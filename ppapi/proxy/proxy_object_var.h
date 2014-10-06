@@ -26,8 +26,8 @@ class PPAPI_PROXY_EXPORT ProxyObjectVar : public Var {
   virtual ~ProxyObjectVar();
 
   // Var overrides.
-  virtual ProxyObjectVar* AsProxyObjectVar() OVERRIDE;
-  virtual PP_VarType GetType() const OVERRIDE;
+  virtual ProxyObjectVar* AsProxyObjectVar() override;
+  virtual PP_VarType GetType() const override;
 
   proxy::PluginDispatcher* dispatcher() const { return dispatcher_; }
   int32 host_var_id() const { return host_var_id_; }

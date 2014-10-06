@@ -28,8 +28,8 @@ class PPAPI_SHARED_EXPORT ArrayVar : public Var {
   static ArrayVar* FromPPVar(const PP_Var& var);
 
   // Var overrides.
-  virtual ArrayVar* AsArrayVar() OVERRIDE;
-  virtual PP_VarType GetType() const OVERRIDE;
+  virtual ArrayVar* AsArrayVar() override;
+  virtual PP_VarType GetType() const override;
 
   // The returned PP_Var has had a ref added on behalf of the caller.
   PP_Var Get(uint32_t index) const;

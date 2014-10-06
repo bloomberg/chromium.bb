@@ -21,26 +21,26 @@ class FlashClipboardResource
   virtual ~FlashClipboardResource();
 
   // Resource implementation.
-  virtual thunk::PPB_Flash_Clipboard_API* AsPPB_Flash_Clipboard_API() OVERRIDE;
+  virtual thunk::PPB_Flash_Clipboard_API* AsPPB_Flash_Clipboard_API() override;
 
   // PPB_Flash_Clipboard_API implementation.
   virtual uint32_t RegisterCustomFormat(PP_Instance instance,
-                                        const char* format_name) OVERRIDE;
+                                        const char* format_name) override;
   virtual PP_Bool IsFormatAvailable(PP_Instance instance,
                                     PP_Flash_Clipboard_Type clipboard_type,
-                                    uint32_t format) OVERRIDE;
+                                    uint32_t format) override;
   virtual PP_Var ReadData(PP_Instance instance,
                           PP_Flash_Clipboard_Type clipboard_type,
-                          uint32_t format) OVERRIDE;
+                          uint32_t format) override;
   virtual int32_t WriteData(PP_Instance instance,
                             PP_Flash_Clipboard_Type clipboard_type,
                             uint32_t data_item_count,
                             const uint32_t formats[],
-                            const PP_Var data_items[]) OVERRIDE;
+                            const PP_Var data_items[]) override;
   virtual PP_Bool GetSequenceNumber(
       PP_Instance instance,
       PP_Flash_Clipboard_Type clipboard_type,
-      uint64_t* sequence_number) OVERRIDE;
+      uint64_t* sequence_number) override;
 
  private:
   FlashClipboardFormatRegistry clipboard_formats_;

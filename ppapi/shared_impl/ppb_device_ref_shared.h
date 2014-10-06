@@ -38,12 +38,12 @@ class PPAPI_SHARED_EXPORT PPB_DeviceRef_Shared
                        const DeviceRefData& data);
 
   // Resource overrides.
-  virtual PPB_DeviceRef_API* AsPPB_DeviceRef_API() OVERRIDE;
+  virtual PPB_DeviceRef_API* AsPPB_DeviceRef_API() override;
 
   // PPB_DeviceRef_API implementation.
-  virtual const DeviceRefData& GetDeviceRefData() const OVERRIDE;
-  virtual PP_DeviceType_Dev GetType() OVERRIDE;
-  virtual PP_Var GetName() OVERRIDE;
+  virtual const DeviceRefData& GetDeviceRefData() const override;
+  virtual PP_DeviceType_Dev GetType() override;
+  virtual PP_Var GetName() override;
 
  private:
   DeviceRefData data_;

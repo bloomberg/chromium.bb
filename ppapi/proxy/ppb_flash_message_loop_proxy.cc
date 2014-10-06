@@ -27,13 +27,13 @@ class FlashMessageLoop : public PPB_Flash_MessageLoop_API, public Resource {
   virtual ~FlashMessageLoop();
 
   // Resource overrides.
-  virtual PPB_Flash_MessageLoop_API* AsPPB_Flash_MessageLoop_API() OVERRIDE;
+  virtual PPB_Flash_MessageLoop_API* AsPPB_Flash_MessageLoop_API() override;
 
   // PPB_Flash_MesssageLoop_API implementation.
-  virtual int32_t Run() OVERRIDE;
-  virtual void Quit() OVERRIDE;
+  virtual int32_t Run() override;
+  virtual void Quit() override;
   virtual void RunFromHostProxy(
-      const RunFromHostProxyCallback& callback) OVERRIDE;
+      const RunFromHostProxyCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashMessageLoop);

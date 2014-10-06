@@ -23,10 +23,10 @@ class BrowserFontSingletonResource
 
   // Resource override.
   virtual thunk::PPB_BrowserFont_Singleton_API*
-      AsPPB_BrowserFont_Singleton_API() OVERRIDE;
+      AsPPB_BrowserFont_Singleton_API() override;
 
   // thunk::PPB_BrowserFontSingleton_API implementation.
-  virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
+  virtual PP_Var GetFontFamilies(PP_Instance instance) override;
 
  private:
   // Lazily-filled-in list of font families.

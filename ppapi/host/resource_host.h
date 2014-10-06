@@ -41,7 +41,7 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   // handled by these filters then the host's own message handler is run. True
   // is always returned (the message will always be handled in some way).
   virtual bool HandleMessage(const IPC::Message& msg,
-                             HostMessageContext* context) OVERRIDE;
+                             HostMessageContext* context) override;
 
   // Sets the PP_Resource ID when the plugin attaches to a pending resource
   // host. This will notify subclasses by calling
@@ -52,7 +52,7 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   void SetPPResourceForPendingHost(PP_Resource pp_resource);
 
   virtual void SendReply(const ReplyMessageContext& context,
-                         const IPC::Message& msg) OVERRIDE;
+                         const IPC::Message& msg) override;
 
   // Simple RTTI. A subclass that is a host for one of these APIs will override
   // the appropriate function and return true.

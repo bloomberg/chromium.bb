@@ -35,10 +35,10 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
 
   // Resource overrides.
   virtual thunk::PPB_VideoDecoder_Dev_API* AsPPB_VideoDecoder_Dev_API()
-      OVERRIDE;
+      override;
 
   // PPB_VideoDecoder_Dev_API implementation.
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy() override;
 
  protected:
   bool SetFlushCallback(scoped_refptr<TrackedCallback> callback);

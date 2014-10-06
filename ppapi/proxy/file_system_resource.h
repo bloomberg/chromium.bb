@@ -45,17 +45,17 @@ class PPAPI_PROXY_EXPORT FileSystemResource
   virtual ~FileSystemResource();
 
   // Resource overrides.
-  virtual thunk::PPB_FileSystem_API* AsPPB_FileSystem_API() OVERRIDE;
+  virtual thunk::PPB_FileSystem_API* AsPPB_FileSystem_API() override;
 
   // PPB_FileSystem_API implementation.
   virtual int32_t Open(int64_t expected_size,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual PP_FileSystemType GetType() OVERRIDE;
-  virtual void OpenQuotaFile(PP_Resource file_io) OVERRIDE;
-  virtual void CloseQuotaFile(PP_Resource file_io) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
+  virtual PP_FileSystemType GetType() override;
+  virtual void OpenQuotaFile(PP_Resource file_io) override;
+  virtual void CloseQuotaFile(PP_Resource file_io) override;
   typedef base::Callback<void(int64_t)> RequestQuotaCallback;
   virtual int64_t RequestQuota(int64_t amount,
-                               const RequestQuotaCallback& callback) OVERRIDE;
+                               const RequestQuotaCallback& callback) override;
 
   int32_t InitIsolatedFileSystem(const std::string& fsid,
                                  PP_IsolatedFileSystemType_Private type,

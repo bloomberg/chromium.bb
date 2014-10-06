@@ -21,7 +21,7 @@ class PPP_Messaging_Proxy : public InterfaceProxy {
   virtual ~PPP_Messaging_Proxy();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

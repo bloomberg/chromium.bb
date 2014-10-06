@@ -24,18 +24,18 @@ class PPAPI_PROXY_EXPORT URLRequestInfoResource
   virtual ~URLRequestInfoResource();
 
   // Resource overrides.
-  virtual thunk::PPB_URLRequestInfo_API* AsPPB_URLRequestInfo_API() OVERRIDE;
+  virtual thunk::PPB_URLRequestInfo_API* AsPPB_URLRequestInfo_API() override;
 
   // PPB_URLRequestInfo_API implementation.
   virtual PP_Bool SetProperty(PP_URLRequestProperty property,
-                              PP_Var var) OVERRIDE;
-  virtual PP_Bool AppendDataToBody(const void* data, uint32_t len) OVERRIDE;
+                              PP_Var var) override;
+  virtual PP_Bool AppendDataToBody(const void* data, uint32_t len) override;
   virtual PP_Bool AppendFileToBody(
       PP_Resource file_ref,
       int64_t start_offset,
       int64_t number_of_bytes,
-      PP_Time expected_last_modified_time) OVERRIDE;
-  virtual const URLRequestInfoData& GetData() const OVERRIDE;
+      PP_Time expected_last_modified_time) override;
+  virtual const URLRequestInfoData& GetData() const override;
 
   bool SetUndefinedProperty(PP_URLRequestProperty property);
   bool SetBooleanProperty(PP_URLRequestProperty property, bool value);

@@ -53,11 +53,11 @@ class PPAPI_SHARED_EXPORT PPB_X509Certificate_Private_Shared
 
   // Resource overrides.
   virtual PPB_X509Certificate_Private_API*
-      AsPPB_X509Certificate_Private_API() OVERRIDE;
+      AsPPB_X509Certificate_Private_API() override;
 
   // PPB_X509Certificate_Private_API implementation.
-  virtual PP_Bool Initialize(const char* bytes, uint32_t length) OVERRIDE;
-  virtual PP_Var GetField(PP_X509Certificate_Private_Field field) OVERRIDE;
+  virtual PP_Bool Initialize(const char* bytes, uint32_t length) override;
+  virtual PP_Var GetField(PP_X509Certificate_Private_Field field) override;
 
  protected:
   virtual bool ParseDER(const std::vector<char>& der,

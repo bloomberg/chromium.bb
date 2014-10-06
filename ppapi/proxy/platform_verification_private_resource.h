@@ -31,7 +31,7 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
 
   // PluginResource overrides.
   virtual thunk::PPB_PlatformVerification_API*
-      AsPPB_PlatformVerification_API() OVERRIDE;
+      AsPPB_PlatformVerification_API() override;
 
   // PPB_PlatformVerification_API implementation.
   virtual int32_t ChallengePlatform(
@@ -40,7 +40,7 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
       PP_Var* signed_data,
       PP_Var* signed_data_signature,
       PP_Var* platform_key_certificate,
-      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) override;
   void OnChallengePlatformReply(
       ChallengePlatformParams output_params,
       const ResourceMessageReplyParams& params,

@@ -22,7 +22,7 @@ class PPAPI_PROXY_EXPORT UMAPrivateResource
   virtual ~UMAPrivateResource();
 
   // Resource overrides.
-  virtual thunk::PPB_UMA_Singleton_API* AsPPB_UMA_Singleton_API() OVERRIDE;
+  virtual thunk::PPB_UMA_Singleton_API* AsPPB_UMA_Singleton_API() override;
 
   // PPB_UMA_Singleton_API implementation.
   virtual void HistogramCustomTimes(PP_Instance instance,
@@ -30,23 +30,23 @@ class PPAPI_PROXY_EXPORT UMAPrivateResource
                                     int64_t sample,
                                     int64_t min,
                                     int64_t max,
-                                    uint32_t bucket_count) OVERRIDE;
+                                    uint32_t bucket_count) override;
 
   virtual void HistogramCustomCounts(PP_Instance instance,
                                      struct PP_Var name,
                                      int32_t sample,
                                      int32_t min,
                                      int32_t max,
-                                     uint32_t bucket_count) OVERRIDE;
+                                     uint32_t bucket_count) override;
 
   virtual void HistogramEnumeration(PP_Instance instance,
                                     struct PP_Var name,
                                     int32_t sample,
-                                    int32_t boundary_value) OVERRIDE;
+                                    int32_t boundary_value) override;
 
   virtual int32_t IsCrashReportingEnabled(
       PP_Instance instance,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
 
  private:
   void OnPluginMsgIsCrashReportingEnabled(

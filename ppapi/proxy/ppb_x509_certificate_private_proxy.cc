@@ -20,7 +20,7 @@ class X509CertificatePrivate : public PPB_X509Certificate_Private_Shared {
   virtual ~X509CertificatePrivate();
 
   virtual bool ParseDER(const std::vector<char>& der,
-                        PPB_X509Certificate_Fields* result) OVERRIDE;
+                        PPB_X509Certificate_Fields* result) override;
 
  private:
   void SendToBrowser(IPC::Message* msg);

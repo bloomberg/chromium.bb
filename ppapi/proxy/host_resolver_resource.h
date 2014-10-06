@@ -22,16 +22,16 @@ class PPAPI_PROXY_EXPORT HostResolverResource
   virtual ~HostResolverResource();
 
   // PluginResource overrides.
-  virtual thunk::PPB_HostResolver_API* AsPPB_HostResolver_API() OVERRIDE;
+  virtual thunk::PPB_HostResolver_API* AsPPB_HostResolver_API() override;
 
   // thunk::PPB_HostResolver_API implementation.
   virtual int32_t Resolve(const char* host,
                           uint16_t port,
                           const PP_HostResolver_Hint* hint,
-                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual PP_Var GetCanonicalName() OVERRIDE;
-  virtual uint32_t GetNetAddressCount() OVERRIDE;
-  virtual PP_Resource GetNetAddress(uint32_t index) OVERRIDE;
+                          scoped_refptr<TrackedCallback> callback) override;
+  virtual PP_Var GetCanonicalName() override;
+  virtual uint32_t GetNetAddressCount() override;
+  virtual PP_Resource GetNetAddress(uint32_t index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolverResource);

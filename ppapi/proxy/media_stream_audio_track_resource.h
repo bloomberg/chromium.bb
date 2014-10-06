@@ -31,23 +31,23 @@ class PPAPI_PROXY_EXPORT MediaStreamAudioTrackResource
 
   // Resource overrides:
   virtual thunk::PPB_MediaStreamAudioTrack_API*
-  AsPPB_MediaStreamAudioTrack_API() OVERRIDE;
+  AsPPB_MediaStreamAudioTrack_API() override;
 
   // PPB_MediaStreamAudioTrack_API overrides:
-  virtual PP_Var GetId() OVERRIDE;
-  virtual PP_Bool HasEnded() OVERRIDE;
+  virtual PP_Var GetId() override;
+  virtual PP_Bool HasEnded() override;
   virtual int32_t Configure(const int32_t attrib_list[],
-                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t GetAttrib(PP_MediaStreamAudioTrack_Attrib attrib,
-                            int32_t* value) OVERRIDE;
+                            int32_t* value) override;
   virtual int32_t GetBuffer(
       PP_Resource* buffer,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t RecycleBuffer(PP_Resource buffer) OVERRIDE;
-  virtual void Close() OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t RecycleBuffer(PP_Resource buffer) override;
+  virtual void Close() override;
 
   // MediaStreamBufferManager::Delegate overrides:
-  virtual void OnNewBufferEnqueued() OVERRIDE;
+  virtual void OnNewBufferEnqueued() override;
 
  private:
   PP_Resource GetAudioBuffer();

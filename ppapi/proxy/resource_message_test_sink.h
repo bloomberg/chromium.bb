@@ -25,7 +25,7 @@ class ResourceMessageTestSink : public IPC::TestSink {
 
   // IPC::TestSink.
   // Overridden to handle sync messages.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // Sets the reply message that will be returned to the next sync message sent.
   // This test sink owns any reply messages passed into this method.
@@ -85,7 +85,7 @@ class ResourceSyncCallHandler : public IPC::Listener {
   virtual ~ResourceSyncCallHandler();
 
   // IPC::Listener.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   IPC::Message last_handled_msg() { return last_handled_msg_; }
 

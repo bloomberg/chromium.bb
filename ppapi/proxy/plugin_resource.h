@@ -46,14 +46,14 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   // callback that was registered when CallBrowser/CallRenderer was called
   // and calling it with |params| and |msg|.
   virtual void OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
   // Resource overrides.
   // Note: Subclasses shouldn't override these methods directly. Instead, they
   // should implement LastPluginRefWasDeleted() or InstanceWasDeleted() to get
   // notified.
-  virtual void NotifyLastPluginRefWasDeleted() OVERRIDE;
-  virtual void NotifyInstanceWasDeleted() OVERRIDE;
+  virtual void NotifyLastPluginRefWasDeleted() override;
+  virtual void NotifyInstanceWasDeleted() override;
 
 
   // Sends a create message to the browser or renderer for the current resource.

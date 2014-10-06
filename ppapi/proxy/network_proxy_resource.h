@@ -22,14 +22,14 @@ class PPAPI_PROXY_EXPORT NetworkProxyResource
 
  private:
   // Resource implementation.
-  virtual thunk::PPB_NetworkProxy_API* AsPPB_NetworkProxy_API() OVERRIDE;
+  virtual thunk::PPB_NetworkProxy_API* AsPPB_NetworkProxy_API() override;
 
   // PPB_NetworkProxy_API implementation.
   virtual int32_t GetProxyForURL(
       PP_Instance instance,
       PP_Var url,
       PP_Var* proxy_string,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
 
   void OnPluginMsgGetProxyForURLReply(PP_Var* proxy_string_out_param,
                                       scoped_refptr<TrackedCallback> callback,

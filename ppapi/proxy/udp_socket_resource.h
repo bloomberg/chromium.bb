@@ -21,24 +21,24 @@ class PPAPI_PROXY_EXPORT UDPSocketResource : public UDPSocketResourceBase,
   virtual ~UDPSocketResource();
 
   // PluginResource implementation.
-  virtual thunk::PPB_UDPSocket_API* AsPPB_UDPSocket_API() OVERRIDE;
+  virtual thunk::PPB_UDPSocket_API* AsPPB_UDPSocket_API() override;
 
   // thunk::PPB_UDPSocket_API implementation.
   virtual int32_t Bind(PP_Resource addr,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual PP_Resource GetBoundAddress() OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
+  virtual PP_Resource GetBoundAddress() override;
   virtual int32_t RecvFrom(char* buffer,
                            int32_t num_bytes,
                            PP_Resource* addr,
-                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                           scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t SendTo(const char* buffer,
                          int32_t num_bytes,
                          PP_Resource addr,
-                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual void Close() OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) override;
+  virtual void Close() override;
   virtual int32_t SetOption(PP_UDPSocket_Option name,
                             const PP_Var& value,
-                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UDPSocketResource);

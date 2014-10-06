@@ -28,8 +28,8 @@ class V8ObjectVar : public ppapi::Var {
   virtual ~V8ObjectVar() {}
 
   // Var overrides.
-  virtual V8ObjectVar* AsV8ObjectVar() OVERRIDE { return this; }
-  virtual PP_VarType GetType() const OVERRIDE { return PP_VARTYPE_OBJECT; }
+  virtual V8ObjectVar* AsV8ObjectVar() override { return this; }
+  virtual PP_VarType GetType() const override { return PP_VARTYPE_OBJECT; }
 };
 
 namespace proxy {

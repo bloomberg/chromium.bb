@@ -27,35 +27,35 @@ class PPAPI_PROXY_EXPORT TCPSocketResource : public thunk::PPB_TCPSocket_API,
   virtual ~TCPSocketResource();
 
   // PluginResource overrides.
-  virtual thunk::PPB_TCPSocket_API* AsPPB_TCPSocket_API() OVERRIDE;
+  virtual thunk::PPB_TCPSocket_API* AsPPB_TCPSocket_API() override;
 
   // thunk::PPB_TCPSocket_API implementation.
   virtual int32_t Bind(PP_Resource addr,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Connect(PP_Resource addr,
-                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual PP_Resource GetLocalAddress() OVERRIDE;
-  virtual PP_Resource GetRemoteAddress() OVERRIDE;
+                          scoped_refptr<TrackedCallback> callback) override;
+  virtual PP_Resource GetLocalAddress() override;
+  virtual PP_Resource GetRemoteAddress() override;
   virtual int32_t Read(char* buffer,
                        int32_t bytes_to_read,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Write(const char* buffer,
                         int32_t bytes_to_write,
-                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Listen(int32_t backlog,
-                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Accept(PP_Resource* accepted_tcp_socket,
-                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual void Close() OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) override;
+  virtual void Close() override;
   virtual int32_t SetOption(PP_TCPSocket_Option name,
                             const PP_Var& value,
-                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) override;
 
   // TCPSocketResourceBase implementation.
   virtual PP_Resource CreateAcceptedSocket(
       int pending_host_id,
       const PP_NetAddress_Private& local_addr,
-      const PP_NetAddress_Private& remote_addr) OVERRIDE;
+      const PP_NetAddress_Private& remote_addr) override;
 
  private:
   // C-tor used for accepted sockets.

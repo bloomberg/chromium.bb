@@ -27,17 +27,17 @@ class PPAPI_PROXY_EXPORT TalkResource
   // PPB_Talk_API implementation.
   virtual int32_t RequestPermission(
       PP_TalkPermission permission,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t StartRemoting(
       PP_TalkEventCallback event_callback,
       void* user_data,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t StopRemoting(
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
 
   // PluginResource override.
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
   void OnNotifyEvent(const ResourceMessageReplyParams& params,
                      PP_TalkEvent event);

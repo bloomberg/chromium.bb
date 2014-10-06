@@ -45,35 +45,35 @@ class PPAPI_PROXY_EXPORT CompositorLayerResource
   virtual ~CompositorLayerResource();
 
   // Resource overrides:
-  virtual thunk::PPB_CompositorLayer_API* AsPPB_CompositorLayer_API() OVERRIDE;
+  virtual thunk::PPB_CompositorLayer_API* AsPPB_CompositorLayer_API() override;
 
   // thunk::PPB_Compositor_API overrides:
   virtual int32_t SetColor(float red,
                            float green,
                            float blue,
                            float alpha,
-                           const PP_Size* size) OVERRIDE;
+                           const PP_Size* size) override;
   virtual int32_t SetTexture0_1(
       PP_Resource context,
       uint32_t texture,
       const PP_Size* size,
-      const scoped_refptr<ppapi::TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<ppapi::TrackedCallback>& callback) override;
   virtual int32_t SetTexture(
       PP_Resource context,
       uint32_t target,
       uint32_t texture,
       const PP_Size* size,
-      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) override;
   virtual int32_t SetImage(
       PP_Resource image_data,
       const PP_Size* size,
-      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
-  virtual int32_t SetClipRect(const PP_Rect* rect) OVERRIDE;
-  virtual int32_t SetTransform(const float matrix[16]) OVERRIDE;
-  virtual int32_t SetOpacity(float opacity) OVERRIDE;
-  virtual int32_t SetBlendMode(PP_BlendMode mode) OVERRIDE;
-  virtual int32_t SetSourceRect(const PP_FloatRect* rect) OVERRIDE;
-  virtual int32_t SetPremultipliedAlpha(PP_Bool premult) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) override;
+  virtual int32_t SetClipRect(const PP_Rect* rect) override;
+  virtual int32_t SetTransform(const float matrix[16]) override;
+  virtual int32_t SetOpacity(float opacity) override;
+  virtual int32_t SetBlendMode(PP_BlendMode mode) override;
+  virtual int32_t SetSourceRect(const PP_FloatRect* rect) override;
+  virtual int32_t SetPremultipliedAlpha(PP_Bool premult) override;
 
   bool SetType(LayerType type);
   int32_t CheckForSetTextureAndImage(

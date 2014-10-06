@@ -25,7 +25,7 @@ class PPAPI_PROXY_EXPORT BrokerDispatcher : public ProxyChannel {
                                      bool is_client);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  protected:
   // You must call InitBrokerWithChannel after the constructor.
@@ -47,7 +47,7 @@ class PPAPI_PROXY_EXPORT BrokerHostDispatcher : public BrokerDispatcher {
   BrokerHostDispatcher();
 
   // IPC::Listener implementation.
-  virtual void OnChannelError() OVERRIDE;
+  virtual void OnChannelError() override;
 };
 
 // The dispatcher for the broker side of the broker channel.
@@ -56,7 +56,7 @@ class PPAPI_PROXY_EXPORT BrokerSideDispatcher : public BrokerDispatcher {
   explicit BrokerSideDispatcher(PP_ConnectInstance_Func connect_instance);
 
   // IPC::Listener implementation.
-  virtual void OnChannelError() OVERRIDE;
+  virtual void OnChannelError() override;
 };
 
 }  // namespace proxy

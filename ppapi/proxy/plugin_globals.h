@@ -53,28 +53,28 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   }
 
   // PpapiGlobals implementation.
-  virtual ResourceTracker* GetResourceTracker() OVERRIDE;
-  virtual VarTracker* GetVarTracker() OVERRIDE;
+  virtual ResourceTracker* GetResourceTracker() override;
+  virtual VarTracker* GetVarTracker() override;
   virtual CallbackTracker* GetCallbackTrackerForInstance(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual thunk::PPB_Instance_API* GetInstanceAPI(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual thunk::ResourceCreationAPI* GetResourceCreationAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual std::string GetCmdLine() OVERRIDE;
-  virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
+      PP_Instance instance) override;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) override;
+  virtual std::string GetCmdLine() override;
+  virtual void PreCacheFontForFlash(const void* logfontw) override;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel level,
                              const std::string& source,
-                             const std::string& value) OVERRIDE;
+                             const std::string& value) override;
   virtual void BroadcastLogWithSource(PP_Module module,
                                       PP_LogLevel level,
                                       const std::string& source,
-                                      const std::string& value) OVERRIDE;
-  virtual MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
-  base::TaskRunner* GetFileTaskRunner() OVERRIDE;
-  virtual void MarkPluginIsActive() OVERRIDE;
+                                      const std::string& value) override;
+  virtual MessageLoopShared* GetCurrentMessageLoop() override;
+  base::TaskRunner* GetFileTaskRunner() override;
+  virtual void MarkPluginIsActive() override;
 
   // Returns the channel for sending to the browser.
   IPC::Sender* GetBrowserSender();
@@ -145,7 +145,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   class BrowserSender;
 
   // PpapiGlobals overrides.
-  virtual bool IsPluginGlobals() const OVERRIDE;
+  virtual bool IsPluginGlobals() const override;
 
   // Locks the proxy lock and releases the throttle on keepalive IPC messages.
   void OnReleaseKeepaliveThrottle();

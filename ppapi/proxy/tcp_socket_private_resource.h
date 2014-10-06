@@ -30,40 +30,40 @@ class PPAPI_PROXY_EXPORT TCPSocketPrivateResource
   virtual ~TCPSocketPrivateResource();
 
   // PluginResource overrides.
-  virtual PPB_TCPSocket_Private_API* AsPPB_TCPSocket_Private_API() OVERRIDE;
+  virtual PPB_TCPSocket_Private_API* AsPPB_TCPSocket_Private_API() override;
 
   // PPB_TCPSocket_Private_API implementation.
   virtual int32_t Connect(const char* host,
                           uint16_t port,
-                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                          scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t ConnectWithNetAddress(
       const PP_NetAddress_Private* addr,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual PP_Bool GetLocalAddress(PP_NetAddress_Private* local_addr) OVERRIDE;
-  virtual PP_Bool GetRemoteAddress(PP_NetAddress_Private* remote_addr) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
+  virtual PP_Bool GetLocalAddress(PP_NetAddress_Private* local_addr) override;
+  virtual PP_Bool GetRemoteAddress(PP_NetAddress_Private* remote_addr) override;
   virtual int32_t SSLHandshake(
       const char* server_name,
       uint16_t server_port,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual PP_Resource GetServerCertificate() OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
+  virtual PP_Resource GetServerCertificate() override;
   virtual PP_Bool AddChainBuildingCertificate(PP_Resource certificate,
-                                              PP_Bool trusted) OVERRIDE;
+                                              PP_Bool trusted) override;
   virtual int32_t Read(char* buffer,
                       int32_t bytes_to_read,
-                      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Write(const char* buffer,
                         int32_t bytes_to_write,
-                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) override;
+  virtual void Disconnect() override;
   virtual int32_t SetOption(PP_TCPSocketOption_Private name,
                             const PP_Var& value,
-                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) override;
 
   // TCPSocketResourceBase implementation.
   virtual PP_Resource CreateAcceptedSocket(
       int pending_host_id,
       const PP_NetAddress_Private& local_addr,
-      const PP_NetAddress_Private& remote_addr) OVERRIDE;
+      const PP_NetAddress_Private& remote_addr) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPSocketPrivateResource);

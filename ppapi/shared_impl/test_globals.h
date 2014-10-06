@@ -22,30 +22,30 @@ class TestVarTracker : public VarTracker {
       PP_Instance instance,
       const IPC::Message& creation_message,
       int pending_renderer_id,
-      int pending_browser_id) OVERRIDE {
+      int pending_browser_id) override {
     return PP_MakeNull();
   }
-  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE {
+  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) override {
     return NULL;
   }
-  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
+  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override {
     return NULL;
   }
   virtual ArrayBufferVar* CreateShmArrayBuffer(uint32 size_in_bytes,
                                                base::SharedMemoryHandle handle)
-      OVERRIDE {
+      override {
     return NULL;
   }
-  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE {}
+  virtual void DidDeleteInstance(PP_Instance instance) override {}
   virtual int TrackSharedMemoryHandle(PP_Instance instance,
                                       base::SharedMemoryHandle handle,
-                                      uint32 size_in_bytes) OVERRIDE {
+                                      uint32 size_in_bytes) override {
     return -1;
   }
   virtual bool StopTrackingSharedMemoryHandle(int id,
                                               PP_Instance instance,
                                               base::SharedMemoryHandle* handle,
-                                              uint32* size_in_bytes) OVERRIDE {
+                                              uint32* size_in_bytes) override {
     return false;
   }
 };
@@ -59,30 +59,30 @@ class TestGlobals : public PpapiGlobals {
   virtual ~TestGlobals();
 
   // PpapiGlobals implementation.
-  virtual ResourceTracker* GetResourceTracker() OVERRIDE;
-  virtual VarTracker* GetVarTracker() OVERRIDE;
+  virtual ResourceTracker* GetResourceTracker() override;
+  virtual VarTracker* GetVarTracker() override;
   virtual CallbackTracker* GetCallbackTrackerForInstance(PP_Instance instance)
-      OVERRIDE;
+      override;
   virtual thunk::PPB_Instance_API* GetInstanceAPI(PP_Instance instance)
-      OVERRIDE;
+      override;
   virtual thunk::ResourceCreationAPI* GetResourceCreationAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual std::string GetCmdLine() OVERRIDE;
-  virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
+      PP_Instance instance) override;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) override;
+  virtual std::string GetCmdLine() override;
+  virtual void PreCacheFontForFlash(const void* logfontw) override;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel level,
                              const std::string& source,
-                             const std::string& value) OVERRIDE;
+                             const std::string& value) override;
   virtual void BroadcastLogWithSource(PP_Module module,
                                       PP_LogLevel level,
                                       const std::string& source,
-                                      const std::string& value) OVERRIDE;
-  virtual MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
-  virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
+                                      const std::string& value) override;
+  virtual MessageLoopShared* GetCurrentMessageLoop() override;
+  virtual base::TaskRunner* GetFileTaskRunner() override;
 
   // PpapiGlobals overrides:
-  virtual bool IsHostGlobals() const OVERRIDE;
+  virtual bool IsHostGlobals() const override;
 
  private:
   ResourceTracker resource_tracker_;

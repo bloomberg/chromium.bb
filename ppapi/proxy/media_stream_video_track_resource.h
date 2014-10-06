@@ -32,25 +32,25 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
 
   // Resource overrides:
   virtual thunk::PPB_MediaStreamVideoTrack_API*
-  AsPPB_MediaStreamVideoTrack_API() OVERRIDE;
+  AsPPB_MediaStreamVideoTrack_API() override;
 
   // PPB_MediaStreamVideoTrack_API overrides:
-  virtual PP_Var GetId() OVERRIDE;
-  virtual PP_Bool HasEnded() OVERRIDE;
+  virtual PP_Var GetId() override;
+  virtual PP_Bool HasEnded() override;
   virtual int32_t Configure(const int32_t attrib_list[],
-                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t GetAttrib(PP_MediaStreamVideoTrack_Attrib attrib,
-                            int32_t* value) OVERRIDE;
+                            int32_t* value) override;
   virtual int32_t GetFrame(PP_Resource* frame,
-                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t RecycleFrame(PP_Resource frame) OVERRIDE;
-  virtual void Close() OVERRIDE;
+                           scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t RecycleFrame(PP_Resource frame) override;
+  virtual void Close() override;
   virtual int32_t GetEmptyFrame(
-      PP_Resource* frame, scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t PutFrame(PP_Resource frame) OVERRIDE;
+      PP_Resource* frame, scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t PutFrame(PP_Resource frame) override;
 
   // MediaStreamBufferManager::Delegate overrides:
-  virtual void OnNewBufferEnqueued() OVERRIDE;
+  virtual void OnNewBufferEnqueued() override;
 
  private:
   PP_Resource GetVideoFrame();

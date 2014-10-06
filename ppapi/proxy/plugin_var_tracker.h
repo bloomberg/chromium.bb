@@ -63,16 +63,16 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
       PP_Instance instance,
       const IPC::Message& creation_message,
       int pending_renderer_id,
-      int pending_browser_id) OVERRIDE;
-  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE;
-  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
+      int pending_browser_id) override;
+  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) override;
+  virtual void DidDeleteInstance(PP_Instance instance) override;
   virtual int TrackSharedMemoryHandle(PP_Instance instance,
                                       base::SharedMemoryHandle file,
-                                      uint32 size_in_bytes) OVERRIDE;
+                                      uint32 size_in_bytes) override;
   virtual bool StopTrackingSharedMemoryHandle(int id,
                                               PP_Instance instance,
                                               base::SharedMemoryHandle* handle,
-                                              uint32* size_in_bytes) OVERRIDE;
+                                              uint32* size_in_bytes) override;
 
   // Notification that a plugin-implemented object (PPP_Class) was created by
   // the plugin or deallocated by WebKit over IPC.
@@ -97,14 +97,14 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
 
  private:
   // VarTracker protected overrides.
-  virtual int32 AddVarInternal(Var* var, AddVarRefMode mode) OVERRIDE;
-  virtual void TrackedObjectGettingOneRef(VarMap::const_iterator iter) OVERRIDE;
-  virtual void ObjectGettingZeroRef(VarMap::iterator iter) OVERRIDE;
-  virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) OVERRIDE;
-  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE;
+  virtual int32 AddVarInternal(Var* var, AddVarRefMode mode) override;
+  virtual void TrackedObjectGettingOneRef(VarMap::const_iterator iter) override;
+  virtual void ObjectGettingZeroRef(VarMap::iterator iter) override;
+  virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) override;
+  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override;
   virtual ArrayBufferVar* CreateShmArrayBuffer(
       uint32 size_in_bytes,
-      base::SharedMemoryHandle handle) OVERRIDE;
+      base::SharedMemoryHandle handle) override;
 
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;

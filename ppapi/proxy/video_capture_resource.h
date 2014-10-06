@@ -24,30 +24,30 @@ class VideoCaptureResource
   virtual ~VideoCaptureResource();
 
   // PluginResource override.
-  virtual thunk::PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE {
+  virtual thunk::PPB_VideoCapture_API* AsPPB_VideoCapture_API() override {
     return this;
   }
 
   // PPB_VideoCapture_API implementation.
   virtual int32_t EnumerateDevices(
       const PP_ArrayOutput& output,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t MonitorDeviceChange(
       PP_MonitorDeviceChangeCallback callback,
-      void* user_data) OVERRIDE;
+      void* user_data) override;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t StartCapture() OVERRIDE;
-  virtual int32_t ReuseBuffer(uint32_t buffer) OVERRIDE;
-  virtual int32_t StopCapture() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual int32_t EnumerateDevicesSync(const PP_ArrayOutput& devices) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t StartCapture() override;
+  virtual int32_t ReuseBuffer(uint32_t buffer) override;
+  virtual int32_t StopCapture() override;
+  virtual void Close() override;
+  virtual int32_t EnumerateDevicesSync(const PP_ArrayOutput& devices) override;
 
  protected:
   // Resource override.
-  virtual void LastPluginRefWasDeleted() OVERRIDE;
+  virtual void LastPluginRefWasDeleted() override;
 
  private:
   enum OpenState {
@@ -58,7 +58,7 @@ class VideoCaptureResource
 
   // PluginResource overrides.
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
   void OnPluginMsgOnDeviceInfo(const ResourceMessageReplyParams& params,
                                const struct PP_VideoCaptureDeviceInfo_Dev& info,

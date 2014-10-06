@@ -36,8 +36,8 @@ class PPAPI_PROXY_EXPORT PluginResourceTracker : public ResourceTracker {
 
  protected:
   // ResourceTracker overrides.
-  virtual PP_Resource AddResource(Resource* object) OVERRIDE;
-  virtual void RemoveResource(Resource* object) OVERRIDE;
+  virtual PP_Resource AddResource(Resource* object) override;
+  virtual void RemoveResource(Resource* object) override;
 
  private:
   // Map of host instance/resource pairs to a plugin resource ID.

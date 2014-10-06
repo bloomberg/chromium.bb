@@ -37,12 +37,12 @@ class ResourceCreationProxy : public InterfaceProxy,
   static InterfaceProxy* Create(Dispatcher* dispatcher);
 
   // ResourceCreationAPI (called in plugin).
-  virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateFileIO(PP_Instance instance) override;
   virtual PP_Resource CreateFileRef(
       PP_Instance instance,
-      const FileRefCreateInfo& create_info) OVERRIDE;
+      const FileRefCreateInfo& create_info) override;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType type) OVERRIDE;
+                                       PP_FileSystemType type) override;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                           PP_InputEvent_Type type,
                                           PP_TimeTicks time_stamp,
@@ -51,14 +51,14 @@ class ResourceCreationProxy : public InterfaceProxy,
                                           const uint32_t* segment_offsets,
                                           int32_t target_segment,
                                           uint32_t selection_start,
-                                          uint32_t selection_end) OVERRIDE;
+                                          uint32_t selection_end) override;
   virtual PP_Resource CreateKeyboardInputEvent_1_0(
       PP_Instance instance,
       PP_InputEvent_Type type,
       PP_TimeTicks time_stamp,
       uint32_t modifiers,
       uint32_t key_code,
-      PP_Var character_text) OVERRIDE;
+      PP_Var character_text) override;
   virtual PP_Resource CreateKeyboardInputEvent_1_2(
       PP_Instance instance,
       PP_InputEvent_Type type,
@@ -66,7 +66,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       uint32_t modifiers,
       uint32_t key_code,
       PP_Var character_text,
-      PP_Var code) OVERRIDE;
+      PP_Var code) override;
   virtual PP_Resource CreateMouseInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,
@@ -75,120 +75,120 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_InputEvent_MouseButton mouse_button,
       const PP_Point* mouse_position,
       int32_t click_count,
-      const PP_Point* mouse_movement) OVERRIDE;
+      const PP_Point* mouse_movement) override;
   virtual PP_Resource CreateTouchInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,
       PP_TimeTicks time_stamp,
-      uint32_t modifiers) OVERRIDE;
+      uint32_t modifiers) override;
   virtual PP_Resource CreateTrueTypeFont(
       PP_Instance instance,
-      const PP_TrueTypeFontDesc_Dev* desc) OVERRIDE;
-  virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
+      const PP_TrueTypeFontDesc_Dev* desc) override;
+  virtual PP_Resource CreateURLLoader(PP_Instance instance) override;
   virtual PP_Resource CreateURLRequestInfo(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual PP_Resource CreateWheelInputEvent(
       PP_Instance instance,
       PP_TimeTicks time_stamp,
       uint32_t modifiers,
       const PP_FloatPoint* wheel_delta,
       const PP_FloatPoint* wheel_ticks,
-      PP_Bool scroll_by_page) OVERRIDE;
+      PP_Bool scroll_by_page) override;
   virtual PP_Resource CreateAudio1_0(PP_Instance instance,
                                      PP_Resource config_id,
                                      PPB_Audio_Callback_1_0 audio_callback,
-                                     void* user_data) OVERRIDE;
+                                     void* user_data) override;
   virtual PP_Resource CreateAudio(PP_Instance instance,
                                   PP_Resource config_id,
                                   PPB_Audio_Callback audio_callback,
-                                  void* user_data) OVERRIDE;
-  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) OVERRIDE;
+                                  void* user_data) override;
+  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) override;
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
-                                        uint32_t sample_frame_count) OVERRIDE;
-  virtual PP_Resource CreateCompositor(PP_Instance instance) OVERRIDE;
+                                        uint32_t sample_frame_count) override;
+  virtual PP_Resource CreateCompositor(PP_Instance instance) override;
   virtual PP_Resource CreateFileChooser(PP_Instance instance,
                                         PP_FileChooserMode_Dev mode,
-                                        const PP_Var& accept_types) OVERRIDE;
+                                        const PP_Var& accept_types) override;
   virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
                                        const PP_Size* size,
-                                       PP_Bool is_always_opaque) OVERRIDE;
+                                       PP_Bool is_always_opaque) override;
   virtual PP_Resource CreateGraphics3D(PP_Instance instance,
                                        PP_Resource share_context,
-                                       const int32_t* attrib_list) OVERRIDE;
+                                       const int32_t* attrib_list) override;
   virtual PP_Resource CreateGraphics3DRaw(
       PP_Instance instance,
       PP_Resource share_context,
       const int32_t* attrib_list,
-      base::SharedMemoryHandle* shared_state) OVERRIDE;
-  virtual PP_Resource CreateHostResolver(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) OVERRIDE;
+      base::SharedMemoryHandle* shared_state) override;
+  virtual PP_Resource CreateHostResolver(PP_Instance instance) override;
+  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) override;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
                                       const PP_Size* size,
-                                      PP_Bool init_to_zero) OVERRIDE;
+                                      PP_Bool init_to_zero) override;
   virtual PP_Resource CreateImageDataSimple(PP_Instance instance,
                                             PP_ImageDataFormat format,
                                             const PP_Size* size,
-                                            PP_Bool init_to_zero) OVERRIDE;
+                                            PP_Bool init_to_zero) override;
   virtual PP_Resource CreateMediaStreamVideoTrack(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual PP_Resource CreateNetAddressFromIPv4Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv4* ipv4_addr) OVERRIDE;
+      const PP_NetAddress_IPv4* ipv4_addr) override;
   virtual PP_Resource CreateNetAddressFromIPv6Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv6* ipv6_addr) OVERRIDE;
+      const PP_NetAddress_IPv6* ipv6_addr) override;
   virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
       PP_Instance instance,
-      const PP_NetAddress_Private& private_addr) OVERRIDE;
-  virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) OVERRIDE;
+      const PP_NetAddress_Private& private_addr) override;
+  virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) override;
   virtual PP_Resource CreateOutputProtectionPrivate(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreatePrinting(PP_Instance) OVERRIDE;
+      PP_Instance instance) override;
+  virtual PP_Resource CreatePrinting(PP_Instance) override;
   virtual PP_Resource CreateTCPServerSocketPrivate(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateTCPSocket1_0(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateTCPSocket(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateUDPSocket(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoDestination(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoSource(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateWebSocket(PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
+  virtual PP_Resource CreateTCPSocket1_0(PP_Instance instance) override;
+  virtual PP_Resource CreateTCPSocket(PP_Instance instance) override;
+  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) override;
+  virtual PP_Resource CreateUDPSocket(PP_Instance instance) override;
+  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoDestination(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoSource(PP_Instance instance) override;
+  virtual PP_Resource CreateWebSocket(PP_Instance instance) override;
   virtual PP_Resource CreateX509CertificatePrivate(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
 #if !defined(OS_NACL)
-  virtual PP_Resource CreateAudioInput(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateAudioInput(PP_Instance instance) override;
+  virtual PP_Resource CreateBroker(PP_Instance instance) override;
   virtual PP_Resource CreateBrowserFont(
       PP_Instance instance,
-      const PP_BrowserFont_Trusted_Description* description) OVERRIDE;
+      const PP_BrowserFont_Trusted_Description* description) override;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
-                                   uint32_t size) OVERRIDE;
-  virtual PP_Resource CreateFlashDRM(PP_Instance instance) OVERRIDE;
+                                   uint32_t size) override;
+  virtual PP_Resource CreateFlashDRM(PP_Instance instance) override;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description,
-      PP_PrivateFontCharset charset) OVERRIDE;
+      PP_PrivateFontCharset charset) override;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
-                                      const PP_Flash_Menu* menu_data) OVERRIDE;
-  virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
+                                      const PP_Flash_Menu* menu_data) override;
+  virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) override;
   virtual PP_Resource CreatePlatformVerificationPrivate(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
-                                      PP_Bool vertical) OVERRIDE;
-  virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
+                                      PP_Bool vertical) override;
+  virtual PP_Resource CreateTalk(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoCapture(PP_Instance instance) override;
   virtual PP_Resource CreateVideoDecoderDev(
       PP_Instance instance,
       PP_Resource context3d_id,
-      PP_VideoDecoder_Profile profile) OVERRIDE;
+      PP_VideoDecoder_Profile profile) override;
 #endif  // !defined(OS_NACL)
 
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   Connection GetConnection();

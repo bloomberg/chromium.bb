@@ -26,16 +26,16 @@ class OutputProtectionResource
 
   // PluginResource overrides.
   virtual thunk::PPB_OutputProtection_API* AsPPB_OutputProtection_API()
-      OVERRIDE;
+      override;
 
   // PPB_OutputProtection_API implementation.
   virtual int32_t QueryStatus(
       uint32_t* link_mask,
       uint32_t* protection_mask,
-      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) override;
   virtual int32_t EnableProtection(
       uint32_t desired_method_mask,
-      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) override;
 
   void OnPluginMsgQueryStatusReply(
       uint32_t* out_link_mask,

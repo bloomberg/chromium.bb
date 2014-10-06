@@ -20,11 +20,11 @@ class PPAPI_SHARED_EXPORT PPB_Instance_Shared
   // Implementation of some shared PPB_Instance_FunctionAPI functions.
   virtual void Log(PP_Instance instance,
                    PP_LogLevel log_level,
-                   PP_Var value) OVERRIDE;
+                   PP_Var value) override;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel log_level,
                              PP_Var source,
-                             PP_Var value) OVERRIDE;
+                             PP_Var value) override;
 
   // Error checks the given resquest to Request[Filtering]InputEvents. Returns
   // PP_OK if the given classes are all valid, PP_ERROR_NOTSUPPORTED if not.

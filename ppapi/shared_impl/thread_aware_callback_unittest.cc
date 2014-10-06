@@ -58,14 +58,14 @@ class ThreadAwareCallbackMultiThreadTest
   }
 
   // proxy::PluginProxyMultiThreadTest implementation.
-  virtual void SetUpTestOnMainThread() OVERRIDE {
+  virtual void SetUpTestOnMainThread() override {
     ProxyAutoLock auto_lock;
 
     main_thread_callback_.reset(
         ThreadAwareCallback<CallbackFunc>::Create(&MainThreadCallbackBody));
   }
 
-  virtual void SetUpTestOnSecondaryThread() OVERRIDE {
+  virtual void SetUpTestOnSecondaryThread() override {
     {
       ProxyAutoLock auto_lock;
       main_thread_callback_->RunOnTargetThread(this);
@@ -103,14 +103,14 @@ class ThreadAwareCallbackAbortTest : public proxy::PluginProxyMultiThreadTest {
   virtual ~ThreadAwareCallbackAbortTest() {}
 
   // proxy::PluginProxyMultiThreadTest implementation.
-  virtual void SetUpTestOnMainThread() OVERRIDE {
+  virtual void SetUpTestOnMainThread() override {
     ProxyAutoLock auto_lock;
 
     main_thread_callback_.reset(
         ThreadAwareCallback<CallbackFunc>::Create(&MainThreadCallbackBody));
   }
 
-  virtual void SetUpTestOnSecondaryThread() OVERRIDE {
+  virtual void SetUpTestOnSecondaryThread() override {
     {
       ProxyAutoLock auto_lock;
       main_thread_message_loop_proxy_->PostTask(

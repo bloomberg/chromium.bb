@@ -42,14 +42,14 @@ class PPAPI_PROXY_EXPORT ImageData
   virtual ~ImageData();
 
   // Resource overrides.
-  virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
-  virtual void LastPluginRefWasDeleted() OVERRIDE;
-  virtual void InstanceWasDeleted() OVERRIDE;
+  virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() override;
+  virtual void LastPluginRefWasDeleted() override;
+  virtual void InstanceWasDeleted() override;
 
   // PPB_ImageData API.
-  virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
-  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-  virtual void SetIsCandidateForReuse() OVERRIDE;
+  virtual PP_Bool Describe(PP_ImageDataDesc* desc) override;
+  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
+  virtual void SetIsCandidateForReuse() override;
 
   PPB_ImageData_Shared::ImageDataType type() const { return type_; }
   const PP_ImageDataDesc& desc() const { return desc_; }
@@ -84,10 +84,10 @@ class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
   virtual ~PlatformImageData();
 
   // PPB_ImageData API.
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
-  virtual SkCanvas* GetCanvas() OVERRIDE;
+  virtual void* Map() override;
+  virtual void Unmap() override;
+  virtual SkCanvas* GetPlatformCanvas() override;
+  virtual SkCanvas* GetCanvas() override;
 
   static ImageHandle NullHandle();
   static ImageHandle HandleFromInt(int32_t i);
@@ -113,10 +113,10 @@ class PPAPI_PROXY_EXPORT SimpleImageData : public ImageData {
   virtual ~SimpleImageData();
 
   // PPB_ImageData API.
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
-  virtual SkCanvas* GetCanvas() OVERRIDE;
+  virtual void* Map() override;
+  virtual void Unmap() override;
+  virtual SkCanvas* GetPlatformCanvas() override;
+  virtual SkCanvas* GetCanvas() override;
 
  private:
   base::SharedMemory shm_;

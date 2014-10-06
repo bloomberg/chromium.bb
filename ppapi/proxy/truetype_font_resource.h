@@ -33,25 +33,25 @@ class PPAPI_PROXY_EXPORT TrueTypeFontResource
   virtual ~TrueTypeFontResource();
 
   // Resource implementation.
-  virtual thunk::PPB_TrueTypeFont_API* AsPPB_TrueTypeFont_API() OVERRIDE;
+  virtual thunk::PPB_TrueTypeFont_API* AsPPB_TrueTypeFont_API() override;
 
   // PPB_TrueTypeFont_API implementation.
   virtual int32_t Describe(
       PP_TrueTypeFontDesc_Dev* desc,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t GetTableTags(
       const PP_ArrayOutput& output,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t GetTable(
       uint32_t table,
       int32_t offset,
       int32_t max_data_length,
       const PP_ArrayOutput& output,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
 
   // PluginResource implementation.
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
  private:
   void OnPluginMsgCreateComplete(

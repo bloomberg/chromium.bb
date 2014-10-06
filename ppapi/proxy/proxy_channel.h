@@ -70,10 +70,10 @@ class PPAPI_PROXY_EXPORT ProxyChannel
       bool should_close_source);
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // IPC::Listener implementation.
-  virtual void OnChannelError() OVERRIDE;
+  virtual void OnChannelError() override;
 
   // Will be NULL in some unit tests and if the remote side has crashed.
   IPC::SyncChannel* channel() const {

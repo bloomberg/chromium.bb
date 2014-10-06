@@ -33,16 +33,16 @@ class PPAPI_PROXY_EXPORT VideoSourceResource
 
   // Resource overrides.
   virtual thunk::PPB_VideoSource_Private_API*
-      AsPPB_VideoSource_Private_API() OVERRIDE;
+      AsPPB_VideoSource_Private_API() override;
 
   // PPB_VideoSource_Private_API implementation.
   virtual int32_t Open(
       const PP_Var& stream_url,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t GetFrame(
       PP_VideoFrame_Private* frame,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual void Close() OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
+  virtual void Close() override;
 
  private:
   void OnPluginMsgOpenComplete(

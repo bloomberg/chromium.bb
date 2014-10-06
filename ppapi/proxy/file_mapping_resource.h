@@ -24,7 +24,7 @@ class PPAPI_PROXY_EXPORT FileMappingResource
   virtual ~FileMappingResource();
 
   // Resource implementation.
-  virtual thunk::PPB_FileMapping_API* AsPPB_FileMapping_API() OVERRIDE;
+  virtual thunk::PPB_FileMapping_API* AsPPB_FileMapping_API() override;
 
   // PPB_FileMapping_API implementation.
   virtual int32_t Map(PP_Instance instance,
@@ -34,12 +34,12 @@ class PPAPI_PROXY_EXPORT FileMappingResource
                       uint32_t flags,
                       int64_t offset,
                       void** address,
-                      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Unmap(PP_Instance instance,
                         const void* address,
                         int64_t length,
-                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int64_t GetMapPageSize(PP_Instance instance) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) override;
+  virtual int64_t GetMapPageSize(PP_Instance instance) override;
 
   struct MapResult {
     MapResult() : result(PP_ERROR_FAILED), address(NULL) {

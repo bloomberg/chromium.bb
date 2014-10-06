@@ -39,36 +39,36 @@ class PPAPI_PROXY_EXPORT URLLoaderResource
   virtual ~URLLoaderResource();
 
   // Resource override.
-  thunk::PPB_URLLoader_API* AsPPB_URLLoader_API() OVERRIDE;
+  thunk::PPB_URLLoader_API* AsPPB_URLLoader_API() override;
 
   // PPB_URLLoader_API implementation.
   virtual int32_t Open(PP_Resource request_id,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Open(const URLRequestInfoData& data,
                        int requestor_pid,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t FollowRedirect(
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual PP_Bool GetUploadProgress(int64_t* bytes_sent,
-                                    int64_t* total_bytes_to_be_sent) OVERRIDE;
+                                    int64_t* total_bytes_to_be_sent) override;
   virtual PP_Bool GetDownloadProgress(
       int64_t* bytes_received,
-      int64_t* total_bytes_to_be_received) OVERRIDE;
-  virtual PP_Resource GetResponseInfo() OVERRIDE;
+      int64_t* total_bytes_to_be_received) override;
+  virtual PP_Resource GetResponseInfo() override;
   virtual int32_t ReadResponseBody(
       void* buffer,
       int32_t bytes_to_read,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t FinishStreamingToFile(
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void GrantUniversalAccess() OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
+  virtual void Close() override;
+  virtual void GrantUniversalAccess() override;
   virtual void RegisterStatusCallback(
-      PP_URLLoaderTrusted_StatusCallback callback) OVERRIDE;
+      PP_URLLoaderTrusted_StatusCallback callback) override;
 
   // PluginResource implementation.
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
  private:
   enum Mode {

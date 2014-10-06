@@ -40,11 +40,11 @@ class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
   static PP_AudioSampleRate RecommendSampleRate(PP_Instance);
 
   // Resource overrides.
-  virtual thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
+  virtual thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() override;
 
   // PPB_AudioConfig_API implementation.
-  virtual PP_AudioSampleRate GetSampleRate() OVERRIDE;
-  virtual uint32_t GetSampleFrameCount() OVERRIDE;
+  virtual PP_AudioSampleRate GetSampleRate() override;
+  virtual uint32_t GetSampleFrameCount() override;
 
  private:
   // You must call Init before using this object.

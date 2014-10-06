@@ -27,14 +27,14 @@ class NetworkMonitorResource : public PluginResource,
   virtual ~NetworkMonitorResource();
 
   // PluginResource overrides.
-  ppapi::thunk::PPB_NetworkMonitor_API* AsPPB_NetworkMonitor_API() OVERRIDE;
+  ppapi::thunk::PPB_NetworkMonitor_API* AsPPB_NetworkMonitor_API() override;
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
   // thunk::PPB_NetworkMonitor_API interface
   virtual int32_t UpdateNetworkList(
       PP_Resource* network_list,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) override;
 
  private:
   // IPC message handlers for the messages received from the browser.

@@ -61,7 +61,7 @@ class MyResourceHost : public ResourceHost {
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      HostMessageContext* context) OVERRIDE {
+      HostMessageContext* context) override {
     last_handled_msg_ = msg;
     if (msg.type() == msg_type_) {
       context->reply_msg = IPC::Message(0, reply_msg_type_,
@@ -72,7 +72,7 @@ class MyResourceHost : public ResourceHost {
   }
 
   virtual void SendReply(const ReplyMessageContext& context,
-                         const IPC::Message& msg) OVERRIDE {
+                         const IPC::Message& msg) override {
     last_reply_msg_ = msg;
     last_reply_message_loop_ = base::MessageLoop::current();
     g_handler_completion.Signal();
@@ -111,7 +111,7 @@ class MyResourceFilter : public ResourceMessageFilter {
   base::MessageLoop* last_message_loop() const { return last_message_loop_; }
 
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) OVERRIDE {
+      const IPC::Message& msg) override {
     if (msg.type() == msg_type_)
       return message_loop_proxy_;
     return NULL;
@@ -119,7 +119,7 @@ class MyResourceFilter : public ResourceMessageFilter {
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      HostMessageContext* context) OVERRIDE {
+      HostMessageContext* context) override {
     last_handled_msg_ = msg;
     last_message_loop_ = base::MessageLoop::current();
     if (msg.type() == msg_type_) {

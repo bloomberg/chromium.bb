@@ -32,7 +32,7 @@ class PluginGlobals::BrowserSender : public IPC::Sender {
   virtual ~BrowserSender() {}
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     if (msg->is_sync()) {
       // Synchronous messages might be re-entrant, so we need to drop the lock.
       ProxyAutoUnlock unlock;

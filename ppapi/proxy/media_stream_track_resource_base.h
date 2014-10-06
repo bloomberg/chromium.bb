@@ -43,7 +43,7 @@ class PPAPI_PROXY_EXPORT MediaStreamTrackResourceBase
 
   // PluginResource overrides:
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
  private:
   // Message handlers:

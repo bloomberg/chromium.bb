@@ -21,7 +21,7 @@ class PPP_MouseLock_Proxy : public InterfaceProxy {
   static const PPP_MouseLock* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

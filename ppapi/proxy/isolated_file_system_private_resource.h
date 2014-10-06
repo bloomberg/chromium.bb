@@ -45,13 +45,13 @@ class PPAPI_PROXY_EXPORT IsolatedFileSystemPrivateResource
 
   // Resource overrides.
   virtual thunk::PPB_IsolatedFileSystem_Private_API*
-      AsPPB_IsolatedFileSystem_Private_API() OVERRIDE;
+      AsPPB_IsolatedFileSystem_Private_API() override;
 
   // PPB_IsolatedFileSystem_Private_API implementation.
   virtual int32_t Open(PP_Instance instance,
                        PP_IsolatedFileSystemType_Private type,
                        PP_Resource* file_system_resource,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
 
  private:
   void OnBrowserOpenComplete(PP_IsolatedFileSystemType_Private type,

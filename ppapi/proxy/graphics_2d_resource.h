@@ -28,21 +28,21 @@ class PPAPI_PROXY_EXPORT Graphics2DResource
   virtual ~Graphics2DResource();
 
   // Resource overrides.
-  virtual thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API() OVERRIDE;
+  virtual thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API() override;
 
   // PPB_Graphics2D_API overrides.
-  virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque) OVERRIDE;
+  virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque) override;
   virtual void PaintImageData(PP_Resource image_data,
                               const PP_Point* top_left,
-                              const PP_Rect* src_rect) OVERRIDE;
+                              const PP_Rect* src_rect) override;
   virtual void Scroll(const PP_Rect* clip_rect,
-                      const PP_Point* amount) OVERRIDE;
-  virtual void ReplaceContents(PP_Resource image_data) OVERRIDE;
-  virtual PP_Bool SetScale(float scale) OVERRIDE;
-  virtual float GetScale() OVERRIDE;
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                      const PP_Point* amount) override;
+  virtual void ReplaceContents(PP_Resource image_data) override;
+  virtual PP_Bool SetScale(float scale) override;
+  virtual float GetScale() override;
+  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
   virtual bool ReadImageData(PP_Resource image,
-                             const PP_Point* top_left) OVERRIDE;
+                             const PP_Point* top_left) override;
 
  private:
   void OnPluginMsgFlushACK(const ResourceMessageReplyParams& params);

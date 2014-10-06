@@ -25,16 +25,16 @@ class PPAPI_PROXY_EXPORT TCPServerSocketPrivateResource
 
   // PluginResource implementation.
   virtual thunk::PPB_TCPServerSocket_Private_API*
-      AsPPB_TCPServerSocket_Private_API() OVERRIDE;
+      AsPPB_TCPServerSocket_Private_API() override;
 
   // PPB_TCPServerSocket_Private_API implementation.
   virtual int32_t Listen(const PP_NetAddress_Private* addr,
                          int32_t backlog,
-                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t Accept(PP_Resource* tcp_socket,
-                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t GetLocalAddress(PP_NetAddress_Private* addr) OVERRIDE;
-  virtual void StopListening() OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t GetLocalAddress(PP_NetAddress_Private* addr) override;
+  virtual void StopListening() override;
 
  private:
   enum State {

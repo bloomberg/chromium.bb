@@ -30,16 +30,16 @@ class FlashMenuResource
   bool Initialize(const PP_Flash_Menu* menu_data);
 
   // Resource overrides.
-  virtual thunk::PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() OVERRIDE;
+  virtual thunk::PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() override;
 
   // PPB_Flash_Menu_API.
   virtual int32_t Show(const PP_Point* location,
                        int32_t* selected_id,
-                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) override;
 
  private:
   virtual void OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
   void OnShowReply(
       const proxy::ResourceMessageReplyParams& params,

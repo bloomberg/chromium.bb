@@ -22,14 +22,14 @@ class FlashFullscreenResource
 
   // Resource overrides.
   virtual thunk::PPB_Flash_Fullscreen_API*
-      AsPPB_Flash_Fullscreen_API() OVERRIDE;
+      AsPPB_Flash_Fullscreen_API() override;
 
   // PPB_Flash_Fullscreen_API implementation.
-  virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool IsFullscreen(PP_Instance instance) override;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
-                                PP_Bool fullscreen) OVERRIDE;
+                                PP_Bool fullscreen) override;
   virtual void SetLocalIsFullscreen(PP_Instance instance,
-                                    PP_Bool is_fullscreen) OVERRIDE;
+                                    PP_Bool is_fullscreen) override;
 
  private:
   PP_Bool is_fullscreen_;

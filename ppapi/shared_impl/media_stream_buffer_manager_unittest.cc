@@ -30,7 +30,7 @@ namespace ppapi {
 class MockDelegate : public MediaStreamBufferManager::Delegate {
  public:
   MockDelegate() : new_buffer_enqueue_counter_(0) {}
-  virtual void OnNewBufferEnqueued() OVERRIDE {
+  virtual void OnNewBufferEnqueued() override {
     new_buffer_enqueue_counter_++;
   }
 

@@ -51,10 +51,10 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   const PpapiPermissions& permissions() const { return permissions_; }
 
   // Sender implementation. Forwards to the sender_.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Sends the given reply message to the plugin.
   void SendReply(const ReplyMessageContext& context,

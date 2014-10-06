@@ -20,10 +20,10 @@ class BrokerResource
   virtual ~BrokerResource();
 
   // Resource override.
-  virtual thunk::PPB_Broker_Instance_API* AsPPB_Broker_Instance_API() OVERRIDE;
+  virtual thunk::PPB_Broker_Instance_API* AsPPB_Broker_Instance_API() override;
 
   // thunk::PPB_Broker_Instance_API implementation.
-  virtual PP_Bool IsAllowed() OVERRIDE;
+  virtual PP_Bool IsAllowed() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrokerResource);

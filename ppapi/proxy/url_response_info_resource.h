@@ -31,11 +31,11 @@ class PPAPI_PROXY_EXPORT URLResponseInfoResource
   virtual ~URLResponseInfoResource();
 
   // Resource override.
-  virtual PPB_URLResponseInfo_API* AsPPB_URLResponseInfo_API() OVERRIDE;
+  virtual PPB_URLResponseInfo_API* AsPPB_URLResponseInfo_API() override;
 
   // PPB_URLResponseInfo_API implementation.
-  virtual PP_Var GetProperty(PP_URLResponseProperty property) OVERRIDE;
-  virtual PP_Resource GetBodyAsFileRef() OVERRIDE;
+  virtual PP_Var GetProperty(PP_URLResponseProperty property) override;
+  virtual PP_Resource GetBodyAsFileRef() override;
 
   const URLResponseInfoData& data() const { return data_; }
 

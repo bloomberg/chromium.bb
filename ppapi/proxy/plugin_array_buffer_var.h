@@ -26,13 +26,13 @@ class PluginArrayBufferVar : public ArrayBufferVar {
   virtual ~PluginArrayBufferVar();
 
   // ArrayBufferVar implementation.
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual uint32 ByteLength() OVERRIDE;
+  virtual void* Map() override;
+  virtual void Unmap() override;
+  virtual uint32 ByteLength() override;
   virtual bool CopyToNewShmem(
       PP_Instance instance,
       int* host_handle,
-      base::SharedMemoryHandle* plugin_handle) OVERRIDE;
+      base::SharedMemoryHandle* plugin_handle) override;
 
  private:
   // Non-shared memory

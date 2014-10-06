@@ -32,12 +32,12 @@ class FlashFontFileResource : public PluginResource,
   virtual ~FlashFontFileResource();
 
   // Resource overrides.
-  virtual thunk::PPB_Flash_FontFile_API* AsPPB_Flash_FontFile_API() OVERRIDE;
+  virtual thunk::PPB_Flash_FontFile_API* AsPPB_Flash_FontFile_API() override;
 
   // PPB_Flash_FontFile_API.
   virtual PP_Bool GetFontTable(uint32_t table,
                                void* output,
-                               uint32_t* output_length) OVERRIDE;
+                               uint32_t* output_length) override;
 
  private:
   // Sees if we have a cache of the font table and returns a pointer to it.

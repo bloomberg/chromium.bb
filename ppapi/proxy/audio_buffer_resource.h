@@ -28,20 +28,20 @@ class PPAPI_PROXY_EXPORT AudioBufferResource
   virtual ~AudioBufferResource();
 
   // PluginResource overrides:
-  virtual thunk::PPB_AudioBuffer_API* AsPPB_AudioBuffer_API() OVERRIDE;
+  virtual thunk::PPB_AudioBuffer_API* AsPPB_AudioBuffer_API() override;
 
   // PPB_AudioBuffer_API overrides:
-  virtual PP_TimeDelta GetTimestamp() OVERRIDE;
-  virtual void SetTimestamp(PP_TimeDelta timestamp) OVERRIDE;
-  virtual PP_AudioBuffer_SampleRate GetSampleRate() OVERRIDE;
-  virtual PP_AudioBuffer_SampleSize GetSampleSize() OVERRIDE;
-  virtual uint32_t GetNumberOfChannels() OVERRIDE;
-  virtual uint32_t GetNumberOfSamples() OVERRIDE;
-  virtual void* GetDataBuffer() OVERRIDE;
-  virtual uint32_t GetDataBufferSize() OVERRIDE;
-  virtual MediaStreamBuffer* GetBuffer() OVERRIDE;
-  virtual int32_t GetBufferIndex() OVERRIDE;
-  virtual void Invalidate() OVERRIDE;
+  virtual PP_TimeDelta GetTimestamp() override;
+  virtual void SetTimestamp(PP_TimeDelta timestamp) override;
+  virtual PP_AudioBuffer_SampleRate GetSampleRate() override;
+  virtual PP_AudioBuffer_SampleSize GetSampleSize() override;
+  virtual uint32_t GetNumberOfChannels() override;
+  virtual uint32_t GetNumberOfSamples() override;
+  virtual void* GetDataBuffer() override;
+  virtual uint32_t GetDataBufferSize() override;
+  virtual MediaStreamBuffer* GetBuffer() override;
+  virtual int32_t GetBufferIndex() override;
+  virtual void Invalidate() override;
 
   // Buffer index
   int32_t index_;

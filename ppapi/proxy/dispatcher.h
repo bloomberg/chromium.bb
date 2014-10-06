@@ -67,7 +67,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   void AddIOThreadMessageFilter(scoped_refptr<IPC::MessageFilter> filter);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   PP_GetInterface_Func local_get_interface() const {
     return local_get_interface_;

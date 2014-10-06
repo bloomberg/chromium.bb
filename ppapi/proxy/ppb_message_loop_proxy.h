@@ -29,14 +29,14 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   virtual ~MessageLoopResource();
 
   // Resource overrides.
-  virtual thunk::PPB_MessageLoop_API* AsPPB_MessageLoop_API() OVERRIDE;
+  virtual thunk::PPB_MessageLoop_API* AsPPB_MessageLoop_API() override;
 
   // PPB_MessageLoop_API implementation.
-  virtual int32_t AttachToCurrentThread() OVERRIDE;
-  virtual int32_t Run() OVERRIDE;
+  virtual int32_t AttachToCurrentThread() override;
+  virtual int32_t Run() override;
   virtual int32_t PostWork(PP_CompletionCallback callback,
-                           int64_t delay_ms) OVERRIDE;
-  virtual int32_t PostQuit(PP_Bool should_destroy) OVERRIDE;
+                           int64_t delay_ms) override;
+  virtual int32_t PostQuit(PP_Bool should_destroy) override;
 
   static MessageLoopResource* GetCurrent();
   void DetachFromThread();
@@ -71,9 +71,9 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   //       proxy operations (e.g., MessageLoop::QuitClosure).
   virtual void PostClosure(const tracked_objects::Location& from_here,
                            const base::Closure& closure,
-                           int64 delay_ms) OVERRIDE;
-  virtual base::MessageLoopProxy* GetMessageLoopProxy() OVERRIDE;
-  virtual bool CurrentlyHandlingBlockingMessage() OVERRIDE;
+                           int64 delay_ms) override;
+  virtual base::MessageLoopProxy* GetMessageLoopProxy() override;
+  virtual bool CurrentlyHandlingBlockingMessage() override;
 
   // TLS destructor function.
   static void ReleaseMessageLoop(void* value);

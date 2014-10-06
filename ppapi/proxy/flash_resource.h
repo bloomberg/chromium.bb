@@ -27,21 +27,21 @@ class FlashResource
   virtual ~FlashResource();
 
   // Resource override.
-  virtual thunk::PPB_Flash_Functions_API* AsPPB_Flash_Functions_API() OVERRIDE;
+  virtual thunk::PPB_Flash_Functions_API* AsPPB_Flash_Functions_API() override;
 
   // PPB_Flash_Functions_API implementation.
   virtual PP_Var GetProxyForURL(PP_Instance instance,
-                                const std::string& url) OVERRIDE;
-  virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
+                                const std::string& url) override;
+  virtual void UpdateActivity(PP_Instance instance) override;
   virtual PP_Bool SetCrashData(PP_Instance instance,
                                PP_FlashCrashKey key,
-                               PP_Var value) OVERRIDE;
+                               PP_Var value) override;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance,
-                                        PP_Time t) OVERRIDE;
+                                        PP_Time t) override;
   virtual PP_Var GetSetting(PP_Instance instance,
-                            PP_FlashSetting setting) OVERRIDE;
+                            PP_FlashSetting setting) override;
   virtual void SetInstanceAlwaysOnTop(PP_Instance instance,
-                                      PP_Bool on_top) OVERRIDE;
+                                      PP_Bool on_top) override;
   virtual PP_Bool DrawGlyphs(
       PP_Instance instance,
       PP_Resource pp_image_data,
@@ -53,14 +53,14 @@ class FlashResource
       PP_Bool allow_subpixel_aa,
       uint32_t glyph_count,
       const uint16_t glyph_indices[],
-      const PP_Point glyph_advances[]) OVERRIDE;
+      const PP_Point glyph_advances[]) override;
   virtual int32_t Navigate(PP_Instance instance,
                            PP_Resource request_info,
                            const char* target,
-                           PP_Bool from_user_action) OVERRIDE;
+                           PP_Bool from_user_action) override;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
-                                const PP_Rect* rect) OVERRIDE;
-  virtual void InvokePrinting(PP_Instance instance) OVERRIDE;
+                                const PP_Rect* rect) override;
+  virtual void InvokePrinting(PP_Instance instance) override;
 
  private:
   // Non-owning pointer to the PluginDispatcher that owns this object.

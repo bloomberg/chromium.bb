@@ -52,34 +52,34 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
                   int renderer_ipc_fd);
 
   // PluginDispatcher::PluginDelegate implementation.
-  virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
-  virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
+  virtual base::MessageLoopProxy* GetIPCMessageLoop() override;
+  virtual base::WaitableEvent* GetShutdownEvent() override;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       base::ProcessId peer_pid,
-      bool should_close_source) OVERRIDE;
-  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() OVERRIDE;
+      bool should_close_source) override;
+  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
   virtual uint32 Register(
-      proxy::PluginDispatcher* plugin_dispatcher) OVERRIDE;
-  virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
+      proxy::PluginDispatcher* plugin_dispatcher) override;
+  virtual void Unregister(uint32 plugin_dispatcher_id) override;
 
   // PluginProxyDelegate implementation.
-  virtual IPC::Sender* GetBrowserSender() OVERRIDE;
-  virtual std::string GetUILanguage() OVERRIDE;
-  virtual void PreCacheFont(const void* logfontw) OVERRIDE;
-  virtual void SetActiveURL(const std::string& url) OVERRIDE;
+  virtual IPC::Sender* GetBrowserSender() override;
+  virtual std::string GetUILanguage() override;
+  virtual void PreCacheFont(const void* logfontw) override;
+  virtual void SetActiveURL(const std::string& url) override;
   virtual PP_Resource CreateBrowserFont(
       proxy::Connection connection,
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description& desc,
-      const Preferences& prefs) OVERRIDE;
+      const Preferences& prefs) override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   // IPC::Sender implementation
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
  private:
   void OnMsgInitializeNaClDispatcher(const PpapiNaClPluginArgs& args);

@@ -79,7 +79,7 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
 
   // Resource overrides.
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
+                               const IPC::Message& msg) override;
 
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 

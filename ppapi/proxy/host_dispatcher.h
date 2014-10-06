@@ -85,8 +85,8 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   virtual bool Send(IPC::Message* msg);
 
   // IPC::Listener.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelError() override;
 
   // Proxied version of calling GetInterface on the plugin. This will check
   // if the plugin supports the given interface (with caching) and returns the
