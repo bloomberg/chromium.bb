@@ -13,34 +13,35 @@ class WebrtcCasesPage(page_module.Page):
 
 class Page1(WebrtcCasesPage):
 
-  """ Why: Simple test page only showing a local video stream """
+  """ Why: Acquires a vga local stream. """
 
   def __init__(self, page_set):
     super(Page1, self).__init__(
-      url='file://webrtc/local-video.html',
+      url=('http://googlechrome.github.io/webrtc/samples/web/content/'
+           'getusermedia-resolution/'),
       page_set=page_set)
 
   def RunWebrtc(self, action_runner):
-    action_runner.NavigateToPage(self)
+    action_runner.ClickElement('button[id="vga"]')
     action_runner.Wait(10)
-    action_runner.ExecuteJavaScript('checkForErrors();')
 
 
 class Page2(WebrtcCasesPage):
 
-  """ Why: Loopback video call using the PeerConnection API. """
+  """ Why: Sets up a local WebRTC call. """
 
   def __init__(self, page_set):
     super(Page2, self).__init__(
-      url='file://third_party/webrtc/samples/js/demos/html/pc1.html',
+      url=('http://googlechrome.github.io/webrtc/samples/web/content/'
+           'peerconnection/'),
       page_set=page_set)
 
   def RunWebrtc(self, action_runner):
-    action_runner.ClickElement('button[id="btn1"]')
+    action_runner.ClickElement('button[id="startButton"]')
     action_runner.Wait(2)
-    action_runner.ClickElement('button[id="btn2"]')
+    action_runner.ClickElement('button[id="callButton"]')
     action_runner.Wait(10)
-    action_runner.ClickElement('button[id="btn3"]')
+    action_runner.ClickElement('button[id="hangupButton"]')
 
 class Page3(WebrtcCasesPage):
 
@@ -64,8 +65,7 @@ class WebrtcCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(WebrtcCasesPageSet, self).__init__(
       archive_data_file='data/webrtc_cases.json',
-      bucket=page_set_module.PUBLIC_BUCKET,
-      serving_dirs=['third_party/webrtc/samples/js'])
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     self.AddPage(Page1(self))
     self.AddPage(Page2(self))
