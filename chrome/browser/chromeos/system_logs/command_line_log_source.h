@@ -13,8 +13,8 @@ namespace system_logs {
 // not access using Debug Daemon.
 class CommandLineLogSource : public SystemLogsSource {
  public:
-  CommandLineLogSource() {}
-  virtual ~CommandLineLogSource() {}
+  CommandLineLogSource();
+  virtual ~CommandLineLogSource();
 
   // SystemLogsSource override.
   virtual void Fetch(const SysLogsSourceCallback& callback) override;

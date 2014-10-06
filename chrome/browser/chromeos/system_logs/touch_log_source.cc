@@ -55,7 +55,7 @@ void GetTouchLogs(system_logs::SystemLogsResponse* response) {
 
 namespace system_logs {
 
-TouchLogSource::TouchLogSource() {
+TouchLogSource::TouchLogSource() : SystemLogsSource("Touch") {
 }
 
 TouchLogSource::~TouchLogSource() {

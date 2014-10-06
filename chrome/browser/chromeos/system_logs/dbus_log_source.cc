@@ -12,6 +12,12 @@ const char kDBusLogEntryLong[] = "dbus_details";
 
 namespace system_logs {
 
+DBusLogSource::DBusLogSource() : SystemLogsSource("DBus") {
+}
+
+DBusLogSource::~DBusLogSource() {
+}
+
 void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());

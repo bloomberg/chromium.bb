@@ -32,6 +32,13 @@ const char kOsVersionTag[] = "OS VERSION";
 
 namespace system_logs {
 
+ChromeInternalLogSource::ChromeInternalLogSource()
+    : SystemLogsSource("ChromeInternal") {
+}
+
+ChromeInternalLogSource::~ChromeInternalLogSource() {
+}
+
 void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());

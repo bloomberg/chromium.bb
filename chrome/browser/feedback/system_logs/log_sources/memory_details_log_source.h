@@ -12,8 +12,8 @@ namespace system_logs {
 // Fetches memory usage details.
 class MemoryDetailsLogSource : public SystemLogsSource {
  public:
-  MemoryDetailsLogSource() {}
-  virtual ~MemoryDetailsLogSource() {}
+  MemoryDetailsLogSource();
+  virtual ~MemoryDetailsLogSource();
 
   // SystemLogsSource override.
   virtual void Fetch(const SysLogsSourceCallback& request) OVERRIDE;

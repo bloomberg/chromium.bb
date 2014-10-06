@@ -11,8 +11,8 @@ namespace system_logs {
 // Fetches release information form /etc/lsb-release file.
 class LsbReleaseLogSource : public SystemLogsSource {
  public:
-  LsbReleaseLogSource() {}
-  virtual ~LsbReleaseLogSource() {}
+  LsbReleaseLogSource();
+  virtual ~LsbReleaseLogSource();
 
   // SystemLogsSource override.
   virtual void Fetch(const SysLogsSourceCallback& callback) override;

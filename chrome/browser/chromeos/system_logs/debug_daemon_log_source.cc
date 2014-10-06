@@ -30,7 +30,8 @@ const char kUserLogFileKeyName[] = "user_log_files";
 namespace system_logs {
 
 DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
-    : response_(new SystemLogsResponse()),
+    : SystemLogsSource("DebugDemon"),
+      response_(new SystemLogsResponse()),
       num_pending_requests_(0),
       scrub_(scrub),
       weak_ptr_factory_(this) {}

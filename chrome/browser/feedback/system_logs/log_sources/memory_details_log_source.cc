@@ -32,6 +32,13 @@ class SystemLogsMemoryHandler : public MemoryDetails {
   DISALLOW_COPY_AND_ASSIGN(SystemLogsMemoryHandler);
 };
 
+MemoryDetailsLogSource::MemoryDetailsLogSource()
+    : SystemLogsSource("MemoryDetails") {
+}
+
+MemoryDetailsLogSource::~MemoryDetailsLogSource() {
+}
+
 void MemoryDetailsLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());

@@ -29,9 +29,17 @@ typedef base::Callback<void(scoped_ptr<SystemLogsResponse> response)>
 // information.
 class SystemLogsSource {
  public:
+  // |source_name| provides a descriptive identifier for debugging.
+  explicit SystemLogsSource(const std::string& source_name);
+  virtual ~SystemLogsSource();
+
   // Fetches data and passes it by to the callback
   virtual void Fetch(const SysLogsSourceCallback& callback) = 0;
-  virtual ~SystemLogsSource() {}
+
+  const std::string& source_name() const { return source_name_; }
+
+ private:
+  std::string source_name_;
 };
 
 // The SystemLogsFetcherBaseBase specifies an interface for LogFetcher classes.
@@ -61,7 +69,8 @@ class SystemLogsFetcherBase
   // into response_. When all the data sources have responded, it deletes their
   // objects and returns the response to the callback_. After this it
   // deletes this instance of the object.
-  void AddResponse(SystemLogsResponse* response);
+  void AddResponse(const std::string& source_name,
+                   SystemLogsResponse* response);
 
   ScopedVector<SystemLogsSource> data_sources_;
   SysLogsFetcherCallback callback_;

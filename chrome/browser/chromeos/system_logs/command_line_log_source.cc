@@ -78,6 +78,7 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   commands.push_back(std::make_pair("user_files", command));
 
   for (size_t i = 0; i < commands.size(); ++i) {
+    VLOG(1) << "Executting System Logs Command: " << commands[i].first;
     std::string output;
     base::GetAppOutput(commands[i].second, &output);
     (*response)[commands[i].first] = output;
@@ -87,6 +88,12 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
 }  // namespace
 
 namespace system_logs {
+
+CommandLineLogSource::CommandLineLogSource() : SystemLogsSource("CommandLine") {
+}
+
+CommandLineLogSource::~CommandLineLogSource() {
+}
 
 void CommandLineLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

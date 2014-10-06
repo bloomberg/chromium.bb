@@ -9,6 +9,12 @@
 
 namespace system_logs {
 
+LsbReleaseLogSource::LsbReleaseLogSource() : SystemLogsSource("LsbRelease") {
+}
+
+LsbReleaseLogSource::~LsbReleaseLogSource() {
+}
+
 void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);

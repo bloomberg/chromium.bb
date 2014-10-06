@@ -12,6 +12,13 @@ namespace system_logs {
 
 const char kNetworkEventLogEntry[] = "network_event_log";
 
+NetworkEventLogSource::NetworkEventLogSource()
+    : SystemLogsSource("NetworkEvent") {
+}
+
+NetworkEventLogSource::~NetworkEventLogSource() {
+}
+
 void NetworkEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());
