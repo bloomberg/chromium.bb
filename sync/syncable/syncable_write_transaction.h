@@ -30,7 +30,7 @@ class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
 
   virtual ~WriteTransaction();
 
-  virtual void TrackChangesTo(const EntryKernel* entry) OVERRIDE;
+  virtual void TrackChangesTo(const EntryKernel* entry) override;
 
  protected:
   // Overridden by tests.

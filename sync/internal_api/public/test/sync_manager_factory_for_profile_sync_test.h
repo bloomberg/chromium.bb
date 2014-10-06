@@ -18,7 +18,7 @@ class SyncManagerFactoryForProfileSyncTest : public syncer::SyncManagerFactory {
   SyncManagerFactoryForProfileSyncTest(base::Closure init_callback);
   virtual ~SyncManagerFactoryForProfileSyncTest();
   virtual scoped_ptr<syncer::SyncManager> CreateSyncManager(
-      std::string name) OVERRIDE;
+      std::string name) override;
  private:
   base::Closure init_callback_;
 };

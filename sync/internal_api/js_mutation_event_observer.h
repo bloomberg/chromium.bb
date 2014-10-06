@@ -46,13 +46,13 @@ class SYNC_EXPORT_PRIVATE JsMutationEventObserver
   virtual void OnChangesApplied(
       ModelType model_type,
       int64 write_transaction_id,
-      const ImmutableChangeRecordList& changes) OVERRIDE;
-  virtual void OnChangesComplete(ModelType model_type) OVERRIDE;
+      const ImmutableChangeRecordList& changes) override;
+  virtual void OnChangesComplete(ModelType model_type) override;
 
   // syncable::TransactionObserver implementation.
   virtual void OnTransactionWrite(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      ModelTypeSet models_with_changes) OVERRIDE;
+      ModelTypeSet models_with_changes) override;
 
  private:
   WeakHandle<JsEventHandler> event_handler_;

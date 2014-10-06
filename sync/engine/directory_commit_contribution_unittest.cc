@@ -20,7 +20,7 @@ namespace syncer {
 
 class DirectoryCommitContributionTest : public ::testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     dir_maker_.SetUp();
 
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
@@ -30,7 +30,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
     CreateTypeRoot(&trans, dir(), BOOKMARKS);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     dir_maker_.TearDown();
   }
 

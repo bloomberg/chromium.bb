@@ -22,12 +22,12 @@ class FakeModelWorker : public ModelSafeWorker, public base::NonThreadSafe {
   explicit FakeModelWorker(ModelSafeGroup group);
 
   // ModelSafeWorker implementation.
-  virtual void RegisterForLoopDestruction() OVERRIDE;
-  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  virtual void RegisterForLoopDestruction() override;
+  virtual ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
   virtual SyncerError DoWorkAndWaitUntilDoneImpl(
-      const WorkCallback& work) OVERRIDE;
+      const WorkCallback& work) override;
 
  private:
   virtual ~FakeModelWorker();

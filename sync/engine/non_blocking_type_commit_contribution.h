@@ -29,12 +29,12 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   virtual ~NonBlockingTypeCommitContribution();
 
   // Implementation of CommitContribution
-  virtual void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) OVERRIDE;
+  virtual void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
   virtual SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
-      sessions::StatusController* status) OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
-  virtual size_t GetNumEntries() const OVERRIDE;
+      sessions::StatusController* status) override;
+  virtual void CleanUp() override;
+  virtual size_t GetNumEntries() const override;
 
  private:
   // A non-owned pointer back to the object that created this contribution.

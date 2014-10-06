@@ -76,12 +76,12 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
-                                const ScopeSet& scopes) OVERRIDE;
+                                const ScopeSet& scopes) override;
 
   virtual void InvalidateOAuth2Token(const std::string& account_id,
                                      const std::string& client_id,
                                      const ScopeSet& scopes,
-                                     const std::string& access_token) OVERRIDE;
+                                     const std::string& access_token) override;
 
  private:
   GoogleServiceAuthError response_error_;
@@ -142,8 +142,8 @@ class TokenServiceProvider
 
   // OAuth2TokenService::TokenServiceProvider implementation.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetTokenServiceTaskRunner() OVERRIDE;
-  virtual OAuth2TokenService* GetTokenService() OVERRIDE;
+      GetTokenServiceTaskRunner() override;
+  virtual OAuth2TokenService* GetTokenService() override;
 
  private:
   virtual ~TokenServiceProvider();

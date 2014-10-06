@@ -17,9 +17,9 @@ class MockNudgeHandler : public NudgeHandler {
   MockNudgeHandler();
   virtual ~MockNudgeHandler();
 
-  virtual void NudgeForInitialDownload(syncer::ModelType type) OVERRIDE;
-  virtual void NudgeForCommit(syncer::ModelType type) OVERRIDE;
-  virtual void NudgeForRefresh(syncer::ModelType type) OVERRIDE;
+  virtual void NudgeForInitialDownload(syncer::ModelType type) override;
+  virtual void NudgeForCommit(syncer::ModelType type) override;
+  virtual void NudgeForRefresh(syncer::ModelType type) override;
 
   int GetNumInitialDownloadNudges() const;
   int GetNumCommitNudges() const;

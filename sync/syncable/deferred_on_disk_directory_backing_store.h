@@ -26,9 +26,9 @@ class SYNC_EXPORT_PRIVATE DeferredOnDiskDirectoryBackingStore
   virtual DirOpenResult Load(
       Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
-      Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
+      Directory::KernelLoadInfo* kernel_load_info) override;
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot)
-      OVERRIDE;
+      override;
 
  private:
   base::FilePath backing_filepath_;

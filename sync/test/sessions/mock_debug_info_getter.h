@@ -22,8 +22,8 @@ class MockDebugInfoGetter : public sessions::DebugInfoGetter {
   virtual ~MockDebugInfoGetter();
 
   // DebugInfoGetter implementation.
-  virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
-  virtual void ClearDebugInfo() OVERRIDE;
+  virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) override;
+  virtual void ClearDebugInfo() override;
 
   void AddDebugEvent();
 

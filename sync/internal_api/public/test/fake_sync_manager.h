@@ -66,10 +66,10 @@ class FakeSyncManager : public SyncManager {
   // Posts a method to invalidate the given IDs on the sync thread.
   virtual void OnIncomingInvalidation(
       syncer::ModelType type,
-      scoped_ptr<InvalidationInterface> interface) OVERRIDE;
+      scoped_ptr<InvalidationInterface> interface) override;
 
   // Posts a method to update the invalidator state on the sync thread.
-  virtual void SetInvalidatorEnabled(bool invalidator_enabled) OVERRIDE;
+  virtual void SetInvalidatorEnabled(bool invalidator_enabled) override;
 
   // Block until the sync thread has finished processing any pending messages.
   void WaitForSyncThread();
@@ -77,14 +77,14 @@ class FakeSyncManager : public SyncManager {
   // SyncManager implementation.
   // Note: we treat whatever message loop this is called from as the sync
   // loop for purposes of callbacks.
-  virtual void Init(InitArgs* args) OVERRIDE;
-  virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
+  virtual void Init(InitArgs* args) override;
+  virtual ModelTypeSet InitialSyncEndedTypes() override;
   virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-      ModelTypeSet types) OVERRIDE;
-  virtual bool PurgePartiallySyncedTypes() OVERRIDE;
-  virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
+      ModelTypeSet types) override;
+  virtual bool PurgePartiallySyncedTypes() override;
+  virtual void UpdateCredentials(const SyncCredentials& credentials) override;
   virtual void StartSyncingNormally(
-      const ModelSafeRoutingInfo& routing_info) OVERRIDE;
+      const ModelSafeRoutingInfo& routing_info) override;
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       ModelTypeSet to_download,
@@ -93,30 +93,30 @@ class FakeSyncManager : public SyncManager {
       ModelTypeSet to_unapply,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
-      const base::Closure& retry_task) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual SyncStatus GetDetailedStatus() const OVERRIDE;
-  virtual void SaveChanges() OVERRIDE;
-  virtual void ShutdownOnSyncThread(ShutdownReason reason) OVERRIDE;
-  virtual UserShare* GetUserShare() OVERRIDE;
-  virtual syncer::SyncContextProxy* GetSyncContextProxy() OVERRIDE;
-  virtual const std::string cache_guid() OVERRIDE;
-  virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
-  virtual bool HasUnsyncedItems() OVERRIDE;
-  virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
+      const base::Closure& retry_task) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual SyncStatus GetDetailedStatus() const override;
+  virtual void SaveChanges() override;
+  virtual void ShutdownOnSyncThread(ShutdownReason reason) override;
+  virtual UserShare* GetUserShare() override;
+  virtual syncer::SyncContextProxy* GetSyncContextProxy() override;
+  virtual const std::string cache_guid() override;
+  virtual bool ReceivedExperiment(Experiments* experiments) override;
+  virtual bool HasUnsyncedItems() override;
+  virtual SyncEncryptionHandler* GetEncryptionHandler() override;
   virtual ScopedVector<syncer::ProtocolEvent>
-      GetBufferedProtocolEvents() OVERRIDE;
+      GetBufferedProtocolEvents() override;
   virtual scoped_ptr<base::ListValue> GetAllNodesForType(
-      syncer::ModelType type) OVERRIDE;
-  virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
+      syncer::ModelType type) override;
+  virtual void RefreshTypes(ModelTypeSet types) override;
   virtual void RegisterDirectoryTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+      syncer::TypeDebugInfoObserver* observer) override;
   virtual void UnregisterDirectoryTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
+      syncer::TypeDebugInfoObserver* observer) override;
   virtual bool HasDirectoryTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) OVERRIDE;
-  virtual void RequestEmitDebugInfo() OVERRIDE;
+      syncer::TypeDebugInfoObserver* observer) override;
+  virtual void RequestEmitDebugInfo() override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;

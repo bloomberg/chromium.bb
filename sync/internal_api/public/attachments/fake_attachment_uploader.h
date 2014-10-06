@@ -19,7 +19,7 @@ class SYNC_EXPORT FakeAttachmentUploader : public AttachmentUploader,
 
   // AttachmentUploader implementation.
   virtual void UploadAttachment(const Attachment& attachment,
-                                const UploadCallback& callback) OVERRIDE;
+                                const UploadCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAttachmentUploader);

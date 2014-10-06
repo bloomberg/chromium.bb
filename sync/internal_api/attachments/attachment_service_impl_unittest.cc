@@ -24,19 +24,19 @@ class MockAttachmentStore : public AttachmentStore,
   MockAttachmentStore() {}
 
   virtual void Read(const AttachmentIdList& ids,
-                    const ReadCallback& callback) OVERRIDE {
+                    const ReadCallback& callback) override {
     read_ids.push_back(ids);
     read_callbacks.push_back(callback);
   }
 
   virtual void Write(const AttachmentList& attachments,
-                     const WriteCallback& callback) OVERRIDE {
+                     const WriteCallback& callback) override {
     write_attachments.push_back(attachments);
     write_callbacks.push_back(callback);
   }
 
   virtual void Drop(const AttachmentIdList& ids,
-                    const DropCallback& callback) OVERRIDE {
+                    const DropCallback& callback) override {
     NOTREACHED();
   }
 
@@ -100,7 +100,7 @@ class MockAttachmentDownloader
   MockAttachmentDownloader() {}
 
   virtual void DownloadAttachment(const AttachmentId& id,
-                                  const DownloadCallback& callback) OVERRIDE {
+                                  const DownloadCallback& callback) override {
     ASSERT_TRUE(download_requests.find(id) == download_requests.end());
     download_requests.insert(std::make_pair(id, callback));
   }
@@ -134,7 +134,7 @@ class MockAttachmentUploader
 
   // AttachmentUploader implementation.
   virtual void UploadAttachment(const Attachment& attachment,
-                                const UploadCallback& callback) OVERRIDE {
+                                const UploadCallback& callback) override {
     const AttachmentId id = attachment.GetId();
     ASSERT_TRUE(upload_requests.find(id) == upload_requests.end());
     upload_requests.insert(std::make_pair(id, callback));
@@ -159,14 +159,14 @@ class AttachmentServiceImplTest : public testing::Test,
  protected:
   AttachmentServiceImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     InitializeAttachmentService(make_scoped_ptr(new MockAttachmentUploader()),
                                 make_scoped_ptr(new MockAttachmentDownloader()),
                                 this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     attachment_service_.reset();
     ASSERT_FALSE(attachment_store_);
     ASSERT_FALSE(attachment_uploader_);
@@ -175,7 +175,7 @@ class AttachmentServiceImplTest : public testing::Test,
 
   // AttachmentService::Delegate implementation.
   virtual void OnAttachmentUploaded(
-      const AttachmentId& attachment_id) OVERRIDE {
+      const AttachmentId& attachment_id) override {
     on_attachment_uploaded_list_.push_back(attachment_id);
   }
 

@@ -20,12 +20,12 @@ static const base::FilePath::CharType kSyncDataFolderName[] =
 
 class DeferredOnDiskDirectoryBackingStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CHECK(temp_dir_.CreateUniqueTempDir());
     db_path_ = temp_dir_.path().Append(kSyncDataFolderName);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     STLDeleteValues(&handles_map_);
   }
 

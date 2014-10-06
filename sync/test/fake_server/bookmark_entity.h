@@ -49,10 +49,10 @@ class BookmarkEntity : public FakeServerEntity {
                  int64 last_modified_time);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const OVERRIDE;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) OVERRIDE;
-  virtual bool IsDeleted() const OVERRIDE;
-  virtual bool IsFolder() const OVERRIDE;
+  virtual std::string GetParentId() const override;
+  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  virtual bool IsDeleted() const override;
+  virtual bool IsFolder() const override;
 
  private:
   // All member values have equivalent fields in SyncEntity.

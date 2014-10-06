@@ -23,7 +23,7 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
   virtual DirOpenResult Load(
       Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
-      Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
+      Directory::KernelLoadInfo* kernel_load_info) override;
 
   // A helper function that will make one attempt to load the directory.
   // Unlike Load(), it does not attempt to recover from failure.

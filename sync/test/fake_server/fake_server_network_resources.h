@@ -29,7 +29,7 @@ class FakeServerNetworkResources : public syncer::NetworkResources {
           const scoped_refptr<net::URLRequestContextGetter>&
               baseline_context_getter,
           const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
-          syncer::CancelationSignal* cancelation_signal) OVERRIDE;
+          syncer::CancelationSignal* cancelation_signal) override;
 
  private:
   FakeServer* const fake_server_;

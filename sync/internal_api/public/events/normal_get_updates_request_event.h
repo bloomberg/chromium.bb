@@ -29,11 +29,11 @@ class SYNC_EXPORT_PRIVATE NormalGetUpdatesRequestEvent : public ProtocolEvent {
 
   virtual ~NormalGetUpdatesRequestEvent();
 
-  virtual base::Time GetTimestamp() const OVERRIDE;
-  virtual std::string GetType() const OVERRIDE;
-  virtual std::string GetDetails() const OVERRIDE;
-  virtual scoped_ptr<base::DictionaryValue> GetProtoMessage() const OVERRIDE;
-  virtual scoped_ptr<ProtocolEvent> Clone() const OVERRIDE;
+  virtual base::Time GetTimestamp() const override;
+  virtual std::string GetType() const override;
+  virtual std::string GetDetails() const override;
+  virtual scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  virtual scoped_ptr<ProtocolEvent> Clone() const override;
 
  private:
   NormalGetUpdatesRequestEvent(

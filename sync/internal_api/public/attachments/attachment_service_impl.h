@@ -59,18 +59,18 @@ class SYNC_EXPORT AttachmentServiceImpl
   static scoped_ptr<syncer::AttachmentService> CreateForTest();
 
   // AttachmentService implementation.
-  virtual AttachmentStore* GetStore() OVERRIDE;
+  virtual AttachmentStore* GetStore() override;
   virtual void GetOrDownloadAttachments(
       const AttachmentIdList& attachment_ids,
-      const GetOrDownloadCallback& callback) OVERRIDE;
+      const GetOrDownloadCallback& callback) override;
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
-                               const DropCallback& callback) OVERRIDE;
+                               const DropCallback& callback) override;
   virtual void UploadAttachments(
-      const AttachmentIdSet& attachment_ids) OVERRIDE;
+      const AttachmentIdSet& attachment_ids) override;
 
   // NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Use |timer| in the underlying TaskQueue.
   //

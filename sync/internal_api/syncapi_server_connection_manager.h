@@ -30,9 +30,9 @@ class SyncAPIBridgedConnection : public ServerConnectionManager::Connection {
   virtual bool Init(const char* path,
                     const std::string& auth_token,
                     const std::string& payload,
-                    HttpResponse* response) OVERRIDE;
+                    HttpResponse* response) override;
 
-  virtual void Abort() OVERRIDE;
+  virtual void Abort() override;
 
  private:
   // Pointer to the factory we use for creating HttpPostProviders. We do not
@@ -59,7 +59,7 @@ class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
   virtual ~SyncAPIServerConnectionManager();
 
   // ServerConnectionManager overrides.
-  virtual Connection* MakeConnection() OVERRIDE;
+  virtual Connection* MakeConnection() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest,

@@ -21,7 +21,7 @@ class SyncManagerForProfileSyncTest
   SyncManagerForProfileSyncTest(std::string name,
                                 base::Closure init_callback);
   virtual ~SyncManagerForProfileSyncTest();
-  virtual void NotifyInitializationSuccess() OVERRIDE;
+  virtual void NotifyInitializationSuccess() override;
 
  private:
   base::Closure init_callback_;

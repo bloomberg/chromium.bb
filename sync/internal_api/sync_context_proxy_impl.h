@@ -41,12 +41,12 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& pending_updates,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& sync_proxy_impl) OVERRIDE;
+      const base::WeakPtr<ModelTypeSyncProxyImpl>& sync_proxy_impl) override;
 
   // Disables syncing for the given type on the sync thread.
-  virtual void Disconnect(syncer::ModelType type) OVERRIDE;
+  virtual void Disconnect(syncer::ModelType type) override;
 
-  virtual scoped_ptr<SyncContextProxy> Clone() const OVERRIDE;
+  virtual scoped_ptr<SyncContextProxy> Clone() const override;
 
  private:
   // A SequencedTaskRunner representing the thread where the SyncContext lives.

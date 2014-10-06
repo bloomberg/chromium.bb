@@ -44,12 +44,12 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
-                                const ScopeSet& scopes) OVERRIDE;
+                                const ScopeSet& scopes) override;
 
   virtual void InvalidateOAuth2Token(const std::string& account_id,
                                      const std::string& client_id,
                                      const ScopeSet& scopes,
-                                     const std::string& access_token) OVERRIDE;
+                                     const std::string& access_token) override;
 
  private:
   base::WeakPtr<RequestImpl> last_request_;
@@ -102,8 +102,8 @@ class TokenServiceProvider
 
   // OAuth2TokenService::TokenServiceProvider implementation.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetTokenServiceTaskRunner() OVERRIDE;
-  virtual OAuth2TokenService* GetTokenService() OVERRIDE;
+      GetTokenServiceTaskRunner() override;
+  virtual OAuth2TokenService* GetTokenService() override;
 
  private:
   virtual ~TokenServiceProvider();
@@ -140,8 +140,8 @@ class AttachmentDownloaderImplTest : public testing::Test {
 
   AttachmentDownloaderImplTest() : num_completed_downloads_(0) {}
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   AttachmentDownloader* downloader() { return attachment_downloader_.get(); }
 

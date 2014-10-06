@@ -36,12 +36,12 @@ class SYNC_EXPORT SyncJsController
   void AttachJsBackend(const WeakHandle<JsBackend>& js_backend);
 
   // JsController implementation.
-  virtual void AddJsEventHandler(JsEventHandler* event_handler) OVERRIDE;
-  virtual void RemoveJsEventHandler(JsEventHandler* event_handler) OVERRIDE;
+  virtual void AddJsEventHandler(JsEventHandler* event_handler) override;
+  virtual void RemoveJsEventHandler(JsEventHandler* event_handler) override;
 
   // JsEventHandler implementation.
   virtual void HandleJsEvent(const std::string& name,
-                             const JsEventDetails& details) OVERRIDE;
+                             const JsEventDetails& details) override;
 
  private:
   // Sets |js_backend_|'s event handler depending on how many

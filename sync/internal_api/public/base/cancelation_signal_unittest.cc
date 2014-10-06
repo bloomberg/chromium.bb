@@ -33,7 +33,7 @@ class BlockingTask : public CancelationObserver {
 
   // Implementation of CancelationObserver.
   // Wakes up the thread blocked in Run().
-  virtual void OnSignalReceived() OVERRIDE;
+  virtual void OnSignalReceived() override;
 
   // Checks if we ever did successfully start waiting for |event_|.  Be careful
   // with this.  The flag itself is thread-unsafe, and the event that flips it
@@ -150,7 +150,7 @@ bool CancelationSignalTest::VerifyTaskNotStarted() {
 }
 
 class FakeCancelationObserver : public CancelationObserver {
-  virtual void OnSignalReceived() OVERRIDE { }
+  virtual void OnSignalReceived() override { }
 };
 
 TEST(CancelationSignalTest_SingleThread, CheckFlags) {

@@ -260,7 +260,7 @@ class DummyConnectionManager : public ServerConnectionManager {
   virtual ~DummyConnectionManager() {}
   virtual bool PostBufferWithCachedAuth(
       PostBufferParams* params,
-      ScopedServerStatusWatcher* watcher) OVERRIDE {
+      ScopedServerStatusWatcher* watcher) override {
     if (send_error_) {
       return false;
     }

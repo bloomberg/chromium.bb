@@ -37,10 +37,10 @@ class PermanentEntity : public FakeServerEntity {
       FakeServerEntity* current_server_entity);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const OVERRIDE;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) OVERRIDE;
-  virtual bool IsDeleted() const OVERRIDE;
-  virtual bool IsFolder() const OVERRIDE;
+  virtual std::string GetParentId() const override;
+  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  virtual bool IsDeleted() const override;
+  virtual bool IsFolder() const override;
 
  private:
   PermanentEntity(const std::string& id,

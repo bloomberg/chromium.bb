@@ -29,30 +29,30 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   virtual ~FakeSyncEncryptionHandler();
 
   // SyncEncryptionHandler implementation.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual void Init() OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual void Init() override;
   virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       bool is_explicit) OVERRIDE;
-  virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
-  virtual void EnableEncryptEverything() OVERRIDE;
-  virtual bool EncryptEverythingEnabled() const OVERRIDE;
-  virtual PassphraseType GetPassphraseType() const OVERRIDE;
+                                       bool is_explicit) override;
+  virtual void SetDecryptionPassphrase(const std::string& passphrase) override;
+  virtual void EnableEncryptEverything() override;
+  virtual bool EncryptEverythingEnabled() const override;
+  virtual PassphraseType GetPassphraseType() const override;
 
   // NigoriHandler implemenation.
   virtual void ApplyNigoriUpdate(
       const sync_pb::NigoriSpecifics& nigori,
-      syncable::BaseTransaction* const trans) OVERRIDE;
+      syncable::BaseTransaction* const trans) override;
   virtual void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
-      syncable::BaseTransaction* const trans) const OVERRIDE;
+      syncable::BaseTransaction* const trans) const override;
   virtual bool NeedKeystoreKey(
-      syncable::BaseTransaction* const trans) const OVERRIDE;
+      syncable::BaseTransaction* const trans) const override;
   virtual bool SetKeystoreKeys(
       const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
-      syncable::BaseTransaction* const trans) OVERRIDE;
+      syncable::BaseTransaction* const trans) override;
   virtual ModelTypeSet GetEncryptedTypes(
-      syncable::BaseTransaction* const trans) const OVERRIDE;
+      syncable::BaseTransaction* const trans) const override;
 
   Cryptographer* cryptographer() { return &cryptographer_; }
 

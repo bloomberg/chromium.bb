@@ -41,12 +41,12 @@ class AllStatus : public SyncEngineEventListener {
   virtual ~AllStatus();
 
   // SyncEngineEventListener implementation.
-  virtual void OnSyncCycleEvent(const SyncCycleEvent& event) OVERRIDE;
-  virtual void OnActionableError(const SyncProtocolError& error) OVERRIDE;
-  virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE;
-  virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE;
-  virtual void OnMigrationRequested(ModelTypeSet types) OVERRIDE;
-  virtual void OnProtocolEvent(const ProtocolEvent& event) OVERRIDE;
+  virtual void OnSyncCycleEvent(const SyncCycleEvent& event) override;
+  virtual void OnActionableError(const SyncProtocolError& error) override;
+  virtual void OnRetryTimeChanged(base::Time retry_time) override;
+  virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) override;
+  virtual void OnMigrationRequested(ModelTypeSet types) override;
+  virtual void OnProtocolEvent(const ProtocolEvent& event) override;
 
   SyncStatus status() const;
 

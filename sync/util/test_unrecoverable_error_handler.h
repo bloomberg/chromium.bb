@@ -18,7 +18,7 @@ class TestUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
   virtual ~TestUnrecoverableErrorHandler();
 
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) OVERRIDE;
+                                    const std::string& message) override;
 };
 
 }  // namespace syncer

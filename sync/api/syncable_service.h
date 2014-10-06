@@ -64,7 +64,7 @@ class SYNC_EXPORT SyncableService
   //          otherwise.
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE = 0;
+      const SyncChangeList& change_list) override = 0;
 
   // Returns AttachmentStore used by datatype. Attachment store is used by sync
   // when uploading or downloading attachments.

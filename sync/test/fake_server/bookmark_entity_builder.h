@@ -26,7 +26,7 @@ class BookmarkEntityBuilder : public EntityBuilder {
   virtual ~BookmarkEntityBuilder();
 
   // EntityBuilder
-  virtual scoped_ptr<FakeServerEntity> Build() OVERRIDE;
+  virtual scoped_ptr<FakeServerEntity> Build() override;
 
  private:
   // The bookmark's URL.

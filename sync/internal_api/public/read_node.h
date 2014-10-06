@@ -28,10 +28,10 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  virtual InitByLookupResult InitByIdLookup(int64 id) OVERRIDE;
+  virtual InitByLookupResult InitByIdLookup(int64 id) override;
   virtual InitByLookupResult InitByClientTagLookup(
       ModelType model_type,
-      const std::string& tag) OVERRIDE;
+      const std::string& tag) override;
 
   // There is always a root node, so this can't fail.  The root node is
   // never mutable, so root lookup is only possible on a ReadNode.
@@ -50,8 +50,8 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   InitByLookupResult InitByTagLookupForBookmarks(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.
-  virtual const syncable::Entry* GetEntry() const OVERRIDE;
-  virtual const BaseTransaction* GetTransaction() const OVERRIDE;
+  virtual const syncable::Entry* GetEntry() const override;
+  virtual const BaseTransaction* GetTransaction() const override;
 
  protected:
   ReadNode();

@@ -35,20 +35,20 @@ class SYNC_EXPORT_PRIVATE JsSyncEncryptionHandlerObserver
   // SyncEncryptionHandlerObserver::Observer implementation.
   virtual void OnPassphraseRequired(
       PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
-  virtual void OnPassphraseAccepted() OVERRIDE;
+      const sync_pb::EncryptedData& pending_keys) override;
+  virtual void OnPassphraseAccepted() override;
   virtual void OnBootstrapTokenUpdated(
       const std::string& bootstrap_token,
-      BootstrapTokenType type) OVERRIDE;
+      BootstrapTokenType type) override;
   virtual void OnEncryptedTypesChanged(
       ModelTypeSet encrypted_types,
-      bool encrypt_everything) OVERRIDE;
-  virtual void OnEncryptionComplete() OVERRIDE;
+      bool encrypt_everything) override;
+  virtual void OnEncryptionComplete() override;
   virtual void OnCryptographerStateChanged(
-      Cryptographer* cryptographer) OVERRIDE;
+      Cryptographer* cryptographer) override;
   virtual void OnPassphraseTypeChanged(
       PassphraseType type,
-      base::Time explicit_passphrase_time) OVERRIDE;
+      base::Time explicit_passphrase_time) override;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

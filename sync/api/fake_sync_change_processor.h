@@ -20,13 +20,13 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   // cleared.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
   // SyncChangeProcessor implementation.
   //
   // Returns data().
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE;
+      const override;
 
   // SyncChangeProcessor implementation.
   //
@@ -34,7 +34,7 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   virtual syncer::SyncError UpdateDataTypeContext(
       ModelType type,
       ContextRefreshStatus refresh_status,
-      const std::string& context) OVERRIDE;
+      const std::string& context) override;
 
   virtual const syncer::SyncChangeList& changes() const;
   virtual syncer::SyncChangeList& changes();

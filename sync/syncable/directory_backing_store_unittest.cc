@@ -3840,7 +3840,7 @@ class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
   bool DidFailFirstOpenAttempt();
 
  protected:
-  virtual void ReportFirstTryOpenFailure() OVERRIDE;
+  virtual void ReportFirstTryOpenFailure() override;
 
  private:
   bool first_open_failed_;

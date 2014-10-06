@@ -89,7 +89,7 @@ class SYNC_EXPORT ModelSafeWorker
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 
   // MessageLoop::DestructionObserver implementation.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
  protected:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;

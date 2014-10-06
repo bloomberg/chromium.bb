@@ -33,18 +33,18 @@ class SYNC_EXPORT_PRIVATE JsSyncManagerObserver : public SyncManager::Observer {
 
   // SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
-      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
-  virtual void OnConnectionStatusChange(ConnectionStatus status) OVERRIDE;
+      const sessions::SyncSessionSnapshot& snapshot) override;
+  virtual void OnConnectionStatusChange(ConnectionStatus status) override;
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       bool success,
-      syncer::ModelTypeSet restored_types) OVERRIDE;
+      syncer::ModelTypeSet restored_types) override;
   virtual void OnActionableError(
-      const SyncProtocolError& sync_protocol_error) OVERRIDE;
-  virtual void OnProtocolEvent(const ProtocolEvent& event) OVERRIDE;
+      const SyncProtocolError& sync_protocol_error) override;
+  virtual void OnProtocolEvent(const ProtocolEvent& event) override;
   virtual void OnMigrationRequested(
-      syncer::ModelTypeSet types) OVERRIDE;
+      syncer::ModelTypeSet types) override;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

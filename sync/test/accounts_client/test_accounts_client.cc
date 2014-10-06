@@ -39,7 +39,7 @@ class AccountsRequestDelegate : public net::URLFetcherDelegate {
   AccountsRequestDelegate(base::RunLoop* run_loop) : response_(""),
       success_(false), run_loop_(run_loop) {}
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     string url = source->GetURL().spec();
     source->GetResponseAsString(&response_);
 

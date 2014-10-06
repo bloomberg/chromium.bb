@@ -30,7 +30,7 @@ class SYNC_EXPORT_PRIVATE ModelNeutralWriteTransaction
       Directory* directory);
   virtual ~ModelNeutralWriteTransaction();
 
-  virtual void TrackChangesTo(const EntryKernel* entry) OVERRIDE;
+  virtual void TrackChangesTo(const EntryKernel* entry) override;
 
  private:
   MetahandleSet modified_handles_;

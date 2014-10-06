@@ -27,28 +27,28 @@ class BlockingHttpPost : public HttpPostProviderInterface {
   BlockingHttpPost() : wait_for_abort_(false, false) {}
   virtual ~BlockingHttpPost() {}
 
-  virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE {}
-  virtual void SetURL(const char* url, int port) OVERRIDE {}
+  virtual void SetExtraRequestHeaders(const char* headers) override {}
+  virtual void SetURL(const char* url, int port) override {}
   virtual void SetPostPayload(const char* content_type,
                               int content_length,
-                              const char* content) OVERRIDE {}
+                              const char* content) override {}
   virtual bool MakeSynchronousPost(int* error_code, int* response_code)
-      OVERRIDE {
+      override {
     wait_for_abort_.TimedWait(TestTimeouts::action_max_timeout());
     *error_code = net::ERR_ABORTED;
     return false;
   }
-  virtual int GetResponseContentLength() const OVERRIDE {
+  virtual int GetResponseContentLength() const override {
     return 0;
   }
-  virtual const char* GetResponseContent() const OVERRIDE {
+  virtual const char* GetResponseContent() const override {
     return "";
   }
   virtual const std::string GetResponseHeaderValue(
-      const std::string& name) const OVERRIDE {
+      const std::string& name) const override {
     return std::string();
   }
-  virtual void Abort() OVERRIDE {
+  virtual void Abort() override {
     wait_for_abort_.Signal();
   }
  private:
@@ -58,11 +58,11 @@ class BlockingHttpPost : public HttpPostProviderInterface {
 class BlockingHttpPostFactory : public HttpPostProviderFactory {
  public:
   virtual ~BlockingHttpPostFactory() {}
-  virtual void Init(const std::string& user_agent) OVERRIDE {}
-  virtual HttpPostProviderInterface* Create() OVERRIDE {
+  virtual void Init(const std::string& user_agent) override {}
+  virtual HttpPostProviderInterface* Create() override {
     return new BlockingHttpPost();
   }
-  virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
+  virtual void Destroy(HttpPostProviderInterface* http) override {
     delete static_cast<BlockingHttpPost*>(http);
   }
 };

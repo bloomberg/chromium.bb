@@ -53,14 +53,14 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
   // AttachmentService implementation.
   //
   // GetStore always returns NULL.
-  virtual AttachmentStore* GetStore() OVERRIDE;
+  virtual AttachmentStore* GetStore() override;
   virtual void GetOrDownloadAttachments(
       const AttachmentIdList& attachment_ids,
-      const GetOrDownloadCallback& callback) OVERRIDE;
+      const GetOrDownloadCallback& callback) override;
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
-                               const DropCallback& callback) OVERRIDE;
+                               const DropCallback& callback) override;
   virtual void UploadAttachments(
-      const AttachmentIdSet& attachment_ids) OVERRIDE;
+      const AttachmentIdSet& attachment_ids) override;
 
  protected:
   // Core does the work of proxying calls to AttachmentService methods from one
@@ -83,14 +83,14 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
     Core(const base::WeakPtr<syncer::AttachmentService>& wrapped);
 
     // AttachmentService implementation.
-    virtual AttachmentStore* GetStore() OVERRIDE;
+    virtual AttachmentStore* GetStore() override;
     virtual void GetOrDownloadAttachments(
         const AttachmentIdList& attachment_ids,
-        const GetOrDownloadCallback& callback) OVERRIDE;
+        const GetOrDownloadCallback& callback) override;
     virtual void DropAttachments(const AttachmentIdList& attachment_ids,
-                                 const DropCallback& callback) OVERRIDE;
+                                 const DropCallback& callback) override;
     virtual void UploadAttachments(
-        const AttachmentIdSet& attachment_ids) OVERRIDE;
+        const AttachmentIdSet& attachment_ids) override;
 
    protected:
     friend class base::RefCountedThreadSafe<Core>;

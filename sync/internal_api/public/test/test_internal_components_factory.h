@@ -19,7 +19,7 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context,
-      syncer::CancelationSignal* cancelation_signal) OVERRIDE;
+      syncer::CancelationSignal* cancelation_signal) override;
 
   virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
@@ -28,15 +28,15 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
-      const std::string& invalidator_client_id) OVERRIDE;
+      const std::string& invalidator_client_id) override;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
       StorageOption storage,
       const std::string& dir_name,
-      const base::FilePath& backing_filepath) OVERRIDE;
+      const base::FilePath& backing_filepath) override;
 
-  virtual Switches GetSwitches() const OVERRIDE;
+  virtual Switches GetSwitches() const override;
 
  private:
   const Switches switches_;

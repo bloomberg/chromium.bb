@@ -19,16 +19,16 @@ class MockUpdateHandler : public UpdateHandler {
 
   // UpdateHandler implementation.
   virtual void GetDownloadProgress(
-      sync_pb::DataTypeProgressMarker* progress_marker) const OVERRIDE;
+      sync_pb::DataTypeProgressMarker* progress_marker) const override;
   virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const
-      OVERRIDE;
+      override;
   virtual SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
-      sessions::StatusController* status) OVERRIDE;
-  virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
-  virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
+      sessions::StatusController* status) override;
+  virtual void ApplyUpdates(sessions::StatusController* status) override;
+  virtual void PassiveApplyUpdates(sessions::StatusController* status) override;
 
   // Returns the number of times ApplyUpdates() was invoked.
   int GetApplyUpdatesCount();

@@ -21,7 +21,7 @@ void OnConfigDone(bool success) {
 
 class SyncTestRollbackManager : public SyncRollbackManagerBase {
  public:
-  virtual void Init(InitArgs* args) OVERRIDE {
+  virtual void Init(InitArgs* args) override {
     SyncRollbackManagerBase::InitInternal(
         args->database_location,
         args->internal_components_factory.get(),
@@ -33,7 +33,7 @@ class SyncTestRollbackManager : public SyncRollbackManagerBase {
 
 class SyncRollbackManagerBaseTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     SyncManager::InitArgs args;
     args.database_location = base::FilePath(base::FilePath::kCurrentDirectory);
     args.service_url = GURL("https://example.com/");

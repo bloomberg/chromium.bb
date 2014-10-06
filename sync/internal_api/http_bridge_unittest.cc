@@ -124,7 +124,7 @@ class ShuntedHttpBridge : public HttpBridge {
           NetworkTimeUpdateCallback()),
         test_(test), never_finishes_(never_finishes) { }
  protected:
-  virtual void MakeAsynchronousPost() OVERRIDE {
+  virtual void MakeAsynchronousPost() override {
     ASSERT_TRUE(base::MessageLoop::current() == test_->GetIOThreadLoop());
     if (never_finishes_)
       return;

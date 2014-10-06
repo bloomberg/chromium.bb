@@ -217,7 +217,7 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
   // We expect this to get called on a different thread than the valid
   // ThreadChecker thread, as we want to kill any pending http traffic without
   // having to wait for the request to complete.
-  virtual void OnSignalReceived() OVERRIDE FINAL;
+  virtual void OnSignalReceived() override final;
 
   void set_client_id(const std::string& client_id) {
     DCHECK(thread_checker_.CalledOnValidThread());

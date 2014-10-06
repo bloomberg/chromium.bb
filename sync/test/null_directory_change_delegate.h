@@ -19,16 +19,16 @@ class NullDirectoryChangeDelegate : public DirectoryChangeDelegate {
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans,
-      std::vector<int64>* entries_changed) OVERRIDE;
+      std::vector<int64>* entries_changed) override;
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans,
-      std::vector<int64>* entries_changed) OVERRIDE;
+      std::vector<int64>* entries_changed) override;
   virtual ModelTypeSet HandleTransactionEndingChangeEvent(
       const ImmutableWriteTransactionInfo& write_transaction_info,
-      BaseTransaction* trans) OVERRIDE;
+      BaseTransaction* trans) override;
   virtual void HandleTransactionCompleteChangeEvent(
-      ModelTypeSet models_with_changes) OVERRIDE;
+      ModelTypeSet models_with_changes) override;
 };
 
 }  // namespace syncable

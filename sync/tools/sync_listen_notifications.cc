@@ -54,13 +54,13 @@ class NotificationPrinter : public InvalidationHandler {
   NotificationPrinter() {}
   virtual ~NotificationPrinter() {}
 
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE {
+  virtual void OnInvalidatorStateChange(InvalidatorState state) override {
     LOG(INFO) << "Invalidator state changed to "
               << InvalidatorStateToString(state);
   }
 
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
+      const ObjectIdInvalidationMap& invalidation_map) override {
     ObjectIdSet ids = invalidation_map.GetObjectIds();
     for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
       LOG(INFO) << "Remote invalidation: "
@@ -68,7 +68,7 @@ class NotificationPrinter : public InvalidationHandler {
     }
   }
 
-  virtual std::string GetOwnerName() const OVERRIDE {
+  virtual std::string GetOwnerName() const override {
     return "NotificationPrinter";
   }
 
@@ -96,7 +96,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
       : TestURLRequestContextGetter(io_task_runner) {}
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::TestURLRequestContext* GetURLRequestContext() override {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)

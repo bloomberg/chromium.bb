@@ -27,10 +27,10 @@ class UniqueClientEntity : public FakeServerEntity {
       const sync_pb::SyncEntity& entity);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const OVERRIDE;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) OVERRIDE;
-  virtual bool IsDeleted() const OVERRIDE;
-  virtual bool IsFolder() const OVERRIDE;
+  virtual std::string GetParentId() const override;
+  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  virtual bool IsDeleted() const override;
+  virtual bool IsFolder() const override;
 
  private:
   UniqueClientEntity(const std::string& id,

@@ -389,7 +389,7 @@ class GetUpdatesProcessorApplyUpdatesTest : public GetUpdatesProcessorTest {
   GetUpdatesProcessorApplyUpdatesTest() {}
   virtual ~GetUpdatesProcessorApplyUpdatesTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     bookmarks_handler_ = AddUpdateHandler(BOOKMARKS);
     autofill_handler_ = AddUpdateHandler(AUTOFILL);
   }

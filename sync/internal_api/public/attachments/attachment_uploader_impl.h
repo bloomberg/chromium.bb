@@ -45,7 +45,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
 
   // AttachmentUploader implementation.
   virtual void UploadAttachment(const Attachment& attachment,
-                                const UploadCallback& callback) OVERRIDE;
+                                const UploadCallback& callback) override;
 
   // Return the URL for the given |sync_service_url| and |attachment_id|.
   static GURL GetURLForAttachmentId(const GURL& sync_service_url,

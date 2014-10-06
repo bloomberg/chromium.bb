@@ -31,12 +31,12 @@ class FakeSyncableService : public SyncableService {
       ModelType type,
       const SyncDataList& initial_sync_data,
       scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(ModelType type) OVERRIDE;
-  virtual SyncDataList GetAllSyncData(ModelType type) const OVERRIDE;
+      scoped_ptr<SyncErrorFactory> sync_error_factory) override;
+  virtual void StopSyncing(ModelType type) override;
+  virtual SyncDataList GetAllSyncData(ModelType type) const override;
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const SyncChangeList& change_list) override;
 
  private:
   scoped_ptr<SyncChangeProcessor> sync_processor_;

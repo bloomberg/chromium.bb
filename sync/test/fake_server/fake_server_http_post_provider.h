@@ -26,17 +26,17 @@ class FakeServerHttpPostProvider
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // HttpPostProviderInterface implementation.
-  virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
-  virtual void SetURL(const char* url, int port) OVERRIDE;
+  virtual void SetExtraRequestHeaders(const char* headers) override;
+  virtual void SetURL(const char* url, int port) override;
   virtual void SetPostPayload(const char* content_type, int content_length,
-                              const char* content) OVERRIDE;
+                              const char* content) override;
   virtual bool MakeSynchronousPost(int* error_code,
-                                   int* response_code) OVERRIDE;
-  virtual void Abort() OVERRIDE;
-  virtual int GetResponseContentLength() const OVERRIDE;
-  virtual const char* GetResponseContent() const OVERRIDE;
+                                   int* response_code) override;
+  virtual void Abort() override;
+  virtual int GetResponseContentLength() const override;
+  virtual const char* GetResponseContent() const override;
   virtual const std::string GetResponseHeaderValue(
-      const std::string& name) const OVERRIDE;
+      const std::string& name) const override;
 
  protected:
   friend class base::RefCountedThreadSafe<FakeServerHttpPostProvider>;
@@ -72,9 +72,9 @@ class FakeServerHttpPostProviderFactory
   virtual ~FakeServerHttpPostProviderFactory();
 
   // HttpPostProviderFactory:
-  virtual void Init(const std::string& user_agent) OVERRIDE;
-  virtual syncer::HttpPostProviderInterface* Create() OVERRIDE;
-  virtual void Destroy(syncer::HttpPostProviderInterface* http) OVERRIDE;
+  virtual void Init(const std::string& user_agent) override;
+  virtual syncer::HttpPostProviderInterface* Create() override;
+  virtual void Destroy(syncer::HttpPostProviderInterface* http) override;
 
  private:
   FakeServer* const fake_server_;

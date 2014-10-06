@@ -35,7 +35,7 @@ class DirectoryCommitContributor : public CommitContributor {
   virtual ~DirectoryCommitContributor();
 
   virtual scoped_ptr<CommitContribution> GetContribution(
-      size_t max_entries) OVERRIDE;
+      size_t max_entries) override;
 
  private:
   syncable::Directory* dir_;

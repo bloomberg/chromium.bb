@@ -41,7 +41,7 @@ class SYNC_EXPORT WriteTransaction : public BaseTransaction {
   virtual ~WriteTransaction();
 
   // Provide access to the syncable transaction from the API WriteNode.
-  virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
+  virtual syncable::BaseTransaction* GetWrappedTrans() const override;
   syncable::WriteTransaction* GetWrappedWriteTrans() { return transaction_; }
 
   // Set's a |type|'s local context. |refresh_status| controls whether

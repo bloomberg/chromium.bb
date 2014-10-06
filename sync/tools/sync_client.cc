@@ -88,7 +88,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
       : TestURLRequestContextGetter(io_task_runner) {}
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::TestURLRequestContext* GetURLRequestContext() override {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)
@@ -108,13 +108,13 @@ class NullEncryptor : public Encryptor {
   virtual ~NullEncryptor() {}
 
   virtual bool EncryptString(const std::string& plaintext,
-                             std::string* ciphertext) OVERRIDE {
+                             std::string* ciphertext) override {
     *ciphertext = plaintext;
     return true;
   }
 
   virtual bool DecryptString(const std::string& ciphertext,
-                             std::string* plaintext) OVERRIDE {
+                             std::string* plaintext) override {
     *plaintext = ciphertext;
     return true;
   }
@@ -134,7 +134,7 @@ class LoggingChangeDelegate : public SyncManager::ChangeDelegate {
       ModelType model_type,
       int64 model_version,
       const BaseTransaction* trans,
-      const ImmutableChangeRecordList& changes) OVERRIDE {
+      const ImmutableChangeRecordList& changes) override {
     LOG(INFO) << "Changes applied for "
               << ModelTypeToString(model_type);
     size_t i = 1;
@@ -154,7 +154,7 @@ class LoggingChangeDelegate : public SyncManager::ChangeDelegate {
     }
   }
 
-  virtual void OnChangesComplete(ModelType model_type) OVERRIDE {
+  virtual void OnChangesComplete(ModelType model_type) override {
     LOG(INFO) << "Changes complete for "
               << ModelTypeToString(model_type);
   }
@@ -166,7 +166,7 @@ class LoggingUnrecoverableErrorHandler
   virtual ~LoggingUnrecoverableErrorHandler() {}
 
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) OVERRIDE {
+                                    const std::string& message) override {
     if (LOG_IS_ON(ERROR)) {
       logging::LogMessage(from_here.file_name(), from_here.line_number(),
                           logging::LOG_ERROR).stream()
@@ -183,7 +183,7 @@ class LoggingJsEventHandler
 
   virtual void HandleJsEvent(
       const std::string& name,
-      const JsEventDetails& details) OVERRIDE {
+      const JsEventDetails& details) override {
     VLOG(1) << name << ": " << details.ToString();
   }
 };
@@ -194,23 +194,23 @@ class InvalidationAdapter : public syncer::InvalidationInterface {
       : invalidation_(invalidation) {}
   virtual ~InvalidationAdapter() {}
 
-  virtual bool IsUnknownVersion() const OVERRIDE {
+  virtual bool IsUnknownVersion() const override {
     return invalidation_.is_unknown_version();
   }
 
-  virtual const std::string& GetPayload() const OVERRIDE {
+  virtual const std::string& GetPayload() const override {
     return invalidation_.payload();
   }
 
-  virtual int64 GetVersion() const OVERRIDE {
+  virtual int64 GetVersion() const override {
     return invalidation_.version();
   }
 
-  virtual void Acknowledge() OVERRIDE {
+  virtual void Acknowledge() override {
     invalidation_.Acknowledge();
   }
 
-  virtual void Drop() OVERRIDE {
+  virtual void Drop() override {
     invalidation_.Drop();
   }
 
@@ -223,12 +223,12 @@ class InvalidatorShim : public InvalidationHandler {
   explicit InvalidatorShim(SyncManager* sync_manager)
       : sync_manager_(sync_manager) {}
 
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE {
+  virtual void OnInvalidatorStateChange(InvalidatorState state) override {
     sync_manager_->SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
   }
 
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
+      const ObjectIdInvalidationMap& invalidation_map) override {
     syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
     for (syncer::ObjectIdSet::const_iterator ids_it = ids.begin();
          ids_it != ids.end();
@@ -252,7 +252,7 @@ class InvalidatorShim : public InvalidationHandler {
     }
   }
 
-  virtual std::string GetOwnerName() const OVERRIDE {
+  virtual std::string GetOwnerName() const override {
     return "InvalidatorShim";
   }
 

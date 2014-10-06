@@ -27,9 +27,9 @@ class InjectableSyncContextProxy : public syncer::SyncContextProxy {
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& pending_updates,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy)
-      OVERRIDE;
-  virtual void Disconnect(syncer::ModelType type) OVERRIDE;
-  virtual scoped_ptr<SyncContextProxy> Clone() const OVERRIDE;
+      override;
+  virtual void Disconnect(syncer::ModelType type) override;
+  virtual scoped_ptr<SyncContextProxy> Clone() const override;
 
   ModelTypeSyncWorker* GetWorker();
 

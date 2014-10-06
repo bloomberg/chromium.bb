@@ -56,7 +56,7 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
   // This function is not const.  It will update some state in this contribution
   // that will be used when processing the associated commit response.  This
   // function should not be called more than once.
-  virtual void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) OVERRIDE;
+  virtual void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
 
   // Updates this contribution's contents in accordance with the provided
   // |response|.
@@ -66,14 +66,14 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
   // This function should not be called more than once.
   virtual SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
-      sessions::StatusController* status) OVERRIDE;
+      sessions::StatusController* status) override;
 
   // Cleans up any temporary state associated with the commit.  Must be called
   // before destruction.
-  virtual void CleanUp() OVERRIDE;
+  virtual void CleanUp() override;
 
   // Returns the number of entries included in this contribution.
-  virtual size_t GetNumEntries() const OVERRIDE;
+  virtual size_t GetNumEntries() const override;
 
  private:
   class DirectoryCommitContributionTest;

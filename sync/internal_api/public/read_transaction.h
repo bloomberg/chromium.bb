@@ -36,7 +36,7 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
   virtual ~ReadTransaction();
 
   // BaseTransaction override.
-  virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
+  virtual syncable::BaseTransaction* GetWrappedTrans() const override;
 
   // Return |transaction_version| of |type| stored in sync directory's
   // persisted info.

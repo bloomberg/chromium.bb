@@ -23,9 +23,9 @@ class SyncChangeProcessorWrapperForTest : public SyncChangeProcessor {
   // SyncChangeProcessor implementation.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE;
+      const override;
 
  private:
   syncer::SyncChangeProcessor* const wrapped_;

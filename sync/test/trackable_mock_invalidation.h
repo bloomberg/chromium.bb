@@ -26,10 +26,10 @@ class TrackableMockInvalidation : public MockInvalidation {
 
   // Forwards notice of the acknowledgement of this invalidation to the
   // |tracker_|.
-  virtual void Acknowledge() OVERRIDE;
+  virtual void Acknowledge() override;
 
   // Forwards notice of the drop of this invalidation to the |tracker_|.
-  virtual void Drop() OVERRIDE;
+  virtual void Drop() override;
 
   // Returns the integer used to identify this object with the |tracker_|.
   int GetTrackingId();

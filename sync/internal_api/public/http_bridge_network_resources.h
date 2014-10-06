@@ -28,7 +28,7 @@ class SYNC_EXPORT HttpBridgeNetworkResources : public NetworkResources {
        const scoped_refptr<net::URLRequestContextGetter>&
            baseline_context_getter,
        const NetworkTimeUpdateCallback& network_time_update_callback,
-       CancelationSignal* cancelation_signal) OVERRIDE;
+       CancelationSignal* cancelation_signal) override;
 };
 
 }  // namespace syncer

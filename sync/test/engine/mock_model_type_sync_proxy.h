@@ -33,11 +33,11 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   // Implementation of ModelTypeSyncProxy.
   virtual void OnCommitCompleted(
       const DataTypeState& type_state,
-      const CommitResponseDataList& response_list) OVERRIDE;
+      const CommitResponseDataList& response_list) override;
   virtual void OnUpdateReceived(
       const DataTypeState& type_state,
       const UpdateResponseDataList& response_list,
-      const UpdateResponseDataList& pending_updates) OVERRIDE;
+      const UpdateResponseDataList& pending_updates) override;
 
   // By default, this object behaves as if all messages are processed
   // immediately.  Sometimes it is useful to defer work until later, as might

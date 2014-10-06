@@ -110,13 +110,13 @@ class TypeDebugInfoCache : public TypeDebugInfoObserver {
   // TypeDebugInfoObserver implementation.
   virtual void OnCommitCountersUpdated(
       syncer::ModelType type,
-      const CommitCounters& counters) OVERRIDE;
+      const CommitCounters& counters) override;
   virtual void OnUpdateCountersUpdated(
       syncer::ModelType type,
-      const UpdateCounters& counters) OVERRIDE;
+      const UpdateCounters& counters) override;
   virtual void OnStatusCountersUpdated(
       syncer::ModelType type,
-      const StatusCounters& counters) OVERRIDE;
+      const StatusCounters& counters) override;
 
  private:
   std::map<ModelType, CommitCounters> commit_counters_map_;
@@ -193,27 +193,27 @@ class SyncerTest : public testing::Test,
 }
 
   // SyncSession::Delegate implementation.
-  virtual void OnThrottled(const base::TimeDelta& throttle_duration) OVERRIDE {
+  virtual void OnThrottled(const base::TimeDelta& throttle_duration) override {
     FAIL() << "Should not get silenced.";
   }
   virtual void OnTypesThrottled(
       ModelTypeSet types,
-      const base::TimeDelta& throttle_duration) OVERRIDE {
+      const base::TimeDelta& throttle_duration) override {
     FAIL() << "Should not get silenced.";
   }
-  virtual bool IsCurrentlyThrottled() OVERRIDE {
+  virtual bool IsCurrentlyThrottled() override {
     return false;
   }
   virtual void OnReceivedLongPollIntervalUpdate(
-      const base::TimeDelta& new_interval) OVERRIDE {
+      const base::TimeDelta& new_interval) override {
     last_long_poll_interval_received_ = new_interval;
   }
   virtual void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) OVERRIDE {
+      const base::TimeDelta& new_interval) override {
     last_short_poll_interval_received_ = new_interval;
   }
   virtual void OnReceivedCustomNudgeDelays(
-      const std::map<ModelType, base::TimeDelta>& delay_map) OVERRIDE {
+      const std::map<ModelType, base::TimeDelta>& delay_map) override {
     std::map<ModelType, base::TimeDelta>::const_iterator iter =
         delay_map.find(SESSIONS);
     if (iter != delay_map.end() && iter->second > base::TimeDelta())
@@ -223,13 +223,13 @@ class SyncerTest : public testing::Test,
       last_bookmarks_commit_delay_ = iter->second;
   }
   virtual void OnReceivedClientInvalidationHintBufferSize(
-      int size) OVERRIDE {
+      int size) override {
     last_client_invalidation_hint_buffer_size_ = size;
   }
-  virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE {}
-  virtual void OnReceivedMigrationRequest(ModelTypeSet types) OVERRIDE {}
-  virtual void OnProtocolEvent(const ProtocolEvent& event) OVERRIDE {}
-  virtual void OnSyncProtocolError(const SyncProtocolError& error) OVERRIDE {}
+  virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) override {}
+  virtual void OnReceivedMigrationRequest(ModelTypeSet types) override {}
+  virtual void OnProtocolEvent(const ProtocolEvent& event) override {}
+  virtual void OnSyncProtocolError(const SyncProtocolError& error) override {}
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     // We're just testing the sync engine here, so we shunt everything to
@@ -240,7 +240,7 @@ class SyncerTest : public testing::Test,
     }
   }
 
-  virtual void OnSyncCycleEvent(const SyncCycleEvent& event) OVERRIDE {
+  virtual void OnSyncCycleEvent(const SyncCycleEvent& event) override {
     DVLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
@@ -254,10 +254,10 @@ class SyncerTest : public testing::Test,
     saw_syncer_event_ = true;
   }
 
-  virtual void OnActionableError(const SyncProtocolError& error) OVERRIDE {}
-  virtual void OnRetryTimeChanged(base::Time retry_time) OVERRIDE {}
-  virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) OVERRIDE {}
-  virtual void OnMigrationRequested(ModelTypeSet types) OVERRIDE {}
+  virtual void OnActionableError(const SyncProtocolError& error) override {}
+  virtual void OnRetryTimeChanged(base::Time retry_time) override {}
+  virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) override {}
+  virtual void OnMigrationRequested(ModelTypeSet types) override {}
 
   void ResetSession() {
     session_.reset(SyncSession::Build(context_.get(), this));

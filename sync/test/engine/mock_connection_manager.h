@@ -42,7 +42,7 @@ class MockConnectionManager : public ServerConnectionManager {
       PostBufferParams*,
       const std::string& path,
       const std::string& auth_token,
-      ScopedServerStatusWatcher* watcher) OVERRIDE;
+      ScopedServerStatusWatcher* watcher) override;
 
   // Control of commit response.
   // NOTE: Commit callback is invoked only once then reset.

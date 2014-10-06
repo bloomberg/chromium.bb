@@ -46,11 +46,11 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
 
   virtual ~DirectoryUpdateHandlerProcessUpdateTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     dir_maker_.SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     dir_maker_.TearDown();
   }
 
@@ -486,7 +486,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         articles_emitter_(ARTICLES, &type_observers_),
         update_handler_map_deleter_(&update_handler_map_) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     dir_maker_.SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
 
@@ -506,7 +506,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
             directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     dir_maker_.TearDown();
   }
 

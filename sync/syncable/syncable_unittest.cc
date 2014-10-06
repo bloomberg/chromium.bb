@@ -53,7 +53,7 @@ class TestBackingStore : public OnDiskDirectoryBackingStore {
   virtual ~TestBackingStore();
 
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot)
-      OVERRIDE;
+      override;
 
    void StartFailingSaveChanges() {
      fail_save_changes_ = true;

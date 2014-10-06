@@ -62,10 +62,10 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  virtual InitByLookupResult InitByIdLookup(int64 id) OVERRIDE;
+  virtual InitByLookupResult InitByIdLookup(int64 id) override;
   virtual InitByLookupResult InitByClientTagLookup(
       ModelType model_type,
-      const std::string& tag) OVERRIDE;
+      const std::string& tag) override;
 
   // Create a new bookmark node with the specified parent and predecessor.  Use
   // a NULL |predecessor| to indicate that this is to be the first child.
@@ -178,9 +178,9 @@ class SYNC_EXPORT WriteNode : public BaseNode {
       const sync_pb::AttachmentMetadata& attachment_metadata);
 
   // Implementation of BaseNode's abstract virtual accessors.
-  virtual const syncable::Entry* GetEntry() const OVERRIDE;
+  virtual const syncable::Entry* GetEntry() const override;
 
-  virtual const BaseTransaction* GetTransaction() const OVERRIDE;
+  virtual const BaseTransaction* GetTransaction() const override;
 
   syncable::MutableEntry* GetMutableEntryForTest();
 

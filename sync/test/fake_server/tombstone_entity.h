@@ -23,10 +23,10 @@ class TombstoneEntity : public FakeServerEntity {
   static FakeServerEntity* Create(const std::string& id);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const OVERRIDE;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) OVERRIDE;
-  virtual bool IsDeleted() const OVERRIDE;
-  virtual bool IsFolder() const OVERRIDE;
+  virtual std::string GetParentId() const override;
+  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  virtual bool IsDeleted() const override;
+  virtual bool IsFolder() const override;
 
  private:
   TombstoneEntity(const std::string& id, const syncer::ModelType& model_type);
