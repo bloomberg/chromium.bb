@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_KEY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_KEY_MANAGER_H_
 
+#include <deque>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -88,6 +88,10 @@ class EasyUnlockKeyManager {
   // Returns the next operations id. Currently only used for get keys ops.
   int GetNextOperationId();
 
+  // Runs the first pending op in |pending_ops_|. No-op if |pending_ops_| is
+  // emtpy.
+  void RunNextPendingOp();
+
   // Callback invoked after create keys op.
   void OnKeysCreated(size_t remove_start_index,
                      const RefreshKeysCallback& callback,
@@ -107,6 +111,8 @@ class EasyUnlockKeyManager {
   scoped_ptr<EasyUnlockCreateKeysOperation> create_keys_op_;
   scoped_ptr<EasyUnlockRemoveKeysOperation> remove_keys_op_;
   std::map<int, EasyUnlockGetKeysOperation*> get_keys_ops_;
+
+  std::deque<base::Closure> pending_ops_;
 
   base::WeakPtrFactory<EasyUnlockKeyManager> weak_ptr_factory_;
 

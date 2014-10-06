@@ -361,7 +361,11 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   std::string canonicalized =
       gaia::CanonicalizeEmail(user_context_.GetUserID());
   cryptohome::Identification id(canonicalized);
-  const Key* const auth_key = user_context_.GetKey();
+
+  scoped_ptr<Key> auth_key(new Key(*user_context_.GetKey()));
+  if (auth_key->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN)
+    auth_key->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
+
   cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
       id,

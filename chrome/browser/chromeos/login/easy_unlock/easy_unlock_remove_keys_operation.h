@@ -29,6 +29,8 @@ class EasyUnlockRemoveKeysOperation {
   void Start();
 
  private:
+  void OnGetSystemSalt(const std::string& system_salt);
+
   void RemoveKey();
   void OnKeyRemoved(bool success, cryptohome::MountError return_code);
 

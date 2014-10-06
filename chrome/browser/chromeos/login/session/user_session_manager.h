@@ -169,6 +169,9 @@ class UserSessionManager
   // Note this could return NULL if not enabled.
   EasyUnlockKeyManager* GetEasyUnlockKeyManager();
 
+  // Update Easy unlock cryptohome keys for given user context.
+  void UpdateEasyUnlockKeys(const UserContext& user_context);
+
  private:
   friend struct DefaultSingletonTraits<UserSessionManager>;
 
@@ -252,11 +255,9 @@ class UserSessionManager
   // Notifies observers that user pending sessions restore has finished.
   void NotifyPendingUserSessionsRestoreFinished();
 
-  // Update Easy unlock cryptohome keys using the pairing data in user prefs.
-  void UpdateEasyUnlockKeys(Profile* user_profile);
-
   // Callback invoked when Easy unlock key operations are finished.
-  void OnEasyUnlockKeyOpsFinished(bool success);
+  void OnEasyUnlockKeyOpsFinished(const std::string& user_id,
+                                  bool success);
 
   UserSessionManagerDelegate* delegate_;
 

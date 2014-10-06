@@ -45,13 +45,21 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
     STATE_AUTHENTICATED
   };
 
+  // Hard lock states.
+  enum HardlockState {
+    NO_HARDLOCK = 0,           // Hard lock is not enforced. This is default.
+    USER_HARDLOCK = 1 << 0,    // Hard lock is requested by user.
+    PAIRING_CHANGED = 1 << 1,  // Hard lock because pairing data is changed.
+    NO_PAIRING = 1 << 2        // Hard lock because there is no pairing data.
+  };
+
   // |user_email|: The email for the user associated with the profile to which
   //     this class is attached.
   // |pref_service|: The profile preferences.
   // |screenlock_bridge|: The screenlock bridge used to update the screen lock
   //     state.
   EasyUnlockScreenlockStateHandler(const std::string& user_email,
-                                   bool initially_hardlocked,
+                                   HardlockState initial_hardlock_state,
                                    PrefService* pref_service,
                                    ScreenlockBridge* screenlock_bridge);
   virtual ~EasyUnlockScreenlockStateHandler();
@@ -60,9 +68,11 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // accordingly.
   void ChangeState(State new_state);
 
-  // Updates the screenlock state according to whether the pod is hardlocked or
-  // not.
-  void SetHardlocked(bool value);
+  // Updates the screenlock state.
+  void SetHardlockState(HardlockState new_state);
+
+  // Shows the hardlock UI if the hardlock_state_ is not NO_HARDLOCK.
+  void MaybeShowHardlockUI();
 
  private:
   // ScreenlockBridge::Observer:
@@ -99,8 +109,8 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   PrefService* pref_service_;
   ScreenlockBridge* screenlock_bridge_;
 
-  // Whether the easy unlock is disabled due to user hardlocking the pod.
-  bool hardlocked_;
+  // State of hardlock.
+  HardlockState hardlock_state_;
   bool hardlock_ui_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockScreenlockStateHandler);

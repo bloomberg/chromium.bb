@@ -813,11 +813,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCRLSetFetcher(user);
   }
 
-  if (user && user->GetType() == user_manager::USER_TYPE_REGULAR &&
-      EasyUnlockService::Get(profile))
-    EasyUnlockService::Get(profile)->SetHardlocked(false);
-
-  UpdateEasyUnlockKeys(profile);
+  UpdateEasyUnlockKeys(user_context_);
   user_context_.ClearSecrets();
 
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
@@ -1029,7 +1025,7 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
                     PendingUserSessionsRestoreFinished());
 }
 
-void UserSessionManager::UpdateEasyUnlockKeys(Profile* user_profile) {
+void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
   // Skip key update because FakeCryptohomeClient always return success
   // and RemoveKey op expects a failure to stop. As a result, some tests would
   // timeout.
@@ -1041,49 +1037,55 @@ void UserSessionManager::UpdateEasyUnlockKeys(Profile* user_profile) {
     return;
 
   // Only update Easy unlock keys for regular user.
-  // TODO(xiyuan): Fix inconsistency user type of |user_context_| introduced in
+  // TODO(xiyuan): Fix inconsistency user type of |user_context| introduced in
   // authenticator.
-  user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  if (active_user->GetType() != user_manager::USER_TYPE_REGULAR)
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
+  if (!user || user->GetType() != user_manager::USER_TYPE_REGULAR)
     return;
 
-  // Bail if |user_context_| does not have secret.
-  if (user_context_.GetKey()->GetSecret().empty()) {
-    // Nagging if this is not crash restore case.
-    DCHECK(user_sessions_restored_);
+  // Bail if |user_context| does not have secret.
+  if (user_context.GetKey()->GetSecret().empty())
     return;
-  }
-
-  // |user_context_| and |user_profile| must belong to the same user.
-  DCHECK_EQ(SigninManagerFactory::GetForProfile(user_profile)
-                ->GetAuthenticatedAccountId(),
-            user_context_.GetUserID());
 
   const base::ListValue* device_list = NULL;
-  if (EasyUnlockService::Get(user_profile))
-    device_list = EasyUnlockService::Get(user_profile)->GetRemoteDevices();
+  EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
+  if (easy_unlock_service) {
+    device_list = easy_unlock_service->GetRemoteDevices();
+    easy_unlock_service->SetHardlockState(
+        EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
+  }
 
   running_easy_unlock_key_ops_ = true;
   if (device_list) {
     easy_unlock_key_manager_->RefreshKeys(
-        user_context_,
+        user_context,
         *device_list,
         base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
-                   AsWeakPtr()));
+                   AsWeakPtr(),
+                   user_context.GetUserID()));
   } else {
     easy_unlock_key_manager_->RemoveKeys(
-        user_context_,
+        user_context,
         0,
         base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
-                   AsWeakPtr()));
+                   AsWeakPtr(),
+                   user_context.GetUserID()));
   }
 }
 
-void UserSessionManager::OnEasyUnlockKeyOpsFinished(bool success) {
+void UserSessionManager::OnEasyUnlockKeyOpsFinished(
+    const std::string& user_id,
+    bool success) {
   running_easy_unlock_key_ops_ = false;
   if (!easy_unlock_key_ops_finished_callback_.is_null())
     easy_unlock_key_ops_finished_callback_.Run();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_id);
+  EasyUnlockService* easy_unlock_service =
+        EasyUnlockService::GetForUser(*user);
+  easy_unlock_service->CheckCryptohomeKeysAndMaybeHardlock();
 }
 
 void UserSessionManager::ActiveUserChanged(

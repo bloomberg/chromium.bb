@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/cryptohome/homedir_methods.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -28,7 +29,20 @@ EasyUnlockRemoveKeysOperation::~EasyUnlockRemoveKeysOperation() {
 }
 
 void EasyUnlockRemoveKeysOperation::Start() {
-  // TODO(xiyuan): Use ListKeyEx and delete by label instead of by index.
+  if (user_context_.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
+    SystemSaltGetter::Get()->GetSystemSalt(
+        base::Bind(&EasyUnlockRemoveKeysOperation::OnGetSystemSalt,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  RemoveKey();
+}
+
+void EasyUnlockRemoveKeysOperation::OnGetSystemSalt(
+    const std::string& system_salt) {
+  user_context_.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                                    system_salt);
   RemoveKey();
 }
 
@@ -39,6 +53,7 @@ void EasyUnlockRemoveKeysOperation::RemoveKey() {
   const Key* const auth_key = user_context_.GetKey();
   cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
 
+  // TODO(xiyuan): Use ListKeyEx and delete by label instead of by index.
   cryptohome::HomedirMethods::GetInstance()->RemoveKeyEx(
       id,
       auth,

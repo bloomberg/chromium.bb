@@ -82,8 +82,14 @@ void EasyUnlockKeyManager::RemoveKeys(const UserContext& user_context,
 void EasyUnlockKeyManager::GetDeviceDataList(
     const UserContext& user_context,
     const GetDeviceDataListCallback& callback) {
-  // No write operations.
-  DCHECK(!create_keys_op_ && !remove_keys_op_);
+  // Defer the get operation if there is pending write operations.
+  if (create_keys_op_ || remove_keys_op_) {
+    pending_ops_.push_back(base::Bind(&EasyUnlockKeyManager::GetDeviceDataList,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      user_context,
+                                      callback));
+    return;
+  }
 
   const int op_id = GetNextOperationId();
   scoped_ptr<EasyUnlockGetKeysOperation> op(new EasyUnlockGetKeysOperation(
@@ -183,6 +189,14 @@ int EasyUnlockKeyManager::GetNextOperationId() {
   return ++operation_id_;
 }
 
+void EasyUnlockKeyManager::RunNextPendingOp() {
+  if (pending_ops_.empty())
+    return;
+
+  pending_ops_.front().Run();
+  pending_ops_.pop_front();
+}
+
 void EasyUnlockKeyManager::OnKeysCreated(
     size_t remove_start_index,
     const RefreshKeysCallback& callback,
@@ -200,6 +214,9 @@ void EasyUnlockKeyManager::OnKeysRemoved(const RemoveKeysCallback& callback,
   scoped_ptr<EasyUnlockRemoveKeysOperation> op = remove_keys_op_.Pass();
   if (!callback.is_null())
     callback.Run(remove_success);
+
+  if (!HasPendingOperations())
+    RunNextPendingOp();
 }
 
 void EasyUnlockKeyManager::OnKeysFetched(
@@ -219,6 +236,9 @@ void EasyUnlockKeyManager::OnKeysFetched(
 
   if (!callback.is_null())
     callback.Run(fetch_success, fetched_data);
+
+  if (!HasPendingOperations())
+    RunNextPendingOp();
 }
 
 }  // namespace chromeos

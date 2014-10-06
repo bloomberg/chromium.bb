@@ -74,14 +74,14 @@ bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
 
 EasyUnlockScreenlockStateHandler::EasyUnlockScreenlockStateHandler(
     const std::string& user_email,
-    bool initially_hardlocked,
+    HardlockState initial_hardlock_state,
     PrefService* pref_service,
     ScreenlockBridge* screenlock_bridge)
     : state_(STATE_INACTIVE),
       user_email_(user_email),
       pref_service_(pref_service),
       screenlock_bridge_(screenlock_bridge),
-      hardlocked_(initially_hardlocked),
+      hardlock_state_(initial_hardlock_state),
       hardlock_ui_shown_(false) {
   DCHECK(screenlock_bridge_);
   screenlock_bridge_->AddObserver(this);
@@ -104,7 +104,10 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   if (!screenlock_bridge_->IsLocked())
     return;
 
-  if (hardlocked_) {
+  const bool trial_run = IsTrialRun();
+
+  // No hardlock UI for trial run.
+  if (!trial_run && hardlock_state_ != NO_HARDLOCK) {
     ShowHardlockUI();
     return;
   }
@@ -121,35 +124,38 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   ScreenlockBridge::UserPodCustomIconOptions icon_options;
   icon_options.SetIcon(icon);
 
-  bool trial_run = IsTrialRun();
-
   // Don't hardlock on trial run.
   if (!trial_run && HardlockOnClick(state_))
     icon_options.SetHardlockOnClick();
 
   UpdateTooltipOptions(trial_run, &icon_options);
 
-  if (trial_run && state_ == STATE_AUTHENTICATED)
-    MarkTrialRunComplete();
-
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(user_email_,
                                                             icon_options);
 }
 
-void EasyUnlockScreenlockStateHandler::SetHardlocked(bool value) {
-  if (hardlocked_ == value)
+void EasyUnlockScreenlockStateHandler::SetHardlockState(
+    HardlockState new_state) {
+  if (hardlock_state_ == new_state)
     return;
 
-  hardlocked_ = value;
+  hardlock_state_ = new_state;
 
-  // If hardlocked_ was set to false, this means the screen is about to get
-  // unlocked. No need to update it in this case.
-  if (hardlocked_) {
+  // If hardlock_state_ was set to NO_HARDLOCK, this means the screen is about
+  // to get unlocked. No need to update it in this case.
+  if (hardlock_state_ != NO_HARDLOCK) {
+    hardlock_ui_shown_ = false;
+
     State last_state = state_;
     // This should force updating screenlock state.
     state_ = STATE_INACTIVE;
     ChangeState(last_state);
   }
+}
+
+void EasyUnlockScreenlockStateHandler::MaybeShowHardlockUI() {
+  if (hardlock_state_ != NO_HARDLOCK)
+    ShowHardlockUI();
 }
 
 void EasyUnlockScreenlockStateHandler::OnScreenDidLock() {
@@ -170,7 +176,7 @@ void EasyUnlockScreenlockStateHandler::OnFocusedUserChanged(
 }
 
 void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
-  DCHECK(hardlocked_);
+  DCHECK(hardlock_state_ != NO_HARDLOCK);
 
   if (!screenlock_bridge_->IsLocked())
     return;
@@ -183,7 +189,7 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
         base::string16());
   }
 
-  if (state_ == STATE_INACTIVE) {
+  if (hardlock_state_ == NO_PAIRING) {
     screenlock_bridge_->lock_handler()->HideUserPodCustomIcon(user_email_);
     hardlock_ui_shown_ = false;
     return;
@@ -194,10 +200,19 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
 
   ScreenlockBridge::UserPodCustomIconOptions icon_options;
   icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
-  icon_options.SetTooltip(
-      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK,
-                                 GetDeviceName()),
-      false /* don't autoshow */);
+
+  base::string16 tooltip;
+  if (hardlock_state_ == USER_HARDLOCK) {
+    tooltip = l10n_util::GetStringFUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, GetDeviceName());
+  } else if (hardlock_state_ == PAIRING_CHANGED) {
+    tooltip = l10n_util::GetStringUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED);
+  } else {
+    LOG(ERROR) << "Unknown hardlock state " << hardlock_state_;
+  }
+  icon_options.SetTooltip(tooltip, false /* don't autoshow */);
+
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(user_email_,
                                                             icon_options);
   hardlock_ui_shown_ = true;
@@ -255,7 +270,7 @@ base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {
 }
 
 void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
-  if (hardlocked_)
+  if (!IsTrialRun() && hardlock_state_ != NO_HARDLOCK)
     return;
 
   if (state_ == STATE_AUTHENTICATED) {

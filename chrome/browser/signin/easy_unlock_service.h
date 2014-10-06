@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_H_
 #define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_H_
 
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -13,6 +14,10 @@
 #include "base/observer_list.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
+#endif
 
 namespace base {
 class DictionaryValue;
@@ -30,6 +35,7 @@ class PrefRegistrySyncable;
 class EasyUnlockAuthAttempt;
 class EasyUnlockServiceObserver;
 class Profile;
+class PrefRegistrySimple;
 
 class EasyUnlockService : public KeyedService {
  public:
@@ -54,6 +60,12 @@ class EasyUnlockService : public KeyedService {
   // Registers Easy Unlock profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Registers Easy Unlock local state entries.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Removes the hardlock state for the given user.
+  static void RemoveHardlockStateForUser(const std::string& user_id);
+
   // Returns the EasyUnlockService type.
   virtual Type GetType() const = 0;
 
@@ -72,12 +84,6 @@ class EasyUnlockService : public KeyedService {
   virtual const base::ListValue* GetRemoteDevices() const = 0;
   virtual void SetRemoteDevices(const base::ListValue& devices) = 0;
   virtual void ClearRemoteDevices() = 0;
-
-  // Hardlocks the service for the associated user.
-  virtual void SetHardlocked(bool value) = 0;
-
-  // Whether the Easy Unlock service is hardlocked for the associated user.
-  virtual bool IsHardlocked() const = 0;
 
   // Runs the flow for turning Easy unlock off.
   virtual void RunTurnOffFlow() = 0;
@@ -103,6 +109,16 @@ class EasyUnlockService : public KeyedService {
   // permitted either the flag is enabled or its field trial is enabled.
   bool IsAllowed();
 
+  // Sets the hardlock state for the associated user.
+  void SetHardlockState(EasyUnlockScreenlockStateHandler::HardlockState state);
+
+  // Returns the hardlock state for the associated user.
+  EasyUnlockScreenlockStateHandler::HardlockState GetHardlockState() const;
+
+  // Ensures the hardlock state is visible even when there is no cryptohome
+  // keys and no state update from the app.
+  void MaybeShowHardlockUI();
+
   // Updates the user pod on the signin/lock screen for the user associated with
   // the service to reflect the provided screenlock state.
   bool UpdateScreenlockState(EasyUnlockScreenlockStateHandler::State state);
@@ -120,6 +136,10 @@ class EasyUnlockService : public KeyedService {
   // regular profile service, it will cancel the current auth attempt if one
   // exists.
   void FinalizeSignin(const std::string& secret);
+
+  // Checks the consistency between pairing data and cryptohome keys. Set
+  // hardlock state if the two do not match.
+  void CheckCryptohomeKeysAndMaybeHardlock();
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
@@ -171,7 +191,8 @@ class EasyUnlockService : public KeyedService {
   void ResetScreenlockState();
 
   // Updates |screenlock_state_handler_|'s hardlocked state.
-  void SetScreenlockHardlockedState(bool value);
+  void SetScreenlockHardlockedState(
+      EasyUnlockScreenlockStateHandler::HardlockState state);
 
  private:
   // A class to detect whether a bluetooth adapter is present.
@@ -188,6 +209,21 @@ class EasyUnlockService : public KeyedService {
 
   // Callback when Bluetooth adapter present state changes.
   void OnBluetoothAdapterPresentChanged();
+
+  // Saves hardlock state for the given user. Update UI if the currently
+  // associated user is the same.
+  void SetHardlockStateForUser(
+      const std::string& user_id,
+      EasyUnlockScreenlockStateHandler::HardlockState state);
+
+#if defined(OS_CHROMEOS)
+  // Callback for get key operation from CheckCryptohomeKeysAndMaybeHardlock.
+  void OnCryptohomeKeysFetchedForChecking(
+      const std::string& user_id,
+      const std::set<std::string> paired_devices,
+      bool success,
+      const chromeos::EasyUnlockDeviceKeyDataList& key_data_list);
+#endif
 
   Profile* profile_;
 

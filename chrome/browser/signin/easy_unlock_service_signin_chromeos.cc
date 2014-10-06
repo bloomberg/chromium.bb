@@ -139,15 +139,6 @@ void EasyUnlockServiceSignin::ClearRemoteDevices() {
   NOTREACHED();
 }
 
-void EasyUnlockServiceSignin::SetHardlocked(bool value) {
-  // TODO(tbarzic): Make this work.
-  SetScreenlockHardlockedState(value);
-}
-
-bool EasyUnlockServiceSignin::IsHardlocked() const {
-  return false;
-}
-
 void EasyUnlockServiceSignin::RunTurnOffFlow() {
   NOTREACHED();
 }
@@ -211,6 +202,9 @@ bool EasyUnlockServiceSignin::IsAllowedInternal() {
 }
 
 void EasyUnlockServiceSignin::OnScreenDidLock() {
+  // Ensure the hardlock UI is updated when the account picker on login screen
+  // is ready.
+  MaybeShowHardlockUI();
 }
 
 void EasyUnlockServiceSignin::OnScreenDidUnlock() {
@@ -227,6 +221,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
   user_id_ = user_id;
 
   ResetScreenlockState();
+  MaybeShowHardlockUI();
 
   if (should_update_app_state) {
     UpdateAppState();

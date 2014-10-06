@@ -2338,4 +2338,7 @@ const char kBrowserGuestModeEnabled[] = "profile.browser_guest_enabled";
 // Whether Adding a new Person is enabled within the user manager.
 const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 
+// A dictionary that maps user id to hardlock state.
+const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
+
 }  // namespace prefs

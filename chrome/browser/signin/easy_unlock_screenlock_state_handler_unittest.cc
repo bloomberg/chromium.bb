@@ -212,11 +212,11 @@ class EasyUnlockScreenlockStateHandlerTest : public testing::Test {
     screenlock_bridge->SetLockHandler(lock_handler_.get());
 
     // Create the screenlock state handler object that will be tested.
-    state_handler_.reset(
-        new EasyUnlockScreenlockStateHandler(user_email_,
-                                             false,
-                                             pref_service_.get(),
-                                             screenlock_bridge));
+    state_handler_.reset(new EasyUnlockScreenlockStateHandler(
+        user_email_,
+        EasyUnlockScreenlockStateHandler::NO_HARDLOCK,
+        pref_service_.get(),
+        screenlock_bridge));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -307,7 +307,8 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockedState) {
   EXPECT_EQ(ScreenlockBridge::LockHandler::USER_CLICK,
             lock_handler_->GetAuthType(user_email_));
 
-  state_handler_->SetHardlocked(true);
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
   EXPECT_EQ(ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
@@ -318,10 +319,28 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockedState) {
   EXPECT_TRUE(lock_handler_->CustomIconHasTooltip());
   EXPECT_FALSE(lock_handler_->CustomIconHardlocksOnClick());
 
-  state_handler_->SetHardlocked(true);
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
 
   EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
+}
+
+TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockedStateNoPairing) {
+  pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
+  state_handler_->ChangeState(
+      EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED);
+
+  EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
+  EXPECT_EQ(ScreenlockBridge::LockHandler::USER_CLICK,
+            lock_handler_->GetAuthType(user_email_));
+
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::NO_PAIRING);
+
+  EXPECT_FALSE(lock_handler_->HasCustomIcon());
+  EXPECT_EQ(ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+            lock_handler_->GetAuthType(user_email_));
 }
 
 TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon) {
@@ -513,6 +532,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest,
 }
 
 TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangesIgnoredIfHardlocked) {
+  pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
   state_handler_->ChangeState(
       EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED);
 
@@ -520,7 +540,8 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangesIgnoredIfHardlocked) {
   EXPECT_EQ(ScreenlockBridge::LockHandler::USER_CLICK,
             lock_handler_->GetAuthType(user_email_));
 
-  state_handler_->SetHardlocked(true);
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
   EXPECT_EQ(ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
@@ -543,13 +564,16 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StateChangesIgnoredIfHardlocked) {
 
 TEST_F(EasyUnlockScreenlockStateHandlerTest,
        LockScreenChangeableOnLockAfterHardlockReset) {
+  pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
   state_handler_->ChangeState(
       EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED);
 
-  state_handler_->SetHardlocked(true);
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
   EXPECT_EQ(2u, lock_handler_->GetAndResetShowIconCount());
 
-  state_handler_->SetHardlocked(false);
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
 
   ScreenlockBridge::Get()->SetLockHandler(NULL);
   lock_handler_.reset(new TestLockHandler(user_email_));
@@ -583,9 +607,11 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest,
 }
 
 TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockStatePersistsOverUnlocks) {
+  pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
   state_handler_->ChangeState(
       EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED);
-  state_handler_->SetHardlocked(true);
+  state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
   EXPECT_EQ(2u, lock_handler_->GetAndResetShowIconCount());
 
   ScreenlockBridge::Get()->SetLockHandler(NULL);

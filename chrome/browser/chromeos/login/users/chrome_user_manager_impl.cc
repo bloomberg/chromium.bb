@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -799,6 +800,8 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   supervised_user_manager_->RemoveNonCryptohomeData(user_id);
 
   multi_profile_user_controller_->RemoveCachedValues(user_id);
+
+  EasyUnlockService::RemoveHardlockStateForUser(user_id);
 }
 
 void

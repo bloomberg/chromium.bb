@@ -1372,7 +1372,7 @@ void SigninScreenHandler::HandleHardlockPod(const std::string& user_id) {
   EasyUnlockService* service = GetEasyUnlockServiceForUser(user_id);
   if (!service)
     return;
-  service->SetHardlocked(true);
+  service->SetHardlockState(EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
 }
 
 void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(

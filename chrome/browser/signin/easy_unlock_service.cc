@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +34,8 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -45,6 +49,10 @@ extensions::ComponentLoader* GetComponentLoader(
       extensions::ExtensionSystem::Get(context);
   ExtensionService* extension_service = extension_system->extension_service();
   return extension_service->component_loader();
+}
+
+PrefService* GetLocalState() {
+  return g_browser_process ? g_browser_process->local_state() : NULL;
 }
 
 }  // namespace
@@ -113,8 +121,8 @@ class EasyUnlockService::BluetoothDetector
 };
 
 #if defined(OS_CHROMEOS)
-class EasyUnlockService::PowerMonitor :
-  public chromeos::PowerManagerClient::Observer {
+class EasyUnlockService::PowerMonitor
+    : public chromeos::PowerManagerClient::Observer {
  public:
   explicit PowerMonitor(EasyUnlockService* service) : service_(service) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
@@ -177,6 +185,23 @@ void EasyUnlockService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
+// static
+void EasyUnlockService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kEasyUnlockHardlockState);
+}
+
+// static
+void EasyUnlockService::RemoveHardlockStateForUser(const std::string& user_id) {
+  DCHECK(!user_id.empty());
+
+  PrefService* local_state = GetLocalState();
+  if (!local_state)
+    return;
+
+  DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
+  update->RemoveWithoutPathExpansion(user_id, NULL);
+}
+
 bool EasyUnlockService::IsAllowed() {
   if (shut_down_)
     return false;
@@ -185,16 +210,6 @@ bool EasyUnlockService::IsAllowed() {
     return false;
 
 #if defined(OS_CHROMEOS)
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
-    return false;
-
-  // Respect existing policy and skip finch test.
-  if (!profile_->GetPrefs()->IsManagedPreference(prefs::kEasyUnlockAllowed)) {
-    // It is disabled when the trial exists and is in "Disable" group.
-    if (base::FieldTrialList::FindFullName("EasyUnlock") == "Disable")
-      return false;
-  }
-
   if (!bluetooth_detector_->IsPresent())
     return false;
 
@@ -205,6 +220,41 @@ bool EasyUnlockService::IsAllowed() {
 #endif
 }
 
+void EasyUnlockService::SetHardlockState(
+    EasyUnlockScreenlockStateHandler::HardlockState state) {
+  const std::string user_id = GetUserEmail();
+  if (user_id.empty())
+    return;
+
+  SetHardlockStateForUser(user_id, state);
+}
+
+EasyUnlockScreenlockStateHandler::HardlockState
+EasyUnlockService::GetHardlockState() const {
+  std::string user_id = GetUserEmail();
+  if (user_id.empty())
+    return EasyUnlockScreenlockStateHandler::NO_HARDLOCK;
+
+  PrefService* local_state = GetLocalState();
+  if (!local_state)
+    return EasyUnlockScreenlockStateHandler::NO_HARDLOCK;
+
+  const base::DictionaryValue* dict =
+      local_state->GetDictionary(prefs::kEasyUnlockHardlockState);
+  int state;
+  if (!dict || !dict->GetIntegerWithoutPathExpansion(user_id, &state))
+    return EasyUnlockScreenlockStateHandler::NO_HARDLOCK;
+
+  return static_cast<EasyUnlockScreenlockStateHandler::HardlockState>(state);
+}
+
+void EasyUnlockService::MaybeShowHardlockUI() {
+  if (GetHardlockState() == EasyUnlockScreenlockStateHandler::NO_HARDLOCK)
+    return;
+  if (GetScreenlockStateHandler())
+    screenlock_state_handler_->MaybeShowHardlockUI();
+}
+
 EasyUnlockScreenlockStateHandler*
     EasyUnlockService::GetScreenlockStateHandler() {
   if (!IsAllowed())
@@ -212,7 +262,7 @@ EasyUnlockScreenlockStateHandler*
   if (!screenlock_state_handler_) {
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
         GetUserEmail(),
-        IsHardlocked(),
+        GetHardlockState(),
         GetType() == TYPE_REGULAR ? profile_->GetPrefs() : NULL,
         ScreenlockBridge::Get()));
   }
@@ -255,6 +305,43 @@ void EasyUnlockService::FinalizeSignin(const std::string& key) {
   if (!wrapped_secret.empty())
     auth_attempt_->FinalizeSignin(GetUserEmail(), wrapped_secret, key);
   auth_attempt_.reset();
+}
+
+void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
+#if defined(OS_CHROMEOS)
+  std::string user_id = GetUserEmail();
+  if (user_id.empty())
+    return;
+
+  const base::ListValue* device_list = GetRemoteDevices();
+  std::set<std::string> paired_devices;
+  if (device_list) {
+    chromeos::EasyUnlockDeviceKeyDataList parsed_paired;
+    chromeos::EasyUnlockKeyManager::RemoteDeviceListToDeviceDataList(
+        *device_list, &parsed_paired);
+    for (const auto& device_key_data : parsed_paired)
+      paired_devices.insert(device_key_data.public_key);
+  }
+  if (paired_devices.empty()) {
+    SetHardlockState(EasyUnlockScreenlockStateHandler::NO_PAIRING);
+    return;
+  }
+
+  // No need to compare if a change is already recorded.
+  if (GetHardlockState() == EasyUnlockScreenlockStateHandler::PAIRING_CHANGED)
+    return;
+
+  chromeos::EasyUnlockKeyManager* key_manager =
+      chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
+  DCHECK(key_manager);
+
+  key_manager->GetDeviceDataList(
+      chromeos::UserContext(user_id),
+      base::Bind(&EasyUnlockService::OnCryptohomeKeysFetchedForChecking,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 user_id,
+                 paired_devices));
+#endif
 }
 
 void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
@@ -392,10 +479,11 @@ void EasyUnlockService::ResetScreenlockState() {
   auth_attempt_.reset();
 }
 
-void EasyUnlockService::SetScreenlockHardlockedState(bool value) {
+void EasyUnlockService::SetScreenlockHardlockedState(
+    EasyUnlockScreenlockStateHandler::HardlockState state) {
   if (screenlock_state_handler_)
-    screenlock_state_handler_->SetHardlocked(value);
-  if (value)
+    screenlock_state_handler_->SetHardlockState(state);
+  if (state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK)
     auth_attempt_.reset();
 }
 
@@ -416,4 +504,45 @@ void EasyUnlockService::Initialize() {
 void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
   UpdateAppState();
 }
+
+void EasyUnlockService::SetHardlockStateForUser(
+      const std::string& user_id,
+      EasyUnlockScreenlockStateHandler::HardlockState state) {
+  DCHECK(!user_id.empty());
+
+  PrefService* local_state = GetLocalState();
+  if (!local_state)
+    return;
+
+  DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
+  update->SetIntegerWithoutPathExpansion(user_id, static_cast<int>(state));
+
+  if (GetUserEmail() == user_id)
+    SetScreenlockHardlockedState(state);
+}
+
+#if defined(OS_CHROMEOS)
+void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
+    const std::string& user_id,
+    const std::set<std::string> paired_devices,
+    bool success,
+    const chromeos::EasyUnlockDeviceKeyDataList& key_data_list) {
+  DCHECK(!user_id.empty() && !paired_devices.empty());
+
+  if (!success) {
+    SetHardlockStateForUser(user_id,
+                            EasyUnlockScreenlockStateHandler::NO_PAIRING);
+    return;
+  }
+
+  std::set<std::string> devices_in_cryptohome;
+  for (const auto& device_key_data : key_data_list)
+    devices_in_cryptohome.insert(device_key_data.public_key);
+
+  if (paired_devices != devices_in_cryptohome) {
+    SetHardlockStateForUser(user_id,
+                            EasyUnlockScreenlockStateHandler::PAIRING_CHANGED);
+  }
+}
+#endif
 
