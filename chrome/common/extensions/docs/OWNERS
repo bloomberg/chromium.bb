@@ -6,6 +6,10 @@ scheib@chromium.org
 # For webview documentation.
 fsamuel@chromium.org
 
+# For devtools documentation.
+paulirish@chromium.org
+pbakaus@chromium.org
+
 # For server related things (Python, JavaScript, templates, etc).
 kalman@chromium.org
 rockot@chromium.org
