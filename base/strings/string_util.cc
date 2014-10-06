@@ -91,6 +91,14 @@ template<> struct NonASCIIMask<8, base::char16> {
 template<> struct NonASCIIMask<8, char> {
     static inline uint64_t value() { return 0x8080808080808080ULL; }
 };
+#if defined(WCHAR_T_IS_UTF32)
+template<> struct NonASCIIMask<4, wchar_t> {
+    static inline uint32_t value() { return 0xFFFFFF80U; }
+};
+template<> struct NonASCIIMask<8, wchar_t> {
+    static inline uint64_t value() { return 0xFFFFFF80FFFFFF80ULL; }
+};
+#endif  // WCHAR_T_IS_UTF32
 
 }  // namespace
 
@@ -391,6 +399,12 @@ bool IsStringASCII(const StringPiece16& str) {
 bool IsStringASCII(const string16& str) {
   return DoIsStringASCII(str.data(), str.length());
 }
+
+#if defined(WCHAR_T_IS_UTF32)
+bool IsStringASCII(const std::wstring& str) {
+  return DoIsStringASCII(str.data(), str.length());
+}
+#endif
 
 bool IsStringUTF8(const std::string& str) {
   const char *src = str.data();

@@ -393,6 +393,8 @@ TEST(StringUtilTest, IsStringASCII) {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'A',
       'B', 'C', 'D', 'E', 'F', '0', '1', '2', '3', '4', '5', '6',
       '7', '8', '9', '0', 'A', 'B', 'C', 'D', 'E', 'F', 0 };
+  static std::wstring wchar_ascii(
+      L"0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF");
 
   // Test a variety of the fragment start positions and lengths in order to make
   // sure that bit masking in IsStringASCII works correctly.
@@ -430,6 +432,29 @@ TEST(StringUtilTest, IsStringASCII) {
               IsStringASCII(StringPiece16(char16_ascii + offset, len)));
           char16_ascii[char_pos] &= ~0x100;
         }
+      }
+    }
+  }
+
+  {
+    const size_t string_length = wchar_ascii.length();
+    for (size_t len = 0; len < string_length; ++len) {
+      EXPECT_TRUE(IsStringASCII(wchar_ascii.substr(0, len)));
+      for (size_t char_pos = 0; char_pos < len; ++char_pos) {
+        wchar_ascii[char_pos] |= 0x80;
+        EXPECT_FALSE(
+            IsStringASCII(wchar_ascii.substr(0, len)));
+        wchar_ascii[char_pos] &= ~0x80;
+        wchar_ascii[char_pos] |= 0x100;
+        EXPECT_FALSE(
+            IsStringASCII(wchar_ascii.substr(0, len)));
+        wchar_ascii[char_pos] &= ~0x100;
+#if defined(WCHAR_T_IS_UTF32)
+        wchar_ascii[char_pos] |= 0x10000;
+        EXPECT_FALSE(
+            IsStringASCII(wchar_ascii.substr(0, len)));
+        wchar_ascii[char_pos] &= ~0x10000;
+#endif  // WCHAR_T_IS_UTF32
       }
     }
   }

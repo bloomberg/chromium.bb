@@ -43,15 +43,23 @@ bool ConvertUnicode(const SRC_CHAR* src,
 // UTF-8 <-> Wide --------------------------------------------------------------
 
 bool WideToUTF8(const wchar_t* src, size_t src_len, std::string* output) {
-  PrepareForUTF8Output(src, src_len, output);
-  return ConvertUnicode(src, src_len, output);
+  if (IsStringASCII(std::wstring(src, src_len))) {
+    output->assign(src, src + src_len);
+    return true;
+  } else {
+    PrepareForUTF8Output(src, src_len, output);
+    return ConvertUnicode(src, src_len, output);
+  }
 }
 
 std::string WideToUTF8(const std::wstring& wide) {
+  if (IsStringASCII(wide)) {
+    return std::string(wide.data(), wide.data() + wide.length());
+  }
+
   std::string ret;
-  // Ignore the success flag of this call, it will do the best it can for
-  // invalid input, which is what we want here.
-  WideToUTF8(wide.data(), wide.length(), &ret);
+  PrepareForUTF8Output(wide.data(), wide.length(), &ret);
+  ConvertUnicode(wide.data(), wide.length(), &ret);
   return ret;
 }
 
@@ -159,11 +167,20 @@ string16 UTF8ToUTF16(const StringPiece& utf8) {
 }
 
 bool UTF16ToUTF8(const char16* src, size_t src_len, std::string* output) {
-  PrepareForUTF8Output(src, src_len, output);
-  return ConvertUnicode(src, src_len, output);
+  if (IsStringASCII(StringPiece16(src, src_len))) {
+    output->assign(src, src + src_len);
+    return true;
+  } else {
+    PrepareForUTF8Output(src, src_len, output);
+    return ConvertUnicode(src, src_len, output);
+  }
 }
 
 std::string UTF16ToUTF8(const string16& utf16) {
+  if (IsStringASCII(utf16)) {
+    return std::string(utf16.begin(), utf16.end());
+  }
+
   std::string ret;
   // Ignore the success flag of this call, it will do the best it can for
   // invalid input, which is what we want here.
