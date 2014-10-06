@@ -47,7 +47,7 @@ class CC_EXPORT RenderingStatsInstrumentation {
   base::TimeTicks StartRecording() const;
   base::TimeDelta EndRecording(base::TimeTicks start_time) const;
 
-  void IncrementFrameCount(int64 count, bool main_thread);
+  void IncrementFrameCount(int64 count);
   void AddPaint(base::TimeDelta duration, int64 pixels);
   void AddRecord(base::TimeDelta duration, int64 pixels);
   void AddRaster(base::TimeDelta duration, int64 pixels);

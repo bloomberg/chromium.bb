@@ -36,7 +36,6 @@ struct CC_EXPORT RenderingStats {
     // Note: when adding new members, please remember to update Add in
     // rendering_stats.cc.
 
-    int64 frame_count;
     base::TimeDelta paint_time;
     int64 painted_pixel_count;
     base::TimeDelta record_time;

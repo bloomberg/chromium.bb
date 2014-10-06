@@ -1478,9 +1478,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   fps_counter_->SaveTimeStamp(frame_begin_time,
                               !output_surface_->context_provider());
-  bool on_main_thread = false;
-  rendering_stats_instrumentation_->IncrementFrameCount(
-      1, on_main_thread);
+  rendering_stats_instrumentation_->IncrementFrameCount(1);
 
   if (tile_manager_) {
     memory_history_->SaveEntry(

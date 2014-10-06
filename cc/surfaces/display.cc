@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/direct_renderer.h"
@@ -110,6 +111,7 @@ bool Display::Draw() {
     return false;
 
   TRACE_EVENT0("cc", "Display::Draw");
+  benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape

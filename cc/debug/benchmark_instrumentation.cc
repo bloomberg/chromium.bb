@@ -28,5 +28,17 @@ void IssueImplThreadRenderingStatsEvent(
                        "data", stats.AsTraceableData());
 }
 
+void IssueDisplayRenderingStatsEvent() {
+  scoped_refptr<base::debug::TracedValue> record_data =
+      new base::debug::TracedValue();
+  record_data->SetInteger("frame_count", 1);
+  TRACE_EVENT_INSTANT1(
+      "benchmark",
+      "BenchmarkInstrumentation::DisplayRenderingStats",
+      TRACE_EVENT_SCOPE_THREAD,
+      "data",
+      scoped_refptr<base::debug::ConvertableToTraceFormat>(record_data));
+}
+
 }  // namespace benchmark_instrumentation
 }  // namespace cc

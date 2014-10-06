@@ -5,6 +5,7 @@
 #ifndef CC_DEBUG_BENCHMARK_INSTRUMENTATION_H_
 #define CC_DEBUG_BENCHMARK_INSTRUMENTATION_H_
 
+#include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats.h"
 
 namespace cc {
@@ -45,6 +46,7 @@ void IssueMainThreadRenderingStatsEvent(
     const RenderingStats::MainThreadRenderingStats& stats);
 void IssueImplThreadRenderingStatsEvent(
     const RenderingStats::ImplThreadRenderingStats& stats);
+void CC_EXPORT IssueDisplayRenderingStatsEvent();
 
 }  // namespace benchmark_instrumentation
 }  // namespace cc

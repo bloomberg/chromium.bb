@@ -29,7 +29,7 @@ void RenderingStats::TimeDeltaList::Add(const TimeDeltaList& other) {
 }
 
 RenderingStats::MainThreadRenderingStats::MainThreadRenderingStats()
-    : frame_count(0), painted_pixel_count(0), recorded_pixel_count(0) {
+    : painted_pixel_count(0), recorded_pixel_count(0) {
 }
 
 RenderingStats::MainThreadRenderingStats::~MainThreadRenderingStats() {
@@ -39,7 +39,6 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
 RenderingStats::MainThreadRenderingStats::AsTraceableData() const {
   scoped_refptr<base::debug::TracedValue> record_data =
       new base::debug::TracedValue();
-  record_data->SetInteger("frame_count", frame_count);
   record_data->SetDouble("paint_time", paint_time.InSecondsF());
   record_data->SetInteger("painted_pixel_count", painted_pixel_count);
   record_data->SetDouble("record_time", record_time.InSecondsF());
@@ -49,7 +48,6 @@ RenderingStats::MainThreadRenderingStats::AsTraceableData() const {
 
 void RenderingStats::MainThreadRenderingStats::Add(
     const MainThreadRenderingStats& other) {
-  frame_count += other.frame_count;
   paint_time += other.paint_time;
   painted_pixel_count += other.painted_pixel_count;
   record_time += other.record_time;

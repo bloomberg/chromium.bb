@@ -71,16 +71,12 @@ base::TimeDelta RenderingStatsInstrumentation::EndRecording(
   return base::TimeDelta();
 }
 
-void RenderingStatsInstrumentation::IncrementFrameCount(int64 count,
-                                                        bool main_thread) {
+void RenderingStatsInstrumentation::IncrementFrameCount(int64 count) {
   if (!record_rendering_stats_)
     return;
 
   base::AutoLock scoped_lock(lock_);
-  if (main_thread)
-    main_thread_rendering_stats_.frame_count += count;
-  else
-    impl_thread_rendering_stats_.frame_count += count;
+  impl_thread_rendering_stats_.frame_count += count;
 }
 
 void RenderingStatsInstrumentation::AddPaint(base::TimeDelta duration,
