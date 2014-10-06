@@ -33,10 +33,10 @@ class PluginArgumentsTest : public PluginTest {
 
   // Initialize this PluginTest based on the arguments from NPP_New.
   virtual NPError  New(uint16 mode, int16 argc, const char* argn[],
-                       const char* argv[], NPSavedData* saved) OVERRIDE;
+                       const char* argv[], NPSavedData* saved) override;
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* pNPWindow) override;
 };
 
 }  // namespace NPAPIClient

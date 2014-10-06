@@ -21,11 +21,11 @@ class NPObjectLifetimeTest : public PluginTest {
   NPObjectLifetimeTest(NPP id, NPNetscapeFuncs *host_functions);
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* pNPWindow) override;
 
   virtual void  URLNotify(const char* url,
                           NPReason reason,
-                          void* data) OVERRIDE;
+                          void* data) override;
 
  protected:
   NPObject* other_plugin_instance_object_;
@@ -47,7 +47,7 @@ class NPObjectLifetimeTestInstance2 : public PluginTest {
   virtual ~NPObjectLifetimeTestInstance2();
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* pNPWindow) override;
  protected:
   static NPObject* plugin_instance_object_;
   friend class NPObjectLifetimeTest;
@@ -64,7 +64,7 @@ class NPObjectDeletePluginInNPN_Evaluate : public PluginTest {
   virtual ~NPObjectDeletePluginInNPN_Evaluate();
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* pNPWindow) override;
 
  protected:
   NPObject* plugin_instance_object_;

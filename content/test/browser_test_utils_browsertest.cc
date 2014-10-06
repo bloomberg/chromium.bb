@@ -21,13 +21,13 @@ class NavigationObserver: public WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) override {
     navigation_url_ = url;
   }
 
   virtual void DidGetRedirectForResourceRequest(
       RenderViewHost* render_view_host,
-      const ResourceRedirectDetails& details) OVERRIDE {
+      const ResourceRedirectDetails& details) override {
     redirect_url_ = details.new_url;
   }
 

@@ -24,14 +24,14 @@ class PluginRequestReadTest : public PluginTest {
   // NPAPI Functions
   //
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) OVERRIDE;
-  virtual NPError SetWindow(NPWindow* window) OVERRIDE;
+                      const char* argv[], NPSavedData* saved) override;
+  virtual NPError SetWindow(NPWindow* window) override;
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stream_type) OVERRIDE;
-  virtual NPError DestroyStream(NPStream *stream, NPError reason) OVERRIDE;
-  virtual int32 WriteReady(NPStream* stream) OVERRIDE;
+                            NPBool seekable, uint16* stream_type) override;
+  virtual NPError DestroyStream(NPStream *stream, NPError reason) override;
+  virtual int32 WriteReady(NPStream* stream) override;
   virtual int32 Write(NPStream* stream, int32 offset, int32 len,
-                      void* buffer) OVERRIDE;
+                      void* buffer) override;
 
  private:
   // Tracks ranges, which we requested, but for which we did not get response.

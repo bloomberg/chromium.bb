@@ -49,7 +49,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   }
 
  protected:
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
 
 #if defined(OS_ANDROID)
     base::i18n::AllowMultipleInitializeCallsForTesting();
@@ -93,12 +93,12 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   ContentTestLauncherDelegate() {}
   virtual ~ContentTestLauncherDelegate() {}
 
-  virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
+  virtual int RunTestSuite(int argc, char** argv) override {
     return ContentBrowserTestSuite(argc, argv).Run();
   }
 
   virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line, const base::FilePath& temp_data_dir) OVERRIDE {
+      CommandLine* command_line, const base::FilePath& temp_data_dir) override {
     command_line->AppendSwitchPath(switches::kContentShellDataPath,
                                    temp_data_dir);
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
@@ -107,7 +107,7 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   }
 
  protected:
-  virtual ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
+  virtual ContentMainDelegate* CreateContentMainDelegate() override {
     return new ShellMainDelegate();
   }
 

@@ -41,7 +41,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual blink::WebMimeRegistry* mimeRegistry();
 
   virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebString userAgent() OVERRIDE;
+  virtual blink::WebString userAgent() override;
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name);
@@ -72,7 +72,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll) OVERRIDE;
+      const blink::WebSize& cumulative_scroll) override;
 
   virtual blink::WebUnitTestSupport* unitTestSupport();
 

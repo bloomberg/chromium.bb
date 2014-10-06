@@ -18,7 +18,7 @@ class ScheduleTimerTest : public PluginTest {
   ScheduleTimerTest(NPP id, NPNetscapeFuncs *host_functions);
 
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) OVERRIDE;
+                      const char* argv[], NPSavedData* saved) override;
 
   void OnTimer(uint32 timer_id);
 

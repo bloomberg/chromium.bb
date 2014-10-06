@@ -16,8 +16,8 @@ class MockRenderProcess : public RenderProcess {
   virtual ~MockRenderProcess();
 
   // RenderProcess implementation.
-  virtual void AddBindings(int bindings) OVERRIDE;
-  virtual int GetEnabledBindings() const OVERRIDE;
+  virtual void AddBindings(int bindings) override;
+  virtual int GetEnabledBindings() const override;
 
  private:
   int enabled_bindings_;

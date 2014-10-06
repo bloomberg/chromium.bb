@@ -20,10 +20,10 @@ class TestContentClient : public ContentClient {
   virtual ~TestContentClient();
 
   // ContentClient:
-  virtual std::string GetUserAgent() const OVERRIDE;
+  virtual std::string GetUserAgent() const override;
   virtual base::StringPiece GetDataResource(
       int resource_id,
-      ui::ScaleFactor scale_factor) const OVERRIDE;
+      ui::ScaleFactor scale_factor) const override;
 
  private:
   ui::DataPack data_pack_;

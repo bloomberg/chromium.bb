@@ -13,9 +13,9 @@ namespace content {
 // Contains stuff WebRTC browsertests have in common.
 class WebRtcContentBrowserTest: public ContentBrowserTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   // Executes |javascript|. The script is required to use

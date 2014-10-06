@@ -28,19 +28,19 @@ class PluginGetURLTest : public PluginTest {
   // NPAPI functions
   //
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) OVERRIDE;
-  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
+                      const char* argv[], NPSavedData* saved) override;
+  virtual NPError SetWindow(NPWindow* pNPWindow) override;
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stype) OVERRIDE;
-  virtual int32   WriteReady(NPStream *stream) OVERRIDE;
+                            NPBool seekable, uint16* stype) override;
+  virtual int32   WriteReady(NPStream *stream) override;
   virtual int32   Write(NPStream *stream, int32 offset, int32 len,
-                        void *buffer) OVERRIDE;
-  virtual NPError DestroyStream(NPStream *stream, NPError reason) OVERRIDE;
-  virtual void    StreamAsFile(NPStream* stream, const char* fname) OVERRIDE;
+                        void *buffer) override;
+  virtual NPError DestroyStream(NPStream *stream, NPError reason) override;
+  virtual void    StreamAsFile(NPStream* stream, const char* fname) override;
   virtual void    URLNotify(const char* url, NPReason reason,
-                            void* data) OVERRIDE;
+                            void* data) override;
   virtual void    URLRedirectNotify(const char* url, int32_t status,
-                                    void* notify_data) OVERRIDE;
+                                    void* notify_data) override;
 
  private:
   bool tests_started_;

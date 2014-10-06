@@ -20,7 +20,7 @@ class ContentTestSuite : public ContentTestSuiteBase {
   virtual ~ContentTestSuite();
 
  protected:
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize() override;
 
  private:
 #if defined(OS_WIN)

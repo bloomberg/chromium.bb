@@ -34,12 +34,12 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
   TestInitializationListener() : test_content_client_initializer_(NULL) {
   }
 
-  virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
+  virtual void OnTestStart(const testing::TestInfo& test_info) override {
     test_content_client_initializer_ =
         new content::TestContentClientInitializer();
   }
 
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+  virtual void OnTestEnd(const testing::TestInfo& test_info) override {
     delete test_content_client_initializer_;
   }
 

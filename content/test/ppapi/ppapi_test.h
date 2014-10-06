@@ -28,8 +28,8 @@ class PPAPITestMessageHandler : public content::TestMessageHandler {
  public:
   PPAPITestMessageHandler();
 
-  virtual MessageResponse HandleMessage(const std::string& json) OVERRIDE;
-  virtual void Reset() OVERRIDE;
+  virtual MessageResponse HandleMessage(const std::string& json) override;
+  virtual void Reset() override;
 
   const std::string& message() const {
     return message_;
@@ -46,7 +46,7 @@ class PPAPITestBase : public ContentBrowserTest {
   PPAPITestBase();
 
   // ContentBrowserTest overrides.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) = 0;
@@ -71,10 +71,10 @@ class PPAPITest : public PPAPITestBase {
  public:
   PPAPITest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) OVERRIDE;
+                                 const std::string& test_case) override;
  protected:
   bool in_process_;  // Controls the --ppapi-in-process switch.
 };
@@ -85,8 +85,8 @@ class OutOfProcessPPAPITest : public PPAPITest {
  public:
   OutOfProcessPPAPITest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 };
 
 }  // namespace

@@ -22,12 +22,12 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
   virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
       const GURL& url,
       const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
+      const VideoFrameProvider::RepaintCB& repaint_cb) override;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,
       int render_view_id,
-      int render_frame_id) OVERRIDE;
+      int render_frame_id) override;
 };
 
 }  // namespace content

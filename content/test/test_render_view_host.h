@@ -56,91 +56,91 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual ~TestRenderWidgetHostView();
 
   // RenderWidgetHostView implementation.
-  virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE {}
-  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
-  virtual void SetSize(const gfx::Size& size) OVERRIDE {}
-  virtual void SetBounds(const gfx::Rect& rect) OVERRIDE {}
-  virtual gfx::Vector2dF GetLastScrollOffset() const OVERRIDE;
-  virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
-  virtual bool HasFocus() const OVERRIDE;
-  virtual bool IsSurfaceAvailableForCopy() const OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual bool IsShowing() OVERRIDE;
-  virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual void InitAsChild(gfx::NativeView parent_view) override {}
+  virtual RenderWidgetHost* GetRenderWidgetHost() const override;
+  virtual void SetSize(const gfx::Size& size) override {}
+  virtual void SetBounds(const gfx::Rect& rect) override {}
+  virtual gfx::Vector2dF GetLastScrollOffset() const override;
+  virtual gfx::NativeView GetNativeView() const override;
+  virtual gfx::NativeViewId GetNativeViewId() const override;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  virtual ui::TextInputClient* GetTextInputClient() override;
+  virtual bool HasFocus() const override;
+  virtual bool IsSurfaceAvailableForCopy() const override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual bool IsShowing() override;
+  virtual gfx::Rect GetViewBounds() const override;
 #if defined(OS_MACOSX)
-  virtual void SetActive(bool active) OVERRIDE;
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
-  virtual void SetWindowVisibility(bool visible) OVERRIDE {}
-  virtual void WindowFrameChanged() OVERRIDE {}
-  virtual void ShowDefinitionForSelection() OVERRIDE {}
-  virtual bool SupportsSpeech() const OVERRIDE;
-  virtual void SpeakSelection() OVERRIDE;
-  virtual bool IsSpeaking() const OVERRIDE;
-  virtual void StopSpeaking() OVERRIDE;
+  virtual void SetActive(bool active) override;
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) override {}
+  virtual void SetWindowVisibility(bool visible) override {}
+  virtual void WindowFrameChanged() override {}
+  virtual void ShowDefinitionForSelection() override {}
+  virtual bool SupportsSpeech() const override;
+  virtual void SpeakSelection() override;
+  virtual bool IsSpeaking() const override;
+  virtual void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
   virtual void OnSwapCompositorFrame(
       uint32 output_surface_id,
-      scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
+      scoped_ptr<cc::CompositorFrame> frame) override;
 
   // RenderWidgetHostViewBase implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) OVERRIDE {}
+                           const gfx::Rect& pos) override {}
   virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) OVERRIDE {}
-  virtual void WasShown() OVERRIDE {}
-  virtual void WasHidden() OVERRIDE {}
+      RenderWidgetHostView* reference_host_view) override {}
+  virtual void WasShown() override {}
+  virtual void WasHidden() override {}
   virtual void MovePluginWindows(
-      const std::vector<WebPluginGeometry>& moves) OVERRIDE {}
-  virtual void Focus() OVERRIDE {}
-  virtual void Blur() OVERRIDE {}
-  virtual void SetIsLoading(bool is_loading) OVERRIDE {}
-  virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE {}
+      const std::vector<WebPluginGeometry>& moves) override {}
+  virtual void Focus() override {}
+  virtual void Blur() override {}
+  virtual void SetIsLoading(bool is_loading) override {}
+  virtual void UpdateCursor(const WebCursor& cursor) override {}
   virtual void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) OVERRIDE {}
-  virtual void ImeCancelComposition() OVERRIDE {}
+      const ViewHostMsg_TextInputState_Params& params) override {}
+  virtual void ImeCancelComposition() override {}
 #if defined(OS_MACOSX) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) OVERRIDE {}
+      const std::vector<gfx::Rect>& character_bounds) override {}
 #endif
   virtual void RenderProcessGone(base::TerminationStatus status,
-                                 int error_code) OVERRIDE;
-  virtual void Destroy() OVERRIDE;
-  virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE {}
+                                 int error_code) override;
+  virtual void Destroy() override;
+  virtual void SetTooltipText(const base::string16& tooltip_text) override {}
   virtual void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE {}
+      const ViewHostMsg_SelectionBounds_Params& params) override {}
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       CopyFromCompositingSurfaceCallback& callback,
-      const SkColorType color_type) OVERRIDE;
+      const SkColorType color_type) override;
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
-  virtual bool CanCopyToVideoFrame() const OVERRIDE;
-  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
+      const base::Callback<void(bool)>& callback) override;
+  virtual bool CanCopyToVideoFrame() const override;
+  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
 #if defined(OS_MACOSX)
   virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const NativeWebKeyboardEvent& event) override;
 #endif
 #if defined(OS_ANDROID)
-  virtual void LockCompositingSurface() OVERRIDE {}
-  virtual void UnlockCompositingSurface() OVERRIDE {}
+  virtual void LockCompositingSurface() override {}
+  virtual void UnlockCompositingSurface() override {}
 #endif
-  virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE {}
-  virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
-  virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
-  virtual bool LockMouse() OVERRIDE;
-  virtual void UnlockMouse() OVERRIDE;
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) override {}
+  virtual gfx::Rect GetBoundsInRootWindow() override;
+  virtual gfx::GLSurfaceHandle GetCompositingSurface() override;
+  virtual bool LockMouse() override;
+  virtual void UnlockMouse() override;
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
-  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const OVERRIDE;
+      gfx::NativeViewAccessible accessible_parent) override;
+  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   bool is_showing() const { return is_showing_; }
@@ -211,18 +211,18 @@ class TestRenderViewHost
   // RenderViewHostTester implementation.  Note that CreateRenderView
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
-  virtual void SetContentsMimeType(const std::string& mime_type) OVERRIDE;
-  virtual void SimulateWasHidden() OVERRIDE;
-  virtual void SimulateWasShown() OVERRIDE;
+  virtual void SetContentsMimeType(const std::string& mime_type) override;
+  virtual void SimulateWasHidden() override;
+  virtual void SimulateWasShown() override;
 
   // NOTE: These methods are deprecated and the equivalents in
   // TestRenderFrameHost should be used.
-  virtual void SendNavigate(int page_id, const GURL& url) OVERRIDE;
-  virtual void SendFailedNavigate(int page_id, const GURL& url) OVERRIDE;
+  virtual void SendNavigate(int page_id, const GURL& url) override;
+  virtual void SendFailedNavigate(int page_id, const GURL& url) override;
   virtual void SendNavigateWithTransition(
       int page_id,
       const GURL& url,
-      ui::PageTransition transition) OVERRIDE;
+      ui::PageTransition transition) override;
 
   // Calls OnNavigate on the RenderViewHost with the given information,
   // including a custom original request URL.  Sets the rest of the
@@ -282,9 +282,9 @@ class TestRenderViewHost
                                 int opener_route_id,
                                 int proxy_route_id,
                                 int32 max_page_id,
-                                bool window_was_created_with_opener) OVERRIDE;
-  virtual bool IsRenderViewLive() const OVERRIDE;
-  virtual bool IsFullscreen() const OVERRIDE;
+                                bool window_was_created_with_opener) override;
+  virtual bool IsRenderViewLive() const override;
+  virtual bool IsFullscreen() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);

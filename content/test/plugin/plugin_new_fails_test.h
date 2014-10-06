@@ -14,7 +14,7 @@ class NewFailsTest : public PluginTest {
  public:
   NewFailsTest(NPP id, NPNetscapeFuncs *host_functions);
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) OVERRIDE;
+                      const char* argv[], NPSavedData* saved) override;
 };
 
 }  // namespace NPAPIClient

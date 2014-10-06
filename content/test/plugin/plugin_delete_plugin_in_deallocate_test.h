@@ -20,8 +20,8 @@ class DeletePluginInDeallocateTest : public PluginTest {
   DeletePluginInDeallocateTest(NPP id, NPNetscapeFuncs* host_functions);
 
   // NPAPI handlers.
-  virtual NPError SetWindow(NPWindow* pNPWindow) OVERRIDE;
-  virtual NPError Destroy() OVERRIDE;
+  virtual NPError SetWindow(NPWindow* pNPWindow) override;
+  virtual NPError Destroy() override;
 
   NPObject* npobject_;
   bool test_started_;

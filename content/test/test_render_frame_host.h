@@ -24,7 +24,7 @@ class TestRenderFrameHostCreationObserver : public WebContentsObserver {
   virtual ~TestRenderFrameHostCreationObserver();
 
   // WebContentsObserver implementation.
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
 
   RenderFrameHost* last_created_frame() const { return last_created_frame_; }
 
@@ -44,17 +44,17 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   virtual ~TestRenderFrameHost();
 
   // RenderFrameHostImpl overrides (same values, but in Test* types)
-  virtual TestRenderViewHost* GetRenderViewHost() OVERRIDE;
+  virtual TestRenderViewHost* GetRenderViewHost() override;
 
   // RenderFrameHostTester implementation.
   virtual TestRenderFrameHost* AppendChild(
-      const std::string& frame_name) OVERRIDE;
+      const std::string& frame_name) override;
   virtual void SendNavigateWithTransition(
       int page_id,
       const GURL& url,
-      ui::PageTransition transition) OVERRIDE;
-  virtual void SendBeforeUnloadACK(bool proceed) OVERRIDE;
-  virtual void SimulateSwapOutACK() OVERRIDE;
+      ui::PageTransition transition) override;
+  virtual void SendBeforeUnloadACK(bool proceed) override;
+  virtual void SimulateSwapOutACK() override;
 
   void SendNavigate(int page_id, const GURL& url);
   void SendFailedNavigate(int page_id, const GURL& url);

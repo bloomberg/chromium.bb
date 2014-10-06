@@ -19,7 +19,7 @@ class ExecuteJavascriptOpenPopupWithPluginTest : public PluginTest {
   ExecuteJavascriptOpenPopupWithPluginTest(
       NPP id, NPNetscapeFuncs *host_functions);
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* window) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* window) override;
 
  private:
   bool popup_window_test_started_;
@@ -32,7 +32,7 @@ class ExecuteJavascriptPopupWindowTargetPluginTest : public PluginTest {
   ExecuteJavascriptPopupWindowTargetPluginTest(
       NPP id, NPNetscapeFuncs *host_functions);
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* window) OVERRIDE;
+  virtual NPError SetWindow(NPWindow* window) override;
 
  private:
   // Do a platform-specific validation of the passed-in |window|.

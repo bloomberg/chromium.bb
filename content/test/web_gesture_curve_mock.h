@@ -20,7 +20,7 @@ class WebGestureCurveMock : public blink::WebGestureCurve {
 
   // Returns false if curve has finished and can no longer be applied.
   virtual bool apply(double time,
-                     blink::WebGestureCurveTarget* target) OVERRIDE;
+                     blink::WebGestureCurveTarget* target) override;
 
  private:
   blink::WebFloatPoint velocity_;

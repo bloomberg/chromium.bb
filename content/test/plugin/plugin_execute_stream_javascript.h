@@ -20,11 +20,11 @@ class ExecuteStreamJavaScript : public PluginTest {
   // NPAPI functions
   //
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stype) OVERRIDE;
-  virtual int32   WriteReady(NPStream *stream) OVERRIDE;
+                            NPBool seekable, uint16* stype) override;
+  virtual int32   WriteReady(NPStream *stream) override;
   virtual int32   Write(NPStream *stream, int32 offset, int32 len,
-                        void *buffer) OVERRIDE;
-  virtual NPError DestroyStream(NPStream *stream, NPError reason) OVERRIDE;
+                        void *buffer) override;
+  virtual NPError DestroyStream(NPStream *stream, NPError reason) override;
 };
 
 }  // namespace NPAPIClient

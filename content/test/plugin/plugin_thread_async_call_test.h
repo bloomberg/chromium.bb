@@ -21,9 +21,9 @@ class PluginThreadAsyncCallTest : public PluginTest {
   virtual ~PluginThreadAsyncCallTest();
 
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) OVERRIDE;
+                      const char* argv[], NPSavedData* saved) override;
 
-  virtual NPError Destroy() OVERRIDE;
+  virtual NPError Destroy() override;
 
   void AsyncCall();
   void OnCallSucceeded();

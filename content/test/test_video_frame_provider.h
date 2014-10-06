@@ -29,10 +29,10 @@ class TestVideoFrameProvider : public VideoFrameProvider {
       const RepaintCB& repaint_cb);
 
   // VideoFrameProvider implementation.
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Play() OVERRIDE;
-  virtual void Pause() OVERRIDE;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void Play() override;
+  virtual void Pause() override;
 
  protected:
   virtual ~TestVideoFrameProvider();

@@ -31,7 +31,7 @@ class AppCacheTestHelper : public AppCacheStorage::Delegate {
       AppCacheGroup* group,
       AppCache* newest_cache,
       bool success,
-      bool would_exceed_quota) OVERRIDE;
+      bool would_exceed_quota) override;
   void OnGotAppCacheInfo(int rv);
 
   int group_id_;

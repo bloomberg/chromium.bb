@@ -26,12 +26,12 @@ class URLRequestAbortOnEndJob : public net::URLRequestJob {
                           net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob
-  virtual void Start() OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+  virtual void Start() override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
+                           int* bytes_read) override;
 
   static void AddUrlHandler();
 
