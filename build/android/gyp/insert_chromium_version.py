@@ -38,7 +38,7 @@ def main(args):
 
   parser.add_option('--android-objcopy',
       help='Path to the toolchain\'s objcopy binary')
-  parser.add_option('--libraries-source-dir',
+  parser.add_option('--stripped-libraries-dir',
       help='Directory of native libraries')
   parser.add_option('--libraries',
       help='List of libraries')
@@ -50,7 +50,7 @@ def main(args):
   libraries = build_utils.ParseGypList(options.libraries)
 
   for library in libraries:
-    library_path = os.path.join(options.libraries_source_dir, library)
+    library_path = os.path.join(options.stripped_libraries_dir, library)
 
     InsertChromiumVersion(options.android_objcopy,
                           library_path,

@@ -342,6 +342,19 @@
           'includes': ['../build/android/strip_native_libraries.gypi'],
         },
         {
+          'action_name': 'insert_chromium_version',
+          'variables': {
+            'ordered_libraries_file%': '<(ordered_libraries_file)',
+            'stripped_libraries_dir%': '<(stripped_libraries_dir)',
+            'version_string': '<(native_lib_version_name)',
+            'input_paths': [
+              '<(strip_stamp)',
+            ],
+            'stamp': '<(version_stamp)'
+          },
+          'includes': ['../build/android/insert_chromium_version.gypi'],
+        },
+        {
           'action_name': 'pack_arm_relocations',
           'variables': {
             'conditions': [
@@ -358,24 +371,11 @@
             'stripped_libraries_dir%': '<(stripped_libraries_dir)',
             'packed_libraries_dir': '<(libraries_source_dir)',
             'input_paths': [
-              '<(strip_stamp)',
+              '<(version_stamp)'
             ],
             'stamp': '<(pack_arm_relocations_stamp)',
           },
           'includes': ['../build/android/pack_arm_relocations.gypi'],
-        },
-        {
-          'action_name': 'insert_chromium_version',
-          'variables': {
-            'ordered_libraries_file%': '<(ordered_libraries_file)',
-            'libraries_source_dir%': '<(libraries_source_dir)',
-            'version_string': '<(native_lib_version_name)',
-            'input_paths': [
-              '<(pack_arm_relocations_stamp)',
-            ],
-            'stamp': '<(version_stamp)'
-          },
-          'includes': ['../build/android/insert_chromium_version.gypi'],
         },
         {
           'variables': {
@@ -476,7 +476,7 @@
                     'inputs': [
                       '<(ordered_libraries_file)',
                       '<(strip_additional_stamp)',
-                      '<(version_stamp)',
+                      '<(pack_arm_relocations_stamp)',
                     ],
                     'input_apk_path': '<(unsigned_apk_path)',
                     'output_apk_path': '<(unsigned_standalone_apk_path)',
@@ -493,7 +493,7 @@
             'libraries_source_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
             'package_input_paths': [
               '<(strip_additional_stamp)',
-              '<(version_stamp)',
+              '<(pack_arm_relocations_stamp)',
             ],
           },
         }],
