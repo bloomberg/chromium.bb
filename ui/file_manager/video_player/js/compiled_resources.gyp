@@ -19,7 +19,11 @@
           'error_util.js',
           'test_util.js',
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        'externs': [
+          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
+          '<(CLOSURE_DIR)/externs/file_manager_private.js',
+        ],
       },
       'includes': [
         '../../../../third_party/closure_compiler/compile_js.gypi'
@@ -30,7 +34,12 @@
       'variables': {
         'depends': [
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        'externs': [
+          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
+          '<(CLOSURE_DIR)/externs/file_manager_private.js',
+          '<(CLOSURE_DIR)/externs/media_player_private.js',
+        ],
       },
       'includes': [
         '../../../../third_party/closure_compiler/compile_js.gypi'

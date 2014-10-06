@@ -18,7 +18,11 @@
           '../../file_manager/common/js/error_util.js',
           '../../file_manager/foreground/js/file_type.js'
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        'externs': [
+          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
+          '<(CLOSURE_DIR)/externs/file_manager_private.js',
+        ],
       },
       'includes': [
         '../../../../third_party/closure_compiler/compile_js.gypi'
@@ -29,7 +33,12 @@
       'variables': {
         'depends': [
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        'externs': [
+          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
+          '<(CLOSURE_DIR)/externs/file_manager_private.js',
+          '<(CLOSURE_DIR)/externs/metrics_private.js',
+        ],
       },
       'includes': [
         '../../../../third_party/closure_compiler/compile_js.gypi'
