@@ -18,9 +18,9 @@ into the Visual Studio environment.
 .. Note::
   :class: note
 
-  The Native Client add-in requires Visual Studio 2010 with Service Pack 1. No
-  other versions of Visual Studio are currently supported. Visual Studio
-  Express is also not supported.
+  The Native Client add-in requires Visual Studio 2012 or Visual Studio 2010
+  with Service Pack 1. No other versions of Visual Studio are currently
+  supported. Visual Studio Express is also not supported.
 
 Introduction
 ============
@@ -153,7 +153,7 @@ In order to use the Native Client Visual Studio add-in, your development
 environment should include:
 
 * A 64-bit version of Windows Vista or Windows 7.
-* Visual Studio 2010 with Service Pack 1.
+* Visual Studio 2012 or Visual Service 2010 with Service Pack 1.
 * `Chrome <https://www.google.com/intl/en/chrome/browser/>`_ version 23 or
   greater. You can choose to develop using the latest `canary
   <https://www.google.com/intl/en/chrome/browser/canary.html>`_ build of
@@ -230,8 +230,9 @@ need to use these command line arguments when you run ``install.bat``:
 * The MSBuild folder is assumed to be at ``C:\Program Files (x86)\MSBuild``.
   You can specify an alternate path with the flag ``--ms-build-path=<path>``.
   The installer assumes Visual Studio has created a user folder at
-* ``%USERPROFILE%\My Documents\Visual Studio 2010``. You can specify an
-  alternate path with the flag ``--vsuser-path=path``.
+* The addin itself is normally installed in ``%USERPROFILE%\My Documents\Visual
+  Studio 2012`` (or 2010 for Visual Studio 2010). You can specify alternate
+  paths with the ``--vsuser-path=<path>`` flag.
 
 From time to time an update to the Visual Studio add-in may become available.
 Updates are performed just like an installation. Download the new add-in using
