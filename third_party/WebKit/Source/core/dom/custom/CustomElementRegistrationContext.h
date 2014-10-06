@@ -43,7 +43,7 @@
 
 namespace blink {
 
-class CustomElementRegistrationContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<CustomElementRegistrationContext> {
+class CustomElementRegistrationContext final : public RefCountedWillBeGarbageCollectedFinalized<CustomElementRegistrationContext> {
 public:
     static PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> create()
     {

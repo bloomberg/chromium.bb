@@ -46,7 +46,7 @@ namespace blink {
 class CustomElementConstructorBuilder;
 class ExceptionState;
 
-class CustomElementRegistry FINAL {
+class CustomElementRegistry final {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
 protected:
     friend class CustomElementRegistrationContext;
