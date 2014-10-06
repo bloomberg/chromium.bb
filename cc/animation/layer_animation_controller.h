@@ -106,7 +106,7 @@ class CC_EXPORT LayerAnimationController
 
   void remove_value_provider(LayerAnimationValueProvider* provider) {
     if (value_provider_ == provider)
-      value_provider_ = NULL;
+      value_provider_ = nullptr;
   }
 
   void set_layer_animation_delegate(AnimationDelegate* delegate) {
@@ -115,7 +115,7 @@ class CC_EXPORT LayerAnimationController
 
   void remove_layer_animation_delegate(AnimationDelegate* delegate) {
     if (layer_animation_delegate_ == delegate)
-      layer_animation_delegate_ = NULL;
+      layer_animation_delegate_ = nullptr;
   }
 
   bool HasFilterAnimationThatInflatesBounds() const;

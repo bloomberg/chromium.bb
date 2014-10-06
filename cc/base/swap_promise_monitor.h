@@ -24,9 +24,9 @@ class LayerTreeHostImpl;
 class CC_EXPORT SwapPromiseMonitor {
  public:
   // If the monitor lives on the main thread, pass in layer_tree_host
-  // and set layer_tree_host_impl to NULL.
+  // and set layer_tree_host_impl to nullptr.
   // If the monitor lives on the impl thread, pass in layer_tree_host_impl
-  // and set layer_tree_host to NULL.
+  // and set layer_tree_host to nullptr.
   SwapPromiseMonitor(LayerTreeHost* layer_tree_host,
                      LayerTreeHostImpl* layer_tree_host_impl);
   virtual ~SwapPromiseMonitor();

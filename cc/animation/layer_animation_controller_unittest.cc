@@ -107,7 +107,7 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
 
   // Start the animation on the main thread. Should not affect the start time.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_EQ(controller->GetAnimation(group_id,
                                      Animation::Opacity)->start_time(),
             controller_impl->GetAnimation(group_id,
@@ -156,7 +156,7 @@ TEST(LayerAnimationControllerTest, UseSpecifiedStartTimes) {
 
   // Start the animation on the main thread. Should not affect the start time.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_EQ(start_time,
             controller->GetAnimation(group_id,
                                      Animation::Opacity)->start_time());
@@ -210,11 +210,11 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_EQ(1u, registrar->active_animation_controllers().size());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_EQ(Animation::Finished,
             controller->GetAnimation(Animation::Opacity)->run_state());
   EXPECT_EQ(1u, registrar->active_animation_controllers().size());
@@ -232,7 +232,7 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(1u, events->size());
   controller->NotifyAnimationFinished((*events)[0]);
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1500));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
 
   EXPECT_EQ(Animation::WaitingForDeletion,
             controller->GetAnimation(Animation::Opacity)->run_state());
@@ -246,8 +246,8 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(0u, registrar->active_animation_controllers().size());
   EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
 
-  controller->SetAnimationRegistrar(NULL);
-  controller_impl->SetAnimationRegistrar(NULL);
+  controller->SetAnimationRegistrar(nullptr);
+  controller_impl->SetAnimationRegistrar(nullptr);
 }
 
 TEST(LayerAnimationControllerTest, SyncPause) {
@@ -279,7 +279,7 @@ TEST(LayerAnimationControllerTest, SyncPause) {
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_EQ(Animation::Running,
             controller_impl->GetAnimation(group_id,
                                           Animation::Opacity)->run_state());
@@ -364,7 +364,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
 
   AddOpacityTransitionToController(controller.get(), 1.0, 0.0f, 1.0f, false);
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
 
@@ -377,7 +377,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   controller->NotifyAnimationStarted((*events)[0]);
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
 
   EXPECT_FALSE(dummy.animation_waiting_for_deletion());
   EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
@@ -400,7 +400,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   controller->NotifyAnimationFinished((*events)[0]);
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(dummy.animation_waiting_for_deletion());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -690,7 +690,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
       controller->GetAnimation(Animation::ScrollOffset)->curve()->Duration());
 
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_EQ(initial_value, dummy.scroll_offset());
 
@@ -704,7 +704,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
 
   controller->NotifyAnimationStarted((*events)[0]);
   controller->Animate(kInitialTickTime + duration / 2);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(200.f, 250.f), dummy.scroll_offset());
 
@@ -723,7 +723,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
   EXPECT_FALSE(event);
 
   controller->Animate(kInitialTickTime + duration);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_VECTOR2DF_EQ(target_value, dummy.scroll_offset());
   EXPECT_FALSE(controller->HasActiveAnimation());
 }
@@ -770,7 +770,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
       controller->GetAnimation(Animation::ScrollOffset)->curve()->Duration());
 
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_EQ(initial_value, dummy.scroll_offset());
 
@@ -787,7 +787,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
 
   controller->NotifyAnimationStarted((*events)[0]);
   controller->Animate(kInitialTickTime + duration / 2);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
   EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(400.f, 150.f), dummy.scroll_offset());
 
@@ -806,7 +806,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   EXPECT_FALSE(event);
 
   controller->Animate(kInitialTickTime + duration);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_VECTOR2DF_EQ(target_value, dummy.scroll_offset());
   EXPECT_FALSE(controller->HasActiveAnimation());
 }
@@ -1569,9 +1569,9 @@ TEST(LayerAnimationControllerTest, AbortAnimations) {
       Animation::Opacity));
 
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
 
   EXPECT_EQ(Animation::Finished,
             controller->GetAnimation(1, Animation::Transform)->run_state());
@@ -1624,7 +1624,7 @@ TEST(LayerAnimationControllerTest, MainThreadAbortedAnimationGetsDeleted) {
   EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
 
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(dummy.animation_waiting_for_deletion());
   EXPECT_EQ(Animation::WaitingForDeletion,
             controller->GetAnimation(Animation::Opacity)->run_state());
@@ -1673,7 +1673,7 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
             controller->GetAnimation(Animation::Opacity)->run_state());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
-  controller->UpdateState(true, NULL);
+  controller->UpdateState(true, nullptr);
   EXPECT_TRUE(dummy.animation_waiting_for_deletion());
   EXPECT_EQ(Animation::WaitingForDeletion,
             controller->GetAnimation(Animation::Opacity)->run_state());

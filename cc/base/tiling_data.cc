@@ -299,7 +299,7 @@ TilingData::BaseIterator::BaseIterator(const TilingData* tiling_data)
       index_y_(-1) {
 }
 
-TilingData::Iterator::Iterator() : BaseIterator(NULL) { done(); }
+TilingData::Iterator::Iterator() : BaseIterator(nullptr) { done(); }
 
 TilingData::Iterator::Iterator(const TilingData* tiling_data,
                                const gfx::Rect& consider_rect,
@@ -441,7 +441,7 @@ TilingData::DifferenceIterator& TilingData::DifferenceIterator::operator++() {
 }
 
 TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator()
-    : BaseIterator(NULL) {
+    : BaseIterator(nullptr) {
   done();
 }
 

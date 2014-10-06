@@ -14,7 +14,7 @@ namespace {
 
 bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info) {
   if (latency_info->FindLatency(
-          ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL))
+          ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, nullptr))
     return false;
   latency_info->AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, 0);
@@ -25,7 +25,7 @@ bool AddForwardingScrollUpdateToMainComponent(ui::LatencyInfo* latency_info) {
   if (latency_info->FindLatency(
           ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
           0,
-          NULL))
+          nullptr))
     return false;
   latency_info->AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,

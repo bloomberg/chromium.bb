@@ -16,7 +16,7 @@ AnimationRegistrar::~AnimationRegistrar() {
   for (AnimationControllerMap::iterator iter = copy.begin();
        iter != copy.end();
        ++iter)
-    (*iter).second->SetAnimationRegistrar(NULL);
+    (*iter).second->SetAnimationRegistrar(nullptr);
 }
 
 scoped_refptr<LayerAnimationController>

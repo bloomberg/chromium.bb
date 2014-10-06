@@ -24,8 +24,8 @@ LayerAnimationController::LayerAnimationController(int id)
     : registrar_(0),
       id_(id),
       is_active_(false),
-      value_provider_(NULL),
-      layer_animation_delegate_(NULL),
+      value_provider_(nullptr),
+      layer_animation_delegate_(nullptr),
       needs_to_start_animations_(false) {
 }
 
@@ -933,7 +933,7 @@ void LayerAnimationController::NotifyObserversOpacityAnimated(
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
         value_observers_);
     LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != NULL) {
+    while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
           (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
@@ -950,7 +950,7 @@ void LayerAnimationController::NotifyObserversTransformAnimated(
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
         value_observers_);
     LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != NULL) {
+    while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
           (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
@@ -967,7 +967,7 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
         value_observers_);
     LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != NULL) {
+    while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
           (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
@@ -984,7 +984,7 @@ void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
         value_observers_);
     LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != NULL) {
+    while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
           (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
@@ -1003,7 +1003,7 @@ bool LayerAnimationController::HasValueObserver() {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
         value_observers_);
-    return it.GetNext() != NULL;
+    return it.GetNext() != nullptr;
   }
   return false;
 }
@@ -1013,7 +1013,7 @@ bool LayerAnimationController::HasActiveValueObserver() {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
         value_observers_);
     LayerAnimationValueObserver* obs;
-    while ((obs = it.GetNext()) != NULL)
+    while ((obs = it.GetNext()) != nullptr)
       if (obs->IsActive())
         return true;
   }

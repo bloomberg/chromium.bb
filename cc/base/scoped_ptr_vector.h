@@ -77,7 +77,7 @@ class ScopedPtrVector {
 
     typename std::vector<T*>::iterator writable_position = position;
     scoped_ptr<T> ret(*writable_position);
-    *writable_position = NULL;
+    *writable_position = nullptr;
     return ret.Pass();
   }
 
