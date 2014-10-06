@@ -31,7 +31,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   NetworkDeviceHandlerTest() : fake_device_client_(NULL) {}
   virtual ~NetworkDeviceHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     fake_device_client_ = new FakeShillDeviceClient;
     DBusThreadManager::GetSetterForTesting()->SetShillDeviceClient(
         scoped_ptr<ShillDeviceClient>(fake_device_client_));
@@ -67,7 +67,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     network_device_handler_.reset();
     network_state_handler_.reset();
     DBusThreadManager::Shutdown();

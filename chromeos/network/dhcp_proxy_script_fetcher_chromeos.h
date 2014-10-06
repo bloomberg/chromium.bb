@@ -27,14 +27,14 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
  public:
   explicit DhcpProxyScriptFetcherChromeos(
       net::URLRequestContext* url_request_context);
-  virtual ~DhcpProxyScriptFetcherChromeos() OVERRIDE;
+  virtual ~DhcpProxyScriptFetcherChromeos() override;
 
   // net::DhcpProxyScriptFetcher
   virtual int Fetch(base::string16* utf16_text,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual const GURL& GetPacURL() const OVERRIDE;
-  virtual std::string GetFetcherName() const OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual void Cancel() override;
+  virtual const GURL& GetPacURL() const override;
+  virtual std::string GetFetcherName() const override;
 
  private:
   void ContinueFetch(base::string16* utf16_text,

@@ -22,20 +22,20 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   virtual ~FakeUpdateEngineClient();
 
   // UpdateEngineClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool HasObserver(Observer* observer) OVERRIDE;
-  virtual void RequestUpdateCheck(const UpdateCheckCallback& callback) OVERRIDE;
-  virtual void RebootAfterUpdate() OVERRIDE;
-  virtual void Rollback() OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual bool HasObserver(Observer* observer) override;
+  virtual void RequestUpdateCheck(const UpdateCheckCallback& callback) override;
+  virtual void RebootAfterUpdate() override;
+  virtual void Rollback() override;
   virtual void CanRollbackCheck(
-      const RollbackCheckCallback& callback) OVERRIDE;
-  virtual Status GetLastStatus() OVERRIDE;
+      const RollbackCheckCallback& callback) override;
+  virtual Status GetLastStatus() override;
   virtual void SetChannel(const std::string& target_channel,
-                          bool is_powerwash_allowed) OVERRIDE;
+                          bool is_powerwash_allowed) override;
   virtual void GetChannel(bool get_current_channel,
-                          const GetChannelCallback& callback) OVERRIDE;
+                          const GetChannelCallback& callback) override;
 
   // Pushes UpdateEngineClient::Status in the queue to test changing status.
   // GetLastStatus() returns the status set by this method in FIFO order.

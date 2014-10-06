@@ -31,7 +31,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   virtual void RegisterService(const dbus::ObjectPath& service_path,
                                const Options& options,
                                const base::Closure& callback,
-                               const ErrorCallback& error_callback) OVERRIDE {
+                               const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
         bluetooth_gatt_manager::kRegisterService);
@@ -59,7 +59,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   // BluetoothGattManagerClient override.
   virtual void UnregisterService(const dbus::ObjectPath& service_path,
                                  const base::Closure& callback,
-                                 const ErrorCallback& error_callback) OVERRIDE {
+                                 const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
         bluetooth_gatt_manager::kUnregisterService);
@@ -79,7 +79,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
 
  protected:
   // chromeos::DBusClient override.
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     DCHECK(bus);
     object_proxy_ = bus->GetObjectProxy(
         bluetooth_gatt_manager::kBluetoothGattManagerServiceName,

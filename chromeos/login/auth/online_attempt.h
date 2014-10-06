@@ -41,9 +41,9 @@ class CHROMEOS_EXPORT OnlineAttempt : public GaiaAuthConsumer {
 
   // GaiaAuthConsumer overrides. Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
   virtual void OnClientLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
+      const GaiaAuthConsumer::ClientLoginResult& credentials) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OnlineAttemptTest, LoginSuccess);

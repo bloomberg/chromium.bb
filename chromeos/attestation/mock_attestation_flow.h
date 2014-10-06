@@ -25,10 +25,10 @@ class FakeServerProxy : public ServerProxy {
   }
 
   virtual void SendEnrollRequest(const std::string& request,
-                                 const DataCallback& callback) OVERRIDE;
+                                 const DataCallback& callback) override;
 
   virtual void SendCertificateRequest(const std::string& request,
-                                      const DataCallback& callback) OVERRIDE;
+                                      const DataCallback& callback) override;
 
  private:
   bool result_;

@@ -33,14 +33,14 @@ class NfcPropertySet : public dbus::PropertySet {
   void SetAllPropertiesReceivedCallback(const base::Closure& callback);
 
   // dbus::PropertySet overrides
-  virtual void ConnectSignals() OVERRIDE;
+  virtual void ConnectSignals() override;
   virtual void Get(dbus::PropertyBase* property,
-                   GetCallback callback) OVERRIDE;
-  virtual void GetAll() OVERRIDE;
-  virtual void OnGetAll(dbus::Response* response) OVERRIDE;
+                   GetCallback callback) override;
+  virtual void GetAll() override;
+  virtual void OnGetAll(dbus::Response* response) override;
   virtual void Set(dbus::PropertyBase* property,
-                   SetCallback callback) OVERRIDE;
-  virtual void ChangedReceived(dbus::Signal* signal) OVERRIDE;
+                   SetCallback callback) override;
+  virtual void ChangedReceived(dbus::Signal* signal) override;
 
  protected:
   const base::Closure& on_get_all_callback() { return on_get_all_callback_; }

@@ -54,7 +54,7 @@ class ModemMessagingClientTest : public testing::Test {
   ModemMessagingClientTest() : response_(NULL),
                                expected_result_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
@@ -89,7 +89,7 @@ class ModemMessagingClientTest : public testing::Test {
     client_->Init(mock_bus_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     mock_bus_->ShutdownAndBlock();
   }
 

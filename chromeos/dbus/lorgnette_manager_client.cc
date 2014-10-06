@@ -29,7 +29,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
   virtual ~LorgnetteManagerClientImpl() {}
 
-  virtual void ListScanners(const ListScannersCallback& callback) OVERRIDE {
+  virtual void ListScanners(const ListScannersCallback& callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
                                  lorgnette::kListScannersMethod);
     lorgnette_daemon_proxy_->CallMethod(
@@ -44,7 +44,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   virtual void ScanImage(std::string device_name,
                          base::PlatformFile file,
                          const ScanProperties& properties,
-                         const ScanImageCallback& callback) OVERRIDE {
+                         const ScanImageCallback& callback) override {
     dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor();
     file_descriptor->PutValue(file);
     // Punt descriptor validity check to a worker thread; on return we'll
@@ -63,7 +63,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     lorgnette_daemon_proxy_ =
         bus->GetObjectProxy(lorgnette::kManagerServiceName,
                             dbus::ObjectPath(lorgnette::kManagerServicePath));

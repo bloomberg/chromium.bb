@@ -143,31 +143,31 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
   virtual void SetSmsReceivedHandler(
       const std::string& service_name,
       const dbus::ObjectPath& object_path,
-      const SmsReceivedHandler& handler) OVERRIDE {
+      const SmsReceivedHandler& handler) override {
     GetProxy(service_name, object_path)->SetSmsReceivedHandler(handler);
   }
 
   virtual void ResetSmsReceivedHandler(
       const std::string& service_name,
-      const dbus::ObjectPath& object_path) OVERRIDE {
+      const dbus::ObjectPath& object_path) override {
     GetProxy(service_name, object_path)->ResetSmsReceivedHandler();
   }
 
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       const dbus::ObjectPath& sms_path,
-                      const DeleteCallback& callback) OVERRIDE {
+                      const DeleteCallback& callback) override {
     GetProxy(service_name, object_path)->Delete(sms_path, callback);
   }
 
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
-                    const ListCallback& callback) OVERRIDE {
+                    const ListCallback& callback) override {
     GetProxy(service_name, object_path)->List(callback);
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     bus_ = bus;
   };
 

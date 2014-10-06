@@ -30,7 +30,7 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicServiceProvider
   virtual ~FakeBluetoothGattCharacteristicServiceProvider();
 
   // BluetoothGattCharacteristicServiceProvider override.
-  virtual void SendValueChanged(const std::vector<uint8>& value) OVERRIDE;
+  virtual void SendValueChanged(const std::vector<uint8>& value) override;
 
   // Methods to simulate value get/set requests issued from a remote device. The
   // methods do nothing, if the associated service was not registered with the

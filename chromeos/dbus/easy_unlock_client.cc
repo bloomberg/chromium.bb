@@ -46,7 +46,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   // EasyUnlockClient override.
   virtual void PerformECDHKeyAgreement(const std::string& private_key,
                                        const std::string& public_key,
-                                       const DataCallback& callback) OVERRIDE {
+                                       const DataCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kPerformECDHKeyAgreementMethod);
@@ -62,7 +62,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   }
 
   // EasyUnlockClient override.
-  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) OVERRIDE {
+  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kGenerateEcP256KeyPairMethod);
@@ -75,7 +75,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   // EasyUnlockClient override.
   virtual void CreateSecureMessage(const std::string& payload,
                                    const CreateSecureMessageOptions& options,
-                                   const DataCallback& callback) OVERRIDE {
+                                   const DataCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kCreateSecureMessageMethod);
@@ -99,7 +99,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   // EasyUnlockClient override.
   virtual void UnwrapSecureMessage(const std::string& message,
                                    const UnwrapSecureMessageOptions& options,
-                                   const DataCallback& callback) OVERRIDE {
+                                   const DataCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kUnwrapSecureMessageMethod);
@@ -118,7 +118,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     proxy_ =
         bus->GetObjectProxy(
             easy_unlock::kEasyUnlockServiceName,

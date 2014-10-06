@@ -24,7 +24,7 @@ class SystemSaltGetterTest : public testing::Test {
  protected:
   SystemSaltGetterTest() : fake_cryptohome_client_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
@@ -35,7 +35,7 @@ class SystemSaltGetterTest : public testing::Test {
     ASSERT_TRUE(SystemSaltGetter::Get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
   }

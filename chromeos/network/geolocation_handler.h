@@ -43,7 +43,7 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
 
   // ShillPropertyChangedObserver overrides
   virtual void OnPropertyChanged(const std::string& key,
-                                 const base::Value& value) OVERRIDE;
+                                 const base::Value& value) override;
 
  private:
   friend class NetworkHandler;

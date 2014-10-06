@@ -26,21 +26,21 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
 
   // Authenticator:
   virtual void CompleteLogin(Profile* profile,
-                             const UserContext& user_context) OVERRIDE;
+                             const UserContext& user_context) override;
   virtual void AuthenticateToLogin(Profile* profile,
-                                   const UserContext& user_context) OVERRIDE;
-  virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
-  virtual void LoginAsSupervisedUser(const UserContext& user_context) OVERRIDE;
-  virtual void LoginRetailMode() OVERRIDE;
-  virtual void LoginOffTheRecord() OVERRIDE;
-  virtual void LoginAsPublicSession(const UserContext& user_context) OVERRIDE;
+                                   const UserContext& user_context) override;
+  virtual void AuthenticateToUnlock(const UserContext& user_context) override;
+  virtual void LoginAsSupervisedUser(const UserContext& user_context) override;
+  virtual void LoginRetailMode() override;
+  virtual void LoginOffTheRecord() override;
+  virtual void LoginAsPublicSession(const UserContext& user_context) override;
   virtual void LoginAsKioskAccount(const std::string& app_user_id,
-                                   bool use_guest_mount) OVERRIDE;
-  virtual void OnRetailModeAuthSuccess() OVERRIDE;
-  virtual void OnAuthSuccess() OVERRIDE;
-  virtual void OnAuthFailure(const AuthFailure& failure) OVERRIDE;
-  virtual void RecoverEncryptedData(const std::string& old_password) OVERRIDE;
-  virtual void ResyncEncryptedData() OVERRIDE;
+                                   bool use_guest_mount) override;
+  virtual void OnRetailModeAuthSuccess() override;
+  virtual void OnAuthSuccess() override;
+  virtual void OnAuthFailure(const AuthFailure& failure) override;
+  virtual void RecoverEncryptedData(const std::string& old_password) override;
+  virtual void ResyncEncryptedData() override;
 
   virtual void SetExpectedCredentials(const UserContext& user_context);
 

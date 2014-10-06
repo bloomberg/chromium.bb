@@ -263,7 +263,7 @@ class OncMaskValues : public Mapper {
       const OncValueSignature& object_signature,
       const base::Value& onc_value,
       bool* found_unknown_field,
-      bool* error) OVERRIDE {
+      bool* error) override {
     if (FieldIsCredential(object_signature, field_name)) {
       return scoped_ptr<base::Value>(new base::StringValue(mask_));
     } else {

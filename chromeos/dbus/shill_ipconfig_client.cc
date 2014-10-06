@@ -29,32 +29,32 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
   // ShillIPConfigClient overrides.
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {
+      ShillPropertyChangedObserver* observer) override {
     GetHelper(ipconfig_path)->AddPropertyChangedObserver(observer);
   }
 
   virtual void RemovePropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {
+      ShillPropertyChangedObserver* observer) override {
     GetHelper(ipconfig_path)->RemovePropertyChangedObserver(observer);
   }
   virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
-                       const VoidDBusMethodCallback& callback) OVERRIDE;
+                       const VoidDBusMethodCallback& callback) override;
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
-                             const DictionaryValueCallback& callback) OVERRIDE;
+                             const DictionaryValueCallback& callback) override;
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE;
+                           const VoidDBusMethodCallback& callback) override;
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) OVERRIDE;
+                             const VoidDBusMethodCallback& callback) override;
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidDBusMethodCallback& callback) OVERRIDE;
-  virtual ShillIPConfigClient::TestInterface* GetTestInterface() OVERRIDE;
+                      const VoidDBusMethodCallback& callback) override;
+  virtual ShillIPConfigClient::TestInterface* GetTestInterface() override;
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     bus_ = bus;
   }
 

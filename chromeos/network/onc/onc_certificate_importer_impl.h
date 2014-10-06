@@ -50,7 +50,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
   // CertificateImporter overrides
   virtual void ImportCertificates(const base::ListValue& certificates,
                                   ::onc::ONCSource source,
-                                  const DoneCallback& done_callback) OVERRIDE;
+                                  const DoneCallback& done_callback) override;
 
  private:
   void RunDoneCallback(const CertificateImporter::DoneCallback& callback,

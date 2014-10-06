@@ -16,14 +16,14 @@ class FakePermissionBrokerClient : public PermissionBrokerClient {
   FakePermissionBrokerClient();
   virtual ~FakePermissionBrokerClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void RequestPathAccess(const std::string& path,
                                  int interface_id,
-                                 const ResultCallback& callback) OVERRIDE;
+                                 const ResultCallback& callback) override;
   virtual void RequestUsbAccess(const uint16_t vendor_id,
                                 const uint16_t product_id,
                                 int interface_id,
-                                const ResultCallback& callback) OVERRIDE;
+                                const ResultCallback& callback) override;
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePermissionBrokerClient);
 };

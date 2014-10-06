@@ -38,7 +38,7 @@ class ImeKeyboardTest : public testing::Test,
     xkey_.reset();
   }
 
-  virtual void OnCapsLockChanged(bool enabled) OVERRIDE {
+  virtual void OnCapsLockChanged(bool enabled) override {
     caps_changed_ = true;
   }
 

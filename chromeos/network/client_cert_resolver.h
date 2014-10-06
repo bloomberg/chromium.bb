@@ -59,14 +59,14 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
 
  private:
    // NetworkStateHandlerObserver overrides
-  virtual void NetworkListChanged() OVERRIDE;
+  virtual void NetworkListChanged() override;
 
   // CertLoader::Observer overrides
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) OVERRIDE;
+                                    bool initial_load) override;
 
   // NetworkPolicyObserver overrides
-  virtual void PolicyApplied(const std::string& service_path) OVERRIDE;
+  virtual void PolicyApplied(const std::string& service_path) override;
 
   // Check which networks of |networks| are configured with a client certificate
   // pattern. Search for certificates, on the worker thread, and configure the

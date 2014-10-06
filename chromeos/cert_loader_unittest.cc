@@ -53,7 +53,7 @@ class CertLoaderTest : public testing::Test,
 
   virtual ~CertLoaderTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(primary_user_.constructed_successfully());
     ASSERT_TRUE(
         crypto::GetPublicSlotForChromeOSUser(primary_user_.username_hash()));
@@ -80,7 +80,7 @@ class CertLoaderTest : public testing::Test,
   // CertLoader::Observer:
   // The test keeps count of times the observer method was called.
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) OVERRIDE {
+                                    bool initial_load) override {
     EXPECT_TRUE(certificates_loaded_events_count_ == 0 || !initial_load);
     certificates_loaded_events_count_++;
   }

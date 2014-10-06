@@ -57,7 +57,7 @@ class ClientCertResolverTest : public testing::Test {
   }
   virtual ~ClientCertResolverTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Initialize NSS db for the user.
     ASSERT_TRUE(user_.constructed_successfully());
     user_.FinishInit();
@@ -88,7 +88,7 @@ class ClientCertResolverTest : public testing::Test {
     cert_loader_->force_hardware_backed_for_test();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     client_cert_resolver_.reset();
     managed_config_handler_.reset();
     network_config_handler_.reset();

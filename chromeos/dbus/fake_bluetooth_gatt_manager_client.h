@@ -30,16 +30,16 @@ class CHROMEOS_EXPORT FakeBluetoothGattManagerClient
   virtual ~FakeBluetoothGattManagerClient();
 
   // DBusClient override.
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
 
   // BluetoothGattManagerClient overrides.
   virtual void RegisterService(const dbus::ObjectPath& service_path,
                                const Options& options,
                                const base::Closure& callback,
-                               const ErrorCallback& error_callback) OVERRIDE;
+                               const ErrorCallback& error_callback) override;
   virtual void UnregisterService(const dbus::ObjectPath& service_path,
                                  const base::Closure& callback,
-                                 const ErrorCallback& error_callback) OVERRIDE;
+                                 const ErrorCallback& error_callback) override;
 
   // Register, unregister, and retrieve pointers to service, characteristic, and
   // descriptor service providers. Automatically called from the service

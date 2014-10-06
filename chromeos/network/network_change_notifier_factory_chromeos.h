@@ -20,7 +20,7 @@ class CHROMEOS_EXPORT NetworkChangeNotifierFactoryChromeos
   NetworkChangeNotifierFactoryChromeos() {}
 
   // net::NetworkChangeNotifierFactory overrides.
-  virtual net::NetworkChangeNotifier* CreateInstance() OVERRIDE;
+  virtual net::NetworkChangeNotifier* CreateInstance() override;
 
   static NetworkChangeNotifierChromeos* GetInstance();
 };

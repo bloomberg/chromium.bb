@@ -28,8 +28,8 @@ class LoginScreenStrategy : public PortalDetectorStrategy {
 
  protected:
   // PortalDetectorStrategy overrides:
-  virtual StrategyId Id() const OVERRIDE { return STRATEGY_ID_LOGIN_SCREEN; }
-  virtual base::TimeDelta GetNextAttemptTimeoutImpl() OVERRIDE {
+  virtual StrategyId Id() const override { return STRATEGY_ID_LOGIN_SCREEN; }
+  virtual base::TimeDelta GetNextAttemptTimeoutImpl() override {
     if (DefaultNetwork() && delegate_->NoResponseResultCount() != 0) {
       int timeout = kMaxAttemptTimeoutSec;
       if (kMaxAttemptTimeoutSec / (delegate_->NoResponseResultCount() + 1) >
@@ -56,8 +56,8 @@ class ErrorScreenStrategy : public PortalDetectorStrategy {
 
  protected:
   // PortalDetectorStrategy overrides:
-  virtual StrategyId Id() const OVERRIDE { return STRATEGY_ID_ERROR_SCREEN; }
-  virtual base::TimeDelta GetNextAttemptTimeoutImpl() OVERRIDE {
+  virtual StrategyId Id() const override { return STRATEGY_ID_ERROR_SCREEN; }
+  virtual base::TimeDelta GetNextAttemptTimeoutImpl() override {
     return base::TimeDelta::FromSeconds(kAttemptTimeoutSec);
   }
 
@@ -76,8 +76,8 @@ class SessionStrategy : public PortalDetectorStrategy {
   virtual ~SessionStrategy() {}
 
  protected:
-  virtual StrategyId Id() const OVERRIDE { return STRATEGY_ID_SESSION; }
-  virtual base::TimeDelta GetNextAttemptTimeoutImpl() OVERRIDE {
+  virtual StrategyId Id() const override { return STRATEGY_ID_SESSION; }
+  virtual base::TimeDelta GetNextAttemptTimeoutImpl() override {
     int timeout;
     if (delegate_->NoResponseResultCount() < kMaxFastAttempts)
       timeout = kFastAttemptTimeoutSec;
@@ -102,7 +102,7 @@ class PortalDetectorStrategy::BackoffEntryImpl : public net::BackoffEntry {
   virtual ~BackoffEntryImpl() {}
 
   // net::BackoffEntry overrides:
-  virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE {
+  virtual base::TimeTicks ImplGetTimeNow() const override {
     return delegate_->GetCurrentTimeTicks();
   }
 

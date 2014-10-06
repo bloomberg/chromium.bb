@@ -50,7 +50,7 @@ class CHROMEOS_EXPORT OnlineAttemptHost : public AuthAttemptStateResolver {
 
   // AuthAttemptStateResolver overrides.
   // Executed on IO thread.
-  virtual void Resolve() OVERRIDE;
+  virtual void Resolve() override;
 
   // Does an actual resolve on UI thread.
   void ResolveOnUIThread(bool success);

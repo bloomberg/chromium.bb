@@ -19,24 +19,24 @@ class CHROMEOS_EXPORT CrasAudioClientStubImpl : public CrasAudioClient {
   virtual ~CrasAudioClientStubImpl();
 
   // CrasAudioClient overrides:
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool HasObserver(Observer* observer) OVERRIDE;
-  virtual void GetVolumeState(const GetVolumeStateCallback& callback) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual bool HasObserver(Observer* observer) override;
+  virtual void GetVolumeState(const GetVolumeStateCallback& callback) override;
   virtual void GetNodes(const GetNodesCallback& callback,
-                        const ErrorCallback& error_callback) OVERRIDE;
-  virtual void SetOutputNodeVolume(uint64 node_id, int32 volume) OVERRIDE;
-  virtual void SetOutputUserMute(bool mute_on) OVERRIDE;
-  virtual void SetInputNodeGain(uint64 node_id, int32 gain) OVERRIDE;
-  virtual void SetInputMute(bool mute_on) OVERRIDE;
-  virtual void SetActiveOutputNode(uint64 node_id) OVERRIDE;
-  virtual void SetActiveInputNode(uint64 node_id) OVERRIDE;
-  virtual void AddActiveInputNode(uint64 node_id) OVERRIDE;
-  virtual void RemoveActiveInputNode(uint64 node_id) OVERRIDE;
-  virtual void AddActiveOutputNode(uint64 node_id) OVERRIDE;
-  virtual void RemoveActiveOutputNode(uint64 node_id) OVERRIDE;
-  virtual void SwapLeftRight(uint64 node_id, bool swap) OVERRIDE;
+                        const ErrorCallback& error_callback) override;
+  virtual void SetOutputNodeVolume(uint64 node_id, int32 volume) override;
+  virtual void SetOutputUserMute(bool mute_on) override;
+  virtual void SetInputNodeGain(uint64 node_id, int32 gain) override;
+  virtual void SetInputMute(bool mute_on) override;
+  virtual void SetActiveOutputNode(uint64 node_id) override;
+  virtual void SetActiveInputNode(uint64 node_id) override;
+  virtual void AddActiveInputNode(uint64 node_id) override;
+  virtual void RemoveActiveInputNode(uint64 node_id) override;
+  virtual void AddActiveOutputNode(uint64 node_id) override;
+  virtual void RemoveActiveOutputNode(uint64 node_id) override;
+  virtual void SwapLeftRight(uint64 node_id, bool swap) override;
 
   // Updates |node_list_| to contain |audio_nodes|.
   void SetAudioNodesForTesting(const AudioNodeList& audio_nodes);

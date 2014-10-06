@@ -48,7 +48,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   virtual void DumpDebugLogs(bool is_compressed,
                              base::File file,
                              scoped_refptr<base::TaskRunner> task_runner,
-                             const GetDebugLogsCallback& callback) OVERRIDE {
+                             const GetDebugLogsCallback& callback) override {
     dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor;
     file_descriptor->PutValue(file.TakePlatformFile());
     // Punt descriptor validity check to a worker thread; on return we'll
@@ -65,7 +65,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void SetDebugMode(const std::string& subsystem,
-                            const SetDebugModeCallback& callback) OVERRIDE {
+                            const SetDebugModeCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kSetDebugMode);
     dbus::MessageWriter writer(&method_call);
@@ -79,7 +79,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetRoutes(bool numeric, bool ipv6,
-                         const GetRoutesCallback& callback) OVERRIDE {
+                         const GetRoutesCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetRoutes);
     dbus::MessageWriter writer(&method_call);
@@ -104,7 +104,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback)
-      OVERRIDE {
+      override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetNetworkStatus);
     debugdaemon_proxy_->CallMethod(
@@ -116,7 +116,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetModemStatus(const GetModemStatusCallback& callback)
-      OVERRIDE {
+      override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetModemStatus);
     debugdaemon_proxy_->CallMethod(
@@ -128,7 +128,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetWiMaxStatus(const GetWiMaxStatusCallback& callback)
-      OVERRIDE {
+      override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetWiMaxStatus);
     debugdaemon_proxy_->CallMethod(
@@ -140,7 +140,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetNetworkInterfaces(
-      const GetNetworkInterfacesCallback& callback) OVERRIDE {
+      const GetNetworkInterfacesCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetInterfaces);
     debugdaemon_proxy_->CallMethod(
@@ -152,7 +152,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetPerfData(uint32_t duration,
-                           const GetPerfDataCallback& callback) OVERRIDE {
+                           const GetPerfDataCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetRichPerfData);
     dbus::MessageWriter writer(&method_call);
@@ -166,7 +166,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
-  virtual void GetScrubbedLogs(const GetLogsCallback& callback) OVERRIDE {
+  virtual void GetScrubbedLogs(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetFeedbackLogs);
     debugdaemon_proxy_->CallMethod(
@@ -178,7 +178,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetAllLogs(const GetLogsCallback& callback)
-      OVERRIDE {
+      override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetAllLogs);
     debugdaemon_proxy_->CallMethod(
@@ -190,7 +190,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void GetUserLogFiles(
-      const GetLogsCallback& callback) OVERRIDE {
+      const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetUserLogFiles);
     debugdaemon_proxy_->CallMethod(
@@ -201,7 +201,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
-  virtual void StartSystemTracing() OVERRIDE {
+  virtual void StartSystemTracing() override {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
         debugd::kSystraceStart);
@@ -218,7 +218,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   virtual bool RequestStopSystemTracing(
       scoped_refptr<base::TaskRunner> task_runner,
-      const StopSystemTracingCallback& callback) OVERRIDE {
+      const StopSystemTracingCallback& callback) override {
     if (pipe_reader_ != NULL) {
       LOG(ERROR) << "Busy doing StopSystemTracing";
       return false;
@@ -246,7 +246,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   virtual void TestICMP(const std::string& ip_address,
-                        const TestICMPCallback& callback) OVERRIDE {
+                        const TestICMPCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kTestICMP);
     dbus::MessageWriter writer(&method_call);
@@ -262,7 +262,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   virtual void TestICMPWithOptions(
       const std::string& ip_address,
       const std::map<std::string, std::string>& options,
-      const TestICMPCallback& callback) OVERRIDE {
+      const TestICMPCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kTestICMPWithOptions);
     dbus::MessageWriter writer(&method_call);
@@ -292,7 +292,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
-  virtual void UploadCrashes() OVERRIDE {
+  virtual void UploadCrashes() override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kUploadCrashes);
     debugdaemon_proxy_->CallMethod(
@@ -303,7 +303,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
         bus->GetObjectProxy(debugd::kDebugdServiceName,
                             dbus::ObjectPath(debugd::kDebugdServicePath));

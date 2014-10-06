@@ -17,14 +17,14 @@ class CHROMEOS_EXPORT MockComponentExtIMEManagerDelegate
   MockComponentExtIMEManagerDelegate();
   virtual ~MockComponentExtIMEManagerDelegate();
 
-  virtual std::vector<ComponentExtensionIME> ListIME() OVERRIDE;
+  virtual std::vector<ComponentExtensionIME> ListIME() override;
   virtual void Load(Profile*,
                     const std::string& extension_id,
                     const std::string& manifest,
-                    const base::FilePath& path) OVERRIDE;
+                    const base::FilePath& path) override;
   virtual void Unload(Profile*,
                       const std::string& extension_id,
-                      const base::FilePath& path) OVERRIDE;
+                      const base::FilePath& path) override;
 
   int load_call_count() const { return load_call_count_; }
   int unload_call_count() const { return unload_call_count_; }

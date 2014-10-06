@@ -34,30 +34,30 @@ class FakePowerManagerClient : public PowerManagerClient {
   bool is_projecting() const { return is_projecting_; }
 
   // PowerManagerClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool HasObserver(Observer* observer) OVERRIDE;
-  virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE;
-  virtual void IncreaseScreenBrightness() OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual bool HasObserver(Observer* observer) override;
+  virtual void DecreaseScreenBrightness(bool allow_off) override;
+  virtual void IncreaseScreenBrightness() override;
   virtual void SetScreenBrightnessPercent(
-      double percent, bool gradual) OVERRIDE;
+      double percent, bool gradual) override;
   virtual void GetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback) OVERRIDE;
-  virtual void DecreaseKeyboardBrightness() OVERRIDE;
-  virtual void IncreaseKeyboardBrightness() OVERRIDE;
-  virtual void RequestStatusUpdate() OVERRIDE;
-  virtual void RequestSuspend() OVERRIDE;
-  virtual void RequestRestart() OVERRIDE;
-  virtual void RequestShutdown() OVERRIDE;
+      const GetScreenBrightnessPercentCallback& callback) override;
+  virtual void DecreaseKeyboardBrightness() override;
+  virtual void IncreaseKeyboardBrightness() override;
+  virtual void RequestStatusUpdate() override;
+  virtual void RequestSuspend() override;
+  virtual void RequestRestart() override;
+  virtual void RequestShutdown() override;
   virtual void NotifyUserActivity(
-      power_manager::UserActivityType type) OVERRIDE;
-  virtual void NotifyVideoActivity(bool is_fullscreen) OVERRIDE;
+      power_manager::UserActivityType type) override;
+  virtual void NotifyVideoActivity(bool is_fullscreen) override;
   virtual void SetPolicy(
-      const power_manager::PowerManagementPolicy& policy) OVERRIDE;
-  virtual void SetIsProjecting(bool is_projecting) OVERRIDE;
-  virtual base::Closure GetSuspendReadinessCallback() OVERRIDE;
-  virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE;
+      const power_manager::PowerManagementPolicy& policy) override;
+  virtual void SetIsProjecting(bool is_projecting) override;
+  virtual base::Closure GetSuspendReadinessCallback() override;
+  virtual int GetNumPendingSuspendReadinessCallbacks() override;
 
   // Emulates the power manager announcing that the system is starting or
   // completing a suspend attempt.

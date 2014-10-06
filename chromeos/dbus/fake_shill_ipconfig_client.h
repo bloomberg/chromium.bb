@@ -22,31 +22,31 @@ class CHROMEOS_EXPORT FakeShillIPConfigClient
   virtual ~FakeShillIPConfigClient();
 
   // ShillIPConfigClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE;
+      ShillPropertyChangedObserver* observer) override;
   virtual void RemovePropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE;
+      ShillPropertyChangedObserver* observer) override;
   virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
-                       const VoidDBusMethodCallback& callback) OVERRIDE;
+                       const VoidDBusMethodCallback& callback) override;
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
-                             const DictionaryValueCallback& callback) OVERRIDE;
+                             const DictionaryValueCallback& callback) override;
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE;
+                           const VoidDBusMethodCallback& callback) override;
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) OVERRIDE;
+                             const VoidDBusMethodCallback& callback) override;
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidDBusMethodCallback& callback) OVERRIDE;
-  virtual ShillIPConfigClient::TestInterface* GetTestInterface() OVERRIDE;
+                      const VoidDBusMethodCallback& callback) override;
+  virtual ShillIPConfigClient::TestInterface* GetTestInterface() override;
 
   // ShillIPConfigClient::TestInterface overrides.
   virtual void AddIPConfig(const std::string& ip_config_path,
-                           const base::DictionaryValue& properties) OVERRIDE;
+                           const base::DictionaryValue& properties) override;
 
  private:
   // Runs callback with |values|.

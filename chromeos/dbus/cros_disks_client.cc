@@ -102,7 +102,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
                      const std::string& source_format,
                      const std::string& mount_label,
                      const base::Closure& callback,
-                     const base::Closure& error_callback) OVERRIDE {
+                     const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kMount);
     dbus::MessageWriter writer(&method_call);
@@ -129,7 +129,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
                        const base::Closure& callback,
-                       const base::Closure& error_callback) OVERRIDE {
+                       const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kUnmount);
     dbus::MessageWriter writer(&method_call);
@@ -152,7 +152,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE {
+      const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateAutoMountableDevices);
     proxy_->CallMethod(
@@ -166,7 +166,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void EnumerateMountEntries(
       const EnumerateMountEntriesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE {
+      const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateMountEntries);
     proxy_->CallMethod(
@@ -181,7 +181,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
                       const base::Closure& callback,
-                      const base::Closure& error_callback) OVERRIDE {
+                      const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kFormat);
     dbus::MessageWriter writer(&method_call);
@@ -202,7 +202,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE {
+      const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kGetDeviceProperties);
     dbus::MessageWriter writer(&method_call);
@@ -218,7 +218,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void SetMountEventHandler(
-      const MountEventHandler& mount_event_handler) OVERRIDE {
+      const MountEventHandler& mount_event_handler) override {
     static const SignalEventTuple kSignalEventTuples[] = {
       { cros_disks::kDeviceAdded, CROS_DISKS_DEVICE_ADDED },
       { cros_disks::kDeviceScanned, CROS_DISKS_DEVICE_SCANNED },
@@ -244,7 +244,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void SetMountCompletedHandler(
-      const MountCompletedHandler& mount_completed_handler) OVERRIDE {
+      const MountCompletedHandler& mount_completed_handler) override {
     proxy_->ConnectToSignal(
         cros_disks::kCrosDisksInterface,
         cros_disks::kMountCompleted,
@@ -257,7 +257,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void SetFormatCompletedHandler(
-      const FormatCompletedHandler& format_completed_handler) OVERRIDE {
+      const FormatCompletedHandler& format_completed_handler) override {
     proxy_->ConnectToSignal(
         cros_disks::kCrosDisksInterface,
         cros_disks::kFormatCompleted,
@@ -269,7 +269,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(
         cros_disks::kCrosDisksServiceName,
         dbus::ObjectPath(cros_disks::kCrosDisksServicePath));
@@ -463,12 +463,12 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual ~CrosDisksClientStubImpl() {}
 
   // CrosDisksClient overrides:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {}
+  virtual void Init(dbus::Bus* bus) override {}
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
                      const base::Closure& callback,
-                     const base::Closure& error_callback) OVERRIDE {
+                     const base::Closure& error_callback) override {
     // This stub implementation only accepts archive mount requests.
     const MountType type = MOUNT_TYPE_ARCHIVE;
 
@@ -498,7 +498,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
                        const base::Closure& callback,
-                       const base::Closure& error_callback) OVERRIDE {
+                       const base::Closure& error_callback) override {
     // Not mounted.
     if (mounted_to_source_path_map_.count(device_path) == 0) {
       base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
@@ -519,7 +519,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE {
+      const base::Closure& error_callback) override {
     std::vector<std::string> device_paths;
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(callback, device_paths));
@@ -527,7 +527,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
   virtual void EnumerateMountEntries(
       const EnumerateMountEntriesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE {
+      const base::Closure& error_callback) override {
     std::vector<MountEntry> entries;
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(callback, entries));
@@ -536,29 +536,29 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
                       const base::Closure& callback,
-                      const base::Closure& error_callback) OVERRIDE {
+                      const base::Closure& error_callback) override {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
 
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE {
+      const base::Closure& error_callback) override {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
 
   virtual void SetMountEventHandler(
-      const MountEventHandler& mount_event_handler) OVERRIDE {
+      const MountEventHandler& mount_event_handler) override {
     mount_event_handler_ = mount_event_handler;
   }
 
   virtual void SetMountCompletedHandler(
-      const MountCompletedHandler& mount_completed_handler) OVERRIDE {
+      const MountCompletedHandler& mount_completed_handler) override {
     mount_completed_handler_ = mount_completed_handler;
   }
 
   virtual void SetFormatCompletedHandler(
-      const FormatCompletedHandler& format_completed_handler) OVERRIDE {
+      const FormatCompletedHandler& format_completed_handler) override {
     format_completed_handler_ = format_completed_handler;
   }
 

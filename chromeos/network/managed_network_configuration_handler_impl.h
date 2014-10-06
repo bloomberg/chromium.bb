@@ -37,68 +37,68 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   virtual ~ManagedNetworkConfigurationHandlerImpl();
 
   // ManagedNetworkConfigurationHandler overrides
-  virtual void AddObserver(NetworkPolicyObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(NetworkPolicyObserver* observer) OVERRIDE;
+  virtual void AddObserver(NetworkPolicyObserver* observer) override;
+  virtual void RemoveObserver(NetworkPolicyObserver* observer) override;
 
   virtual void GetProperties(
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
   virtual void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
   virtual void SetProperties(
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) const override;
 
   virtual void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
       const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) const override;
 
   virtual void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) const override;
 
   virtual void SetPolicy(
       onc::ONCSource onc_source,
       const std::string& userhash,
       const base::ListValue& network_configs_onc,
-      const base::DictionaryValue& global_network_config) OVERRIDE;
+      const base::DictionaryValue& global_network_config) override;
 
   virtual const base::DictionaryValue* FindPolicyByGUID(
       const std::string userhash,
       const std::string& guid,
-      onc::ONCSource* onc_source) const OVERRIDE;
+      onc::ONCSource* onc_source) const override;
 
   virtual const base::DictionaryValue* GetGlobalConfigFromPolicy(
-      const std::string userhash) const OVERRIDE;
+      const std::string userhash) const override;
 
   virtual const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
-      const std::string& profile_path) const OVERRIDE;
+      const std::string& profile_path) const override;
 
   // NetworkProfileObserver overrides
-  virtual void OnProfileAdded(const NetworkProfile& profile) OVERRIDE;
-  virtual void OnProfileRemoved(const NetworkProfile& profile) OVERRIDE;
+  virtual void OnProfileAdded(const NetworkProfile& profile) override;
+  virtual void OnProfileRemoved(const NetworkProfile& profile) override;
 
   // PolicyApplicator::ConfigurationHandler overrides
   virtual void CreateConfigurationFromPolicy(
-      const base::DictionaryValue& shill_properties) OVERRIDE;
+      const base::DictionaryValue& shill_properties) override;
 
   virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
       const base::DictionaryValue& existing_properties,
-      const base::DictionaryValue& new_properties) OVERRIDE;
+      const base::DictionaryValue& new_properties) override;
 
-  virtual void OnPoliciesApplied() OVERRIDE;
+  virtual void OnPoliciesApplied() override;
 
  private:
   friend class ClientCertResolverTest;

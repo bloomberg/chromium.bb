@@ -102,7 +102,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   // |signature|. On error returns NULL.
   virtual scoped_ptr<base::Value> MapValue(const OncValueSignature& signature,
                                            const base::Value& onc_value,
-                                           bool* error) OVERRIDE;
+                                           bool* error) override;
 
   // Dispatch to the right validation function according to
   // |signature|. Iterates over all fields and recursively validates/repairs
@@ -111,7 +111,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   virtual scoped_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
-      bool* error) OVERRIDE;
+      bool* error) override;
 
   // Pushes/pops the |field_name| to |path_|, otherwise like |Mapper::MapField|.
   virtual scoped_ptr<base::Value> MapField(
@@ -119,20 +119,20 @@ class CHROMEOS_EXPORT Validator : public Mapper {
       const OncValueSignature& object_signature,
       const base::Value& onc_value,
       bool* found_unknown_field,
-      bool* error) OVERRIDE;
+      bool* error) override;
 
   // Ignores nested errors in NetworkConfigurations and Certificates, otherwise
   // like |Mapper::MapArray|.
   virtual scoped_ptr<base::ListValue> MapArray(
       const OncValueSignature& array_signature,
       const base::ListValue& onc_array,
-      bool* nested_error) OVERRIDE;
+      bool* nested_error) override;
 
   // Pushes/pops the index to |path_|, otherwise like |Mapper::MapEntry|.
   virtual scoped_ptr<base::Value> MapEntry(int index,
                                            const OncValueSignature& signature,
                                            const base::Value& onc_value,
-                                           bool* error) OVERRIDE;
+                                           bool* error) override;
 
   // This is the default validation of objects/dictionaries. Validates
   // |onc_object| according to |object_signature|. |result| must point to a

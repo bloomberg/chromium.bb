@@ -60,14 +60,14 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   virtual ~TestObserver() {
   }
 
-  virtual void DeviceListChanged() OVERRIDE {
+  virtual void DeviceListChanged() override {
     NetworkStateHandler::DeviceStateList devices;
     handler_->GetDeviceList(&devices);
     device_count_ = devices.size();
     ++device_list_changed_count_;
   }
 
-  virtual void NetworkListChanged() OVERRIDE {
+  virtual void NetworkListChanged() override {
     NetworkStateHandler::NetworkStateList networks;
     handler_->GetNetworkListByType(chromeos::NetworkTypePattern::Default(),
                                    false /* configured_only */,
@@ -82,7 +82,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
     ++network_list_changed_count_;
   }
 
-  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE {
+  virtual void DefaultNetworkChanged(const NetworkState* network) override {
     ++default_network_change_count_;
     default_network_ = network ? network->path() : "";
     default_network_connection_state_ =
@@ -92,17 +92,17 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   }
 
   virtual void NetworkConnectionStateChanged(
-      const NetworkState* network) OVERRIDE {
+      const NetworkState* network) override {
     network_connection_state_[network->path()] = network->connection_state();
     connection_state_changes_[network->path()]++;
   }
 
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE {
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) override {
     DCHECK(network);
     property_updates_[network->path()]++;
   }
 
-  virtual void DevicePropertiesUpdated(const DeviceState* device) OVERRIDE {
+  virtual void DevicePropertiesUpdated(const DeviceState* device) override {
     DCHECK(device);
     device_property_updates_[device->path()]++;
   }
@@ -177,7 +177,7 @@ class NetworkStateHandlerTest : public testing::Test {
         service_test_(NULL) {}
   virtual ~NetworkStateHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Initialize DBusThreadManager with a stub implementation.
     DBusThreadManager::Initialize();
     SetupDefaultShillState();
@@ -189,7 +189,7 @@ class NetworkStateHandlerTest : public testing::Test {
     test_observer_->reset_change_counts();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     network_state_handler_->RemoveObserver(test_observer_.get(), FROM_HERE);
     test_observer_.reset();
     network_state_handler_.reset();

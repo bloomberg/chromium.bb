@@ -23,76 +23,76 @@ class CHROMEOS_EXPORT FakeNetworkDeviceHandler : public NetworkDeviceHandler {
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) const override;
 
   virtual void SetDeviceProperty(
       const std::string& device_path,
       const std::string& property_name,
       const base::Value& value,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
   virtual void RequestRefreshIPConfigs(
       const std::string& device_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
   virtual void ProposeScan(const std::string& device_path,
                            const base::Closure& callback,
                            const network_handler::ErrorCallback& error_callback)
-      OVERRIDE;
+      override;
 
   virtual void RegisterCellularNetwork(
       const std::string& device_path,
       const std::string& network_id,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
   virtual void SetCarrier(const std::string& device_path,
                           const std::string& carrier,
                           const base::Closure& callback,
                           const network_handler::ErrorCallback& error_callback)
-      OVERRIDE;
+      override;
 
   virtual void RequirePin(const std::string& device_path,
                           bool require_pin,
                           const std::string& pin,
                           const base::Closure& callback,
                           const network_handler::ErrorCallback& error_callback)
-      OVERRIDE;
+      override;
 
   virtual void EnterPin(const std::string& device_path,
                         const std::string& pin,
                         const base::Closure& callback,
                         const network_handler::ErrorCallback& error_callback)
-      OVERRIDE;
+      override;
 
   virtual void UnblockPin(const std::string& device_path,
                           const std::string& puk,
                           const std::string& new_pin,
                           const base::Closure& callback,
                           const network_handler::ErrorCallback& error_callback)
-      OVERRIDE;
+      override;
 
   virtual void ChangePin(const std::string& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
                          const base::Closure& callback,
                          const network_handler::ErrorCallback& error_callback)
-      OVERRIDE;
+      override;
 
-  virtual void SetCellularAllowRoaming(bool allow_roaming) OVERRIDE;
+  virtual void SetCellularAllowRoaming(bool allow_roaming) override;
 
   virtual void SetWifiTDLSEnabled(
       const std::string& ip_or_mac_address,
       bool enabled,
       const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
   virtual void GetWifiTDLSStatus(
       const std::string& ip_or_mac_address,
       const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkDeviceHandler);

@@ -42,7 +42,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
 
   // ShillPropertyChangedObserver overrides
   virtual void OnPropertyChanged(const std::string& name,
-                                 const base::Value& value) OVERRIDE;
+                                 const base::Value& value) override;
 
   void GetProfilePropertiesCallback(const std::string& profile_path,
                                     const base::DictionaryValue& properties);

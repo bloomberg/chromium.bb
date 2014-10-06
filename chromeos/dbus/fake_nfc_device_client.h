@@ -30,28 +30,28 @@ class CHROMEOS_EXPORT FakeNfcDeviceClient : public NfcDeviceClient {
 
     // dbus::PropertySet overrides.
     virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE;
-    virtual void GetAll() OVERRIDE;
+                     dbus::PropertySet::GetCallback callback) override;
+    virtual void GetAll() override;
     virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE;
+                     dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeNfcDeviceClient();
   virtual ~FakeNfcDeviceClient();
 
   // NfcDeviceClient overrides.
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
   virtual std::vector<dbus::ObjectPath> GetDevicesForAdapter(
-      const dbus::ObjectPath& adapter_path) OVERRIDE;
+      const dbus::ObjectPath& adapter_path) override;
   virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
   virtual void Push(
       const dbus::ObjectPath& object_path,
       const base::DictionaryValue& attributes,
       const base::Closure& callback,
-      const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE;
+      const nfc_client_helpers::ErrorCallback& error_callback) override;
 
   // Simulates the appearance of a device. The fake device will show up after
   // exactly |visibility_delay| milliseconds, and will simulate pushing a single

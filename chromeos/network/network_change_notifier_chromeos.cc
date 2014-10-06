@@ -28,7 +28,7 @@ class NetworkChangeNotifierChromeos::DnsConfigService
   virtual ~DnsConfigService();
 
   // net::internal::DnsConfigService() overrides.
-  virtual bool StartWatching() OVERRIDE;
+  virtual bool StartWatching() override;
 
   virtual void OnNetworkChange();
 };

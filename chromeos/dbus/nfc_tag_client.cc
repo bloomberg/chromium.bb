@@ -52,20 +52,20 @@ class NfcTagClientImpl : public NfcTagClient,
   }
 
   // NfcTagClient override.
-  virtual void AddObserver(NfcTagClient::Observer* observer) OVERRIDE {
+  virtual void AddObserver(NfcTagClient::Observer* observer) override {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // NfcTagClient override.
-  virtual void RemoveObserver(NfcTagClient::Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(NfcTagClient::Observer* observer) override {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // NfcTagClient override.
   virtual std::vector<dbus::ObjectPath> GetTagsForAdapter(
-      const dbus::ObjectPath& adapter_path) OVERRIDE {
+      const dbus::ObjectPath& adapter_path) override {
     DBusObjectMap* object_map =
         adapters_to_object_maps_.GetObjectMap(adapter_path);
     if (!object_map)
@@ -75,7 +75,7 @@ class NfcTagClientImpl : public NfcTagClient,
 
   // NfcTagClient override.
   virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) OVERRIDE {
+      const dbus::ObjectPath& object_path) override {
     return static_cast<Properties*>(
         adapters_to_object_maps_.FindObjectProperties(object_path));
   }
@@ -85,7 +85,7 @@ class NfcTagClientImpl : public NfcTagClient,
       const dbus::ObjectPath& object_path,
       const base::DictionaryValue& attributes,
       const base::Closure& callback,
-      const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE {
+      const nfc_client_helpers::ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         adapters_to_object_maps_.FindObjectProxy(object_path);
     if (!object_proxy) {
@@ -121,7 +121,7 @@ class NfcTagClientImpl : public NfcTagClient,
 
  protected:
   // DBusClient override.
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     VLOG(1) << "Creating NfcTagClientImpl";
     DCHECK(bus);
     bus_ = bus;
@@ -131,7 +131,7 @@ class NfcTagClientImpl : public NfcTagClient,
 
  private:
   // NfcAdapterClient::Observer override.
-  virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+  virtual void AdapterAdded(const dbus::ObjectPath& object_path) override {
     VLOG(1) << "Adapter added. Creating map for tag proxies belonging to "
             << "adapter: " << object_path.value();
     adapters_to_object_maps_.CreateObjectMap(
@@ -139,7 +139,7 @@ class NfcTagClientImpl : public NfcTagClient,
   }
 
   // NfcAdapterClient::Observer override.
-  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) override {
     // Neard doesn't send out property changed signals for the tags that
     // are removed when the adapter they belong to is removed. Clean up the
     // object proxies for devices that are managed by the removed adapter.
@@ -153,7 +153,7 @@ class NfcTagClientImpl : public NfcTagClient,
   // NfcAdapterClient::Observer override.
   virtual void AdapterPropertyChanged(
       const dbus::ObjectPath& object_path,
-      const std::string& property_name) OVERRIDE {
+      const std::string& property_name) override {
     // Update the tag proxies.
     DCHECK(adapter_client_);
     NfcAdapterClient::Properties *adapter_properties =
@@ -181,7 +181,7 @@ class NfcTagClientImpl : public NfcTagClient,
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
   virtual NfcPropertySet* CreateProperties(
-      dbus::ObjectProxy* object_proxy) OVERRIDE {
+      dbus::ObjectProxy* object_proxy) override {
     Properties* properties = new Properties(
         object_proxy,
         base::Bind(&NfcTagClientImpl::OnPropertyChanged,
@@ -195,12 +195,12 @@ class NfcTagClientImpl : public NfcTagClient,
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
-  virtual void ObjectAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+  virtual void ObjectAdded(const dbus::ObjectPath& object_path) override {
     FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
                       TagAdded(object_path));
   }
 
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+  virtual void ObjectRemoved(const dbus::ObjectPath& object_path) override {
     FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
                       TagRemoved(object_path));
   }

@@ -21,19 +21,19 @@ class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
   FakeImeKeyboard();
   virtual ~FakeImeKeyboard();
 
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
   virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name)
-      OVERRIDE;
-  virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE;
-  virtual void ReapplyCurrentModifierLockStatus() OVERRIDE;
-  virtual void DisableNumLock() OVERRIDE;
-  virtual void SetCapsLockEnabled(bool enable_caps_lock) OVERRIDE;
-  virtual bool CapsLockIsEnabled() OVERRIDE;
-  virtual bool IsISOLevel5ShiftAvailable() const OVERRIDE;
-  virtual bool IsAltGrAvailable() const OVERRIDE;
-  virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
-  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
+      override;
+  virtual bool ReapplyCurrentKeyboardLayout() override;
+  virtual void ReapplyCurrentModifierLockStatus() override;
+  virtual void DisableNumLock() override;
+  virtual void SetCapsLockEnabled(bool enable_caps_lock) override;
+  virtual bool CapsLockIsEnabled() override;
+  virtual bool IsISOLevel5ShiftAvailable() const override;
+  virtual bool IsAltGrAvailable() const override;
+  virtual bool SetAutoRepeatEnabled(bool enabled) override;
+  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
 
   int set_current_keyboard_layout_by_name_count_;
   std::string last_layout_;

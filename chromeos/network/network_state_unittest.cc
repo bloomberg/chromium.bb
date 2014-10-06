@@ -27,17 +27,17 @@ class TestStringValue : public base::Value {
   }
 
   // Overridden from Value:
-  virtual bool GetAsString(std::string* out_value) const OVERRIDE {
+  virtual bool GetAsString(std::string* out_value) const override {
     if (out_value)
       *out_value = value_;
     return true;
   }
 
-  virtual TestStringValue* DeepCopy() const OVERRIDE {
+  virtual TestStringValue* DeepCopy() const override {
     return new TestStringValue(value_);
   }
 
-  virtual bool Equals(const base::Value* other) const OVERRIDE {
+  virtual bool Equals(const base::Value* other) const override {
     if (other->GetType() != GetType())
       return false;
     std::string lhs, rhs;

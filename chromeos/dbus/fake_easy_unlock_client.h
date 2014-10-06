@@ -23,17 +23,17 @@ class CHROMEOS_EXPORT FakeEasyUnlockClient : public EasyUnlockClient {
   virtual ~FakeEasyUnlockClient();
 
   // EasyUnlockClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) override;
   virtual void PerformECDHKeyAgreement(const std::string& private_key,
                                        const std::string& public_key,
-                                       const DataCallback& callback) OVERRIDE;
+                                       const DataCallback& callback) override;
   virtual void CreateSecureMessage(const std::string& payload,
                                    const CreateSecureMessageOptions& options,
-                                   const DataCallback& callback) OVERRIDE;
+                                   const DataCallback& callback) override;
   virtual void UnwrapSecureMessage(const std::string& message,
                                    const UnwrapSecureMessageOptions& options,
-                                   const DataCallback& callback) OVERRIDE;
+                                   const DataCallback& callback) override;
 
  private:
   int generated_keys_count_;

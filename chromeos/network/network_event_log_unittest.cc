@@ -27,11 +27,11 @@ class NetworkEventLogTest : public testing::Test {
   NetworkEventLogTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     network_event_log::Initialize();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     network_event_log::Shutdown();
   }
 

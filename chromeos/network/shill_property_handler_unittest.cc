@@ -41,7 +41,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   }
 
   virtual void UpdateManagedList(ManagedState::ManagedType type,
-                                 const base::ListValue& entries) OVERRIDE {
+                                 const base::ListValue& entries) override {
     VLOG(1) << "UpdateManagedList[" << ManagedState::TypeToString(type) << "]: "
             << entries.GetSize();
     UpdateEntries(GetTypeString(type), entries);
@@ -50,25 +50,25 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   virtual void UpdateManagedStateProperties(
       ManagedState::ManagedType type,
       const std::string& path,
-      const base::DictionaryValue& properties) OVERRIDE {
+      const base::DictionaryValue& properties) override {
     VLOG(2) << "UpdateManagedStateProperties: " << GetTypeString(type);
     initial_property_updates(GetTypeString(type))[path] += 1;
   }
 
-  virtual void ProfileListChanged() OVERRIDE {
+  virtual void ProfileListChanged() override {
   }
 
   virtual void UpdateNetworkServiceProperty(
       const std::string& service_path,
       const std::string& key,
-      const base::Value& value) OVERRIDE {
+      const base::Value& value) override {
     AddPropertyUpdate(shill::kServiceCompleteListProperty, service_path);
   }
 
   virtual void UpdateDeviceProperty(
       const std::string& device_path,
       const std::string& key,
-      const base::Value& value) OVERRIDE {
+      const base::Value& value) override {
     AddPropertyUpdate(shill::kDevicesProperty, device_path);
   }
 
@@ -76,27 +76,27 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
       ManagedState::ManagedType type,
       const std::string& path,
       const std::string& ip_config_path,
-      const base::DictionaryValue& properties) OVERRIDE {
+      const base::DictionaryValue& properties) override {
     AddPropertyUpdate(shill::kIPConfigsProperty, ip_config_path);
   }
 
-  virtual void TechnologyListChanged() OVERRIDE {
+  virtual void TechnologyListChanged() override {
     VLOG(1) << "TechnologyListChanged.";
     ++technology_list_updates_;
   }
 
   virtual void CheckPortalListChanged(
-      const std::string& check_portal_list) OVERRIDE {
+      const std::string& check_portal_list) override {
   }
 
   virtual void ManagedStateListChanged(
-      ManagedState::ManagedType type) OVERRIDE {
+      ManagedState::ManagedType type) override {
     VLOG(1) << "ManagedStateListChanged: " << GetTypeString(type);
     AddStateListUpdate(GetTypeString(type));
   }
 
   virtual void DefaultNetworkServiceChanged(
-      const std::string& service_path) OVERRIDE {
+      const std::string& service_path) override {
   }
 
   std::vector<std::string>& entries(const std::string& type) {
@@ -175,7 +175,7 @@ class ShillPropertyHandlerTest : public testing::Test {
   virtual ~ShillPropertyHandlerTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Initialize DBusThreadManager with a stub implementation.
     DBusThreadManager::Initialize();
     // Get the test interface for manager / device / service and clear the
@@ -196,7 +196,7 @@ class ShillPropertyHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     shill_property_handler_.reset();
     listener_.reset();
     DBusThreadManager::Shutdown();

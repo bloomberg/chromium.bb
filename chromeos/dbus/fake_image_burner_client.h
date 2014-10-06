@@ -18,14 +18,14 @@ class CHROMEOS_EXPORT FakeImageBurnerClient : public ImageBurnerClient {
   virtual ~FakeImageBurnerClient();
 
   // ImageBurnerClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void BurnImage(const std::string& from_path,
                          const std::string& to_path,
-                         const ErrorCallback& error_callback) OVERRIDE;
+                         const ErrorCallback& error_callback) override;
   virtual void SetEventHandlers(
       const BurnFinishedHandler& burn_finished_handler,
-      const BurnProgressUpdateHandler& burn_progress_update_handler) OVERRIDE;
-  virtual void ResetEventHandlers() OVERRIDE;
+      const BurnProgressUpdateHandler& burn_progress_update_handler) override;
+  virtual void ResetEventHandlers() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeImageBurnerClient);

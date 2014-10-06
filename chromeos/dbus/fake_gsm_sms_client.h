@@ -21,27 +21,27 @@ class CHROMEOS_EXPORT FakeGsmSMSClient : public GsmSMSClient {
   virtual ~FakeGsmSMSClient();
 
   // GsmSMSClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void SetSmsReceivedHandler(const std::string& service_name,
                                      const dbus::ObjectPath& object_path,
                                      const SmsReceivedHandler& handler)
-      OVERRIDE;
+      override;
   virtual void ResetSmsReceivedHandler(const std::string& service_name,
                                        const dbus::ObjectPath& object_path)
-      OVERRIDE;
+      override;
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       uint32 index,
-                      const DeleteCallback& callback) OVERRIDE;
+                      const DeleteCallback& callback) override;
   virtual void Get(const std::string& service_name,
                    const dbus::ObjectPath& object_path,
                    uint32 index,
-                   const GetCallback& callback) OVERRIDE;
+                   const GetCallback& callback) override;
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
-                    const ListCallback& callback) OVERRIDE;
+                    const ListCallback& callback) override;
   virtual void RequestUpdate(const std::string& service_name,
-                             const dbus::ObjectPath& object_path) OVERRIDE;
+                             const dbus::ObjectPath& object_path) override;
 
   // Sets if the command line switch for test is present. RequestUpdate()
   // changes its behavior depending on the switch.

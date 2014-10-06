@@ -74,7 +74,7 @@ class PipeReaderForString : public PipeReader {
   PipeReaderForString(const scoped_refptr<base::TaskRunner>& task_runner,
                       const IOCompleteCallback& callback);
 
-  virtual void AcceptData(const char *data, int length) OVERRIDE;
+  virtual void AcceptData(const char *data, int length) override;
 
   // Destructively returns collected data, by swapping |data_| with |data|.
   void GetData(std::string* data);

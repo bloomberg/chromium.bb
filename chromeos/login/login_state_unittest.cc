@@ -25,19 +25,19 @@ class LoginStateTest : public testing::Test,
   }
 
   // testing::Test
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     LoginState::Initialize();
     LoginState::Get()->set_always_logged_in(false);
     LoginState::Get()->AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     LoginState::Get()->RemoveObserver(this);
     LoginState::Shutdown();
   }
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged() OVERRIDE {
+  virtual void LoggedInStateChanged() override {
     ++login_state_changes_count_;
     logged_in_user_type_ = LoginState::Get()->GetLoggedInUserType();
   }

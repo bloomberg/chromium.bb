@@ -18,10 +18,10 @@ class FakeIntrospectableClient: public IntrospectableClient {
   FakeIntrospectableClient();
   virtual ~FakeIntrospectableClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void Introspect(const std::string& service_name,
                           const dbus::ObjectPath& object_path,
-                          const IntrospectCallback& callback) OVERRIDE;
+                          const IntrospectCallback& callback) override;
 };
 
 }  // namespace chromeos

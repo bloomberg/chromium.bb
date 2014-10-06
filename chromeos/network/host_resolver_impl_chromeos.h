@@ -48,7 +48,7 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
                       net::AddressList* addresses,
                       const net::CompletionCallback& callback,
                       RequestHandle* out_req,
-                      const net::BoundNetLog& source_net_log) OVERRIDE;
+                      const net::BoundNetLog& source_net_log) override;
 
  private:
   friend class net::HostResolver;

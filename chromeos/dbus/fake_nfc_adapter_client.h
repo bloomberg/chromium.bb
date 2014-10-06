@@ -30,31 +30,31 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
 
     // dbus::PropertySet overrides.
     virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE;
-    virtual void GetAll() OVERRIDE;
+                     dbus::PropertySet::GetCallback callback) override;
+    virtual void GetAll() override;
     virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE;
+                     dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeNfcAdapterClient();
   virtual ~FakeNfcAdapterClient();
 
   // NfcAdapterClient overrides.
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual std::vector<dbus::ObjectPath> GetAdapters() override;
   virtual Properties* GetProperties(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
   virtual void StartPollLoop(
       const dbus::ObjectPath& object_path,
       const std::string& mode,
       const base::Closure& callback,
-      const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE;
+      const nfc_client_helpers::ErrorCallback& error_callback) override;
   virtual void StopPollLoop(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
-      const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE;
+      const nfc_client_helpers::ErrorCallback& error_callback) override;
 
   // Sets the adapter as |present|. Used for testing.
   void SetAdapterPresent(bool present);

@@ -63,7 +63,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
   virtual ~NetworkConnectionHandlerTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(user_.constructed_successfully());
     user_.FinishInit();
 
@@ -121,7 +121,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     managed_config_handler_.reset();
     network_profile_handler_.reset();
     network_connection_handler_.reset();

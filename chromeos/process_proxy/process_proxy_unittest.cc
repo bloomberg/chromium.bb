@@ -41,7 +41,7 @@ class RegistryTestRunner : public TestRunner {
  public:
   virtual ~RegistryTestRunner() {}
 
-  virtual void SetupExpectations(pid_t pid) OVERRIDE {
+  virtual void SetupExpectations(pid_t pid) override {
     pid_ = pid;
     left_to_check_index_[0] = 0;
     left_to_check_index_[1] = 0;
@@ -60,7 +60,7 @@ class RegistryTestRunner : public TestRunner {
   // against two lines. The lines MUST NOT have two same characters for this
   // algorithm to work.
   virtual void OnSomeRead(pid_t pid, const std::string& type,
-                          const std::string& output) OVERRIDE {
+                          const std::string& output) override {
     EXPECT_EQ(type, kStdoutType);
     EXPECT_EQ(pid_, pid);
 
@@ -79,7 +79,7 @@ class RegistryTestRunner : public TestRunner {
     }
   }
 
-  virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
+  virtual void StartRegistryTest(ProcessProxyRegistry* registry) override {
     for (int i = 0; i < kTestLineNum; i++) {
       EXPECT_TRUE(registry->SendInput(pid_, kTestLineToSend));
     }
@@ -118,13 +118,13 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
  public:
   virtual ~RegistryNotifiedOnProcessExitTestRunner() {}
 
-  virtual void SetupExpectations(pid_t pid) OVERRIDE {
+  virtual void SetupExpectations(pid_t pid) override {
     output_received_ = false;
     pid_ = pid;
   }
 
   virtual void OnSomeRead(pid_t pid, const std::string& type,
-                          const std::string& output) OVERRIDE {
+                          const std::string& output) override {
     EXPECT_EQ(pid_, pid);
     if (!output_received_) {
       output_received_ = true;
@@ -138,7 +138,7 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
                                            base::MessageLoop::QuitClosure());
   }
 
-  virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
+  virtual void StartRegistryTest(ProcessProxyRegistry* registry) override {
     EXPECT_TRUE(registry->SendInput(pid_, "p"));
   }
 
@@ -150,12 +150,12 @@ class SigIntTestRunner : public TestRunner {
  public:
   virtual ~SigIntTestRunner() {}
 
-  virtual void SetupExpectations(pid_t pid) OVERRIDE {
+  virtual void SetupExpectations(pid_t pid) override {
     pid_ = pid;
   }
 
   virtual void OnSomeRead(pid_t pid, const std::string& type,
-                          const std::string& output) OVERRIDE {
+                          const std::string& output) override {
     EXPECT_EQ(pid_, pid);
     // We may receive ^C on stdout, but we don't care about that, as long as we
     // eventually received exit event.
@@ -165,7 +165,7 @@ class SigIntTestRunner : public TestRunner {
     }
   }
 
-  virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
+  virtual void StartRegistryTest(ProcessProxyRegistry* registry) override {
     // Send SingInt and verify the process exited.
     EXPECT_TRUE(registry->SendInput(pid_, "\003"));
   }

@@ -31,11 +31,11 @@ class CHROMEOS_EXPORT NetworkCertMigrator : public NetworkStateHandlerObserver,
   void Init(NetworkStateHandler* network_state_handler);
 
    // NetworkStateHandlerObserver overrides
-  virtual void NetworkListChanged() OVERRIDE;
+  virtual void NetworkListChanged() override;
 
   // CertLoader::Observer overrides
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) OVERRIDE;
+                                    bool initial_load) override;
 
   // Unowned associated NetworkStateHandler* (global or test instance).
   NetworkStateHandler* network_state_handler_;

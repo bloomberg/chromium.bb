@@ -37,7 +37,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
-                             Callback callback) OVERRIDE {
+                             Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncCheckKey(user_email, passhash, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -49,7 +49,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   virtual void AsyncMigrateKey(const std::string& user_email,
                                const std::string& old_hash,
                                const std::string& new_hash,
-                               Callback callback) OVERRIDE {
+                               Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMigrateKey(user_email, old_hash, new_hash, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -61,7 +61,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
                           int flags,
-                          Callback callback) OVERRIDE {
+                          Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMount(user_email, passhash, flags, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -73,7 +73,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   virtual void AsyncAddKey(const std::string& user_email,
                            const std::string& passhash,
                            const std::string& new_passhash,
-                           Callback callback) OVERRIDE {
+                           Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncAddKey(user_email, passhash, new_passhash, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -82,7 +82,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
             "Couldn't initiate async key addition."));
   }
 
-  virtual void AsyncMountGuest(Callback callback) OVERRIDE {
+  virtual void AsyncMountGuest(Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMountGuest(base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -93,7 +93,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void AsyncMountPublic(const std::string& public_mount_id,
                                 int flags,
-                                Callback callback) OVERRIDE {
+                                Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMountPublic(public_mount_id, flags, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -103,7 +103,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
   virtual void AsyncRemove(const std::string& user_email,
-                           Callback callback) OVERRIDE {
+                           Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncRemove(user_email, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -114,7 +114,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
-      const DataCallback& callback) OVERRIDE {
+      const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationCreateEnrollRequest(pca_type, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
@@ -126,7 +126,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   virtual void AsyncTpmAttestationEnroll(
       chromeos::attestation::PrivacyCAType pca_type,
       const std::string& pca_response,
-      const Callback& callback) OVERRIDE {
+      const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationEnroll(pca_type, pca_response, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -140,7 +140,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,
-      const DataCallback& callback) OVERRIDE {
+      const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationCreateCertRequest(
             pca_type,
@@ -158,7 +158,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       chromeos::attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const DataCallback& callback) OVERRIDE {
+      const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationFinishCertRequest(
             pca_response,
@@ -176,7 +176,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       chromeos::attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const Callback& callback) OVERRIDE {
+      const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         TpmAttestationRegisterKey(
             key_type,
@@ -197,7 +197,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       const std::string& device_id,
       chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
-      const DataCallback& callback) OVERRIDE {
+      const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         TpmAttestationSignEnterpriseChallenge(
             key_type,
@@ -219,7 +219,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       const std::string& user_id,
       const std::string& key_name,
       const std::string& challenge,
-      const DataCallback& callback) OVERRIDE {
+      const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         TpmAttestationSignSimpleChallenge(
             key_type,
@@ -235,7 +235,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void AsyncGetSanitizedUsername(
       const std::string& user,
-      const DataCallback& callback) OVERRIDE {
+      const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         GetSanitizedUsername(user,
         base::Bind(

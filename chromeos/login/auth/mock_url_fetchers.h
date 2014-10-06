@@ -32,7 +32,7 @@ class ExpectCanceledFetcher : public net::TestURLFetcher {
                         net::URLFetcherDelegate* d);
   virtual ~ExpectCanceledFetcher();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   void CompleteFetch();
 
@@ -50,7 +50,7 @@ class GotCanceledFetcher : public net::TestURLFetcher {
                      net::URLFetcherDelegate* d);
   virtual ~GotCanceledFetcher();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GotCanceledFetcher);
@@ -65,7 +65,7 @@ class SuccessFetcher : public net::TestURLFetcher {
                  net::URLFetcherDelegate* d);
   virtual ~SuccessFetcher();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuccessFetcher);
@@ -80,7 +80,7 @@ class FailFetcher : public net::TestURLFetcher {
               net::URLFetcherDelegate* d);
   virtual ~FailFetcher();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FailFetcher);
@@ -99,7 +99,7 @@ class CaptchaFetcher : public net::TestURLFetcher {
   static std::string GetCaptchaUrl();
   static std::string GetUnlockUrl();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
  private:
   static const char kCaptchaToken[];
@@ -118,7 +118,7 @@ class HostedFetcher : public net::TestURLFetcher {
                 net::URLFetcherDelegate* d);
   virtual ~HostedFetcher();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostedFetcher);

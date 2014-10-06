@@ -45,9 +45,9 @@ class ValueMatcher : public MatcherInterface<const base::Value&> {
 
   // MatcherInterface overrides.
   virtual bool MatchAndExplain(const base::Value& value,
-                               MatchResultListener* listener) const OVERRIDE;
-  virtual void DescribeTo(::std::ostream* os) const OVERRIDE;
-  virtual void DescribeNegationTo(::std::ostream* os) const OVERRIDE;
+                               MatchResultListener* listener) const override;
+  virtual void DescribeTo(::std::ostream* os) const override;
+  virtual void DescribeNegationTo(::std::ostream* os) const override;
 
  private:
   scoped_ptr<base::Value> expected_value_;
@@ -101,8 +101,8 @@ class ShillClientUnittestBase : public testing::Test {
                                       const dbus::ObjectPath& object_path);
   virtual ~ShillClientUnittestBase();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   // A callback to intercept and check the method call arguments.

@@ -57,7 +57,7 @@ class NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler
                                       const std::string& service_name,
                                       const dbus::ObjectPath& object_path);
 
-  virtual void RequestUpdate() OVERRIDE;
+  virtual void RequestUpdate() override;
 
  private:
   void ListCallback(const base::ListValue& message_list);
@@ -179,7 +179,7 @@ class NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler
                                        const std::string& service_name,
                                        const dbus::ObjectPath& object_path);
 
-  virtual void RequestUpdate() OVERRIDE;
+  virtual void RequestUpdate() override;
 
  private:
   void ListCallback(const std::vector<dbus::ObjectPath>& paths);

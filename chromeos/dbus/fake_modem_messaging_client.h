@@ -17,21 +17,21 @@ class CHROMEOS_EXPORT FakeModemMessagingClient : public ModemMessagingClient {
   FakeModemMessagingClient();
   virtual ~FakeModemMessagingClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void SetSmsReceivedHandler(const std::string& service_name,
                                      const dbus::ObjectPath& object_path,
                                      const SmsReceivedHandler& handler)
-      OVERRIDE;
+      override;
   virtual void ResetSmsReceivedHandler(const std::string& service_name,
                                        const dbus::ObjectPath& object_path)
-      OVERRIDE;
+      override;
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       const dbus::ObjectPath& sms_path,
-                      const DeleteCallback& callback) OVERRIDE;
+                      const DeleteCallback& callback) override;
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
-                    const ListCallback& callback) OVERRIDE;
+                    const ListCallback& callback) override;
 
  private:
   SmsReceivedHandler sms_received_handler_;

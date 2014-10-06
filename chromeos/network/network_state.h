@@ -38,11 +38,11 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // ManagedState overrides
   // If you change this method, update GetProperties too.
   virtual bool PropertyChanged(const std::string& key,
-                               const base::Value& value) OVERRIDE;
+                               const base::Value& value) override;
   virtual bool InitialPropertiesReceived(
-      const base::DictionaryValue& properties) OVERRIDE;
+      const base::DictionaryValue& properties) override;
   virtual void GetStateProperties(
-      base::DictionaryValue* dictionary) const OVERRIDE;
+      base::DictionaryValue* dictionary) const override;
 
   void IPConfigPropertiesChanged(const base::DictionaryValue& properties);
 

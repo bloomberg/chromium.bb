@@ -90,7 +90,7 @@ class CHROMEOS_EXPORT PowerPolicyController
   void RemoveWakeLock(int id);
 
   // PowerManagerClient::Observer implementation:
-  virtual void PowerManagerRestarted() OVERRIDE;
+  virtual void PowerManagerRestarted() override;
 
  private:
   friend class PowerPrefsTest;

@@ -31,37 +31,37 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
 
     // dbus::PropertySet override
     virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE;
-    virtual void GetAll() OVERRIDE;
+                     dbus::PropertySet::GetCallback callback) override;
+    virtual void GetAll() override;
     virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE;
+                     dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeBluetoothGattCharacteristicClient();
   virtual ~FakeBluetoothGattCharacteristicClient();
 
   // DBusClient override.
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
 
   // BluetoothGattCharacteristicClient overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual std::vector<dbus::ObjectPath> GetCharacteristics() OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual std::vector<dbus::ObjectPath> GetCharacteristics() override;
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      OVERRIDE;
+      override;
   virtual void ReadValue(const dbus::ObjectPath& object_path,
                          const ValueCallback& callback,
-                         const ErrorCallback& error_callback) OVERRIDE;
+                         const ErrorCallback& error_callback) override;
   virtual void WriteValue(const dbus::ObjectPath& object_path,
                           const std::vector<uint8>& value,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
   virtual void StartNotify(const dbus::ObjectPath& object_path,
                            const base::Closure& callback,
-                           const ErrorCallback& error_callback) OVERRIDE;
+                           const ErrorCallback& error_callback) override;
   virtual void StopNotify(const dbus::ObjectPath& object_path,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
 
   // Makes the group of characteristics belonging to a particular GATT based
   // profile available under the GATT service with object path |service_path|.

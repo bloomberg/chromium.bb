@@ -29,32 +29,32 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
 
     // dbus::PropertySet override
     virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE;
-    virtual void GetAll() OVERRIDE;
+                     dbus::PropertySet::GetCallback callback) override;
+    virtual void GetAll() override;
     virtual void Set(dbus::PropertyBase* property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE;
+                     dbus::PropertySet::SetCallback callback) override;
   };
 
   FakeBluetoothAdapterClient();
   virtual ~FakeBluetoothAdapterClient();
 
   // BluetoothAdapterClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual std::vector<dbus::ObjectPath> GetAdapters() override;
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      OVERRIDE;
+      override;
   virtual void StartDiscovery(const dbus::ObjectPath& object_path,
                               const base::Closure& callback,
-                              const ErrorCallback& error_callback) OVERRIDE;
+                              const ErrorCallback& error_callback) override;
   virtual void StopDiscovery(const dbus::ObjectPath& object_path,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) OVERRIDE;
+                             const ErrorCallback& error_callback) override;
   virtual void RemoveDevice(const dbus::ObjectPath& object_path,
                             const dbus::ObjectPath& device_path,
                             const base::Closure& callback,
-                            const ErrorCallback& error_callback) OVERRIDE;
+                            const ErrorCallback& error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);

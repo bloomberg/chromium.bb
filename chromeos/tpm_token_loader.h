@@ -101,7 +101,7 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   void NotifyTPMTokenReady();
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged() OVERRIDE;
+  virtual void LoggedInStateChanged() override;
 
   bool initialized_for_test_;
 

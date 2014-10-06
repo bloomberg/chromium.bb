@@ -127,18 +127,18 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   bool HasPendingConnectRequest();
 
   // NetworkStateHandlerObserver
-  virtual void NetworkListChanged() OVERRIDE;
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
+  virtual void NetworkListChanged() override;
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged() OVERRIDE;
+  virtual void LoggedInStateChanged() override;
 
   // CertLoader::Observer
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) OVERRIDE;
+                                    bool initial_load) override;
 
   // NetworkPolicyObserver
-  virtual void PolicyChanged(const std::string& userhash) OVERRIDE;
+  virtual void PolicyChanged(const std::string& userhash) override;
 
  private:
   friend class NetworkHandler;

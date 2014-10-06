@@ -115,21 +115,21 @@ class ImeKeyboardX11 : public ImeKeyboard {
   virtual ~ImeKeyboardX11() {}
 
   // Adds/removes observer.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
 
   // ImeKeyboard:
   virtual bool SetCurrentKeyboardLayoutByName(
-      const std::string& layout_name) OVERRIDE;
-  virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE;
-  virtual void ReapplyCurrentModifierLockStatus() OVERRIDE;
-  virtual void DisableNumLock() OVERRIDE;
-  virtual void SetCapsLockEnabled(bool enable_caps_lock) OVERRIDE;
-  virtual bool CapsLockIsEnabled() OVERRIDE;
-  virtual bool IsISOLevel5ShiftAvailable() const OVERRIDE;
-  virtual bool IsAltGrAvailable() const OVERRIDE;
-  virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
-  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
+      const std::string& layout_name) override;
+  virtual bool ReapplyCurrentKeyboardLayout() override;
+  virtual void ReapplyCurrentModifierLockStatus() override;
+  virtual void DisableNumLock() override;
+  virtual void SetCapsLockEnabled(bool enable_caps_lock) override;
+  virtual bool CapsLockIsEnabled() override;
+  virtual bool IsISOLevel5ShiftAvailable() const override;
+  virtual bool IsAltGrAvailable() const override;
+  virtual bool SetAutoRepeatEnabled(bool enabled) override;
+  virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
 
  private:
   // Returns a mask for Num Lock (e.g. 1U << 4). Returns 0 on error.

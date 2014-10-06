@@ -90,7 +90,7 @@ class NfcClientTest : public testing::Test {
   NfcClientTest() : response_(NULL) {}
   virtual ~NfcClientTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create the mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
@@ -222,7 +222,7 @@ class NfcClientTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     tag_client_->RemoveObserver(&mock_tag_observer_);
     device_client_->RemoveObserver(&mock_device_observer_);
     adapter_client_->RemoveObserver(&mock_adapter_observer_);

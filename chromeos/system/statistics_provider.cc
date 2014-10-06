@@ -91,11 +91,11 @@ class StatisticsProviderImpl : public StatisticsProvider {
   // StatisticsProvider implementation:
   virtual void StartLoadingMachineStatistics(
       const scoped_refptr<base::TaskRunner>& file_task_runner,
-      bool load_oem_manifest) OVERRIDE;
+      bool load_oem_manifest) override;
   virtual bool GetMachineStatistic(const std::string& name,
-                                   std::string* result) OVERRIDE;
-  virtual bool GetMachineFlag(const std::string& name, bool* result) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+                                   std::string* result) override;
+  virtual bool GetMachineFlag(const std::string& name, bool* result) override;
+  virtual void Shutdown() override;
 
   static StatisticsProviderImpl* GetInstance();
 

@@ -23,78 +23,78 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   virtual ~FakeShillDeviceClient();
 
   // ShillDeviceClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE;
+      ShillPropertyChangedObserver* observer) override;
   virtual void RemovePropertyChangedObserver(
       const dbus::ObjectPath& device_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE;
+      ShillPropertyChangedObserver* observer) override;
   virtual void GetProperties(const dbus::ObjectPath& device_path,
-                             const DictionaryValueCallback& callback) OVERRIDE;
+                             const DictionaryValueCallback& callback) override;
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
-                           const VoidDBusMethodCallback& callback) OVERRIDE;
+                           const VoidDBusMethodCallback& callback) override;
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
                            const base::Closure& callback,
-                           const ErrorCallback& error_callback) OVERRIDE;
+                           const ErrorCallback& error_callback) override;
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) OVERRIDE;
+                             const VoidDBusMethodCallback& callback) override;
   virtual void AddIPConfig(
       const dbus::ObjectPath& device_path,
       const std::string& method,
-      const ObjectPathDBusMethodCallback& callback) OVERRIDE;
+      const ObjectPathDBusMethodCallback& callback) override;
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
                         const base::Closure& callback,
-                        const ErrorCallback& error_callback) OVERRIDE;
+                        const ErrorCallback& error_callback) override;
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
                          const base::Closure& callback,
-                         const ErrorCallback& error_callback) OVERRIDE;
+                         const ErrorCallback& error_callback) override;
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
                         const base::Closure& callback,
-                        const ErrorCallback& error_callback) OVERRIDE;
+                        const ErrorCallback& error_callback) override;
   virtual void SetCarrier(const dbus::ObjectPath& device_path,
                           const std::string& carrier,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
   virtual void Reset(const dbus::ObjectPath& device_path,
                      const base::Closure& callback,
-                     const ErrorCallback& error_callback) OVERRIDE;
+                     const ErrorCallback& error_callback) override;
   virtual void PerformTDLSOperation(
       const dbus::ObjectPath& device_path,
       const std::string& operation,
       const std::string& peer,
       const StringCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
 
-  virtual ShillDeviceClient::TestInterface* GetTestInterface() OVERRIDE;
+  virtual ShillDeviceClient::TestInterface* GetTestInterface() override;
 
   // ShillDeviceClient::TestInterface overrides.
   virtual void AddDevice(const std::string& device_path,
                          const std::string& type,
-                         const std::string& name) OVERRIDE;
-  virtual void RemoveDevice(const std::string& device_path) OVERRIDE;
-  virtual void ClearDevices() OVERRIDE;
+                         const std::string& name) override;
+  virtual void RemoveDevice(const std::string& device_path) override;
+  virtual void ClearDevices() override;
   virtual void SetDeviceProperty(const std::string& device_path,
                                  const std::string& name,
-                                 const base::Value& value) OVERRIDE;
-  virtual std::string GetDevicePathForType(const std::string& type) OVERRIDE;
+                                 const base::Value& value) override;
+  virtual std::string GetDevicePathForType(const std::string& type) override;
 
   void set_tdls_busy_count(int count) { tdls_busy_count_ = count; }
 

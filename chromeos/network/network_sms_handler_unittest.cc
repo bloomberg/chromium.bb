@@ -25,7 +25,7 @@ class TestObserver : public NetworkSmsHandler::Observer {
   TestObserver() {}
   virtual ~TestObserver() {}
 
-  virtual void MessageReceived(const base::DictionaryValue& message) OVERRIDE {
+  virtual void MessageReceived(const base::DictionaryValue& message) override {
     std::string text;
     if (message.GetStringWithoutPathExpansion(
             NetworkSmsHandler::kTextKey, &text)) {
@@ -53,7 +53,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   NetworkSmsHandlerTest() {}
   virtual ~NetworkSmsHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Append '--sms-test-messages' to the command line to tell
     // SMSClientStubImpl to generate a series of test SMS messages.
     CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -80,7 +80,7 @@ class NetworkSmsHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     network_sms_handler_.reset();
     DBusThreadManager::Shutdown();
   }

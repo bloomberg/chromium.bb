@@ -68,20 +68,20 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   // PowerManagerClient overrides:
 
-  virtual void AddObserver(Observer* observer) OVERRIDE {
+  virtual void AddObserver(Observer* observer) override {
     CHECK(observer);  // http://crbug.com/119976
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) OVERRIDE {
+  virtual bool HasObserver(Observer* observer) override {
     return observers_.HasObserver(observer);
   }
 
-  virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
+  virtual void DecreaseScreenBrightness(bool allow_off) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kDecreaseScreenBrightnessMethod);
@@ -93,23 +93,23 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void IncreaseScreenBrightness() OVERRIDE {
+  virtual void IncreaseScreenBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kIncreaseScreenBrightnessMethod);
   }
 
-  virtual void DecreaseKeyboardBrightness() OVERRIDE {
+  virtual void DecreaseKeyboardBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kDecreaseKeyboardBrightnessMethod);
   }
 
-  virtual void IncreaseKeyboardBrightness() OVERRIDE {
+  virtual void IncreaseKeyboardBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kIncreaseKeyboardBrightnessMethod);
   }
 
   virtual void SetScreenBrightnessPercent(double percent,
-                                          bool gradual) OVERRIDE {
+                                          bool gradual) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kSetScreenBrightnessPercentMethod);
@@ -126,7 +126,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void GetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
+      const GetScreenBrightnessPercentCallback& callback) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kGetScreenBrightnessPercentMethod);
@@ -137,7 +137,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void RequestStatusUpdate() OVERRIDE {
+  virtual void RequestStatusUpdate() override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kGetPowerSupplyPropertiesMethod);
@@ -148,20 +148,20 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void RequestSuspend() OVERRIDE {
+  virtual void RequestSuspend() override {
     SimpleMethodCallToPowerManager(power_manager::kRequestSuspendMethod);
   }
 
-  virtual void RequestRestart() OVERRIDE {
+  virtual void RequestRestart() override {
     SimpleMethodCallToPowerManager(power_manager::kRequestRestartMethod);
   }
 
-  virtual void RequestShutdown() OVERRIDE {
+  virtual void RequestShutdown() override {
     SimpleMethodCallToPowerManager(power_manager::kRequestShutdownMethod);
   }
 
   virtual void NotifyUserActivity(
-      power_manager::UserActivityType type) OVERRIDE {
+      power_manager::UserActivityType type) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kHandleUserActivityMethod);
@@ -174,7 +174,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void NotifyVideoActivity(bool is_fullscreen) OVERRIDE {
+  virtual void NotifyVideoActivity(bool is_fullscreen) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kHandleVideoActivityMethod);
@@ -188,7 +188,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void SetPolicy(
-      const power_manager::PowerManagementPolicy& policy) OVERRIDE {
+      const power_manager::PowerManagementPolicy& policy) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kSetPolicyMethod);
@@ -203,7 +203,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void SetIsProjecting(bool is_projecting) OVERRIDE {
+  virtual void SetIsProjecting(bool is_projecting) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kSetIsProjectingMethod);
@@ -216,7 +216,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     last_is_projecting_ = is_projecting;
   }
 
-  virtual base::Closure GetSuspendReadinessCallback() OVERRIDE {
+  virtual base::Closure GetSuspendReadinessCallback() override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);
     num_pending_suspend_readiness_callbacks_++;
@@ -225,12 +225,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
                       suspending_from_dark_resume_);
   }
 
-  virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE {
+  virtual int GetNumPendingSuspendReadinessCallbacks() override {
     return num_pending_suspend_readiness_callbacks_;
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
@@ -751,7 +751,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
 
   // PowerManagerClient overrides:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     ParseCommandLineSwitch();
     if (power_cycle_delay_ != base::TimeDelta()) {
       update_timer_.Start(FROM_HERE,
@@ -761,70 +761,70 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     }
   }
 
-  virtual void AddObserver(Observer* observer) OVERRIDE {
+  virtual void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) OVERRIDE {
+  virtual bool HasObserver(Observer* observer) override {
     return observers_.HasObserver(observer);
   }
 
-  virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
+  virtual void DecreaseScreenBrightness(bool allow_off) override {
     VLOG(1) << "Requested to descrease screen brightness";
     SetBrightness(brightness_ - 5.0, true);
   }
 
-  virtual void IncreaseScreenBrightness() OVERRIDE {
+  virtual void IncreaseScreenBrightness() override {
     VLOG(1) << "Requested to increase screen brightness";
     SetBrightness(brightness_ + 5.0, true);
   }
 
   virtual void SetScreenBrightnessPercent(double percent,
-                                          bool gradual) OVERRIDE {
+                                          bool gradual) override {
     VLOG(1) << "Requested to set screen brightness to " << percent << "% "
             << (gradual ? "gradually" : "instantaneously");
     SetBrightness(percent, false);
   }
 
   virtual void GetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
+      const GetScreenBrightnessPercentCallback& callback) override {
     callback.Run(brightness_);
   }
 
-  virtual void DecreaseKeyboardBrightness() OVERRIDE {
+  virtual void DecreaseKeyboardBrightness() override {
     VLOG(1) << "Requested to descrease keyboard brightness";
   }
 
-  virtual void IncreaseKeyboardBrightness() OVERRIDE {
+  virtual void IncreaseKeyboardBrightness() override {
     VLOG(1) << "Requested to increase keyboard brightness";
   }
 
-  virtual void RequestStatusUpdate() OVERRIDE {
+  virtual void RequestStatusUpdate() override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&PowerManagerClientStubImpl::UpdateStatus,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void RequestSuspend() OVERRIDE {}
-  virtual void RequestRestart() OVERRIDE {}
-  virtual void RequestShutdown() OVERRIDE {}
+  virtual void RequestSuspend() override {}
+  virtual void RequestRestart() override {}
+  virtual void RequestShutdown() override {}
 
   virtual void NotifyUserActivity(
-      power_manager::UserActivityType type) OVERRIDE {}
-  virtual void NotifyVideoActivity(bool is_fullscreen) OVERRIDE {}
+      power_manager::UserActivityType type) override {}
+  virtual void NotifyVideoActivity(bool is_fullscreen) override {}
   virtual void SetPolicy(
-      const power_manager::PowerManagementPolicy& policy) OVERRIDE {}
-  virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
-  virtual base::Closure GetSuspendReadinessCallback() OVERRIDE {
+      const power_manager::PowerManagementPolicy& policy) override {}
+  virtual void SetIsProjecting(bool is_projecting) override {}
+  virtual base::Closure GetSuspendReadinessCallback() override {
     num_pending_suspend_readiness_callbacks_++;
     return base::Bind(&PowerManagerClientStubImpl::HandleSuspendReadiness,
                       weak_ptr_factory_.GetWeakPtr());
   }
-  virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE {
+  virtual int GetNumPendingSuspendReadinessCallbacks() override {
     return num_pending_suspend_readiness_callbacks_;
   }
 

@@ -32,13 +32,13 @@ class CHROMEOS_EXPORT TestAttemptState : public AuthAttemptState {
                               cryptohome::MountError cryptohome_code);
 
   // To allow state to be queried on the main thread during tests.
-  virtual bool online_complete() OVERRIDE;
-  virtual const AuthFailure& online_outcome() OVERRIDE;
-  virtual bool is_first_time_user() OVERRIDE;
-  virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy() OVERRIDE;
-  virtual bool cryptohome_complete() OVERRIDE;
-  virtual bool cryptohome_outcome() OVERRIDE;
-  virtual cryptohome::MountError cryptohome_code() OVERRIDE;
+  virtual bool online_complete() override;
+  virtual const AuthFailure& online_outcome() override;
+  virtual bool is_first_time_user() override;
+  virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy() override;
+  virtual bool cryptohome_complete() override;
+  virtual bool cryptohome_outcome() override;
+  virtual cryptohome::MountError cryptohome_code() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAttemptState);

@@ -17,11 +17,11 @@ class FakeSMSClient : public SMSClient {
   FakeSMSClient();
   virtual ~FakeSMSClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
 
   virtual void GetAll(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
-                      const GetAllCallback& callback) OVERRIDE;
+                      const GetAllCallback& callback) override;
 
  private:
   void OnGetAll(base::DictionaryValue* sms, const GetAllCallback& callback);

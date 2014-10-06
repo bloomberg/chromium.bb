@@ -90,7 +90,7 @@ class ProcessOutputWatcherTest : public testing::Test {
 
   virtual ~ProcessOutputWatcherTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (output_watch_thread_started_)
       output_watch_thread_->Stop();
   }

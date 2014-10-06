@@ -20,36 +20,36 @@ class FakeCrosDisksClient : public CrosDisksClient {
   virtual ~FakeCrosDisksClient();
 
   // CrosDisksClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
                      const base::Closure& callback,
-                     const base::Closure& error_callback) OVERRIDE;
+                     const base::Closure& error_callback) override;
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
                        const base::Closure& callback,
-                       const base::Closure& error_callback) OVERRIDE;
+                       const base::Closure& error_callback) override;
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE;
+      const base::Closure& error_callback) override;
   virtual void EnumerateMountEntries(
       const EnumerateMountEntriesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE;
+      const base::Closure& error_callback) override;
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
                       const base::Closure& callback,
-                      const base::Closure& error_callback) OVERRIDE;
+                      const base::Closure& error_callback) override;
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
-      const base::Closure& error_callback) OVERRIDE;
+      const base::Closure& error_callback) override;
   virtual void SetMountEventHandler(
-      const MountEventHandler& mount_event_handler) OVERRIDE;
+      const MountEventHandler& mount_event_handler) override;
   virtual void SetMountCompletedHandler(
-      const MountCompletedHandler& mount_completed_handler) OVERRIDE;
+      const MountCompletedHandler& mount_completed_handler) override;
   virtual void SetFormatCompletedHandler(
-      const FormatCompletedHandler& format_completed_handler) OVERRIDE;
+      const FormatCompletedHandler& format_completed_handler) override;
 
   // Used in tests to simulate signals sent by cros disks layer.
   // Invokes handlers set in |SetMountEventHandler|, |SetMountCompletedHandler|,

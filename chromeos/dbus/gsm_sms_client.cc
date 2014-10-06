@@ -168,14 +168,14 @@ class GsmSMSClientImpl : public GsmSMSClient {
   virtual void SetSmsReceivedHandler(
       const std::string& service_name,
       const dbus::ObjectPath& object_path,
-      const SmsReceivedHandler& handler) OVERRIDE {
+      const SmsReceivedHandler& handler) override {
     GetProxy(service_name, object_path)->SetSmsReceivedHandler(handler);
   }
 
   // GsmSMSClient override.
   virtual void ResetSmsReceivedHandler(
       const std::string& service_name,
-      const dbus::ObjectPath& object_path) OVERRIDE {
+      const dbus::ObjectPath& object_path) override {
     GetProxy(service_name, object_path)->ResetSmsReceivedHandler();
   }
 
@@ -183,7 +183,7 @@ class GsmSMSClientImpl : public GsmSMSClient {
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       uint32 index,
-                      const DeleteCallback& callback) OVERRIDE {
+                      const DeleteCallback& callback) override {
     GetProxy(service_name, object_path)->Delete(index, callback);
   }
 
@@ -191,24 +191,24 @@ class GsmSMSClientImpl : public GsmSMSClient {
   virtual void Get(const std::string& service_name,
                    const dbus::ObjectPath& object_path,
                    uint32 index,
-                   const GetCallback& callback) OVERRIDE {
+                   const GetCallback& callback) override {
     GetProxy(service_name, object_path)->Get(index, callback);
   }
 
   // GsmSMSClient override.
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
-                    const ListCallback& callback) OVERRIDE {
+                    const ListCallback& callback) override {
     GetProxy(service_name, object_path)->List(callback);
   }
 
   // GsmSMSClient override.
   virtual void RequestUpdate(const std::string& service_name,
-                             const dbus::ObjectPath& object_path) OVERRIDE {
+                             const dbus::ObjectPath& object_path) override {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE { bus_ = bus; }
+  virtual void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   typedef std::map<std::pair<std::string, std::string>, SMSProxy*> ProxyMap;

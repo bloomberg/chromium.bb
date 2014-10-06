@@ -137,7 +137,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
 
   // ShillPropertyChangedObserver overrides
   virtual void OnPropertyChanged(const std::string& key,
-                                 const base::Value& value) OVERRIDE;
+                                 const base::Value& value) override;
 
  private:
   typedef std::map<ManagedState::ManagedType, std::set<std::string> >

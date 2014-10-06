@@ -67,7 +67,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
   ONCCertificateImporterImplTest() {}
   virtual ~ONCCertificateImporterImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(public_nssdb_.is_open());
     ASSERT_TRUE(private_nssdb_.is_open());
 
@@ -84,7 +84,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
     EXPECT_TRUE(ListCertsInPrivateSlot().empty());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     thread_task_runner_handle_.reset();
     task_runner_ = NULL;
   }

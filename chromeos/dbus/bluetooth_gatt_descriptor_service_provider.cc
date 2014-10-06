@@ -87,7 +87,7 @@ class BluetoothGattDescriptorServiceProviderImpl
   }
 
   // BluetoothGattDescriptorServiceProvider override.
-  virtual void SendValueChanged(const std::vector<uint8>& value) OVERRIDE {
+  virtual void SendValueChanged(const std::vector<uint8>& value) override {
     VLOG(2) << "Emitting a PropertiesChanged signal for descriptor value.";
     dbus::Signal signal(
         dbus::kDBusPropertiesInterface,

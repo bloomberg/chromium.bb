@@ -19,13 +19,13 @@ class CHROMEOS_EXPORT FakeLorgnetteManagerClient
   FakeLorgnetteManagerClient();
   virtual ~FakeLorgnetteManagerClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
 
-  virtual void ListScanners(const ListScannersCallback& callback) OVERRIDE;
+  virtual void ListScanners(const ListScannersCallback& callback) override;
   virtual void ScanImage(std::string device_name,
                          base::PlatformFile file,
                          const ScanProperties& properties,
-                         const ScanImageCallback& callback) OVERRIDE;
+                         const ScanImageCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeLorgnetteManagerClient);

@@ -21,7 +21,7 @@ class PowerPolicyControllerTest : public testing::Test {
   PowerPolicyControllerTest() {}
   virtual ~PowerPolicyControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     fake_power_client_ = new FakePowerManagerClient;
@@ -32,7 +32,7 @@ class PowerPolicyControllerTest : public testing::Test {
     policy_controller_->Init(DBusThreadManager::Get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     policy_controller_.reset();
     DBusThreadManager::Shutdown();
   }

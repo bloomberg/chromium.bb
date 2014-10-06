@@ -49,7 +49,7 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
 
   // ShillPropertyChangedObserver
   virtual void OnPropertyChanged(const std::string& name,
-                                 const base::Value& value) OVERRIDE;
+                                 const base::Value& value) override;
 
  private:
   friend class NetworkHandler;

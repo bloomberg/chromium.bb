@@ -33,14 +33,14 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
 
   // NetworkChangeNotifier overrides.
   virtual net::NetworkChangeNotifier::ConnectionType
-      GetCurrentConnectionType() const OVERRIDE;
+      GetCurrentConnectionType() const override;
 
   // PowerManagerClient::Observer overrides.
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* default_network) OVERRIDE;
+      const chromeos::NetworkState* default_network) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierChromeosTest,

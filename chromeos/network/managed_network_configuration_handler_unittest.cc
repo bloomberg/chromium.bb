@@ -180,7 +180,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   virtual ~ManagedNetworkConfigurationHandlerTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
     mock_manager_client_ = new StrictMock<MockShillManagerClient>();
@@ -222,7 +222,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     managed_network_configuration_handler_.reset();
     network_configuration_handler_.reset();
     network_profile_handler_.reset();
@@ -809,7 +809,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
 class ManagedNetworkConfigurationHandlerShutdownTest
     : public ManagedNetworkConfigurationHandlerTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ManagedNetworkConfigurationHandlerTest::SetUp();
     ON_CALL(*mock_profile_client_, GetProperties(_, _, _)).WillByDefault(
         Invoke(&ManagedNetworkConfigurationHandlerShutdownTest::GetProperties));

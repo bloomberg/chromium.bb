@@ -27,19 +27,19 @@ class SystemClockClientImpl : public SystemClockClient {
   virtual ~SystemClockClientImpl() {
   }
 
-  virtual void AddObserver(Observer* observer) OVERRIDE {
+  virtual void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) OVERRIDE {
+  virtual bool HasObserver(Observer* observer) override {
     return observers_.HasObserver(observer);
   }
 
-  virtual void SetTime(int64 time_in_seconds) OVERRIDE {
+  virtual void SetTime(int64 time_in_seconds) override {
     // Always try to set the time, because |can_set_time_| may be stale.
     dbus::MethodCall method_call(system_clock::kSystemClockInterface,
                                  system_clock::kSystemClockSet);
@@ -50,10 +50,10 @@ class SystemClockClientImpl : public SystemClockClient {
                                     dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual bool CanSetTime() OVERRIDE { return can_set_time_; }
+  virtual bool CanSetTime() override { return can_set_time_; }
 
  protected:
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
+  virtual void Init(dbus::Bus* bus) override {
     system_clock_proxy_ = bus->GetObjectProxy(
         system_clock::kSystemClockServiceName,
         dbus::ObjectPath(system_clock::kSystemClockServicePath));

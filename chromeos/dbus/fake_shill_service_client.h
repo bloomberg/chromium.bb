@@ -26,54 +26,54 @@ class CHROMEOS_EXPORT FakeShillServiceClient
   virtual ~FakeShillServiceClient();
 
   // ShillServiceClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE;
+      ShillPropertyChangedObserver* observer) override;
   virtual void RemovePropertyChangedObserver(
       const dbus::ObjectPath& service_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE;
+      ShillPropertyChangedObserver* observer) override;
   virtual void GetProperties(const dbus::ObjectPath& service_path,
-                             const DictionaryValueCallback& callback) OVERRIDE;
+                             const DictionaryValueCallback& callback) override;
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
                            const base::Closure& callback,
-                           const ErrorCallback& error_callback) OVERRIDE;
+                           const ErrorCallback& error_callback) override;
   virtual void SetProperties(const dbus::ObjectPath& service_path,
                              const base::DictionaryValue& properties,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) OVERRIDE;
+                             const ErrorCallback& error_callback) override;
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) OVERRIDE;
+                             const ErrorCallback& error_callback) override;
   virtual void ClearProperties(const dbus::ObjectPath& service_path,
                                const std::vector<std::string>& names,
                                const ListValueCallback& callback,
-                               const ErrorCallback& error_callback) OVERRIDE;
+                               const ErrorCallback& error_callback) override;
   virtual void Connect(const dbus::ObjectPath& service_path,
                        const base::Closure& callback,
-                       const ErrorCallback& error_callback) OVERRIDE;
+                       const ErrorCallback& error_callback) override;
   virtual void Disconnect(const dbus::ObjectPath& service_path,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
   virtual void Remove(const dbus::ObjectPath& service_path,
                       const base::Closure& callback,
-                      const ErrorCallback& error_callback) OVERRIDE;
+                      const ErrorCallback& error_callback) override;
   virtual void ActivateCellularModem(
       const dbus::ObjectPath& service_path,
       const std::string& carrier,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
   virtual void CompleteCellularActivation(
       const dbus::ObjectPath& service_path,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
   virtual void GetLoadableProfileEntries(
       const dbus::ObjectPath& service_path,
-      const DictionaryValueCallback& callback) OVERRIDE;
-  virtual ShillServiceClient::TestInterface* GetTestInterface() OVERRIDE;
+      const DictionaryValueCallback& callback) override;
+  virtual ShillServiceClient::TestInterface* GetTestInterface() override;
 
   // ShillServiceClient::TestInterface overrides.
   virtual void AddService(const std::string& service_path,
@@ -81,30 +81,30 @@ class CHROMEOS_EXPORT FakeShillServiceClient
                           const std::string& name,
                           const std::string& type,
                           const std::string& state,
-                          bool visible) OVERRIDE;
+                          bool visible) override;
   virtual void AddServiceWithIPConfig(const std::string& service_path,
                                       const std::string& guid,
                                       const std::string& name,
                                       const std::string& type,
                                       const std::string& state,
                                       const std::string& ipconfig_path,
-                                      bool visible) OVERRIDE;
+                                      bool visible) override;
   virtual base::DictionaryValue* SetServiceProperties(
       const std::string& service_path,
       const std::string& guid,
       const std::string& name,
       const std::string& type,
       const std::string& state,
-      bool visible) OVERRIDE;
-  virtual void RemoveService(const std::string& service_path) OVERRIDE;
+      bool visible) override;
+  virtual void RemoveService(const std::string& service_path) override;
   virtual bool SetServiceProperty(const std::string& service_path,
                                   const std::string& property,
-                                  const base::Value& value) OVERRIDE;
+                                  const base::Value& value) override;
   virtual const base::DictionaryValue* GetServiceProperties(
-      const std::string& service_path) const OVERRIDE;
-  virtual void ClearServices() OVERRIDE;
+      const std::string& service_path) const override;
+  virtual void ClearServices() override;
   virtual void SetConnectBehavior(const std::string& service_path,
-                                  const base::Closure& behavior) OVERRIDE;
+                                  const base::Closure& behavior) override;
 
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;

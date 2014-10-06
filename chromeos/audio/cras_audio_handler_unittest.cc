@@ -193,31 +193,31 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
-  virtual void OnActiveOutputNodeChanged() OVERRIDE {
+  virtual void OnActiveOutputNodeChanged() override {
     ++active_output_node_changed_count_;
   }
 
-  virtual void OnActiveInputNodeChanged() OVERRIDE {
+  virtual void OnActiveInputNodeChanged() override {
     ++active_input_node_changed_count_;
   }
 
-  virtual void OnAudioNodesChanged() OVERRIDE {
+  virtual void OnAudioNodesChanged() override {
     ++audio_nodes_changed_count_;
   }
 
-  virtual void OnOutputMuteChanged() OVERRIDE {
+  virtual void OnOutputMuteChanged() override {
     ++output_mute_changed_count_;
   }
 
-  virtual void OnInputMuteChanged() OVERRIDE {
+  virtual void OnInputMuteChanged() override {
     ++input_mute_changed_count_;
   }
 
-  virtual void OnOutputVolumeChanged() OVERRIDE {
+  virtual void OnOutputVolumeChanged() override {
     ++output_volume_changed_count_;
   }
 
-  virtual void OnInputGainChanged() OVERRIDE {
+  virtual void OnInputGainChanged() override {
     ++input_gain_changed_count_;
   }
 
@@ -240,10 +240,10 @@ class CrasAudioHandlerTest : public testing::Test {
   }
   virtual ~CrasAudioHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     cras_audio_handler_->RemoveAudioObserver(test_observer_.get());
     test_observer_.reset();
     CrasAudioHandler::Shutdown();

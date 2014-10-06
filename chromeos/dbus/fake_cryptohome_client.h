@@ -18,117 +18,117 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   FakeCryptohomeClient();
   virtual ~FakeCryptohomeClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void SetAsyncCallStatusHandlers(
       const AsyncCallStatusHandler& handler,
-      const AsyncCallStatusWithDataHandler& data_handler) OVERRIDE;
-  virtual void ResetAsyncCallStatusHandlers() OVERRIDE;
+      const AsyncCallStatusWithDataHandler& data_handler) override;
+  virtual void ResetAsyncCallStatusHandlers() override;
   virtual void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) OVERRIDE;
-  virtual void IsMounted(const BoolDBusMethodCallback& callback) OVERRIDE;
-  virtual bool Unmount(bool* success) OVERRIDE;
+      const WaitForServiceToBeAvailableCallback& callback) override;
+  virtual void IsMounted(const BoolDBusMethodCallback& callback) override;
+  virtual bool Unmount(bool* success) override;
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             const AsyncMethodCallback& callback) OVERRIDE;
+                             const AsyncMethodCallback& callback) override;
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               const AsyncMethodCallback& callback) OVERRIDE;
+                               const AsyncMethodCallback& callback) override;
   virtual void AsyncRemove(const std::string& username,
-                           const AsyncMethodCallback& callback) OVERRIDE;
-  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE;
+                           const AsyncMethodCallback& callback) override;
+  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) override;
   virtual void GetSanitizedUsername(
       const std::string& username,
-      const StringDBusMethodCallback& callback) OVERRIDE;
+      const StringDBusMethodCallback& callback) override;
   virtual std::string BlockingGetSanitizedUsername(
-      const std::string& username) OVERRIDE;
+      const std::string& username) override;
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           int flags,
-                          const AsyncMethodCallback& callback) OVERRIDE;
+                          const AsyncMethodCallback& callback) override;
   virtual void AsyncAddKey(const std::string& username,
                            const std::string& key,
                            const std::string& new_key,
-                           const AsyncMethodCallback& callback) OVERRIDE;
-  virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE;
+                           const AsyncMethodCallback& callback) override;
+  virtual void AsyncMountGuest(const AsyncMethodCallback& callback) override;
   virtual void AsyncMountPublic(const std::string& public_mount_id,
                                 int flags,
-                                const AsyncMethodCallback& callback) OVERRIDE;
-  virtual void TpmIsReady(const BoolDBusMethodCallback& callback) OVERRIDE;
-  virtual void TpmIsEnabled(const BoolDBusMethodCallback& callback) OVERRIDE;
-  virtual bool CallTpmIsEnabledAndBlock(bool* enabled) OVERRIDE;
+                                const AsyncMethodCallback& callback) override;
+  virtual void TpmIsReady(const BoolDBusMethodCallback& callback) override;
+  virtual void TpmIsEnabled(const BoolDBusMethodCallback& callback) override;
+  virtual bool CallTpmIsEnabledAndBlock(bool* enabled) override;
   virtual void TpmGetPassword(
-      const StringDBusMethodCallback& callback) OVERRIDE;
-  virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) OVERRIDE;
-  virtual bool CallTpmIsOwnedAndBlock(bool* owned) OVERRIDE;
-  virtual void TpmIsBeingOwned(const BoolDBusMethodCallback& callback) OVERRIDE;
-  virtual bool CallTpmIsBeingOwnedAndBlock(bool* owning) OVERRIDE;
+      const StringDBusMethodCallback& callback) override;
+  virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) override;
+  virtual bool CallTpmIsOwnedAndBlock(bool* owned) override;
+  virtual void TpmIsBeingOwned(const BoolDBusMethodCallback& callback) override;
+  virtual bool CallTpmIsBeingOwnedAndBlock(bool* owning) override;
   virtual void TpmCanAttemptOwnership(
-      const VoidDBusMethodCallback& callback) OVERRIDE;
+      const VoidDBusMethodCallback& callback) override;
   virtual void TpmClearStoredPassword(
-      const VoidDBusMethodCallback& callback) OVERRIDE;
-  virtual bool CallTpmClearStoredPasswordAndBlock() OVERRIDE;
+      const VoidDBusMethodCallback& callback) override;
+  virtual bool CallTpmClearStoredPasswordAndBlock() override;
   virtual void Pkcs11IsTpmTokenReady(
-      const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
   virtual void Pkcs11GetTpmTokenInfo(
-      const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE;
+      const Pkcs11GetTpmTokenInfoCallback& callback) override;
   virtual void Pkcs11GetTpmTokenInfoForUser(
       const std::string& username,
-      const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE;
+      const Pkcs11GetTpmTokenInfoCallback& callback) override;
   virtual bool InstallAttributesGet(const std::string& name,
                                     std::vector<uint8>* value,
-                                    bool* successful) OVERRIDE;
+                                    bool* successful) override;
   virtual bool InstallAttributesSet(const std::string& name,
                                     const std::vector<uint8>& value,
-                                    bool* successful) OVERRIDE;
-  virtual bool InstallAttributesFinalize(bool* successful) OVERRIDE;
+                                    bool* successful) override;
+  virtual bool InstallAttributesFinalize(bool* successful) override;
   virtual void InstallAttributesIsReady(
-      const BoolDBusMethodCallback& callback) OVERRIDE;
-  virtual bool InstallAttributesIsInvalid(bool* is_invalid) OVERRIDE;
-  virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
+  virtual bool InstallAttributesIsInvalid(bool* is_invalid) override;
+  virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) override;
   virtual void TpmAttestationIsPrepared(
-      const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
   virtual void TpmAttestationIsEnrolled(
-      const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
   virtual void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void AsyncTpmAttestationEnroll(
       chromeos::attestation::PrivacyCAType pca_type,
       const std::string& pca_response,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void AsyncTpmAttestationCreateCertRequest(
       chromeos::attestation::PrivacyCAType pca_type,
       attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void TpmAttestationDoesKeyExist(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
   virtual void TpmAttestationGetCertificate(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) OVERRIDE;
+      const DataMethodCallback& callback) override;
   virtual void TpmAttestationGetPublicKey(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) OVERRIDE;
+      const DataMethodCallback& callback) override;
   virtual void TpmAttestationRegisterKey(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
@@ -137,67 +137,67 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
       const std::string& challenge,
-      const AsyncMethodCallback& callback) OVERRIDE;
+      const AsyncMethodCallback& callback) override;
   virtual void TpmAttestationGetKeyPayload(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) OVERRIDE;
+      const DataMethodCallback& callback) override;
   virtual void TpmAttestationSetKeyPayload(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_name,
       const std::string& payload,
-      const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
   virtual void TpmAttestationDeleteKeys(
       attestation::AttestationKeyType key_type,
       const std::string& user_id,
       const std::string& key_prefix,
-      const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) override;
   virtual void GetKeyDataEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::GetKeyDataRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void CheckKeyEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::CheckKeyRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void MountEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::MountRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void AddKeyEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::AddKeyRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void UpdateKeyEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::UpdateKeyRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void RemoveKeyEx(const cryptohome::AccountIdentifier& id,
                            const cryptohome::AuthorizationRequest& auth,
                            const cryptohome::RemoveKeyRequest& request,
-                           const ProtobufMethodCallback& callback) OVERRIDE;
+                           const ProtobufMethodCallback& callback) override;
   virtual void GetBootAttribute(
       const cryptohome::GetBootAttributeRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void SetBootAttribute(
       const cryptohome::SetBootAttributeRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
   virtual void FlushAndSignBootAttributes(
       const cryptohome::FlushAndSignBootAttributesRequest& request,
-      const ProtobufMethodCallback& callback) OVERRIDE;
+      const ProtobufMethodCallback& callback) override;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.

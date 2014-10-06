@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT Normalizer : public Mapper {
   virtual scoped_ptr<base::DictionaryValue> MapObject(
       const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
-      bool* error) OVERRIDE;
+      bool* error) override;
 
   void NormalizeCertificate(base::DictionaryValue* cert);
   void NormalizeEAP(base::DictionaryValue* eap);

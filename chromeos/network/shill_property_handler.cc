@@ -87,7 +87,7 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
 
   // ShillPropertyChangedObserver overrides.
   virtual void OnPropertyChanged(const std::string& key,
-                                 const base::Value& value) OVERRIDE {
+                                 const base::Value& value) override {
     handler_.Run(type_, path_, key, value);
   }
 

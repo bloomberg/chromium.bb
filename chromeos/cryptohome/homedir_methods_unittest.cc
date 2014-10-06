@@ -49,8 +49,8 @@ class HomedirMethodsTest : public testing::Test {
   virtual ~HomedirMethodsTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void RunProtobufMethodCallback(
       const chromeos::CryptohomeClient::ProtobufMethodCallback& callback);

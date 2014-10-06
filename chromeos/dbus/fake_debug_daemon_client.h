@@ -18,38 +18,38 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
   FakeDebugDaemonClient();
   virtual ~FakeDebugDaemonClient();
 
-  virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void Init(dbus::Bus* bus) override;
   virtual void DumpDebugLogs(bool is_compressed,
                              base::File file,
                              scoped_refptr<base::TaskRunner> task_runner,
-                             const GetDebugLogsCallback& callback) OVERRIDE;
+                             const GetDebugLogsCallback& callback) override;
   virtual void SetDebugMode(const std::string& subsystem,
-                            const SetDebugModeCallback& callback) OVERRIDE;
-  virtual void StartSystemTracing() OVERRIDE;
+                            const SetDebugModeCallback& callback) override;
+  virtual void StartSystemTracing() override;
   virtual bool RequestStopSystemTracing(
       scoped_refptr<base::TaskRunner> task_runner,
-      const StopSystemTracingCallback& callback) OVERRIDE;
+      const StopSystemTracingCallback& callback) override;
   virtual void GetRoutes(bool numeric,
                          bool ipv6,
-                         const GetRoutesCallback& callback) OVERRIDE;
+                         const GetRoutesCallback& callback) override;
   virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback)
-      OVERRIDE;
-  virtual void GetModemStatus(const GetModemStatusCallback& callback) OVERRIDE;
-  virtual void GetWiMaxStatus(const GetWiMaxStatusCallback& callback) OVERRIDE;
+      override;
+  virtual void GetModemStatus(const GetModemStatusCallback& callback) override;
+  virtual void GetWiMaxStatus(const GetWiMaxStatusCallback& callback) override;
   virtual void GetNetworkInterfaces(
-      const GetNetworkInterfacesCallback& callback) OVERRIDE;
+      const GetNetworkInterfacesCallback& callback) override;
   virtual void GetPerfData(uint32_t duration,
-                           const GetPerfDataCallback& callback) OVERRIDE;
-  virtual void GetScrubbedLogs(const GetLogsCallback& callback) OVERRIDE;
-  virtual void GetAllLogs(const GetLogsCallback& callback) OVERRIDE;
-  virtual void GetUserLogFiles(const GetLogsCallback& callback) OVERRIDE;
+                           const GetPerfDataCallback& callback) override;
+  virtual void GetScrubbedLogs(const GetLogsCallback& callback) override;
+  virtual void GetAllLogs(const GetLogsCallback& callback) override;
+  virtual void GetUserLogFiles(const GetLogsCallback& callback) override;
   virtual void TestICMP(const std::string& ip_address,
-                        const TestICMPCallback& callback) OVERRIDE;
+                        const TestICMPCallback& callback) override;
   virtual void TestICMPWithOptions(
       const std::string& ip_address,
       const std::map<std::string, std::string>& options,
-      const TestICMPCallback& callback) OVERRIDE;
-  virtual void UploadCrashes() OVERRIDE;
+      const TestICMPCallback& callback) override;
+  virtual void UploadCrashes() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
