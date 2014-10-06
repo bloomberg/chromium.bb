@@ -298,8 +298,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                           kRenderDuplicatedMediastreamAndStop));
 }
 
+// Flaky on Android.  http://crbug.com/387895
+#if defined(OS_ANDROID)
+#define MAYBE_GetAudioAndVideoStreamAndStop DISABLED_GetAudioAndVideoStreamAndStop
+#else
+#define MAYBE_GetAudioAndVideoStreamAndStop GetAudioAndVideoStreamAndStop
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetAudioAndVideoStreamAndStop) {
+                       MAYBE_GetAudioAndVideoStreamAndStop) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -432,8 +439,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
       "twoGetUserMediaAndStop({video: true, audio: true});");
 }
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on Webkit Win7 Debug bot: http://crbug.com/417756
+#define MAYBE_TwoGetUserMediaWithEqualConstraints \
+    DISABLED_TwoGetUserMediaWithEqualConstraints
+#else
+#define MAYBE_TwoGetUserMediaWithEqualConstraints \
+    TwoGetUserMediaWithEqualConstraints
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithEqualConstraints) {
+                       MAYBE_TwoGetUserMediaWithEqualConstraints) {
   std::string constraints1 = "{video: true, audio: true}";
   const std::string& constraints2 = constraints1;
   std::string expected_result = "w=640:h=480-w=640:h=480";
@@ -442,8 +457,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+#if defined(OS_WIN)
+// Flaky on Windows Debug: http://crbug.com/417756
+#define MAYBE_TwoGetUserMediaWithSecondVideoCropped \
+    DISABLED_TwoGetUserMediaWithSecondVideoCropped
+#else
+#define MAYBE_TwoGetUserMediaWithSecondVideoCropped \
+    TwoGetUserMediaWithSecondVideoCropped
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithSecondVideoCropped) {
+                       MAYBE_TwoGetUserMediaWithSecondVideoCropped) {
   std::string constraints1 = "{video: true}";
   std::string constraints2 = "{video: {mandatory: {maxHeight: 360}}}";
   std::string expected_result = "w=640:h=480-w=640:h=360";
@@ -451,8 +474,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(NDEBUG))
+// Flaky on Windows and on Linux Debug: http://crbug.com/417756
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
+    DISABLED_TwoGetUserMediaWithFirstHdSecondVga
+#else
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
+    TwoGetUserMediaWithFirstHdSecondVga
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithFirstHdSecondVga) {
+                       MAYBE_TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
       "{video: {mandatory: {minWidth:1280 , minHeight: 720}}}";
   std::string constraints2 =
