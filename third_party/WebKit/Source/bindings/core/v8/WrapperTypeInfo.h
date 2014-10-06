@@ -197,10 +197,8 @@ COMPILE_ASSERT(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct 
 template<typename T, int offset>
 inline T* getInternalField(const v8::Persistent<v8::Object>& persistent)
 {
-    // This would be unsafe, but InternalFieldCount and GetAlignedPointerFromInternalField are guaranteed not to allocate
-    const v8::Handle<v8::Object>& object = reinterpret_cast<const v8::Handle<v8::Object>&>(persistent);
-    ASSERT(offset < object->InternalFieldCount());
-    return static_cast<T*>(object->GetAlignedPointerFromInternalField(offset));
+    ASSERT(offset < v8::Object::InternalFieldCount(persistent));
+    return static_cast<T*>(v8::Object::GetAlignedPointerFromInternalField(persistent, offset));
 }
 
 template<typename T, int offset>
