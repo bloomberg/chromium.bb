@@ -26,8 +26,8 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
                             MessagePortMessageFilter* message_port_filter);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelClosing() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   int GetNextRoutingID();
   int render_process_id() const { return render_process_id_; }

@@ -60,8 +60,8 @@ class SharedWorkerServiceImplTest : public testing::Test {
             &SharedWorkerServiceImplTest::MockTryIncrementWorkerRefCount);
   }
 
-  virtual void SetUp() OVERRIDE {}
-  virtual void TearDown() OVERRIDE {
+  virtual void SetUp() override {}
+  virtual void TearDown() override {
     s_update_worker_dependency_call_count_ = 0;
     s_worker_dependency_added_ids_.clear();
     s_worker_dependency_removed_ids_.clear();
@@ -110,7 +110,7 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
                                ScopedVector<IPC::Message>* message_queue)
       : MessagePortMessageFilter(callback), message_queue_(message_queue) {}
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     if (!message_queue_) {
       delete message;
       return false;
@@ -142,7 +142,7 @@ class MockSharedWorkerMessageFilter : public SharedWorkerMessageFilter {
                                   message_port_filter),
         message_queue_(message_queue) {}
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     if (!message_queue_) {
       delete message;
       return false;
