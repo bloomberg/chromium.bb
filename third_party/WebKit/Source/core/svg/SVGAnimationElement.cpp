@@ -52,11 +52,37 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document&
     UseCounter::count(document, UseCounter::SVGAnimationElement);
 }
 
-static void parseKeyTimes(const String& string, Vector<float>& result, bool verifyOrder)
+static bool parseValues(const String& value, Vector<String>& result)
+{
+    // Per the SMIL specification, leading and trailing white space,
+    // and white space before and after semicolon separators, is allowed and will be ignored.
+    // http://www.w3.org/TR/SVG11/animate.html#ValuesAttribute
+    result.clear();
+    Vector<String> parseList;
+    value.split(';', true, parseList);
+    unsigned last = parseList.size() - 1;
+    for (unsigned i = 0; i <= last; ++i) {
+        if (parseList[i].isEmpty()) {
+            // Tolerate trailing ';'
+            if (i < last)
+                goto fail;
+        } else {
+            parseList[i] = parseList[i].stripWhiteSpace();
+            result.append(parseList[i]);
+        }
+    }
+
+    return true;
+fail:
+    result.clear();
+    return false;
+}
+
+static bool parseKeyTimes(const String& string, Vector<float>& result, bool verifyOrder)
 {
     result.clear();
     Vector<String> parseList;
-    string.split(';', parseList);
+    string.split(';', true, parseList);
     for (unsigned n = 0; n < parseList.size(); ++n) {
         String timeString = parseList[n];
         bool ok;
@@ -72,9 +98,10 @@ static void parseKeyTimes(const String& string, Vector<float>& result, bool veri
         }
         result.append(time);
     }
-    return;
+    return true;
 fail:
     result.clear();
+    return false;
 }
 
 template<typename CharType>
@@ -156,19 +183,17 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
     }
 
     if (name == SVGNames::valuesAttr) {
-        // Per the SMIL specification, leading and trailing white space,
-        // and white space before and after semicolon separators, is allowed and will be ignored.
-        // http://www.w3.org/TR/SVG11/animate.html#ValuesAttribute
-        value.string().split(';', m_values);
-        for (unsigned i = 0; i < m_values.size(); ++i)
-            m_values[i] = m_values[i].stripWhiteSpace();
-
+        if (!parseValues(value, m_values)) {
+            reportAttributeParsingError(ParsingAttributeFailedError, name, value);
+            return;
+        }
         updateAnimationMode();
         return;
     }
 
     if (name == SVGNames::keyTimesAttr) {
-        parseKeyTimes(value, m_keyTimes, true);
+        if (!parseKeyTimes(value, m_keyTimes, true))
+            reportAttributeParsingError(ParsingAttributeFailedError, name, value);
         return;
     }
 
@@ -176,7 +201,8 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
         if (isSVGAnimateMotionElement(*this)) {
             // This is specified to be an animateMotion attribute only but it is simpler to put it here
             // where the other timing calculatations are.
-            parseKeyTimes(value, m_keyPoints, false);
+            if (!parseKeyTimes(value, m_keyPoints, false))
+                reportAttributeParsingError(ParsingAttributeFailedError, name, value);
         }
         return;
     }
