@@ -74,29 +74,29 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnTimeUpdate(
       int player_id,
       base::TimeDelta current_timestamp,
-      base::TimeTicks current_time_ticks) OVERRIDE;
+      base::TimeTicks current_time_ticks) override;
   virtual void OnMediaMetadataChanged(
       int player_id,
       base::TimeDelta duration,
       int width,
       int height,
-      bool success) OVERRIDE;
-  virtual void OnPlaybackComplete(int player_id) OVERRIDE;
-  virtual void OnMediaInterrupted(int player_id) OVERRIDE;
-  virtual void OnBufferingUpdate(int player_id, int percentage) OVERRIDE;
+      bool success) override;
+  virtual void OnPlaybackComplete(int player_id) override;
+  virtual void OnMediaInterrupted(int player_id) override;
+  virtual void OnBufferingUpdate(int player_id, int percentage) override;
   virtual void OnSeekComplete(
       int player_id,
-      const base::TimeDelta& current_time) OVERRIDE;
-  virtual void OnError(int player_id, int error) OVERRIDE;
+      const base::TimeDelta& current_time) override;
+  virtual void OnError(int player_id, int error) override;
   virtual void OnVideoSizeChanged(
-      int player_id, int width, int height) OVERRIDE;
-  virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
-  virtual media::MediaUrlInterceptor* GetMediaUrlInterceptor() OVERRIDE;
-  virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
-  virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
-  virtual void RequestFullScreen(int player_id) OVERRIDE;
+      int player_id, int width, int height) override;
+  virtual media::MediaResourceGetter* GetMediaResourceGetter() override;
+  virtual media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
+  virtual media::MediaPlayerAndroid* GetFullscreenPlayer() override;
+  virtual media::MediaPlayerAndroid* GetPlayer(int player_id) override;
+  virtual void RequestFullScreen(int player_id) override;
 #if defined(VIDEO_HOLE)
-  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() OVERRIDE;
+  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() override;
 
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);

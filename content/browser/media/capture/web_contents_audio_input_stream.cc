@@ -81,11 +81,11 @@ class WebContentsAudioInputStream::Impl
   // AudioMirroringManager::MirroringDestination implementation
   virtual void QueryForMatches(
       const std::set<SourceFrameRef>& candidates,
-      const MatchesCallback& results_callback) OVERRIDE;
+      const MatchesCallback& results_callback) override;
   void QueryForMatchesOnUIThread(const std::set<SourceFrameRef>& candidates,
                                  const MatchesCallback& results_callback);
   virtual media::AudioOutputStream* AddInput(
-      const media::AudioParameters& params) OVERRIDE;
+      const media::AudioParameters& params) override;
 
   // Callback which is run when |stream| is closed.  Deletes |stream|.
   void ReleaseInput(media::VirtualAudioOutputStream* stream);

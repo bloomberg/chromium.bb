@@ -166,18 +166,18 @@ class CaptureTestView : public TestRenderWidgetHostView {
   virtual ~CaptureTestView() {}
 
   // TestRenderWidgetHostView overrides.
-  virtual gfx::Rect GetViewBounds() const OVERRIDE {
+  virtual gfx::Rect GetViewBounds() const override {
     return gfx::Rect(100, 100, 100 + kTestWidth, 100 + kTestHeight);
   }
 
-  virtual bool CanCopyToVideoFrame() const OVERRIDE {
+  virtual bool CanCopyToVideoFrame() const override {
     return controller_->CanCopyToVideoFrame();
   }
 
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) OVERRIDE {
+      const base::Callback<void(bool)>& callback) override {
     SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
     media::FillYUV(
         target.get(), SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
@@ -186,11 +186,11 @@ class CaptureTestView : public TestRenderWidgetHostView {
   }
 
   virtual void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE {
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override {
     subscriber_.reset(subscriber.release());
   }
 
-  virtual void EndFrameSubscription() OVERRIDE {
+  virtual void EndFrameSubscription() override {
     subscriber_.reset();
   }
 
@@ -252,7 +252,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkColorType color_type) OVERRIDE {
+      const SkColorType color_type) override {
     gfx::Size size = controller_->GetCopyResultSize();
     SkColor color = controller_->GetSolidColor();
 
@@ -297,7 +297,7 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,
-      bool swapped_out) OVERRIDE {
+      bool swapped_out) override {
     return new CaptureTestRenderViewHost(instance, delegate, widget_delegate,
                                          routing_id, main_frame_routing_id,
                                          swapped_out, controller_);
@@ -322,7 +322,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   virtual scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
   ReserveOutputBuffer(media::VideoFrame::Format format,
-                      const gfx::Size& dimensions) OVERRIDE {
+                      const gfx::Size& dimensions) override {
     CHECK_EQ(format, media::VideoFrame::I420);
     const size_t frame_bytes =
         media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions);
@@ -343,7 +343,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
       int length,
       const media::VideoCaptureFormat& frame_format,
       int rotation,
-      base::TimeTicks timestamp) OVERRIDE {
+      base::TimeTicks timestamp) override {
     FAIL();
   }
 
@@ -351,7 +351,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
       const scoped_refptr<Buffer>& buffer,
       const media::VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks timestamp) OVERRIDE {
+      base::TimeTicks timestamp) override {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), buffer_format.frame_size);
     EXPECT_EQ(media::PIXEL_FORMAT_I420, buffer_format.pixel_format);
     EXPECT_EQ(media::VideoFrame::I420, frame->format());
@@ -364,7 +364,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     color_callback_.Run((SkColorSetRGB(yuv[0], yuv[1], yuv[2])));
   }
 
-  virtual void OnError(const std::string& reason) OVERRIDE {
+  virtual void OnError(const std::string& reason) override {
     error_callback_.Run();
   }
 
@@ -479,32 +479,32 @@ class FakeScreen : public gfx::Screen {
   virtual ~FakeScreen() {}
 
   // gfx::Screen implementation (only what's needed for testing).
-  virtual bool IsDIPEnabled() OVERRIDE { return true; }
-  virtual gfx::Point GetCursorScreenPoint() OVERRIDE { return gfx::Point(); }
-  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE { return NULL; }
+  virtual bool IsDIPEnabled() override { return true; }
+  virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  virtual gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
   virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) OVERRIDE { return NULL; }
-  virtual int GetNumDisplays() const OVERRIDE { return 1; }
-  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+      const gfx::Point& point) override { return NULL; }
+  virtual int GetNumDisplays() const override { return 1; }
+  virtual std::vector<gfx::Display> GetAllDisplays() const override {
     return std::vector<gfx::Display>(1, the_one_display_);
   }
   virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const OVERRIDE {
+      gfx::NativeView view) const override {
     return the_one_display_;
   }
   virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE {
+      const gfx::Point& point) const override {
     return the_one_display_;
   }
   virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const OVERRIDE {
+      const gfx::Rect& match_rect) const override {
     return the_one_display_;
   }
-  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+  virtual gfx::Display GetPrimaryDisplay() const override {
     return the_one_display_;
   }
-  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {}
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {}
+  virtual void AddObserver(gfx::DisplayObserver* observer) override {}
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {}
 
  private:
   gfx::Display the_one_display_;

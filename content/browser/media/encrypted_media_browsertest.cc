@@ -124,14 +124,14 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 
  protected:
   // We want to fail quickly when a test fails because an error is encountered.
-  virtual void AddWaitForTitles(content::TitleWatcher* title_watcher) OVERRIDE {
+  virtual void AddWaitForTitles(content::TitleWatcher* title_watcher) override {
     MediaBrowserTest::AddWaitForTitles(title_watcher);
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
   }
 
 #if defined(OS_ANDROID)
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
   }

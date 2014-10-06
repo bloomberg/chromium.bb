@@ -45,7 +45,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
 public:
   MediaCanPlayTypeTest() : url_("about:blank") { }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     NavigateToURL(shell(), url_);
   }
 

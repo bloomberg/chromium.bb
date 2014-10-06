@@ -37,15 +37,15 @@ class CONTENT_EXPORT WebContentsAudioInputStream
     : NON_EXPORTED_BASE(public media::AudioInputStream) {
  public:
   // media::AudioInputStream implementation
-  virtual bool Open() OVERRIDE;
-  virtual void Start(AudioInputCallback* callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual double GetMaxVolume() OVERRIDE;
-  virtual void SetVolume(double volume) OVERRIDE;
-  virtual double GetVolume() OVERRIDE;
-  virtual void SetAutomaticGainControl(bool enabled) OVERRIDE;
-  virtual bool GetAutomaticGainControl() OVERRIDE;
+  virtual bool Open() override;
+  virtual void Start(AudioInputCallback* callback) override;
+  virtual void Stop() override;
+  virtual void Close() override;
+  virtual double GetMaxVolume() override;
+  virtual void SetVolume(double volume) override;
+  virtual double GetVolume() override;
+  virtual void SetAutomaticGainControl(bool enabled) override;
+  virtual bool GetAutomaticGainControl() override;
 
   // Create a new audio mirroring session, or return NULL on error.  |device_id|
   // should be in the format accepted by

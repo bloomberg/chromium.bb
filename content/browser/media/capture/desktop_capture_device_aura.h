@@ -31,8 +31,8 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
 
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(const media::VideoCaptureParams& params,
-                                scoped_ptr<Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+                                scoped_ptr<Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
  private:
   DesktopCaptureDeviceAura(const DesktopMediaID& source);

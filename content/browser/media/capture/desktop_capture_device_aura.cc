@@ -100,26 +100,26 @@ class DesktopVideoCaptureMachine
 
   // VideoCaptureFrameSource overrides.
   virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-                     const media::VideoCaptureParams& params) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
+                     const media::VideoCaptureParams& params) override;
+  virtual void Stop(const base::Closure& callback) override;
 
   // Implements aura::WindowObserver.
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
-  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) override;
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) OVERRIDE;
+                                              aura::Window* new_root) override;
 
   // Implements ui::CompositorObserver.
-  virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {}
+  virtual void OnCompositingDidCommit(ui::Compositor* compositor) override {}
   virtual void OnCompositingStarted(ui::Compositor* compositor,
-                                    base::TimeTicks start_time) OVERRIDE {}
-  virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE {}
+                                    base::TimeTicks start_time) override {}
+  virtual void OnCompositingEnded(ui::Compositor* compositor) override;
+  virtual void OnCompositingAborted(ui::Compositor* compositor) override {}
   virtual void OnCompositingLockStateChanged(
-      ui::Compositor* compositor) OVERRIDE {}
+      ui::Compositor* compositor) override {}
 
  private:
   // Captures a frame.

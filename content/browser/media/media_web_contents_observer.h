@@ -26,11 +26,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   virtual ~MediaWebContentsObserver();
 
   // WebContentsObserver implementations.
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
 #if defined(OS_ANDROID)
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) OVERRIDE;
+                                 RenderFrameHost* render_frame_host) override;
 
   // Helper functions to handle media player IPC messages. Returns whether the
   // |message| is handled in the function.

@@ -64,8 +64,8 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  private:
 
   // webrtc::DesktopCapturer::Callback interface
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
+  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // Chooses new output properties based on the supplied source size and the
   // properties requested to Allocate(), and dispatches OnFrameInfo[Changed]

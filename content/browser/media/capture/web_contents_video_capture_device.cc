@@ -147,7 +147,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
       base::TimeTicks present_time,
       scoped_refptr<media::VideoFrame>* storage,
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback*
-          deliver_frame_cb) OVERRIDE;
+          deliver_frame_cb) override;
 
  private:
   const VideoCaptureOracle::Event event_type_;
@@ -190,7 +190,7 @@ class ContentCaptureSubscription : public content::NotificationObserver {
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   void OnTimer();
@@ -233,8 +233,8 @@ class WebContentsCaptureMachine : public VideoCaptureMachine {
 
   // VideoCaptureMachine overrides.
   virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-                     const media::VideoCaptureParams& params) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
+                     const media::VideoCaptureParams& params) override;
+  virtual void Stop(const base::Closure& callback) override;
 
   // Starts a copy from the backing store or the composited surface. Must be run
   // on the UI BrowserThread. |deliver_frame_cb| will be run when the operation

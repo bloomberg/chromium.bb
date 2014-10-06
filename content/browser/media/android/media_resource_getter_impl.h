@@ -46,24 +46,24 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   // Must be called on the UI thread.
   virtual void GetAuthCredentials(
       const GURL& url,
-      const GetAuthCredentialsCB& callback) OVERRIDE;
+      const GetAuthCredentialsCB& callback) override;
   virtual void GetCookies(
       const GURL& url,
       const GURL& first_party_for_cookies,
-      const GetCookieCB& callback) OVERRIDE;
+      const GetCookieCB& callback) override;
   virtual void GetPlatformPathFromURL(
       const GURL& url,
-      const GetPlatformPathCB& callback) OVERRIDE;
+      const GetPlatformPathCB& callback) override;
   virtual void ExtractMediaMetadata(
       const std::string& url,
       const std::string& cookies,
       const std::string& user_agent,
-      const ExtractMediaMetadataCB& callback) OVERRIDE;
+      const ExtractMediaMetadataCB& callback) override;
   virtual void ExtractMediaMetadata(
       const int fd,
       const int64 offset,
       const int64 size,
-      const ExtractMediaMetadataCB& callback) OVERRIDE;
+      const ExtractMediaMetadataCB& callback) override;
 
   static bool RegisterMediaResourceGetter(JNIEnv* env);
 

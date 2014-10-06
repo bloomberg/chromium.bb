@@ -21,12 +21,12 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
   }
 
   // media::DemuxerAndroid implementation.
-  virtual void Initialize(media::DemuxerAndroidClient* client) OVERRIDE {
+  virtual void Initialize(media::DemuxerAndroidClient* client) override {
     DCHECK(!ClientIDExists()) << demuxer_client_id_;
     demuxer_->AddDemuxerClient(demuxer_client_id_, client);
   }
 
-  virtual void RequestDemuxerData(media::DemuxerStream::Type type) OVERRIDE {
+  virtual void RequestDemuxerData(media::DemuxerStream::Type type) override {
     DCHECK(ClientIDExists()) << demuxer_client_id_;
     demuxer_->Send(new MediaPlayerMsg_ReadFromDemuxer(
         demuxer_client_id_, type));
@@ -34,7 +34,7 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
 
   virtual void RequestDemuxerSeek(
       const base::TimeDelta& time_to_seek,
-      bool is_browser_seek) OVERRIDE {
+      bool is_browser_seek) override {
     DCHECK(ClientIDExists()) << demuxer_client_id_;
     demuxer_->Send(new MediaPlayerMsg_DemuxerSeekRequest(
         demuxer_client_id_, time_to_seek, is_browser_seek));

@@ -48,7 +48,7 @@ class CONTENT_EXPORT MediaInternals
 
   // AudioLogFactory implementation.  Safe to call from any thread.
   virtual scoped_ptr<media::AudioLog> CreateAudioLog(
-      AudioComponent component) OVERRIDE;
+      AudioComponent component) override;
 
  private:
   friend class AudioLogImpl;

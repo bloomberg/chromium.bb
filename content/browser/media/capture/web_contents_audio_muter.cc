@@ -33,14 +33,14 @@ class AudioDiscarder : public media::AudioOutputStream {
       : consumer_(media::AudioManager::Get()->GetWorkerTaskRunner(), params) {}
 
   // AudioOutputStream implementation.
-  virtual bool Open() OVERRIDE { return true; }
-  virtual void Start(AudioSourceCallback* callback) OVERRIDE {
+  virtual bool Open() override { return true; }
+  virtual void Start(AudioSourceCallback* callback) override {
     consumer_.Start(base::Bind(&AudioDiscarder::FetchAudioData, callback));
   }
-  virtual void Stop() OVERRIDE { consumer_.Stop(); }
-  virtual void SetVolume(double volume) OVERRIDE {}
-  virtual void GetVolume(double* volume) OVERRIDE { *volume = 0; }
-  virtual void Close() OVERRIDE { delete this; }
+  virtual void Stop() override { consumer_.Stop(); }
+  virtual void SetVolume(double volume) override {}
+  virtual void GetVolume(double* volume) override { *volume = 0; }
+  virtual void Close() override { delete this; }
 
  private:
   virtual ~AudioDiscarder() {}
@@ -77,7 +77,7 @@ class WebContentsAudioMuter::MuteDestination
 
   virtual void QueryForMatches(
       const std::set<SourceFrameRef>& candidates,
-      const MatchesCallback& results_callback) OVERRIDE {
+      const MatchesCallback& results_callback) override {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -105,7 +105,7 @@ class WebContentsAudioMuter::MuteDestination
   }
 
   virtual media::AudioOutputStream* AddInput(
-      const media::AudioParameters& params) OVERRIDE {
+      const media::AudioParameters& params) override {
     return new AudioDiscarder(params);
   }
 

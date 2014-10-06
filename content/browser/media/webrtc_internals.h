@@ -118,13 +118,13 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
   // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* unused_params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+                            void* unused_params) override;
+  virtual void FileSelectionCanceled(void* params) override;
 
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);

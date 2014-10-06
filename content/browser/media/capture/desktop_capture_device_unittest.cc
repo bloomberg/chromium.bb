@@ -97,11 +97,11 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   }
 
   // VideoFrameCapturer interface.
-  virtual void Start(Callback* callback) OVERRIDE {
+  virtual void Start(Callback* callback) override {
     callback_ = callback;
   }
 
-  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE {
+  virtual void Capture(const webrtc::DesktopRegion& region) override {
     webrtc::DesktopSize size;
     if (frame_index_ % 2 == 0) {
       size = webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1);
@@ -117,14 +117,14 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   }
 
   virtual void SetMouseShapeObserver(
-      MouseShapeObserver* mouse_shape_observer) OVERRIDE {
+      MouseShapeObserver* mouse_shape_observer) override {
   }
 
-  virtual bool GetScreenList(ScreenList* screens) OVERRIDE {
+  virtual bool GetScreenList(ScreenList* screens) override {
     return false;
   }
 
-  virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE {
+  virtual bool SelectScreen(webrtc::ScreenId id) override {
     return false;
   }
 
