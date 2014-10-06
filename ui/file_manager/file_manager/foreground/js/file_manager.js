@@ -3994,6 +3994,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // consistency, the current directory is always changed regardless of
       // the file type.
       entry.getParent(function(parentEntry) {
+        // Check if the parent entry points /drive/other or not.
+        // If so it just opens the file.
+        var locationInfo = self.volumeManager_.getLocationInfo(parentEntry);
+        if (!locationInfo ||
+            (locationInfo.isRootEntry &&
+             locationInfo.rootType ===
+                 VolumeManagerCommon.RootType.DRIVE_OTHER)) {
+          openIt();
+          return;
+        }
         var onDirectoryChanged = function(event) {
           self.directoryModel_.removeEventListener('scan-completed',
                                                    onDirectoryChanged);
