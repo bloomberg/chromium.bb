@@ -482,6 +482,8 @@ template("java_strings_grd") {
 #   java_files: List of .java files included in this library.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #     will be added to java_files and be included in this library.
+#   srcjars: List of srcjars to be included in this library, together with the
+#     ones obtained from srcjar_deps.
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
@@ -513,7 +515,8 @@ template("java_strings_grd") {
 template("android_library") {
   if (defined(invoker.testonly)) { testonly = invoker.testonly }
 
-  assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir))
+  assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir)
+      || defined(invoker.srcjars))
   _base_path = "$target_gen_dir/$target_name"
   _build_config = _base_path + ".build_config"
   _jar_path = _base_path + ".jar"
@@ -541,7 +544,7 @@ template("android_library") {
     chromium_code = _chromium_code
     if (defined(invoker.java_files)) {
       java_files = invoker.java_files
-    } else {
+    } else if (defined(invoker.DEPRECATED_java_in_dir)) {
       DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
     }
     build_config = _build_config
@@ -563,6 +566,9 @@ template("android_library") {
 
     if (defined(invoker.srcjar_deps)) {
       srcjar_deps = invoker.srcjar_deps
+    }
+    if (defined(invoker.srcjars)) {
+      srcjars = invoker.srcjars
     }
   }
 }

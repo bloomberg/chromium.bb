@@ -21,6 +21,12 @@ group("mojo") {
     "//mojo/tools/package_manager",
   ]
 
+  if (is_android) {
+    deps += [
+      "//mojo/android",
+    ]
+  }
+
   if (is_linux) {
     deps += [
       "//mojo/python",

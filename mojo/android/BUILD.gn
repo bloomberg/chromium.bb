@@ -1,0 +1,64 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+group("android") {
+  testonly = true
+  deps = [
+    ":system_impl",
+    ":mojo_javatests",
+  ]
+}
+
+android_library("system_impl") {
+  java_files = [
+    "system/src/org/chromium/mojo/system/impl/CoreImpl.java",
+    "system/src/org/chromium/mojo/system/impl/DataPipeConsumerHandleImpl.java",
+    "system/src/org/chromium/mojo/system/impl/DataPipeProducerHandleImpl.java",
+    "system/src/org/chromium/mojo/system/impl/HandleBase.java",
+    "system/src/org/chromium/mojo/system/impl/MessagePipeHandleImpl.java",
+    "system/src/org/chromium/mojo/system/impl/SharedBufferHandleImpl.java",
+    "system/src/org/chromium/mojo/system/impl/UntypedHandleImpl.java",
+  ]
+
+  deps = [
+    "//base:base_java",
+    "//mojo/public/java:system",
+  ]
+}
+
+android_library("mojo_javatests") {
+  testonly = true
+  java_files = [
+    "javatests/src/org/chromium/mojo/HandleMock.java",
+    "javatests/src/org/chromium/mojo/MojoTestCase.java",
+    "javatests/src/org/chromium/mojo/TestUtils.java",
+    "javatests/src/org/chromium/mojo/bindings/BindingsHelperTest.java",
+    "javatests/src/org/chromium/mojo/bindings/BindingsTest.java",
+    "javatests/src/org/chromium/mojo/bindings/BindingsTestUtils.java",
+    "javatests/src/org/chromium/mojo/bindings/CallbacksTest.java",
+    "javatests/src/org/chromium/mojo/bindings/ConnectorTest.java",
+    "javatests/src/org/chromium/mojo/bindings/ExecutorFactoryTest.java",
+    "javatests/src/org/chromium/mojo/bindings/InterfacesTest.java",
+    "javatests/src/org/chromium/mojo/bindings/MessageHeaderTest.java",
+    "javatests/src/org/chromium/mojo/bindings/ReadAndDispatchMessageTest.java",
+    "javatests/src/org/chromium/mojo/bindings/RouterTest.java",
+    "javatests/src/org/chromium/mojo/bindings/SerializationTest.java",
+    "javatests/src/org/chromium/mojo/bindings/ValidationTest.java",
+    "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",
+    "javatests/src/org/chromium/mojo/bindings/ValidationTestUtilTest.java",
+    "javatests/src/org/chromium/mojo/bindings/test/mojom/mojo/IntegrationTestInterface2TestHelper.java",
+    "javatests/src/org/chromium/mojo/system/impl/CoreImplTest.java",
+  ]
+
+  deps = [
+    ":system_impl",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces_java",
+    "//mojo/public/java:bindings",
+    "//mojo/public/java:system",
+  ]
+}

@@ -12,8 +12,10 @@
 #       List of source .mojom files to compile.
 #
 #   deps (optional)
+#       Note: this can contain only other mojom targets.
 #
 #   public_deps (optional)
+#       Note: this can contain only other mojom targets.
 #
 #   testonly (optional)
 #
@@ -45,6 +47,16 @@ template("mojom") {
     "$generator_root/generators/cpp_templates/struct_macros.tmpl",
     "$generator_root/generators/cpp_templates/wrapper_class_declaration.tmpl",
     "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
+    "$generator_root/generators/java_templates/constant_definition.tmpl",
+    "$generator_root/generators/java_templates/constants.java.tmpl",
+    "$generator_root/generators/java_templates/enum.java.tmpl",
+    "$generator_root/generators/java_templates/enum_definition.tmpl",
+    "$generator_root/generators/java_templates/header.java.tmpl",
+    "$generator_root/generators/java_templates/interface.java.tmpl",
+    "$generator_root/generators/java_templates/interface_definition.tmpl",
+    "$generator_root/generators/java_templates/interface_internal.java.tmpl",
+    "$generator_root/generators/java_templates/struct.java.tmpl",
+    "$generator_root/generators/java_templates/struct_definition.tmpl",
     "$generator_root/generators/js_templates/enum_definition.tmpl",
     "$generator_root/generators/js_templates/interface_definition.tmpl",
     "$generator_root/generators/js_templates/module.js.tmpl",
@@ -53,6 +65,7 @@ template("mojom") {
     "$generator_root/generators/python_templates/module.py.tmpl",
     "$generator_root/generators/mojom_cpp_generator.py",
     "$generator_root/generators/mojom_js_generator.py",
+    "$generator_root/generators/mojom_java_generator.py",
     "$generator_root/generators/mojom_python_generator.py",
     "$generator_root/pylib/mojom/__init__.py",
     "$generator_root/pylib/mojom/error.py",
@@ -72,6 +85,9 @@ template("mojom") {
     "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
     "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
     "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
+  ]
+  generator_java_outputs = [
+    "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar",
   ]
   generator_js_outputs = [
     "{{source_gen_dir}}/{{source_name_part}}.mojom.js",
@@ -96,6 +112,7 @@ template("mojom") {
     inputs = generator_sources
     sources = invoker.sources
     outputs = generator_cpp_outputs +
+              generator_java_outputs +
               generator_js_outputs +
               generator_python_outputs
     args = [
@@ -125,6 +142,50 @@ template("mojom") {
     }
     if (defined(invoker.public_deps)) {
       public_deps = invoker.public_deps
+    }
+  }
+
+  all_deps = []
+  if (defined(invoker.deps)) {
+    all_deps += invoker.deps
+  }
+  if (defined(invoker.public_deps)) {
+    all_deps += invoker.public_deps
+  }
+
+  group("${target_name}__is_mojom") {
+  }
+
+  # Explicitly ensure that all dependencies (invoker.deps and
+  # invoker.public_deps) are mojom targets themselves.
+  group("${target_name}__check_deps_are_all_mojom") {
+    deps = []
+    foreach(d, all_deps) {
+      name = get_label_info(d, "label_no_toolchain")
+      toolchain = get_label_info(d, "toolchain")
+      deps += [ "${name}__is_mojom(${toolchain})" ]
+    }
+  }
+
+  if (is_android) {
+    import("//build/config/android/rules.gni")
+
+    java_target_name = target_name + "_java"
+    android_library(java_target_name) {
+      deps = [
+        "//mojo/public/java:bindings",
+        "//mojo/public/java:system",
+      ]
+
+      foreach(d, all_deps) {
+        # Resolve the name, so that a target //mojo/something becomes
+        # //mojo/something:something and we can append "_java" to get the java
+        # dependency name.
+        full_name = get_label_info(d, "label_no_toolchain")
+        deps += [ "${full_name}_java" ]
+      }
+
+      srcjars = process_file_template(invoker.sources, generator_java_outputs)
     }
   }
 }
