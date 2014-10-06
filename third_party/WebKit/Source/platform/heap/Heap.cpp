@@ -2499,10 +2499,12 @@ void Heap::processMarkingStackInParallel()
             while (popAndInvokeTraceCallback<GlobalMarking>(s_markingStack, s_markingVisitor)) { }
         }
 
-        // Mark any strong pointers that have now become reachable in ephemeron
-        // maps.
-        TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-        s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
+        {
+            // Mark any strong pointers that have now become reachable in ephemeron
+            // maps.
+            TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
+            s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
+        }
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
@@ -2513,17 +2515,21 @@ void Heap::processMarkingStack()
 {
     // Ephemeron fixed point loop.
     do {
-        // Iteratively mark all objects that are reachable from the objects
-        // currently pushed onto the marking stack. If Mode is ThreadLocalMarking
-        // don't continue tracing if the trace hits an object on another thread's
-        // heap.
-        TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-        while (popAndInvokeTraceCallback<Mode>(s_markingStack, s_markingVisitor)) { }
+        {
+            // Iteratively mark all objects that are reachable from the objects
+            // currently pushed onto the marking stack. If Mode is ThreadLocalMarking
+            // don't continue tracing if the trace hits an object on another thread's
+            // heap.
+            TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
+            while (popAndInvokeTraceCallback<Mode>(s_markingStack, s_markingVisitor)) { }
+        }
 
-        // Mark any strong pointers that have now become reachable in ephemeron
-        // maps.
-        TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-        s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
+        {
+            // Mark any strong pointers that have now become reachable in ephemeron
+            // maps.
+            TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
+            s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
+        }
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
