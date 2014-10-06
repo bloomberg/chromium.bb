@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import contextlib
 import functools
 import datetime
 import os
@@ -1288,6 +1289,144 @@ detail=A nonempty x-goog-project-id header is required for this request."""
     self._AddLsConfigResult(
         side_effect=functools.partial(self._WriteBotoFile, ''))
     self.assertRaises(gs.GSContextException, self.ctx._InitBoto)
+
+
+class GSCounterTest(AbstractGSContextTest):
+  """Tests GSCounter functionality."""
+
+  COUNTER_URI = 'gs://foo/mock/counter'
+  INITIAL_VALUE = 100
+
+  def setUp(self):
+    self.counter = gs.GSCounter(self.ctx, self.COUNTER_URI)
+    self.cat_mock = self.PatchObject(self.ctx, 'Cat')
+    self.gen_mock = self.PatchObject(self.ctx, 'GetGeneration',
+                                     return_value=(1, 1))
+    self._SetCounter(self.INITIAL_VALUE)
+
+  def _SetCounter(self, value):
+    """Set the test counter to |value|."""
+    self.cat_mock.return_value = str(value)
+
+  def testGetInitial(self):
+    """Test Get when the counter doesn't exist."""
+    self.cat_mock.side_effect = gs.GSNoSuchKey
+    self.assertEqual(self.counter.Get(), 0)
+
+  def testGet(self):
+    """Basic Get() test."""
+    self.assertEqual(self.counter.Get(), self.INITIAL_VALUE)
+
+  def testIncrement(self):
+    """Basic Increment() test."""
+    self.assertEqual(self.counter.Increment(), self.INITIAL_VALUE + 1)
+
+  def testDecrement(self):
+    """Basic Decrement() test."""
+    self.assertEqual(self.counter.Decrement(), self.INITIAL_VALUE - 1)
+
+  def testReset(self):
+    """Basic Reset() test."""
+    self.assertEqual(self.counter.Reset(), 0)
+
+  def testStreakIncrement(self):
+    """Basic StreakIncrement() test."""
+    self._SetCounter(10)
+    self.assertEqual(self.counter.StreakIncrement(), 11)
+
+  def testStreakIncrementReset(self):
+    """Test StreakIncrement() when the counter is negative."""
+    self._SetCounter(-10)
+    self.assertEqual(self.counter.StreakIncrement(), 1)
+
+  def testStreakDecrement(self):
+    """Basic StreakDecrement() test."""
+    self._SetCounter(-10)
+    self.assertEqual(self.counter.StreakDecrement(), -11)
+
+  def testStreakDecrementReset(self):
+    """Test StreakDecrement() when the counter is positive."""
+    self._SetCounter(10)
+    self.assertEqual(self.counter.StreakDecrement(), -1)
+
+
+class UnmockedGSCounterTest(cros_test_lib.TestCase):
+  """Tests GSCounter functionality w/out mocks."""
+
+  @staticmethod
+  @contextlib.contextmanager
+  def _Counter():
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('chromite.counter') as tempuri:
+      yield gs.GSCounter(ctx, tempuri)
+
+  @staticmethod
+  def _SetCounter(counter, value):
+    """Set the test counter to |value|."""
+    counter.AtomicCounterOperation(value, lambda x: value)
+
+  @cros_test_lib.NetworkTest()
+  def testGetInitial(self):
+    """Test Get when the counter doesn't exist."""
+    with self._Counter() as counter:
+      self.assertEqual(counter.Get(), 0)
+
+  @cros_test_lib.NetworkTest()
+  def testGet(self):
+    """Basic Get() test."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, 100)
+      self.assertEqual(counter.Get(), 100)
+
+  @cros_test_lib.NetworkTest()
+  def testIncrement(self):
+    """Basic Increment() test."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, 100)
+      self.assertEqual(counter.Increment(), 101)
+
+  @cros_test_lib.NetworkTest()
+  def testDecrement(self):
+    """Basic Decrement() test."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, 100)
+      self.assertEqual(counter.Decrement(), 99)
+
+  @cros_test_lib.NetworkTest()
+  def testReset(self):
+    """Basic Reset() test."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, 100)
+      self.assertEqual(counter.Reset(), 0)
+      self.assertEqual(counter.Get(), 0)
+
+  @cros_test_lib.NetworkTest()
+  def testStreakIncrement(self):
+    """Basic StreakIncrement() test."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, 100)
+      self.assertEqual(counter.StreakIncrement(), 101)
+
+  @cros_test_lib.NetworkTest()
+  def testStreakIncrementReset(self):
+    """Test StreakIncrement() when the counter is negative."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, -100)
+      self.assertEqual(counter.StreakIncrement(), 1)
+
+  @cros_test_lib.NetworkTest()
+  def testStreakDecrement(self):
+    """Basic StreakDecrement() test."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, -100)
+      self.assertEqual(counter.StreakDecrement(), -101)
+
+  @cros_test_lib.NetworkTest()
+  def testStreakDecrementReset(self):
+    """Test StreakDecrement() when the counter is positive."""
+    with self._Counter() as counter:
+      self._SetCounter(counter, 100)
+      self.assertEqual(counter.StreakDecrement(), -1)
 
 
 if __name__ == '__main__':
