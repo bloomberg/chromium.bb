@@ -31,6 +31,11 @@
             '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
           ],
         }],
+        ['target_arch=="ia32" and OS=="linux"', {
+          'dependencies': [
+            '../src/nonsfi/loader/loader.gyp:nonsfi_loader',
+          ],
+        }],
         ['(target_arch!="arm" and target_arch!="mipsel") or OS=="linux"', {
           # irt_core_nexe relies on tls_edit which is not currently buildable
           # on windows with target_arch != x86.
