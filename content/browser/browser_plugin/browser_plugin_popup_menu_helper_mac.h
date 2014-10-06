@@ -25,7 +25,7 @@ class BrowserPluginPopupMenuHelper : public PopupMenuHelper {
                                RenderFrameHost* guest_rfh);
 
  private:
-  virtual RenderWidgetHostViewMac* GetRenderWidgetHostView() const OVERRIDE;
+  virtual RenderWidgetHostViewMac* GetRenderWidgetHostView() const override;
 
   RenderViewHostImpl* embedder_rvh_;
 
