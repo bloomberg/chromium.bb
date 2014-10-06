@@ -2167,7 +2167,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // does not have listIndex, and therefore is not found in the list.
       if (entry) visibleEntries.push(entry);
     }
-    this.metadataCache_.get(visibleEntries, 'thumbnail', null);
+    // Refreshes the metadata.
+    this.metadataCache_.getLatest(visibleEntries, 'thumbnail', null);
   };
 
   /**
