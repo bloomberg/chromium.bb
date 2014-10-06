@@ -102,6 +102,7 @@ crbug.com/420008 [ Release ] virtual/deferred/inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] inspector/timeline [ Slow ]
 crbug.com/420008 [ Release ] virtual/implsidepainting/inspector/timeline [ Slow ]
 crbug.com/420008 [ Release ] virtual/deferred/inspector/timeline [ Slow ]
+crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 # inspector tests below are slow on LinuxASAN
 crbug.com/247466 [ Linux Release ] inspector/sources/debugger/debugger-activation-crash2.html [ Slow ]
 
