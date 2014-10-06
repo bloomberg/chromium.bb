@@ -790,8 +790,13 @@ void DeviceSettingsProvider::UpdateValuesCache(
     TrustedStatus trusted_status) {
   PrefValueMap new_values_cache;
 
-  if (policy_data.has_username() && !policy_data.has_request_token())
+  // If the device is not managed, or is consumer-managed, we set the device
+  // owner value.
+  if (policy_data.has_username() &&
+      (!policy_data.has_request_token() ||
+       policy_data.management_mode() == em::PolicyData::CONSUMER_MANAGED)) {
     new_values_cache.SetString(kDeviceOwner, policy_data.username());
+  }
 
   if (policy_data.has_service_account_identity()) {
     new_values_cache.SetString(kServiceAccountIdentity,
