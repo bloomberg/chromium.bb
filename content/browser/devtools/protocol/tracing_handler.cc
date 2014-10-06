@@ -26,8 +26,21 @@ Response TracingHandler::Start(const std::string& categories,
   return Response::FallThrough();
 }
 
+scoped_refptr<DevToolsProtocol::Response> TracingHandler::Start(
+    const std::string& categories,
+    const std::string& options,
+    const double* buffer_usage_reporting_interval,
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  return NULL;
+}
+
 Response TracingHandler::End() {
   return Response::FallThrough();
+}
+
+scoped_refptr<DevToolsProtocol::Response> TracingHandler::End(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  return NULL;
 }
 
 scoped_refptr<DevToolsProtocol::Response> TracingHandler::GetCategories(

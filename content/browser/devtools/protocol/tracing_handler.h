@@ -20,11 +20,20 @@ class TracingHandler {
 
   void SetClient(scoped_ptr<Client> client);
 
+  // TODO(dgozman): remove sync version after migration.
   Response Start(const std::string& categories,
                  const std::string& options,
                  const double* buffer_usage_reporting_interval);
+  scoped_refptr<DevToolsProtocol::Response> Start(
+      const std::string& categories,
+      const std::string& options,
+      const double* buffer_usage_reporting_interval,
+      scoped_refptr<DevToolsProtocol::Command> command);
 
+  // TODO(dgozman): remove sync version after migration.
   Response End();
+  scoped_refptr<DevToolsProtocol::Response> End(
+      scoped_refptr<DevToolsProtocol::Command> command);
 
   scoped_refptr<DevToolsProtocol::Response> GetCategories(
       scoped_refptr<DevToolsProtocol::Command> command);
