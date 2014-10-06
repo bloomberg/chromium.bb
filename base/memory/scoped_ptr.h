@@ -308,7 +308,7 @@ class scoped_ptr_impl {
 // types.
 template <class T, class D = base::DefaultDeleter<T> >
 class scoped_ptr {
-  MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
+  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(scoped_ptr)
 
   COMPILE_ASSERT(base::internal::IsNotRefCounted<T>::value,
                  T_is_refcounted_type_and_needs_scoped_refptr);
@@ -345,9 +345,6 @@ class scoped_ptr {
       : impl_(&other.impl_) {
     COMPILE_ASSERT(!base::is_array<U>::value, U_cannot_be_an_array);
   }
-
-  // Constructor.  Move constructor for C++03 move emulation of this type.
-  scoped_ptr(RValue rvalue) : impl_(&rvalue.object->impl_) {}
 
   // operator=.  Allows assignment from a scoped_ptr rvalue for a convertible
   // type and deleter.
@@ -457,7 +454,7 @@ class scoped_ptr {
 
 template <class T, class D>
 class scoped_ptr<T[], D> {
-  MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
+  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(scoped_ptr)
 
  public:
   // The element and deleter types.
@@ -488,18 +485,9 @@ class scoped_ptr<T[], D> {
   // Constructor.  Allows construction from a scoped_ptr rvalue.
   scoped_ptr(scoped_ptr&& other) : impl_(&other.impl_) {}
 
-  // Constructor.  Move constructor for C++03 move emulation of this type.
-  scoped_ptr(RValue rvalue) : impl_(&rvalue.object->impl_) {}
-
   // operator=.  Allows assignment from a scoped_ptr rvalue.
   scoped_ptr& operator=(scoped_ptr&& rhs) {
     impl_.TakeState(&rhs.impl_);
-    return *this;
-  }
-
-  // operator=.  Move operator= for C++03 move emulation of this type.
-  scoped_ptr& operator=(RValue rhs) {
-    impl_.TakeState(&rhs.object->impl_);
     return *this;
   }
 

@@ -398,17 +398,17 @@ TEST(ScopedPtrTest, PassBehavior) {
     EXPECT_TRUE(scoper3.get());
   }
 
-  // Test uncaught Pass() does not leak.
+  // Test uncaught Pass() does not have side effects.
   {
     ConDecLogger* logger = new ConDecLogger(&constructed);
     scoped_ptr<ConDecLogger> scoper(logger);
     EXPECT_EQ(1, constructed);
 
     // Should auto-destruct logger by end of scope.
-    scoper.Pass();
-    // This differs from unique_ptr, as Pass() has side effects but std::move()
-    // does not.
-    EXPECT_FALSE(scoper.get());
+    scoped_ptr<ConDecLogger>&& rvalue = scoper.Pass();
+    // The Pass() function mimics std::move(), which does not have side-effects.
+    EXPECT_TRUE(scoper.get());
+    EXPECT_TRUE(rvalue);
   }
   EXPECT_EQ(0, constructed);
 
