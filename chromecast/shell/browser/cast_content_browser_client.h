@@ -22,22 +22,22 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
 
   // content::ContentBrowserClient implementation:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) OVERRIDE;
+      const content::MainFunctionParams& parameters) override;
   virtual void RenderProcessWillLaunch(
-      content::RenderProcessHost* host) OVERRIDE;
+      content::RenderProcessHost* host) override;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-      OVERRIDE;
-  virtual bool IsHandledURL(const GURL& url) OVERRIDE;
+      override;
+  virtual bool IsHandledURL(const GURL& url) override;
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
-                                              int child_process_id) OVERRIDE;
-  virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
+                                              int child_process_id) override;
+  virtual content::AccessTokenStore* CreateAccessTokenStore() override;
   virtual void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                                    const GURL& url,
-                                   content::WebPreferences* prefs) OVERRIDE;
-  virtual std::string GetApplicationLocale() OVERRIDE;
+                                   content::WebPreferences* prefs) override;
+  virtual std::string GetApplicationLocale() override;
   virtual void AllowCertificateError(
       int render_process_id,
       int render_view_id,
@@ -49,13 +49,13 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       bool strict_enforcement,
       bool expired_previous_decision,
       const base::Callback<void(bool)>& callback,
-      content::CertificateRequestResultType* result) OVERRIDE;
+      content::CertificateRequestResultType* result) override;
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_frame_id,
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback) OVERRIDE;
+      const base::Callback<void(net::X509Certificate*)>& callback) override;
   virtual bool CanCreateWindow(
       const GURL& opener_url,
       const GURL& opener_top_level_frame_url,
@@ -70,17 +70,17 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       content::ResourceContext* context,
       int render_process_id,
       int opener_id,
-      bool* no_javascript_access) OVERRIDE;
+      bool* no_javascript_access) override;
   virtual content::DevToolsManagerDelegate*
-      GetDevToolsManagerDelegate() OVERRIDE;
+      GetDevToolsManagerDelegate() override;
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      content::FileDescriptorInfo* mappings) OVERRIDE;
+      content::FileDescriptorInfo* mappings) override;
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)
   virtual content::ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(
-      content::WebContents* web_contents) OVERRIDE;
+      content::WebContents* web_contents) override;
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 
  private:

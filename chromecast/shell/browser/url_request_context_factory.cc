@@ -59,7 +59,7 @@ class URLRequestContextFactory::URLRequestContextGetter
         factory_(factory) {
   }
 
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     if (!request_context_) {
       if (is_media_) {
         request_context_.reset(factory_->CreateMediaRequestContext());
@@ -75,7 +75,7 @@ class URLRequestContextFactory::URLRequestContextGetter
   }
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
+      GetNetworkTaskRunner() const override {
     return content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
   }
@@ -106,7 +106,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     if (!request_context_) {
       request_context_.reset(factory_->CreateMainRequestContext(
           browser_context_, &protocol_handlers_, request_interceptors_.Pass()));
@@ -116,7 +116,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
   }
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
+      GetNetworkTaskRunner() const override {
     return content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
   }

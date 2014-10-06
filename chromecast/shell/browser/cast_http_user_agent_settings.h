@@ -19,8 +19,8 @@ class CastHttpUserAgentSettings : public net::HttpUserAgentSettings {
   virtual ~CastHttpUserAgentSettings();
 
   // net::HttpUserAgentSettings implementation:
-  virtual std::string GetAcceptLanguage() const OVERRIDE;
-  virtual std::string GetUserAgent() const OVERRIDE;
+  virtual std::string GetAcceptLanguage() const override;
+  virtual std::string GetUserAgent() const override;
 
  private:
   mutable std::string accept_language_;

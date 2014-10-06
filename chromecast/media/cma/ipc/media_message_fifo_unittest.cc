@@ -24,9 +24,9 @@ class FifoMemoryChunk : public MediaMemoryChunk {
       : mem_(mem), size_(size) {}
   virtual ~FifoMemoryChunk() {}
 
-  virtual void* data() const OVERRIDE { return mem_; }
-  virtual size_t size() const OVERRIDE { return size_; }
-  virtual bool valid() const OVERRIDE { return true; }
+  virtual void* data() const override { return mem_; }
+  virtual size_t size() const override { return size_; }
+  virtual bool valid() const override { return true; }
 
  private:
   void* mem_;

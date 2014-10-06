@@ -41,21 +41,21 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
       net::URLRequestContextGetter* request_context);
 
   // metrics::MetricsServiceClient implementation:
-  virtual void SetMetricsClientId(const std::string& client_id) OVERRIDE;
-  virtual bool IsOffTheRecordSessionActive() OVERRIDE;
-  virtual int32_t GetProduct() OVERRIDE;
-  virtual std::string GetApplicationLocale() OVERRIDE;
-  virtual bool GetBrand(std::string* brand_code) OVERRIDE;
-  virtual ::metrics::SystemProfileProto::Channel GetChannel() OVERRIDE;
-  virtual std::string GetVersionString() OVERRIDE;
-  virtual void OnLogUploadComplete() OVERRIDE;
+  virtual void SetMetricsClientId(const std::string& client_id) override;
+  virtual bool IsOffTheRecordSessionActive() override;
+  virtual int32_t GetProduct() override;
+  virtual std::string GetApplicationLocale() override;
+  virtual bool GetBrand(std::string* brand_code) override;
+  virtual ::metrics::SystemProfileProto::Channel GetChannel() override;
+  virtual std::string GetVersionString() override;
+  virtual void OnLogUploadComplete() override;
   virtual void StartGatheringMetrics(
-      const base::Closure& done_callback) OVERRIDE;
-  virtual void CollectFinalMetrics(const base::Closure& done_callback) OVERRIDE;
+      const base::Closure& done_callback) override;
+  virtual void CollectFinalMetrics(const base::Closure& done_callback) override;
   virtual scoped_ptr< ::metrics::MetricsLogUploader> CreateUploader(
       const std::string& server_url,
       const std::string& mime_type,
-      const base::Callback<void(int)>& on_upload_complete) OVERRIDE;
+      const base::Callback<void(int)>& on_upload_complete) override;
 
   // Starts/stops the metrics service.
   void EnableMetricsService(bool enabled);

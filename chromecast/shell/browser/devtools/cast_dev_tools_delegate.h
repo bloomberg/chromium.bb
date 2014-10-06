@@ -26,12 +26,12 @@ class CastDevToolsDelegate : public content::DevToolsHttpHandlerDelegate {
   virtual ~CastDevToolsDelegate();
 
   // DevToolsHttpHandlerDelegate implementation.
-  virtual std::string GetDiscoveryPageHTML() OVERRIDE;
-  virtual bool BundlesFrontendResources() OVERRIDE;
-  virtual base::FilePath GetDebugFrontendDir() OVERRIDE;
+  virtual std::string GetDiscoveryPageHTML() override;
+  virtual bool BundlesFrontendResources() override;
+  virtual base::FilePath GetDebugFrontendDir() override;
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
-      std::string* name) OVERRIDE;
+      std::string* name) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastDevToolsDelegate);
@@ -45,17 +45,17 @@ class CastDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // DevToolsManagerDelegate implementation.
   virtual void Inspect(
       content::BrowserContext* browser_context,
-      content::DevToolsAgentHost* agent_host) OVERRIDE {}
+      content::DevToolsAgentHost* agent_host) override {}
   virtual void DevToolsAgentStateChanged(
       content::DevToolsAgentHost* agent_host,
-      bool attached) OVERRIDE {}
+      bool attached) override {}
   virtual base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command) OVERRIDE;
+      base::DictionaryValue* command) override;
   virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL& url) OVERRIDE;
-  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE;
-  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
+      const GURL& url) override;
+  virtual void EnumerateTargets(TargetCallback callback) override;
+  virtual std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastDevToolsManagerDelegate);

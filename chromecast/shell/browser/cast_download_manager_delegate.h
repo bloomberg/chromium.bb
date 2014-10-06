@@ -18,18 +18,18 @@ class CastDownloadManagerDelegate : public content::DownloadManagerDelegate {
 
   // content::DownloadManagerDelegate implementation:
   virtual void GetNextId(
-      const content::DownloadIdCallback& callback) OVERRIDE;
+      const content::DownloadIdCallback& callback) override;
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) OVERRIDE;
+      const content::DownloadTargetCallback& callback) override;
   virtual bool ShouldOpenFileBasedOnExtension(
-      const base::FilePath& path) OVERRIDE;
+      const base::FilePath& path) override;
   virtual bool ShouldCompleteDownload(
       content::DownloadItem* item,
-      const base::Closure& complete_callback) OVERRIDE;
+      const base::Closure& complete_callback) override;
   virtual bool ShouldOpenDownload(
       content::DownloadItem* item,
-      const content::DownloadOpenDelayedCallback& callback) OVERRIDE;
+      const content::DownloadOpenDelayedCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastDownloadManagerDelegate);

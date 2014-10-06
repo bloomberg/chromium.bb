@@ -22,9 +22,9 @@ class ExternalMemoryBlock
   virtual ~ExternalMemoryBlock() {}
 
   // MediaMemoryChunk implementation.
-  virtual void* data() const OVERRIDE { return data_; }
-  virtual size_t size() const OVERRIDE { return size_; }
-  virtual bool valid() const OVERRIDE { return true; }
+  virtual void* data() const override { return data_; }
+  virtual size_t size() const override { return size_; }
+  virtual bool valid() const override { return true; }
 
  private:
   void* const data_;

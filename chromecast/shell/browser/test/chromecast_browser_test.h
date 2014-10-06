@@ -28,10 +28,10 @@ class ChromecastBrowserTest : public content::BrowserTestBase {
   virtual ~ChromecastBrowserTest();
 
   // testing::Test implementation:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // BrowserTestBase implementation:
-  virtual void RunTestOnMainThreadLoop() OVERRIDE;
+  virtual void RunTestOnMainThreadLoop() override;
 
  protected:
   void NavigateToURL(content::WebContents* window, const GURL& gurl);

@@ -24,12 +24,12 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   virtual ~CastBrowserMainParts();
 
   // content::BrowserMainParts implementation:
-  virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual int PreCreateThreads() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE;
-  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PreMainMessageLoopStart() override;
+  virtual void PostMainMessageLoopStart() override;
+  virtual int PreCreateThreads() override;
+  virtual void PreMainMessageLoopRun() override;
+  virtual bool MainMessageLoopRun(int* result_code) override;
+  virtual void PostMainMessageLoopRun() override;
 
  private:
   scoped_ptr<CastBrowserProcess> cast_browser_process_;

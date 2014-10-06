@@ -29,17 +29,17 @@ class CastMainDelegate : public content::ContentMainDelegate {
   virtual ~CastMainDelegate();
 
   // content::ContentMainDelegate implementation:
-  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
-  virtual void PreSandboxStartup() OVERRIDE;
+  virtual bool BasicStartupComplete(int* exit_code) override;
+  virtual void PreSandboxStartup() override;
   virtual int RunProcess(
       const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) OVERRIDE;
+      const content::MainFunctionParams& main_function_params) override;
 #if !defined(OS_ANDROID)
-  virtual void ZygoteForked() OVERRIDE;
+  virtual void ZygoteForked() override;
 #endif  // !defined(OS_ANDROID)
-  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() override;
   virtual content::ContentRendererClient*
-      CreateContentRendererClient() OVERRIDE;
+      CreateContentRendererClient() override;
 
  private:
   void InitializeResourceBundle();

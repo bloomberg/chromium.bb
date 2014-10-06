@@ -20,7 +20,7 @@ class NetworkChangeNotifierFactoryCast
   virtual ~NetworkChangeNotifierFactoryCast();
 
   // net::NetworkChangeNotifierFactory implementation:
-  virtual net::NetworkChangeNotifier* CreateInstance() OVERRIDE;
+  virtual net::NetworkChangeNotifier* CreateInstance() override;
 
   static NetworkChangeNotifierCast* GetInstance();
 

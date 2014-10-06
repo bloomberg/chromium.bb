@@ -31,9 +31,9 @@ class Target : public content::DevToolsTarget {
  public:
   explicit Target(scoped_refptr<content::DevToolsAgentHost> agent_host);
 
-  virtual std::string GetId() const OVERRIDE { return agent_host_->GetId(); }
-  virtual std::string GetParentId() const OVERRIDE { return std::string(); }
-  virtual std::string GetType() const OVERRIDE {
+  virtual std::string GetId() const override { return agent_host_->GetId(); }
+  virtual std::string GetParentId() const override { return std::string(); }
+  virtual std::string GetType() const override {
     switch (agent_host_->GetType()) {
       case content::DevToolsAgentHost::TYPE_WEB_CONTENTS:
         return kTargetTypePage;
@@ -46,28 +46,28 @@ class Target : public content::DevToolsTarget {
     }
     return kTargetTypeOther;
   }
-  virtual std::string GetTitle() const OVERRIDE {
+  virtual std::string GetTitle() const override {
     return agent_host_->GetTitle();
   }
-  virtual std::string GetDescription() const OVERRIDE { return std::string(); }
-  virtual GURL GetURL() const OVERRIDE {
+  virtual std::string GetDescription() const override { return std::string(); }
+  virtual GURL GetURL() const override {
     return agent_host_->GetURL();
   }
-  virtual GURL GetFaviconURL() const OVERRIDE { return favicon_url_; }
-  virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
+  virtual GURL GetFaviconURL() const override { return favicon_url_; }
+  virtual base::TimeTicks GetLastActivityTime() const override {
     return last_activity_time_;
   }
-  virtual bool IsAttached() const OVERRIDE {
+  virtual bool IsAttached() const override {
     return agent_host_->IsAttached();
   }
   virtual scoped_refptr<content::DevToolsAgentHost> GetAgentHost()
-      const OVERRIDE {
+      const override {
     return agent_host_;
   }
-  virtual bool Activate() const OVERRIDE {
+  virtual bool Activate() const override {
     return agent_host_->Activate();
   }
-  virtual bool Close() const OVERRIDE {
+  virtual bool Close() const override {
     return agent_host_->Close();
   }
 

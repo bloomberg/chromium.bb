@@ -16,10 +16,10 @@ class CastContentRendererClient : public content::ContentRendererClient {
   virtual ~CastContentRendererClient() {}
 
   // ContentRendererClient implementation:
-  virtual void RenderThreadStarted() OVERRIDE;
-  virtual void RenderViewCreated(content::RenderView* render_view) OVERRIDE;
+  virtual void RenderThreadStarted() override;
+  virtual void RenderViewCreated(content::RenderView* render_view) override;
   virtual void AddKeySystems(
-      std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
+      std::vector<content::KeySystemInfo>* key_systems) override;
 };
 
 }  // namespace shell

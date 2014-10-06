@@ -19,7 +19,7 @@ class CmaTestSuite : public base::TestSuite {
   virtual ~CmaTestSuite() {}
 
  protected:
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize() override;
 };
 
 void CmaTestSuite::Initialize() {

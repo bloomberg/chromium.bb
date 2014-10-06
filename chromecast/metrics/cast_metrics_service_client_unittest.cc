@@ -19,7 +19,7 @@ class CastMetricsTest : public testing::Test {
   virtual ~CastMetricsTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
     prefs_.reset(new TestingPrefServiceSimple());
     ::metrics::MetricsService::RegisterPrefs(prefs_->registry());

@@ -24,8 +24,8 @@ class MockFrameProvider : public CodedFrameProvider {
       scoped_ptr<FrameGeneratorForTest> frame_generator);
 
   // CodedFrameProvider implementation.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual void Flush(const base::Closure& flush_cb) override;
 
  private:
   void DoRead(const ReadCB& read_cb);

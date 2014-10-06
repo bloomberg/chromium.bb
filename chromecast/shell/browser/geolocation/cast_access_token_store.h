@@ -26,9 +26,9 @@ class CastAccessTokenStore : public content::AccessTokenStore {
 
   // AccessTokenStore implementation:
   virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& callback) OVERRIDE;
+      const LoadAccessTokensCallbackType& callback) override;
   virtual void SaveAccessToken(
-      const GURL& server_url, const base::string16& access_token) OVERRIDE;
+      const GURL& server_url, const base::string16& access_token) override;
 
   void GetRequestContextGetterOnUIThread();
   void RespondOnOriginatingThread();

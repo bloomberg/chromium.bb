@@ -35,7 +35,7 @@ class MediaTaskRunnerWithNotification : public MediaTaskRunner {
   virtual bool PostMediaTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta timestamp) OVERRIDE;
+      base::TimeDelta timestamp) override;
 
  private:
   virtual ~MediaTaskRunnerWithNotification();
@@ -96,7 +96,7 @@ class BalancedMediaTaskRunner
   virtual bool PostMediaTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta timestamp) OVERRIDE;
+      base::TimeDelta timestamp) override;
 
  private:
   virtual ~BalancedMediaTaskRunner();

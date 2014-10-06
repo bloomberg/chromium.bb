@@ -35,20 +35,20 @@ class ChromecastTestLauncherDelegate : public content::TestLauncherDelegate {
   ChromecastTestLauncherDelegate() {}
   virtual ~ChromecastTestLauncherDelegate() {}
 
-  virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
+  virtual int RunTestSuite(int argc, char** argv) override {
     return BrowserTestSuite(argc, argv).Run();
   }
 
   virtual bool AdjustChildProcessCommandLine(
       base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) OVERRIDE {
+      const base::FilePath& temp_data_dir) override {
     // TODO(gunsch): handle temp_data_dir
     command_line->AppendSwitchASCII(switches::kTestType, kTestTypeBrowser);
     return true;
   }
 
  protected:
-  virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
+  virtual content::ContentMainDelegate* CreateContentMainDelegate() override {
     return new CastMainDelegate();
   }
 

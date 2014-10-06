@@ -43,8 +43,8 @@ class BufferingFrameProvider : public CodedFrameProvider {
   virtual ~BufferingFrameProvider();
 
   // CodedFrameProvider implementation.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual void Flush(const base::Closure& flush_cb) override;
 
  private:
   class BufferWithConfig {

@@ -26,9 +26,9 @@ class CastServiceSimple : public CastService {
 
  protected:
   // CastService implementation:
-  virtual void Initialize() OVERRIDE;
-  virtual void StartInternal() OVERRIDE;
-  virtual void StopInternal() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void StartInternal() override;
+  virtual void StopInternal() override;
 
  private:
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;

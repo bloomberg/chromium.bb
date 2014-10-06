@@ -21,7 +21,7 @@ class NetworkChangeNotifierCast : public net::NetworkChangeNotifier {
 
   // net::NetworkChangeNotifier implementation:
   virtual net::NetworkChangeNotifier::ConnectionType
-      GetCurrentConnectionType() const OVERRIDE;
+      GetCurrentConnectionType() const override;
 
  private:
   friend class NetworkChangeNotifierCastTest;

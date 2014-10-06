@@ -61,19 +61,19 @@ class CastWindowAndroid : public content::WebContentsDelegate,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
-  virtual void CloseContents(content::WebContents* source) OVERRIDE;
-  virtual bool CanOverscrollContent() const OVERRIDE;
+                              bool* was_blocked) override;
+  virtual void CloseContents(content::WebContents* source) override;
+  virtual bool CanOverscrollContent() const override;
   virtual bool AddMessageToConsole(content::WebContents* source,
                                    int32 level,
                                    const base::string16& message,
                                    int32 line_no,
-                                   const base::string16& source_id) OVERRIDE;
-  virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void DeactivateContents(content::WebContents* contents) OVERRIDE;
+                                   const base::string16& source_id) override;
+  virtual void ActivateContents(content::WebContents* contents) override;
+  virtual void DeactivateContents(content::WebContents* contents) override;
 
   // content::WebContentsObserver implementation:
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   explicit CastWindowAndroid(content::WebContents* web_contents);

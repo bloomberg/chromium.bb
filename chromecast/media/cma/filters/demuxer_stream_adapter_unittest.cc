@@ -44,12 +44,12 @@ class DummyDemuxerStream : public ::media::DemuxerStream {
   virtual ~DummyDemuxerStream();
 
   // ::media::DemuxerStream implementation.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual ::media::AudioDecoderConfig audio_decoder_config() OVERRIDE;
-  virtual ::media::VideoDecoderConfig video_decoder_config() OVERRIDE;
-  virtual Type type() OVERRIDE;
-  virtual bool SupportsConfigChanges() OVERRIDE;
-  virtual ::media::VideoRotation video_rotation() OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual ::media::AudioDecoderConfig audio_decoder_config() override;
+  virtual ::media::VideoDecoderConfig video_decoder_config() override;
+  virtual Type type() override;
+  virtual bool SupportsConfigChanges() override;
+  virtual ::media::VideoRotation video_rotation() override;
 
   bool has_pending_read() const {
     return has_pending_read_;

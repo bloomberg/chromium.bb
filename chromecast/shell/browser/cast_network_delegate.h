@@ -29,7 +29,7 @@ class CastNetworkDelegate : public net::NetworkDelegate {
  private:
   // net::NetworkDelegate implementation:
   virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const base::FilePath& path) const OVERRIDE;
+                               const base::FilePath& path) const override;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetworkDelegate);
 };

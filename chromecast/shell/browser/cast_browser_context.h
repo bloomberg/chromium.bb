@@ -26,25 +26,25 @@ class CastBrowserContext : public content::BrowserContext {
   virtual ~CastBrowserContext();
 
   // BrowserContext implementation:
-  virtual base::FilePath GetPath() const OVERRIDE;
-  virtual bool IsOffTheRecord() const OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual base::FilePath GetPath() const override;
+  virtual bool IsOffTheRecord() const override;
+  virtual net::URLRequestContextGetter* GetRequestContext() override;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
+      int renderer_child_id) override;
+  virtual net::URLRequestContextGetter* GetMediaRequestContext() override;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
+      int renderer_child_id) override;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,
-          bool in_memory) OVERRIDE;
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
+          bool in_memory) override;
+  virtual content::ResourceContext* GetResourceContext() override;
   virtual content::DownloadManagerDelegate*
-      GetDownloadManagerDelegate() OVERRIDE;
-  virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
-  virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
-  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
+      GetDownloadManagerDelegate() override;
+  virtual content::BrowserPluginGuestManager* GetGuestManager() override;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  virtual content::PushMessagingService* GetPushMessagingService() override;
+  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
 
  private:
   class CastResourceContext;

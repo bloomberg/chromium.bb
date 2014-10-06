@@ -38,20 +38,20 @@ class CastStabilityMetricsProvider
   virtual ~CastStabilityMetricsProvider();
 
   // metrics::MetricsDataProvider implementation:
-  virtual void OnRecordingEnabled() OVERRIDE;
-  virtual void OnRecordingDisabled() OVERRIDE;
+  virtual void OnRecordingEnabled() override;
+  virtual void OnRecordingDisabled() override;
   virtual void ProvideStabilityMetrics(
-      ::metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+      ::metrics::SystemProfileProto* system_profile_proto) override;
 
  private:
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // content::BrowserChildProcessObserver implementation:
   virtual void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
 
   // Records a renderer process crash.
   void LogRendererCrash(content::RenderProcessHost* host,

@@ -18,9 +18,9 @@ class CastServiceAndroid : public CastService {
 
  protected:
   // CastService implementation.
-  virtual void Initialize() OVERRIDE;
-  virtual void StartInternal() OVERRIDE;
-  virtual void StopInternal() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void StartInternal() override;
+  virtual void StopInternal() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastServiceAndroid);

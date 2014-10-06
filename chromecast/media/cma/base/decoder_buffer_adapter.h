@@ -24,12 +24,12 @@ class DecoderBufferAdapter : public DecoderBufferBase {
       const scoped_refptr< ::media::DecoderBuffer>& buffer);
 
   // DecoderBufferBase implementation.
-  virtual base::TimeDelta timestamp() const OVERRIDE;
-  virtual const uint8* data() const OVERRIDE;
-  virtual uint8* writable_data() const OVERRIDE;
-  virtual int data_size() const OVERRIDE;
-  virtual const ::media::DecryptConfig* decrypt_config() const OVERRIDE;
-  virtual bool end_of_stream() const OVERRIDE;
+  virtual base::TimeDelta timestamp() const override;
+  virtual const uint8* data() const override;
+  virtual uint8* writable_data() const override;
+  virtual int data_size() const override;
+  virtual const ::media::DecryptConfig* decrypt_config() const override;
+  virtual bool end_of_stream() const override;
 
  private:
   virtual ~DecoderBufferAdapter();

@@ -35,24 +35,24 @@ class CastResourceDelegate : public ui::ResourceBundle::Delegate {
   // ui:ResourceBundle::Delegate implementation:
   virtual base::FilePath GetPathForResourcePack(
       const base::FilePath& pack_path,
-      ui::ScaleFactor scale_factor) OVERRIDE;
+      ui::ScaleFactor scale_factor) override;
   virtual base::FilePath GetPathForLocalePack(
       const base::FilePath& pack_path,
-      const std::string& locale) OVERRIDE;
-  virtual gfx::Image GetImageNamed(int resource_id) OVERRIDE;
+      const std::string& locale) override;
+  virtual gfx::Image GetImageNamed(int resource_id) override;
   virtual gfx::Image GetNativeImageNamed(
       int resource_id,
-      ui::ResourceBundle::ImageRTL rtl) OVERRIDE;
+      ui::ResourceBundle::ImageRTL rtl) override;
   virtual base::RefCountedStaticMemory* LoadDataResourceBytes(
       int resource_id,
-      ui::ScaleFactor scale_factor) OVERRIDE;
+      ui::ScaleFactor scale_factor) override;
   virtual bool GetRawDataResource(int resource_id,
                                   ui::ScaleFactor scale_factor,
-                                  base::StringPiece* value) OVERRIDE;
+                                  base::StringPiece* value) override;
   virtual bool GetLocalizedString(int message_id,
-                                  base::string16* value) OVERRIDE;
+                                  base::string16* value) override;
   virtual scoped_ptr<gfx::Font> GetFont(
-      ui::ResourceBundle::FontStyle style) OVERRIDE;
+      ui::ResourceBundle::FontStyle style) override;
 
   // Adds/removes/clears extra localized strings.
   void AddExtraLocalizedString(int resource_id,

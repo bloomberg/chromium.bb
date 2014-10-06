@@ -28,8 +28,8 @@ class CodedFrameProviderHost : public CodedFrameProvider {
   virtual ~CodedFrameProviderHost();
 
   // CodedFrameProvider implementation.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual void Flush(const base::Closure& flush_cb) override;
 
   // Invoked when some data has been written into the fifo.
   void OnFifoWriteEvent();

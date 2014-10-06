@@ -63,9 +63,9 @@ class FifoOwnedMemory : public MediaMemoryChunk {
   virtual ~FifoOwnedMemory();
 
   // MediaMemoryChunk implementation.
-  virtual void* data() const OVERRIDE { return data_; }
-  virtual size_t size() const OVERRIDE { return size_; }
-  virtual bool valid() const OVERRIDE { return flag_->IsValid(); }
+  virtual void* data() const override { return data_; }
+  virtual size_t size() const override { return size_; }
+  virtual bool valid() const override { return flag_->IsValid(); }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
