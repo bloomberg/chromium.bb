@@ -50,8 +50,11 @@ public:
     // Layout resources used by this node.
     static void layoutResourcesIfNeeded(const RenderObject*);
 
-    // Helper function determining wheter overflow is hidden
+    // Helper function determining whether overflow is hidden.
     static bool isOverflowHidden(const RenderObject*);
+
+    // Returns true if we're currently within the rendering of a clip-path as a mask.
+    static bool isRenderingMaskImage(const RenderObject&);
 
     // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
     static void intersectPaintInvalidationRectWithResources(const RenderObject*, FloatRect&);

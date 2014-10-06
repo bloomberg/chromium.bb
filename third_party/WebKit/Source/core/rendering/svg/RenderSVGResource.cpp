@@ -24,12 +24,11 @@
 
 #include "core/rendering/svg/RenderSVGResource.h"
 
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 
@@ -45,9 +44,7 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     // If we have no style at all, ignore it.
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
-    bool isRenderingMask = false;
-    if (object->frame() && object->frame()->view())
-        isRenderingMask = object->frame()->view()->paintBehavior() & PaintBehaviorRenderingSVGMask;
+    bool isRenderingMask = SVGRenderSupport::isRenderingMaskImage(*object);
 
     // If we have no fill/stroke, return 0.
     if (mode == ApplyToFillMode) {

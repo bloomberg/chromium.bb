@@ -25,6 +25,8 @@
 #include "config.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
@@ -272,6 +274,11 @@ bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
     ASSERT(!object->isDocumentElement());
 
     return object->style()->overflowX() == OHIDDEN || object->style()->overflowX() == OSCROLL;
+}
+
+bool SVGRenderSupport::isRenderingMaskImage(const RenderObject& object)
+{
+    return object.frame() && object.frame()->view() && object.frame()->view()->paintBehavior() & PaintBehaviorRenderingSVGMask;
 }
 
 void SVGRenderSupport::intersectPaintInvalidationRectWithResources(const RenderObject* renderer, FloatRect& paintInvalidationRect)

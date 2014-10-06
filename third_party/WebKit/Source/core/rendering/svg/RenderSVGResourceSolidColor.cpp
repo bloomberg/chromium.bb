@@ -21,8 +21,6 @@
 
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -47,10 +45,7 @@ bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyl
     ASSERT(context);
     ASSERT(resourceMode != ApplyToDefaultMode);
 
-    bool isRenderingMask = false;
-    if (object->frame() && object->frame()->view())
-        isRenderingMask = object->frame()->view()->paintBehavior() & PaintBehaviorRenderingSVGMask;
-
+    bool isRenderingMask = SVGRenderSupport::isRenderingMaskImage(*object);
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
     if (resourceMode & ApplyToFillMode) {

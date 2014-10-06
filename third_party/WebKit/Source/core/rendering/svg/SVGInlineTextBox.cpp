@@ -25,7 +25,6 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/editing/Editor.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
@@ -286,7 +285,7 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
         }
     }
 
-    if (textRenderer.frame() && textRenderer.frame()->view() && textRenderer.frame()->view()->paintBehavior() & PaintBehaviorRenderingSVGMask) {
+    if (SVGRenderSupport::isRenderingMaskImage(textRenderer)) {
         hasFill = true;
         hasVisibleStroke = false;
     }

@@ -27,15 +27,13 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "core/frame/FrameHost.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/paint/SVGImagePainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/FloatConversion.h"
@@ -43,13 +41,6 @@
 static int kMaxImageBufferSize = 4096;
 
 namespace blink {
-
-static inline bool isRenderingMaskImage(RenderObject* object)
-{
-    if (object->frame() && object->frame()->view())
-        return object->frame()->view()->paintBehavior() & PaintBehaviorRenderingSVGMask;
-    return false;
-}
 
 SVGRenderingContext::~SVGRenderingContext()
 {
@@ -108,7 +99,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
     // Setup transparency layers before setting up SVG resources!
-    bool isRenderingMask = isRenderingMaskImage(m_object);
+    bool isRenderingMask = SVGRenderSupport::isRenderingMaskImage(*m_object);
     // RenderLayer takes care of root opacity.
     float opacity = (object->isSVGRoot() || isRenderingMask) ? 1 : style->opacity();
     bool hasBlendMode = style->hasBlendMode() && !isRenderingMask;
