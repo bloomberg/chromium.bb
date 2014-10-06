@@ -1285,6 +1285,8 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
   results.extend(_CheckForInvalidIfDefinedMacros(input_api, output_api))
+  # TODO(danakj): Remove this when base/move.h is removed.
+  results.extend(_CheckForUsingSideEffectsOfPass(input_api, output_api))
   results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckChangeHasNoTabs(
@@ -1442,6 +1444,20 @@ def _CheckForInvalidIfDefinedMacros(input_api, output_api):
       'Found ifdef check on always-defined macro[s]. Please fix your code\n'
       'or check the list of ALWAYS_DEFINED_MACROS in src/PRESUBMIT.py.',
       bad_macros)]
+
+
+def _CheckForUsingSideEffectsOfPass(input_api, output_api):
+  """Check all affected files for using side effects of Pass."""
+  errors = []
+  for f in input_api.AffectedFiles():
+    if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm')):
+      for lnum, line in f.ChangedContents():
+        # Disallow Foo(*my_scoped_thing.Pass()); See crbug.com/418297.
+        if re.search(r'\*[a-zA-Z0-9_]+\.Pass\(\)', line):
+          errors.append(output_api.PresubmitError(
+            ('%s:%d uses *foo.Pass() to delete the contents of scoped_ptr. ' +
+             'See crbug.com/418297.') % (f.LocalPath(), lnum)))
+  return errors
 
 
 def _CheckForIPCRules(input_api, output_api):
