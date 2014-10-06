@@ -43,10 +43,10 @@ class PDFWebContentsHelper
   virtual ~PDFWebContentsHelper();
 
   // content::WebContentsObserver overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   // Internal helpers ----------------------------------------------------------
 

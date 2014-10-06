@@ -34,13 +34,13 @@ class TestService : public BrowserContextKeyedServiceFactory {
         fill_on_shutdown_(fill_on_shutdown) {}
 
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE {
+      content::BrowserContext* context) const override {
     ADD_FAILURE() << "This isn't part of the tests!";
     return NULL;
   }
 
   virtual void BrowserContextShutdown(content::BrowserContext* context)
-      OVERRIDE {
+      override {
     fill_on_shutdown_->push_back(name_);
   }
 

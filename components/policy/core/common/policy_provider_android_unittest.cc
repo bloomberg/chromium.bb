@@ -62,8 +62,8 @@ class PolicyProviderAndroidTest : public ::testing::Test {
   PolicyProviderAndroidTest();
   virtual ~PolicyProviderAndroidTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyProviderAndroidTest);

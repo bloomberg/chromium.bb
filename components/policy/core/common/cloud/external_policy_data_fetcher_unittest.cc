@@ -38,7 +38,7 @@ class ExternalPolicyDataFetcherTest : public testing::Test {
   virtual ~ExternalPolicyDataFetcherTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void StartJob(int index);
   void CancelJob(int index);

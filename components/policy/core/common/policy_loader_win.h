@@ -62,8 +62,8 @@ class POLICY_EXPORT PolicyLoaderWin
       const base::string16& chrome_policy_key);
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() OVERRIDE;
-  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
+  virtual void InitOnBackgroundThread() override;
+  virtual scoped_ptr<PolicyBundle> Load() override;
 
  private:
   // Reads Chrome Policy from a PReg file at the given path and stores the
@@ -104,7 +104,7 @@ class POLICY_EXPORT PolicyLoaderWin
   void SetupWatches();
 
   // ObjectWatcher::Delegate overrides:
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+  virtual void OnObjectSignaled(HANDLE object) override;
 
   bool is_initialized_;
   const base::string16 chrome_policy_key_;

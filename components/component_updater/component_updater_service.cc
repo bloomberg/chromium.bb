@@ -106,17 +106,17 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
   virtual ~CrxUpdateService();
 
   // Overrides for ComponentUpdateService.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual Status Start() OVERRIDE;
-  virtual Status Stop() OVERRIDE;
-  virtual Status RegisterComponent(const CrxComponent& component) OVERRIDE;
-  virtual std::vector<std::string> GetComponentIDs() const OVERRIDE;
-  virtual OnDemandUpdater& GetOnDemandUpdater() OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual Status Start() override;
+  virtual Status Stop() override;
+  virtual Status RegisterComponent(const CrxComponent& component) override;
+  virtual std::vector<std::string> GetComponentIDs() const override;
+  virtual OnDemandUpdater& GetOnDemandUpdater() override;
   virtual void MaybeThrottle(const std::string& crx_id,
-                             const base::Closure& callback) OVERRIDE;
+                             const base::Closure& callback) override;
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      OVERRIDE;
+      override;
 
   // Context for a crx download url request.
   struct CRXContext {
@@ -143,10 +143,10 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
   // Overrides for ComponentUpdateService.
   virtual bool GetComponentDetails(const std::string& component_id,
-                                   CrxUpdateItem* item) const OVERRIDE;
+                                   CrxUpdateItem* item) const override;
 
   // Overrides for OnDemandUpdater.
-  virtual Status OnDemandUpdate(const std::string& component_id) OVERRIDE;
+  virtual Status OnDemandUpdate(const std::string& component_id) override;
 
   void UpdateCheckComplete(const GURL& original_url,
                            int error,

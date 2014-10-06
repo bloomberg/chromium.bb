@@ -47,10 +47,10 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
   typedef std::map<PP_Instance, RequestNexeFdCallback> CacheRequestInfoMap;
 
   // IPC::MessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual void OnFilterRemoved() OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual void OnFilterRemoved() override;
+  virtual void OnChannelClosing() override;
 
   void SendRequestNexeFd(int render_view_id,
                          PP_Instance instance,

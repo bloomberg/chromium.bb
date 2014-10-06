@@ -101,7 +101,7 @@ class GCMStatsRecorderImplTest : public testing::Test {
  public:
   GCMStatsRecorderImplTest();
   virtual ~GCMStatsRecorderImplTest();
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void VerifyRecordedCheckinCount(int expected_count) {
     EXPECT_EQ(expected_count,

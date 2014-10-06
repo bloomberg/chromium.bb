@@ -27,7 +27,7 @@ class FakeGCMClientFactory : public GCMClientFactory {
   virtual ~FakeGCMClientFactory();
 
   // GCMClientFactory:
-  virtual scoped_ptr<GCMClient> BuildInstance() OVERRIDE;
+  virtual scoped_ptr<GCMClient> BuildInstance() override;
 
  private:
   FakeGCMClient::StartMode gcm_client_start_mode_;

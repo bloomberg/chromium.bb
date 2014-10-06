@@ -38,18 +38,18 @@ class POLICY_EXPORT ConfigurationPolicyPrefStore
       PolicyLevel level);
 
   // PrefStore methods:
-  virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual bool HasObservers() const OVERRIDE;
-  virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual void AddObserver(PrefStore::Observer* observer) override;
+  virtual void RemoveObserver(PrefStore::Observer* observer) override;
+  virtual bool HasObservers() const override;
+  virtual bool IsInitializationComplete() const override;
   virtual bool GetValue(const std::string& key,
-                        const base::Value** result) const OVERRIDE;
+                        const base::Value** result) const override;
 
   // PolicyService::Observer methods:
   virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
-                               const PolicyMap& current) OVERRIDE;
-  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
+                               const PolicyMap& current) override;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) override;
 
  private:
   virtual ~ConfigurationPolicyPrefStore();

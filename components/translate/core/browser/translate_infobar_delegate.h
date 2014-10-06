@@ -192,11 +192,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual int GetIconID() const OVERRIDE;
-  virtual infobars::InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
-  virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
+  virtual void InfoBarDismissed() override;
+  virtual int GetIconID() const override;
+  virtual infobars::InfoBarDelegate::Type GetInfoBarType() const override;
+  virtual bool ShouldExpire(const NavigationDetails& details) const override;
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
 
   bool is_off_the_record_;
   translate::TranslateStep step_;

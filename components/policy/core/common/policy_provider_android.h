@@ -33,9 +33,9 @@ class POLICY_EXPORT PolicyProviderAndroid : public ConfigurationPolicyProvider {
   void SetPolicies(scoped_ptr<PolicyBundle> policy);
 
   // ConfigurationPolicyProvider:
-  virtual void Shutdown() OVERRIDE;
-  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  virtual void Shutdown() override;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
+  virtual void RefreshPolicies() override;
 
  private:
   PolicyProviderAndroidDelegate* delegate_;

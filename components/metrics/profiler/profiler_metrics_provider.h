@@ -24,7 +24,7 @@ class ProfilerMetricsProvider : public MetricsProvider {
 
   // MetricsDataProvider:
   virtual void ProvideGeneralMetrics(
-      ChromeUserMetricsExtension* uma_proto) OVERRIDE;
+      ChromeUserMetricsExtension* uma_proto) override;
 
   // Records the passed profiled data, which should be a snapshot of the
   // browser's profiled performance during startup for a single process.

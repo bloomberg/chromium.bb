@@ -56,10 +56,10 @@ class INVALIDATION_EXPORT MockAckHandler
   // Implementation of AckHandler.
   virtual void Acknowledge(
       const invalidation::ObjectId& id,
-      const AckHandle& handle) OVERRIDE;
+      const AckHandle& handle) override;
   virtual void Drop(
       const invalidation::ObjectId& id,
-      const AckHandle& handle) OVERRIDE;
+      const AckHandle& handle) override;
 
  private:
   typedef std::vector<syncer::Invalidation> InvalidationVector;

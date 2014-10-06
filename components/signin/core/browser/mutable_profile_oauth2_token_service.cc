@@ -49,7 +49,7 @@ class MutableProfileOAuth2TokenService::RevokeServerRefreshToken
 
  private:
   // GaiaAuthConsumer overrides:
-  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
+  virtual void OnOAuth2RevokeTokenCompleted() override;
 
   MutableProfileOAuth2TokenService* token_service_;
   GaiaAuthFetcher fetcher_;

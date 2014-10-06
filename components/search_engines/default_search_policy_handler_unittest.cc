@@ -29,7 +29,7 @@ class DefaultSearchPolicyHandlerTest
         "http://www.google.com/search#q={searchTerms}");
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
         new DefaultSearchPolicyHandler));
   }

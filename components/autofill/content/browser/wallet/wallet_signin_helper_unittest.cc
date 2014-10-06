@@ -54,12 +54,12 @@ class WalletSigninHelperTest : public testing::Test {
             base::MessageLoopProxy::current())) {}
   virtual ~WalletSigninHelperTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     signin_helper_.reset(
         new WalletSigninHelper(&mock_delegate_, request_context_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     signin_helper_.reset();
   }
 

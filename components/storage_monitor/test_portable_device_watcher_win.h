@@ -60,13 +60,13 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
 
  private:
   // PortableDeviceWatcherWin:
-  virtual void EnumerateAttachedDevices() OVERRIDE;
+  virtual void EnumerateAttachedDevices() override;
   virtual void HandleDeviceAttachEvent(
-      const base::string16& pnp_device_id) OVERRIDE;
+      const base::string16& pnp_device_id) override;
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
       base::string16* device_location,
-      base::string16* storage_object_id) const OVERRIDE;
+      base::string16* storage_object_id) const override;
 
   // Set to true to get dummy storage details from
   // GetMTPStorageInfoFromDeviceId().

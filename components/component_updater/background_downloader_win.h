@@ -42,7 +42,7 @@ class BackgroundDownloader : public CrxDownloader {
 
  private:
   // Overrides for CrxDownloader.
-  virtual void DoStartDownload(const GURL& url) OVERRIDE;
+  virtual void DoStartDownload(const GURL& url) override;
 
   // Called asynchronously on the |task_runner_| at different stages during
   // the download. |OnDownloading| can be called multiple times.

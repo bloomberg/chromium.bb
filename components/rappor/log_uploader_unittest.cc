@@ -35,13 +35,13 @@ class TestLogUploader : public LogUploader {
   }
 
  protected:
-  virtual bool IsUploadScheduled() const OVERRIDE {
+  virtual bool IsUploadScheduled() const override {
     return last_interval_set() != base::TimeDelta();
   }
 
   // Schedules a future call to StartScheduledUpload if one isn't already
   // pending.
-  virtual void ScheduleNextUpload(base::TimeDelta interval) OVERRIDE {
+  virtual void ScheduleNextUpload(base::TimeDelta interval) override {
     EXPECT_EQ(last_interval_set(), base::TimeDelta());
     last_interval_set_ = interval;
   }

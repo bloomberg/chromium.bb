@@ -65,9 +65,9 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 
   virtual void Start(const std::string& client_id,
                      const std::string& client_secret,
-                     const std::vector<std::string>& scopes) OVERRIDE;
+                     const std::vector<std::string>& scopes) override;
 
-  virtual void CancelRequest() OVERRIDE;
+  virtual void CancelRequest() override;
 
   // Handles an access token response.
   void OnAccessTokenResponse(NSString* token,

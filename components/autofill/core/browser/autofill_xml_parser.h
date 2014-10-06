@@ -33,7 +33,7 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
   virtual void EndElement(buzz::XmlParseContext* context,
-                          const char* name) OVERRIDE;
+                          const char* name) override;
 
   // The callback for character data between tags (<element>text...</element>).
   // |context| is a parsing context used to resolve element/attribute names.
@@ -42,13 +42,13 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
   // |len| is the length of the string pointed to by text.
   virtual void CharacterData(buzz::XmlParseContext* context,
                              const char* text,
-                             int len) OVERRIDE;
+                             int len) override;
 
   // The callback for parsing errors.
   // |context| is a parsing context used to resolve names.
   // |error_code| is a code representing the parsing error.
   virtual void Error(buzz::XmlParseContext* context,
-                     XML_Error error_code) OVERRIDE;
+                     XML_Error error_code) override;
 
   // True if parsing succeeded.
   bool succeeded_;
@@ -84,7 +84,7 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
   // |attrs| is the list of attributes (names and values) for the element.
   virtual void StartElement(buzz::XmlParseContext* context,
                             const char* name,
-                            const char** attrs) OVERRIDE;
+                            const char** attrs) override;
 
   // A helper function to parse a |WebElementDescriptor|.
   // |context| is the current parsing context.
@@ -133,7 +133,7 @@ class AutofillUploadXmlParser : public AutofillXmlParser {
   // |attrs| is the list of attributes (names and values) for the element.
   virtual void StartElement(buzz::XmlParseContext* context,
                             const char* name,
-                            const char** attrs) OVERRIDE;
+                            const char** attrs) override;
 
   // A helper function to retrieve double values from strings.  Raises an XML
   // parse error if it fails.

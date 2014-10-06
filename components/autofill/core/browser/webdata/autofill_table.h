@@ -133,11 +133,11 @@ class AutofillTable : public WebDatabaseTable {
   // Retrieves the AutofillTable* owned by |database|.
   static AutofillTable* FromWebDatabase(WebDatabase* db);
 
-  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
-  virtual bool CreateTablesIfNecessary() OVERRIDE;
-  virtual bool IsSyncable() OVERRIDE;
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const override;
+  virtual bool CreateTablesIfNecessary() override;
+  virtual bool IsSyncable() override;
   virtual bool MigrateToVersion(int version,
-                                bool* update_compatible_version) OVERRIDE;
+                                bool* update_compatible_version) override;
 
   // Records the form elements in |elements| in the database in the
   // autofill table.  A list of all added and updated autofill entries

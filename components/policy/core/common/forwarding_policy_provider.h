@@ -43,14 +43,14 @@ class POLICY_EXPORT ForwardingPolicyProvider
   // except POLICY_DOMAIN_CHROME, whose status is always queried from the
   // |delegate_|. RefreshPolicies() calls are also forwarded, since this
   // provider doesn't have a "real" policy source of its own.
-  virtual void Init(SchemaRegistry* registry) OVERRIDE;
-  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
-  virtual void OnSchemaRegistryReady() OVERRIDE;
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
+  virtual void Init(SchemaRegistry* registry) override;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
+  virtual void RefreshPolicies() override;
+  virtual void OnSchemaRegistryReady() override;
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) override;
 
   // ConfigurationPolicyProvider::Observer:
-  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
+  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
 
  private:
   enum InitializationState {

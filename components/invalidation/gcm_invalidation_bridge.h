@@ -46,25 +46,25 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // gcm::GCMAppHandler implementation.
-  virtual void ShutdownHandler() OVERRIDE;
+  virtual void ShutdownHandler() override;
   virtual void OnMessage(
       const std::string& app_id,
-      const gcm::GCMClient::IncomingMessage& message) OVERRIDE;
-  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+      const gcm::GCMClient::IncomingMessage& message) override;
+  virtual void OnMessagesDeleted(const std::string& app_id) override;
   virtual void OnSendError(
       const std::string& app_id,
-      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+      const gcm::GCMClient::SendErrorDetails& send_error_details) override;
   virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) OVERRIDE;
+                                  const std::string& message_id) override;
 
   // gcm::GCMConnectionObserver implementation.
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
 
   scoped_ptr<syncer::GCMNetworkChannelDelegate> CreateDelegate();
 

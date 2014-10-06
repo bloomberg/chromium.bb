@@ -31,11 +31,11 @@ class BookmarkClientMock : public TestBookmarkClient {
   BookmarkClientMock(const std::map<GURL, int>& typed_count_map)
       : typed_count_map_(typed_count_map) {}
 
-  virtual bool SupportsTypedCountForNodes() OVERRIDE { return true; }
+  virtual bool SupportsTypedCountForNodes() override { return true; }
 
   virtual void GetTypedCountForNodes(
       const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE {
+      NodeTypedCountPairs* node_typed_count_pairs) override {
     for (NodeSet::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
       const BookmarkNode* node = *it;
       std::map<GURL, int>::const_iterator found =

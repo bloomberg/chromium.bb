@@ -28,19 +28,19 @@ class NameInfo : public FormGroup {
   bool ParsedNamesAreEqual(const NameInfo& info);
 
   // FormGroup:
-  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
   virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) OVERRIDE;
+                          const base::string16& value) override;
   virtual base::string16 GetInfo(const AutofillType& type,
-                                 const std::string& app_locale) const OVERRIDE;
+                                 const std::string& app_locale) const override;
   virtual bool SetInfo(const AutofillType& type,
                        const base::string16& value,
-                       const std::string& app_locale) OVERRIDE;
+                       const std::string& app_locale) override;
 
  private:
   // FormGroup:
   virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const OVERRIDE;
+      ServerFieldTypeSet* supported_types) const override;
 
   // Returns the full name, which is either |full_|, or if |full_| is empty,
   // is composed of given, middle and family.
@@ -68,14 +68,14 @@ class EmailInfo : public FormGroup {
   EmailInfo& operator=(const EmailInfo& info);
 
   // FormGroup:
-  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
   virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) OVERRIDE;
+                          const base::string16& value) override;
 
  private:
   // FormGroup:
   virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const OVERRIDE;
+      ServerFieldTypeSet* supported_types) const override;
 
   base::string16 email_;
 };
@@ -89,14 +89,14 @@ class CompanyInfo : public FormGroup {
   CompanyInfo& operator=(const CompanyInfo& info);
 
   // FormGroup:
-  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
   virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) OVERRIDE;
+                          const base::string16& value) override;
 
  private:
   // FormGroup:
   virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const OVERRIDE;
+      ServerFieldTypeSet* supported_types) const override;
 
   base::string16 company_name_;
 };

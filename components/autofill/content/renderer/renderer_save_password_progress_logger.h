@@ -29,7 +29,7 @@ class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
 
  protected:
   // SavePasswordProgressLogger:
-  virtual void SendLog(const std::string& log) OVERRIDE;
+  virtual void SendLog(const std::string& log) override;
 
  private:
   // Used by SendLog to send the IPC message with logs. |sender_| needs to

@@ -41,7 +41,7 @@ class EnhancedBookmarkModelTest
         last_remote_id_node_(NULL) {}
   virtual ~EnhancedBookmarkModelTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
     bookmark_client_.reset(new bookmarks::TestBookmarkClient());
     bookmark_model_.reset(bookmark_client_->CreateModel().release());
@@ -49,7 +49,7 @@ class EnhancedBookmarkModelTest
     model_->AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (model_)
       model_->Shutdown();
     model_.reset();
@@ -107,25 +107,25 @@ class EnhancedBookmarkModelTest
   scoped_ptr<EnhancedBookmarkModel> model_;
 
   // EnhancedBookmarkModelObserver implementation:
-  virtual void EnhancedBookmarkModelLoaded() OVERRIDE { loaded_calls_++; }
-  virtual void EnhancedBookmarkModelShuttingDown() OVERRIDE {
+  virtual void EnhancedBookmarkModelLoaded() override { loaded_calls_++; }
+  virtual void EnhancedBookmarkModelShuttingDown() override {
     shutting_down_calls_++;
   }
-  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) OVERRIDE {
+  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) override {
     added_calls_++;
     last_added_ = node;
   }
-  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) OVERRIDE {
+  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) override {
     removed_calls_++;
     last_removed_ = node;
   }
-  virtual void EnhancedBookmarkAllUserNodesRemoved() OVERRIDE {
+  virtual void EnhancedBookmarkAllUserNodesRemoved() override {
     all_user_nodes_removed_calls_++;
   }
   virtual void EnhancedBookmarkRemoteIdChanged(
       const BookmarkNode* node,
       const std::string& old_remote_id,
-      const std::string& remote_id) OVERRIDE {
+      const std::string& remote_id) override {
     remote_id_changed_calls_++;
     last_remote_id_node_ = node;
     last_old_remote_id_ = old_remote_id;

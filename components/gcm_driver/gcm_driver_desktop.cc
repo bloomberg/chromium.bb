@@ -37,26 +37,26 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   // Called on IO thread.
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
-                                  GCMClient::Result result) OVERRIDE;
+                                  GCMClient::Result result) override;
   virtual void OnUnregisterFinished(const std::string& app_id,
-                                    GCMClient::Result result) OVERRIDE;
+                                    GCMClient::Result result) override;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
-                              GCMClient::Result result) OVERRIDE;
+                              GCMClient::Result result) override;
   virtual void OnMessageReceived(
       const std::string& app_id,
-      const GCMClient::IncomingMessage& message) OVERRIDE;
-  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+      const GCMClient::IncomingMessage& message) override;
+  virtual void OnMessagesDeleted(const std::string& app_id) override;
   virtual void OnMessageSendError(
       const std::string& app_id,
-      const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+      const GCMClient::SendErrorDetails& send_error_details) override;
   virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) OVERRIDE;
+                                  const std::string& message_id) override;
   virtual void OnGCMReady(
-      const std::vector<AccountMapping>& account_mappings) OVERRIDE;
-  virtual void OnActivityRecorded() OVERRIDE;
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+      const std::vector<AccountMapping>& account_mappings) override;
+  virtual void OnActivityRecorded() override;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
 
   // Called on IO thread.
   void Initialize(

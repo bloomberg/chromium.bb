@@ -57,29 +57,29 @@ class GCMDriverDesktop : public GCMDriver {
   virtual ~GCMDriverDesktop();
 
   // GCMDriver overrides:
-  virtual void Shutdown() OVERRIDE;
-  virtual void OnSignedIn() OVERRIDE;
-  virtual void Purge() OVERRIDE;
+  virtual void Shutdown() override;
+  virtual void OnSignedIn() override;
+  virtual void Purge() override;
   virtual void AddAppHandler(const std::string& app_id,
-                             GCMAppHandler* handler) OVERRIDE;
-  virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
-  virtual void AddConnectionObserver(GCMConnectionObserver* observer) OVERRIDE;
+                             GCMAppHandler* handler) override;
+  virtual void RemoveAppHandler(const std::string& app_id) override;
+  virtual void AddConnectionObserver(GCMConnectionObserver* observer) override;
   virtual void RemoveConnectionObserver(
-      GCMConnectionObserver* observer) OVERRIDE;
-  virtual void Enable() OVERRIDE;
-  virtual void Disable() OVERRIDE;
-  virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
-  virtual bool IsStarted() const OVERRIDE;
-  virtual bool IsConnected() const OVERRIDE;
+      GCMConnectionObserver* observer) override;
+  virtual void Enable() override;
+  virtual void Disable() override;
+  virtual GCMClient* GetGCMClientForTesting() const override;
+  virtual bool IsStarted() const override;
+  virtual bool IsConnected() const override;
   virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                bool clear_logs) OVERRIDE;
+                                bool clear_logs) override;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                               bool recording) OVERRIDE;
+                               bool recording) override;
   virtual void SetAccountTokens(
-      const std::vector<GCMClient::AccountTokenInfo>& account_tokens) OVERRIDE;
+      const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
   virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) OVERRIDE;
-  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
+      const AccountMapping& account_mapping) override;
+  virtual void RemoveAccountMapping(const std::string& account_id) override;
 
   // Exposed for testing purpose.
   bool gcm_enabled() const { return gcm_enabled_; }
@@ -89,14 +89,14 @@ class GCMDriverDesktop : public GCMDriver {
 
  protected:
   // GCMDriver implementation:
-  virtual GCMClient::Result EnsureStarted() OVERRIDE;
+  virtual GCMClient::Result EnsureStarted() override;
   virtual void RegisterImpl(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void UnregisterImpl(const std::string& app_id) OVERRIDE;
+      const std::vector<std::string>& sender_ids) override;
+  virtual void UnregisterImpl(const std::string& app_id) override;
   virtual void SendImpl(const std::string& app_id,
                         const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) OVERRIDE;
+                        const GCMClient::OutgoingMessage& message) override;
 
  private:
   class IOWorker;

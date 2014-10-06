@@ -21,8 +21,8 @@ class NaClNonSfiBPFSandboxPolicy
   virtual ~NaClNonSfiBPFSandboxPolicy() {}
 
   virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int sysno) const OVERRIDE;
-  virtual sandbox::bpf_dsl::ResultExpr InvalidSyscall() const OVERRIDE;
+      int sysno) const override;
+  virtual sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NaClNonSfiBPFSandboxPolicy);

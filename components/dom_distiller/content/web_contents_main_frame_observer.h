@@ -28,11 +28,11 @@ class WebContentsMainFrameObserver
 
   // content::WebContentsObserver implementation.
   virtual void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   explicit WebContentsMainFrameObserver(content::WebContents* web_contents);

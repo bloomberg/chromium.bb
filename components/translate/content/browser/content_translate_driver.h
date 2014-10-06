@@ -71,29 +71,29 @@ class ContentTranslateDriver : public TranslateDriver,
   void InitiateTranslation(const std::string& page_lang, int attempt);
 
   // TranslateDriver methods.
-  virtual void OnIsPageTranslatedChanged() OVERRIDE;
-  virtual void OnTranslateEnabledChanged() OVERRIDE;
-  virtual bool IsLinkNavigation() OVERRIDE;
+  virtual void OnIsPageTranslatedChanged() override;
+  virtual void OnTranslateEnabledChanged() override;
+  virtual bool IsLinkNavigation() override;
   virtual void TranslatePage(int page_seq_no,
                              const std::string& translate_script,
                              const std::string& source_lang,
-                             const std::string& target_lang) OVERRIDE;
-  virtual void RevertTranslation(int page_seq_no) OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
-  virtual const std::string& GetContentsMimeType() OVERRIDE;
-  virtual const GURL& GetLastCommittedURL() OVERRIDE;
-  virtual const GURL& GetActiveURL() OVERRIDE;
-  virtual const GURL& GetVisibleURL() OVERRIDE;
-  virtual bool HasCurrentPage() OVERRIDE;
-  virtual void OpenUrlInNewTab(const GURL& url) OVERRIDE;
+                             const std::string& target_lang) override;
+  virtual void RevertTranslation(int page_seq_no) override;
+  virtual bool IsOffTheRecord() override;
+  virtual const std::string& GetContentsMimeType() override;
+  virtual const GURL& GetLastCommittedURL() override;
+  virtual const GURL& GetActiveURL() override;
+  virtual const GURL& GetVisibleURL() override;
+  virtual bool HasCurrentPage() override;
+  virtual void OpenUrlInNewTab(const GURL& url) override;
 
   // content::WebContentsObserver implementation.
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) OVERRIDE;
+      const content::LoadCommittedDetails& load_details) override;
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC handlers.
   void OnTranslateAssignedSequenceNumber(int page_seq_no);

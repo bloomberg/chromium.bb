@@ -19,7 +19,7 @@ class GPUMetricsProvider : public MetricsProvider {
 
   // MetricsProvider:
   virtual void ProvideSystemProfileMetrics(
-      SystemProfileProto* system_profile_proto) OVERRIDE;
+      SystemProfileProto* system_profile_proto) override;
 
  protected:
   // Exposed for the sake of mocking in test code.

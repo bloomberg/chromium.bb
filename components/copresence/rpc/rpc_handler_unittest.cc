@@ -51,13 +51,13 @@ class FakeDirectiveHandler : public DirectiveHandler {
 
   virtual void Initialize(
       const AudioRecorder::DecodeSamplesCallback& decode_cb,
-      const AudioDirectiveHandler::EncodeTokenCallback& encode_cb) OVERRIDE {}
+      const AudioDirectiveHandler::EncodeTokenCallback& encode_cb) override {}
 
-  virtual void AddDirective(const Directive& directive) OVERRIDE {
+  virtual void AddDirective(const Directive& directive) override {
     added_directives_.push_back(directive);
   }
 
-  virtual void RemoveDirectives(const std::string& op_id) OVERRIDE {
+  virtual void RemoveDirectives(const std::string& op_id) override {
     // TODO(ckehoe): Add a parallel implementation when prod has one.
   }
 
@@ -143,24 +143,24 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   virtual void HandleMessages(
       const std::string& app_id,
       const std::string& subscription_id,
-      const std::vector<Message>& messages) OVERRIDE {
+      const std::vector<Message>& messages) override {
     // app_id is unused for now, pending a server fix.
     messages_by_subscription_[subscription_id] = messages;
   }
 
-  virtual net::URLRequestContextGetter* GetRequestContext() const OVERRIDE {
+  virtual net::URLRequestContextGetter* GetRequestContext() const override {
     return NULL;
   }
 
-  virtual const std::string GetPlatformVersionString() const OVERRIDE {
+  virtual const std::string GetPlatformVersionString() const override {
     return kChromeVersion;
   }
 
-  virtual const std::string GetAPIKey() const OVERRIDE {
+  virtual const std::string GetAPIKey() const override {
     return api_key_;
   }
 
-  virtual WhispernetClient* GetWhispernetClient() OVERRIDE {
+  virtual WhispernetClient* GetWhispernetClient() override {
     return NULL;
   }
 

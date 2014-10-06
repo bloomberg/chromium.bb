@@ -98,22 +98,22 @@ class POLICY_EXPORT ComponentCloudPolicyService
   void ClearCache();
 
   // SchemaRegistry::Observer implementation:
-  virtual void OnSchemaRegistryReady() OVERRIDE;
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
+  virtual void OnSchemaRegistryReady() override;
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) override;
 
   // CloudPolicyCore::Observer implementation:
-  virtual void OnCoreConnected(CloudPolicyCore* core) OVERRIDE;
-  virtual void OnCoreDisconnecting(CloudPolicyCore* core) OVERRIDE;
-  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) OVERRIDE;
+  virtual void OnCoreConnected(CloudPolicyCore* core) override;
+  virtual void OnCoreDisconnecting(CloudPolicyCore* core) override;
+  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) override;
 
   // CloudPolicyStore::Observer implementation:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
   // CloudPolicyClient::Observer implementation:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
+  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  virtual void OnClientError(CloudPolicyClient* client) override;
 
  private:
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

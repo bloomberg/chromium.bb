@@ -223,7 +223,7 @@ class WalletClient : public net::URLFetcherDelegate {
   void HandleWalletError(ErrorType error_type);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Logs an UMA metric for each of the |required_actions|.
   void LogRequiredActions(

@@ -98,7 +98,7 @@ template <class T> class WDDestroyableResult : public WDTypedResult {
   }
 
 
-  virtual void Destroy()  OVERRIDE {
+  virtual void Destroy()  override {
     if (!callback_.is_null()) {
       callback_.Run(this);
     }

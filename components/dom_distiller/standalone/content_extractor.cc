@@ -200,10 +200,10 @@ class ContentExtractionRequest : public ViewRequestDelegate {
   ContentExtractionRequest(const GURL& url) : url_(url) {}
 
   virtual void OnArticleUpdated(ArticleDistillationUpdate article_update)
-      OVERRIDE {}
+      override {}
 
   virtual void OnArticleReady(const DistilledArticleProto* article_proto)
-      OVERRIDE {
+      override {
     article_proto_ = article_proto;
     CHECK(article_proto->pages_size()) << "Failed extracting " << url_;
     base::MessageLoop::current()->PostTask(
@@ -229,7 +229,7 @@ class ContentExtractor : public ContentBrowserTest {
 
   // Change behavior of the default host resolver to avoid DNS lookup errors, so
   // we can make network calls.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableDnsSwitch)) {
       EnableDNSLookupForThisTest();
     }
@@ -237,7 +237,7 @@ class ContentExtractor : public ContentBrowserTest {
     AddComponentsResources();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     DisableDNSLookupForThisTest();
   }
 

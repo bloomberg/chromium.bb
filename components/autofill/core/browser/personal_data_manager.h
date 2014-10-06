@@ -66,10 +66,10 @@ class PersonalDataManager : public KeyedService,
   // WebDataServiceConsumer:
   virtual void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
-      const WDTypedResult* result) OVERRIDE;
+      const WDTypedResult* result) override;
 
   // AutofillWebDataServiceObserverOnUIThread:
-  virtual void AutofillMultipleChanged() OVERRIDE;
+  virtual void AutofillMultipleChanged() override;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);

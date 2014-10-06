@@ -41,7 +41,7 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
 
  private:
   // Overridden from URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   bool ParseResponse(const net::URLFetcher* source);
   void RetryWithBackoff(bool update_backoff);

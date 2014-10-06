@@ -23,26 +23,26 @@ class TestAutofillDriver : public AutofillDriver {
   virtual ~TestAutofillDriver();
 
   // AutofillDriver implementation.
-  virtual bool IsOffTheRecord() const OVERRIDE;
+  virtual bool IsOffTheRecord() const override;
   // Returns the value passed in to the last call to |SetURLRequestContext()|
   // or NULL if that method has never been called.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
-  virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
-  virtual bool RendererIsAvailable() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() override;
+  virtual base::SequencedWorkerPool* GetBlockingPool() override;
+  virtual bool RendererIsAvailable() override;
   virtual void SendFormDataToRenderer(int query_id,
                                       RendererFormDataAction action,
-                                      const FormData& data) OVERRIDE;
-  virtual void PingRenderer() OVERRIDE;
+                                      const FormData& data) override;
+  virtual void PingRenderer() override;
   virtual void SendAutofillTypePredictionsToRenderer(
-      const std::vector<FormStructure*>& forms) OVERRIDE;
+      const std::vector<FormStructure*>& forms) override;
   virtual void RendererShouldAcceptDataListSuggestion(
-      const base::string16& value) OVERRIDE;
-  virtual void RendererShouldClearFilledForm() OVERRIDE;
-  virtual void RendererShouldClearPreviewedForm() OVERRIDE;
+      const base::string16& value) override;
+  virtual void RendererShouldClearFilledForm() override;
+  virtual void RendererShouldClearPreviewedForm() override;
   virtual void RendererShouldFillFieldWithValue(
-      const base::string16& value) OVERRIDE;
+      const base::string16& value) override;
   virtual void RendererShouldPreviewFieldWithValue(
-      const base::string16& value) OVERRIDE;
+      const base::string16& value) override;
 
   // Methods that tests can use to specialize functionality.
 

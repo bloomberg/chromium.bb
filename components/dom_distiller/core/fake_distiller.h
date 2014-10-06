@@ -22,7 +22,7 @@ class MockDistillerFactory : public DistillerFactory {
   MockDistillerFactory();
   virtual ~MockDistillerFactory();
   MOCK_METHOD0(CreateDistillerImpl, Distiller*());
-  virtual scoped_ptr<Distiller> CreateDistiller() OVERRIDE {
+  virtual scoped_ptr<Distiller> CreateDistiller() override {
     return scoped_ptr<Distiller>(CreateDistillerImpl());
   }
 };
@@ -44,7 +44,7 @@ class FakeDistiller : public Distiller {
       const GURL& url,
       scoped_ptr<DistillerPage> distiller_page,
       const DistillationFinishedCallback& article_callback,
-      const DistillationUpdateCallback& page_callback) OVERRIDE;
+      const DistillationUpdateCallback& page_callback) override;
 
   void RunDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
   void RunDistillerUpdateCallback(const ArticleDistillationUpdate& update);

@@ -43,21 +43,21 @@ class AutofillProfile : public AutofillDataModel {
   virtual void GetMatchingTypes(
       const base::string16& text,
       const std::string& app_locale,
-      ServerFieldTypeSet* matching_types) const OVERRIDE;
-  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+      ServerFieldTypeSet* matching_types) const override;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
   virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) OVERRIDE;
+                          const base::string16& value) override;
   virtual base::string16 GetInfo(const AutofillType& type,
-                                 const std::string& app_locale) const OVERRIDE;
+                                 const std::string& app_locale) const override;
   virtual bool SetInfo(const AutofillType& type,
                        const base::string16& value,
-                       const std::string& app_locale) OVERRIDE;
+                       const std::string& app_locale) override;
 
   // AutofillDataModel:
   virtual base::string16 GetInfoForVariant(
       const AutofillType& type,
       size_t variant,
-      const std::string& app_locale) const OVERRIDE;
+      const std::string& app_locale) const override;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetRawMultiInfo(ServerFieldType type,
@@ -154,7 +154,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // FormGroup:
   virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const OVERRIDE;
+      ServerFieldTypeSet* supported_types) const override;
 
   // Shared implementation for GetRawMultiInfo() and GetMultiInfo().  Pass an
   // empty |app_locale| to get the raw info; otherwise, the returned info is

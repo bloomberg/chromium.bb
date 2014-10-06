@@ -41,7 +41,7 @@ class URLDatabaseTest : public testing::Test,
 
  protected:
   // Provided for URL/VisitDatabase.
-  virtual sql::Connection& GetDB() OVERRIDE {
+  virtual sql::Connection& GetDB() override {
     return db_;
   }
 

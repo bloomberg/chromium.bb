@@ -50,7 +50,7 @@ class FakeSyncErrorFactory : public syncer::SyncErrorFactory {
  public:
   virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
-      const std::string& message) OVERRIDE {
+      const std::string& message) override {
     return syncer::SyncError();
   }
 };
@@ -60,14 +60,14 @@ class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
   explicit FakeSyncChangeProcessor(EntryMap* model) : model_(model) {}
 
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE {
+      syncer::ModelType type) const override {
     ADD_FAILURE() << "FakeSyncChangeProcessor::GetAllSyncData not implemented.";
     return syncer::SyncDataList();
   }
 
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location&,
-      const syncer::SyncChangeList& changes) OVERRIDE {
+      const syncer::SyncChangeList& changes) override {
     for (SyncChangeList::const_iterator it = changes.begin();
          it != changes.end(); ++it) {
       AddEntry(GetEntryFromChange(*it), model_);

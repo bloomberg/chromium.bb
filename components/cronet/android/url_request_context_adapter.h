@@ -32,7 +32,7 @@ class NetLogObserver : public net::NetLog::ThreadSafeObserver {
 
   virtual ~NetLogObserver() {}
 
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetLogObserver);
@@ -59,9 +59,9 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   const std::string& GetUserAgent(const GURL& url) const;
 
   // net::URLRequestContextGetter implementation:
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const OVERRIDE;
+      const override;
 
   void StartNetLogToFile(const std::string& file_name);
   void StopNetLog();

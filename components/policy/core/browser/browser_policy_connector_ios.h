@@ -31,7 +31,7 @@ class POLICY_EXPORT BrowserPolicyConnectorIOS : public BrowserPolicyConnector {
 
   virtual void Init(
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) OVERRIDE;
+      scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
  private:
   std::string user_agent_;

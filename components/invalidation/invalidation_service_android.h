@@ -38,19 +38,19 @@ class InvalidationServiceAndroid
   // fetching the invalidator state, or querying the client's ID.  Support for
   // exposing the client ID should be available soon; see crbug.com/172391.
   virtual void RegisterInvalidationHandler(
-      syncer::InvalidationHandler* handler) OVERRIDE;
+      syncer::InvalidationHandler* handler) override;
   virtual void UpdateRegisteredInvalidationIds(
       syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) OVERRIDE;
+      const syncer::ObjectIdSet& ids) override;
   virtual void UnregisterInvalidationHandler(
-      syncer::InvalidationHandler* handler) OVERRIDE;
-  virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual std::string GetInvalidatorClientId() const OVERRIDE;
-  virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
+      syncer::InvalidationHandler* handler) override;
+  virtual syncer::InvalidatorState GetInvalidatorState() const override;
+  virtual std::string GetInvalidatorClientId() const override;
+  virtual InvalidationLogger* GetInvalidationLogger() override;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const
-      OVERRIDE;
-  virtual IdentityProvider* GetIdentityProvider() OVERRIDE;
+      override;
+  virtual IdentityProvider* GetIdentityProvider() override;
 
   void RequestSync(JNIEnv* env,
                    jobject obj,

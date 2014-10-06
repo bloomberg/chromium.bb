@@ -55,12 +55,12 @@ class AutofillWebDataBackendImpl
 
   // AutofillWebDataBackend implementation.
   virtual void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer)
-      OVERRIDE;
+      override;
   virtual void RemoveObserver(
-      AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE;
-  virtual WebDatabase* GetDatabase() OVERRIDE;
-  virtual void RemoveExpiredFormElements() OVERRIDE;
-  virtual void NotifyOfMultipleAutofillChanges() OVERRIDE;
+      AutofillWebDataServiceObserverOnDBThread* observer) override;
+  virtual WebDatabase* GetDatabase() override;
+  virtual void RemoveExpiredFormElements() override;
+  virtual void NotifyOfMultipleAutofillChanges() override;
 
   // Returns a SupportsUserData objects that may be used to store data
   // owned by the DB thread on this object. Should be called only from

@@ -31,15 +31,15 @@ class TestAudioOutputStream : public media::AudioOutputStream {
 
   virtual ~TestAudioOutputStream() {}
 
-  virtual bool Open() OVERRIDE { return true; }
-  virtual void Start(AudioSourceCallback* callback) OVERRIDE {
+  virtual bool Open() override { return true; }
+  virtual void Start(AudioSourceCallback* callback) override {
     callback_ = callback;
     GatherPlayedSamples();
   }
-  virtual void Stop() OVERRIDE {}
-  virtual void SetVolume(double volume) OVERRIDE {}
-  virtual void GetVolume(double* volume) OVERRIDE {}
-  virtual void Close() OVERRIDE {}
+  virtual void Stop() override {}
+  virtual void SetVolume(double volume) override {}
+  virtual void GetVolume(double* volume) override {}
+  virtual void Close() override {}
 
  private:
   void GatherPlayedSamples() {

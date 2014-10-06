@@ -25,7 +25,7 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true) {}
   virtual ~TestAutofillManager() {}
 
-  virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
+  virtual bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
@@ -46,7 +46,7 @@ class CustomTestAutofillClient : public TestAutofillClient {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const ResultCallback& callback) OVERRIDE {
+      const ResultCallback& callback) override {
     if (should_simulate_success_) {
       FormStructure form_structure(form);
       callback.Run(
@@ -96,7 +96,7 @@ class RequestAutocompleteManagerTest :
  public:
   RequestAutocompleteManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
     driver_.reset(
@@ -105,7 +105,7 @@ class RequestAutocompleteManagerTest :
         new RequestAutocompleteManager(driver_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Reset the driver now to cause all pref observers to be removed and avoid
     // crashes that otherwise occur in the destructor.
     driver_.reset();

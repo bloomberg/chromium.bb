@@ -57,7 +57,7 @@ class PrecacheDatabaseTest : public testing::Test {
   virtual ~PrecacheDatabaseTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::StatisticsRecorder::Initialize();
     precache_database_ = new PrecacheDatabase();
 

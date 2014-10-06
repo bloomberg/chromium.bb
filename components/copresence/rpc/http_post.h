@@ -60,7 +60,7 @@ class HttpPost : public net::URLFetcherDelegate {
   friend class HttpPostTest;
 
   // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   ResponseCallback response_callback_;
 

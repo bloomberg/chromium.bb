@@ -399,25 +399,25 @@ class CrashReporterWriter : public MimeWriter {
  public:
   explicit CrashReporterWriter(int fd);
 
-  virtual void AddBoundary() OVERRIDE;
+  virtual void AddBoundary() override;
 
-  virtual void AddEnd() OVERRIDE;
+  virtual void AddEnd() override;
 
   virtual void AddPairData(const char* msg_type,
                            size_t msg_type_size,
                           const char* msg_data,
-                           size_t msg_data_size) OVERRIDE;
+                           size_t msg_data_size) override;
 
   virtual void AddPairDataInChunks(const char* msg_type,
                                    size_t msg_type_size,
                                    const char* msg_data,
                                    size_t msg_data_size,
                                    size_t chunk_size,
-                                   bool strip_trailing_spaces) OVERRIDE;
+                                   bool strip_trailing_spaces) override;
 
   virtual void AddFileContents(const char* filename_msg,
                                uint8_t* file_data,
-                               size_t file_size) OVERRIDE;
+                               size_t file_size) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrashReporterWriter);
@@ -760,7 +760,7 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
   virtual ~NonBrowserCrashHandler() {}
 
   virtual bool RequestDump(const void* crash_context,
-                           size_t crash_context_size) OVERRIDE {
+                           size_t crash_context_size) override {
     int fds[2] = { -1, -1 };
     if (sys_socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
       static const char msg[] = "Failed to create socket for crash dumping.\n";

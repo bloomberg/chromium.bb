@@ -49,7 +49,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Set the node's internal title. Note that this neither invokes observers
   // nor updates any bookmark model this node may be in. For that functionality,
   // BookmarkModel::SetTitle(..) should be used instead.
-  virtual void SetTitle(const base::string16& title) OVERRIDE;
+  virtual void SetTitle(const base::string16& title) override;
 
   // Returns an unique id for this node.
   // For bookmark nodes that are managed by the bookmark model, the IDs are
@@ -201,7 +201,7 @@ class BookmarkPermanentNode : public BookmarkNode {
   void set_visible(bool value) { visible_ = value; }
 
   // BookmarkNode overrides:
-  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsVisible() const override;
 
  private:
   bool visible_;

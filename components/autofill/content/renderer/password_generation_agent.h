@@ -48,15 +48,15 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   virtual bool ShouldAnalyzeDocument(const blink::WebDocument& document) const;
 
   // RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Use to force enable during testing.
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
  private:
   // RenderViewObserver:
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) override;
 
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);

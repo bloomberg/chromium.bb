@@ -53,14 +53,14 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
 
   // content::BrowserChildProcessObserver implementation:
   virtual void BrowserChildProcessHostDisconnected(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
   virtual void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Called on child process exit (including crash).
   void OnChildExit(int child_process_id, base::ProcessHandle pid);

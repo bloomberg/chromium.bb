@@ -32,7 +32,7 @@ class TestLogger : public SavePasswordProgressLogger {
   std::string accumulated_log() { return accumulated_log_; }
 
  private:
-  virtual void SendLog(const std::string& log) OVERRIDE {
+  virtual void SendLog(const std::string& log) override {
     accumulated_log_.append(log);
   }
 

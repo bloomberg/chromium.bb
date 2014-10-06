@@ -180,7 +180,7 @@ class TranslateHelper : public content::RenderViewObserver {
   static bool IsTranslationAllowed(blink::WebDocument* document);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Informs us that the page's text has been extracted.
   void PageCapturedImpl(int page_seq_no, const base::string16& contents);

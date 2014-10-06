@@ -22,7 +22,7 @@ class PrecacheURLTableTest : public testing::Test {
   virtual ~PrecacheURLTableTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     precache_url_table_.reset(new PrecacheURLTable());
     db_.reset(new sql::Connection());
     ASSERT_TRUE(db_->OpenInMemory());

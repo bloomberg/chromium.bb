@@ -50,9 +50,9 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   // VolumeMountWatcherWin:
   virtual GetAttachedDevicesCallbackType
-      GetAttachedDevicesCallback() const OVERRIDE;
+      GetAttachedDevicesCallback() const override;
   virtual GetDeviceDetailsCallbackType
-      GetDeviceDetailsCallback() const OVERRIDE;
+      GetDeviceDetailsCallback() const override;
 
   // Should be used by unit tests to make sure the worker pool doesn't survive
   // into other test runs.

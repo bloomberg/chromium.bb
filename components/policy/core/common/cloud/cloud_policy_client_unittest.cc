@@ -97,7 +97,7 @@ class CloudPolicyClientTest : public testing::Test {
     upload_certificate_response_.mutable_cert_upload_response();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EXPECT_CALL(status_provider_, GetDeviceStatus(_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(status_provider_, GetSessionStatus(_))
@@ -105,7 +105,7 @@ class CloudPolicyClientTest : public testing::Test {
     CreateClient(USER_AFFILIATION_NONE);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     client_->RemoveObserver(&observer_);
   }
 

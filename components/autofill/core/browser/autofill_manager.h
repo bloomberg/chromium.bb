@@ -223,7 +223,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
  private:
   // AutofillDownloadManager::Observer:
   virtual void OnLoadedServerPredictions(
-      const std::string& response_xml) OVERRIDE;
+      const std::string& response_xml) override;
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels() const;

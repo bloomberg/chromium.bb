@@ -59,7 +59,7 @@ class TrackingSynchronizer
   // This is called on UI thread.
   virtual void OnPendingProcesses(int sequence_number,
                                   int pending_processes,
-                                  bool end) OVERRIDE;
+                                  bool end) override;
 
  private:
   friend class base::RefCountedThreadSafe<TrackingSynchronizer>;
@@ -75,7 +75,7 @@ class TrackingSynchronizer
   virtual void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      int process_type) OVERRIDE;
+      int process_type) override;
 
   // Establish a new sequence_number_, and use it to notify all the processes of
   // the need to supply, to the browser, their tracking data. It also registers

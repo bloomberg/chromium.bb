@@ -19,7 +19,7 @@ class TestPasswordAutofillAgent : public PasswordAutofillAgent {
   // work with the password manager.
   // PasswordAutofillAgent:
   virtual bool OriginCanAccessPasswordManager(
-      const blink::WebSecurityOrigin& origin) OVERRIDE;
+      const blink::WebSecurityOrigin& origin) override;
 };
 
 }  // namespace autofill

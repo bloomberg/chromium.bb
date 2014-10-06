@@ -59,23 +59,23 @@ class INVALIDATION_EXPORT_PRIVATE GCMNetworkChannel
   virtual ~GCMNetworkChannel();
 
   // invalidation::NetworkChannel implementation.
-  virtual void SendMessage(const std::string& message) OVERRIDE;
+  virtual void SendMessage(const std::string& message) override;
   virtual void SetMessageReceiver(
-      invalidation::MessageCallback* incoming_receiver) OVERRIDE;
+      invalidation::MessageCallback* incoming_receiver) override;
 
   // SyncNetworkChannel implementation.
   virtual void UpdateCredentials(const std::string& email,
-                                 const std::string& token) OVERRIDE;
-  virtual int GetInvalidationClientType() OVERRIDE;
+                                 const std::string& token) override;
+  virtual int GetInvalidationClientType() override;
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
+      base::Callback<void(const base::DictionaryValue&)> callback) override;
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType connection_type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType connection_type) override;
 
  protected:
   void ResetRegisterBackoffEntryForTest(

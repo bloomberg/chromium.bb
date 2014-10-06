@@ -26,9 +26,9 @@ class BookmarkLoadObserver : public BaseBookmarkModelObserver {
 
  private:
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
+                                   bool ids_reassigned) override;
 
   base::Closure quit_task_;
 

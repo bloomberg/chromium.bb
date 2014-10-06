@@ -35,9 +35,9 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                            content::BrowserContext* browser_context);
   virtual ~VisitedLinkEventListener();
 
-  virtual void NewTable(base::SharedMemory* table_memory) OVERRIDE;
-  virtual void Add(VisitedLinkMaster::Fingerprint fingerprint) OVERRIDE;
-  virtual void Reset() OVERRIDE;
+  virtual void NewTable(base::SharedMemory* table_memory) override;
+  virtual void Add(VisitedLinkMaster::Fingerprint fingerprint) override;
+  virtual void Reset() override;
 
  private:
   void CommitVisitedLinks();
@@ -45,7 +45,7 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   base::OneShotTimer<VisitedLinkEventListener> coalesce_timer_;
   VisitedLinkCommon::Fingerprints pending_visited_links_;

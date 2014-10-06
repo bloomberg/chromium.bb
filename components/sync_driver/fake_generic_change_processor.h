@@ -28,13 +28,13 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   // GenericChangeProcessor implementations.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
   virtual syncer::SyncError GetAllSyncDataReturnError(
-      syncer::SyncDataList* data) const OVERRIDE;
-  virtual bool GetDataTypeContext(std::string* context) const OVERRIDE;
-  virtual int GetSyncCount() OVERRIDE;
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
-  virtual bool CryptoReadyIfNecessary() OVERRIDE;
+      syncer::SyncDataList* data) const override;
+  virtual bool GetDataTypeContext(std::string* context) const override;
+  virtual int GetSyncCount() override;
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
+  virtual bool CryptoReadyIfNecessary() override;
 
  private:
   bool sync_model_has_user_created_nodes_;
@@ -53,7 +53,7 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-      SyncApiComponentFactory* sync_factory) OVERRIDE;
+      SyncApiComponentFactory* sync_factory) override;
 
  private:
   scoped_ptr<FakeGenericChangeProcessor> processor_;

@@ -44,36 +44,36 @@ class GCMDriverAndroid : public GCMDriver {
   static bool RegisterBindings(JNIEnv* env);
 
   // GCMDriver implementation:
-  virtual void OnSignedIn() OVERRIDE;
-  virtual void Purge() OVERRIDE;
-  virtual void Enable() OVERRIDE;
-  virtual void AddConnectionObserver(GCMConnectionObserver* observer) OVERRIDE;
+  virtual void OnSignedIn() override;
+  virtual void Purge() override;
+  virtual void Enable() override;
+  virtual void AddConnectionObserver(GCMConnectionObserver* observer) override;
   virtual void RemoveConnectionObserver(
-      GCMConnectionObserver* observer) OVERRIDE;
-  virtual void Disable() OVERRIDE;
-  virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
-  virtual bool IsStarted() const OVERRIDE;
-  virtual bool IsConnected() const OVERRIDE;
+      GCMConnectionObserver* observer) override;
+  virtual void Disable() override;
+  virtual GCMClient* GetGCMClientForTesting() const override;
+  virtual bool IsStarted() const override;
+  virtual bool IsConnected() const override;
   virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                bool clear_logs) OVERRIDE;
+                                bool clear_logs) override;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                               bool recording) OVERRIDE;
+                               bool recording) override;
   virtual void SetAccountTokens(
-      const std::vector<GCMClient::AccountTokenInfo>& account_tokens) OVERRIDE;
+      const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
   virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) OVERRIDE;
-  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
+      const AccountMapping& account_mapping) override;
+  virtual void RemoveAccountMapping(const std::string& account_id) override;
 
  protected:
   // GCMDriver implementation:
-  virtual GCMClient::Result EnsureStarted() OVERRIDE;
+  virtual GCMClient::Result EnsureStarted() override;
   virtual void RegisterImpl(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void UnregisterImpl(const std::string& app_id) OVERRIDE;
+      const std::vector<std::string>& sender_ids) override;
+  virtual void UnregisterImpl(const std::string& app_id) override;
   virtual void SendImpl(const std::string& app_id,
                         const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) OVERRIDE;
+                        const GCMClient::OutgoingMessage& message) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

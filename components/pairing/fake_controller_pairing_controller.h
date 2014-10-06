@@ -64,24 +64,24 @@ class FakeControllerPairingController
   void SetDiscoveryScenario(const DiscoveryScenario& discovery_scenario);
 
   // Overridden from ControllerPairingController:
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual Stage GetCurrentStage() OVERRIDE;
-  virtual void StartPairing() OVERRIDE;
-  virtual DeviceIdList GetDiscoveredDevices() OVERRIDE;
-  virtual void ChooseDeviceForPairing(const std::string& device_id) OVERRIDE;
-  virtual void RepeatDiscovery() OVERRIDE;
-  virtual std::string GetConfirmationCode() OVERRIDE;
-  virtual void SetConfirmationCodeIsCorrect(bool correct) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual Stage GetCurrentStage() override;
+  virtual void StartPairing() override;
+  virtual DeviceIdList GetDiscoveredDevices() override;
+  virtual void ChooseDeviceForPairing(const std::string& device_id) override;
+  virtual void RepeatDiscovery() override;
+  virtual std::string GetConfirmationCode() override;
+  virtual void SetConfirmationCodeIsCorrect(bool correct) override;
   virtual void SetHostConfiguration(
       bool accepted_eula,
       const std::string& lang,
       const std::string& timezone,
       bool send_reports,
-      const std::string& keyboard_layout) OVERRIDE;
+      const std::string& keyboard_layout) override;
   virtual void OnAuthenticationDone(const std::string& domain,
-                                    const std::string& auth_token) OVERRIDE;
-  virtual void StartSession() OVERRIDE;
+                                    const std::string& auth_token) override;
+  virtual void StartSession() override;
 
  private:
   void ChangeStage(Stage new_stage);
@@ -91,8 +91,8 @@ class FakeControllerPairingController
   void DeviceLost(const std::string& device_id);
 
   // Overridden from ui::ControllerPairingController::Observer:
-  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
-  virtual void DiscoveredDevicesListChanged() OVERRIDE;
+  virtual void PairingStageChanged(Stage new_stage) override;
+  virtual void DiscoveredDevicesListChanged() override;
 
   ObserverList<ControllerPairingController::Observer> observers_;
   Stage current_stage_;

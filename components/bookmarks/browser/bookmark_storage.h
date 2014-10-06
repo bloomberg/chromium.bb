@@ -162,7 +162,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   void OnLoadFinished(scoped_ptr<BookmarkLoadDetails> details);
 
   // ImportantFileWriter::DataSerializer implementation.
-  virtual bool SerializeData(std::string* output) OVERRIDE;
+  virtual bool SerializeData(std::string* output) override;
 
  private:
   // Serializes the data and schedules save using ImportantFileWriter.

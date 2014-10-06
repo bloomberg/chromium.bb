@@ -25,7 +25,7 @@ class WebDatabaseService::BackendDelegate :
         callback_thread_(base::MessageLoopProxy::current()) {
   }
 
-  virtual void DBLoaded(sql::InitStatus status) OVERRIDE {
+  virtual void DBLoaded(sql::InitStatus status) override {
     callback_thread_->PostTask(
         FROM_HERE,
         base::Bind(&WebDatabaseService::OnDatabaseLoadDone,

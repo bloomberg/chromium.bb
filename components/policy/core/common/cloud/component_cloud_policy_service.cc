@@ -75,7 +75,7 @@ class ComponentCloudPolicyService::Backend
   void UpdateExternalPolicy(scoped_ptr<em::PolicyFetchResponse> response);
 
   // ComponentCloudPolicyStore::Delegate implementation:
-  virtual void OnComponentCloudPolicyStoreUpdated() OVERRIDE;
+  virtual void OnComponentCloudPolicyStoreUpdated() override;
 
   // Passes the current SchemaMap so that the disk cache can purge components
   // that aren't being tracked anymore.

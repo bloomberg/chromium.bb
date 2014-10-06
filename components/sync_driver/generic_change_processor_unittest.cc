@@ -41,7 +41,7 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
       const scoped_refptr<syncer::AttachmentStore>& attachment_store);
   virtual ~MockAttachmentService();
   virtual void UploadAttachments(
-      const syncer::AttachmentIdSet& attachment_ids) OVERRIDE;
+      const syncer::AttachmentIdSet& attachment_ids) override;
   std::vector<syncer::AttachmentIdSet>* attachment_id_sets();
 
  private:
@@ -83,7 +83,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       : attachment_service_(attachment_service.Pass()) {}
 
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) OVERRIDE {
+      syncer::ModelType type) override {
     // Shouldn't be called for this test.
     NOTREACHED();
     return base::WeakPtr<syncer::SyncableService>();
@@ -92,7 +92,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
-      syncer::AttachmentService::Delegate* delegate) OVERRIDE {
+      syncer::AttachmentService::Delegate* delegate) override {
     EXPECT_TRUE(attachment_service_ != NULL);
     return attachment_service_.Pass();
   }
@@ -111,14 +111,14 @@ class SyncGenericChangeProcessorTest : public testing::Test {
       : syncable_service_ptr_factory_(&fake_syncable_service_),
         mock_attachment_service_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Use kType by default, but allow test cases to re-initialize with whatever
     // type they choose.  Therefore, it's important that all type dependent
     // initialization occurs in InitializeForType.
     InitializeForType(kType);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     mock_attachment_service_ = NULL;
     if (test_user_share_) {
       test_user_share_->TearDown();

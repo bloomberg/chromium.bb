@@ -130,7 +130,7 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
 
  private:
   virtual void UpdateMtab(
-      const MtabWatcherLinux::MountPointDeviceMap& new_mtab) OVERRIDE {
+      const MtabWatcherLinux::MountPointDeviceMap& new_mtab) override {
     StorageMonitorLinux::UpdateMtab(new_mtab);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::MessageLoop::QuitClosure());
@@ -160,7 +160,7 @@ class StorageMonitorLinuxTest : public testing::Test {
   virtual ~StorageMonitorLinuxTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create and set up a temp dir with files for the test.
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
@@ -182,7 +182,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     base::RunLoop().RunUntilIdle();
     monitor_->RemoveObserver(mock_storage_observer_.get());
     base::RunLoop().RunUntilIdle();

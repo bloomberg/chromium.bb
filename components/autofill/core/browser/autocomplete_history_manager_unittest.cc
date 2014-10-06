@@ -50,8 +50,8 @@ class MockAutofillClient : public TestAutofillClient {
         prefs_(test::PrefServiceForTesting()) {}
   virtual ~MockAutofillClient() {}
   virtual scoped_refptr<AutofillWebDataService>
-      GetDatabase() OVERRIDE { return web_data_service_; }
-  virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
+      GetDatabase() override { return web_data_service_; }
+  virtual PrefService* GetPrefs() override { return prefs_.get(); }
 
  private:
   scoped_refptr<MockWebDataService> web_data_service_;
@@ -66,7 +66,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
  protected:
   AutocompleteHistoryManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     web_data_service_ = new MockWebDataService();
     autofill_client_.reset(new MockAutofillClient(web_data_service_));
     autofill_driver_.reset(new TestAutofillDriver());
@@ -74,7 +74,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
         autofill_driver_.get(), autofill_client_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     autocomplete_manager_.reset();
   }
 

@@ -33,25 +33,25 @@ class TestHarness : public PolicyProviderTestHarness {
   explicit TestHarness(PolicyLevel level);
   virtual ~TestHarness();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
-  virtual void InstallEmptyPolicy() OVERRIDE;
+  virtual void InstallEmptyPolicy() override;
   virtual void InstallStringPolicy(const std::string& policy_name,
-                                   const std::string& policy_value) OVERRIDE;
+                                   const std::string& policy_value) override;
   virtual void InstallIntegerPolicy(const std::string& policy_name,
-                                    int policy_value) OVERRIDE;
+                                    int policy_value) override;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
-                                    bool policy_value) OVERRIDE;
+                                    bool policy_value) override;
   virtual void InstallStringListPolicy(
       const std::string& policy_name,
-      const base::ListValue* policy_value) OVERRIDE;
+      const base::ListValue* policy_value) override;
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
-      const base::DictionaryValue* policy_value) OVERRIDE;
+      const base::DictionaryValue* policy_value) override;
 
   // Creates harnesses for mandatory and recommended levels, respectively.
   static PolicyProviderTestHarness* CreateMandatory();
@@ -177,7 +177,7 @@ class CloudPolicyManagerTest : public testing::Test {
   CloudPolicyManagerTest()
       : policy_ns_key_(dm_protocol::kChromeUserPolicyType, std::string()) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key",
                     POLICY_LEVEL_MANDATORY,
@@ -198,7 +198,7 @@ class CloudPolicyManagerTest : public testing::Test {
     manager_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     manager_->RemoveObserver(&observer_);
     manager_->Shutdown();
   }

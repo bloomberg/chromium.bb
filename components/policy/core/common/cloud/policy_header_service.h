@@ -44,8 +44,8 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Overridden CloudPolicyStore::Observer methods:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
   // Returns a list of all PolicyHeaderIOHelpers created by this object.
   std::vector<PolicyHeaderIOHelper*> GetHelpersForTest();

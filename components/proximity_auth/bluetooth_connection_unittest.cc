@@ -74,7 +74,7 @@ class MockBluetoothConnection : public BluetoothConnection {
   MOCK_METHOD2(OnDidSendMessage,
                void(const WireMessage& message, bool success));
 
-  virtual void SetStatus(Status status) OVERRIDE {
+  virtual void SetStatus(Status status) override {
     SetStatusProxy(status);
     BluetoothConnection::SetStatus(status);
   }
@@ -93,7 +93,7 @@ class TestWireMessage : public WireMessage {
   TestWireMessage() : WireMessage("permit id", "payload") {}
   virtual ~TestWireMessage() {}
 
-  virtual std::string Serialize() const OVERRIDE { return kSerializedMessage; }
+  virtual std::string Serialize() const override { return kSerializedMessage; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWireMessage);

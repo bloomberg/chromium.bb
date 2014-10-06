@@ -16,11 +16,11 @@ class RefCountedNSDataMemory : public base::RefCountedMemory {
  public:
   explicit RefCountedNSDataMemory(NSData* memory) : data_([memory retain]) {}
 
-  virtual const unsigned char* front() const OVERRIDE {
+  virtual const unsigned char* front() const override {
     return reinterpret_cast<const unsigned char*>([data_ bytes]);
   }
 
-  virtual size_t size() const OVERRIDE {
+  virtual size_t size() const override {
     return [data_ length];
   }
 

@@ -172,10 +172,10 @@ class LogoTracker : public net::URLFetcherDelegate {
                             const SkBitmap& image);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
-                                          int64 total) OVERRIDE;
+                                          int64 total) override;
 
   // The URL from which the logo is fetched.
   GURL logo_url_;

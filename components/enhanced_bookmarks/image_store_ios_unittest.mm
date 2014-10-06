@@ -106,13 +106,13 @@ class ImageStoreUnitTestIOS : public PlatformTest {
   ImageStoreUnitTestIOS() {}
   virtual ~ImageStoreUnitTestIOS() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     bool success = temp_dir_.CreateUniqueTempDir();
     ASSERT_TRUE(success);
     store_.reset(CreateStore<T>(temp_dir_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (store_ && use_persistent_store())
       store_->ClearAll();
   }

@@ -165,7 +165,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
 
  protected:
   // DeviceManagementRequestJob:
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   // Invokes the callback with the given error code.

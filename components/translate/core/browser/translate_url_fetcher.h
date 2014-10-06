@@ -54,7 +54,7 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   State state() { return state_; }
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // URL to send the request.

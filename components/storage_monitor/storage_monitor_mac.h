@@ -32,7 +32,7 @@ class StorageMonitorMac : public StorageMonitor,
 
   virtual ~StorageMonitorMac();
 
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   void UpdateDisk(const std::string& bsd_name,
                   const StorageInfo& info,
@@ -40,11 +40,11 @@ class StorageMonitorMac : public StorageMonitor,
 
   virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
-      StorageInfo* device_info) const OVERRIDE;
+      StorageInfo* device_info) const override;
 
   virtual void EjectDevice(
       const std::string& device_id,
-      base::Callback<void(EjectStatus)> callback) OVERRIDE;
+      base::Callback<void(EjectStatus)> callback) override;
 
  private:
   static void DiskAppearedCallback(DADiskRef disk, void* context);

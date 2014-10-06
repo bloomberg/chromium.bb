@@ -171,7 +171,7 @@ class InterceptorFactory : public URLRequestPostInterceptorFactory {
 class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
  public:
   explicit PartialMatch(const std::string& expected) : expected_(expected) {}
-  virtual bool Match(const std::string& actual) const OVERRIDE;
+  virtual bool Match(const std::string& actual) const override;
 
  private:
   const std::string expected_;

@@ -59,12 +59,12 @@ class JniURLRequestAdapterDelegate
     owner_ = env->NewGlobalRef(owner);
   }
 
-  virtual void OnResponseStarted(URLRequestAdapter* request) OVERRIDE {
+  virtual void OnResponseStarted(URLRequestAdapter* request) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_ChromiumUrlRequest_onResponseStarted(env, owner_);
   }
 
-  virtual void OnBytesRead(URLRequestAdapter* request) OVERRIDE {
+  virtual void OnBytesRead(URLRequestAdapter* request) override {
     int bytes_read = request->bytes_read();
     if (bytes_read != 0) {
       JNIEnv* env = base::android::AttachCurrentThread();
@@ -75,13 +75,13 @@ class JniURLRequestAdapterDelegate
     }
   }
 
-  virtual void OnRequestFinished(URLRequestAdapter* request) OVERRIDE {
+  virtual void OnRequestFinished(URLRequestAdapter* request) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_ChromiumUrlRequest_finish(env, owner_);
   }
 
   virtual int ReadFromUploadChannel(net::IOBuffer* buf,
-                                    int buf_length) OVERRIDE {
+                                    int buf_length) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaLocalRef<jobject> java_buffer(
         env, env->NewDirectByteBuffer(buf->data(), buf_length));

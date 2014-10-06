@@ -25,15 +25,15 @@ class ActualTimer : public MockableTime::Timer {
   // MockableTime::Timer implementation:
   virtual void Start(const tracked_objects::Location& posted_from,
                      base::TimeDelta delay,
-                     const base::Closure& user_task) OVERRIDE {
+                     const base::Closure& user_task) override {
     base_timer_.Start(posted_from, delay, user_task);
   }
 
-  virtual void Stop() OVERRIDE {
+  virtual void Stop() override {
     base_timer_.Stop();
   }
 
-  virtual bool IsRunning() OVERRIDE {
+  virtual bool IsRunning() override {
     return base_timer_.IsRunning();
   }
 

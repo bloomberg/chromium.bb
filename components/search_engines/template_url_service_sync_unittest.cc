@@ -91,10 +91,10 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
   // Store a copy of all the changes passed in so we can examine them later.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
+      override {
     return syncer::SyncDataList();
   }
 
@@ -154,8 +154,8 @@ class TemplateURLServiceSyncTest : public testing::Test {
 
   TemplateURLServiceSyncTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   TemplateURLService* model() { return test_util_a_->model(); }
   // For readability, we redefine an accessor for Model A for use in tests that

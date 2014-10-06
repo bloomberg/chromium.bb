@@ -24,15 +24,15 @@ class TestGPUMetricsProvider : public GPUMetricsProvider {
   virtual ~TestGPUMetricsProvider() {}
 
  private:
-  virtual gfx::Size GetScreenSize() const OVERRIDE {
+  virtual gfx::Size GetScreenSize() const override {
     return gfx::Size(kScreenWidth, kScreenHeight);
   }
 
-  virtual float GetScreenDeviceScaleFactor() const OVERRIDE {
+  virtual float GetScreenDeviceScaleFactor() const override {
     return kScreenScaleFactor;
   }
 
-  virtual int GetScreenCount() const OVERRIDE {
+  virtual int GetScreenCount() const override {
     return kScreenCount;
   }
 

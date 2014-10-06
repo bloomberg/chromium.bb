@@ -78,11 +78,11 @@ class SigninTracker : public SigninManagerBase::Observer,
   virtual ~SigninTracker();
 
   // SigninManagerBase::Observer implementation.
-  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
 
  private:
   // Initializes this by adding notifications and observers.
@@ -91,7 +91,7 @@ class SigninTracker : public SigninManagerBase::Observer,
   // MergeSessionHelper::Observer implementation.
   virtual void MergeSessionCompleted(
       const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // The classes whose collective signin status we are tracking.
   ProfileOAuth2TokenService* token_service_;

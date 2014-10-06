@@ -34,7 +34,7 @@ class PushClientChannelTest
   }
 
   virtual void OnNetworkChannelStateChanged(
-      InvalidatorState invalidator_state) OVERRIDE {
+      InvalidatorState invalidator_state) override {
     last_invalidator_state_ = invalidator_state;
   }
 

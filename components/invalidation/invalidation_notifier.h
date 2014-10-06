@@ -53,21 +53,21 @@ class INVALIDATION_EXPORT_PRIVATE InvalidationNotifier
   virtual ~InvalidationNotifier();
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void RegisterHandler(InvalidationHandler* handler) override;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
-  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
+                                   const ObjectIdSet& ids) override;
+  virtual void UnregisterHandler(InvalidationHandler* handler) override;
+  virtual InvalidatorState GetInvalidatorState() const override;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) OVERRIDE;
+      const std::string& email, const std::string& token) override;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) const
-      OVERRIDE;
+      override;
 
   // SyncInvalidationListener::Delegate implementation.
   virtual void OnInvalidate(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+      const ObjectIdInvalidationMap& invalidation_map) override;
+  virtual void OnInvalidatorStateChange(InvalidatorState state) override;
 
  private:
   // We start off in the STOPPED state.  When we get our initial

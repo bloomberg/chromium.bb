@@ -31,8 +31,8 @@ class TestAudioInputStream : public media::AudioInputStream {
 
   virtual ~TestAudioInputStream() {}
 
-  virtual bool Open() OVERRIDE { return true; }
-  virtual void Start(AudioInputCallback* callback) OVERRIDE {
+  virtual bool Open() override { return true; }
+  virtual void Start(AudioInputCallback* callback) override {
     DCHECK(callback);
     callback_ = callback;
     media::AudioManager::Get()->GetTaskRunner()->PostTask(
@@ -40,13 +40,13 @@ class TestAudioInputStream : public media::AudioInputStream {
         base::Bind(&TestAudioInputStream::SimulateRecording,
                    base::Unretained(this)));
   }
-  virtual void Stop() OVERRIDE {}
-  virtual void Close() OVERRIDE {}
-  virtual double GetMaxVolume() OVERRIDE { return 1.0; }
-  virtual void SetVolume(double volume) OVERRIDE {}
-  virtual double GetVolume() OVERRIDE { return 1.0; }
-  virtual void SetAutomaticGainControl(bool enabled) OVERRIDE {}
-  virtual bool GetAutomaticGainControl() OVERRIDE { return true; }
+  virtual void Stop() override {}
+  virtual void Close() override {}
+  virtual double GetMaxVolume() override { return 1.0; }
+  virtual void SetVolume(double volume) override {}
+  virtual double GetVolume() override { return 1.0; }
+  virtual void SetAutomaticGainControl(bool enabled) override {}
+  virtual bool GetAutomaticGainControl() override { return true; }
 
  private:
   void SimulateRecording() {

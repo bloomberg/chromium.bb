@@ -32,7 +32,7 @@ class TestTickClock : public base::TickClock {
   explicit TestTickClock(base::TimeTicks* ticks_now) : ticks_now_(ticks_now) {}
   virtual ~TestTickClock() {}
 
-  virtual base::TimeTicks NowTicks() OVERRIDE {
+  virtual base::TimeTicks NowTicks() override {
     return *ticks_now_;
   }
 
@@ -46,7 +46,7 @@ class NetworkTimeTrackerTest : public testing::Test {
  public:
   virtual ~NetworkTimeTrackerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
 
     now_ = base::Time::NowFromSystemTime();

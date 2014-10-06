@@ -39,19 +39,19 @@ class SyncSharedChangeProcessorTest :
   }
 
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) OVERRIDE {
+      syncer::ModelType type) override {
     return db_syncable_service_->AsWeakPtr();
   }
 
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
-      syncer::AttachmentService::Delegate* delegate) OVERRIDE {
+      syncer::AttachmentService::Delegate* delegate) override {
     return syncer::AttachmentServiceImpl::CreateForTest();
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     shared_change_processor_ = new SharedChangeProcessor();
     ASSERT_TRUE(backend_thread_.Start());
     ASSERT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
@@ -60,7 +60,7 @@ class SyncSharedChangeProcessorTest :
                    base::Unretained(this))));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     EXPECT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::TearDownDBSyncableService,

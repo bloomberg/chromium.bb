@@ -23,9 +23,9 @@ class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
   virtual ~PolicyLoaderIOS();
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() OVERRIDE;
-  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
-  virtual base::Time LastModificationTime() OVERRIDE;
+  virtual void InitOnBackgroundThread() override;
+  virtual scoped_ptr<PolicyBundle> Load() override;
+  virtual base::Time LastModificationTime() override;
 
  private:
   void UserDefaultsChanged();

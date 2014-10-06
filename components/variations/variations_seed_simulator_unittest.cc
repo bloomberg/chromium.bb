@@ -26,7 +26,7 @@ class TestEntropyProvider : public base::FieldTrial::EntropyProvider {
 
   // base::FieldTrial::EntropyProvider implementation:
   virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const OVERRIDE {
+                                    uint32 randomization_seed) const override {
     return entropy_value_;
   }
 

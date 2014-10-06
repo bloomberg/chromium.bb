@@ -44,8 +44,8 @@ class PolicyTestBase : public testing::Test {
   virtual ~PolicyTestBase();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   bool RegisterSchema(const PolicyNamespace& ns,
@@ -120,8 +120,8 @@ class ConfigurationPolicyProviderTest
   ConfigurationPolicyProviderTest();
   virtual ~ConfigurationPolicyProviderTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Installs a valid policy and checks whether the provider returns the
   // |expected_value|.

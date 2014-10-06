@@ -154,7 +154,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   friend class DeviceManagementRequestJobImpl;
 
   // net::URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Starts processing any queued jobs.
   void Initialize();

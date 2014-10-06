@@ -57,7 +57,7 @@ class MockSaveCallback {
 
 class DomDistillerTaskTrackerTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
     entry_id_ = "id0";
     page_0_url_ = GURL("http://www.example.com/1");

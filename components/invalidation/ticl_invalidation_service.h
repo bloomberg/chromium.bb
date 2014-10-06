@@ -73,18 +73,18 @@ class TiclInvalidationService : public base::NonThreadSafe,
   // InvalidationService implementation.
   // It is an error to have registered handlers when the service is destroyed.
   virtual void RegisterInvalidationHandler(
-      syncer::InvalidationHandler* handler) OVERRIDE;
+      syncer::InvalidationHandler* handler) override;
   virtual void UpdateRegisteredInvalidationIds(
       syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) OVERRIDE;
+      const syncer::ObjectIdSet& ids) override;
   virtual void UnregisterInvalidationHandler(
-      syncer::InvalidationHandler* handler) OVERRIDE;
-  virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual std::string GetInvalidatorClientId() const OVERRIDE;
-  virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
+      syncer::InvalidationHandler* handler) override;
+  virtual syncer::InvalidatorState GetInvalidatorState() const override;
+  virtual std::string GetInvalidatorClientId() const override;
+  virtual InvalidationLogger* GetInvalidationLogger() override;
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> caller) const OVERRIDE;
-  virtual IdentityProvider* GetIdentityProvider() OVERRIDE;
+      base::Callback<void(const base::DictionaryValue&)> caller) const override;
+  virtual IdentityProvider* GetIdentityProvider() override;
 
   void RequestAccessToken();
 
@@ -92,27 +92,27 @@ class TiclInvalidationService : public base::NonThreadSafe,
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
-      const base::Time& expiration_time) OVERRIDE;
+      const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer implementation
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   // IdentityProvider::Observer implementation.
-  virtual void OnActiveAccountLogout() OVERRIDE;
+  virtual void OnActiveAccountLogout() override;
 
   // TiclSettingsProvider::Observer implementation.
-  virtual void OnUseGCMChannelChanged() OVERRIDE;
+  virtual void OnUseGCMChannelChanged() override;
 
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
+      syncer::InvalidatorState state) override;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
  protected:
   // Initializes with an injected invalidator.

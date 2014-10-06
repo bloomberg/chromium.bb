@@ -90,13 +90,13 @@ class ImageStoreUnitTest : public PlatformTest {
   ImageStoreUnitTest() {}
   virtual ~ImageStoreUnitTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     bool success = tempDir_.CreateUniqueTempDir();
     ASSERT_TRUE(success);
     store_.reset(CreateStore<T>(tempDir_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (store_ && use_persistent_store())
       store_->ClearAll();
   }

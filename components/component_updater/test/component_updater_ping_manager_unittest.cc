@@ -23,8 +23,8 @@ class ComponentUpdaterPingManagerTest : public testing::Test {
   void RunThreadsUntilIdle();
 
   // Overrides from testing::Test.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   scoped_ptr<TestConfigurator> config_;

@@ -27,9 +27,9 @@ class FakeAuthStatusProvider
   }
 
   // AuthStatusProvider implementation.
-  virtual std::string GetAccountId() const OVERRIDE;
-  virtual std::string GetUsername() const OVERRIDE;
-  virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
+  virtual std::string GetAccountId() const override;
+  virtual std::string GetUsername() const override;
+  virtual GoogleServiceAuthError GetAuthStatus() const override;
 
  private:
   SigninErrorController* error_provider_;

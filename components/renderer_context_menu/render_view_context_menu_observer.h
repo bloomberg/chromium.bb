@@ -32,10 +32,10 @@ struct ContextMenuParams;
 //    MyMenuObserver(RenderViewContextMenuProxy* p);
 //    ~MyMenuObserver();
 //
-//    virtual void InitMenu(const content::ContextMenuParams& params) OVERRIDE;
-//    virtual bool IsCommandIdSupported(int command_id) OVERRIDE;
-//    virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
-//    virtual void ExecuteCommand(int command_id) OVERRIDE;
+//    virtual void InitMenu(const content::ContextMenuParams& params) override;
+//    virtual bool IsCommandIdSupported(int command_id) override;
+//    virtual bool IsCommandIdEnabled(int command_id) override;
+//    virtual void ExecuteCommand(int command_id) override;
 //
 //   private:
 //    RenderViewContextMenuProxy* proxy_;

@@ -49,7 +49,7 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   virtual ~UserCloudPolicyManager();
 
   // ConfigurationPolicyProvider overrides:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void SetSigninUsername(const std::string& username);
 

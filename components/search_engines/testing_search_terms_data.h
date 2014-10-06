@@ -12,14 +12,14 @@ class TestingSearchTermsData : public SearchTermsData {
   explicit TestingSearchTermsData(const std::string& google_base_url);
   virtual ~TestingSearchTermsData();
 
-  virtual std::string GoogleBaseURLValue() const OVERRIDE;
+  virtual std::string GoogleBaseURLValue() const override;
   virtual base::string16 GetRlzParameterValue(
-      bool from_app_list) const OVERRIDE;
-  virtual std::string GetSearchClient() const OVERRIDE;
-  virtual std::string GoogleImageSearchSource() const OVERRIDE;
-  virtual bool EnableAnswersInSuggest() const OVERRIDE;
-  virtual bool IsShowingSearchTermsOnSearchResultsPages() const OVERRIDE;
-  virtual int OmniboxStartMargin() const OVERRIDE;
+      bool from_app_list) const override;
+  virtual std::string GetSearchClient() const override;
+  virtual std::string GoogleImageSearchSource() const override;
+  virtual bool EnableAnswersInSuggest() const override;
+  virtual bool IsShowingSearchTermsOnSearchResultsPages() const override;
+  virtual int OmniboxStartMargin() const override;
 
   void set_google_base_url(const std::string& google_base_url) {
     google_base_url_ = google_base_url;

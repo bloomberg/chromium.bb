@@ -33,25 +33,25 @@ class TestHarness : public PolicyProviderTestHarness {
   explicit TestHarness(bool use_encoded_key);
   virtual ~TestHarness();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
-  virtual void InstallEmptyPolicy() OVERRIDE;
+  virtual void InstallEmptyPolicy() override;
   virtual void InstallStringPolicy(const std::string& policy_name,
-                                   const std::string& policy_value) OVERRIDE;
+                                   const std::string& policy_value) override;
   virtual void InstallIntegerPolicy(const std::string& policy_name,
-                                    int policy_value) OVERRIDE;
+                                    int policy_value) override;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
-                                    bool policy_value) OVERRIDE;
+                                    bool policy_value) override;
   virtual void InstallStringListPolicy(
       const std::string& policy_name,
-      const base::ListValue* policy_value) OVERRIDE;
+      const base::ListValue* policy_value) override;
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
-      const base::DictionaryValue* policy_value) OVERRIDE;
+      const base::DictionaryValue* policy_value) override;
 
   static PolicyProviderTestHarness* Create();
   static PolicyProviderTestHarness* CreateWithEncodedKey();

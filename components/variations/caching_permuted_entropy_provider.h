@@ -38,7 +38,7 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
 
  private:
   // PermutedEntropyProvider overrides:
-  virtual uint16 GetPermutedValue(uint32 randomization_seed) const OVERRIDE;
+  virtual uint16 GetPermutedValue(uint32 randomization_seed) const override;
 
   // Reads the cache from local state.
   void ReadFromLocalState() const;

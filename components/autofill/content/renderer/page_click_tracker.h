@@ -34,10 +34,10 @@ class PageClickTracker : public content::RenderViewObserver {
 
  private:
   // RenderView::Observer implementation.
-  virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) OVERRIDE;
+  virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) override;
   virtual void DidHandleGestureEvent(
-      const blink::WebGestureEvent& event) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
+      const blink::WebGestureEvent& event) override;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
 
   // Called there is a tap or click at |x|, |y|.
   void PotentialActivationAt(int x, int y);

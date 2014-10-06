@@ -29,13 +29,13 @@ class WrappedChannelElementReader : public net::UploadElementReader {
   virtual ~WrappedChannelElementReader();
 
   // UploadElementReader overrides:
-  virtual int Init(const net::CompletionCallback& callback) OVERRIDE;
-  virtual uint64 GetContentLength() const OVERRIDE;
-  virtual uint64 BytesRemaining() const OVERRIDE;
-  virtual bool IsInMemory() const OVERRIDE;
+  virtual int Init(const net::CompletionCallback& callback) override;
+  virtual uint64 GetContentLength() const override;
+  virtual uint64 BytesRemaining() const override;
+  virtual bool IsInMemory() const override;
   virtual int Read(net::IOBuffer* buf,
                    int buf_length,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
 
  private:
   const uint64 length_;

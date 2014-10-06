@@ -201,7 +201,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
   }
 
   virtual void FetchURL(const string& url,
-                        const URLFetcherCallback& callback) OVERRIDE {
+                        const URLFetcherCallback& callback) override {
     ASSERT_FALSE(callback.is_null());
     url_ = url;
     callback_ = callback;
@@ -229,7 +229,7 @@ class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
   TestDistillerURLFetcherFactory() : DistillerURLFetcherFactory(NULL) {}
 
   virtual ~TestDistillerURLFetcherFactory() {}
-  virtual DistillerURLFetcher* CreateDistillerURLFetcher() const OVERRIDE {
+  virtual DistillerURLFetcher* CreateDistillerURLFetcher() const override {
     return new TestDistillerURLFetcher(false);
   }
 };

@@ -53,53 +53,53 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   // Overridden from WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual content::ColorChooser* OpenColorChooser(
       content::WebContents* source,
       SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
+      const std::vector<content::ColorSuggestion>& suggestions) override;
   virtual void NavigationStateChanged(
       const content::WebContents* source,
-      content::InvalidateTypes changed_flags) OVERRIDE;
+      content::InvalidateTypes changed_flags) override;
   virtual void VisibleSSLStateChanged(
-      const content::WebContents* source) OVERRIDE;
-  virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void DeactivateContents(content::WebContents* contents) OVERRIDE;
+      const content::WebContents* source) override;
+  virtual void ActivateContents(content::WebContents* contents) override;
+  virtual void DeactivateContents(content::WebContents* contents) override;
   virtual void LoadingStateChanged(content::WebContents* source,
-                                   bool to_different_document) OVERRIDE;
+                                   bool to_different_document) override;
   virtual void LoadProgressChanged(content::WebContents* source,
-                                   double load_progress) OVERRIDE;
-  virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
-  virtual void RendererResponsive(content::WebContents* source) OVERRIDE;
-  virtual void CloseContents(content::WebContents* source) OVERRIDE;
+                                   double load_progress) override;
+  virtual void RendererUnresponsive(content::WebContents* source) override;
+  virtual void RendererResponsive(content::WebContents* source) override;
+  virtual void CloseContents(content::WebContents* source) override;
   virtual void MoveContents(content::WebContents* source,
-                            const gfx::Rect& pos) OVERRIDE;
+                            const gfx::Rect& pos) override;
   virtual bool AddMessageToConsole(content::WebContents* source,
                                    int32 level,
                                    const base::string16& message,
                                    int32 line_no,
-                                   const base::string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) override;
   virtual void UpdateTargetURL(content::WebContents* source,
-                               const GURL& url) OVERRIDE;
+                               const GURL& url) override;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual bool TakeFocus(content::WebContents* source, bool reverse) override;
   virtual void ShowRepostFormWarningDialog(
-      content::WebContents* source) OVERRIDE;
+      content::WebContents* source) override;
   virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                          bool enter_fullscreen) OVERRIDE;
+                                          bool enter_fullscreen) override;
   virtual bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const OVERRIDE;
+      const content::WebContents* web_contents) const override;
   virtual void ShowValidationMessage(content::WebContents* web_contents,
                                      const gfx::Rect& anchor_in_root_view,
                                      const base::string16& main_text,
-                                     const base::string16& sub_text) OVERRIDE;
+                                     const base::string16& sub_text) override;
   virtual void HideValidationMessage(
-      content::WebContents* web_contents) OVERRIDE;
+      content::WebContents* web_contents) override;
   virtual void MoveValidationMessage(
       content::WebContents* web_contents,
-      const gfx::Rect& anchor_in_root_view) OVERRIDE;
+      const gfx::Rect& anchor_in_root_view) override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

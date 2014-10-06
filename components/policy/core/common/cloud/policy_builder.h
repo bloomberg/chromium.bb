@@ -134,7 +134,7 @@ class TypedPolicyBuilder : public PolicyBuilder {
   }
 
   // PolicyBuilder:
-  virtual void Build() OVERRIDE {
+  virtual void Build() override {
     if (payload_.get())
       CHECK(payload_->SerializeToString(policy_data().mutable_policy_value()));
 

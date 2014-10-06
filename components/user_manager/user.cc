@@ -42,13 +42,13 @@ class RegularUser : public User {
   virtual ~RegularUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
-  virtual bool CanSyncImage() const OVERRIDE;
-  virtual void SetIsSupervised(bool is_supervised) OVERRIDE {
+  virtual UserType GetType() const override;
+  virtual bool CanSyncImage() const override;
+  virtual void SetIsSupervised(bool is_supervised) override {
     VLOG(1) << "Setting user is supervised to " << is_supervised;
     is_supervised_ = is_supervised;
   }
-  virtual bool IsSupervised() const OVERRIDE {
+  virtual bool IsSupervised() const override {
     return is_supervised_;
   }
 
@@ -64,7 +64,7 @@ class GuestUser : public User {
   virtual ~GuestUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestUser);
@@ -76,7 +76,7 @@ class KioskAppUser : public User {
   virtual ~KioskAppUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskAppUser);
@@ -88,9 +88,9 @@ class SupervisedUser : public User {
   virtual ~SupervisedUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
-  virtual bool IsSupervised() const OVERRIDE;
-  virtual std::string display_email() const OVERRIDE;
+  virtual UserType GetType() const override;
+  virtual bool IsSupervised() const override;
+  virtual std::string display_email() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUser);
@@ -102,7 +102,7 @@ class RetailModeUser : public User {
   virtual ~RetailModeUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RetailModeUser);
@@ -114,7 +114,7 @@ class PublicAccountUser : public User {
   virtual ~PublicAccountUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);

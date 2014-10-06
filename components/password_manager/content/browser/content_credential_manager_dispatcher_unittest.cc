@@ -33,7 +33,7 @@ class TestPasswordManagerClient
       : store_(store) {}
   virtual ~TestPasswordManagerClient() {}
 
-  virtual password_manager::PasswordStore* GetPasswordStore() OVERRIDE {
+  virtual password_manager::PasswordStore* GetPasswordStore() override {
     return store_;
   }
 
@@ -77,7 +77,7 @@ class ContentCredentialManagerDispatcherTest
     EXPECT_TRUE(store_->IsEmpty());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     store_->Shutdown();
     content::RenderViewHostTestHarness::TearDown();
   }

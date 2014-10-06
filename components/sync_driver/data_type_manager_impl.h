@@ -50,27 +50,27 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // DataTypeManager interface.
   virtual void Configure(syncer::ModelTypeSet desired_types,
-                         syncer::ConfigureReason reason) OVERRIDE;
-  virtual void ReenableType(syncer::ModelType type) OVERRIDE;
-  virtual void ResetDataTypeErrors() OVERRIDE;
+                         syncer::ConfigureReason reason) override;
+  virtual void ReenableType(syncer::ModelType type) override;
+  virtual void ResetDataTypeErrors() override;
 
   // Needed only for backend migration.
   virtual void PurgeForMigration(
       syncer::ModelTypeSet undesired_types,
-      syncer::ConfigureReason reason) OVERRIDE;
+      syncer::ConfigureReason reason) override;
 
-  virtual void Stop() OVERRIDE;
-  virtual State state() const OVERRIDE;
+  virtual void Stop() override;
+  virtual State state() const override;
 
   // |ModelAssociationManagerDelegate| implementation.
   virtual void OnSingleDataTypeAssociationDone(
       syncer::ModelType type,
-      const syncer::DataTypeAssociationStats& association_stats) OVERRIDE;
+      const syncer::DataTypeAssociationStats& association_stats) override;
   virtual void OnModelAssociationDone(
-      const DataTypeManager::ConfigureResult& result) OVERRIDE;
+      const DataTypeManager::ConfigureResult& result) override;
   virtual void OnSingleDataTypeWillStop(
       syncer::ModelType type,
-      const syncer::SyncError& error) OVERRIDE;
+      const syncer::SyncError& error) override;
 
   // Used by unit tests. TODO(sync) : This would go away if we made
   // this class be able to do Dependency injection. crbug.com/129212.

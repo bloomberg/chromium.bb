@@ -292,7 +292,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // invoked.
   virtual void OnWebDataServiceRequestDone(
       KeywordWebDataService::Handle h,
-      const WDTypedResult* result) OVERRIDE;
+      const WDTypedResult* result) override;
 
   // Returns the locale-direction-adjusted short name for the given keyword.
   // Also sets the out param to indicate whether the keyword belongs to an
@@ -304,20 +304,20 @@ class TemplateURLService : public WebDataServiceConsumer,
   void OnHistoryURLVisited(const URLVisitedDetails& details);
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // syncer::SyncableService implementation.
 
   // Returns all syncable TemplateURLs from this model as SyncData. This should
   // include every search engine and no Extension keywords.
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   // Process new search engine changes from Sync, merging them into our local
   // data. This may send notifications if local search engines are added,
   // updated or removed.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
   // Merge initial search engine data from Sync and push any local changes up
   // to Sync. This may send notifications if local search engines are added,
   // updated or removed.
@@ -325,8 +325,8 @@ class TemplateURLService : public WebDataServiceConsumer,
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
 
   // Processes a local TemplateURL change for Sync. |turl| is the TemplateURL
   // that has been modified, and |type| is the Sync ChangeType that took place.

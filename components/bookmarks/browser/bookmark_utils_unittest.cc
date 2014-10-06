@@ -32,7 +32,7 @@ class BookmarkUtilsTest : public testing::Test,
 
 // Copy and paste is not yet supported on iOS. http://crbug.com/228147
 #if !defined(OS_IOS)
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 #endif  // !defined(OS_IOS)
@@ -54,13 +54,13 @@ class BookmarkUtilsTest : public testing::Test,
 
  private:
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE {}
+  virtual void BookmarkModelChanged() override {}
 
-  virtual void GroupedBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE {
+  virtual void GroupedBookmarkChangesBeginning(BookmarkModel* model) override {
     ++grouped_changes_beginning_count_;
   }
 
-  virtual void GroupedBookmarkChangesEnded(BookmarkModel* model) OVERRIDE {
+  virtual void GroupedBookmarkChangesEnded(BookmarkModel* model) override {
     ++grouped_changes_ended_count_;
   }
 

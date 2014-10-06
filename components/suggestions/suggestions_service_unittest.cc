@@ -165,7 +165,7 @@ class SuggestionsServiceTest : public testing::Test {
 
   virtual ~SuggestionsServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     request_context_ = new net::TestURLRequestContextGetter(
         io_message_loop_.message_loop_proxy());
   }

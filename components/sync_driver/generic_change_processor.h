@@ -62,25 +62,25 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 version,
-      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::ImmutableChangeRecordList& changes) override;
   // Passes |syncer_changes_|, built in ApplyChangesFromSyncModel, onto
   // |local_service_| by way of its ProcessSyncChanges method.
-  virtual void CommitChangesFromSyncModel() OVERRIDE;
+  virtual void CommitChangesFromSyncModel() override;
 
   // syncer::SyncChangeProcessor implementation.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE;
+      const override;
   virtual syncer::SyncError UpdateDataTypeContext(
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
-      const std::string& context) OVERRIDE;
+      const std::string& context) override;
 
   // syncer::AttachmentService::Delegate implementation.
   virtual void OnAttachmentUploaded(
-      const syncer::AttachmentId& attachment_id) OVERRIDE;
+      const syncer::AttachmentId& attachment_id) override;
 
   // Similar to above, but returns a SyncError for use by direct clients
   // of GenericChangeProcessor that may need more error visibility.
@@ -102,8 +102,8 @@ class GenericChangeProcessor : public ChangeProcessor,
 
  protected:
   // ChangeProcessor interface.
-  virtual void StartImpl() OVERRIDE;  // Does nothing.
-  virtual syncer::UserShare* share_handle() const OVERRIDE;
+  virtual void StartImpl() override;  // Does nothing.
+  virtual syncer::UserShare* share_handle() const override;
 
  private:
   // Logically part of ProcessSyncChanges.

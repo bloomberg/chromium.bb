@@ -29,15 +29,15 @@ class FakeDB : public ProtoDatabase<T> {
 
   virtual void Init(const base::FilePath& database_dir,
                     typename ProtoDatabase<T>::InitCallback callback)
-      OVERRIDE;
+      override;
 
   virtual void UpdateEntries(
       scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
       scoped_ptr<std::vector<std::string> > keys_to_remove,
-      typename ProtoDatabase<T>::UpdateCallback callback) OVERRIDE;
+      typename ProtoDatabase<T>::UpdateCallback callback) override;
 
   virtual void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback)
-      OVERRIDE;
+      override;
   base::FilePath& GetDirectory();
 
   void InitCallback(bool success);

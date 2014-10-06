@@ -72,13 +72,13 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
       BuildServiceInstanceFor(content::BrowserContext* context) const = 0;
 
   virtual void BrowserContextShutdown(content::BrowserContext* context)
-      OVERRIDE;
+      override;
   virtual void BrowserContextDestroyed(content::BrowserContext* context)
-      OVERRIDE;
+      override;
   virtual void SetEmptyTestingFactory(content::BrowserContext* context)
-      OVERRIDE;
-  virtual bool HasTestingFactory(content::BrowserContext* context) OVERRIDE;
-  virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
+      override;
+  virtual bool HasTestingFactory(content::BrowserContext* context) override;
+  virtual void CreateServiceNow(content::BrowserContext* context) override;
 
  private:
   typedef std::map<content::BrowserContext*,

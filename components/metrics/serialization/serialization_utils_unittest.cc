@@ -25,7 +25,7 @@ class SerializationUtilsTest : public testing::Test {
     }
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::DeleteFile(filepath, false);
   }
 

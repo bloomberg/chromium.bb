@@ -24,10 +24,10 @@ class FakeInvalidationHandler : public InvalidationHandler {
   int GetInvalidationCount() const;
 
   // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void OnInvalidatorStateChange(InvalidatorState state) override;
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
  private:
   InvalidatorState state_;

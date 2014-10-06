@@ -57,7 +57,7 @@ class MediaTransferProtocolDeviceObserverLinux
   // device::MediaTransferProtocolManager::Observer implementation.
   // Exposed for unit tests.
   virtual void StorageChanged(bool is_attached,
-                              const std::string& storage_name) OVERRIDE;
+                              const std::string& storage_name) override;
 
  private:
   // Mapping of storage location and mtp storage info object.

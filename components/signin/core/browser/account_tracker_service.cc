@@ -40,15 +40,15 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   virtual void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> user_info) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
  private:
   OAuth2TokenService* token_service_;

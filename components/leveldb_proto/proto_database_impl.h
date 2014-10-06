@@ -41,13 +41,13 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   // TODO(cjhopman): Perhaps Init() shouldn't be exposed to users and not just
   //     part of the constructor
   virtual void Init(const base::FilePath& database_dir,
-                    typename ProtoDatabase<T>::InitCallback callback) OVERRIDE;
+                    typename ProtoDatabase<T>::InitCallback callback) override;
   virtual void UpdateEntries(
       scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
       scoped_ptr<KeyVector> keys_to_remove,
-      typename ProtoDatabase<T>::UpdateCallback callback) OVERRIDE;
+      typename ProtoDatabase<T>::UpdateCallback callback) override;
   virtual void LoadEntries(
-      typename ProtoDatabase<T>::LoadCallback callback) OVERRIDE;
+      typename ProtoDatabase<T>::LoadCallback callback) override;
 
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(scoped_ptr<LevelDB> database,

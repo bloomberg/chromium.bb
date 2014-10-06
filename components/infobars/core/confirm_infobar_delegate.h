@@ -26,7 +26,7 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual ~ConfirmInfoBarDelegate();
 
   // Returns the InfoBar type to be displayed for the InfoBar.
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const override;
 
   // Returns the message string to be displayed for the InfoBar.
   virtual base::string16 GetMessageText() const = 0;
@@ -71,13 +71,13 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
       scoped_ptr<ConfirmInfoBarDelegate> delegate);
 
   virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const override;
 
  private:
   // InfoBarDelegate:
   virtual bool EqualsDelegate(
-      infobars::InfoBarDelegate* delegate) const OVERRIDE;
-  virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() OVERRIDE;
+      infobars::InfoBarDelegate* delegate) const override;
+  virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() override;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBarDelegate);
 };

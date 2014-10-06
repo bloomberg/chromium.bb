@@ -40,8 +40,8 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
 
  protected:
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   base::MessageLoop message_loop_;
   TestBookmarkClient client_;

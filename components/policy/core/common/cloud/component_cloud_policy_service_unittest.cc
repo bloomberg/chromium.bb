@@ -89,11 +89,11 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
   explicit TestURLRequestContextGetter(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {}
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     return NULL;
   }
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
+      GetNetworkTaskRunner() const override {
     return task_runner_;
   }
 
@@ -113,7 +113,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
               &store_,
               loop_.message_loop_proxy()) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     cache_ = new ResourceCache(temp_dir_.path(), loop_.message_loop_proxy());
@@ -146,7 +146,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
                          NULL);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // The service cleans up its backend on the background thread.
     service_.reset();
     RunUntilIdle();

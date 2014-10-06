@@ -16,7 +16,7 @@ class TestStorageMonitor : public StorageMonitor {
   TestStorageMonitor();
   virtual ~TestStorageMonitor();
 
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
   void MarkInitialized();
 
@@ -36,26 +36,26 @@ class TestStorageMonitor : public StorageMonitor {
 
   virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
-      StorageInfo* device_info) const OVERRIDE;
+      StorageInfo* device_info) const override;
 
 #if defined(OS_WIN)
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
       base::string16* device_location,
-      base::string16* storage_object_id) const OVERRIDE;
+      base::string16* storage_object_id) const override;
 #endif
 
 #if defined(OS_LINUX)
   virtual device::MediaTransferProtocolManager*
-      media_transfer_protocol_manager() OVERRIDE;
+      media_transfer_protocol_manager() override;
 #endif
 
-  virtual Receiver* receiver() const OVERRIDE;
+  virtual Receiver* receiver() const override;
 
   virtual void EjectDevice(
       const std::string& device_id,
       base::Callback<void(StorageMonitor::EjectStatus)> callback)
-      OVERRIDE;
+      override;
 
   const std::string& ejected_device() const { return ejected_device_; }
 

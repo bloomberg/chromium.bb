@@ -163,7 +163,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
       : listener_(listener) {
   }
 
-  virtual bool QueryKnownToValidate(const std::string& signature) OVERRIDE {
+  virtual bool QueryKnownToValidate(const std::string& signature) override {
     // Initialize to false so that if the Send fails to write to the return
     // value we're safe.  For example if the message is (for some reason)
     // dispatched as an async message the return parameter will not be written.
@@ -176,7 +176,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
     return result;
   }
 
-  virtual void SetKnownToValidate(const std::string& signature) OVERRIDE {
+  virtual void SetKnownToValidate(const std::string& signature) override {
     // Caching is optional: NaCl will still work correctly if the IPC fails.
     if (!listener_->Send(new NaClProcessMsg_SetKnownToValidate(signature))) {
       LOG(ERROR) << "Failed to update NaCl validation cache.";
@@ -187,7 +187,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
   // used for resolving the main nexe.
   // TODO(teravest): Remove this.
   virtual bool ResolveFileToken(struct NaClFileToken* file_token,
-                                int32* fd, std::string* path) OVERRIDE {
+                                int32* fd, std::string* path) override {
     *fd = -1;
     *path = "";
     if (!NaClFileTokenIsValid(file_token)) {
@@ -262,7 +262,7 @@ bool NaClListener::Send(IPC::Message* msg) {
 // NaClChromeMainAppStart(), so it can't be used for servicing messages.
 class FileTokenMessageFilter : public IPC::MessageFilter {
  public:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FileTokenMessageFilter, msg)
       IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileTokenAsyncReply,

@@ -57,23 +57,23 @@ class AutofillAgent : public content::RenderViewObserver,
 
  private:
   // content::RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
-  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
-  virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
+                                        bool is_new_navigation) override;
+  virtual void FrameDetached(blink::WebFrame* frame) override;
+  virtual void FrameWillClose(blink::WebFrame* frame) override;
   virtual void WillSubmitForm(blink::WebLocalFrame* frame,
-                              const blink::WebFormElement& form) OVERRIDE;
-  virtual void DidChangeScrollOffset(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
-  virtual void OrientationChangeEvent() OVERRIDE;
-  virtual void Resized() OVERRIDE;
+                              const blink::WebFormElement& form) override;
+  virtual void DidChangeScrollOffset(blink::WebLocalFrame* frame) override;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
+  virtual void OrientationChangeEvent() override;
+  virtual void Resized() override;
 
   // PageClickListener:
   virtual void FormControlElementClicked(
       const blink::WebFormControlElement& element,
-      bool was_focused) OVERRIDE;
+      bool was_focused) override;
 
   // blink::WebAutofillClient:
   virtual void textFieldDidEndEditing(

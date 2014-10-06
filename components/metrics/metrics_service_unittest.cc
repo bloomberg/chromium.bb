@@ -38,9 +38,9 @@ class TestMetricsProvider : public metrics::MetricsProvider {
       provide_stability_metrics_called_(false) {
   }
 
-  virtual bool HasStabilityMetrics() OVERRIDE { return has_stability_metrics_; }
+  virtual bool HasStabilityMetrics() override { return has_stability_metrics_; }
   virtual void ProvideStabilityMetrics(
-      SystemProfileProto* system_profile_proto) OVERRIDE {
+      SystemProfileProto* system_profile_proto) override {
     provide_stability_metrics_called_ = true;
   }
 

@@ -39,29 +39,29 @@ class TestConfigurator : public Configurator {
   virtual ~TestConfigurator();
 
   // Overrrides for Configurator.
-  virtual int InitialDelay() const OVERRIDE;
-  virtual int NextCheckDelay() OVERRIDE;
-  virtual int StepDelay() const OVERRIDE;
-  virtual int StepDelayMedium() OVERRIDE;
-  virtual int MinimumReCheckWait() const OVERRIDE;
-  virtual int OnDemandDelay() const OVERRIDE;
-  virtual std::vector<GURL> UpdateUrl() const OVERRIDE;
-  virtual std::vector<GURL> PingUrl() const OVERRIDE;
-  virtual base::Version GetBrowserVersion() const OVERRIDE;
-  virtual std::string GetChannel() const OVERRIDE;
-  virtual std::string GetLang() const OVERRIDE;
-  virtual std::string GetOSLongName() const OVERRIDE;
-  virtual std::string ExtraRequestParams() const OVERRIDE;
-  virtual size_t UrlSizeLimit() const OVERRIDE;
-  virtual net::URLRequestContextGetter* RequestContext() const OVERRIDE;
+  virtual int InitialDelay() const override;
+  virtual int NextCheckDelay() override;
+  virtual int StepDelay() const override;
+  virtual int StepDelayMedium() override;
+  virtual int MinimumReCheckWait() const override;
+  virtual int OnDemandDelay() const override;
+  virtual std::vector<GURL> UpdateUrl() const override;
+  virtual std::vector<GURL> PingUrl() const override;
+  virtual base::Version GetBrowserVersion() const override;
+  virtual std::string GetChannel() const override;
+  virtual std::string GetLang() const override;
+  virtual std::string GetOSLongName() const override;
+  virtual std::string ExtraRequestParams() const override;
+  virtual size_t UrlSizeLimit() const override;
+  virtual net::URLRequestContextGetter* RequestContext() const override;
   virtual scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher()
-      const OVERRIDE;
-  virtual bool DeltasEnabled() const OVERRIDE;
-  virtual bool UseBackgroundDownloader() const OVERRIDE;
+      const override;
+  virtual bool DeltasEnabled() const override;
+  virtual bool UseBackgroundDownloader() const override;
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      const OVERRIDE;
+      const override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetSingleThreadTaskRunner() const OVERRIDE;
+      GetSingleThreadTaskRunner() const override;
 
   void SetLoopCount(int times);
   void SetRecheckTime(int seconds);

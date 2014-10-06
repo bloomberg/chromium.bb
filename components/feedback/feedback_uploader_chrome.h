@@ -19,7 +19,7 @@ class FeedbackUploaderChrome : public FeedbackUploader,
  public:
   explicit FeedbackUploaderChrome(content::BrowserContext* context);
 
-  virtual void DispatchReport(const std::string& data) OVERRIDE;
+  virtual void DispatchReport(const std::string& data) override;
 
  private:
   // Browser context this uploader was created for.

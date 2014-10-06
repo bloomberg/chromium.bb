@@ -58,7 +58,7 @@ class VariationsHttpHeaderProviderTest : public ::testing::Test {
 
   virtual ~VariationsHttpHeaderProviderTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     testing::ClearAllVariationIDs();
   }
 };

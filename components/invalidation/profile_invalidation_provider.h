@@ -24,7 +24,7 @@ class ProfileInvalidationProvider : public KeyedService {
   InvalidationService* GetInvalidationService();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   scoped_ptr<InvalidationService> invalidation_service_;

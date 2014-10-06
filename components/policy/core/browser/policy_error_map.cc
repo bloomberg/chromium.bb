@@ -43,7 +43,7 @@ class SimplePendingError : public PolicyErrorMap::PendingError {
         replacement_(replacement) {}
   virtual ~SimplePendingError() {}
 
-  virtual base::string16 GetMessage() const OVERRIDE {
+  virtual base::string16 GetMessage() const override {
     if (message_id_ >= 0) {
       if (replacement_.empty())
         return l10n_util::GetStringUTF16(message_id_);
@@ -70,7 +70,7 @@ class DictSubkeyPendingError : public SimplePendingError {
         subkey_(subkey) {}
   virtual ~DictSubkeyPendingError() {}
 
-  virtual base::string16 GetMessage() const OVERRIDE {
+  virtual base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
                                       base::ASCIIToUTF16(subkey_),
                                       SimplePendingError::GetMessage());
@@ -92,7 +92,7 @@ class ListItemPendingError : public SimplePendingError {
         index_(index) {}
   virtual ~ListItemPendingError() {}
 
-  virtual base::string16 GetMessage() const OVERRIDE {
+  virtual base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,
                                       base::IntToString16(index_),
                                       SimplePendingError::GetMessage());
@@ -113,7 +113,7 @@ class SchemaValidatingPendingError : public SimplePendingError {
         error_path_(error_path) {};
   virtual ~SchemaValidatingPendingError() {}
 
-  virtual base::string16 GetMessage() const OVERRIDE {
+  virtual base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_SCHEMA_VALIDATION_ERROR,
                                       base::ASCIIToUTF16(error_path_),
                                       SimplePendingError::GetMessage());

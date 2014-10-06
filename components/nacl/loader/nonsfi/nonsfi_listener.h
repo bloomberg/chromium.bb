@@ -36,7 +36,7 @@ class NonSfiListener : public IPC::Listener {
   bool Send(IPC::Message* msg);
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
   void OnStart(const nacl::NaClStartParams& params);
 
   base::Thread io_thread_;

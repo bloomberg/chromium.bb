@@ -124,10 +124,10 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // net::URLFetcherDelegate implementation.
   // Called when fetch request completes. Parses the received suggestions data,
   // and dispatches them to callbacks stored in queue.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Load the cached suggestions and service the requestors with them.
   void ServeFromCache();

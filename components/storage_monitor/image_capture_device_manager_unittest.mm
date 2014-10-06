@@ -208,23 +208,23 @@ class TestCameraListener
   virtual ~TestCameraListener() {}
 
   virtual void ItemAdded(const std::string& name,
-                         const base::File::Info& info) OVERRIDE {
+                         const base::File::Info& info) override {
     items_.push_back(name);
   }
 
-  virtual void NoMoreItems() OVERRIDE {
+  virtual void NoMoreItems() override {
     completed_ = true;
   }
 
   virtual void DownloadedFile(const std::string& name,
-                              base::File::Error error) OVERRIDE {
+                              base::File::Error error) override {
     EXPECT_TRUE(content::BrowserThread::CurrentlyOn(
         content::BrowserThread::UI));
     downloads_.push_back(name);
     last_error_ = error;
   }
 
-  virtual void DeviceRemoved() OVERRIDE {
+  virtual void DeviceRemoved() override {
     removed_ = true;
   }
 
@@ -244,11 +244,11 @@ class TestCameraListener
 
 class ImageCaptureDeviceManagerTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     monitor_ = TestStorageMonitor::CreateAndInstall();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     TestStorageMonitor::Destroy();
   }
 

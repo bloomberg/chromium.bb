@@ -46,9 +46,9 @@ class CloudPolicyClientRegistrationHelper::TokenServiceHelper
   // OAuth2TokenService::Consumer implementation:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   StringCallback callback_;
   scoped_ptr<OAuth2TokenService::Request> token_request_;
@@ -108,9 +108,9 @@ class CloudPolicyClientRegistrationHelper::LoginTokenHelper
  private:
   // OAuth2AccessTokenConsumer implementation:
   virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   StringCallback callback_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;

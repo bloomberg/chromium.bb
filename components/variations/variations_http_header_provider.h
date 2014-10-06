@@ -71,7 +71,7 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
   // |group_name| to the variation ID cache.
   virtual void OnFieldTrialGroupFinalized(
       const std::string& trial_name,
-      const std::string& group_name) OVERRIDE;
+      const std::string& group_name) override;
 
   // Prepares the variation IDs cache with initial values if not already done.
   // This method also registers the caller with the FieldTrialList to receive

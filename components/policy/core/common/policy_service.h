@@ -99,7 +99,7 @@ class POLICY_EXPORT PolicyChangeRegistrar : public PolicyService::Observer {
   // Implementation of PolicyService::Observer:
   virtual void OnPolicyUpdated(const PolicyNamespace& ns,
                                const PolicyMap& previous,
-                               const PolicyMap& current) OVERRIDE;
+                               const PolicyMap& current) override;
 
  private:
   typedef std::map<std::string, UpdateCallback> CallbackMap;

@@ -33,23 +33,23 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   virtual void OnResolveProxy(const GURL& url,
                               int load_flags,
                               const net::ProxyService& proxy_service,
-                              net::ProxyInfo* result) OVERRIDE;
+                              net::ProxyInfo* result) override;
 
   virtual void OnFallback(const net::ProxyServer& bad_proxy,
-                          int net_error) OVERRIDE;
+                          int net_error) override;
 
   virtual void OnBeforeSendHeaders(net::URLRequest* request,
                                    const net::ProxyInfo& proxy_info,
-                                   net::HttpRequestHeaders* headers) OVERRIDE;
+                                   net::HttpRequestHeaders* headers) override;
 
   virtual void OnBeforeTunnelRequest(
       const net::HostPortPair& proxy_server,
-      net::HttpRequestHeaders* extra_headers) OVERRIDE;
+      net::HttpRequestHeaders* extra_headers) override;
 
   virtual void OnTunnelHeadersReceived(
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
-      const net::HttpResponseHeaders& response_headers) OVERRIDE;
+      const net::HttpResponseHeaders& response_headers) override;
 
  private:
   DataReductionProxyAuthRequestHandler* auth_handler_;

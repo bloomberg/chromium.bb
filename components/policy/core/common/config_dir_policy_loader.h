@@ -30,9 +30,9 @@ class POLICY_EXPORT ConfigDirPolicyLoader : public AsyncPolicyLoader {
   virtual ~ConfigDirPolicyLoader();
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() OVERRIDE;
-  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
-  virtual base::Time LastModificationTime() OVERRIDE;
+  virtual void InitOnBackgroundThread() override;
+  virtual scoped_ptr<PolicyBundle> Load() override;
+  virtual base::Time LastModificationTime() override;
 
  private:
   // Loads the policy files at |path| into the |bundle|, with the given |level|.

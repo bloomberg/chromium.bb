@@ -30,16 +30,16 @@ class FakeInvalidator : public Invalidator {
   void EmitOnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map);
 
-  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void RegisterHandler(InvalidationHandler* handler) override;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
-  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
+                                   const ObjectIdSet& ids) override;
+  virtual void UnregisterHandler(InvalidationHandler* handler) override;
+  virtual InvalidatorState GetInvalidatorState() const override;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) OVERRIDE;
+      const std::string& email, const std::string& token) override;
   virtual void RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> callback) const
-    OVERRIDE;
+    override;
 
  private:
   InvalidatorRegistrar registrar_;

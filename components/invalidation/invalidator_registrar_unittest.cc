@@ -29,30 +29,30 @@ class RegistrarInvalidator : public Invalidator {
   }
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE {
+  virtual void RegisterHandler(InvalidationHandler* handler) override {
     registrar_.RegisterHandler(handler);
   }
 
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) OVERRIDE {
+                                   const ObjectIdSet& ids) override {
     registrar_.UpdateRegisteredIds(handler, ids);
   }
 
-  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE {
+  virtual void UnregisterHandler(InvalidationHandler* handler) override {
     registrar_.UnregisterHandler(handler);
   }
 
-  virtual InvalidatorState GetInvalidatorState() const OVERRIDE {
+  virtual InvalidatorState GetInvalidatorState() const override {
     return registrar_.GetInvalidatorState();
   }
 
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) OVERRIDE {
+      const std::string& email, const std::string& token) override {
     // Do nothing.
   }
 
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> call) const OVERRIDE {
+      base::Callback<void(const base::DictionaryValue&)> call) const override {
     // Do nothing.
   }
 

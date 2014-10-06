@@ -32,10 +32,10 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
                       bool fallback_restricted,
                       const std::string& primary_origin,
                       const std::string& fallback_origin,
-                      const std::string& ssl_origin) OVERRIDE;
-  virtual void Disable() OVERRIDE;
-  virtual void AddHostPatternToBypass(const std::string& pattern) OVERRIDE {}
-  virtual void AddURLPatternToBypass(const std::string& pattern) OVERRIDE {}
+                      const std::string& ssl_origin) override;
+  virtual void Disable() override;
+  virtual void AddHostPatternToBypass(const std::string& pattern) override {}
+  virtual void AddURLPatternToBypass(const std::string& pattern) override {}
 
   // True if the proxy has been enabled, i.e., only after |Enable| has been
   // called. Defaults to false.
@@ -86,12 +86,12 @@ class MockDataReductionProxySettings : public C {
   virtual void SetProxyConfigs(bool enabled,
                                bool alternative_enabled,
                                bool restricted,
-                               bool at_startup) OVERRIDE {
+                               bool at_startup) override {
     EXPECT_CALL(*this, LogProxyState(enabled, restricted, at_startup)).Times(1);
     C::SetProxyConfigs(enabled, alternative_enabled, restricted, at_startup);
   }
   virtual void GetNetworkList(net::NetworkInterfaceList* interfaces,
-                              int policy) OVERRIDE {
+                              int policy) override {
     if (!network_interfaces_.get())
       return;
     for (size_t i = 0; i < network_interfaces_->size(); ++i)
@@ -114,7 +114,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
 
   void AddProxyToCommandLine();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   template <class C> void ResetSettings(bool allowed,
                                         bool fallback_allowed,
@@ -181,7 +181,7 @@ class ConcreteDataReductionProxySettingsTest
                              bool fallback_allowed,
                              bool alt_allowed,
                              bool promo_allowed,
-                             bool holdback) OVERRIDE {
+                             bool holdback) override {
     return DataReductionProxySettingsTestBase::ResetSettings<C>(
         allowed, fallback_allowed, alt_allowed, promo_allowed, holdback);
   }
@@ -190,7 +190,7 @@ class ConcreteDataReductionProxySettingsTest
                               const std::string& response,
                               ProbeURLFetchResult result,
                               bool success,
-                              int expected_calls) OVERRIDE {
+                              int expected_calls) override {
     return DataReductionProxySettingsTestBase::SetProbeResult<C>(
         test_url,
         response,

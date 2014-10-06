@@ -90,32 +90,32 @@ class GCMClientImpl
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       scoped_ptr<Encryptor> encryptor,
-      GCMClient::Delegate* delegate) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void CheckOut() OVERRIDE;
+      GCMClient::Delegate* delegate) override;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void CheckOut() override;
   virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void Unregister(const std::string& app_id) OVERRIDE;
+                        const std::vector<std::string>& sender_ids) override;
+  virtual void Unregister(const std::string& app_id) override;
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
-                    const OutgoingMessage& message) OVERRIDE;
-  virtual void SetRecording(bool recording) OVERRIDE;
-  virtual void ClearActivityLogs() OVERRIDE;
-  virtual GCMStatistics GetStatistics() const OVERRIDE;
+                    const OutgoingMessage& message) override;
+  virtual void SetRecording(bool recording) override;
+  virtual void ClearActivityLogs() override;
+  virtual GCMStatistics GetStatistics() const override;
   virtual void SetAccountTokens(
-      const std::vector<AccountTokenInfo>& account_tokens) OVERRIDE;
+      const std::vector<AccountTokenInfo>& account_tokens) override;
   virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) OVERRIDE;
-  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
+      const AccountMapping& account_mapping) override;
+  virtual void RemoveAccountMapping(const std::string& account_id) override;
 
   // GCMStatsRecorder::Delegate implemenation.
-  virtual void OnActivityRecorded() OVERRIDE;
+  virtual void OnActivityRecorded() override;
 
   // ConnectionFactory::ConnectionListener implementation.
   virtual void OnConnected(const GURL& current_server,
-                           const net::IPEndPoint& ip_endpoint) OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+                           const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
 
  private:
   // State representation of the GCMClient.

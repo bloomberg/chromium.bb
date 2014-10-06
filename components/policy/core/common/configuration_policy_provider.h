@@ -71,8 +71,8 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   virtual void RemoveObserver(Observer* observer);
 
   // SchemaRegistry::Observer:
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
-  virtual void OnSchemaRegistryReady() OVERRIDE;
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) override;
+  virtual void OnSchemaRegistryReady() override;
 
  protected:
   // Subclasses must invoke this to update the policies currently served by

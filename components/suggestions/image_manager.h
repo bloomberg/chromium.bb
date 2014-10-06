@@ -51,7 +51,7 @@ class ImageManager : public ImageFetcherDelegate {
 
  protected:
   // Perform additional tasks when an image has been fetched.
-  virtual void OnImageFetched(const GURL& url, const SkBitmap* bitmap) OVERRIDE;
+  virtual void OnImageFetched(const GURL& url, const SkBitmap* bitmap) override;
 
  private:
   friend class MockImageManager;

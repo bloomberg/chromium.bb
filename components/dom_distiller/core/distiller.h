@@ -59,7 +59,7 @@ class DistillerFactoryImpl : public DistillerFactory {
       scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
       const dom_distiller::proto::DomDistillerOptions& dom_distiller_options);
   virtual ~DistillerFactoryImpl();
-  virtual scoped_ptr<Distiller> CreateDistiller() OVERRIDE;
+  virtual scoped_ptr<Distiller> CreateDistiller() override;
 
  private:
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;
@@ -78,7 +78,7 @@ class DistillerImpl : public Distiller {
       const GURL& url,
       scoped_ptr<DistillerPage> distiller_page,
       const DistillationFinishedCallback& finished_cb,
-      const DistillationUpdateCallback& update_cb) OVERRIDE;
+      const DistillationUpdateCallback& update_cb) override;
 
   void SetMaxNumPagesInArticle(size_t max_num_pages);
 

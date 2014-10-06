@@ -37,15 +37,15 @@ class InvalidatorStorage : public syncer::InvalidationStateTracker {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // InvalidationStateTracker implementation.
-  virtual void ClearAndSetNewClientId(const std::string& client_id) OVERRIDE;
-  virtual std::string GetInvalidatorClientId() const OVERRIDE;
-  virtual void SetBootstrapData(const std::string& data) OVERRIDE;
-  virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void ClearAndSetNewClientId(const std::string& client_id) override;
+  virtual std::string GetInvalidatorClientId() const override;
+  virtual void SetBootstrapData(const std::string& data) override;
+  virtual std::string GetBootstrapData() const override;
   virtual void SetSavedInvalidations(
-      const syncer::UnackedInvalidationsMap& map) OVERRIDE;
+      const syncer::UnackedInvalidationsMap& map) override;
   virtual syncer::UnackedInvalidationsMap GetSavedInvalidations()
-      const OVERRIDE;
-  virtual void Clear() OVERRIDE;
+      const override;
+  virtual void Clear() override;
 
  private:
   base::ThreadChecker thread_checker_;

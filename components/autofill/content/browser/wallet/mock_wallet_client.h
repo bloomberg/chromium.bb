@@ -46,7 +46,7 @@ class MockWalletClient : public WalletClient {
       scoped_ptr<Instrument> instrument,
       scoped_ptr<Address> address,
       const WalletItems::MaskedInstrument* reference_instrument,
-      const Address* reference_address) OVERRIDE;
+      const Address* reference_address) override;
 
   MOCK_METHOD4(SaveToWalletMock,
       void(Instrument* instrument,

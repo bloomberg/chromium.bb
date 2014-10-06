@@ -95,28 +95,28 @@ class DomDistillerStore : public syncer::SyncableService,
   virtual ~DomDistillerStore();
 
   // DomDistillerStoreInterface implementation.
-  virtual syncer::SyncableService* GetSyncableService() OVERRIDE;
-  virtual bool AddEntry(const ArticleEntry& entry) OVERRIDE;
-  virtual bool UpdateEntry(const ArticleEntry& entry) OVERRIDE;
-  virtual bool RemoveEntry(const ArticleEntry& entry) OVERRIDE;
+  virtual syncer::SyncableService* GetSyncableService() override;
+  virtual bool AddEntry(const ArticleEntry& entry) override;
+  virtual bool UpdateEntry(const ArticleEntry& entry) override;
+  virtual bool RemoveEntry(const ArticleEntry& entry) override;
   virtual bool GetEntryById(const std::string& entry_id,
-                            ArticleEntry* entry) OVERRIDE;
-  virtual bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) OVERRIDE;
-  virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
-  virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE;
+                            ArticleEntry* entry) override;
+  virtual bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) override;
+  virtual std::vector<ArticleEntry> GetEntries() const override;
+  virtual void AddObserver(DomDistillerObserver* observer) override;
+  virtual void RemoveObserver(DomDistillerObserver* observer) override;
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type, const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
  private:
   void OnDatabaseInit(bool success);

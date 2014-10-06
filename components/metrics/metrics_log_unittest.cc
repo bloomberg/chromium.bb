@@ -71,7 +71,7 @@ class TestMetricsLog : public MetricsLog {
 
   virtual void GetFieldTrialIds(
       std::vector<variations::ActiveGroupId>* field_trial_ids) const
-      OVERRIDE {
+      override {
     ASSERT_TRUE(field_trial_ids->empty());
 
     for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {

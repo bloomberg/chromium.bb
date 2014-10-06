@@ -25,7 +25,7 @@ class CreditCardField : public FormField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const OVERRIDE;
+  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   friend class CreditCardFieldTest;

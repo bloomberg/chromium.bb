@@ -34,13 +34,13 @@ class UrlFetcherDownloader : public CrxDownloader,
 
  private:
   // Overrides for CrxDownloader.
-  virtual void DoStartDownload(const GURL& url) OVERRIDE;
+  virtual void DoStartDownload(const GURL& url) override;
 
   // Overrides for URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64_t current,
-                                          int64_t total) OVERRIDE;
+                                          int64_t total) override;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

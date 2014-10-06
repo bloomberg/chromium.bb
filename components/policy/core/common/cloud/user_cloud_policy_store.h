@@ -53,9 +53,9 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   virtual void Clear();
 
   // CloudPolicyStore implementation.
-  virtual void Load() OVERRIDE;
+  virtual void Load() override;
   virtual void Store(
-      const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
+      const enterprise_management::PolicyFetchResponse& policy) override;
 
   // The key used to sign the current policy (empty if there either is no
   // loaded policy yet, or if the policy is unsigned).

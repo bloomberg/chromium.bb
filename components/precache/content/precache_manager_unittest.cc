@@ -89,7 +89,7 @@ class FakeURLListProvider : public URLListProvider {
         run_immediately_(run_immediately),
         was_get_urls_called_(false) {}
 
-  virtual void GetURLs(const GetURLsCallback& callback) OVERRIDE {
+  virtual void GetURLs(const GetURLsCallback& callback) override {
     was_get_urls_called_ = true;
 
     if (run_immediately_) {
@@ -140,7 +140,7 @@ class PrecacheManagerTest : public testing::Test {
                                   base::Unretained(&url_callback_))) {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::StatisticsRecorder::Initialize();
 
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(

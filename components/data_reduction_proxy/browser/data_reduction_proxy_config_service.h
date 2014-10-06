@@ -40,12 +40,12 @@ class DataReductionProxyConfigService
 
   // ProxyConfigService implementation:
   virtual void AddObserver(
-      net::ProxyConfigService::Observer* observer) OVERRIDE;
+      net::ProxyConfigService::Observer* observer) override;
   virtual void RemoveObserver(
-      net::ProxyConfigService::Observer* observer) OVERRIDE;
+      net::ProxyConfigService::Observer* observer) override;
   virtual ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* config) OVERRIDE;
-  virtual void OnLazyPoll() OVERRIDE;
+      net::ProxyConfig* config) override;
+  virtual void OnLazyPoll() override;
 
   // Method on IO thread that receives the data reduction proxy settings pushed
   // from DataReductionProxyConfiguratorImpl.
@@ -57,7 +57,7 @@ class DataReductionProxyConfigService
 
   // ProxyConfigService::Observer implementation:
   virtual void OnProxyConfigChanged(const net::ProxyConfig& config,
-                                    ConfigAvailability availability) OVERRIDE;
+                                    ConfigAvailability availability) override;
 
   // Makes sure that the observer registration with the base service is set up.
   void RegisterObserver();
@@ -100,10 +100,10 @@ class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
                       bool fallback_restricted,
                       const std::string& primary_origin,
                       const std::string& fallback_origin,
-                      const std::string& ssl_origin) OVERRIDE;
-  virtual void Disable() OVERRIDE;
-  virtual void AddHostPatternToBypass(const std::string& pattern) OVERRIDE;
-  virtual void AddURLPatternToBypass(const std::string& pattern) OVERRIDE;
+                      const std::string& ssl_origin) override;
+  virtual void Disable() override;
+  virtual void AddHostPatternToBypass(const std::string& pattern) override;
+  virtual void AddURLPatternToBypass(const std::string& pattern) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceTest,

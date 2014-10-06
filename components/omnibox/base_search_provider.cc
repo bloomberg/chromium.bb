@@ -40,7 +40,7 @@ class SuggestionDeletionHandler : public net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   scoped_ptr<net::URLFetcher> deletion_fetcher_;
   DeletionCompletedCallback callback_;

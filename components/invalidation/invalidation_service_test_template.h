@@ -348,7 +348,7 @@ class BoundFakeInvalidationHandler : public syncer::FakeInvalidationHandler {
 
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
+      syncer::InvalidatorState state) override;
 
  private:
   const invalidation::InvalidationService& invalidator_;

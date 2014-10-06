@@ -37,9 +37,9 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
   virtual ~AsyncPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual void Init(SchemaRegistry* registry) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  virtual void Init(SchemaRegistry* registry) override;
+  virtual void Shutdown() override;
+  virtual void RefreshPolicies() override;
 
  private:
   // Helper for RefreshPolicies().

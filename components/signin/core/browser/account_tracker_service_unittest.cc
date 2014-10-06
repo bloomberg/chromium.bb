@@ -114,9 +114,9 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
  private:
   // AccountTrackerService::Observer implementation
   virtual void OnAccountUpdated(
-      const AccountTrackerService::AccountInfo& ids) OVERRIDE;
+      const AccountTrackerService::AccountInfo& ids) override;
   virtual void OnAccountRemoved(
-      const AccountTrackerService::AccountInfo& ids) OVERRIDE;
+      const AccountTrackerService::AccountInfo& ids) override;
 
   testing::AssertionResult CheckEvents(
       const std::vector<TrackingEvent>& events);
@@ -195,7 +195,7 @@ class AccountTrackerServiceTest : public testing::Test {
 
   virtual ~AccountTrackerServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
 
     pref_service_.registry()->RegisterListPref(
@@ -209,7 +209,7 @@ class AccountTrackerServiceTest : public testing::Test {
     account_tracker_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     account_tracker_->RemoveObserver(&observer_);
     account_tracker_->Shutdown();
   }

@@ -85,11 +85,11 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   base::string16 display_name() const { return display_name_; }
 
   // UserInfo
-  virtual std::string GetEmail() const OVERRIDE;
-  virtual base::string16 GetDisplayName() const OVERRIDE;
-  virtual base::string16 GetGivenName() const OVERRIDE;
-  virtual const gfx::ImageSkia& GetImage() const OVERRIDE;
-  virtual std::string GetUserID() const OVERRIDE;
+  virtual std::string GetEmail() const override;
+  virtual base::string16 GetDisplayName() const override;
+  virtual base::string16 GetGivenName() const override;
+  virtual const gfx::ImageSkia& GetImage() const override;
+  virtual std::string GetUserID() const override;
 
   // Is user supervised.
   virtual bool IsSupervised() const;

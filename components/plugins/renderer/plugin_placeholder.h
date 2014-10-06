@@ -68,15 +68,15 @@ class PluginPlaceholder : public content::RenderFrameObserver,
 
   // gin::Wrappable method:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
  private:
   // WebViewPlugin::Delegate methods:
-  virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
-  virtual void PluginDestroyed() OVERRIDE;
+  virtual void ShowContextMenu(const blink::WebMouseEvent&) override;
+  virtual void PluginDestroyed() override;
 
   // RenderFrameObserver methods:
-  virtual void OnDestruct() OVERRIDE;
+  virtual void OnDestruct() override;
 
   // Javascript callbacks:
 

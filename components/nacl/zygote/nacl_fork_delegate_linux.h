@@ -36,18 +36,18 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
   explicit NaClForkDelegate(bool nonsfi_mode);
   virtual ~NaClForkDelegate();
 
-  virtual void Init(int sandboxdesc, bool enable_layer1_sandbox) OVERRIDE;
+  virtual void Init(int sandboxdesc, bool enable_layer1_sandbox) override;
   virtual void InitialUMA(std::string* uma_name,
                           int* uma_sample,
-                          int* uma_boundary_value) OVERRIDE;
+                          int* uma_boundary_value) override;
   virtual bool CanHelp(const std::string& process_type, std::string* uma_name,
-                          int* uma_sample, int* uma_boundary_value) OVERRIDE;
+                          int* uma_sample, int* uma_boundary_value) override;
   virtual pid_t Fork(const std::string& process_type,
                      const std::vector<int>& fds,
-                     const std::string& channel_id) OVERRIDE;
+                     const std::string& channel_id) override;
   virtual bool GetTerminationStatus(pid_t pid, bool known_dead,
                                     base::TerminationStatus* status,
-                                    int* exit_code) OVERRIDE;
+                                    int* exit_code) override;
 
  private:
   static void AddPassthroughEnvToOptions(base::LaunchOptions* options);

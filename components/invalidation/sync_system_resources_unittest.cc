@@ -185,19 +185,19 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
   using SyncNetworkChannel::NotifyChannelStateChange;
   using SyncNetworkChannel::DeliverIncomingMessage;
 
-  virtual void SendMessage(const std::string& message) OVERRIDE {
+  virtual void SendMessage(const std::string& message) override {
   }
 
   virtual void UpdateCredentials(const std::string& email,
-      const std::string& token) OVERRIDE {
+      const std::string& token) override {
   }
 
-  virtual int GetInvalidationClientType() OVERRIDE {
+  virtual int GetInvalidationClientType() override {
     return 0;
   }
 
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE {
+      base::Callback<void(const base::DictionaryValue&)> callback) override {
     base::DictionaryValue value;
     callback.Run(value);
   }
@@ -221,7 +221,7 @@ class SyncNetworkChannelTest
   }
 
   virtual void OnNetworkChannelStateChanged(
-      InvalidatorState invalidator_state) OVERRIDE {
+      InvalidatorState invalidator_state) override {
     last_invalidator_state_ = invalidator_state;
   }
 

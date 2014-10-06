@@ -20,17 +20,17 @@ class POLICY_EXPORT PolicyServiceStub : public PolicyService {
   virtual ~PolicyServiceStub();
 
   virtual void AddObserver(PolicyDomain domain,
-                           Observer* observer) OVERRIDE;
+                           Observer* observer) override;
 
   virtual void RemoveObserver(PolicyDomain domain,
-                              Observer* observer) OVERRIDE;
+                              Observer* observer) override;
 
   virtual const PolicyMap& GetPolicies(
-      const PolicyNamespace& ns) const OVERRIDE;
+      const PolicyNamespace& ns) const override;
 
-  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
 
-  virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
+  virtual void RefreshPolicies(const base::Closure& callback) override;
  private:
   const PolicyMap kEmpty_;
 

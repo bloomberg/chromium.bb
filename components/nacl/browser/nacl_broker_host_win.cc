@@ -28,7 +28,7 @@ class NaClBrokerSandboxedProcessLauncherDelegate
   NaClBrokerSandboxedProcessLauncherDelegate() {}
   virtual ~NaClBrokerSandboxedProcessLauncherDelegate() {}
 
-  virtual bool ShouldSandbox() OVERRIDE {
+  virtual bool ShouldSandbox() override {
     return false;
   }
 

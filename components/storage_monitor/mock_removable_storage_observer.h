@@ -15,9 +15,9 @@ class MockRemovableStorageObserver : public RemovableStorageObserver {
   MockRemovableStorageObserver();
   virtual ~MockRemovableStorageObserver();
 
-  virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageAttached(const StorageInfo& info) override;
 
-  virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(const StorageInfo& info) override;
 
   int attach_calls() { return attach_calls_; }
 

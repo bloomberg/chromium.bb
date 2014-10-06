@@ -30,8 +30,8 @@ class RequestSenderTest : public testing::Test {
   virtual ~RequestSenderTest();
 
   // Overrides from testing::Test.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void RequestSenderComplete(const net::URLFetcher* source);
 

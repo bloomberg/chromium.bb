@@ -40,7 +40,7 @@ class CopresenceManagerImpl : public CopresenceManager {
   virtual ~CopresenceManagerImpl();
   virtual void ExecuteReportRequest(ReportRequest request,
                                     const std::string& app_id,
-                                    const StatusCallback& callback) OVERRIDE;
+                                    const StatusCallback& callback) override;
 
  private:
   // Create managers with the CopresenceManager::Create() method.

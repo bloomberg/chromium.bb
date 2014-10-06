@@ -222,7 +222,7 @@ class MockLogoCache : public LogoCache {
     metadata_.reset(logo ? new LogoMetadata(logo->metadata) : NULL);
   }
 
-  virtual scoped_ptr<EncodedLogo> GetCachedLogo() OVERRIDE {
+  virtual scoped_ptr<EncodedLogo> GetCachedLogo() override {
     OnGetCachedLogo();
     return make_scoped_ptr(logo_ ? new EncodedLogo(*logo_) : NULL);
   }
@@ -281,7 +281,7 @@ class TestLogoDelegate : public LogoDelegate {
 
   virtual void DecodeUntrustedImage(
       const scoped_refptr<base::RefCountedString>& encoded_image,
-      base::Callback<void(const SkBitmap&)> image_decoded_callback) OVERRIDE {
+      base::Callback<void(const SkBitmap&)> image_decoded_callback) override {
     SkBitmap bitmap =
         gfx::Image::CreateFrom1xPNGBytes(encoded_image->front(),
                                          encoded_image->size()).AsBitmap();

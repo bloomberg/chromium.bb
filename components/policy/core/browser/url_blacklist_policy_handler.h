@@ -21,9 +21,9 @@ class POLICY_EXPORT URLBlacklistPolicyHandler
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
+                                   PolicyErrorMap* errors) override;
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);

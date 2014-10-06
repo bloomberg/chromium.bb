@@ -24,14 +24,14 @@ class SigninAccountIdHelper::GaiaIdFetcher
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetUserIdResponse(const std::string& gaia_id) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+  virtual void OnGetUserIdResponse(const std::string& gaia_id) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
  private:
   void Start();

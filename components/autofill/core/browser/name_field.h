@@ -25,7 +25,7 @@ class NameField : public FormField {
   NameField() {}
 
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const OVERRIDE;
+  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstMiddleLast);

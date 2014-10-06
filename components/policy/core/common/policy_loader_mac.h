@@ -36,9 +36,9 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
   virtual ~PolicyLoaderMac();
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() OVERRIDE;
-  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
-  virtual base::Time LastModificationTime() OVERRIDE;
+  virtual void InitOnBackgroundThread() override;
+  virtual scoped_ptr<PolicyBundle> Load() override;
+  virtual base::Time LastModificationTime() override;
 
  private:
   // Callback for the FilePathWatcher.

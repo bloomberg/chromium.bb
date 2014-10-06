@@ -52,7 +52,7 @@ class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
 
   // base::FieldTrial::EntropyProvider implementation:
   virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const OVERRIDE;
+                                    uint32 randomization_seed) const override;
 
  private:
   std::string entropy_source_;
@@ -75,7 +75,7 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
 
   // base::FieldTrial::EntropyProvider implementation:
   virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const OVERRIDE;
+                                    uint32 randomization_seed) const override;
 
  protected:
   // Performs the permutation algorithm and returns the permuted value that

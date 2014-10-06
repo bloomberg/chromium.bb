@@ -20,13 +20,13 @@ class OWNERSHIP_EXPORT OwnerKeyUtilImpl : public OwnerKeyUtil {
   explicit OwnerKeyUtilImpl(const base::FilePath& public_key_file);
 
   // OwnerKeyUtil implementation:
-  virtual bool ImportPublicKey(std::vector<uint8>* output) OVERRIDE;
+  virtual bool ImportPublicKey(std::vector<uint8>* output) override;
 #if defined(USE_NSS)
   virtual crypto::RSAPrivateKey* FindPrivateKeyInSlot(
       const std::vector<uint8>& key,
-      PK11SlotInfo* slot) OVERRIDE;
+      PK11SlotInfo* slot) override;
 #endif  // defined(USE_NSS)
-  virtual bool IsPublicKeyPresent() OVERRIDE;
+  virtual bool IsPublicKeyPresent() override;
 
  private:
   virtual ~OwnerKeyUtilImpl();

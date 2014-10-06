@@ -59,7 +59,7 @@ class TestDataReductionProxyNetworkDelegate : public net::NetworkDelegate {
       const net::CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url) OVERRIDE {
+      GURL* allowed_unsafe_redirect_url) override {
     data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
         test_data_reduction_proxy_params_,
         request,
@@ -813,7 +813,7 @@ class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
   virtual ~BadEntropyProvider() {}
 
   virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const OVERRIDE {
+                                    uint32 randomization_seed) const override {
     return 0.5;
   }
 };

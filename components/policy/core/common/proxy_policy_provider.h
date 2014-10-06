@@ -24,11 +24,11 @@ class POLICY_EXPORT ProxyPolicyProvider
   void SetDelegate(ConfigurationPolicyProvider* delegate);
 
   // ConfigurationPolicyProvider:
-  virtual void Shutdown() OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  virtual void Shutdown() override;
+  virtual void RefreshPolicies() override;
 
   // ConfigurationPolicyProvider::Observer:
-  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
+  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
 
  private:
   ConfigurationPolicyProvider* delegate_;

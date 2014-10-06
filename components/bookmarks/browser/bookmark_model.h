@@ -67,7 +67,7 @@ class BookmarkModel : public KeyedService {
   virtual ~BookmarkModel();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Loads the bookmarks. This is called upon creation of the
   // BookmarkModel. You need not invoke this directly.

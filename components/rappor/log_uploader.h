@@ -64,7 +64,7 @@ class LogUploader : public net::URLFetcherDelegate {
  private:
   // Implements net::URLFetcherDelegate. Called after transmission completes
   // (whether successful or not).
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Called when the upload is completed.
   void OnUploadFinished(bool server_is_healthy, bool more_logs_remaining);

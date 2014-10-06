@@ -101,7 +101,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
                syncer::SyncError(const tracked_objects::Location&,
                                  const syncer::SyncChangeList&));
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE { return syncer::SyncDataList(); }
+      const override { return syncer::SyncDataList(); }
 };
 
 class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
@@ -111,13 +111,13 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
 
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& location,
-      const syncer::SyncChangeList& changes) OVERRIDE {
+      const syncer::SyncChangeList& changes) override {
     changes_ = changes;
     return syncer::SyncError();
   }
 
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
+      override {
     return syncer::SyncDataList();
   }
 
@@ -228,7 +228,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
  public:
   AutofillProfileSyncableServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     sync_processor_.reset(new MockSyncChangeProcessor);
   }
 

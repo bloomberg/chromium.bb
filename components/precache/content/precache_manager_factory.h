@@ -31,7 +31,7 @@ class PrecacheManagerFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* browser_context) const OVERRIDE;
+      content::BrowserContext* browser_context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheManagerFactory);
 };

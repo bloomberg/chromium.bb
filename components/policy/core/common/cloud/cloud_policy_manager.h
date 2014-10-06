@@ -61,16 +61,16 @@ class POLICY_EXPORT CloudPolicyManager
   const CloudPolicyCore* core() const { return &core_; }
 
   // ConfigurationPolicyProvider:
-  virtual void Shutdown() OVERRIDE;
-  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  virtual void Shutdown() override;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
+  virtual void RefreshPolicies() override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* cloud_policy_store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
+  virtual void OnStoreError(CloudPolicyStore* cloud_policy_store) override;
 
   // ComponentCloudPolicyService::Delegate:
-  virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
+  virtual void OnComponentCloudPolicyUpdated() override;
 
  protected:
   // Check whether fully initialized and if so, publish policy by calling

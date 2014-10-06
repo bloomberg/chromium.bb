@@ -43,24 +43,24 @@ class ContentAutofillDriver : public AutofillDriver,
   static ContentAutofillDriver* FromWebContents(content::WebContents* contents);
 
   // AutofillDriver:
-  virtual bool IsOffTheRecord() const OVERRIDE;
-  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
-  virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
-  virtual bool RendererIsAvailable() OVERRIDE;
+  virtual bool IsOffTheRecord() const override;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() override;
+  virtual base::SequencedWorkerPool* GetBlockingPool() override;
+  virtual bool RendererIsAvailable() override;
   virtual void SendFormDataToRenderer(int query_id,
                                       RendererFormDataAction action,
-                                      const FormData& data) OVERRIDE;
-  virtual void PingRenderer() OVERRIDE;
+                                      const FormData& data) override;
+  virtual void PingRenderer() override;
   virtual void SendAutofillTypePredictionsToRenderer(
-      const std::vector<FormStructure*>& forms) OVERRIDE;
+      const std::vector<FormStructure*>& forms) override;
   virtual void RendererShouldAcceptDataListSuggestion(
-      const base::string16& value) OVERRIDE;
-  virtual void RendererShouldClearFilledForm() OVERRIDE;
-  virtual void RendererShouldClearPreviewedForm() OVERRIDE;
+      const base::string16& value) override;
+  virtual void RendererShouldClearFilledForm() override;
+  virtual void RendererShouldClearPreviewedForm() override;
   virtual void RendererShouldFillFieldWithValue(
-      const base::string16& value) OVERRIDE;
+      const base::string16& value) override;
   virtual void RendererShouldPreviewFieldWithValue(
-      const base::string16& value) OVERRIDE;
+      const base::string16& value) override;
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return &autofill_external_delegate_;
@@ -79,11 +79,11 @@ class ContentAutofillDriver : public AutofillDriver,
   // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) OVERRIDE;
-  virtual void WasHidden() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const content::LoadCommittedDetails& load_details) override;
+  virtual void WasHidden() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Sets the manager to |manager| and sets |manager|'s external delegate
   // to |autofill_external_delegate_|. Takes ownership of |manager|.

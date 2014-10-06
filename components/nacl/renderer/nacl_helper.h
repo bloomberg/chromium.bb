@@ -20,7 +20,7 @@ class NaClHelper : public content::RenderFrameObserver {
   virtual ~NaClHelper();
 
   // RenderFrameObserver.
-  virtual void DidCreatePepperPlugin(content::RendererPpapiHost* host) OVERRIDE;
+  virtual void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NaClHelper);

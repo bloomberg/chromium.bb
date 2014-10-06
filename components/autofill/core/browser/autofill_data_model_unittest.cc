@@ -19,13 +19,13 @@ class TestAutofillDataModel : public AutofillDataModel {
   virtual ~TestAutofillDataModel() {}
 
  private:
-  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE {
+  virtual base::string16 GetRawInfo(ServerFieldType type) const override {
     return base::string16();
   }
   virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) OVERRIDE {}
+                          const base::string16& value) override {}
   virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const OVERRIDE {}
+      ServerFieldTypeSet* supported_types) const override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDataModel);
 };

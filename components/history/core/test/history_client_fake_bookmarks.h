@@ -24,8 +24,8 @@ class HistoryClientFakeBookmarks : public HistoryClient {
   void DelBookmark(const GURL& url);
 
   // HistoryClient:
-  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
-  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) OVERRIDE;
+  virtual bool IsBookmarked(const GURL& url) override;
+  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
 
  private:
   std::map<GURL, base::string16> bookmarks_;

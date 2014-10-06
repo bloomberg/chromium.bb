@@ -176,10 +176,10 @@ class NaClSandboxedProcessLauncherDelegate
     }
   }
 #elif defined(OS_POSIX)
-  virtual bool ShouldUseZygote() OVERRIDE {
+  virtual bool ShouldUseZygote() override {
     return true;
   }
-  virtual int GetIpcFd() OVERRIDE {
+  virtual int GetIpcFd() override {
     return ipc_fd_;
   }
 #endif  // OS_WIN

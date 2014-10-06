@@ -151,7 +151,7 @@ class SearchSuggestionParser {
     // Result:
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
-        bool keyword_provider_requested) const OVERRIDE;
+        bool keyword_provider_requested) const override;
 
    private:
     // The search terms to be used for this suggestion.
@@ -211,7 +211,7 @@ class SearchSuggestionParser {
     // Result:
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
-        bool keyword_provider_requested) const OVERRIDE;
+        bool keyword_provider_requested) const override;
 
    private:
     // The suggested url for navigation.

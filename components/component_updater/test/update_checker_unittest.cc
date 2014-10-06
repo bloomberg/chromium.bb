@@ -41,8 +41,8 @@ class UpdateCheckerTest : public testing::Test {
   virtual ~UpdateCheckerTest();
 
   // Overrides from testing::Test.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void UpdateCheckComplete(const GURL& original_url,
                            int error,

@@ -173,35 +173,35 @@ class RegistryTestHarness : public PolicyProviderTestHarness,
   virtual ~RegistryTestHarness();
 
   // PolicyProviderTestHarness:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
-  virtual void InstallEmptyPolicy() OVERRIDE;
+  virtual void InstallEmptyPolicy() override;
   virtual void InstallStringPolicy(const std::string& policy_name,
-                                   const std::string& policy_value) OVERRIDE;
+                                   const std::string& policy_value) override;
   virtual void InstallIntegerPolicy(const std::string& policy_name,
-                                    int policy_value) OVERRIDE;
+                                    int policy_value) override;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
-                                    bool policy_value) OVERRIDE;
+                                    bool policy_value) override;
   virtual void InstallStringListPolicy(
       const std::string& policy_name,
-      const base::ListValue* policy_value) OVERRIDE;
+      const base::ListValue* policy_value) override;
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
-      const base::DictionaryValue* policy_value) OVERRIDE;
+      const base::DictionaryValue* policy_value) override;
   virtual void Install3rdPartyPolicy(
-      const base::DictionaryValue* policies) OVERRIDE;
+      const base::DictionaryValue* policies) override;
 
   // AppliedGPOListProvider:
   virtual DWORD GetAppliedGPOList(DWORD flags,
                                   LPCTSTR machine_name,
                                   PSID sid_user,
                                   GUID* extension_guid,
-                                  PGROUP_POLICY_OBJECT* gpo_list) OVERRIDE;
-  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) OVERRIDE;
+                                  PGROUP_POLICY_OBJECT* gpo_list) override;
+  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override;
 
   // Creates a harness instance that will install policy in HKCU or HKLM,
   // respectively.
@@ -224,35 +224,35 @@ class PRegTestHarness : public PolicyProviderTestHarness,
   virtual ~PRegTestHarness();
 
   // PolicyProviderTestHarness:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
-  virtual void InstallEmptyPolicy() OVERRIDE;
+  virtual void InstallEmptyPolicy() override;
   virtual void InstallStringPolicy(const std::string& policy_name,
-                                   const std::string& policy_value) OVERRIDE;
+                                   const std::string& policy_value) override;
   virtual void InstallIntegerPolicy(const std::string& policy_name,
-                                    int policy_value) OVERRIDE;
+                                    int policy_value) override;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
-                                    bool policy_value) OVERRIDE;
+                                    bool policy_value) override;
   virtual void InstallStringListPolicy(
       const std::string& policy_name,
-      const base::ListValue* policy_value) OVERRIDE;
+      const base::ListValue* policy_value) override;
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
-      const base::DictionaryValue* policy_value) OVERRIDE;
+      const base::DictionaryValue* policy_value) override;
   virtual void Install3rdPartyPolicy(
-      const base::DictionaryValue* policies) OVERRIDE;
+      const base::DictionaryValue* policies) override;
 
   // AppliedGPOListProvider:
   virtual DWORD GetAppliedGPOList(DWORD flags,
                                   LPCTSTR machine_name,
                                   PSID sid_user,
                                   GUID* extension_guid,
-                                  PGROUP_POLICY_OBJECT* gpo_list) OVERRIDE;
-  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) OVERRIDE;
+                                  PGROUP_POLICY_OBJECT* gpo_list) override;
+  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override;
 
   // Creates a harness instance.
   static PolicyProviderTestHarness* Create();
@@ -704,7 +704,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
         gpo_list_status_(ERROR_ACCESS_DENIED) {}
   virtual ~PolicyLoaderWinTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::win::SetDomainStateForTesting(false);
     PolicyTestBase::SetUp();
 
@@ -721,11 +721,11 @@ class PolicyLoaderWinTest : public PolicyTestBase,
                                   LPCTSTR machine_name,
                                   PSID sid_user,
                                   GUID* extension_guid,
-                                  PGROUP_POLICY_OBJECT* gpo_list) OVERRIDE {
+                                  PGROUP_POLICY_OBJECT* gpo_list) override {
     *gpo_list = gpo_list_;
     return gpo_list_status_;
   }
-  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) OVERRIDE {
+  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override {
     return TRUE;
   }
 

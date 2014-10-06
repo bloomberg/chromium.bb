@@ -29,13 +29,13 @@ class SharkConnectionListener : public HostPairingController::Observer {
   typedef HostPairingController::Stage Stage;
 
   // HostPairingController::Observer overrides:
-  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
+  virtual void PairingStageChanged(Stage new_stage) override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,
                              const std::string& timezone,
                              bool send_reports,
-                             const std::string& keyboard_layout) OVERRIDE;
-  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
+                             const std::string& keyboard_layout) override;
+  virtual void EnrollHost(const std::string& auth_token) override;
 
   OnConnectedCallback callback_;
   scoped_ptr<HostPairingController> controller_;

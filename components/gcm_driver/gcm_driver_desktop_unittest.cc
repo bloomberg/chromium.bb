@@ -48,8 +48,8 @@ class FakeGCMConnectionObserver : public GCMConnectionObserver {
   virtual ~FakeGCMConnectionObserver();
 
   // gcm::GCMConnectionObserver implementation:
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
 
   bool connected() const { return connected_; }
 
@@ -101,8 +101,8 @@ class GCMDriverTest : public testing::Test {
   virtual ~GCMDriverTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   GCMDriverDesktop* driver() { return driver_.get(); }
   FakeGCMAppHandler* gcm_app_handler() { return gcm_app_handler_.get(); }
@@ -665,7 +665,7 @@ class GCMDriverFunctionalTest : public GCMDriverTest {
   virtual ~GCMDriverFunctionalTest();
 
   // GCMDriverTest:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMDriverFunctionalTest);
@@ -950,7 +950,7 @@ class GCMChannelStatusSyncerTest : public GCMDriverTest {
   virtual ~GCMChannelStatusSyncerTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void CompleteGCMChannelStatusRequest(bool enabled, int poll_interval_seconds);
   bool CompareDelaySeconds(bool expected_delay_seconds,

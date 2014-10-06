@@ -34,28 +34,28 @@ class FakeHostPairingController
   void ApplyConfig(const std::string& config);
 
   // Overridden from HostPairingFlow:
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual Stage GetCurrentStage() OVERRIDE;
-  virtual void StartPairing() OVERRIDE;
-  virtual std::string GetDeviceName() OVERRIDE;
-  virtual std::string GetConfirmationCode() OVERRIDE;
-  virtual std::string GetEnrollmentDomain() OVERRIDE;
-  virtual void OnUpdateStatusChanged(UpdateStatus update_status) OVERRIDE;
-  virtual void SetEnrollmentComplete(bool success) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual Stage GetCurrentStage() override;
+  virtual void StartPairing() override;
+  virtual std::string GetDeviceName() override;
+  virtual std::string GetConfirmationCode() override;
+  virtual std::string GetEnrollmentDomain() override;
+  virtual void OnUpdateStatusChanged(UpdateStatus update_status) override;
+  virtual void SetEnrollmentComplete(bool success) override;
 
  private:
   void ChangeStage(Stage new_stage);
   void ChangeStageLater(Stage new_stage);
 
   // HostPairingFlow::Observer:
-  virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
+  virtual void PairingStageChanged(Stage new_stage) override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,
                              const std::string& timezone,
                              bool send_reports,
-                             const std::string& keyboard_layout) OVERRIDE;
-  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
+                             const std::string& keyboard_layout) override;
+  virtual void EnrollHost(const std::string& auth_token) override;
 
   ObserverList<Observer> observers_;
   Stage current_stage_;

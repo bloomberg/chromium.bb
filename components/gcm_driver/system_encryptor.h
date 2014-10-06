@@ -16,10 +16,10 @@ class SystemEncryptor : public Encryptor {
   virtual ~SystemEncryptor();
 
   virtual bool EncryptString(const std::string& plaintext,
-                             std::string* ciphertext) OVERRIDE;
+                             std::string* ciphertext) override;
 
   virtual bool DecryptString(const std::string& ciphertext,
-                             std::string* plaintext) OVERRIDE;
+                             std::string* plaintext) override;
 };
 
 }  // namespace gcm

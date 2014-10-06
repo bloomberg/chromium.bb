@@ -16,7 +16,7 @@ class TestSchemeClassifier : public AutocompleteSchemeClassifier {
 
   // Overridden from AutocompleteInputSchemeChecker:
   virtual metrics::OmniboxInputType::Type GetInputTypeForScheme(
-      const std::string& scheme) const OVERRIDE;
+      const std::string& scheme) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSchemeClassifier);

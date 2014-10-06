@@ -93,8 +93,8 @@ class FakeMCSClient : public MCSClient {
                 GCMStore* gcm_store,
                 GCMStatsRecorder* recorder);
   virtual ~FakeMCSClient();
-  virtual void Login(uint64 android_id, uint64 security_token) OVERRIDE;
-  virtual void SendMessage(const MCSMessage& message) OVERRIDE;
+  virtual void Login(uint64 android_id, uint64 security_token) override;
+  virtual void SendMessage(const MCSMessage& message) override;
 
   uint64 last_android_id() const { return last_android_id_; }
   uint64 last_security_token() const { return last_security_token_; }
@@ -142,7 +142,7 @@ class AutoAdvancingTestClock : public base::Clock {
   explicit AutoAdvancingTestClock(base::TimeDelta auto_increment_time_delta);
   virtual ~AutoAdvancingTestClock();
 
-  virtual base::Time Now() OVERRIDE;
+  virtual base::Time Now() override;
   void Advance(TimeDelta delta);
   int call_count() const { return call_count_; }
 
@@ -177,20 +177,20 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
   FakeGCMInternalsBuilder(base::TimeDelta clock_step);
   virtual ~FakeGCMInternalsBuilder();
 
-  virtual scoped_ptr<base::Clock> BuildClock() OVERRIDE;
+  virtual scoped_ptr<base::Clock> BuildClock() override;
   virtual scoped_ptr<MCSClient> BuildMCSClient(
       const std::string& version,
       base::Clock* clock,
       ConnectionFactory* connection_factory,
       GCMStore* gcm_store,
-      GCMStatsRecorder* recorder) OVERRIDE;
+      GCMStatsRecorder* recorder) override;
   virtual scoped_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
       const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
       const scoped_refptr<net::HttpNetworkSession>& http_network_session,
       net::NetLog* net_log,
-      GCMStatsRecorder* recorder) OVERRIDE;
+      GCMStatsRecorder* recorder) override;
 
  private:
   base::TimeDelta clock_step_;
@@ -236,7 +236,7 @@ class GCMClientImplTest : public testing::Test,
   GCMClientImplTest();
   virtual ~GCMClientImplTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void BuildGCMClient(base::TimeDelta clock_step);
   void InitializeGCMClient();
@@ -261,26 +261,26 @@ class GCMClientImplTest : public testing::Test,
   // GCMClient::Delegate overrides (for verification).
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
-                                  GCMClient::Result result) OVERRIDE;
+                                  GCMClient::Result result) override;
   virtual void OnUnregisterFinished(const std::string& app_id,
-                                    GCMClient::Result result) OVERRIDE;
+                                    GCMClient::Result result) override;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
-                              GCMClient::Result result) OVERRIDE {}
+                              GCMClient::Result result) override {}
   virtual void OnMessageReceived(const std::string& registration_id,
                                  const GCMClient::IncomingMessage& message)
-      OVERRIDE;
-  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+      override;
+  virtual void OnMessagesDeleted(const std::string& app_id) override;
   virtual void OnMessageSendError(
       const std::string& app_id,
-      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+      const gcm::GCMClient::SendErrorDetails& send_error_details) override;
   virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) OVERRIDE;
+                                  const std::string& message_id) override;
   virtual void OnGCMReady(
-      const std::vector<AccountMapping>& account_mappings) OVERRIDE;
-  virtual void OnActivityRecorded() OVERRIDE {}
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE {}
-  virtual void OnDisconnected() OVERRIDE {}
+      const std::vector<AccountMapping>& account_mappings) override;
+  virtual void OnActivityRecorded() override {}
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override {}
+  virtual void OnDisconnected() override {}
 
   GCMClientImpl* gcm_client() const { return gcm_client_.get(); }
   FakeMCSClient* mcs_client() const {
@@ -754,7 +754,7 @@ class GCMClientImplCheckinTest : public GCMClientImplTest {
   GCMClientImplCheckinTest();
   virtual ~GCMClientImplCheckinTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 GCMClientImplCheckinTest::GCMClientImplCheckinTest() {
@@ -983,7 +983,7 @@ public:
   GCMClientImplStartAndStopTest();
   virtual ~GCMClientImplStartAndStopTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 GCMClientImplStartAndStopTest::GCMClientImplStartAndStopTest() {

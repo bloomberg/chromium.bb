@@ -27,13 +27,13 @@ class NetworkMetricsProvider
 
  private:
   // metrics::MetricsProvider:
-  virtual void OnDidCreateMetricsLog() OVERRIDE;
+  virtual void OnDidCreateMetricsLog() override;
   virtual void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile) OVERRIDE;
+      metrics::SystemProfileProto* system_profile) override;
 
   // ConnectionTypeObserver:
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   metrics::SystemProfileProto::Network::ConnectionType
   GetConnectionType() const;

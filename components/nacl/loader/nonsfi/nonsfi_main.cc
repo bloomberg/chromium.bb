@@ -31,7 +31,7 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
   virtual ~PluginMainDelegate() {
   }
 
-  virtual void ThreadMain() OVERRIDE {
+  virtual void ThreadMain() override {
     base::PlatformThread::SetName("NaClMainThread");
 
     // This will only happen once per process, so we give the permission to

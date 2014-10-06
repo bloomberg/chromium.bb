@@ -50,9 +50,9 @@ class InMemoryContentStore : public DistilledContentStore {
   // DistilledContentStore implementation
   virtual void SaveContent(const ArticleEntry& entry,
                            const DistilledArticleProto& proto,
-                           SaveCallback callback) OVERRIDE;
+                           SaveCallback callback) override;
   virtual void LoadContent(const ArticleEntry& entry,
-                           LoadCallback callback) OVERRIDE;
+                           LoadCallback callback) override;
 
   // Synchronously saves the content.
   void InjectContent(const ArticleEntry& entry,

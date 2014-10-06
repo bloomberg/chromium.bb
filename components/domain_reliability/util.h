@@ -77,9 +77,9 @@ class DOMAIN_RELIABILITY_EXPORT ActualTime : public MockableTime {
   virtual ~ActualTime();
 
   // MockableTime implementation:
-  virtual base::Time Now() OVERRIDE;
-  virtual base::TimeTicks NowTicks() OVERRIDE;
-  virtual scoped_ptr<MockableTime::Timer> CreateTimer() OVERRIDE;
+  virtual base::Time Now() override;
+  virtual base::TimeTicks NowTicks() override;
+  virtual scoped_ptr<MockableTime::Timer> CreateTimer() override;
 };
 
 }  // namespace domain_reliability

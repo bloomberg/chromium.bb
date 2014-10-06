@@ -43,24 +43,24 @@ class FakeGCMClient : public GCMClient {
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       scoped_ptr<Encryptor> encryptor,
-      Delegate* delegate) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void CheckOut() OVERRIDE;
+      Delegate* delegate) override;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void CheckOut() override;
   virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void Unregister(const std::string& app_id) OVERRIDE;
+                        const std::vector<std::string>& sender_ids) override;
+  virtual void Unregister(const std::string& app_id) override;
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
-                    const OutgoingMessage& message) OVERRIDE;
-  virtual void SetRecording(bool recording) OVERRIDE;
-  virtual void ClearActivityLogs() OVERRIDE;
-  virtual GCMStatistics GetStatistics() const OVERRIDE;
+                    const OutgoingMessage& message) override;
+  virtual void SetRecording(bool recording) override;
+  virtual void ClearActivityLogs() override;
+  virtual GCMStatistics GetStatistics() const override;
   virtual void SetAccountTokens(
-      const std::vector<AccountTokenInfo>& account_tokens) OVERRIDE;
+      const std::vector<AccountTokenInfo>& account_tokens) override;
   virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) OVERRIDE;
-  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
+      const AccountMapping& account_mapping) override;
+  virtual void RemoveAccountMapping(const std::string& account_id) override;
 
   // Initiate the loading that has been delayed.
   // Called on UI thread.

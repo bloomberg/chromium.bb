@@ -68,16 +68,16 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   }
 
   // CloudPolicyClient::Observer:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
+  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  virtual void OnClientError(CloudPolicyClient* client) override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
   // net::NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
  private:
   // Initializes |last_refresh_| to the policy timestamp from |store_| in case

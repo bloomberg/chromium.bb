@@ -39,7 +39,7 @@ class CloudPolicyCoreTest : public testing::Test,
     core_.RemoveObserver(this);
   }
 
-  virtual void OnCoreConnected(CloudPolicyCore* core) OVERRIDE {
+  virtual void OnCoreConnected(CloudPolicyCore* core) override {
     // Make sure core is connected at callback time.
     if (core_.client())
       core_connected_callback_count_++;
@@ -47,7 +47,7 @@ class CloudPolicyCoreTest : public testing::Test,
       bad_callback_count_++;
   }
 
-  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) OVERRIDE {
+  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) override {
     // Make sure refresh scheduler is started at callback time.
     if (core_.refresh_scheduler())
       refresh_scheduler_started_callback_count_++;
@@ -55,7 +55,7 @@ class CloudPolicyCoreTest : public testing::Test,
       bad_callback_count_++;
   }
 
-  virtual void OnCoreDisconnecting(CloudPolicyCore* core) OVERRIDE {
+  virtual void OnCoreDisconnecting(CloudPolicyCore* core) override {
     // Make sure core is still connected at callback time.
     if (core_.client())
       core_disconnecting_callback_count_++;

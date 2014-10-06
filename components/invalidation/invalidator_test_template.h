@@ -340,7 +340,7 @@ class BoundFakeInvalidationHandler : public FakeInvalidationHandler {
   InvalidatorState GetLastRetrievedState() const;
 
   // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void OnInvalidatorStateChange(InvalidatorState state) override;
 
  private:
   const Invalidator& invalidator_;

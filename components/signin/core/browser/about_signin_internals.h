@@ -61,16 +61,16 @@ class AboutSigninInternals
   // SigninManager::SigninDiagnosticsObserver implementation.
   virtual void NotifySigninValueChanged(
       const signin_internals_util::UntimedSigninStatusField& field,
-      const std::string& value) OVERRIDE;
+      const std::string& value) override;
 
   virtual void NotifySigninValueChanged(
       const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value) OVERRIDE;
+      const std::string& value) override;
 
   void Initialize(SigninClient* client);
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns a dictionary of values in signin_status_ for use in
   // about:signin-internals. The values are formatted as shown -
@@ -96,16 +96,16 @@ class AboutSigninInternals
   virtual void OnAccessTokenRequested(
       const std::string& account_id,
       const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes) OVERRIDE;
+      const OAuth2TokenService::ScopeSet& scopes) override;
   virtual void OnFetchAccessTokenComplete(
       const std::string& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes,
       GoogleServiceAuthError error,
-      base::Time expiration_time) OVERRIDE;
+      base::Time expiration_time) override;
   virtual void OnTokenRemoved(const std::string& account_id,
                               const OAuth2TokenService::ScopeSet& scopes)
-      OVERRIDE;
+      override;
 
     void OnRefreshTokenReceived(std::string status);
     void OnAuthenticationResultReceived(std::string status);
@@ -174,9 +174,9 @@ class AboutSigninInternals
 
 
   // Overriden from GaiaAuthConsumer.
-  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsSuccess(const std::string& data) override;
   virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
   // Callback for ListAccounts. Once the email addresses are fetched from GAIA,
   // they are pushed to the signin_internals_ui.

@@ -49,11 +49,11 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   }
 
   // MessagePumbLibevent::Watcher impl:
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
 
   // MessageLoop::DestructionObserver impl:
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
   // Whether we are shutting down or not.
   bool IsShuttingDown() const;

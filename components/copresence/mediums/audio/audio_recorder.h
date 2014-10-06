@@ -78,12 +78,12 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
   virtual void OnData(media::AudioInputStream* stream,
                       const media::AudioBus* source,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE;
-  virtual void OnError(media::AudioInputStream* stream) OVERRIDE;
+                      double volume) override;
+  virtual void OnError(media::AudioInputStream* stream) override;
 
   // AudioConverter::InputCallback overrides:
   virtual double ProvideInput(media::AudioBus* dest,
-                              base::TimeDelta buffer_delay) OVERRIDE;
+                              base::TimeDelta buffer_delay) override;
 
   // Flushes the audio loop, making sure that any queued operations are
   // performed.

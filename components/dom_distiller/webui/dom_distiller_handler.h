@@ -23,7 +23,7 @@ class DomDistillerHandler : public content::WebUIMessageHandler {
   virtual ~DomDistillerHandler();
 
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // Callback from JavaScript for the "requestEntries" message. This
   // requests the list of entries and returns it to the front end by calling

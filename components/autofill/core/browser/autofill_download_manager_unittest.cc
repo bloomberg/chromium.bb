@@ -79,14 +79,14 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
 
   // AutofillDownloadManager::Observer implementation.
   virtual void OnLoadedServerPredictions(
-      const std::string& response_xml) OVERRIDE {
+      const std::string& response_xml) override {
     ResponseData response;
     response.response = response_xml;
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
   }
 
-  virtual void OnUploadedPossibleFieldTypes() OVERRIDE {
+  virtual void OnUploadedPossibleFieldTypes() override {
     ResponseData response;
     response.type_of_response = UPLOAD_SUCCESSFULL;
     responses_.push_back(response);
@@ -95,7 +95,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   virtual void OnServerRequestError(
       const std::string& form_signature,
       AutofillDownloadManager::RequestType request_type,
-      int http_error) OVERRIDE {
+      int http_error) override {
     ResponseData response;
     response.signature = form_signature;
     response.error = http_error;

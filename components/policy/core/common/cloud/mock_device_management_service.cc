@@ -29,7 +29,7 @@ class MockRequestJobBase : public DeviceManagementRequestJob {
   virtual ~MockRequestJobBase() {}
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     service_->StartJob(ExtractParameter(dm_protocol::kParamRequest),
                        gaia_token_,
                        ExtractParameter(dm_protocol::kParamOAuthToken),
@@ -70,7 +70,7 @@ class SyncRequestJob : public MockRequestJobBase {
   virtual ~SyncRequestJob() {}
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     MockRequestJobBase::Run();
     callback_.Run(status_, net::OK, response_);
   }
@@ -91,7 +91,7 @@ class AsyncRequestJob : public MockRequestJobBase,
   virtual ~AsyncRequestJob() {}
 
  protected:
-  virtual void RetryJob() OVERRIDE {
+  virtual void RetryJob() override {
     if (!retry_callback_.is_null())
       retry_callback_.Run(this);
     Run();
@@ -99,7 +99,7 @@ class AsyncRequestJob : public MockRequestJobBase,
 
   virtual void SendResponse(
       DeviceManagementStatus status,
-      const em::DeviceManagementResponse& response) OVERRIDE {
+      const em::DeviceManagementResponse& response) override {
     callback_.Run(status, net::OK, response);
   }
 

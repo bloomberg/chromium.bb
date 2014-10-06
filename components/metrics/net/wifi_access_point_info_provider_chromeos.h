@@ -22,11 +22,11 @@ class WifiAccessPointInfoProviderChromeos
   virtual ~WifiAccessPointInfoProviderChromeos();
 
   // WifiAccessPointInfoProvider
-  virtual bool GetInfo(WifiAccessPointInfo* info) OVERRIDE;
+  virtual bool GetInfo(WifiAccessPointInfo* info) override;
 
   // NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* default_network) OVERRIDE;
+      const chromeos::NetworkState* default_network) override;
 
  private:
   // Callback from Shill.Service.GetProperties. Parses |properties| to obtain

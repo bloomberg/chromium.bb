@@ -74,15 +74,15 @@ class QueryNodeWord : public QueryNode {
   void set_literal(bool literal) { literal_ = literal; }
 
   // QueryNode:
-  virtual int AppendToSQLiteQuery(base::string16* query) const OVERRIDE;
-  virtual bool IsWord() const OVERRIDE;
-  virtual bool Matches(const base::string16& word, bool exact) const OVERRIDE;
+  virtual int AppendToSQLiteQuery(base::string16* query) const override;
+  virtual bool IsWord() const override;
+  virtual bool Matches(const base::string16& word, bool exact) const override;
   virtual bool HasMatchIn(
       const QueryWordVector& words,
-      Snippet::MatchPositions* match_positions) const OVERRIDE;
+      Snippet::MatchPositions* match_positions) const override;
   virtual bool HasMatchIn(
-      const QueryWordVector& words) const OVERRIDE;
-  virtual void AppendWords(std::vector<base::string16>* words) const OVERRIDE;
+      const QueryWordVector& words) const override;
+  virtual void AppendWords(std::vector<base::string16>* words) const override;
 
  private:
   base::string16 word_;
@@ -158,14 +158,14 @@ class QueryNodeList : public QueryNode {
   void RemoveEmptySubnodes();
 
   // QueryNode:
-  virtual int AppendToSQLiteQuery(base::string16* query) const OVERRIDE;
-  virtual bool IsWord() const OVERRIDE;
-  virtual bool Matches(const base::string16& word, bool exact) const OVERRIDE;
+  virtual int AppendToSQLiteQuery(base::string16* query) const override;
+  virtual bool IsWord() const override;
+  virtual bool Matches(const base::string16& word, bool exact) const override;
   virtual bool HasMatchIn(
       const QueryWordVector& words,
-      Snippet::MatchPositions* match_positions) const OVERRIDE;
-  virtual bool HasMatchIn(const QueryWordVector& words) const OVERRIDE;
-  virtual void AppendWords(std::vector<base::string16>* words) const OVERRIDE;
+      Snippet::MatchPositions* match_positions) const override;
+  virtual bool HasMatchIn(const QueryWordVector& words) const override;
+  virtual void AppendWords(std::vector<base::string16>* words) const override;
 
  protected:
   int AppendChildrenToString(base::string16* query) const;
@@ -248,11 +248,11 @@ class QueryNodePhrase : public QueryNodeList {
   virtual ~QueryNodePhrase();
 
   // QueryNodeList:
-  virtual int AppendToSQLiteQuery(base::string16* query) const OVERRIDE;
+  virtual int AppendToSQLiteQuery(base::string16* query) const override;
   virtual bool HasMatchIn(
       const QueryWordVector& words,
-      Snippet::MatchPositions* match_positions) const OVERRIDE;
-  virtual bool HasMatchIn(const QueryWordVector& words) const OVERRIDE;
+      Snippet::MatchPositions* match_positions) const override;
+  virtual bool HasMatchIn(const QueryWordVector& words) const override;
 
  private:
   bool MatchesAll(const QueryWordVector& words,

@@ -39,22 +39,22 @@ class BookmarkServerSearchService : public BookmarkServerService {
 
  protected:
 
-  virtual net::URLFetcher* CreateFetcher() OVERRIDE;
+  virtual net::URLFetcher* CreateFetcher() override;
 
   virtual bool ProcessResponse(const std::string& response,
-                               bool* should_notify) OVERRIDE;
+                               bool* should_notify) override;
 
-  virtual void CleanAfterFailure() OVERRIDE;
+  virtual void CleanAfterFailure() override;
 
   // EnhancedBookmarkModelObserver methods.
-  virtual void EnhancedBookmarkModelLoaded() OVERRIDE{};
-  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) OVERRIDE;
-  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) OVERRIDE{};
-  virtual void EnhancedBookmarkAllUserNodesRemoved() OVERRIDE;
+  virtual void EnhancedBookmarkModelLoaded() override{};
+  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) override;
+  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) override{};
+  virtual void EnhancedBookmarkAllUserNodesRemoved() override;
   virtual void EnhancedBookmarkRemoteIdChanged(
       const BookmarkNode* node,
       const std::string& old_remote_id,
-      const std::string& remote_id) OVERRIDE;
+      const std::string& remote_id) override;
 
  private:
   // The search data, a map from query to a vector of stars.id.

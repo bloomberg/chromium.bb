@@ -57,13 +57,13 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   void RemoveObserver(Observer* observer);
 
   // CloudPolicyClient::Observer:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
+  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  virtual void OnClientError(CloudPolicyClient* client) override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
   bool IsInitializationComplete() const { return initialization_complete_; }
 

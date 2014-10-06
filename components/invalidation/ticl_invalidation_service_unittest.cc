@@ -30,7 +30,7 @@ class FakeTiclSettingsProvider : public TiclSettingsProvider {
   virtual ~FakeTiclSettingsProvider();
 
   // TiclSettingsProvider:
-  virtual bool UseGCMChannel() const OVERRIDE;
+  virtual bool UseGCMChannel() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeTiclSettingsProvider);

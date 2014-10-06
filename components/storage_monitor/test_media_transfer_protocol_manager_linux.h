@@ -18,27 +18,27 @@ class TestMediaTransferProtocolManagerLinux
 
  private:
   // device::MediaTransferProtocolManager implementation.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual const std::vector<std::string> GetStorages() const OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual const std::vector<std::string> GetStorages() const override;
   virtual const MtpStorageInfo* GetStorageInfo(
-      const std::string& storage_name) const OVERRIDE;
+      const std::string& storage_name) const override;
   virtual void OpenStorage(const std::string& storage_name,
                            const std::string& mode,
-                           const OpenStorageCallback& callback) OVERRIDE;
+                           const OpenStorageCallback& callback) override;
   virtual void CloseStorage(const std::string& storage_handle,
-                            const CloseStorageCallback& callback) OVERRIDE;
+                            const CloseStorageCallback& callback) override;
   virtual void ReadDirectory(const std::string& storage_handle,
                              uint32 file_id,
-                             const ReadDirectoryCallback& callback) OVERRIDE;
+                             const ReadDirectoryCallback& callback) override;
   virtual void ReadFileChunk(const std::string& storage_handle,
                              uint32 file_id,
                              uint32 offset,
                              uint32 count,
-                             const ReadFileCallback& callback) OVERRIDE;
+                             const ReadFileCallback& callback) override;
   virtual void GetFileInfo(const std::string& storage_handle,
                            uint32 file_id,
-                           const GetFileInfoCallback& callback) OVERRIDE;
+                           const GetFileInfoCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };

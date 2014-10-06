@@ -19,8 +19,8 @@ class TestPasswordGenerationAgent : public PasswordGenerationAgent {
   virtual ~TestPasswordGenerationAgent();
 
   // content::RenderViewObserver implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual bool Send(IPC::Message* message) override;
 
   // Access messages that would have been sent to the browser.
   const std::vector<IPC::Message*>& messages() const { return messages_.get(); }
@@ -31,7 +31,7 @@ class TestPasswordGenerationAgent : public PasswordGenerationAgent {
   // PasswordGenreationAgent implementation:
   // Always return true to allow loading of data URLs.
   virtual bool ShouldAnalyzeDocument(
-      const blink::WebDocument& document) const OVERRIDE;
+      const blink::WebDocument& document) const override;
 
  private:
   ScopedVector<IPC::Message> messages_;

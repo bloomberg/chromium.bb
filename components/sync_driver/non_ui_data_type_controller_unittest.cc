@@ -106,10 +106,10 @@ class NonUIDataTypeControllerFake
         change_processor_(change_processor),
         backend_loop_(backend_loop) {}
 
-  virtual syncer::ModelType type() const OVERRIDE {
+  virtual syncer::ModelType type() const override {
     return AUTOFILL_PROFILE;
   }
-  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE {
+  virtual syncer::ModelSafeGroup model_safe_group() const override {
     return syncer::GROUP_DB;
   }
 
@@ -130,14 +130,14 @@ class NonUIDataTypeControllerFake
     pending_tasks_.clear();
   }
 
-  virtual SharedChangeProcessor* CreateSharedChangeProcessor() OVERRIDE {
+  virtual SharedChangeProcessor* CreateSharedChangeProcessor() override {
     return change_processor_.get();
   }
 
  protected:
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE {
+      const base::Closure& task) override {
     if (blocked_) {
       pending_tasks_.push_back(PendingTask(from_here, task));
       return true;
@@ -148,17 +148,17 @@ class NonUIDataTypeControllerFake
 
   // We mock the following methods because their default implementations do
   // nothing, but we still want to make sure they're called appropriately.
-  virtual bool StartModels() OVERRIDE {
+  virtual bool StartModels() override {
     return mock_->StartModels();
   }
-  virtual void StopModels() OVERRIDE {
+  virtual void StopModels() override {
     mock_->StopModels();
   }
-  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE {
+  virtual void RecordAssociationTime(base::TimeDelta time) override {
     mock_->RecordAssociationTime(time);
   }
   virtual void RecordStartFailure(DataTypeController::ConfigureResult result)
-      OVERRIDE {
+      override {
     mock_->RecordStartFailure(result);
   }
 
@@ -188,7 +188,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   SyncNonUIDataTypeControllerTest()
       : backend_thread_("dbthread") {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     backend_thread_.Start();
     change_processor_ = new SharedChangeProcessorMock();
     // All of these are refcounted, so don't need to be released.
@@ -200,7 +200,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
                                         backend_thread_.message_loop_proxy());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     backend_thread_.Stop();
   }
 

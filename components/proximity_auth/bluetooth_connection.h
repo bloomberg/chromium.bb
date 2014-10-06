@@ -37,13 +37,13 @@ class BluetoothConnection : public Connection,
 
  protected:
   // Connection:
-  virtual void Connect() OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual void SendMessageImpl(scoped_ptr<WireMessage> message) OVERRIDE;
+  virtual void Connect() override;
+  virtual void Disconnect() override;
+  virtual void SendMessageImpl(scoped_ptr<WireMessage> message) override;
 
   // BluetoothAdapter::Observer:
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
+                             device::BluetoothDevice* device) override;
 
   // Exposed for testing.
   virtual void ConnectToService(

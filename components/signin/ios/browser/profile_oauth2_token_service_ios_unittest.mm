@@ -26,7 +26,7 @@ class ProfileOAuth2TokenServiceIOSTest : public testing::Test,
         access_token_failure_(0),
         last_access_token_error_(GoogleServiceAuthError::NONE) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(),
                              "",
                              net::HTTP_OK,
@@ -36,7 +36,7 @@ class ProfileOAuth2TokenServiceIOSTest : public testing::Test,
     oauth2_service_.AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     oauth2_service_.RemoveObserver(this);
     oauth2_service_.Shutdown();
   }
@@ -44,24 +44,24 @@ class ProfileOAuth2TokenServiceIOSTest : public testing::Test,
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE {
+                                 const base::Time& expiration_time) override {
     ++access_token_success_;
   }
 
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE {
+                                 const GoogleServiceAuthError& error) override {
     ++access_token_failure_;
     last_access_token_error_ = error;
   };
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE {
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override {
     ++token_available_count_;
   }
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override {
     ++token_revoked_count_;
   }
-  virtual void OnRefreshTokensLoaded() OVERRIDE { ++tokens_loaded_count_; }
+  virtual void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
 
   void ResetObserverCounts() {
     token_available_count_ = 0;

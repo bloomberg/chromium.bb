@@ -54,16 +54,16 @@ class INVALIDATION_EXPORT_PRIVATE NonBlockingInvalidator
   virtual ~NonBlockingInvalidator();
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void RegisterHandler(InvalidationHandler* handler) override;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
-  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
+                                   const ObjectIdSet& ids) override;
+  virtual void UnregisterHandler(InvalidationHandler* handler) override;
+  virtual InvalidatorState GetInvalidatorState() const override;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) OVERRIDE;
+      const std::string& email, const std::string& token) override;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) const
-      OVERRIDE;
+      override;
 
   // Static functions to construct callback that creates network channel for
   // SyncSystemResources. The goal is to pass network channel to invalidator at
@@ -76,14 +76,14 @@ class INVALIDATION_EXPORT_PRIVATE NonBlockingInvalidator
       scoped_ptr<GCMNetworkChannelDelegate> delegate);
 
   // These methods are forwarded to the invalidation_state_tracker_.
-  virtual void ClearAndSetNewClientId(const std::string& data) OVERRIDE;
-  virtual std::string GetInvalidatorClientId() const OVERRIDE;
-  virtual void SetBootstrapData(const std::string& data) OVERRIDE;
-  virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void ClearAndSetNewClientId(const std::string& data) override;
+  virtual std::string GetInvalidatorClientId() const override;
+  virtual void SetBootstrapData(const std::string& data) override;
+  virtual std::string GetBootstrapData() const override;
   virtual void SetSavedInvalidations(
-      const UnackedInvalidationsMap& states) OVERRIDE;
-  virtual UnackedInvalidationsMap GetSavedInvalidations() const OVERRIDE;
-  virtual void Clear() OVERRIDE;
+      const UnackedInvalidationsMap& states) override;
+  virtual UnackedInvalidationsMap GetSavedInvalidations() const override;
+  virtual void Clear() override;
 
  private:
   void OnInvalidatorStateChange(InvalidatorState state);

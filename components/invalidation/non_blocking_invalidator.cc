@@ -116,10 +116,10 @@ class NonBlockingInvalidator::Core
 
   // InvalidationHandler implementation (all called on I/O thread by
   // InvalidationNotifier).
-  virtual void OnInvalidatorStateChange(InvalidatorState reason) OVERRIDE;
+  virtual void OnInvalidatorStateChange(InvalidatorState reason) override;
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
  private:
   friend class

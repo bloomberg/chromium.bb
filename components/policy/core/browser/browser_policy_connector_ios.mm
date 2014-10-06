@@ -24,15 +24,15 @@ class DeviceManagementServiceConfiguration
 
   virtual ~DeviceManagementServiceConfiguration() {}
 
-  virtual std::string GetServerUrl() OVERRIDE {
+  virtual std::string GetServerUrl() override {
     return BrowserPolicyConnector::GetDeviceManagementUrl();
   }
 
-  virtual std::string GetAgentParameter() OVERRIDE {
+  virtual std::string GetAgentParameter() override {
     return user_agent_;
   }
 
-  virtual std::string GetPlatformParameter() OVERRIDE {
+  virtual std::string GetPlatformParameter() override {
     std::string os_name = base::SysInfo::OperatingSystemName();
     std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
     std::string os_version("-");

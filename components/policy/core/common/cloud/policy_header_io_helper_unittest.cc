@@ -24,13 +24,13 @@ class PolicyHeaderIOHelperTest : public testing::Test {
   }
   virtual ~PolicyHeaderIOHelperTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     helper_ = make_scoped_ptr(new PolicyHeaderIOHelper(kDMServerURL,
                                                        kInitialPolicyHeader,
                                                        task_runner_));
     task_runner_->RunUntilIdle();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     task_runner_->RunUntilIdle();
     helper_.reset();
   }

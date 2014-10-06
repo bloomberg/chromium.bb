@@ -58,7 +58,7 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
   void OnOtherError();
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* fetcher) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* fetcher) override;
 
   // Callback for when the Google Wallet cookie has been retrieved.
   void ReturnWalletCookieValue(const std::string& cookie_value);

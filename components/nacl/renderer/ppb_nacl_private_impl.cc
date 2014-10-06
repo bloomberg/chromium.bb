@@ -167,7 +167,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
 
   virtual ~ManifestServiceProxy() { }
 
-  virtual void StartupInitializationComplete() OVERRIDE {
+  virtual void StartupInitializationComplete() override {
     if (StartPpapiProxy(pp_instance_) == PP_TRUE) {
       JsonManifest* manifest = GetJsonManifest(pp_instance_);
       NexeLoadManager* load_manager = NexeLoadManager::Get(pp_instance_);
@@ -189,7 +189,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
 
   virtual void OpenResource(
       const std::string& key,
-      const ManifestServiceChannel::OpenResourceCallback& callback) OVERRIDE {
+      const ManifestServiceChannel::OpenResourceCallback& callback) override {
     DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
                BelongsToCurrentThread());
 

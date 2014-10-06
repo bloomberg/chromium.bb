@@ -41,7 +41,7 @@ class StorageMonitorMacTest : public testing::Test {
  public:
   StorageMonitorMacTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     monitor_.reset(new StorageMonitorMac);
 
     mock_storage_observer_.reset(new MockRemovableStorageObserver);

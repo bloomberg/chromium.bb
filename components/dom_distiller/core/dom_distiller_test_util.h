@@ -28,9 +28,9 @@ class ObserverUpdatesMatcher
   // MatcherInterface overrides.
   virtual bool MatchAndExplain(
       const std::vector<DomDistillerObserver::ArticleUpdate>& actual_updates,
-      testing::MatchResultListener* listener) const OVERRIDE;
-  virtual void DescribeTo(std::ostream* os) const OVERRIDE;
-  virtual void DescribeNegationTo(std::ostream* os) const OVERRIDE;
+      testing::MatchResultListener* listener) const override;
+  virtual void DescribeTo(std::ostream* os) const override;
+  virtual void DescribeNegationTo(std::ostream* os) const override;
 
  private:
   void DescribeUpdates(std::ostream* os) const;

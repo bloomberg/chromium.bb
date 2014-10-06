@@ -20,10 +20,10 @@ class StaticRendererCldDataProvider : public RendererCldDataProvider {
   explicit StaticRendererCldDataProvider();
   virtual ~StaticRendererCldDataProvider();
   // RendererCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
-  virtual void SendCldDataRequest() OVERRIDE;
-  virtual void SetCldAvailableCallback(base::Callback<void(void)>) OVERRIDE;
-  virtual bool IsCldDataAvailable() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message&) override;
+  virtual void SendCldDataRequest() override;
+  virtual void SetCldAvailableCallback(base::Callback<void(void)>) override;
+  virtual bool IsCldDataAvailable() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StaticRendererCldDataProvider);

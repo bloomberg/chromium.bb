@@ -95,8 +95,8 @@ class KeywordProvider : public AutocompleteProvider {
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
+                     bool minimal_changes) override;
+  virtual void Stop(bool clear_cached_results) override;
 
  private:
   friend class KeywordExtensionsDelegateImpl;

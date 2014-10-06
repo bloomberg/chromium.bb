@@ -22,7 +22,7 @@ namespace {
 class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
  public:
   virtual metrics::OmniboxInputType::Type GetInputTypeForScheme(
-      const std::string& scheme) const OVERRIDE {
+      const std::string& scheme) const override {
     if (net::URLRequest::IsHandledProtocol(scheme))
       return metrics::OmniboxInputType::URL;
     return metrics::OmniboxInputType::INVALID;

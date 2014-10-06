@@ -21,11 +21,11 @@ class TokenServiceTable : public WebDatabaseTable {
   // Retrieves the TokenServiceTable* owned by |database|.
   static TokenServiceTable* FromWebDatabase(WebDatabase* db);
 
-  virtual WebDatabaseTable::TypeKey GetTypeKey() const OVERRIDE;
-  virtual bool CreateTablesIfNecessary() OVERRIDE;
-  virtual bool IsSyncable() OVERRIDE;
+  virtual WebDatabaseTable::TypeKey GetTypeKey() const override;
+  virtual bool CreateTablesIfNecessary() override;
+  virtual bool IsSyncable() override;
   virtual bool MigrateToVersion(int version,
-                                bool* update_compatible_version) OVERRIDE;
+                                bool* update_compatible_version) override;
 
   // Remove all tokens previously set with SetTokenForService.
   bool RemoveAllTokens();

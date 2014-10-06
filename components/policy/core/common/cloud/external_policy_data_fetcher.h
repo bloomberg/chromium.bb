@@ -156,10 +156,10 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
                  const base::Closure& callback);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
-                                          int64 total) OVERRIDE;
+                                          int64 total) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

@@ -25,7 +25,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
         last_type_(syncer::UNSPECIFIED) {}
   virtual ~DeviceInfoDataTypeControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     local_device_.reset(new LocalDeviceInfoProviderMock(
         "cache_guid",
         "Wayne Gretzky's Hacking Box",
@@ -45,7 +45,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
     last_error_ = syncer::SyncError();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     local_device_.reset();
   }
@@ -57,7 +57,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
   }
 
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) OVERRIDE {
+      syncer::ModelType type) override {
     // Shouldn't be called for this test.
     NOTREACHED();
     return base::WeakPtr<syncer::SyncableService>();
@@ -66,7 +66,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
-      syncer::AttachmentService::Delegate* delegate) OVERRIDE {
+      syncer::AttachmentService::Delegate* delegate) override {
     // Shouldn't be called for this test.
     NOTREACHED();
     return scoped_ptr<syncer::AttachmentService>();

@@ -95,7 +95,7 @@ class HmacByteVectorGenerator : public ByteVectorGenerator {
   explicit HmacByteVectorGenerator(const HmacByteVectorGenerator& prev_request);
 
   // ByteVector implementation:
-  virtual ByteVector GetRandomByteVector() OVERRIDE;
+  virtual ByteVector GetRandomByteVector() override;
 
  private:
   // HMAC initalized with the value of "Key" HMAC_DRBG_Initialize.

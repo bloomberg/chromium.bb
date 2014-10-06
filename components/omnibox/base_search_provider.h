@@ -69,8 +69,8 @@ class BaseSearchProvider : public AutocompleteProvider {
       const SearchTermsData& search_terms_data);
 
   // AutocompleteProvider:
-  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
+  virtual void DeleteMatch(const AutocompleteMatch& match) override;
+  virtual void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
   bool field_trial_triggered_in_session() const {
     return field_trial_triggered_in_session_;

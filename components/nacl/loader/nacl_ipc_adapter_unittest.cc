@@ -24,7 +24,7 @@ class NaClIPCAdapterTest : public testing::Test {
   NaClIPCAdapterTest() {}
 
   // testing::Test implementation.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     sink_ = new IPC::TestSink;
 
     // Takes ownership of the sink_ pointer. Note we provide the current message
@@ -33,7 +33,7 @@ class NaClIPCAdapterTest : public testing::Test {
     adapter_ = new NaClIPCAdapter(scoped_ptr<IPC::Channel>(sink_),
                                   base::MessageLoopProxy::current().get());
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sink_ = NULL;  // This pointer is actually owned by the IPCAdapter.
     adapter_ = NULL;
     // The adapter destructor has to post a task to destroy the Channel on the
@@ -279,7 +279,7 @@ TEST_F(NaClIPCAdapterTest, ReadWithChannelError) {
     explicit MyThread(NaClIPCAdapter* adapter)
         : SimpleThread("NaClIPCAdapterThread"),
           adapter_(adapter) {}
-    virtual void Run() OVERRIDE {
+    virtual void Run() override {
       base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
       adapter_->OnChannelError();
     }

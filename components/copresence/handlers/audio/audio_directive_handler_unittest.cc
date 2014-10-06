@@ -24,13 +24,13 @@ class TestAudioPlayer : public AudioPlayer {
   virtual ~TestAudioPlayer() {}
 
   // AudioPlayer overrides:
-  virtual void Initialize() OVERRIDE {}
+  virtual void Initialize() override {}
   virtual void Play(
-      const scoped_refptr<media::AudioBusRefCounted>& /* samples */) OVERRIDE {
+      const scoped_refptr<media::AudioBusRefCounted>& /* samples */) override {
     set_is_playing(true);
   }
-  virtual void Stop() OVERRIDE { set_is_playing(false); }
-  virtual void Finalize() OVERRIDE { delete this; }
+  virtual void Stop() override { set_is_playing(false); }
+  virtual void Finalize() override { delete this; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAudioPlayer);
@@ -42,10 +42,10 @@ class TestAudioRecorder : public AudioRecorder {
   virtual ~TestAudioRecorder() {}
 
   // AudioRecorder overrides:
-  virtual void Initialize() OVERRIDE {}
-  virtual void Record() OVERRIDE { set_is_recording(true); }
-  virtual void Stop() OVERRIDE { set_is_recording(false); }
-  virtual void Finalize() OVERRIDE { delete this; }
+  virtual void Initialize() override {}
+  virtual void Record() override { set_is_recording(true); }
+  virtual void Stop() override { set_is_recording(false); }
+  virtual void Finalize() override { delete this; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAudioRecorder);

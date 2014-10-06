@@ -43,8 +43,8 @@ class CrxDownloaderTest : public testing::Test {
   virtual ~CrxDownloaderTest();
 
   // Overrides from testing::Test.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void Quit();
   void RunThreads();

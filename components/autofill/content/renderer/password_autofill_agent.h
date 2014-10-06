@@ -132,18 +132,18 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   };
 
   // RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
-  virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
+  virtual void DidStartLoading() override;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  virtual void DidStopLoading() override;
+  virtual void FrameDetached(blink::WebFrame* frame) override;
+  virtual void FrameWillClose(blink::WebFrame* frame) override;
   virtual void WillSendSubmitEvent(blink::WebLocalFrame* frame,
-                                   const blink::WebFormElement& form) OVERRIDE;
+                                   const blink::WebFormElement& form) override;
   virtual void WillSubmitForm(blink::WebLocalFrame* frame,
-                              const blink::WebFormElement& form) OVERRIDE;
+                              const blink::WebFormElement& form) override;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);

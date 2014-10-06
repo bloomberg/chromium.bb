@@ -24,10 +24,10 @@ class CdmMessageFilterAndroid
   virtual ~CdmMessageFilterAndroid();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      content::BrowserThread::ID* thread) override;
 
   // Query the key system information.
   void OnQueryKeySystemSupport(const SupportedKeySystemRequest& request,

@@ -84,27 +84,27 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   bool IsCommandIdKnown(int command_id, bool* enabled) const;
 
   // SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
-  virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  virtual void MenuWillShow(ui::SimpleMenuModel* source) override;
+  virtual void MenuClosed(ui::SimpleMenuModel* source) override;
 
   // RenderViewContextMenuProxy implementation.
   virtual void AddMenuItem(int command_id,
-                           const base::string16& title) OVERRIDE;
+                           const base::string16& title) override;
   virtual void AddCheckItem(int command_id,
-                            const base::string16& title) OVERRIDE;
-  virtual void AddSeparator() OVERRIDE;
+                            const base::string16& title) override;
+  virtual void AddSeparator() override;
   virtual void AddSubMenu(int command_id,
                           const base::string16& label,
-                          ui::MenuModel* model) OVERRIDE;
+                          ui::MenuModel* model) override;
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const base::string16& title) OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+                              const base::string16& title) override;
+  virtual content::RenderViewHost* GetRenderViewHost() const override;
+  virtual content::WebContents* GetWebContents() const override;
+  virtual content::BrowserContext* GetBrowserContext() const override;
 
  protected:
   friend class RenderViewContextMenuTest;

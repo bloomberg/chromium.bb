@@ -109,7 +109,7 @@ class DataReductionProxyUsageStats
 
   // NetworkChangeNotifier::NetworkChangeObserver:
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Called when request counts change. Resets counts if they exceed thresholds,
   // and calls MaybeNotifyUnavailability otherwise.

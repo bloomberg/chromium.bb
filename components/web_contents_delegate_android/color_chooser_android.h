@@ -33,8 +33,8 @@ class ColorChooserAndroid : public content::ColorChooser {
   void OnColorChosen(JNIEnv* env, jobject obj, jint color);
 
   // ColorChooser interface
-  virtual void End() OVERRIDE;
-  virtual void SetSelectedColor(SkColor color) OVERRIDE;
+  virtual void End() override;
+  virtual void SetSelectedColor(SkColor color) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_color_chooser_;

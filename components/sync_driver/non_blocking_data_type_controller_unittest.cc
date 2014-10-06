@@ -30,7 +30,7 @@ class NullModelTypeSyncWorker : public syncer::ModelTypeSyncWorker {
   virtual ~NullModelTypeSyncWorker();
 
   virtual void EnqueueForCommit(
-      const syncer::CommitRequestDataList& list) OVERRIDE;
+      const syncer::CommitRequestDataList& list) override;
 };
 
 NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
@@ -87,7 +87,7 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
       const syncer::DataTypeState& data_type_state,
       const syncer::UpdateResponseDataList& saved_pending_updates,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
-      OVERRIDE {
+      override {
     // Normally we'd use MessageLoopProxy::current() as the TaskRunner argument
     // to Connect().  That won't work here in this test, so we use the
     // model_task_runner_ that was injected for this purpose instead.
@@ -99,14 +99,14 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
                                            type_proxy));
   }
 
-  virtual void Disconnect(syncer::ModelType type) OVERRIDE {
+  virtual void Disconnect(syncer::ModelType type) override {
     sync_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&MockSyncContext::Disconnect,
                                            base::Unretained(mock_sync_context_),
                                            type));
   }
 
-  virtual scoped_ptr<SyncContextProxy> Clone() const OVERRIDE {
+  virtual scoped_ptr<SyncContextProxy> Clone() const override {
     return scoped_ptr<SyncContextProxy>(new MockSyncContextProxy(
         mock_sync_context_, model_task_runner_, sync_task_runner_));
   }

@@ -19,9 +19,9 @@ class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
   explicit DataFileBrowserCldDataProvider(content::WebContents*);
   virtual ~DataFileBrowserCldDataProvider();
   // BrowserCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
-  virtual void OnCldDataRequest() OVERRIDE;
-  virtual void SendCldDataResponse() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message&) override;
+  virtual void OnCldDataRequest() override;
+  virtual void SendCldDataResponse() override;
 
  private:
   void SendCldDataResponseInternal(const base::File*,

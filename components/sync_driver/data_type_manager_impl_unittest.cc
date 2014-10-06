@@ -87,7 +87,7 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
       const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(ModelTypeSet,
                                 ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) OVERRIDE {
+      const base::Callback<void()>& retry_callback) override {
     last_ready_task_ = ready_task;
 
     if (!expected_configure_types_.Empty()) {
@@ -103,10 +103,10 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
 
   virtual void ActivateDataType(
       syncer::ModelType type, syncer::ModelSafeGroup group,
-      ChangeProcessor* change_processor) OVERRIDE {
+      ChangeProcessor* change_processor) override {
     activated_types_.Put(type);
   }
-  virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE {
+  virtual void DeactivateDataType(syncer::ModelType type) override {
     activated_types_.Remove(type);
   }
 
@@ -150,7 +150,7 @@ class FakeDataTypeManagerObserver : public DataTypeManagerObserver {
   }
 
   virtual void OnConfigureDone(
-      const DataTypeManager::ConfigureResult& result) OVERRIDE {
+      const DataTypeManager::ConfigureResult& result) override {
     EXPECT_EQ(done_expectation_.status, result.status);
     DataTypeStatusTable::TypeErrorMap errors =
         result.data_type_status_table.GetAllErrors();
@@ -168,7 +168,7 @@ class FakeDataTypeManagerObserver : public DataTypeManagerObserver {
     done_expectation_ = DataTypeManager::ConfigureResult();
   }
 
-  virtual void OnConfigureStart() OVERRIDE {
+  virtual void OnConfigureStart() override {
     EXPECT_TRUE(start_expected_);
     start_expected_ = false;
   }
@@ -183,8 +183,8 @@ class FakeDataTypeEncryptionHandler : public DataTypeEncryptionHandler {
   FakeDataTypeEncryptionHandler();
   virtual ~FakeDataTypeEncryptionHandler();
 
-  virtual bool IsPassphraseRequired() const OVERRIDE;
-  virtual ModelTypeSet GetEncryptedDataTypes() const OVERRIDE;
+  virtual bool IsPassphraseRequired() const override;
+  virtual ModelTypeSet GetEncryptedDataTypes() const override;
 
   void set_passphrase_required(bool passphrase_required) {
     passphrase_required_ = passphrase_required;
@@ -238,13 +238,13 @@ class TestDataTypeManager : public DataTypeManagerImpl {
   }
 
   virtual void OnModelAssociationDone(
-      const DataTypeManager::ConfigureResult& result) OVERRIDE {
+      const DataTypeManager::ConfigureResult& result) override {
     configure_result_ = result;
     DataTypeManagerImpl::OnModelAssociationDone(result);
   }
 
  private:
-  virtual ModelTypeSet GetPriorityTypes() const OVERRIDE {
+  virtual ModelTypeSet GetPriorityTypes() const override {
     return custom_priority_types_;
   }
 

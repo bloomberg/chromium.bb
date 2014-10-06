@@ -56,7 +56,7 @@ class DomainReliabilityUploaderImpl
   virtual void UploadReport(
       const std::string& report_json,
       const GURL& upload_url,
-      const DomainReliabilityUploader::UploadCallback& callback) OVERRIDE {
+      const DomainReliabilityUploader::UploadCallback& callback) override {
     VLOG(1) << "Uploading report to " << upload_url;
     VLOG(2) << "Report JSON: " << report_json;
 
@@ -81,14 +81,14 @@ class DomainReliabilityUploaderImpl
     upload_callbacks_[fetcher] = callback;
   }
 
-  virtual void set_discard_uploads(bool discard_uploads) OVERRIDE {
+  virtual void set_discard_uploads(bool discard_uploads) override {
     discard_uploads_ = discard_uploads;
     VLOG(1) << "Setting discard_uploads to " << discard_uploads;
   }
 
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(
-      const net::URLFetcher* fetcher) OVERRIDE {
+      const net::URLFetcher* fetcher) override {
     DCHECK(fetcher);
 
     UploadCallbackMap::iterator callback_it = upload_callbacks_.find(fetcher);

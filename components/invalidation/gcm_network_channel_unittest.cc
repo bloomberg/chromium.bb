@@ -18,24 +18,24 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
       : register_call_count_(0) {}
 
   virtual void Initialize(
-      GCMNetworkChannelDelegate::ConnectionStateCallback callback) OVERRIDE {
+      GCMNetworkChannelDelegate::ConnectionStateCallback callback) override {
     connection_state_callback = callback;
   }
 
-  virtual void RequestToken(RequestTokenCallback callback) OVERRIDE {
+  virtual void RequestToken(RequestTokenCallback callback) override {
     request_token_callback = callback;
   }
 
-  virtual void InvalidateToken(const std::string& token) OVERRIDE {
+  virtual void InvalidateToken(const std::string& token) override {
     invalidated_token = token;
   }
 
-  virtual void Register(RegisterCallback callback) OVERRIDE {
+  virtual void Register(RegisterCallback callback) override {
     ++register_call_count_;
     register_callback = callback;
   }
 
-  virtual void SetMessageReceiver(MessageCallback callback) OVERRIDE {
+  virtual void SetMessageReceiver(MessageCallback callback) override {
     message_callback = callback;
   }
 
@@ -86,7 +86,7 @@ class TestGCMNetworkChannel : public GCMNetworkChannel {
  protected:
   // On Android GCMNetworkChannel::BuildUrl hits NOTREACHED(). I still want
   // tests to run.
-  virtual GURL BuildUrl(const std::string& registration_id) OVERRIDE {
+  virtual GURL BuildUrl(const std::string& registration_id) override {
     return GURL("http://test.url.com");
   }
 };
@@ -110,7 +110,7 @@ class TestNetworkChannelURLFetcher : public net::FakeURLFetcher {
                             status),
         test_(test) {}
 
-  virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
+  virtual void AddExtraRequestHeader(const std::string& header_line) override;
 
  private:
   GCMNetworkChannelTest* test_;
@@ -167,7 +167,7 @@ class GCMNetworkChannelTest
   }
 
   virtual void OnNetworkChannelStateChanged(
-      InvalidatorState invalidator_state) OVERRIDE {
+      InvalidatorState invalidator_state) override {
     last_invalidator_state_ = invalidator_state;
   }
 

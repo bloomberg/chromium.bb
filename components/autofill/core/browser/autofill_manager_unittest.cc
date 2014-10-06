@@ -91,7 +91,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     credit_cards_.push_back(credit_card);
   }
 
-  virtual void RemoveByGUID(const std::string& guid) OVERRIDE {
+  virtual void RemoveByGUID(const std::string& guid) override {
     CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
     if (credit_card) {
       credit_cards_.erase(
@@ -107,7 +107,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Do nothing (auxiliary profiles will be created in
   // CreateTestAuxiliaryProfile).
-  virtual void LoadAuxiliaryProfiles(bool record_metrics) const OVERRIDE {}
+  virtual void LoadAuxiliaryProfiles(bool record_metrics) const override {}
 
   void ClearAutofillProfiles() {
     web_profiles_.clear();
@@ -387,7 +387,7 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true) {}
   virtual ~TestAutofillManager() {}
 
-  virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
+  virtual bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
@@ -402,7 +402,7 @@ class TestAutofillManager : public AutofillManager {
       const FormStructure* submitted_form,
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
-      const base::TimeTicks& submission_time) OVERRIDE {
+      const base::TimeTicks& submission_time) override {
     run_loop_->Quit();
 
     // If we have expected field types set, make sure they match.
@@ -440,7 +440,7 @@ class TestAutofillManager : public AutofillManager {
   // Wait for the asynchronous OnFormSubmitted() call to complete.
   void WaitForAsyncFormSubmit() { run_loop_->Run(); }
 
-  virtual void UploadFormData(const FormStructure& submitted_form) OVERRIDE {
+  virtual void UploadFormData(const FormStructure& submitted_form) override {
     submitted_form_signature_ = submitted_form.FormSignature();
   }
 
@@ -506,7 +506,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                        const FormData& form,
                        const FormFieldData& field,
                        const gfx::RectF& bounds,
-                       bool display_warning) OVERRIDE {
+                       bool display_warning) override {
     on_query_seen_ = true;
     on_suggestions_returned_seen_ = false;
   }
@@ -516,7 +516,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
       const std::vector<base::string16>& autofill_values,
       const std::vector<base::string16>& autofill_labels,
       const std::vector<base::string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids) OVERRIDE {
+      const std::vector<int>& autofill_unique_ids) override {
     on_suggestions_returned_seen_ = true;
 
     query_id_ = query_id;
@@ -581,7 +581,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
 class AutofillManagerTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     personal_data_.set_database(autofill_client_.GetDatabase());
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
@@ -595,7 +595,7 @@ class AutofillManagerTest : public testing::Test {
     autofill_manager_->SetExternalDelegate(external_delegate_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
     autofill_manager_.reset();
@@ -2888,7 +2888,7 @@ class MockAutofillClient : public TestAutofillClient {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const ResultCallback& callback) OVERRIDE {
+      const ResultCallback& callback) override {
     callback.Run(user_supplied_data_ ? AutocompleteResultSuccess :
                                        AutocompleteResultErrorDisabled,
                  base::string16(),

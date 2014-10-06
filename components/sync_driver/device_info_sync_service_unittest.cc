@@ -40,13 +40,13 @@ class TestChangeProcessor : public SyncChangeProcessor {
   // Store a copy of all the changes passed in so we can examine them later.
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE {
+      const SyncChangeList& change_list) override {
     change_list_ = change_list;
     return SyncError();
   }
 
   // This method isn't used in these tests.
-  virtual SyncDataList GetAllSyncData(ModelType type) const OVERRIDE {
+  virtual SyncDataList GetAllSyncData(ModelType type) const override {
     return SyncDataList();
   }
 
@@ -80,7 +80,7 @@ class DeviceInfoSyncServiceTest : public testing::Test,
   DeviceInfoSyncServiceTest() : num_device_info_changed_callbacks_(0) {}
   virtual ~DeviceInfoSyncServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     local_device_.reset(new LocalDeviceInfoProviderMock(
         "guid_1",
         "client_1",
@@ -94,11 +94,11 @@ class DeviceInfoSyncServiceTest : public testing::Test,
     sync_service_->AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sync_service_->RemoveObserver(this);
   }
 
-  virtual void OnDeviceInfoChange() OVERRIDE {
+  virtual void OnDeviceInfoChange() override {
     num_device_info_changed_callbacks_++;
   }
 

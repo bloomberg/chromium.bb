@@ -31,7 +31,7 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
-      const WDTypedResult* result) OVERRIDE;
+      const WDTypedResult* result) override;
 
   // Pass-through functions that are called by AutofillManager, after it has
   // dispatched a message.

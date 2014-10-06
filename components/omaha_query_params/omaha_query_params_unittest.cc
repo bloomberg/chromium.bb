@@ -18,7 +18,7 @@ bool Contains(const std::string& source, const std::string& target) {
 }
 
 class TestOmahaQueryParamsDelegate : public OmahaQueryParamsDelegate {
-  virtual std::string GetExtraParams() OVERRIDE { return "&cat=dog"; }
+  virtual std::string GetExtraParams() override { return "&cat=dog"; }
 };
 
 }  // namespace

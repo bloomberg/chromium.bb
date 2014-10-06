@@ -19,11 +19,11 @@ class ListIterator : public RuleIterator {
 
   virtual ~ListIterator() {}
 
-  virtual bool HasNext() const OVERRIDE {
+  virtual bool HasNext() const override {
     return !rules_.empty();
   }
 
-  virtual Rule Next() OVERRIDE {
+  virtual Rule Next() override {
     EXPECT_FALSE(rules_.empty());
     // |front()| returns a reference but we're going to discard the object
     // referred to; force copying here.

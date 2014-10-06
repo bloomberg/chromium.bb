@@ -39,7 +39,7 @@ class MockValidationDB : public NaClValidationDB {
       status_(true) {
   }
 
-  virtual bool QueryKnownToValidate(const std::string& signature) OVERRIDE {
+  virtual bool QueryKnownToValidate(const std::string& signature) override {
     // The typecast is needed to work around gtest trying to take the address
     // of a constant.
     EXPECT_EQ((int) NaClValidationQuery::kDigestLength,
@@ -52,7 +52,7 @@ class MockValidationDB : public NaClValidationDB {
     return status_;
   }
 
-  virtual void SetKnownToValidate(const std::string& signature) OVERRIDE {
+  virtual void SetKnownToValidate(const std::string& signature) override {
     // The typecast is needed to work around gtest trying to take the address
     // of a constant.
     ASSERT_EQ((int) NaClValidationQuery::kDigestLength,
@@ -68,7 +68,7 @@ class MockValidationDB : public NaClValidationDB {
   }
 
   virtual bool ResolveFileToken(struct NaClFileToken* file_token, int32* fd,
-                                std::string* path) OVERRIDE {
+                                std::string* path) override {
     *fd = -1;
     *path = "";
     return false;

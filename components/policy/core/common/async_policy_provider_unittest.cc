@@ -47,7 +47,7 @@ class MockPolicyLoader : public AsyncPolicyLoader {
   // scoped_ptr is moveable but not copyable. This override forwards the
   // call to MockLoad() which returns a PolicyBundle*, and returns a copy
   // wrapped in a passed scoped_ptr.
-  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
+  virtual scoped_ptr<PolicyBundle> Load() override;
 
   MOCK_METHOD0(MockLoad, const PolicyBundle*());
   MOCK_METHOD0(InitOnBackgroundThread, void());
@@ -80,8 +80,8 @@ class AsyncPolicyProviderTest : public testing::Test {
   AsyncPolicyProviderTest();
   virtual ~AsyncPolicyProviderTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   base::MessageLoop loop_;
   SchemaRegistry schema_registry_;

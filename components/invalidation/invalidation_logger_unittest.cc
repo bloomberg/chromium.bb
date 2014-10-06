@@ -25,33 +25,33 @@ class InvalidationLoggerObserverTest : public InvalidationLoggerObserver {
   }
 
   virtual void OnRegistrationChange(const std::multiset<std::string>& handlers)
-      OVERRIDE {
+      override {
     registered_handlers = handlers;
     registration_change_received = true;
   }
 
   virtual void OnStateChange(const syncer::InvalidatorState& new_state,
                              const base::Time& last_change_timestamp)
-      OVERRIDE {
+      override {
     state_received = true;
   }
 
   virtual void OnUpdateIds(const std::string& handler,
-                           const syncer::ObjectIdCountMap& details) OVERRIDE {
+                           const syncer::ObjectIdCountMap& details) override {
     update_id_received = true;
     update_id_replicated[handler] = details;
   }
 
-  virtual void OnDebugMessage(const base::DictionaryValue& details) OVERRIDE {
+  virtual void OnDebugMessage(const base::DictionaryValue& details) override {
     debug_message_received = true;
   }
 
   virtual void OnInvalidation(
-      const syncer::ObjectIdInvalidationMap& new_invalidations) OVERRIDE {
+      const syncer::ObjectIdInvalidationMap& new_invalidations) override {
     invalidation_received = true;
   }
 
-  virtual void OnDetailedStatus(const base::DictionaryValue& details) OVERRIDE {
+  virtual void OnDetailedStatus(const base::DictionaryValue& details) override {
     detailed_status_received = true;
   }
 

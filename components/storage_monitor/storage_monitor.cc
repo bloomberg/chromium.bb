@@ -27,11 +27,11 @@ class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
 
   virtual ~ReceiverImpl() {}
 
-  virtual void ProcessAttach(const StorageInfo& info) OVERRIDE;
+  virtual void ProcessAttach(const StorageInfo& info) override;
 
-  virtual void ProcessDetach(const std::string& id) OVERRIDE;
+  virtual void ProcessDetach(const std::string& id) override;
 
-  virtual void MarkInitialized() OVERRIDE;
+  virtual void MarkInitialized() override;
 
  private:
   StorageMonitor* notifications_;

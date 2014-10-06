@@ -41,11 +41,11 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
   virtual ~Core();
 
   // syncer::GCMNetworkChannelDelegate implementation.
-  virtual void Initialize(ConnectionStateCallback callback) OVERRIDE;
-  virtual void RequestToken(RequestTokenCallback callback) OVERRIDE;
-  virtual void InvalidateToken(const std::string& token) OVERRIDE;
-  virtual void Register(RegisterCallback callback) OVERRIDE;
-  virtual void SetMessageReceiver(MessageCallback callback) OVERRIDE;
+  virtual void Initialize(ConnectionStateCallback callback) override;
+  virtual void RequestToken(RequestTokenCallback callback) override;
+  virtual void InvalidateToken(const std::string& token) override;
+  virtual void Register(RegisterCallback callback) override;
+  virtual void SetMessageReceiver(MessageCallback callback) override;
 
   void RequestTokenFinished(RequestTokenCallback callback,
                             const GoogleServiceAuthError& error,

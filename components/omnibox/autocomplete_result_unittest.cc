@@ -89,7 +89,7 @@ class AutocompleteResultTest : public testing::Test  {
     variations::testing::ClearAllVariationParams();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
 #if defined(OS_ANDROID)
     TemplateURLPrepopulateData::InitCountryCode(
         std::string() /* unknown country code */);

@@ -37,9 +37,9 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
   virtual ~DistillerPageWebContentsFactory() {}
 
   virtual scoped_ptr<DistillerPage> CreateDistillerPage(
-      const gfx::Size& render_view_size) const OVERRIDE;
+      const gfx::Size& render_view_size) const override;
   virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const OVERRIDE;
+      scoped_ptr<SourcePageHandle> handle) const override;
 
  private:
   content::BrowserContext* browser_context_;
@@ -57,20 +57,20 @@ class DistillerPageWebContents : public DistillerPage,
 
   // content::WebContentsDelegate implementation.
   virtual gfx::Size GetSizeForNewRenderView(
-      content::WebContents* web_contents) const OVERRIDE;
+      content::WebContents* web_contents) const override;
 
   // content::WebContentsObserver implementation.
   virtual void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
 
   virtual void DidFailLoad(content::RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
                            int error_code,
-                           const base::string16& error_description) OVERRIDE;
+                           const base::string16& error_description) override;
 
  protected:
   virtual void DistillPageImpl(const GURL& url,
-                               const std::string& script) OVERRIDE;
+                               const std::string& script) override;
 
  private:
   friend class TestDistillerPageWebContents;

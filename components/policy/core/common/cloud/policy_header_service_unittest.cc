@@ -39,7 +39,7 @@ class PolicyHeaderServiceTest : public testing::Test {
   }
   virtual ~PolicyHeaderServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     service_.reset(new PolicyHeaderService(kDMServerURL,
                                            kPolicyVerificationKeyHash,
                                            &user_store_,
@@ -47,7 +47,7 @@ class PolicyHeaderServiceTest : public testing::Test {
     helper_ = service_->CreatePolicyHeaderIOHelper(task_runner_).Pass();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     task_runner_->RunUntilIdle();
     // Helper should outlive the service.
     service_.reset();

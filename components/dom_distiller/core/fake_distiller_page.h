@@ -17,11 +17,11 @@ class MockDistillerPageFactory : public DistillerPageFactory {
   virtual ~MockDistillerPageFactory();
   MOCK_CONST_METHOD0(CreateDistillerPageImpl, DistillerPage*());
   virtual scoped_ptr<DistillerPage> CreateDistillerPage(
-      const gfx::Size& render_view_size) const OVERRIDE {
+      const gfx::Size& render_view_size) const override {
     return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
   virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const OVERRIDE {
+      scoped_ptr<SourcePageHandle> handle) const override {
     return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
 };

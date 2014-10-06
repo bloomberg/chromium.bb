@@ -133,8 +133,8 @@ class TemplateURLServiceTest : public testing::Test {
   TemplateURLServiceTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   TemplateURL* AddKeywordWithDate(const std::string& short_name,
                                   const std::string& keyword,
@@ -176,12 +176,12 @@ class TemplateURLServiceWithoutFallbackTest : public TemplateURLServiceTest {
  public:
   TemplateURLServiceWithoutFallbackTest() : TemplateURLServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
     TemplateURLServiceTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     TemplateURLServiceTest::TearDown();
     DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(false);
   }

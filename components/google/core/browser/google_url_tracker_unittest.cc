@@ -74,11 +74,11 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
   explicit TestGoogleURLTrackerClient(PrefService* prefs_);
   virtual ~TestGoogleURLTrackerClient();
 
-  virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationStart() OVERRIDE;
-  virtual bool IsBackgroundNetworkingEnabled() OVERRIDE;
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual void SetListeningForNavigationStart(bool listen) override;
+  virtual bool IsListeningForNavigationStart() override;
+  virtual bool IsBackgroundNetworkingEnabled() override;
+  virtual PrefService* GetPrefs() override;
+  virtual net::URLRequestContextGetter* GetRequestContext() override;
 
  private:
   PrefService* prefs_;
@@ -127,13 +127,13 @@ class TestGoogleURLTrackerNavigationHelper
   explicit TestGoogleURLTrackerNavigationHelper(GoogleURLTracker* tracker);
   virtual ~TestGoogleURLTrackerNavigationHelper();
 
-  virtual void SetListeningForNavigationCommit(bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationCommit() OVERRIDE;
-  virtual void SetListeningForTabDestruction(bool listen) OVERRIDE;
-  virtual bool IsListeningForTabDestruction() OVERRIDE;
+  virtual void SetListeningForNavigationCommit(bool listen) override;
+  virtual bool IsListeningForNavigationCommit() override;
+  virtual void SetListeningForTabDestruction(bool listen) override;
+  virtual bool IsListeningForTabDestruction() override;
   virtual void OpenURL(GURL url,
                        WindowOpenDisposition disposition,
-                       bool user_clicked_on_link) OVERRIDE;
+                       bool user_clicked_on_link) override;
 
  private:
   bool listening_for_nav_commit_;
@@ -182,7 +182,7 @@ class TestInfoBarManager : public infobars::InfoBarManager {
  public:
   explicit TestInfoBarManager(int unique_id);
   virtual ~TestInfoBarManager();
-  virtual int GetActiveEntryID() OVERRIDE;
+  virtual int GetActiveEntryID() override;
 
  private:
   int unique_id_;
@@ -210,8 +210,8 @@ class GoogleURLTrackerTest : public testing::Test {
   virtual ~GoogleURLTrackerTest();
 
   // testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   net::TestURLFetcher* GetFetcher();
   void MockSearchDomainCheckResponse(const std::string& domain);

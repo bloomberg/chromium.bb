@@ -32,11 +32,11 @@ class RuleIteratorImpl : public RuleIterator {
   }
   virtual ~RuleIteratorImpl() {}
 
-  virtual bool HasNext() const OVERRIDE {
+  virtual bool HasNext() const override {
     return (current_rule_ != rule_end_);
   }
 
-  virtual Rule Next() OVERRIDE {
+  virtual Rule Next() override {
     DCHECK(current_rule_ != rule_end_);
     DCHECK(current_rule_->second.get());
     Rule to_return(current_rule_->first.primary_pattern,

@@ -59,7 +59,7 @@ class NaClListener : public IPC::Listener {
                            base::FilePath file_path);
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   void OnStart(const nacl::NaClStartParams& params);
 

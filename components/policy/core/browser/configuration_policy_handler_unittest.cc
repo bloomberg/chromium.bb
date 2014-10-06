@@ -37,7 +37,7 @@ class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
   virtual ~TestSchemaValidatingPolicyHandler() {}
 
   virtual void ApplyPolicySettings(const policy::PolicyMap&,
-                                   PrefValueMap*) OVERRIDE {
+                                   PrefValueMap*) override {
   }
 
   bool CheckAndGetValueForTest(const PolicyMap& policies,

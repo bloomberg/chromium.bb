@@ -92,9 +92,9 @@ class DeltaUpdateOpCopy : public DeltaUpdateOp {
   virtual ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) OVERRIDE;
+      ComponentInstaller* installer) override;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
+  virtual void DoRun(const ComponentUnpacker::Callback& callback) override;
 
   base::FilePath input_abs_path_;
 
@@ -116,9 +116,9 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
   virtual ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) OVERRIDE;
+      ComponentInstaller* installer) override;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
+  virtual void DoRun(const ComponentUnpacker::Callback& callback) override;
 
   base::FilePath patch_abs_path_;
 
@@ -159,9 +159,9 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
   virtual ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
-      ComponentInstaller* installer) OVERRIDE;
+      ComponentInstaller* installer) override;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
+  virtual void DoRun(const ComponentUnpacker::Callback& callback) override;
 
   // |success_code| is the code that indicates a successful patch.
   // |result| is the code the patching operation returned.

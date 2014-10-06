@@ -38,7 +38,7 @@ const char* kVideoArticlePath = "/video_article.html";
 class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     AddComponentsResources();
     SetUpTestServer();
     ContentBrowserTest::SetUpOnMainThread();
@@ -103,7 +103,7 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
         expect_new_web_contents_(expect_new_web_contents),
         new_web_contents_created_(false) {}
 
-  virtual void CreateNewWebContents(const GURL& url) OVERRIDE {
+  virtual void CreateNewWebContents(const GURL& url) override {
     ASSERT_EQ(true, expect_new_web_contents_);
     new_web_contents_created_ = true;
     // DistillerPageWebContents::CreateNewWebContents resets the scoped_ptr to
@@ -145,7 +145,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) override {
     if (wait_for_document_loaded_)
       return;
     if (!render_frame_host->GetParent())
@@ -153,7 +153,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   }
 
   virtual void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) OVERRIDE {
+      content::RenderFrameHost* render_frame_host) override {
     if (wait_for_document_loaded_) {
       if (!render_frame_host->GetParent())
         callback_.Run();

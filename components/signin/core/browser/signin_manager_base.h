@@ -109,7 +109,7 @@ class SigninManagerBase : public KeyedService {
   virtual bool AuthInProgress() const;
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Methods to register or remove observers of signin.
   void AddObserver(Observer* observer);

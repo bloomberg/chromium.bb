@@ -74,10 +74,10 @@ class PrecacheManager : public KeyedService,
 
  private:
   // From KeyedService.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // From PrecacheFetcher::PrecacheDelegate.
-  virtual void OnDone() OVERRIDE;
+  virtual void OnDone() override;
 
   void OnURLsReceived(const std::list<GURL>& urls);
 

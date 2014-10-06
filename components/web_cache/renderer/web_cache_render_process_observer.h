@@ -23,9 +23,9 @@ class WebCacheRenderProcessObserver : public content::RenderProcessObserver {
 
  private:
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebKitInitialized() OVERRIDE;
-  virtual void OnRenderProcessShutdown() OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void WebKitInitialized() override;
+  virtual void OnRenderProcessShutdown() override;
 
   // Message handlers.
   void OnSetCacheCapacities(size_t min_dead_capacity,

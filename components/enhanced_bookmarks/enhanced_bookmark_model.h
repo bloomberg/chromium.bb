@@ -38,7 +38,7 @@ class EnhancedBookmarkModel : public KeyedService,
                         const std::string& version);
   virtual ~EnhancedBookmarkModel();
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void AddObserver(EnhancedBookmarkModelObserver* observer);
   void RemoveObserver(EnhancedBookmarkModelObserver* observer);
@@ -134,24 +134,24 @@ class EnhancedBookmarkModel : public KeyedService,
   typedef std::map<const BookmarkNode*, std::string> NodeToIdMap;
 
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
+                                   bool ids_reassigned) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
-                                            const BookmarkNode* node) OVERRIDE;
+                                            const BookmarkNode* node) override;
   virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
-                                       const BookmarkNode* node) OVERRIDE;
+                                       const BookmarkNode* node) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
 
   // Initialize the mapping from remote ids to nodes.
   void InitializeIdMap();

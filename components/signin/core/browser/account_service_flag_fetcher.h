@@ -55,23 +55,23 @@ class AccountServiceFlagFetcher : public GaiaAuthConsumer,
   void StartFetchingOAuth2AccessToken();
 
   // Overridden from OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokensLoaded() OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokensLoaded() override;
 
   // Overridden from OAuth2TokenService::Consumer:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // Overridden from GaiaAuthConsumer:
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
+  virtual void OnClientLoginSuccess(const ClientLoginResult& result) override;
   virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
-  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
+      override;
+  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) override;
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
   const std::string account_id_;
   ProfileOAuth2TokenService* token_service_;

@@ -30,12 +30,12 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
         response_body_(response_body) {}
 
  protected:
-  virtual int GetResponseCode() const OVERRIDE { return response_code_; }
+  virtual int GetResponseCode() const override { return response_code_; }
 
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     mime_type->assign("text/plain");
     charset->assign("US-ASCII");
     data->assign(response_body_);
@@ -172,7 +172,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
     // Only intercepts POST.

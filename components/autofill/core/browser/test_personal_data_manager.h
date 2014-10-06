@@ -26,18 +26,18 @@ class TestPersonalDataManager : public PersonalDataManager {
   // |credit_card|.
   void AddTestingCreditCard(CreditCard* credit_card);
 
-  virtual const std::vector<AutofillProfile*>& GetProfiles() const OVERRIDE;
-  virtual const std::vector<AutofillProfile*>& web_profiles() const OVERRIDE;
-  virtual const std::vector<CreditCard*>& GetCreditCards() const OVERRIDE;
+  virtual const std::vector<AutofillProfile*>& GetProfiles() const override;
+  virtual const std::vector<AutofillProfile*>& web_profiles() const override;
+  virtual const std::vector<CreditCard*>& GetCreditCards() const override;
 
   virtual std::string SaveImportedProfile(
-      const AutofillProfile& imported_profile) OVERRIDE;
+      const AutofillProfile& imported_profile) override;
   virtual std::string SaveImportedCreditCard(
-      const CreditCard& imported_credit_card) OVERRIDE;
+      const CreditCard& imported_credit_card) override;
 
-  virtual std::string CountryCodeForCurrentTimezone() const OVERRIDE;
+  virtual std::string CountryCodeForCurrentTimezone() const override;
   virtual const std::string& GetDefaultCountryCodeForNewAddress() const
-      OVERRIDE;
+      override;
 
   void set_timezone_country_code(const std::string& timezone_country_code) {
     timezone_country_code_ = timezone_country_code;

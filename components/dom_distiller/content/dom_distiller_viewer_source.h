@@ -28,18 +28,18 @@ class DomDistillerViewerSource : public content::URLDataSource {
   class RequestViewerHandle;
 
   // Overridden from content::URLDataSource:
-  virtual std::string GetSource() const OVERRIDE;
+  virtual std::string GetSource() const override;
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
+  virtual std::string GetMimeType(const std::string& path) const override;
   virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const OVERRIDE;
+      const net::URLRequest* request) const override;
   virtual void WillServiceRequest(const net::URLRequest* request,
-                                  std::string* path) const OVERRIDE;
-  virtual std::string GetContentSecurityPolicyObjectSrc() const OVERRIDE;
+                                  std::string* path) const override;
+  virtual std::string GetContentSecurityPolicyObjectSrc() const override;
 
  private:
   friend class DomDistillerViewerSourceTest;

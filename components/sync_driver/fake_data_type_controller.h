@@ -24,18 +24,18 @@ class FakeDataTypeController : public DataTypeController {
   explicit FakeDataTypeController(syncer::ModelType type);
 
   virtual void LoadModels(
-      const ModelLoadCallback& model_load_callback) OVERRIDE;
-  virtual void OnModelLoaded() OVERRIDE;
-  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual syncer::ModelType type() const OVERRIDE;
-  virtual std::string name() const OVERRIDE;
-  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
-  virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
-  virtual State state() const OVERRIDE;
+      const ModelLoadCallback& model_load_callback) override;
+  virtual void OnModelLoaded() override;
+  virtual void StartAssociating(const StartCallback& start_callback) override;
+  virtual void Stop() override;
+  virtual syncer::ModelType type() const override;
+  virtual std::string name() const override;
+  virtual syncer::ModelSafeGroup model_safe_group() const override;
+  virtual ChangeProcessor* GetChangeProcessor() const override;
+  virtual State state() const override;
   virtual void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) OVERRIDE;
-  virtual bool ReadyForStart() const OVERRIDE;
+      const syncer::SyncError& error) override;
+  virtual bool ReadyForStart() const override;
 
   void FinishStart(ConfigureResult result);
 

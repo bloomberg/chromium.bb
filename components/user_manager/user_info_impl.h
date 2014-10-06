@@ -21,11 +21,11 @@ class USER_MANAGER_EXPORT UserInfoImpl : public UserInfo {
   virtual ~UserInfoImpl();
 
   // UserInfo:
-  virtual base::string16 GetDisplayName() const OVERRIDE;
-  virtual base::string16 GetGivenName() const OVERRIDE;
-  virtual std::string GetEmail() const OVERRIDE;
-  virtual std::string GetUserID() const OVERRIDE;
-  virtual const gfx::ImageSkia& GetImage() const OVERRIDE;
+  virtual base::string16 GetDisplayName() const override;
+  virtual base::string16 GetGivenName() const override;
+  virtual std::string GetEmail() const override;
+  virtual std::string GetUserID() const override;
+  virtual const gfx::ImageSkia& GetImage() const override;
 
  private:
   gfx::ImageSkia user_image_;

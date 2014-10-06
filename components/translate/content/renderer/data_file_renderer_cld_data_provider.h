@@ -17,10 +17,10 @@ class DataFileRendererCldDataProvider : public RendererCldDataProvider {
   explicit DataFileRendererCldDataProvider(content::RenderViewObserver*);
   virtual ~DataFileRendererCldDataProvider();
   // RendererCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
-  virtual void SendCldDataRequest() OVERRIDE;
-  virtual void SetCldAvailableCallback(base::Callback<void(void)>) OVERRIDE;
-  virtual bool IsCldDataAvailable() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message&) override;
+  virtual void SendCldDataRequest() override;
+  virtual void SetCldAvailableCallback(base::Callback<void(void)>) override;
+  virtual bool IsCldDataAvailable() override;
 
  private:
   void OnCldDataAvailable(const IPC::PlatformFileForTransit ipc_file_handle,

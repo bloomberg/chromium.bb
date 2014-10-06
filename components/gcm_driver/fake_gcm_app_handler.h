@@ -38,15 +38,15 @@ class FakeGCMAppHandler : public GCMAppHandler {
   void WaitForNotification();
 
   // GCMAppHandler implementation.
-  virtual void ShutdownHandler() OVERRIDE;
+  virtual void ShutdownHandler() override;
   virtual void OnMessage(const std::string& app_id,
-                         const GCMClient::IncomingMessage& message) OVERRIDE;
-  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+                         const GCMClient::IncomingMessage& message) override;
+  virtual void OnMessagesDeleted(const std::string& app_id) override;
   virtual void OnSendError(
       const std::string& app_id,
-      const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+      const GCMClient::SendErrorDetails& send_error_details) override;
   virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) OVERRIDE;
+                                  const std::string& message_id) override;
 
  private:
   void ClearResults();

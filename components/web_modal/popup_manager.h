@@ -48,7 +48,7 @@ class PopupManager : public SinglePopupManagerDelegate {
       const content::WebContents* web_contents) const;
 
   // Called when a NativePopup we own is about to be closed.
-  virtual void WillClose(NativePopup popup) OVERRIDE;
+  virtual void WillClose(NativePopup popup) override;
 
   // Called by views code to re-activate popups anchored to a particular tab
   // when that tab gets focus. Note that depending on the situation, more than

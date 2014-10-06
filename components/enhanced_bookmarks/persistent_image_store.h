@@ -17,16 +17,16 @@ class PersistentImageStore : public ImageStore {
  public:
   // Creates a PersistentImageStore in the directory at the given path.
   explicit PersistentImageStore(const base::FilePath& path);
-  virtual bool HasKey(const GURL& page_url) OVERRIDE;
+  virtual bool HasKey(const GURL& page_url) override;
   virtual void Insert(const GURL& page_url,
                       const GURL& image_url,
-                      const gfx::Image& image) OVERRIDE;
-  virtual void Erase(const GURL& page_url) OVERRIDE;
-  virtual std::pair<gfx::Image, GURL> Get(const GURL& page_url) OVERRIDE;
-  virtual gfx::Size GetSize(const GURL& page_url) OVERRIDE;
-  virtual void GetAllPageUrls(std::set<GURL>* urls) OVERRIDE;
-  virtual void ClearAll() OVERRIDE;
-  virtual int64 GetStoreSizeInBytes() OVERRIDE;
+                      const gfx::Image& image) override;
+  virtual void Erase(const GURL& page_url) override;
+  virtual std::pair<gfx::Image, GURL> Get(const GURL& page_url) override;
+  virtual gfx::Size GetSize(const GURL& page_url) override;
+  virtual void GetAllPageUrls(std::set<GURL>* urls) override;
+  virtual void ClearAll() override;
+  virtual int64 GetStoreSizeInBytes() override;
 
  protected:
   virtual ~PersistentImageStore();

@@ -98,7 +98,7 @@ class InfoBar : public gfx::AnimationDelegate {
 
  protected:
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
@@ -116,7 +116,7 @@ class InfoBar : public gfx::AnimationDelegate {
 
  private:
   // gfx::AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   // Finds the new desired arrow and bar heights, and if they differ from the
   // current ones, calls PlatformSpecificOnHeightRecalculated().  Informs our

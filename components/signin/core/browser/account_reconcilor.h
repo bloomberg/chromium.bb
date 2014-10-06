@@ -51,7 +51,7 @@ class AccountReconcilor : public KeyedService,
   void OnNewProfileManagementFlagChanged(bool new_flag_status);
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Add or remove observers for the merge session notification.
   void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
@@ -138,24 +138,24 @@ class AccountReconcilor : public KeyedService,
   void OnCookieChanged(const net::CanonicalCookie* cookie);
 
   // Overriden from GaiaAuthConsumer.
-  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsSuccess(const std::string& data) override;
   virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
   // Overriden from MergeSessionHelper::Observer.
   virtual void MergeSessionCompleted(const std::string& account_id,
                                      const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
   // Overriden from OAuth2TokenService::Observer.
-  virtual void OnEndBatchChanges() OVERRIDE;
+  virtual void OnEndBatchChanges() override;
 
   // Overriden from SigninManagerBase::Observer.
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   void MayBeDoNextListAccounts();
 

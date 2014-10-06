@@ -128,14 +128,14 @@ class GoogleURLTracker
   static const char kSearchDomainCheckURL[];
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Registers consumer interest in getting an updated URL from the server.
   // Observe chrome::NOTIFICATION_GOOGLE_URL_UPDATED to be notified when the URL

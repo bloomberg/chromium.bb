@@ -37,10 +37,10 @@ class SyncLogger : public invalidation::Logger {
 
   // invalidation::Logger implementation.
   virtual void Log(LogLevel level, const char* file, int line,
-                   const char* format, ...) OVERRIDE;
+                   const char* format, ...) override;
 
   virtual void SetSystemResources(
-      invalidation::SystemResources* resources) OVERRIDE;
+      invalidation::SystemResources* resources) override;
 };
 
 class SyncInvalidationScheduler : public invalidation::Scheduler {
@@ -55,14 +55,14 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
 
   // invalidation::Scheduler implementation.
   virtual void Schedule(invalidation::TimeDelta delay,
-                        invalidation::Closure* task) OVERRIDE;
+                        invalidation::Closure* task) override;
 
-  virtual bool IsRunningOnThread() const OVERRIDE;
+  virtual bool IsRunningOnThread() const override;
 
-  virtual invalidation::Time GetCurrentTime() const OVERRIDE;
+  virtual invalidation::Time GetCurrentTime() const override;
 
   virtual void SetSystemResources(
-      invalidation::SystemResources* resources) OVERRIDE;
+      invalidation::SystemResources* resources) override;
 
  private:
   // Runs the task, deletes it, and removes it from |posted_tasks_|.
@@ -105,11 +105,11 @@ class INVALIDATION_EXPORT_PRIVATE SyncNetworkChannel
   // SyncNetworkChannel doesn't implement SendMessage. It is responsibility of
   // subclass to implement it.
   virtual void SetMessageReceiver(
-      invalidation::MessageCallback* incoming_receiver) OVERRIDE;
+      invalidation::MessageCallback* incoming_receiver) override;
   virtual void AddNetworkStatusReceiver(
-      invalidation::NetworkStatusCallback* network_status_receiver) OVERRIDE;
+      invalidation::NetworkStatusCallback* network_status_receiver) override;
   virtual void SetSystemResources(
-      invalidation::SystemResources* resources) OVERRIDE;
+      invalidation::SystemResources* resources) override;
 
   // Subclass should implement UpdateCredentials to pass new token to channel
   // library.
@@ -186,19 +186,19 @@ class SyncStorage : public invalidation::Storage {
 
   // invalidation::Storage implementation.
   virtual void WriteKey(const std::string& key, const std::string& value,
-                        invalidation::WriteKeyCallback* done) OVERRIDE;
+                        invalidation::WriteKeyCallback* done) override;
 
   virtual void ReadKey(const std::string& key,
-                       invalidation::ReadKeyCallback* done) OVERRIDE;
+                       invalidation::ReadKeyCallback* done) override;
 
   virtual void DeleteKey(const std::string& key,
-                         invalidation::DeleteKeyCallback* done) OVERRIDE;
+                         invalidation::DeleteKeyCallback* done) override;
 
   virtual void ReadAllKeys(
-      invalidation::ReadAllKeysCallback* key_callback) OVERRIDE;
+      invalidation::ReadAllKeysCallback* key_callback) override;
 
   virtual void SetSystemResources(
-      invalidation::SystemResources* resources) OVERRIDE;
+      invalidation::SystemResources* resources) override;
 
  private:
   // Runs the given storage callback with SUCCESS status and deletes it.
@@ -223,16 +223,16 @@ class INVALIDATION_EXPORT_PRIVATE SyncSystemResources
   virtual ~SyncSystemResources();
 
   // invalidation::SystemResources implementation.
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual bool IsStarted() const OVERRIDE;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual bool IsStarted() const override;
   virtual void set_platform(const std::string& platform);
-  virtual std::string platform() const OVERRIDE;
-  virtual SyncLogger* logger() OVERRIDE;
-  virtual SyncStorage* storage() OVERRIDE;
-  virtual SyncNetworkChannel* network() OVERRIDE;
-  virtual SyncInvalidationScheduler* internal_scheduler() OVERRIDE;
-  virtual SyncInvalidationScheduler* listener_scheduler() OVERRIDE;
+  virtual std::string platform() const override;
+  virtual SyncLogger* logger() override;
+  virtual SyncStorage* storage() override;
+  virtual SyncNetworkChannel* network() override;
+  virtual SyncInvalidationScheduler* internal_scheduler() override;
+  virtual SyncInvalidationScheduler* listener_scheduler() override;
 
  private:
   bool is_started_;

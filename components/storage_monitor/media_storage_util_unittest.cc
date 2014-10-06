@@ -60,12 +60,12 @@ class MediaStorageUtilTest : public testing::Test {
     return scoped_temp_dir_.path();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     monitor_ = TestStorageMonitor::CreateAndInstall();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     WaitForFileThread();
     TestStorageMonitor::Destroy();
   }

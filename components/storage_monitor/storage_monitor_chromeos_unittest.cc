@@ -61,7 +61,7 @@ class TestStorageMonitorCros : public StorageMonitorCros {
 
   virtual ~TestStorageMonitorCros() {}
 
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     SetMediaTransferProtocolManagerForTest(
         new TestMediaTransferProtocolManagerLinux());
     StorageMonitorCros::Init();
@@ -69,17 +69,17 @@ class TestStorageMonitorCros : public StorageMonitorCros {
 
   virtual void OnMountEvent(DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
-      const DiskMountManager::MountPointInfo& mount_info) OVERRIDE {
+      const DiskMountManager::MountPointInfo& mount_info) override {
     StorageMonitorCros::OnMountEvent(event, error_code, mount_info);
   }
 
   virtual bool GetStorageInfoForPath(const base::FilePath& path,
-                                     StorageInfo* device_info) const OVERRIDE {
+                                     StorageInfo* device_info) const override {
     return StorageMonitorCros::GetStorageInfoForPath(path, device_info);
   }
   virtual void EjectDevice(
       const std::string& device_id,
-      base::Callback<void(EjectStatus)> callback) OVERRIDE {
+      base::Callback<void(EjectStatus)> callback) override {
     StorageMonitorCros::EjectDevice(device_id, callback);
   }
 
@@ -97,8 +97,8 @@ class StorageMonitorCrosTest : public testing::Test {
 
  protected:
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void MountDevice(chromeos::MountError error_code,
                    const DiskMountManager::MountPointInfo& mount_info,

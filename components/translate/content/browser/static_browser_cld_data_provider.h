@@ -15,9 +15,9 @@ class StaticBrowserCldDataProvider : public BrowserCldDataProvider {
   explicit StaticBrowserCldDataProvider();
   virtual ~StaticBrowserCldDataProvider();
   // BrowserCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
-  virtual void OnCldDataRequest() OVERRIDE;
-  virtual void SendCldDataResponse() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message&) override;
+  virtual void OnCldDataRequest() override;
+  virtual void SendCldDataResponse() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StaticBrowserCldDataProvider);

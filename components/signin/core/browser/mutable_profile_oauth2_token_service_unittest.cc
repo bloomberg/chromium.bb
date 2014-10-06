@@ -37,7 +37,7 @@ class MutableProfileOAuth2TokenServiceTest
         start_batch_changes_(0),
         end_batch_changes_(0) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
 #if defined(OS_MACOSX)
     OSCrypt::UseMockKeychain(true);
 #endif
@@ -52,7 +52,7 @@ class MutableProfileOAuth2TokenServiceTest
     oauth2_service_.AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     oauth2_service_.RemoveObserver(this);
     oauth2_service_.Shutdown();
   }
@@ -65,19 +65,19 @@ class MutableProfileOAuth2TokenServiceTest
   }
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE {
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override {
     ++token_available_count_;
   }
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override {
     ++token_revoked_count_;
   }
-  virtual void OnRefreshTokensLoaded() OVERRIDE { ++tokens_loaded_count_; }
+  virtual void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
 
-  virtual void OnStartBatchChanges() OVERRIDE {
+  virtual void OnStartBatchChanges() override {
     ++start_batch_changes_;
   }
 
-  virtual void OnEndBatchChanges() OVERRIDE {
+  virtual void OnEndBatchChanges() override {
     ++end_batch_changes_;
   }
 

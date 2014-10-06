@@ -82,14 +82,14 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   virtual ~CustomFakeGCMDriver();
 
   virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) OVERRIDE;
-  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
+      const AccountMapping& account_mapping) override;
+  virtual void RemoveAccountMapping(const std::string& account_id) override;
   virtual void AddAppHandler(const std::string& app_id,
-                             GCMAppHandler* handler) OVERRIDE;
-  virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
+                             GCMAppHandler* handler) override;
+  virtual void RemoveAppHandler(const std::string& app_id) override;
   virtual void RegisterImpl(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids) OVERRIDE;
+      const std::vector<std::string>& sender_ids) override;
 
   void CompleteRegister(const std::string& registration_id,
                         GCMClient::Result result);
@@ -117,7 +117,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
  protected:
   virtual void SendImpl(const std::string& app_id,
                         const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) OVERRIDE;
+                        const GCMClient::OutgoingMessage& message) override;
 
  private:
   AccountMapping account_mapping_;

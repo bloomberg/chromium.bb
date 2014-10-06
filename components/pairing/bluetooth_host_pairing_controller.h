@@ -62,43 +62,43 @@ class BluetoothHostPairingController
                       const std::string& error_message);
 
   // HostPairingController:
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual Stage GetCurrentStage() OVERRIDE;
-  virtual void StartPairing() OVERRIDE;
-  virtual std::string GetDeviceName() OVERRIDE;
-  virtual std::string GetConfirmationCode() OVERRIDE;
-  virtual std::string GetEnrollmentDomain() OVERRIDE;
-  virtual void OnUpdateStatusChanged(UpdateStatus update_status) OVERRIDE;
-  virtual void SetEnrollmentComplete(bool success) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual Stage GetCurrentStage() override;
+  virtual void StartPairing() override;
+  virtual std::string GetDeviceName() override;
+  virtual std::string GetConfirmationCode() override;
+  virtual std::string GetEnrollmentDomain() override;
+  virtual void OnUpdateStatusChanged(UpdateStatus update_status) override;
+  virtual void SetEnrollmentComplete(bool success) override;
 
   // ProtoDecoder::Observer:
   virtual void OnHostStatusMessage(
-      const pairing_api::HostStatus& message) OVERRIDE;
+      const pairing_api::HostStatus& message) override;
   virtual void OnConfigureHostMessage(
-      const pairing_api::ConfigureHost& message) OVERRIDE;
+      const pairing_api::ConfigureHost& message) override;
   virtual void OnPairDevicesMessage(
-      const pairing_api::PairDevices& message) OVERRIDE;
+      const pairing_api::PairDevices& message) override;
   virtual void OnCompleteSetupMessage(
-      const pairing_api::CompleteSetup& message) OVERRIDE;
-  virtual void OnErrorMessage(const pairing_api::Error& message) OVERRIDE;
+      const pairing_api::CompleteSetup& message) override;
+  virtual void OnErrorMessage(const pairing_api::Error& message) override;
 
   // BluetoothAdapter::Observer:
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE;
+                                     bool present) override;
 
   // device::BluetoothDevice::PairingDelegate:
-  virtual void RequestPinCode(device::BluetoothDevice* device) OVERRIDE;
-  virtual void RequestPasskey(device::BluetoothDevice* device) OVERRIDE;
+  virtual void RequestPinCode(device::BluetoothDevice* device) override;
+  virtual void RequestPasskey(device::BluetoothDevice* device) override;
   virtual void DisplayPinCode(device::BluetoothDevice* device,
-                              const std::string& pincode) OVERRIDE;
+                              const std::string& pincode) override;
   virtual void DisplayPasskey(device::BluetoothDevice* device,
-                              uint32 passkey) OVERRIDE;
+                              uint32 passkey) override;
   virtual void KeysEntered(device::BluetoothDevice* device,
-                           uint32 entered) OVERRIDE;
+                           uint32 entered) override;
   virtual void ConfirmPasskey(device::BluetoothDevice* device,
-                              uint32 passkey) OVERRIDE;
-  virtual void AuthorizePairing(device::BluetoothDevice* device) OVERRIDE;
+                              uint32 passkey) override;
+  virtual void AuthorizePairing(device::BluetoothDevice* device) override;
 
   Stage current_stage_;
   std::string device_name_;

@@ -32,11 +32,11 @@ class MobileYouTubePlugin : public PluginPlaceholder {
   void OpenYoutubeUrlCallback();
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
+  virtual void BindWebFrame(blink::WebFrame* frame) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   DISALLOW_COPY_AND_ASSIGN(MobileYouTubePlugin);
 };

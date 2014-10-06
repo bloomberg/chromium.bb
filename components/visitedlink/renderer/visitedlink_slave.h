@@ -21,7 +21,7 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   virtual ~VisitedLinkSlave();
 
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
   void OnUpdateVisitedLinks(base::SharedMemoryHandle table);

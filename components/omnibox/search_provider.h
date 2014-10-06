@@ -65,7 +65,7 @@ class SearchProvider : public BaseSearchProvider,
   void RegisterDisplayedAnswers(const AutocompleteResult& result);
 
   // AutocompleteProvider:
-  virtual void ResetSession() OVERRIDE;
+  virtual void ResetSession() override;
 
   // This URL may be sent with suggest requests; see comments on CanSendURL().
   void set_current_page_url(const GURL& current_page_url) {
@@ -159,18 +159,18 @@ class SearchProvider : public BaseSearchProvider,
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
+                     bool minimal_changes) override;
+  virtual void Stop(bool clear_cached_results) override;
 
   // BaseSearchProvider:
-  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
-  virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
+  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const override;
+  virtual const AutocompleteInput GetInput(bool is_keyword) const override;
   virtual bool ShouldAppendExtraParams(
-      const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
-  virtual void RecordDeletionResult(bool success) OVERRIDE;
+      const SearchSuggestionParser::SuggestResult& result) const override;
+  virtual void RecordDeletionResult(bool success) override;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Stops the suggest query.
   // NOTE: This does not update |done_|.  Callers must do so.

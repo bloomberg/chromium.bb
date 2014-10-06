@@ -173,7 +173,7 @@ class FaviconImageSource : public gfx::ImageSkiaSource {
   virtual ~FaviconImageSource() {}
 
   // gfx::ImageSkiaSource:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
     const gfx::ImageSkiaRep* rep = NULL;
     // gfx::ImageSkia passes one of the resource scale factors. The source
     // should return:

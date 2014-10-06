@@ -68,7 +68,7 @@ class MockComponentCloudPolicyStoreDelegate
 
 class ComponentCloudPolicyStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     cache_.reset(new ResourceCache(
         temp_dir_.path(),

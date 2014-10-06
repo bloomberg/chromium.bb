@@ -42,15 +42,15 @@ class SigninOAuthHelper : public GaiaAuthConsumer {
 
  private:
   // Overridden from GaiaAuthConsumer.
-  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
+  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) override;
   virtual void OnClientOAuthFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
+      override;
+  virtual void OnClientLoginSuccess(const ClientLoginResult& result) override;
   virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
-  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
+      override;
+  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) override;
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
   GaiaAuthFetcher gaia_auth_fetcher_;
   std::string refresh_token_;

@@ -75,14 +75,14 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
 
   // UserInfoFetcher::Delegate implementation:
   virtual void OnGetUserInfoSuccess(
-      const base::DictionaryValue* response) OVERRIDE;
+      const base::DictionaryValue* response) override;
   virtual void OnGetUserInfoFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // CloudPolicyClient::Observer implementation:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
+  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  virtual void OnClientError(CloudPolicyClient* client) override;
 
   // Invoked when the registration request has been completed.
   void RequestCompleted();

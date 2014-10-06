@@ -31,7 +31,7 @@ class JniURLRequestContextAdapterDelegate
       : owner_(env->NewGlobalRef(owner)) {}
 
   virtual void OnContextInitialized(
-      cronet::URLRequestContextAdapter* context) OVERRIDE {
+      cronet::URLRequestContextAdapter* context) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_ChromiumUrlRequestContext_initNetworkThread(env, owner_);
     // TODO(dplotnikov): figure out if we need to detach from the thread.

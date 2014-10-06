@@ -51,7 +51,7 @@ class OwnerKeyUtilImplTest : public testing::Test {
   OwnerKeyUtilImplTest() {}
   virtual ~OwnerKeyUtilImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(tmpdir_.CreateUniqueTempDir());
     key_file_ = tmpdir_.path().Append(FILE_PATH_LITERAL("key"));
     util_ = new OwnerKeyUtilImpl(key_file_);

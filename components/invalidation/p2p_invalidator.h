@@ -101,23 +101,23 @@ class INVALIDATION_EXPORT_PRIVATE P2PInvalidator
   virtual ~P2PInvalidator();
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void RegisterHandler(InvalidationHandler* handler) override;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
-  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
+                                   const ObjectIdSet& ids) override;
+  virtual void UnregisterHandler(InvalidationHandler* handler) override;
+  virtual InvalidatorState GetInvalidatorState() const override;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) OVERRIDE;
+      const std::string& email, const std::string& token) override;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) const
-      OVERRIDE;
+      override;
 
   // PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsEnabled() override;
   virtual void OnNotificationsDisabled(
-      notifier::NotificationsDisabledReason reason) OVERRIDE;
+      notifier::NotificationsDisabledReason reason) override;
   virtual void OnIncomingNotification(
-      const notifier::Notification& notification) OVERRIDE;
+      const notifier::Notification& notification) override;
 
   void SendInvalidation(const ObjectIdSet& ids);
 

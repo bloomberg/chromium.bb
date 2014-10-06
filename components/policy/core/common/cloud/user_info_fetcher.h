@@ -49,7 +49,7 @@ class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
   void Start(const std::string& access_token);
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   Delegate* delegate_;
