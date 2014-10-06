@@ -57,16 +57,16 @@ struct IsGarbageCollectedMixin {
 
 #if COMPILER(MSVC)
     template<typename U> static TrueType hasAdjustAndMark(char[&U::adjustAndMark != 0]);
-    template<typename U> static TrueType hasIsAlive(char[&U::isAlive != 0]);
+    template<typename U> static TrueType hasIsHeapObjectAlive(char[&U::isHeapObjectAlive != 0]);
 #else
     template<size_t> struct F;
     template<typename U> static TrueType hasAdjustAndMark(F<sizeof(&U::adjustAndMark)>*);
-    template<typename U> static TrueType hasIsAlive(F<sizeof(&U::isAlive)>*);
+    template<typename U> static TrueType hasIsHeapObjectAlive(F<sizeof(&U::isHeapObjectAlive)>*);
 #endif
-    template<typename U> static FalseType hasIsAlive(...);
+    template<typename U> static FalseType hasIsHeapObjectAlive(...);
     template<typename U> static FalseType hasAdjustAndMark(...);
 
-    static bool const value = (sizeof(TrueType) == sizeof(hasAdjustAndMark<T>(0))) && (sizeof(TrueType) == sizeof(hasIsAlive<T>(0)));
+    static bool const value = (sizeof(TrueType) == sizeof(hasAdjustAndMark<T>(0))) && (sizeof(TrueType) == sizeof(hasIsHeapObjectAlive<T>(0)));
 };
 
 template <typename T>
