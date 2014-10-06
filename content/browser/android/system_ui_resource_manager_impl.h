@@ -28,8 +28,8 @@ class CONTENT_EXPORT SystemUIResourceManagerImpl
       UIResourceProvider* ui_resource_provider);
   virtual ~SystemUIResourceManagerImpl();
 
-  virtual void PreloadResource(ResourceType type) OVERRIDE;
-  virtual cc::UIResourceId GetUIResourceId(ResourceType type) OVERRIDE;
+  virtual void PreloadResource(ResourceType type) override;
+  virtual cc::UIResourceId GetUIResourceId(ResourceType type) override;
 
  private:
   friend class TestSystemUIResourceManagerImpl;

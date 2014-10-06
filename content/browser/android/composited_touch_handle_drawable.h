@@ -21,12 +21,12 @@ class CompositedTouchHandleDrawable : public TouchHandleDrawable {
   virtual ~CompositedTouchHandleDrawable();
 
   // TouchHandleDrawable implementation.
-  virtual void SetEnabled(bool enabled) OVERRIDE;
-  virtual void SetOrientation(TouchHandleOrientation orientation) OVERRIDE;
-  virtual void SetAlpha(float alpha) OVERRIDE;
-  virtual void SetFocus(const gfx::PointF& position) OVERRIDE;
-  virtual void SetVisible(bool visible) OVERRIDE;
-  virtual bool IntersectsWith(const gfx::RectF& rect) const OVERRIDE;
+  virtual void SetEnabled(bool enabled) override;
+  virtual void SetOrientation(TouchHandleOrientation orientation) override;
+  virtual void SetAlpha(float alpha) override;
+  virtual void SetFocus(const gfx::PointF& position) override;
+  virtual void SetVisible(bool visible) override;
+  virtual bool IntersectsWith(const gfx::RectF& rect) const override;
 
   static bool RegisterHandleViewResources(JNIEnv* env);
 

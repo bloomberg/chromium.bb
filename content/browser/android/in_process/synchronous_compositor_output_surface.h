@@ -65,10 +65,10 @@ class SynchronousCompositorOutputSurface
   virtual ~SynchronousCompositorOutputSurface();
 
   // OutputSurface.
-  virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) OVERRIDE;
-  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
+  virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
+  virtual void Reshape(const gfx::Size& size, float scale_factor) override;
+  virtual void SetNeedsBeginFrame(bool enable) override;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
 
   // Partial SynchronousCompositor API implementation.
   bool InitializeHwDraw(

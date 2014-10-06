@@ -33,17 +33,17 @@ class EdgeEffectL : public EdgeEffectBase {
 
   virtual void Pull(base::TimeTicks current_time,
                     float delta_distance,
-                    float displacement) OVERRIDE;
-  virtual void Absorb(base::TimeTicks current_time, float velocity) OVERRIDE;
-  virtual bool Update(base::TimeTicks current_time) OVERRIDE;
-  virtual void Release(base::TimeTicks current_time) OVERRIDE;
+                    float displacement) override;
+  virtual void Absorb(base::TimeTicks current_time, float velocity) override;
+  virtual bool Update(base::TimeTicks current_time) override;
+  virtual void Release(base::TimeTicks current_time) override;
 
-  virtual void Finish() OVERRIDE;
-  virtual bool IsFinished() const OVERRIDE;
+  virtual void Finish() override;
+  virtual bool IsFinished() const override;
 
   virtual void ApplyToLayers(const gfx::SizeF& size,
-                             const gfx::Transform& transform) OVERRIDE;
-  virtual void SetParent(cc::Layer* parent) OVERRIDE;
+                             const gfx::Transform& transform) override;
+  virtual void SetParent(cc::Layer* parent) override;
 
   // Thread-safe trigger to load resources.
   static void PreloadResources(ui::SystemUIResourceManager* resource_manager);

@@ -31,22 +31,22 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   // SynchronousCompositorFactory
   virtual scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop()
-      OVERRIDE;
-  virtual bool RecordFullLayer() OVERRIDE;
+      override;
+  virtual bool RecordFullLayer() override;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
       scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
-      OVERRIDE;
-  virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE;
+      override;
+  virtual InputHandlerManagerClient* GetInputHandlerManagerClient() override;
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
       CreateOffscreenContextProvider(
           const blink::WebGraphicsContext3D::Attributes& attributes,
-          const std::string& debug_name) OVERRIDE;
+          const std::string& debug_name) override;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
-      int view_id) OVERRIDE;
+      int view_id) override;
   virtual webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl*
       CreateOffscreenGraphicsContext3D(
-          const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
+          const blink::WebGraphicsContext3D::Attributes& attributes) override;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;

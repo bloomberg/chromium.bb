@@ -36,7 +36,7 @@ class LayerTreeBuildHelperImpl : public LayerTreeBuildHelper {
   virtual ~LayerTreeBuildHelperImpl() {}
 
   virtual scoped_refptr<cc::Layer> GetLayerTree(
-      scoped_refptr<cc::Layer> content_root_layer) OVERRIDE {
+      scoped_refptr<cc::Layer> content_root_layer) override {
     return content_root_layer;
   }
 

@@ -43,12 +43,12 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
   virtual void RenderProcessExited(content::RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
-                                   int exit_code) OVERRIDE {
+                                   int exit_code) override {
     StopWatching(host);
   }
 
   virtual void RenderProcessHostDestroyed(
-      content::RenderProcessHost* host) OVERRIDE {
+      content::RenderProcessHost* host) override {
     StopWatching(host);
   }
 

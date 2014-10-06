@@ -291,7 +291,7 @@ class MessageForwarder : public IPC::Sender {
                            arguments,
                            reply_msg);
   }
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     NOTREACHED();
     return false;
   }

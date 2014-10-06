@@ -35,10 +35,10 @@ class InterstitialPageDelegateAndroid : public InterstitialPageDelegate {
   void DontProceed(JNIEnv* env, jobject obj);
 
   // Implementation of InterstitialPageDelegate
-  virtual std::string GetHTMLContents() OVERRIDE;
-  virtual void OnProceed() OVERRIDE;
-  virtual void OnDontProceed() OVERRIDE;
-  virtual void CommandReceived(const std::string& command) OVERRIDE;
+  virtual std::string GetHTMLContents() override;
+  virtual void OnProceed() override;
+  virtual void OnDontProceed() override;
+  virtual void CommandReceived(const std::string& command) override;
 
   static bool RegisterInterstitialPageDelegateAndroid(JNIEnv* env);
 

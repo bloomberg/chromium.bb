@@ -120,20 +120,20 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
   }
 
   virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32 stream_id) OVERRIDE {
+      uint32 stream_id) override {
     return gl_in_process_context_->GetSurfaceTexture(stream_id);
   }
 
-  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE {
+  virtual gpu::gles2::GLES2Interface* ContextGL() override {
     return context_provider_->ContextGL();
   }
 
-  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) OVERRIDE {
+  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) override {
     observer_list_.AddObserver(obs);
   }
 
   virtual void RemoveObserver(
-      StreamTextureFactoryContextObserver* obs) OVERRIDE {
+      StreamTextureFactoryContextObserver* obs) override {
     observer_list_.RemoveObserver(obs);
   }
 

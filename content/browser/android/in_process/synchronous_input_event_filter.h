@@ -32,13 +32,13 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
                                       const blink::WebInputEvent& input_event);
 
   // InputHandlerManagerClient implementation.
-  virtual void SetBoundHandler(const Handler& handler) OVERRIDE;
+  virtual void SetBoundHandler(const Handler& handler) override;
   virtual void DidAddInputHandler(int routing_id,
-                                  cc::InputHandler* input_handler) OVERRIDE;
-  virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
+                                  cc::InputHandler* input_handler) override;
+  virtual void DidRemoveInputHandler(int routing_id) override;
   virtual void DidOverscroll(int routing_id,
-                             const DidOverscrollParams& params) OVERRIDE;
-  virtual void DidStopFlinging(int routing_id) OVERRIDE;
+                             const DidOverscrollParams& params) override;
+  virtual void DidStopFlinging(int routing_id) override;
 
  private:
   void SetBoundHandlerOnUIThread(const Handler& handler);

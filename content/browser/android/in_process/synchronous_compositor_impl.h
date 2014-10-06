@@ -50,41 +50,41 @@ class SynchronousCompositorImpl
 
   // SynchronousCompositor
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
-      OVERRIDE;
-  virtual bool InitializeHwDraw() OVERRIDE;
-  virtual void ReleaseHwDraw() OVERRIDE;
+      override;
+  virtual bool InitializeHwDraw() override;
+  virtual void ReleaseHwDraw() override;
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,
       gfx::Rect viewport,
       gfx::Rect clip,
       gfx::Rect viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority) OVERRIDE;
-  virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
+      const gfx::Transform& transform_for_tile_priority) override;
+  virtual bool DemandDrawSw(SkCanvas* canvas) override;
   virtual void ReturnResources(
-      const cc::CompositorFrameAck& frame_ack) OVERRIDE;
+      const cc::CompositorFrameAck& frame_ack) override;
   virtual void SetMemoryPolicy(
-      const SynchronousCompositorMemoryPolicy& policy) OVERRIDE;
-  virtual void DidChangeRootLayerScrollOffset() OVERRIDE;
+      const SynchronousCompositorMemoryPolicy& policy) override;
+  virtual void DidChangeRootLayerScrollOffset() override;
 
   // SynchronousCompositorOutputSurfaceDelegate
   virtual void DidBindOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface) OVERRIDE;
+      SynchronousCompositorOutputSurface* output_surface) override;
   virtual void DidDestroySynchronousOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface) OVERRIDE;
-  virtual void SetContinuousInvalidate(bool enable) OVERRIDE;
-  virtual void DidActivatePendingTree() OVERRIDE;
+      SynchronousCompositorOutputSurface* output_surface) override;
+  virtual void SetContinuousInvalidate(bool enable) override;
+  virtual void DidActivatePendingTree() override;
 
   // LayerScrollOffsetDelegate
-  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE;
+  virtual gfx::ScrollOffset GetTotalScrollOffset() override;
   virtual void UpdateRootLayerState(
       const gfx::ScrollOffset& total_scroll_offset,
       const gfx::ScrollOffset& max_scroll_offset,
       const gfx::SizeF& scrollable_size,
       float page_scale_factor,
       float min_page_scale_factor,
-      float max_page_scale_factor) OVERRIDE;
-  virtual bool IsExternalFlingActive() const OVERRIDE;
+      float max_page_scale_factor) override;
+  virtual bool IsExternalFlingActive() const override;
 
   void SetInputHandler(cc::InputHandler* input_handler);
   void DidOverscroll(const DidOverscrollParams& params);

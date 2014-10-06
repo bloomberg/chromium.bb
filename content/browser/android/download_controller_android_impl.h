@@ -77,16 +77,16 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
 
   // DownloadControllerAndroid implementation.
   virtual void CreateGETDownload(int render_process_id, int render_view_id,
-                                 int request_id) OVERRIDE;
-  virtual void OnDownloadStarted(DownloadItem* download_item) OVERRIDE;
+                                 int request_id) override;
+  virtual void OnDownloadStarted(DownloadItem* download_item) override;
   virtual void StartContextMenuDownload(
       const ContextMenuParams& params, WebContents* web_contents,
-      bool is_link) OVERRIDE;
+      bool is_link) override;
   virtual void DangerousDownloadValidated(
-      WebContents* web_contents, int download_id, bool accept) OVERRIDE;
+      WebContents* web_contents, int download_id, bool accept) override;
 
   // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadUpdated(DownloadItem* item) override;
 
   typedef base::Callback<void(const DownloadInfoAndroid&)>
       GetDownloadInfoCB;

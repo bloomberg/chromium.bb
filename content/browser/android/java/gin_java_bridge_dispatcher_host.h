@@ -48,15 +48,15 @@ class GinJavaBridgeDispatcherHost
   void SetAllowObjectContentsInspection(bool allow);
 
   // WebContentsObserver
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void DocumentAvailableInMainFrame() OVERRIDE;
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  virtual void DocumentAvailableInMainFrame() override;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) OVERRIDE;
+                                 RenderFrameHost* render_frame_host) override;
 
   // GinJavaMethodInvocationHelper::DispatcherDelegate
   virtual JavaObjectWeakGlobalRef GetObjectWeakRef(
-      GinJavaBoundObject::ObjectID object_id) OVERRIDE;
+      GinJavaBoundObject::ObjectID object_id) override;
 
   void OnGetMethods(RenderFrameHost* render_frame_host,
                     GinJavaBoundObject::ObjectID object_id,

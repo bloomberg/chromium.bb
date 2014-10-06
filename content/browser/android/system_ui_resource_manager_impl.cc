@@ -104,13 +104,13 @@ class SystemUIResourceManagerImpl::Entry
 
   // content::UIResourceClient implementation.
   virtual cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
-                                         bool resource_lost) OVERRIDE {
+                                         bool resource_lost) override {
     DCHECK(!bitmap_.empty());
     return cc::UIResourceBitmap(bitmap_);
   }
 
   // content::UIResourceClientAndroid implementation.
-  virtual void UIResourceIsInvalid() OVERRIDE { id_ = 0; }
+  virtual void UIResourceIsInvalid() override { id_ = 0; }
 
   const SkBitmap& bitmap() const { return bitmap_; }
 

@@ -28,16 +28,16 @@ class UIResourceProviderImpl : public UIResourceProvider {
   void UIResourcesAreInvalid();
 
   virtual cc::UIResourceId CreateUIResource(
-      UIResourceClientAndroid* client) OVERRIDE;
+      UIResourceClientAndroid* client) override;
 
-  virtual void DeleteUIResource(cc::UIResourceId resource_id) OVERRIDE;
+  virtual void DeleteUIResource(cc::UIResourceId resource_id) override;
 
   ui::SystemUIResourceManager& GetSystemUIResourceManager();
 
   void SetSupportsETC1NonPowerOfTwo(bool supports_etc1_npot) {
     supports_etc1_npot_ = supports_etc1_npot;
   }
-  virtual bool SupportsETC1NonPowerOfTwo() const OVERRIDE;
+  virtual bool SupportsETC1NonPowerOfTwo() const override;
 
  private:
   typedef base::hash_map<cc::UIResourceId, UIResourceClientAndroid*>

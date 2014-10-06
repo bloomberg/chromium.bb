@@ -33,42 +33,42 @@ class WebContentsObserverAndroid : public WebContentsObserver {
 
  private:
   virtual void RenderProcessGone(
-      base::TerminationStatus termination_status) OVERRIDE;
-  virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
+      base::TerminationStatus termination_status) override;
+  virtual void DidStartLoading(RenderViewHost* render_view_host) override;
+  virtual void DidStopLoading(RenderViewHost* render_view_host) override;
   virtual void DidFailProvisionalLoad(
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) OVERRIDE;
+      const base::string16& error_description) override;
   virtual void DidFailLoad(RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
                            int error_code,
-                           const base::string16& error_description) OVERRIDE;
+                           const base::string16& error_description) override;
   virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
-                                    const FrameNavigateParams& params) OVERRIDE;
+                                    const FrameNavigateParams& params) override;
   virtual void DidNavigateAnyFrame(const LoadCommittedDetails& details,
-                                   const FrameNavigateParams& params) OVERRIDE;
-  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
+                                   const FrameNavigateParams& params) override;
+  virtual void DidFirstVisuallyNonEmptyPaint() override;
   virtual void DidStartProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) override;
   virtual void DidFinishLoad(RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE;
+                             const GURL& validated_url) override;
   virtual void DocumentLoadedInFrame(
-      RenderFrameHost* render_frame_host) OVERRIDE;
+      RenderFrameHost* render_frame_host) override;
   virtual void NavigationEntryCommitted(
-      const LoadCommittedDetails& load_details) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
-  virtual void DidAttachInterstitialPage() OVERRIDE;
-  virtual void DidDetachInterstitialPage() OVERRIDE;
-  virtual void DidChangeThemeColor(SkColor color) OVERRIDE;
+      const LoadCommittedDetails& load_details) override;
+  virtual void WebContentsDestroyed() override;
+  virtual void DidAttachInterstitialPage() override;
+  virtual void DidDetachInterstitialPage() override;
+  virtual void DidChangeThemeColor(SkColor color) override;
 
   void DidFailLoadInternal(bool is_provisional_load,
                            bool is_main_frame,

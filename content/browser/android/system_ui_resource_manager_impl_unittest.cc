@@ -21,7 +21,7 @@ class TestSystemUIResourceManagerImpl
   virtual ~TestSystemUIResourceManagerImpl() {}
 
   virtual void BuildResource(
-      ui::SystemUIResourceManager::ResourceType type) OVERRIDE {}
+      ui::SystemUIResourceManager::ResourceType type) override {}
 
   void SetResourceAsLoaded(ui::SystemUIResourceManager::ResourceType type) {
     SkBitmap small_bitmap;
@@ -49,7 +49,7 @@ class MockUIResourceProvider : public content::UIResourceProvider {
   virtual ~MockUIResourceProvider() {}
 
   virtual cc::UIResourceId CreateUIResource(
-      content::UIResourceClientAndroid* client) OVERRIDE {
+      content::UIResourceClientAndroid* client) override {
     if (!has_layer_tree_host_)
       return 0;
     cc::UIResourceId id = next_ui_resource_id_++;
@@ -58,12 +58,12 @@ class MockUIResourceProvider : public content::UIResourceProvider {
     return id;
   }
 
-  virtual void DeleteUIResource(cc::UIResourceId id) OVERRIDE {
+  virtual void DeleteUIResource(cc::UIResourceId id) override {
     CHECK(has_layer_tree_host_);
     ui_resource_client_map_.erase(id);
   }
 
-  virtual bool SupportsETC1NonPowerOfTwo() const OVERRIDE { return true; }
+  virtual bool SupportsETC1NonPowerOfTwo() const override { return true; }
 
   void LayerTreeHostCleared() {
     has_layer_tree_host_ = false;

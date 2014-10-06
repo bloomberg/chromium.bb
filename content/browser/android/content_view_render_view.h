@@ -49,8 +49,8 @@ class ContentViewRenderView : public CompositorClient {
   jlong GetUIResourceProvider(JNIEnv* env, jobject obj);
 
   // CompositorClient implementation
-  virtual void Layout() OVERRIDE;
-  virtual void OnSwapBuffersCompleted(int pending_swap_buffers) OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnSwapBuffersCompleted(int pending_swap_buffers) override;
 
  private:
   virtual ~ContentViewRenderView();
