@@ -51,8 +51,8 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) OVERRIDE;
-    virtual void postApplyResource(GraphicsContext*) OVERRIDE;
+    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE;
+    virtual void postApplyResource(RenderObject*, GraphicsContext*&) OVERRIDE;
 
     virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;

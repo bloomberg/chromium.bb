@@ -38,7 +38,7 @@ RenderSVGResourceSolidColor::~RenderSVGResourceSolidColor()
 {
 }
 
-bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext* context, RenderSVGResourceModeFlags resourceMode)
+bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext*& context, unsigned short resourceMode)
 {
     ASSERT(object);
     ASSERT(style);

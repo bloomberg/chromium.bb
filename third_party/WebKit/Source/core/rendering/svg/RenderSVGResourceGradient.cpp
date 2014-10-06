@@ -50,7 +50,7 @@ void RenderSVGResourceGradient::removeClientFromCache(RenderObject* client, bool
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext* context, RenderSVGResourceModeFlags resourceMode)
+bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext*& context, unsigned short resourceMode)
 {
     ASSERT(object);
     ASSERT(style);
@@ -127,7 +127,7 @@ bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle*
     return true;
 }
 
-void RenderSVGResourceGradient::postApplyResource(GraphicsContext* context)
+void RenderSVGResourceGradient::postApplyResource(RenderObject*, GraphicsContext*& context)
 {
     ASSERT(context);
     context->restore();

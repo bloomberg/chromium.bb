@@ -385,7 +385,7 @@ void PaintingResourceScope::releasePaintingResource(GraphicsContext*& context)
 {
     ASSERT(m_paintingResource);
 
-    m_paintingResource->postApplyResource(context);
+    m_paintingResource->postApplyResource(&m_renderer, context);
     m_paintingResource = 0;
 }
 
