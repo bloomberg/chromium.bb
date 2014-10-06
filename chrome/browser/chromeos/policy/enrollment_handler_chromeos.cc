@@ -133,12 +133,23 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
-  // If |domain| is empty here, the policy validation code will just use the
-  // domain from the username field in the policy itself to do key validation.
-  // TODO(mnissler): Plumb the enrolling user's username into this object so
-  // we can validate the username on the resulting policy, and use the domain
-  // from that username to validate the key below (http://crbug.com/343074).
-  validator->ValidateInitialKey(GetPolicyVerificationKey(), domain);
+  if (management_mode_ == em::PolicyData::CONSUMER_MANAGED) {
+    // For consumer-managed devices, although we don't store the policy, we
+    // still need to verify its integrity since we use the request token in it.
+    // The consumer device management server does not have the verification
+    // key, and we need to skip checking on that by passing an empty key to
+    // ValidateInitialKey(). ValidateInitialKey() still checks that the policy
+    // data is correctly signed by the new public key when the verification key
+    // is empty.
+    validator->ValidateInitialKey("", "");
+  } else {
+    // If |domain| is empty here, the policy validation code will just use the
+    // domain from the username field in the policy itself to do key validation.
+    // TODO(mnissler): Plumb the enrolling user's username into this object so
+    // we can validate the username on the resulting policy, and use the domain
+    // from that username to validate the key below (http://crbug.com/343074).
+    validator->ValidateInitialKey(GetPolicyVerificationKey(), domain);
+  }
   validator.release()->StartValidation(
       base::Bind(&EnrollmentHandlerChromeOS::HandlePolicyValidationResult,
                  weak_ptr_factory_.GetWeakPtr()));
