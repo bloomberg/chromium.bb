@@ -12,6 +12,7 @@ var eventBindings = require('event_bindings');
 var Event = eventBindings.Event;
 var forEach = require('utils').forEach;
 var lastError = require('lastError');
+var logging = requireNative('logging');
 var schema = requireNative('automationInternal').GetSchemaAdditions();
 
 // TODO(aboxhall): Look into using WeakMap
