@@ -6,6 +6,7 @@
 #include "platform/scheduler/Scheduler.h"
 
 #include "platform/PlatformThreadData.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Task.h"
 #include "platform/ThreadTimers.h"
 #include "platform/TraceEvent.h"
@@ -169,7 +170,9 @@ void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 
 void Scheduler::didReceiveInputEvent()
 {
-    enterSchedulerPolicy(CompositorPriority);
+    // FIXME: We probably want an explicit Disabled policy rather than disabling CompositorPriority.
+    if (RuntimeEnabledFeatures::blinkSchedulerEnabled())
+        enterSchedulerPolicy(CompositorPriority);
 }
 
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)

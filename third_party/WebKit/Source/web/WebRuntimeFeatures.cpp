@@ -49,6 +49,11 @@ void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
     RuntimeEnabledFeatures::setWebAnimationsAPIEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableBlinkScheduler(bool enable)
+{
+    RuntimeEnabledFeatures::setBlinkSchedulerEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);
