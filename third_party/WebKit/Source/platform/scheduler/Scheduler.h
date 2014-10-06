@@ -75,6 +75,7 @@ protected:
 
     void scheduleIdleTask(const TraceLocation&, const IdleTask&);
     void postHighPriorityTaskInternal(const TraceLocation&, const Task&, const char* traceName);
+    void didRunHighPriorityTask();
 
     static void sharedTimerAdapter();
 
@@ -84,20 +85,12 @@ protected:
     bool runPendingHighPriorityTasksIfInCompositorPriority();
 
     // Returns true if any work was done.
-    bool swapQueuesAndRunPendingTasks();
-
-    void swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting();
-
-    // Returns true if any work was done.
     bool executeHighPriorityTasks(Deque<TracedTask>&);
 
     // Return the current SchedulerPolicy.
     SchedulerPolicy schedulerPolicy() const;
 
-    void maybeEnterNormalSchedulerPolicy();
-
-    // Must be called while m_pendingTasksMutex is locked.
-    void maybePostMainThreadPendingHighPriorityTaskRunner();
+    void updatePolicy();
 
     void tickSharedTimer();
 
@@ -105,28 +98,22 @@ protected:
 
     // End of main thread only members -------------------------------------
 
-    bool hasPendingHighPriorityWork() const;
-
     void enterSchedulerPolicyLocked(SchedulerPolicy);
-
     void enterSchedulerPolicy(SchedulerPolicy);
 
     static Scheduler* s_sharedScheduler;
 
     WebThread* m_mainThread;
 
-    // This mutex protects calls to the pending task queue, m_highPriorityTaskRunnerPosted and
-    // m_compositorPriorityPolicyEndTimeSeconds.
-    Mutex m_pendingTasksMutex;
-    DoubleBufferedDeque<TracedTask> m_pendingHighPriorityTasks;
-    double m_compositorPriorityPolicyEndTimeSeconds;
-
     // Declared volatile as it is atomically incremented.
     volatile int m_highPriorityTaskCount;
 
     bool m_highPriorityTaskRunnerPosted;
 
-    // Don't access m_schedulerPolicy directly, use enterSchedulerPolicyLocked and SchedulerPolicy instead.
+    Mutex m_policyStateMutex;
+    double m_compositorPriorityPolicyEndTimeSeconds;
+
+    // Don't access m_schedulerPolicy directly, use enterSchedulerPolicyLocked and schedulerPolicy instead.
     volatile int m_schedulerPolicy;
 };
 

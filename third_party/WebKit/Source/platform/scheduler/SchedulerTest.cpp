@@ -319,23 +319,6 @@ TEST_F(SchedulerTest, TestTaskPrioritization_normalPolicy)
         std::string("IPC")));
 }
 
-TEST_F(SchedulerTest, TestTaskPrioritization_compositorPriorityPolicy)
-{
-    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
-    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L1")));
-    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L2")));
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I1")));
-    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C1")));
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I2")));
-    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C2")));
-    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("IPC")));
-
-    runPendingTasks();
-    EXPECT_THAT(m_order, testing::ElementsAre(
-        std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2"), std::string("L1"), std::string("L2"),
-        std::string("IPC")));
-}
-
 TEST_F(SchedulerTest, TestRentrantTask)
 {
     m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVectorReentrantTask, this));
@@ -344,21 +327,19 @@ TEST_F(SchedulerTest, TestRentrantTask)
     EXPECT_THAT(m_reentrantOrder, testing::ElementsAre(0, 1, 2, 3, 4));
 }
 
-
-TEST_F(SchedulerTest, TestRentrantInputTaskDuringShutdown)
+TEST_F(SchedulerTest, TestTasksRunAfterShutdown)
 {
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVectorReentrantInputTask, this));
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("1")));
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("2")));
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("3")));
+    m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("4")));
+
     Scheduler::shutdown();
+    EXPECT_TRUE(m_order.empty());
 
-    EXPECT_THAT(m_reentrantOrder, testing::ElementsAre(0, 1, 2, 3, 4));
-}
-
-TEST_F(SchedulerTest, TestRentrantCompositorTaskDuringShutdown)
-{
-    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVectorReentrantCompositorTask, this));
-    Scheduler::shutdown();
-
-    EXPECT_THAT(m_reentrantOrder, testing::ElementsAre(0, 1, 2, 3, 4));
+    runPendingTasks();
+    EXPECT_THAT(m_order, testing::ElementsAre(
+        std::string("1"), std::string("2"), std::string("3"), std::string("4")));
 }
 
 bool s_shouldContinue;
@@ -405,18 +386,6 @@ void dummyTask()
     s_dummyTaskCount++;
 }
 
-TEST_F(SchedulerTest, TestMultipleCallsToPostInputOrCompositorTaskResultsInOnlyOneMainThreadTask)
-{
-    EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
-
-    for (int i = 0; i < 10; i++) {
-        m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
-        m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
-    }
-
-    EXPECT_EQ(1U, m_platformSupport.numPendingMainThreadTasks());
-}
-
 TEST_F(SchedulerTest, TestMainThreadTaskLifeCycle)
 {
     EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
@@ -449,23 +418,6 @@ TEST_F(SchedulerTest, HighPriorityTasksOnlyDontRunBecauseOfSharedTimerFiring_InN
     m_platformSupport.triggerSharedTimer();
 
     EXPECT_EQ(0, s_dummyTaskCount);
-
-    // Clean up.
-    m_scheduler->stopSharedTimer();
-    m_scheduler->setSharedTimerFiredFunction(nullptr);
-}
-
-TEST_F(SchedulerTest, HighPriorityTasksOnlyRunOncePerSharedTimerFiring_InLowSchedulerPolicy)
-{
-    s_dummyTaskCount = 0;
-    m_scheduler->enterSchedulerPolicy(SchedulerForTest::CompositorPriority);
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
-    // Trigger the posting of an input task during execution of the shared timer function.
-    m_scheduler->setSharedTimerFiredFunction(&postDummyInputTask);
-    m_scheduler->setSharedTimerFireInterval(0);
-    m_platformSupport.triggerSharedTimer();
-
-    EXPECT_EQ(1, s_dummyTaskCount);
 
     // Clean up.
     m_scheduler->stopSharedTimer();
