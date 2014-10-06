@@ -13,6 +13,7 @@ import datetime
 import os
 import string # pylint: disable=W0402
 import sys
+import unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
@@ -531,6 +532,76 @@ class CopyIntoTest(CopyTest):
 
   def _Copy(self, ctx, *args, **kwargs):
     return ctx.CopyInto(*args, filename=self.FILE, **kwargs)
+
+
+class RemoveTest(AbstractGSContextTest):
+  """Tests GSContext.Remove() functionality."""
+
+  def testNormal(self):
+    """Test normal remove behavior."""
+    self.assertEqual(self.ctx.Remove('gs://foo/bar'), None)
+
+  def testMissing(self):
+    """Test behavior w/missing files."""
+    self.gs_mock.AddCmdResult(['rm', 'gs://foo/bar'],
+                              error='CommandException: No URLs matched: '
+                                    'gs://foo/bar',
+                              returncode=1)
+    self.assertRaises(gs.GSNoSuchKey, self.ctx.Remove, 'gs://foo/bar')
+    # This one should not throw an exception.
+    self.ctx.Remove('gs://foo/bar', ignore_missing=True)
+
+  def testRecursive(self):
+    """Verify we pass down -R in recursive mode."""
+    self.ctx.Remove('gs://foo/bar', recurse=True)
+    self.gs_mock.assertCommandContains(['rm', '-R'])
+
+
+class UnmockedRemoveTest(cros_test_lib.TestCase):
+  """Tests Remove functionality w/out mocks."""
+
+  @cros_test_lib.NetworkTest()
+  def testNormal(self):
+    """Test normal remove behavior."""
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('chromite.rm') as tempuri:
+      ctx.Copy('/dev/null', tempuri)
+      self.assertEqual(ctx.Remove(tempuri), None)
+
+  @cros_test_lib.NetworkTest()
+  def testMissing(self):
+    """Test behavior w/missing files."""
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('chromite.rm') as tempuri:
+      self.assertRaises(gs.GSNoSuchKey, ctx.Remove, tempuri)
+      # This one should not throw an exception.
+      ctx.Remove(tempuri, ignore_missing=True)
+
+  @cros_test_lib.NetworkTest()
+  def testRecursive(self):
+    """Verify recursive mode works."""
+    files = ('a', 'b/c', 'd/e/ffff')
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('chromite.rm') as tempuri:
+      for p in files:
+        ctx.Copy('/dev/null', os.path.join(tempuri, p))
+      ctx.Remove(tempuri, recurse=True)
+      for p in files:
+        self.assertFalse(ctx.Exists(os.path.join(tempuri, p)))
+
+  @unittest.skip('this gsutil version is broken b/17882592')
+  @cros_test_lib.NetworkTest()
+  def testGeneration(self):
+    """Test conditional remove behavior."""
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('chromite.rm') as tempuri:
+      ctx.Copy('/dev/null', tempuri)
+      gen, _ = ctx.GetGeneration(tempuri)
+      self.assertRaises(gs.GSContextPreconditionFailed, ctx.Remove,
+                        tempuri, version=gen + 1)
+      self.assertTrue(ctx.Exists(tempuri))
+      ctx.Remove(tempuri, version=gen)
+      self.assertFalse(ctx.Exists(tempuri))
 
 
 class MoveTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
