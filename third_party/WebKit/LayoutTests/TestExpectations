@@ -1472,3 +1472,5 @@ crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-rec
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing/timeline-script-tag-1.html [ Pass Failure Timeout ]
 
 crbug.com/420307 [ Win ] http/tests/serviceworker/fetch-frame-resource.html [ Pass Timeout ]
+
+crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Pass Timeout ]
