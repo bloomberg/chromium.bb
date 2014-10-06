@@ -5,158 +5,158 @@
 
 function test()
 {
-    InspectorTest.registerModule("documentation", true);
+    runtime.loadModulePromise("documentation").then(function() {
+        InspectorTest.runTestSuite([
+            function testWikiParser(next)
+            {
+                var testCases = [
+                    "{{A|text=&lt;code>it's not a code &lt;code>}}",
+                    "{{A|Code={{=}} }}",
+                    "{{ABC|Array={{A|B=c}}{{X|y=Z}}|text=blabla}}",
+                    "{{A|B=C}}",
+                    "{{A|B={{C|D=blablabla}}}}",
+                    "{{A|B={{C|D=bla}}|x=y}}",
+                    "{{CS|Init=black|Values={{CSS Property Value\n|Data Type=color\n|Description= [[css/color|CSS color value]]}}\n}}",
+                    "{{A}}",
+                    "{{A|B= [[http://google.com{{!}}Google]]}}",
+                    "{{AbC|xyz \n\t \r}}",
+                    "{{Notes_Section\n|Notes=Do not specify the ''refChild'' parameter when inserting the first child node. If children already exist and you do not specify the ''refChild'' parameter, the ''newChild'' becomes the last child of the parent object.\nThis method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render.\n}}",
+                    "{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}",
+                    "{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}\n}}"
+                ];
+                for (var i = 0; i < testCases.length; i++) {
+                    var wikiParser = new WebInspector.WikiParser(testCases[i]);
+                    InspectorTest.addResult("\"" + testCases[i].replace("\r", "\\r") + "\" is parsed");
+                    InspectorTest.addObject(wikiParser.document());
+                }
+                next();
+            },
 
-    InspectorTest.runTestSuite([
-        function testWikiParser(next)
-        {
-            var testCases = [
-                "{{A|text=&lt;code>it's not a code &lt;code>}}",
-                "{{A|Code={{=}} }}",
-                "{{ABC|Array={{A|B=c}}{{X|y=Z}}|text=blabla}}",
-                "{{A|B=C}}",
-                "{{A|B={{C|D=blablabla}}}}",
-                "{{A|B={{C|D=bla}}|x=y}}",
-                "{{CS|Init=black|Values={{CSS Property Value\n|Data Type=color\n|Description= [[css/color|CSS color value]]}}\n}}",
-                "{{A}}",
-                "{{A|B= [[http://google.com{{!}}Google]]}}",
-                "{{AbC|xyz \n\t \r}}",
-                "{{Notes_Section\n|Notes=Do not specify the ''refChild'' parameter when inserting the first child node. If children already exist and you do not specify the ''refChild'' parameter, the ''newChild'' becomes the last child of the parent object.\nThis method is accessible at run time. If elements are removed at run time, before the closing tag has been parsed, areas of the document might not render.\n}}",
-                "{{External_Attribution|MSDN_link=[http://msdn.microsoft.com/en-us/library/ie/ms536365(v=vs.85).aspx cloneNode Method]|HTML5Rocks_link=}}",
-                "{{JS_Syntax|Formats={{JS Syntax Format|Format='''JSON.stringify(''' value [ , replacer] [ , space] ''')'''}}\n}}"
-            ];
-            for (var i = 0; i < testCases.length; i++) {
-                var wikiParser = new WebInspector.WikiParser(testCases[i]);
-                InspectorTest.addResult("\"" + testCases[i].replace("\r", "\\r") + "\" is parsed");
-                InspectorTest.addObject(wikiParser.document());
-            }
-            next();
-        },
-
-        function testJS(next)
-        {
-            var jsTest = "{{Remarks_Section\n|Remarks=The optional number1, number2, ..., numberN arguments are numeric expressions to be evaluated.\n\nIf no arguments are provided, the return value is equal to [[javascript/Number/constants{{!}}Number.NEGATIVE_INFINITY]]. If any argument is '''NaN''' , the return value is also '''NaN'''.\n}}";
-            var article = WebInspector.JSArticle.parse(jsTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testSmall(next)
-        {
-            var smallTest = "{{Summary_Section|blabla '''oops'''}}";
-            var article = WebInspector.JSArticle.parse(smallTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testHighlightAndLink(next)
-        {
-            var highlightAndLink = "{{Summary_Section|The '''flex''' CSS property specifies the ability of a flex item to alter its dimensions to fill the available space. '''flex''' is a shorthand property comprised of the [[css/properties/flex-grow|flex-grow]], [[css/properties/flex-shrink|flex-shrink]], and [[css/properties/flex-basis|flex-basis]] properties. A flex item can be stretched to use available space proportional to its flex grow factor, or reduced proportional to its flex shrink factor to prevent overflow.}}";
-            var article = WebInspector.JSArticle.parse(highlightAndLink);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testNamedLink(next)
-        {
-            var namedLink = "{{Summary_Section| [[url|naaaame]]}}";
-            var article = WebInspector.JSArticle.parse(namedLink);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testBullet(next)
-        {
-            var bulletTest = "{{Summary_Section|*blabla\n*some_text\n*bullet\n}}";
-            var article = WebInspector.JSArticle.parse(bulletTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testRemarks(next)
-        {
-            var remarksTest = "{{Remarks_Section\n|Remarks=In JavaScript arrays are sparse, and the elements in an array do not have to be contiguous. The '''length''' property is not necessarily the number of elements in the array. For example, in the following array definition, <code>my_array.length</code> contains 7, not 2:\n\n var my_array = new Array( );\n my_array[0] = \"Test\";\n my_array[6] = \"Another Test\";\n console.log(my_array.length);\n \n // Output\n // 7\nEven if you set length to a number greater than its previous value, the number of actual elements does not increase.\n\n console.log(my_array.length); // 7\n my_array.length = 10;\n console.log(Object.keys(my_array));\n \n // Output\n // [\"0\", \"6\"]\nOn the other hand, when decreasing length, the array is truncated.\n\n console.log(my_array.length); // 10\n my_array.length = 1;\n console.log(Object.keys(my_array));\n \n // Output\n // [\"0\"]\n}}";
-            var article = WebInspector.JSArticle.parse(remarksTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testComplexLinkName(next)
-        {
-            var complexLinkNameTest = "{{Summary_Section| [[url|text <code>blabla</code>\n]]}}";
-            var article = WebInspector.JSArticle.parse(complexLinkNameTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testCodeInsideBullet(next)
-        {
-            var codeInsideBullet = "{{Summary_Section|*some text <code>bullet & code </code>}}";
-            var article = WebInspector.JSArticle.parse(codeInsideBullet);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testInvalidInput(next)
-        {
-            var invalidInputTest = "{{Remarks_Section|Remarks=text ]]}}";
-            var article = WebInspector.JSArticle.parse(invalidInputTest);
-            InspectorTest.addResult(article);
-            next();
-        },
-
-        function testLinkInsideCode(next)
-        {
-            var linkInsideCode = "{{Summary_Section|<code> [[https://google.com|GOOGLE!]] </code >}}";
-            var article = WebInspector.JSArticle.parse(linkInsideCode);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testExamples(next)
-        {
-            var examplesTest = "{{Examples_Section\n|Not_required=No\n|Examples={{Single Example\n|Language=HTML\n|Description=The following example shows how to use the '''insertBefore''' method to insert a new item into an existing list.\n|Code=&lt;!doctype html&gt;\n&lt;html&gt;\n&lt;head&gt;\n&lt;script type{{=}}\"application/javascript\"&gt;\n    function insertElement()\n    {\n        var nod{{=}}document.createElement(\"li\");\n        document.getElementById(\"oUL1\").insertBefore(nod, document.getElementById(\"oLIYellow\"));\n        nod.textContet{{=}}\"Orange\";\n    }\n&lt;/script&gt;\n&lt;/head&gt;\n&lt;body&gt;\n    &lt;p onclick{{=}}\"insertElement()\"&gt;Click &lt;strong&gt;HERE&lt;/strong&gt; to add an item to the following list.&lt;/p&gt;\n    &lt;ul id{{=}}\"oUL1\"&gt;\n        &lt;li id{{=}}\"oLIRed\"&gt;Red&lt;/li&gt;\n        &lt;li id{{=}}\"oLIYellow\"&gt;Yellow&lt;/li&gt;\n        &lt;li id{{=}}\"oLIBlue\"&gt;Blue&lt;/li&gt;\n    &lt;/ul&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n|LiveURL=http://samples.msdn.microsoft.com/workshop/samples/author/dhtml/refs/insertBefore.htm\n}}\n}}";
-            var article = WebInspector.JSArticle.parse(examplesTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testJsMethod(next)
-        {
-            var jsMethodTest = "{{API_Object_Method\n|Parameters={{Method Parameter\n|Name=newNode\n|Data type=DOM Node\n|Description=The new node to be inserted.\n|Optional=No\n}}{{Method Parameter\n|Name=refChild\n|Data type=DOM Node\n|Description=Supplies the placement of the new node. If this parameter is specified, the new element will be inserted immediately before this existing child node. If not, it will be added after the last child node.\n|Optional=Yes\n}}\n|Method_applies_to=dom/Node\n|Example_object_name=node\n|Return_value_name=insertedNode\n|Javascript_data_type=DOM Node\n|Return_value_description=The inserted node.\n}}\n";
-            var article = WebInspector.JSArticle.parse(jsMethodTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testLinkWithoutSpace(next)
-        {
-            var linkWithoutSpaceTest = "{{Summary_Section|[[http://google.com|LINK_WITHOUT_SPACE]]}}";
-            try {
-                var article = WebInspector.JSArticle.parse(linkWithoutSpaceTest);
+            function testJS(next)
+            {
+                var jsTest = "{{Remarks_Section\n|Remarks=The optional number1, number2, ..., numberN arguments are numeric expressions to be evaluated.\n\nIf no arguments are provided, the return value is equal to [[javascript/Number/constants{{!}}Number.NEGATIVE_INFINITY]]. If any argument is '''NaN''' , the return value is also '''NaN'''.\n}}";
+                var article = WebInspector.JSArticle.parse(jsTest);
                 InspectorTest.addObject(article);
-            } catch (error) {
-                InspectorTest.addResult("Expected error: " + error);
+                next();
+            },
+
+            function testSmall(next)
+            {
+                var smallTest = "{{Summary_Section|blabla '''oops'''}}";
+                var article = WebInspector.JSArticle.parse(smallTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testHighlightAndLink(next)
+            {
+                var highlightAndLink = "{{Summary_Section|The '''flex''' CSS property specifies the ability of a flex item to alter its dimensions to fill the available space. '''flex''' is a shorthand property comprised of the [[css/properties/flex-grow|flex-grow]], [[css/properties/flex-shrink|flex-shrink]], and [[css/properties/flex-basis|flex-basis]] properties. A flex item can be stretched to use available space proportional to its flex grow factor, or reduced proportional to its flex shrink factor to prevent overflow.}}";
+                var article = WebInspector.JSArticle.parse(highlightAndLink);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testNamedLink(next)
+            {
+                var namedLink = "{{Summary_Section| [[url|naaaame]]}}";
+                var article = WebInspector.JSArticle.parse(namedLink);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testBullet(next)
+            {
+                var bulletTest = "{{Summary_Section|*blabla\n*some_text\n*bullet\n}}";
+                var article = WebInspector.JSArticle.parse(bulletTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testRemarks(next)
+            {
+                var remarksTest = "{{Remarks_Section\n|Remarks=In JavaScript arrays are sparse, and the elements in an array do not have to be contiguous. The '''length''' property is not necessarily the number of elements in the array. For example, in the following array definition, <code>my_array.length</code> contains 7, not 2:\n\n var my_array = new Array( );\n my_array[0] = \"Test\";\n my_array[6] = \"Another Test\";\n console.log(my_array.length);\n \n // Output\n // 7\nEven if you set length to a number greater than its previous value, the number of actual elements does not increase.\n\n console.log(my_array.length); // 7\n my_array.length = 10;\n console.log(Object.keys(my_array));\n \n // Output\n // [\"0\", \"6\"]\nOn the other hand, when decreasing length, the array is truncated.\n\n console.log(my_array.length); // 10\n my_array.length = 1;\n console.log(Object.keys(my_array));\n \n // Output\n // [\"0\"]\n}}";
+                var article = WebInspector.JSArticle.parse(remarksTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testComplexLinkName(next)
+            {
+                var complexLinkNameTest = "{{Summary_Section| [[url|text <code>blabla</code>\n]]}}";
+                var article = WebInspector.JSArticle.parse(complexLinkNameTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testCodeInsideBullet(next)
+            {
+                var codeInsideBullet = "{{Summary_Section|*some text <code>bullet & code </code>}}";
+                var article = WebInspector.JSArticle.parse(codeInsideBullet);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testInvalidInput(next)
+            {
+                var invalidInputTest = "{{Remarks_Section|Remarks=text ]]}}";
+                var article = WebInspector.JSArticle.parse(invalidInputTest);
+                InspectorTest.addResult(article);
+                next();
+            },
+
+            function testLinkInsideCode(next)
+            {
+                var linkInsideCode = "{{Summary_Section|<code> [[https://google.com|GOOGLE!]] </code >}}";
+                var article = WebInspector.JSArticle.parse(linkInsideCode);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testExamples(next)
+            {
+                var examplesTest = "{{Examples_Section\n|Not_required=No\n|Examples={{Single Example\n|Language=HTML\n|Description=The following example shows how to use the '''insertBefore''' method to insert a new item into an existing list.\n|Code=&lt;!doctype html&gt;\n&lt;html&gt;\n&lt;head&gt;\n&lt;script type{{=}}\"application/javascript\"&gt;\n    function insertElement()\n    {\n        var nod{{=}}document.createElement(\"li\");\n        document.getElementById(\"oUL1\").insertBefore(nod, document.getElementById(\"oLIYellow\"));\n        nod.textContet{{=}}\"Orange\";\n    }\n&lt;/script&gt;\n&lt;/head&gt;\n&lt;body&gt;\n    &lt;p onclick{{=}}\"insertElement()\"&gt;Click &lt;strong&gt;HERE&lt;/strong&gt; to add an item to the following list.&lt;/p&gt;\n    &lt;ul id{{=}}\"oUL1\"&gt;\n        &lt;li id{{=}}\"oLIRed\"&gt;Red&lt;/li&gt;\n        &lt;li id{{=}}\"oLIYellow\"&gt;Yellow&lt;/li&gt;\n        &lt;li id{{=}}\"oLIBlue\"&gt;Blue&lt;/li&gt;\n    &lt;/ul&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n|LiveURL=http://samples.msdn.microsoft.com/workshop/samples/author/dhtml/refs/insertBefore.htm\n}}\n}}";
+                var article = WebInspector.JSArticle.parse(examplesTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testJsMethod(next)
+            {
+                var jsMethodTest = "{{API_Object_Method\n|Parameters={{Method Parameter\n|Name=newNode\n|Data type=DOM Node\n|Description=The new node to be inserted.\n|Optional=No\n}}{{Method Parameter\n|Name=refChild\n|Data type=DOM Node\n|Description=Supplies the placement of the new node. If this parameter is specified, the new element will be inserted immediately before this existing child node. If not, it will be added after the last child node.\n|Optional=Yes\n}}\n|Method_applies_to=dom/Node\n|Example_object_name=node\n|Return_value_name=insertedNode\n|Javascript_data_type=DOM Node\n|Return_value_description=The inserted node.\n}}\n";
+                var article = WebInspector.JSArticle.parse(jsMethodTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testLinkWithoutSpace(next)
+            {
+                var linkWithoutSpaceTest = "{{Summary_Section|[[http://google.com|LINK_WITHOUT_SPACE]]}}";
+                try {
+                    var article = WebInspector.JSArticle.parse(linkWithoutSpaceTest);
+                    InspectorTest.addObject(article);
+                } catch (error) {
+                    InspectorTest.addResult("Expected error: " + error);
+                }
+                next();
+            },
+
+            function testEmptyParameters(next)
+            {
+                var emptyParameterTest = "{{API_Object_Method\n|Parameters=\n|Method_applies_to=dom/shadowdom/ShadowRoot\n|Javascript_data_type=DOM Node\n|Return_value_description=Returns the DOM node specified by the given ID. Case matters, and if there is more than one node with the given ID, which node is returned is uncertain.\n}}";
+                var article = WebInspector.JSArticle.parse(emptyParameterTest);
+                InspectorTest.addObject(article);
+                next();
+            },
+
+            function testTable(next)
+            {
+                var tableTest = "{{Table|there is a table \n{{{!}} class='wikitable' \n{{!}}-\n! A\n! B\n! C\n{{!}}-\n{{!}} 1\n{{!}} 2\n{{!}} 3\n{{!}}-\n{{!}} 4\n{{!}} 5\n{{!}} 6\n{{!}}}\n}}";
+                var wikiParser = new WebInspector.WikiParser(tableTest);
+                InspectorTest.addObject(wikiParser.document());
+                next();
             }
-            next();
-        },
-
-        function testEmptyParameters(next)
-        {
-            var emptyParameterTest = "{{API_Object_Method\n|Parameters=\n|Method_applies_to=dom/shadowdom/ShadowRoot\n|Javascript_data_type=DOM Node\n|Return_value_description=Returns the DOM node specified by the given ID. Case matters, and if there is more than one node with the given ID, which node is returned is uncertain.\n}}";
-            var article = WebInspector.JSArticle.parse(emptyParameterTest);
-            InspectorTest.addObject(article);
-            next();
-        },
-
-        function testTable(next)
-        {
-            var tableTest = "{{Table|there is a table \n{{{!}} class='wikitable' \n{{!}}-\n! A\n! B\n! C\n{{!}}-\n{{!}} 1\n{{!}} 2\n{{!}} 3\n{{!}}-\n{{!}} 4\n{{!}} 5\n{{!}} 6\n{{!}}}\n}}";
-            var wikiParser = new WebInspector.WikiParser(tableTest);
-            InspectorTest.addObject(wikiParser.document());
-            next();
-        }
-    ]);
+        ]);
+    }).done();
 }
 </script>
 </head>

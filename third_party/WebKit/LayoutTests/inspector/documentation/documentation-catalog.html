@@ -6,52 +6,53 @@
 
 function test()
 {
-    InspectorTest.registerModule("documentation", true);
-    InspectorTest.killLoadXHRWithPrefix(WebInspector.DocumentationCatalog.apiURLPrefix);
-    var testCases = [
-        "max",
-        "insertBefore",
-        "eval",
-        "stringify",
-        "isArray",
-        "now",
-        "fromCharCode",
-        "keys",
-        "notExist",
-        "indexOf",
-        "setDate",
-        "parse"
-    ];
-    var articleList = [
-        "javascript/Math/max",
-        "dom/Node/insertBefore",
-        "javascript/eval",
-        "javascript/JSON/stringify",
-        "javascript/Array/isArray",
-        "javascript/Date/now",
-        "javascript/String/fromCharCode",
-        "javascript/Object/keys",
-        "javascript/Array/indexOf",
-        "javascript/String/indexOf",
-        "javascript/Date/setDate",
-        "javascript/Date/parse",
-        "javascript/JSON/parse"
-    ]
+    runtime.loadModulePromise("documentation").then(function() {
+        InspectorTest.killLoadXHRWithPrefix(WebInspector.DocumentationCatalog.apiURLPrefix);
+        var testCases = [
+            "max",
+            "insertBefore",
+            "eval",
+            "stringify",
+            "isArray",
+            "now",
+            "fromCharCode",
+            "keys",
+            "notExist",
+            "indexOf",
+            "setDate",
+            "parse"
+        ];
+        var articleList = [
+            "javascript/Math/max",
+            "dom/Node/insertBefore",
+            "javascript/eval",
+            "javascript/JSON/stringify",
+            "javascript/Array/isArray",
+            "javascript/Date/now",
+            "javascript/String/fromCharCode",
+            "javascript/Object/keys",
+            "javascript/Array/indexOf",
+            "javascript/String/indexOf",
+            "javascript/Date/setDate",
+            "javascript/Date/parse",
+            "javascript/JSON/parse"
+        ]
 
-    var urlProvider = WebInspector.DocumentationCatalog.instance();
-    for (var i = 0; i < articleList.length; ++i)
-        urlProvider._addDescriptorToList(articleList[i]);
-    for (var i = 0; i < testCases.length; ++i) {
-        InspectorTest.addResult("Property " + testCases[i] + ":");
-        var properties = urlProvider.itemDescriptors(testCases[i]);
-        if (properties.length === 0) {
-            InspectorTest.addResult("    null");
-            continue;
+        var urlProvider = WebInspector.DocumentationCatalog.instance();
+        for (var i = 0; i < articleList.length; ++i)
+            urlProvider._addDescriptorToList(articleList[i]);
+        for (var i = 0; i < testCases.length; ++i) {
+            InspectorTest.addResult("Property " + testCases[i] + ":");
+            var properties = urlProvider.itemDescriptors(testCases[i]);
+            if (properties.length === 0) {
+                InspectorTest.addResult("    null");
+                continue;
+            }
+            for (var j = 0; j < properties.length; ++j)
+                InspectorTest.addResult("    " + j + ": " + properties[j].url());
         }
-        for (var j = 0; j < properties.length; ++j)
-            InspectorTest.addResult("    " + j + ": " + properties[j].url());
-    }
-    InspectorTest.completeTest();
+        InspectorTest.completeTest();
+    }).done();
 }
 
 </script>

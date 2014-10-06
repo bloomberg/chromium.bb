@@ -3,7 +3,6 @@ function initialize_EditorTests()
 
 InspectorTest.createTestEditor = function(clientHeight, textEditorDelegate)
 {
-    runtime.loadModule("source_frame");
     var textEditor = new WebInspector.CodeMirrorTextEditor("", textEditorDelegate || new WebInspector.TextEditorDelegate());
     clientHeight = clientHeight || 100;
     textEditor.element.style.height = clientHeight + "px";

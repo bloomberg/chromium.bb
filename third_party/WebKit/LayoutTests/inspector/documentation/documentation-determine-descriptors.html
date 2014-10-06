@@ -4,8 +4,8 @@
 <script src="../editor/editor-test.js"></script>
 <script>
 
-function test() {
-    InspectorTest.registerModule("documentation", true);
+function test()
+{
     var testCases = [
         { name: "max", startColumn: 0 },
         { name: "insertBefore", startColumn: 0 },
@@ -21,41 +21,43 @@ function test() {
         "javascript/NaN"
     ]
 
-    var urlProvider = WebInspector.DocumentationCatalog.instance();
-    for (var i = 0; i < articleList.length; ++i)
-        urlProvider._addDescriptorToList(articleList[i]);
-    var determineDescriptors = WebInspector.DocumentationView.ContextMenuProvider.prototype._determineDescriptors;
-    var textEditor = InspectorTest.createTestEditor();
-    textEditor.setMimeType("text/javascript");
-    textEditor.setReadOnly(false);
-    textEditor.element.focus();
-    for (var i = 0; i < testCases.length; ++i) {
-        InspectorTest.addResult("Case " + testCases[i].name + ":");
-        textEditor.setText(testCases[i].name);
-        InspectorTest.setLineSelections(textEditor, [
-            {line: 0, column: testCases[i].startColumn}
-        ]);
-        InspectorTest.addResult("    Empty selection:");
-        dumpURLs();
+    runtime.loadModulePromise("documentation").then(function() {
+        var urlProvider = WebInspector.DocumentationCatalog.instance();
+        for (var i = 0; i < articleList.length; ++i)
+            urlProvider._addDescriptorToList(articleList[i]);
+        var determineDescriptors = WebInspector.DocumentationView.ContextMenuProvider.prototype._determineDescriptors;
+        var textEditor = InspectorTest.createTestEditor();
+        textEditor.setMimeType("text/javascript");
+        textEditor.setReadOnly(false);
+        textEditor.element.focus();
+        for (var i = 0; i < testCases.length; ++i) {
+            InspectorTest.addResult("Case " + testCases[i].name + ":");
+            textEditor.setText(testCases[i].name);
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 0, column: testCases[i].startColumn}
+            ]);
+            InspectorTest.addResult("    Empty selection:");
+            dumpURLs();
 
-        InspectorTest.setLineSelections(textEditor, [
-            {line: 0, from: testCases[i].startColumn, to: testCases[i].length}
-        ]);
-        InspectorTest.addResult("    Property selected:");
-        dumpURLs();
-        
-        function dumpURLs()
-        {
-            var properties = determineDescriptors(textEditor);
-            if (properties.length === 0) {
-                InspectorTest.addResult("        null");
-                return;
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 0, from: testCases[i].startColumn, to: testCases[i].length}
+            ]);
+            InspectorTest.addResult("    Property selected:");
+            dumpURLs();
+
+            function dumpURLs()
+            {
+                var properties = determineDescriptors(textEditor);
+                if (properties.length === 0) {
+                    InspectorTest.addResult("        null");
+                    return;
+                }
+                for (var j = 0; j < properties.length; ++j)
+                    InspectorTest.addResult("        " + j + ": " + properties[j].name() + "." + properties[j].searchItem());
             }
-            for (var j = 0; j < properties.length; ++j)
-                InspectorTest.addResult("        " + j + ": " + properties[j].name() + "." + properties[j].searchItem());
         }
-    }
-    InspectorTest.completeTest();
+        InspectorTest.completeTest();
+    }).done();
 }
 
 </script>
