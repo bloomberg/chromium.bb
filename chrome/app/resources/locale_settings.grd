@@ -290,7 +290,7 @@
 
         <!-- The height of the advanced Join Wi-Fi network dialog box in lines. -->
         <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS" use_name_for_id="true">
-          86
+          100
         </message>
         <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
           30
