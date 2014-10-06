@@ -63,7 +63,7 @@ class CloudPrintRequest : public net::URLFetcherDelegate,
                     Delegate* delegate);
 
   // net::URLFetcherDelegate methods:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Method for handling timeout.
   void OnRequestTimeout();

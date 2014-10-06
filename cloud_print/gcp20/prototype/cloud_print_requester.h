@@ -134,20 +134,20 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
   typedef base::Callback<void(const std::string&)> ParserCallback;
 
   // CloudPrintRequester::Delegate methods:
-  virtual void OnFetchComplete(const std::string& response) OVERRIDE;
+  virtual void OnFetchComplete(const std::string& response) override;
   virtual void OnFetchError(const std::string& server_api,
                             int server_code,
-                            int server_http_code) OVERRIDE;
-  virtual void OnFetchTimeoutReached() OVERRIDE;
+                            int server_http_code) override;
+  virtual void OnFetchTimeoutReached() override;
 
   // gaia::GaiaOAuthClient::Delegate methods:
   virtual void OnGetTokensResponse(const std::string& refresh_token,
                                    const std::string& access_token,
-                                   int expires_in_seconds) OVERRIDE;
+                                   int expires_in_seconds) override;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+                                      int expires_in_seconds) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
   // Creates GET request.
   scoped_ptr<CloudPrintRequest> CreateGet(const GURL& url,

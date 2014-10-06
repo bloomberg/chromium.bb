@@ -18,10 +18,10 @@ class CloudPrintURLRequestContextGetter : public net::URLRequestContextGetter {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-    GetNetworkTaskRunner() const OVERRIDE;
+    GetNetworkTaskRunner() const override;
 
  private:
   virtual ~CloudPrintURLRequestContextGetter();

@@ -38,8 +38,8 @@ class SetupListener : public IPC::Listener {
   explicit SetupListener(const base::string16& user);
   virtual ~SetupListener();
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelError() override;
 
   bool WaitResponce(const base::TimeDelta& delta);
 

@@ -75,12 +75,12 @@ class CloudPrintXmppListener
 
  private:
   // notifier::PushClientObserver methods:
-  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsEnabled() override;
   virtual void OnNotificationsDisabled(
-      notifier::NotificationsDisabledReason reason) OVERRIDE;
+      notifier::NotificationsDisabledReason reason) override;
   virtual void OnIncomingNotification(
-      const notifier::Notification& notification) OVERRIDE;
-  virtual void OnPingResponse() OVERRIDE;
+      const notifier::Notification& notification) override;
+  virtual void OnPingResponse() override;
 
   // Stops listening and sending pings.
   void Disconnect();

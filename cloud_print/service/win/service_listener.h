@@ -25,8 +25,8 @@ class ServiceListener : public IPC::Listener {
   explicit ServiceListener(const base::FilePath& user_data_dir);
   virtual ~ServiceListener();
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
 
  private:
   void Disconnect();

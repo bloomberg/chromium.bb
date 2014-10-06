@@ -22,7 +22,7 @@ class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
   bool Start();
   void Stop();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   static std::string CreateServiceStateFile(
       const std::string& proxy_id,
