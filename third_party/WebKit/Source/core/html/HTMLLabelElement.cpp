@@ -40,6 +40,7 @@ using namespace HTMLNames;
 
 inline HTMLLabelElement::HTMLLabelElement(Document& document, HTMLFormElement* form)
     : HTMLElement(labelTag, document)
+    , m_processingClick(false)
 {
     FormAssociatedElement::associateByParser(form);
 }
@@ -128,9 +129,7 @@ bool HTMLLabelElement::isInInteractiveContent(Node* node) const
 
 void HTMLLabelElement::defaultEventHandler(Event* evt)
 {
-    static bool processingClick = false;
-
-    if (evt->type() == EventTypeNames::click && !processingClick) {
+    if (evt->type() == EventTypeNames::click && !m_processingClick) {
         RefPtrWillBeRawPtr<HTMLElement> element = control();
 
         // If we can't find a control or if the control received the click
@@ -174,7 +173,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
             }
         }
 
-        processingClick = true;
+        m_processingClick = true;
 
         document().updateLayoutIgnorePendingStylesheets();
         if (element->isMouseFocusable()) {
@@ -189,7 +188,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
         // Click the corresponding control.
         element->dispatchSimulatedClick(evt);
 
-        processingClick = false;
+        m_processingClick = false;
 
         evt->setDefaultHandled();
     }
