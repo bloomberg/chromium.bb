@@ -41,7 +41,7 @@ class MyObject : public BaseClass,
  protected:
   MyObject() : value_(0) {}
   virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
   virtual ~MyObject() {}
 
  private:
@@ -62,7 +62,7 @@ class MyObjectSubclass : public MyObject {
 
  private:
   virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE {
+      v8::Isolate* isolate) override {
     return MyObject::GetObjectTemplateBuilder(isolate)
         .SetMethod("sayHello", &MyObjectSubclass::SayHello);
   }
@@ -86,7 +86,7 @@ class MyCallableObject : public Wrappable<MyCallableObject> {
 
  private:
   virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE {
+      v8::Isolate* isolate) override {
     return Wrappable<MyCallableObject>::GetObjectTemplateBuilder(isolate)
         .SetCallAsFunctionHandler(&MyCallableObject::Call);
   }
