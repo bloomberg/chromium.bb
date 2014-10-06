@@ -79,10 +79,14 @@ static const char kMainWebrtcTestHtmlPage[] =
 // 2. Install it + reboot.
 // 3. Install MacPorts (http://www.macports.org/).
 // 4. Install sox: sudo port install sox.
-// 5. In Sound Preferences, set both input and output to Soundflower (2ch).
+// 5. (For Chrome bots) Ensure sox and rec are reachable from the env the test
+//    executes in (sox and rec tends to install in /opt/, which generally isn't
+//    in the Chrome bots' env). For instance, run
+//    sudo ln -s /opt/local/bin/rec /usr/local/bin/rec
+//    sudo ln -s /opt/local/bin/sox /usr/local/bin/sox
+// 6. In Sound Preferences, set both input and output to Soundflower (2ch).
 //    Note: You will no longer hear audio on this machine, and it will no
 //    longer use any built-in mics.
-// 6. Ensure the output volume is max and the input volume at about 20%.
 // 7. Try launching chrome as the target user on the target machine, try
 //    playing, say, a YouTube video, and record with 'rec test.wav trim 0 5'.
 //    Stop the video in chrome and try playing back the file; you should hear
@@ -236,7 +240,17 @@ bool ForceMicrophoneVolumeTo100Percent() {
     return false;
   }
 #elif defined(OS_MACOSX)
-  // TODO(phoglund): implement.
+  CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("osascript")));
+  command_line.AppendArg("-e");
+  command_line.AppendArg("set volume input volume 100");
+  command_line.AppendArg("-e");
+  command_line.AppendArg("set volume output volume 100");
+
+  std::string result;
+  if (!base::GetAppOutput(command_line, &result)) {
+    LOG(ERROR) << "Failed to set source volume: output was " << result;
+    return false;
+  }
 #else
   // Just force the volume of, say the first 5 devices. A machine will rarely
   // have more input sources than that. This is way easier than finding the
@@ -364,7 +378,7 @@ bool RunPesq(const base::FilePath& reference_file,
   std::size_t anchor_pos = result.find(result_anchor);
   if (anchor_pos == std::string::npos) {
     LOG(ERROR) << "PESQ was not able to compute a score; we probably recorded "
-        << "only silence.";
+        << "only silence. Please check the output/input volume levels.";
     return false;
   }
 
