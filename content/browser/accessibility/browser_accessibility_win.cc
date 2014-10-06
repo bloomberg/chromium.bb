@@ -3423,6 +3423,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_CHECK_BOX:
       ia_role_ = ROLE_SYSTEM_CHECKBUTTON;
+      ia2_state_ |= IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_COLOR_WELL:
       ia_role_ = ROLE_SYSTEM_CLIENT;
