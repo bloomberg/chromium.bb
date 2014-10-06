@@ -39,30 +39,30 @@ class BluetoothRemoteGattCharacteristicChromeOS
       public BluetoothGattDescriptorClient::Observer {
  public:
   // device::BluetoothGattCharacteristic overrides.
-  virtual std::string GetIdentifier() const OVERRIDE;
-  virtual device::BluetoothUUID GetUUID() const OVERRIDE;
-  virtual bool IsLocal() const OVERRIDE;
-  virtual const std::vector<uint8>& GetValue() const OVERRIDE;
-  virtual device::BluetoothGattService* GetService() const OVERRIDE;
-  virtual Properties GetProperties() const OVERRIDE;
-  virtual Permissions GetPermissions() const OVERRIDE;
-  virtual bool IsNotifying() const OVERRIDE;
+  virtual std::string GetIdentifier() const override;
+  virtual device::BluetoothUUID GetUUID() const override;
+  virtual bool IsLocal() const override;
+  virtual const std::vector<uint8>& GetValue() const override;
+  virtual device::BluetoothGattService* GetService() const override;
+  virtual Properties GetProperties() const override;
+  virtual Permissions GetPermissions() const override;
+  virtual bool IsNotifying() const override;
   virtual std::vector<device::BluetoothGattDescriptor*>
-      GetDescriptors() const OVERRIDE;
+      GetDescriptors() const override;
   virtual device::BluetoothGattDescriptor* GetDescriptor(
-      const std::string& identifier) const OVERRIDE;
+      const std::string& identifier) const override;
   virtual bool AddDescriptor(
-      device::BluetoothGattDescriptor* descriptor) OVERRIDE;
-  virtual bool UpdateValue(const std::vector<uint8>& value) OVERRIDE;
+      device::BluetoothGattDescriptor* descriptor) override;
+  virtual bool UpdateValue(const std::vector<uint8>& value) override;
   virtual void ReadRemoteCharacteristic(
       const ValueCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
   virtual void WriteRemoteCharacteristic(
       const std::vector<uint8>& new_value,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
   virtual void StartNotifySession(const NotifySessionCallback& callback,
-                                  const ErrorCallback& error_callback) OVERRIDE;
+                                  const ErrorCallback& error_callback) override;
 
   // Removes one value update session and invokes |callback| on completion. This
   // decrements the session reference count by 1 and if the number reaches 0,
@@ -84,13 +84,13 @@ class BluetoothRemoteGattCharacteristicChromeOS
   // BluetoothGattCharacteristicClient::Observer overrides.
   virtual void GattCharacteristicValueUpdated(
       const dbus::ObjectPath& object_path,
-      const std::vector<uint8>& value) OVERRIDE;
+      const std::vector<uint8>& value) override;
 
   // BluetoothGattDescriptorClient::Observer overrides.
   virtual void GattDescriptorAdded(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
   virtual void GattDescriptorRemoved(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
 
   // Called by dbus:: on successful completion of a request to read
   // the characteristic value.

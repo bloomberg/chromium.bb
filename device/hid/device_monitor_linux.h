@@ -47,11 +47,11 @@ class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver,
   void Enumerate(const EnumerateCallback& callback);
 
   // Implements base::MessageLoop::DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
   // Implements base::MessagePumpLibevent::Watcher
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
  private:
   friend struct base::DefaultDeleter<DeviceMonitorLinux>;

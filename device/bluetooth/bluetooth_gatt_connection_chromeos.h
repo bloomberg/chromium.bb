@@ -34,16 +34,16 @@ class BluetoothGattConnectionChromeOS
   virtual ~BluetoothGattConnectionChromeOS();
 
   // BluetoothGattConnection overrides.
-  virtual std::string GetDeviceAddress() const OVERRIDE;
-  virtual bool IsConnected() OVERRIDE;
-  virtual void Disconnect(const base::Closure& callback) OVERRIDE;
+  virtual std::string GetDeviceAddress() const override;
+  virtual bool IsConnected() override;
+  virtual void Disconnect(const base::Closure& callback) override;
 
  private:
 
   // chromeos::BluetoothDeviceClient::Observer overrides.
-  virtual void DeviceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void DeviceRemoved(const dbus::ObjectPath& object_path) override;
   virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
-                                     const std::string& property_name) OVERRIDE;
+                                     const std::string& property_name) override;
 
   // True, if the connection is currently active.
   bool connected_;

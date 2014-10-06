@@ -27,15 +27,15 @@ class SerialConnection : public mojo::InterfaceImpl<serial::Connection> {
 
   // mojo::InterfaceImpl<serial::Connection> overrides.
   virtual void GetInfo(
-      const mojo::Callback<void(serial::ConnectionInfoPtr)>& callback) OVERRIDE;
+      const mojo::Callback<void(serial::ConnectionInfoPtr)>& callback) override;
   virtual void SetOptions(serial::ConnectionOptionsPtr options,
-                          const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                          const mojo::Callback<void(bool)>& callback) override;
   virtual void SetControlSignals(
       serial::HostControlSignalsPtr signals,
-      const mojo::Callback<void(bool)>& callback) OVERRIDE;
+      const mojo::Callback<void(bool)>& callback) override;
   virtual void GetControlSignals(const mojo::Callback<
-      void(serial::DeviceControlSignalsPtr)>& callback) OVERRIDE;
-  virtual void Flush(const mojo::Callback<void(bool)>& callback) OVERRIDE;
+      void(serial::DeviceControlSignalsPtr)>& callback) override;
+  virtual void Flush(const mojo::Callback<void(bool)>& callback) override;
 
  private:
   void OnSendPipeReady(scoped_ptr<ReadOnlyBuffer> buffer);

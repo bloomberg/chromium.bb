@@ -49,10 +49,10 @@ class DataSinkReceiver::Buffer : public ReadOnlyBuffer {
   void Cancel(int32_t error);
 
   // ReadOnlyBuffer overrides.
-  virtual const char* GetData() OVERRIDE;
-  virtual uint32_t GetSize() OVERRIDE;
-  virtual void Done(uint32_t bytes_read) OVERRIDE;
-  virtual void DoneWithError(uint32_t bytes_read, int32_t error) OVERRIDE;
+  virtual const char* GetData() override;
+  virtual uint32_t GetSize() override;
+  virtual void Done(uint32_t bytes_read) override;
+  virtual void DoneWithError(uint32_t bytes_read, int32_t error) override;
 
  private:
   // The DataSinkReceiver whose data pipe we are providing a view.

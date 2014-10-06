@@ -70,10 +70,10 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
       const ErrorCompletionCallback& error_callback);
 
   // BluetoothSocket:
-  virtual void Close() OVERRIDE;
-  virtual void Disconnect(const base::Closure& callback) OVERRIDE;
+  virtual void Close() override;
+  virtual void Disconnect(const base::Closure& callback) override;
   virtual void Accept(const AcceptCompletionCallback& success_callback,
-                      const ErrorCompletionCallback& error_callback) OVERRIDE;
+                      const ErrorCompletionCallback& error_callback) override;
 
   // Returns the object path of the socket.
   const dbus::ObjectPath& object_path() const { return object_path_; }
@@ -103,7 +103,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
 
   // BluetoothAdapter::Observer:
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE;
+                                     bool present) override;
 
   // Called by dbus:: on completion of the RegisterProfile() method call
   // triggered as a result of the adapter becoming present again.
@@ -112,16 +112,16 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
                                       const std::string& error_message);
 
   // BluetoothProfileServiceProvider::Delegate:
-  virtual void Released() OVERRIDE;
+  virtual void Released() override;
   virtual void NewConnection(
       const dbus::ObjectPath& device_path,
       scoped_ptr<dbus::FileDescriptor> fd,
       const BluetoothProfileServiceProvider::Delegate::Options& options,
-      const ConfirmationCallback& callback) OVERRIDE;
+      const ConfirmationCallback& callback) override;
   virtual void RequestDisconnection(
       const dbus::ObjectPath& device_path,
-      const ConfirmationCallback& callback) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
+      const ConfirmationCallback& callback) override;
+  virtual void Cancel() override;
 
   // Method run to accept a single incoming connection.
   void AcceptConnectionRequest();

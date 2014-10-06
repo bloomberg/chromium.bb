@@ -17,7 +17,7 @@ namespace device {
 namespace {
 
 class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() OVERRIDE {
+  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() override {
     mojo::Array<serial::DeviceInfoPtr> devices(1);
     devices[0] = serial::DeviceInfo::New();
     devices[0]->path = "device";
@@ -28,7 +28,7 @@ class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
 class FailToOpenIoHandler : public TestSerialIoHandler {
  public:
   virtual void Open(const std::string& port,
-                    const OpenCompleteCallback& callback) OVERRIDE {
+                    const OpenCompleteCallback& callback) override {
     callback.Run(false);
   }
 
@@ -47,7 +47,7 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
     StopMessageLoop();
   }
 
-  virtual void OnConnectionError() OVERRIDE {
+  virtual void OnConnectionError() override {
     StopMessageLoop();
     EXPECT_TRUE(expecting_error_);
   }

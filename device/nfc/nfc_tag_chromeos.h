@@ -23,22 +23,22 @@ class NfcTagChromeOS : public device::NfcTag,
                        public NfcTagClient::Observer {
  public:
   // device::NfcTag overrides.
-  virtual void AddObserver(device::NfcTag::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(device::NfcTag::Observer* observer) OVERRIDE;
-  virtual std::string GetIdentifier() const OVERRIDE;
-  virtual TagType GetType() const OVERRIDE;
-  virtual bool IsReadOnly() const OVERRIDE;
-  virtual device::NfcTag::Protocol GetSupportedProtocol() const OVERRIDE;
+  virtual void AddObserver(device::NfcTag::Observer* observer) override;
+  virtual void RemoveObserver(device::NfcTag::Observer* observer) override;
+  virtual std::string GetIdentifier() const override;
+  virtual TagType GetType() const override;
+  virtual bool IsReadOnly() const override;
+  virtual device::NfcTag::Protocol GetSupportedProtocol() const override;
   virtual device::NfcTagTechnology::TechnologyTypeMask
-      GetSupportedTechnologies() const OVERRIDE;
-  virtual bool IsReady() const OVERRIDE;
-  virtual device::NfcNdefTagTechnology* GetNdefTagTechnology() OVERRIDE;
+      GetSupportedTechnologies() const override;
+  virtual bool IsReady() const override;
+  virtual device::NfcNdefTagTechnology* GetNdefTagTechnology() override;
 
   // NfcTagClient::Observer overrides.
   virtual void TagPropertyChanged(const dbus::ObjectPath& object_path,
-                                  const std::string& property_name) OVERRIDE;
+                                  const std::string& property_name) override;
   virtual void TagPropertiesReceived(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
 
   // Object path representing the remote tag object.
   const dbus::ObjectPath& object_path() const { return object_path_; }

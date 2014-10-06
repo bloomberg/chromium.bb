@@ -31,16 +31,16 @@ namespace device {
 class BluetoothSocketNet : public BluetoothSocket {
  public:
   // BluetoothSocket:
-  virtual void Close() OVERRIDE;
-  virtual void Disconnect(const base::Closure& callback) OVERRIDE;
+  virtual void Close() override;
+  virtual void Disconnect(const base::Closure& callback) override;
   virtual void Receive(int buffer_size,
                        const ReceiveCompletionCallback& success_callback,
                        const ReceiveErrorCompletionCallback& error_callback)
-      OVERRIDE;
+      override;
   virtual void Send(scoped_refptr<net::IOBuffer> buffer,
                     int buffer_size,
                     const SendCompletionCallback& success_callback,
-                    const ErrorCompletionCallback& error_callback) OVERRIDE;
+                    const ErrorCompletionCallback& error_callback) override;
 
  protected:
   BluetoothSocketNet(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,

@@ -92,19 +92,19 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void AddObserver(Observer* observer) OVERRIDE {
+  virtual void AddObserver(Observer* observer) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     observers_.AddObserver(observer);
   }
 
   // MediaTransferProtocolManager override.
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(Observer* observer) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     observers_.RemoveObserver(observer);
   }
 
   // MediaTransferProtocolManager override.
-  virtual const std::vector<std::string> GetStorages() const OVERRIDE {
+  virtual const std::vector<std::string> GetStorages() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> storages;
     for (StorageInfoMap::const_iterator it = storage_info_map_.begin();
@@ -117,7 +117,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // MediaTransferProtocolManager override.
   virtual const MtpStorageInfo* GetStorageInfo(
-      const std::string& storage_name) const OVERRIDE {
+      const std::string& storage_name) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
     return it != storage_info_map_.end() ? &it->second : NULL;
@@ -126,7 +126,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // MediaTransferProtocolManager override.
   virtual void OpenStorage(const std::string& storage_name,
                            const std::string& mode,
-                           const OpenStorageCallback& callback) OVERRIDE {
+                           const OpenStorageCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
       callback.Run(std::string(), true);
@@ -144,7 +144,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // MediaTransferProtocolManager override.
   virtual void CloseStorage(const std::string& storage_handle,
-                            const CloseStorageCallback& callback) OVERRIDE {
+                            const CloseStorageCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true);
@@ -162,7 +162,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // MediaTransferProtocolManager override.
   virtual void ReadDirectory(const std::string& storage_handle,
                              uint32 file_id,
-                             const ReadDirectoryCallback& callback) OVERRIDE {
+                             const ReadDirectoryCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::vector<MtpFileEntry>(),
@@ -186,7 +186,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                              uint32 file_id,
                              uint32 offset,
                              uint32 count,
-                             const ReadFileCallback& callback) OVERRIDE {
+                             const ReadFileCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::string(), true);
@@ -203,7 +203,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   virtual void GetFileInfo(const std::string& storage_handle,
                            uint32 file_id,
-                           const GetFileInfoCallback& callback) OVERRIDE {
+                           const GetFileInfoCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(MtpFileEntry(), true);

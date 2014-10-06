@@ -47,10 +47,10 @@ class BluetoothDiscoveryManagerMacClassic
   virtual ~BluetoothDiscoveryManagerMacClassic() {}
 
   // BluetoothDiscoveryManagerMac override.
-  virtual bool IsDiscovering() const OVERRIDE { return should_do_discovery_; }
+  virtual bool IsDiscovering() const override { return should_do_discovery_; }
 
   // BluetoothDiscoveryManagerMac override.
-  virtual bool StartDiscovery() OVERRIDE {
+  virtual bool StartDiscovery() override {
     DVLOG(1) << "Bluetooth Classic: StartDiscovery";
     DCHECK(!should_do_discovery_);
 
@@ -78,7 +78,7 @@ class BluetoothDiscoveryManagerMacClassic
   }
 
   // BluetoothDiscoveryManagerMac override.
-  virtual bool StopDiscovery() OVERRIDE {
+  virtual bool StopDiscovery() override {
     DVLOG(1) << "Bluetooth Classic: StopDiscovery";
     DCHECK(should_do_discovery_);
 

@@ -49,9 +49,9 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   virtual ~DataSinkReceiver();
 
   // mojo::InterfaceImpl<serial::DataSink> overrides.
-  virtual void Init(mojo::ScopedDataPipeConsumerHandle handle) OVERRIDE;
-  virtual void Cancel(int32_t error) OVERRIDE;
-  virtual void OnConnectionError() OVERRIDE;
+  virtual void Init(mojo::ScopedDataPipeConsumerHandle handle) override;
+  virtual void Cancel(int32_t error) override;
+  virtual void OnConnectionError() override;
 
   // Starts waiting for |handle_| to be ready for reads.
   void StartWaiting();

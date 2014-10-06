@@ -69,7 +69,7 @@ class TestCompletionCallback {
 
 class HidConnectionTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     if (!UsbTestGadget::IsTestEnabled()) return;
 
     message_loop_.reset(new base::MessageLoopForIO());

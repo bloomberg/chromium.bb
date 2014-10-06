@@ -21,17 +21,17 @@ class TestSerialIoHandler : public SerialIoHandler {
 
   // SerialIoHandler overrides.
   virtual void Open(const std::string& port,
-                    const OpenCompleteCallback& callback) OVERRIDE;
-  virtual bool ConfigurePort(const serial::ConnectionOptions& options) OVERRIDE;
-  virtual void ReadImpl() OVERRIDE;
-  virtual void CancelReadImpl() OVERRIDE;
-  virtual void WriteImpl() OVERRIDE;
-  virtual void CancelWriteImpl() OVERRIDE;
-  virtual serial::DeviceControlSignalsPtr GetControlSignals() const OVERRIDE;
-  virtual serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE;
-  virtual bool Flush() const OVERRIDE;
+                    const OpenCompleteCallback& callback) override;
+  virtual bool ConfigurePort(const serial::ConnectionOptions& options) override;
+  virtual void ReadImpl() override;
+  virtual void CancelReadImpl() override;
+  virtual void WriteImpl() override;
+  virtual void CancelWriteImpl() override;
+  virtual serial::DeviceControlSignalsPtr GetControlSignals() const override;
+  virtual serial::ConnectionInfoPtr GetPortInfo() const override;
+  virtual bool Flush() const override;
   virtual bool SetControlSignals(
-      const serial::HostControlSignals& signals) OVERRIDE;
+      const serial::HostControlSignals& signals) override;
 
   serial::ConnectionInfo* connection_info() { return &info_; }
   serial::DeviceControlSignals* device_control_signals() {

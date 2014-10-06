@@ -23,7 +23,7 @@ class UsbContext::UsbEventHandler : public base::PlatformThread::Delegate {
   virtual ~UsbEventHandler();
 
   // base::PlatformThread::Delegate
-  virtual void ThreadMain() OVERRIDE;
+  virtual void ThreadMain() override;
 
  private:
   base::subtle::Atomic32 running_;

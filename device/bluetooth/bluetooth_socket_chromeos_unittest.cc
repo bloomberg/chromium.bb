@@ -49,7 +49,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
         last_bytes_received_(0),
         last_reason_(BluetoothSocket::kSystemError) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
 
@@ -87,7 +87,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     ASSERT_TRUE(adapter_->IsPowered());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     adapter_ = NULL;
     BluetoothSocketThread::CleanupForTesting();
     DBusThreadManager::Shutdown();

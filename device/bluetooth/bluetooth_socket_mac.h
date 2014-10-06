@@ -75,18 +75,18 @@ class BluetoothSocketMac : public BluetoothSocket {
                         const ErrorCompletionCallback& error_callback);
 
   // BluetoothSocket:
-  virtual void Close() OVERRIDE;
-  virtual void Disconnect(const base::Closure& callback) OVERRIDE;
+  virtual void Close() override;
+  virtual void Disconnect(const base::Closure& callback) override;
   virtual void Receive(
       int /* buffer_size */,
       const ReceiveCompletionCallback& success_callback,
-      const ReceiveErrorCompletionCallback& error_callback) OVERRIDE;
+      const ReceiveErrorCompletionCallback& error_callback) override;
   virtual void Send(scoped_refptr<net::IOBuffer> buffer,
                     int buffer_size,
                     const SendCompletionCallback& success_callback,
-                    const ErrorCompletionCallback& error_callback) OVERRIDE;
+                    const ErrorCompletionCallback& error_callback) override;
   virtual void Accept(const AcceptCompletionCallback& success_callback,
-                      const ErrorCompletionCallback& error_callback) OVERRIDE;
+                      const ErrorCompletionCallback& error_callback) override;
 
   // Callback that is invoked when the OS completes an SDP query.
   // |status| is the returned status from the SDP query, |device| is the

@@ -27,7 +27,7 @@ class HidServiceMac : public HidService {
   HidServiceMac();
 
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
-      OVERRIDE;
+      override;
 
  private:
   virtual ~HidServiceMac();

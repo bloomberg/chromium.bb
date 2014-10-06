@@ -16,7 +16,7 @@ class SerialDeviceEnumeratorMac : public SerialDeviceEnumerator {
   virtual ~SerialDeviceEnumeratorMac();
 
   // Implementation for SerialDeviceEnumerator.
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() OVERRIDE;
+  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorMac);

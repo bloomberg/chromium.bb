@@ -37,12 +37,12 @@ class BluetoothL2capChannelMac : public BluetoothChannelMac {
       IOReturn* status);
 
   // BluetoothChannelMac:
-  virtual void SetSocket(BluetoothSocketMac* socket) OVERRIDE;
-  virtual IOBluetoothDevice* GetDevice() OVERRIDE;
-  virtual uint16_t GetOutgoingMTU() OVERRIDE;
+  virtual void SetSocket(BluetoothSocketMac* socket) override;
+  virtual IOBluetoothDevice* GetDevice() override;
+  virtual uint16_t GetOutgoingMTU() override;
   virtual IOReturn WriteAsync(void* data,
                               uint16_t length,
-                              void* refcon) OVERRIDE;
+                              void* refcon) override;
 
   void OnChannelOpenComplete(IOBluetoothL2CAPChannel* channel,
                              IOReturn status);

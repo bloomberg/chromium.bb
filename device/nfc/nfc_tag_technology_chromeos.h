@@ -28,19 +28,19 @@ class NfcNdefTagTechnologyChromeOS : public device::NfcNdefTagTechnology,
 
   // device::NfcNdefTagTechnology overrides.
   virtual void AddObserver(device::NfcNdefTagTechnology::Observer* observer)
-    OVERRIDE;
+    override;
   virtual void RemoveObserver(device::NfcNdefTagTechnology::Observer* observer)
-    OVERRIDE;
-  virtual const device::NfcNdefMessage& GetNdefMessage() const OVERRIDE;
+    override;
+  virtual const device::NfcNdefMessage& GetNdefMessage() const override;
   virtual void WriteNdef(const device::NfcNdefMessage& message,
                          const base::Closure& callback,
-                         const ErrorCallback& error_callback) OVERRIDE;
+                         const ErrorCallback& error_callback) override;
 
   // NfcRecordClient::Observer overrides.
-  virtual void RecordAdded(const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void RecordRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void RecordAdded(const dbus::ObjectPath& object_path) override;
+  virtual void RecordRemoved(const dbus::ObjectPath& object_path) override;
   virtual void RecordPropertiesReceived(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
 
  private:
   friend class NfcTagChromeOS;

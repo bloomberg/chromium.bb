@@ -40,7 +40,7 @@ class MockUsbDevice : public UsbDevice {
 
 class UsbFilterTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     UsbInterfaceDescriptor interface;
     interface.interface_number = 1;
     interface.alternate_setting = 0;

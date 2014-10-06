@@ -55,7 +55,7 @@ class BluetoothSocketWin : public BluetoothSocketNet {
 
   // BluetoothSocket:
   virtual void Accept(const AcceptCompletionCallback& success_callback,
-                      const ErrorCompletionCallback& error_callback) OVERRIDE;
+                      const ErrorCompletionCallback& error_callback) override;
 
  protected:
   virtual ~BluetoothSocketWin();

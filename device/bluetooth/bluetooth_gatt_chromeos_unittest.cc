@@ -81,7 +81,7 @@ class TestObserver : public BluetoothAdapter::Observer {
   // BluetoothAdapter::Observer overrides.
   virtual void GattServiceAdded(BluetoothAdapter* adapter,
                                 BluetoothDevice* device,
-                                BluetoothGattService* service) OVERRIDE {
+                                BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ASSERT_EQ(service->GetDevice(), device);
 
@@ -99,7 +99,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void GattServiceRemoved(BluetoothAdapter* adapter,
                                   BluetoothDevice* device,
-                                  BluetoothGattService* service) OVERRIDE {
+                                  BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ASSERT_EQ(service->GetDevice(), device);
 
@@ -118,7 +118,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void GattDiscoveryCompleteForService(
       BluetoothAdapter* adapter,
-      BluetoothGattService* service) OVERRIDE {
+      BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ++gatt_discovery_complete_count_;
 
@@ -126,7 +126,7 @@ class TestObserver : public BluetoothAdapter::Observer {
   }
 
   virtual void GattServiceChanged(BluetoothAdapter* adapter,
-                                  BluetoothGattService* service) OVERRIDE {
+                                  BluetoothGattService* service) override {
     ASSERT_EQ(adapter_.get(), adapter);
     ++gatt_service_changed_count_;
 
@@ -135,7 +135,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void GattCharacteristicAdded(
       BluetoothAdapter* adapter,
-      BluetoothGattCharacteristic* characteristic) OVERRIDE {
+      BluetoothGattCharacteristic* characteristic) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_characteristic_added_count_;
@@ -152,7 +152,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void GattCharacteristicRemoved(
       BluetoothAdapter* adapter,
-      BluetoothGattCharacteristic* characteristic) OVERRIDE {
+      BluetoothGattCharacteristic* characteristic) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_characteristic_removed_count_;
@@ -170,7 +170,7 @@ class TestObserver : public BluetoothAdapter::Observer {
   virtual void GattCharacteristicValueChanged(
       BluetoothAdapter* adapter,
       BluetoothGattCharacteristic* characteristic,
-      const std::vector<uint8>& value) OVERRIDE {
+      const std::vector<uint8>& value) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_characteristic_value_changed_count_;
@@ -188,7 +188,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void GattDescriptorAdded(
       BluetoothAdapter* adapter,
-      BluetoothGattDescriptor* descriptor) OVERRIDE {
+      BluetoothGattDescriptor* descriptor) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_descriptor_added_count_;
@@ -205,7 +205,7 @@ class TestObserver : public BluetoothAdapter::Observer {
 
   virtual void GattDescriptorRemoved(
       BluetoothAdapter* adapter,
-      BluetoothGattDescriptor* descriptor) OVERRIDE {
+      BluetoothGattDescriptor* descriptor) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_descriptor_removed_count_;
@@ -223,7 +223,7 @@ class TestObserver : public BluetoothAdapter::Observer {
   virtual void GattDescriptorValueChanged(
       BluetoothAdapter* adapter,
       BluetoothGattDescriptor* descriptor,
-      const std::vector<uint8>& value) OVERRIDE {
+      const std::vector<uint8>& value) override {
     ASSERT_EQ(adapter_.get(), adapter);
 
     ++gatt_descriptor_value_changed_count_;

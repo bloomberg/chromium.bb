@@ -40,25 +40,25 @@ class BluetoothRemoteGattServiceChromeOS
       public BluetoothGattCharacteristicClient::Observer {
  public:
   // device::BluetoothGattService overrides.
-  virtual std::string GetIdentifier() const OVERRIDE;
-  virtual device::BluetoothUUID GetUUID() const OVERRIDE;
-  virtual bool IsLocal() const OVERRIDE;
-  virtual bool IsPrimary() const OVERRIDE;
-  virtual device::BluetoothDevice* GetDevice() const OVERRIDE;
+  virtual std::string GetIdentifier() const override;
+  virtual device::BluetoothUUID GetUUID() const override;
+  virtual bool IsLocal() const override;
+  virtual bool IsPrimary() const override;
+  virtual device::BluetoothDevice* GetDevice() const override;
   virtual std::vector<device::BluetoothGattCharacteristic*>
-      GetCharacteristics() const OVERRIDE;
+      GetCharacteristics() const override;
   virtual std::vector<device::BluetoothGattService*>
-      GetIncludedServices() const OVERRIDE;
+      GetIncludedServices() const override;
   virtual device::BluetoothGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) const OVERRIDE;
+      const std::string& identifier) const override;
   virtual bool AddCharacteristic(
-      device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
+      device::BluetoothGattCharacteristic* characteristic) override;
   virtual bool AddIncludedService(
-      device::BluetoothGattService* service) OVERRIDE;
+      device::BluetoothGattService* service) override;
   virtual void Register(const base::Closure& callback,
-                        const ErrorCallback& error_callback) OVERRIDE;
+                        const ErrorCallback& error_callback) override;
   virtual void Unregister(const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
 
   // Object path of the underlying service.
   const dbus::ObjectPath& object_path() const { return object_path_; }
@@ -113,16 +113,16 @@ class BluetoothRemoteGattServiceChromeOS
   // BluetoothGattServiceClient::Observer override.
   virtual void GattServicePropertyChanged(
       const dbus::ObjectPath& object_path,
-      const std::string& property_name) OVERRIDE;
+      const std::string& property_name) override;
 
   // BluetoothGattCharacteristicClient::Observer override.
   virtual void GattCharacteristicAdded(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
   virtual void GattCharacteristicRemoved(
-      const dbus::ObjectPath& object_path) OVERRIDE;
+      const dbus::ObjectPath& object_path) override;
   virtual void GattCharacteristicPropertyChanged(
       const dbus::ObjectPath& object_path,
-      const std::string& property_name) OVERRIDE;
+      const std::string& property_name) override;
 
   // Object path of the GATT service.
   dbus::ObjectPath object_path_;

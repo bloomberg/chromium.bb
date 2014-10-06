@@ -34,14 +34,14 @@ class UsbDeviceImpl : public UsbDevice {
 #if defined(OS_CHROMEOS)
   virtual void RequestUsbAccess(
       int interface_id,
-      const base::Callback<void(bool success)>& callback) OVERRIDE;
+      const base::Callback<void(bool success)>& callback) override;
 #endif  // OS_CHROMEOS
-  virtual scoped_refptr<UsbDeviceHandle> Open() OVERRIDE;
-  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) OVERRIDE;
-  virtual const UsbConfigDescriptor& GetConfiguration() OVERRIDE;
-  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE;
-  virtual bool GetProduct(base::string16* product) OVERRIDE;
-  virtual bool GetSerialNumber(base::string16* serial_number) OVERRIDE;
+  virtual scoped_refptr<UsbDeviceHandle> Open() override;
+  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
+  virtual const UsbConfigDescriptor& GetConfiguration() override;
+  virtual bool GetManufacturer(base::string16* manufacturer) override;
+  virtual bool GetProduct(base::string16* product) override;
+  virtual bool GetSerialNumber(base::string16* serial_number) override;
 
  protected:
   friend class UsbServiceImpl;

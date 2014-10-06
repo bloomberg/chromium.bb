@@ -47,10 +47,10 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
 
   // serial::DataSourceClient override. Invoked by the DataSource to report
   // errors.
-  virtual void OnError(uint32_t bytes_since_last_error, int32_t error) OVERRIDE;
+  virtual void OnError(uint32_t bytes_since_last_error, int32_t error) override;
 
   // mojo::ErrorHandler override. Calls ShutDown().
-  virtual void OnConnectionError() OVERRIDE;
+  virtual void OnConnectionError() override;
 
   // Invoked by the PendingReceive to report that the user is done with the
   // receive buffer, having read |bytes_read| bytes from it.

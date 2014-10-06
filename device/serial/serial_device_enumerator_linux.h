@@ -19,7 +19,7 @@ class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator {
   virtual ~SerialDeviceEnumeratorLinux();
 
   // Implementation for SerialDeviceEnumerator.
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() OVERRIDE;
+  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
 
  private:
   struct UdevDeleter {

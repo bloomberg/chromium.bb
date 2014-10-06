@@ -30,21 +30,21 @@ class BluetoothRemoteGattDescriptorChromeOS
     : public device::BluetoothGattDescriptor {
  public:
   // device::BluetoothGattDescriptor overrides.
-  virtual std::string GetIdentifier() const OVERRIDE;
-  virtual device::BluetoothUUID GetUUID() const OVERRIDE;
-  virtual bool IsLocal() const OVERRIDE;
-  virtual const std::vector<uint8>& GetValue() const OVERRIDE;
+  virtual std::string GetIdentifier() const override;
+  virtual device::BluetoothUUID GetUUID() const override;
+  virtual bool IsLocal() const override;
+  virtual const std::vector<uint8>& GetValue() const override;
   virtual device::BluetoothGattCharacteristic*
-      GetCharacteristic() const OVERRIDE;
+      GetCharacteristic() const override;
   virtual device::BluetoothGattCharacteristic::Permissions
-      GetPermissions() const OVERRIDE;
+      GetPermissions() const override;
   virtual void ReadRemoteDescriptor(
       const ValueCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
   virtual void WriteRemoteDescriptor(
       const std::vector<uint8>& new_value,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
 
   // Object path of the underlying D-Bus characteristic.
   const dbus::ObjectPath& object_path() const { return object_path_; }

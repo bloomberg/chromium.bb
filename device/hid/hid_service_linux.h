@@ -24,11 +24,11 @@ class HidServiceLinux : public HidService,
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
-      OVERRIDE;
+      override;
 
   // Implements DeviceMonitorLinux::Observer:
-  virtual void OnDeviceAdded(udev_device* device) OVERRIDE;
-  virtual void OnDeviceRemoved(udev_device* device) OVERRIDE;
+  virtual void OnDeviceAdded(udev_device* device) override;
+  virtual void OnDeviceRemoved(udev_device* device) override;
 
  private:
   virtual ~HidServiceLinux();

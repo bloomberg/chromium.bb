@@ -66,12 +66,12 @@ class UsbTestGadgetImpl : public UsbTestGadget {
  public:
   virtual ~UsbTestGadgetImpl();
 
-  virtual bool Unclaim() OVERRIDE;
-  virtual bool Disconnect() OVERRIDE;
-  virtual bool Reconnect() OVERRIDE;
-  virtual bool SetType(Type type) OVERRIDE;
-  virtual UsbDevice* GetDevice() const OVERRIDE;
-  virtual std::string GetSerialNumber() const OVERRIDE;
+  virtual bool Unclaim() override;
+  virtual bool Disconnect() override;
+  virtual bool Reconnect() override;
+  virtual bool SetType(Type type) override;
+  virtual UsbDevice* GetDevice() const override;
+  virtual std::string GetSerialNumber() const override;
 
  protected:
   UsbTestGadgetImpl();
@@ -99,7 +99,7 @@ class UsbTestGadgetImpl : public UsbTestGadget {
       run_loop_.Run();
     }
 
-    virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+    virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
       run_loop_.Quit();
     }
 

@@ -30,10 +30,10 @@ class HidServiceWin : public HidService {
  public:
   HidServiceWin();
 
-  virtual void GetDevices(std::vector<HidDeviceInfo>* devices) OVERRIDE;
+  virtual void GetDevices(std::vector<HidDeviceInfo>* devices) override;
 
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
-      OVERRIDE;
+      override;
 
  private:
   virtual ~HidServiceWin();

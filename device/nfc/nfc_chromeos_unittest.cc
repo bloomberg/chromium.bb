@@ -60,34 +60,34 @@ class TestObserver : public NfcAdapter::Observer,
 
   // NfcAdapter::Observer override.
   virtual void AdapterPresentChanged(NfcAdapter* adapter,
-                                     bool present) OVERRIDE {
+                                     bool present) override {
     EXPECT_EQ(adapter_.get(), adapter);
     present_changed_count_++;
   }
 
   // NfcAdapter::Observer override.
   virtual void AdapterPoweredChanged(NfcAdapter* adapter,
-                                     bool powered) OVERRIDE {
+                                     bool powered) override {
     EXPECT_EQ(adapter_.get(), adapter);
     powered_changed_count_++;
   }
 
   // NfcAdapter::Observer override.
   virtual void AdapterPollingChanged(NfcAdapter* adapter,
-                                     bool powered) OVERRIDE {
+                                     bool powered) override {
     EXPECT_EQ(adapter_.get(), adapter);
     polling_changed_count_++;
   }
 
   // NfcAdapter::Observer override.
-  virtual void PeerFound(NfcAdapter* adapter, NfcPeer* peer) OVERRIDE {
+  virtual void PeerFound(NfcAdapter* adapter, NfcPeer* peer) override {
     EXPECT_EQ(adapter_.get(), adapter);
     peer_count_++;
     peer_identifier_ = peer->GetIdentifier();
   }
 
   // NfcAdapter::Observer override.
-  virtual void PeerLost(NfcAdapter* adapter, NfcPeer* peer) OVERRIDE {
+  virtual void PeerLost(NfcAdapter* adapter, NfcPeer* peer) override {
     EXPECT_EQ(adapter_.get(), adapter);
     EXPECT_EQ(peer_identifier_, peer->GetIdentifier());
     peer_count_--;
@@ -95,14 +95,14 @@ class TestObserver : public NfcAdapter::Observer,
   }
 
   // NfcAdapter::Observer override.
-  virtual void TagFound(NfcAdapter* adapter, NfcTag* tag) OVERRIDE {
+  virtual void TagFound(NfcAdapter* adapter, NfcTag* tag) override {
     EXPECT_EQ(adapter_.get(), adapter);
     tag_count_++;
     tag_identifier_ = tag->GetIdentifier();
   }
 
   // NfcAdapter::Observer override.
-  virtual void TagLost(NfcAdapter* adapter, NfcTag* tag) OVERRIDE {
+  virtual void TagLost(NfcAdapter* adapter, NfcTag* tag) override {
     EXPECT_EQ(adapter_.get(), adapter);
     EXPECT_EQ(tag_identifier_, tag->GetIdentifier());
     tag_count_--;
@@ -111,7 +111,7 @@ class TestObserver : public NfcAdapter::Observer,
 
   // NfcPeer::Observer override.
   virtual void RecordReceived(
-      NfcPeer* peer, const NfcNdefRecord* record) OVERRIDE {
+      NfcPeer* peer, const NfcNdefRecord* record) override {
     EXPECT_EQ(peer, adapter_->GetPeer(peer_identifier_));
     EXPECT_EQ(peer_identifier_, peer->GetIdentifier());
     peer_records_received_count_++;
@@ -119,7 +119,7 @@ class TestObserver : public NfcAdapter::Observer,
 
   // NfcNdefTagTechnology::Observer override.
   virtual void RecordReceived(
-        NfcTag* tag, const NfcNdefRecord* record) OVERRIDE {
+        NfcTag* tag, const NfcNdefRecord* record) override {
     EXPECT_EQ(tag, adapter_->GetTag(tag_identifier_));
     EXPECT_EQ(tag_identifier_, tag->GetIdentifier());
     tag_records_received_count_++;

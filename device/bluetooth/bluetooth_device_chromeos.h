@@ -32,46 +32,46 @@ class BluetoothDeviceChromeOS
       public BluetoothGattServiceClient::Observer {
  public:
   // BluetoothDevice override
-  virtual uint32 GetBluetoothClass() const OVERRIDE;
-  virtual std::string GetAddress() const OVERRIDE;
-  virtual VendorIDSource GetVendorIDSource() const OVERRIDE;
-  virtual uint16 GetVendorID() const OVERRIDE;
-  virtual uint16 GetProductID() const OVERRIDE;
-  virtual uint16 GetDeviceID() const OVERRIDE;
-  virtual int GetRSSI() const OVERRIDE;
-  virtual int GetCurrentHostTransmitPower() const OVERRIDE;
-  virtual int GetMaximumHostTransmitPower() const OVERRIDE;
-  virtual bool IsPaired() const OVERRIDE;
-  virtual bool IsConnected() const OVERRIDE;
-  virtual bool IsConnectable() const OVERRIDE;
-  virtual bool IsConnecting() const OVERRIDE;
-  virtual UUIDList GetUUIDs() const OVERRIDE;
-  virtual bool ExpectingPinCode() const OVERRIDE;
-  virtual bool ExpectingPasskey() const OVERRIDE;
-  virtual bool ExpectingConfirmation() const OVERRIDE;
+  virtual uint32 GetBluetoothClass() const override;
+  virtual std::string GetAddress() const override;
+  virtual VendorIDSource GetVendorIDSource() const override;
+  virtual uint16 GetVendorID() const override;
+  virtual uint16 GetProductID() const override;
+  virtual uint16 GetDeviceID() const override;
+  virtual int GetRSSI() const override;
+  virtual int GetCurrentHostTransmitPower() const override;
+  virtual int GetMaximumHostTransmitPower() const override;
+  virtual bool IsPaired() const override;
+  virtual bool IsConnected() const override;
+  virtual bool IsConnectable() const override;
+  virtual bool IsConnecting() const override;
+  virtual UUIDList GetUUIDs() const override;
+  virtual bool ExpectingPinCode() const override;
+  virtual bool ExpectingPasskey() const override;
+  virtual bool ExpectingConfirmation() const override;
   virtual void Connect(
       device::BluetoothDevice::PairingDelegate* pairing_delegate,
       const base::Closure& callback,
-      const ConnectErrorCallback& error_callback) OVERRIDE;
-  virtual void SetPinCode(const std::string& pincode) OVERRIDE;
-  virtual void SetPasskey(uint32 passkey) OVERRIDE;
-  virtual void ConfirmPairing() OVERRIDE;
-  virtual void RejectPairing() OVERRIDE;
-  virtual void CancelPairing() OVERRIDE;
+      const ConnectErrorCallback& error_callback) override;
+  virtual void SetPinCode(const std::string& pincode) override;
+  virtual void SetPasskey(uint32 passkey) override;
+  virtual void ConfirmPairing() override;
+  virtual void RejectPairing() override;
+  virtual void CancelPairing() override;
   virtual void Disconnect(
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  virtual void Forget(const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
+  virtual void Forget(const ErrorCallback& error_callback) override;
   virtual void ConnectToService(
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) OVERRIDE;
+      const ConnectToServiceErrorCallback& error_callback) override;
   virtual void CreateGattConnection(
       const GattConnectionCallback& callback,
-      const ConnectErrorCallback& error_callback) OVERRIDE;
+      const ConnectErrorCallback& error_callback) override;
   virtual void StartConnectionMonitor(
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
 
   // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the
   // advertised service on this device matching |uuid|, performing an SDP lookup
@@ -104,7 +104,7 @@ class BluetoothDeviceChromeOS
 
  protected:
    // BluetoothDevice override
-  virtual std::string GetDeviceName() const OVERRIDE;
+  virtual std::string GetDeviceName() const override;
 
  private:
   friend class BluetoothAdapterChromeOS;
@@ -117,8 +117,8 @@ class BluetoothDeviceChromeOS
   virtual ~BluetoothDeviceChromeOS();
 
   // BluetoothGattServiceClient::Observer overrides.
-  virtual void GattServiceAdded(const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void GattServiceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattServiceAdded(const dbus::ObjectPath& object_path) override;
+  virtual void GattServiceRemoved(const dbus::ObjectPath& object_path) override;
 
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.

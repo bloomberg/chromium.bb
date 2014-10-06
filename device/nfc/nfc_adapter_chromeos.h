@@ -29,19 +29,19 @@ class NfcAdapterChromeOS : public device::NfcAdapter,
                            public chromeos::NfcTagClient::Observer {
  public:
   // NfcAdapter overrides.
-  virtual void AddObserver(NfcAdapter::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(NfcAdapter::Observer* observer) OVERRIDE;
-  virtual bool IsPresent() const OVERRIDE;
-  virtual bool IsPowered() const OVERRIDE;
-  virtual bool IsPolling() const OVERRIDE;
-  virtual bool IsInitialized() const OVERRIDE;
+  virtual void AddObserver(NfcAdapter::Observer* observer) override;
+  virtual void RemoveObserver(NfcAdapter::Observer* observer) override;
+  virtual bool IsPresent() const override;
+  virtual bool IsPowered() const override;
+  virtual bool IsPolling() const override;
+  virtual bool IsInitialized() const override;
   virtual void SetPowered(bool powered,
                           const base::Closure& callback,
-                          const ErrorCallback& error_callback) OVERRIDE;
+                          const ErrorCallback& error_callback) override;
   virtual void StartPolling(const base::Closure& callback,
-                            const ErrorCallback& error_callback) OVERRIDE;
+                            const ErrorCallback& error_callback) override;
   virtual void StopPolling(const base::Closure& callback,
-                           const ErrorCallback& error_callback) OVERRIDE;
+                           const ErrorCallback& error_callback) override;
 
  private:
   friend class device::NfcAdapterFactory;
@@ -51,19 +51,19 @@ class NfcAdapterChromeOS : public device::NfcAdapter,
   virtual ~NfcAdapterChromeOS();
 
   // NfcAdapterClient::Observer overrides.
-  virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void AdapterAdded(const dbus::ObjectPath& object_path) override;
+  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) override;
   virtual void AdapterPropertyChanged(
       const dbus::ObjectPath& object_path,
-      const std::string& property_name) OVERRIDE;
+      const std::string& property_name) override;
 
   // NfcDeviceClient::Observer overrides.
-  virtual void DeviceAdded(const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void DeviceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void DeviceAdded(const dbus::ObjectPath& object_path) override;
+  virtual void DeviceRemoved(const dbus::ObjectPath& object_path) override;
 
   // NfcTagClient::Observer overrides.
-  virtual void TagAdded(const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void TagRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void TagAdded(const dbus::ObjectPath& object_path) override;
+  virtual void TagRemoved(const dbus::ObjectPath& object_path) override;
 
   // Set the tracked adapter to the one in |object_path|, this object will
   // subsequently operate on that adapter until it is removed.

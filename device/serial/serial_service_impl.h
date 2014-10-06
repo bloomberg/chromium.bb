@@ -32,13 +32,13 @@ class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
 
   // mojo::InterfaceImpl<SerialService> overrides.
   virtual void GetDevices(const mojo::Callback<
-      void(mojo::Array<serial::DeviceInfoPtr>)>& callback) OVERRIDE;
+      void(mojo::Array<serial::DeviceInfoPtr>)>& callback) override;
   virtual void Connect(
       const mojo::String& path,
       serial::ConnectionOptionsPtr options,
       mojo::InterfaceRequest<serial::Connection> connection_request,
       mojo::InterfaceRequest<serial::DataSink> sink,
-      mojo::InterfaceRequest<serial::DataSource> source) OVERRIDE;
+      mojo::InterfaceRequest<serial::DataSource> source) override;
 
  private:
   SerialDeviceEnumerator* GetDeviceEnumerator();

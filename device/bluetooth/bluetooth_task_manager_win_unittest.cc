@@ -24,15 +24,15 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
   }
 
   virtual void AdapterStateChanged(
-    const device::BluetoothTaskManagerWin::AdapterState& state) OVERRIDE {
+    const device::BluetoothTaskManagerWin::AdapterState& state) override {
     num_adapter_state_changed_++;
   }
 
-  virtual void DiscoveryStarted(bool success) OVERRIDE {
+  virtual void DiscoveryStarted(bool success) override {
     num_discovery_started_++;
   }
 
-  virtual void DiscoveryStopped() OVERRIDE {
+  virtual void DiscoveryStopped() override {
     num_discovery_stopped_++;
   }
 

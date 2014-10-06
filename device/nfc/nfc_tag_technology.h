@@ -93,7 +93,7 @@ class NfcNdefTagTechnology : public NfcTagTechnology {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // NfcTagTechnology override.
-  virtual bool IsSupportedByTag() const OVERRIDE;
+  virtual bool IsSupportedByTag() const override;
 
   // Returns all NDEF records that were received from the tag in the form of an
   // NDEF message. If the returned NDEF message contains no records, this only

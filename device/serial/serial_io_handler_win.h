@@ -15,17 +15,17 @@ class SerialIoHandlerWin : public SerialIoHandler,
                            public base::MessageLoopForIO::IOHandler {
  protected:
   // SerialIoHandler implementation.
-  virtual void ReadImpl() OVERRIDE;
-  virtual void WriteImpl() OVERRIDE;
-  virtual void CancelReadImpl() OVERRIDE;
-  virtual void CancelWriteImpl() OVERRIDE;
-  virtual bool Flush() const OVERRIDE;
-  virtual serial::DeviceControlSignalsPtr GetControlSignals() const OVERRIDE;
+  virtual void ReadImpl() override;
+  virtual void WriteImpl() override;
+  virtual void CancelReadImpl() override;
+  virtual void CancelWriteImpl() override;
+  virtual bool Flush() const override;
+  virtual serial::DeviceControlSignalsPtr GetControlSignals() const override;
   virtual bool SetControlSignals(
-      const serial::HostControlSignals& control_signals) OVERRIDE;
-  virtual bool ConfigurePort(const serial::ConnectionOptions& options) OVERRIDE;
-  virtual serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE;
-  virtual bool PostOpen() OVERRIDE;
+      const serial::HostControlSignals& control_signals) override;
+  virtual bool ConfigurePort(const serial::ConnectionOptions& options) override;
+  virtual serial::ConnectionInfoPtr GetPortInfo() const override;
+  virtual bool PostOpen() override;
 
  private:
   friend class SerialIoHandler;
@@ -37,7 +37,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
   // base::MessageLoopForIO::IOHandler implementation.
   virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                              DWORD bytes_transfered,
-                             DWORD error) OVERRIDE;
+                             DWORD error) override;
 
   // Context used for asynchronous WaitCommEvent calls.
   scoped_ptr<base::MessageLoopForIO::IOContext> comm_context_;

@@ -23,20 +23,20 @@ class HidConnectionLinux : public HidConnection,
   virtual ~HidConnectionLinux();
 
   // HidConnection implementation.
-  virtual void PlatformRead(const ReadCallback& callback) OVERRIDE;
+  virtual void PlatformRead(const ReadCallback& callback) override;
   virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                              size_t size,
-                             const WriteCallback& callback) OVERRIDE;
+                             const WriteCallback& callback) override;
   virtual void PlatformGetFeatureReport(uint8_t report_id,
-                                        const ReadCallback& callback) OVERRIDE;
+                                        const ReadCallback& callback) override;
   virtual void PlatformSendFeatureReport(
       scoped_refptr<net::IOBuffer> buffer,
       size_t size,
-      const WriteCallback& callback) OVERRIDE;
+      const WriteCallback& callback) override;
 
   // base::MessagePumpLibevent::Watcher implementation.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   void Disconnect();
 
