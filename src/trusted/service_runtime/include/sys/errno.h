@@ -11,12 +11,12 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_ERRNO_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_ERRNO_H_
 
+#ifdef __native_client__
+#include <sys/reent.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifdef __native_client__
-#include <sys/reent.h>
 
 #ifndef _REENT_ONLY
 #define errno (*__errno())
@@ -29,15 +29,20 @@ extern __IMPORT _CONST char * _CONST _sys_errlist[];
 extern __IMPORT int _sys_nerr;
 
 #define __errno_r(ptr) ((ptr)->_errno)
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif  /* __native_client__ */
 
 /*
  * NOTE: when adding new errnos here, check
- * service_runtime/nacl_host_desc_common.[hc] and
- * service_runtime/win/xlate_system_error.h.
+ * service_runtime/nacl_host_desc_common.c and
+ * service_runtime/win/xlate_system_error.c.
  */
 
-/* 
+/*
  * The errno values below 2048 here are the same as Linux's errno
  * values.  See Linux's asm-generic/errno-base.h and
  * asm-generic/errno.h.
@@ -167,6 +172,8 @@ extern __IMPORT int _sys_nerr;
 #define NACL_ABI_ENOTSUP NACL_ABI_EOPNOTSUPP   /* Not supported */
 #define NACL_ABI_ENOMEDIUM 123   /* No medium (in tape drive) */
 #define NACL_ABI_ECANCELED 125 /* Operation canceled. */
+#define NACL_ABI_EOWNERDEAD 130 /* Owner died */
+#define NACL_ABI_ENOTRECOVERABLE 131 /* State not recoverable */
 
 
 /*
@@ -185,9 +192,5 @@ extern __IMPORT int _sys_nerr;
 
 /* From cygwin32.  */
 #define NACL_ABI_EWOULDBLOCK NACL_ABI_EAGAIN      /* Operation would block */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

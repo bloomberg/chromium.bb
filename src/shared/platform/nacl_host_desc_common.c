@@ -324,6 +324,12 @@ int NaClXlateErrno(int errnum) {
 #ifdef  EMSGSIZE
     MAP(EMSGSIZE);
 #endif
+#ifdef  EOWNERDEAD
+    MAP(EOWNERDEAD);
+#endif
+#ifdef  ENOTRECOVERABLE
+    MAP(ENOTRECOVERABLE);
+#endif
 #undef MAP
   }
   return NACL_ABI_EINVAL;  /* catch all */
