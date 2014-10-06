@@ -3439,6 +3439,14 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_COMBO_BOX:
       ia_role_ = ROLE_SYSTEM_COMBOBOX;
       break;
+    case ui::AX_ROLE_COMPLEMENTARY:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_NOTE;
+      break;
+    case ui::AX_ROLE_CONTENT_INFO:
+      ia_role_ = ROLE_SYSTEM_TEXT;
+      ia2_role_ = IA2_ROLE_PARAGRAPH;
+      break;
     case ui::AX_ROLE_DIV:
       role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
@@ -3556,13 +3564,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_LABEL;
       break;
-    case ui::AX_ROLE_MAIN:
-      ia_role_ = ROLE_SYSTEM_GROUPING;
-      break;
     case ui::AX_ROLE_BANNER:
-    case ui::AX_ROLE_COMPLEMENTARY:
-    case ui::AX_ROLE_CONTENT_INFO:
-    case ui::AX_ROLE_NAVIGATION:
     case ui::AX_ROLE_SEARCH:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
@@ -3591,6 +3593,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
+    case ui::AX_ROLE_MAIN:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_PARAGRAPH;
+      break;
     case ui::AX_ROLE_MATH_ELEMENT:
       ia_role_ = ROLE_SYSTEM_EQUATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
@@ -3615,6 +3621,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         if (HasState(ui::AX_STATE_FOCUSED))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
+      break;
+    case ui::AX_ROLE_NAVIGATION:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_SECTION;
       break;
     case ui::AX_ROLE_NOTE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
