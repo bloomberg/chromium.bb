@@ -1861,6 +1861,7 @@
             '../athena/test/chrome/test_util.h',
             '../athena/content/app_activity_browsertest.cc',
             '../athena/content/chrome/web_activity_helpers_browsertest.cc',
+            '../athena/content/chrome/web_activity_browsertest.cc',
             '../athena/content/content_proxy_browsertest.cc',
             '../athena/main/placeholder_for_browsertest.cc',
             'test/base/browser_tests_main.cc',
