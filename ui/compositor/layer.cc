@@ -510,6 +510,9 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetForceRenderSurface(force_render_surface_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
   cc_layer_->SetHideLayerAndSubtree(!visible_);
+
+  SetLayerFilters();
+  SetLayerBackgroundFilters();
 }
 
 void Layer::SwitchCCLayerForTest() {

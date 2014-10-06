@@ -1522,6 +1522,33 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   EXPECT_NE(before.get(), child->cc_layer());
 }
 
+// Verifies that layer filters still attached after changing implementation
+// layer.
+TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
+  scoped_ptr<Layer> layer(CreateLayer(LAYER_TEXTURED));
+  layer->SetBounds(gfx::Rect(0, 0, 10, 10));
+  EXPECT_TRUE(layer->cc_layer());
+  EXPECT_EQ(0u, layer->cc_layer()->filters().size());
+
+  layer->SetLayerGrayscale(0.5f);
+  EXPECT_EQ(layer->layer_grayscale(), 0.5f);
+  EXPECT_EQ(1u, layer->cc_layer()->filters().size());
+
+  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
+      new cc::DelegatedFrameResourceCollection;
+  scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
+      new cc::DelegatedFrameProvider(resource_collection.get(),
+                                     MakeFrameData(gfx::Size(10, 10)));
+
+  // Showing delegated content changes the underlying cc layer.
+  scoped_refptr<cc::Layer> before = layer->cc_layer();
+  layer->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
+  EXPECT_EQ(layer->layer_grayscale(), 0.5f);
+  EXPECT_TRUE(layer->cc_layer());
+  EXPECT_NE(before.get(), layer->cc_layer());
+  EXPECT_EQ(1u, layer->cc_layer()->filters().size());
+}
+
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
 TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
