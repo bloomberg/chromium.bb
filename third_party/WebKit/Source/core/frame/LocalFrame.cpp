@@ -93,7 +93,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     : Frame(client, host, owner)
     , m_loader(this)
     , m_navigationScheduler(this)
-    , m_script(adoptPtr(new ScriptController(this)))
+    , m_script(ScriptController::create(this))
     , m_editor(Editor::create(*this))
     , m_spellChecker(SpellChecker::create(*this))
     , m_selection(FrameSelection::create(this))
@@ -146,6 +146,7 @@ void LocalFrame::trace(Visitor* visitor)
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
     visitor->trace(m_pagePopupOwner);
+    visitor->trace(m_script);
     visitor->trace(m_editor);
     visitor->trace(m_spellChecker);
     visitor->trace(m_selection);

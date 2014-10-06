@@ -34,8 +34,8 @@
 #include "bindings/core/v8/SharedPersistent.h"
 
 #include "core/fetch/CrossOriginAccessControl.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
 #include <v8.h>
@@ -63,15 +63,20 @@ enum ReasonForCallingCanExecuteScripts {
     NotAboutToExecuteScript
 };
 
-class ScriptController {
+class ScriptController final : public NoBaseWillBeGarbageCollectedFinalized<ScriptController> {
 public:
     enum ExecuteScriptPolicy {
         ExecuteScriptWhenScriptsDisabled,
         DoNotExecuteScriptWhenScriptsDisabled
     };
 
-    ScriptController(LocalFrame*);
+    static PassOwnPtrWillBeRawPtr<ScriptController> create(LocalFrame* frame)
+    {
+        return adoptPtrWillBeNoop(new ScriptController(frame));
+    }
+
     ~ScriptController();
+    void trace(Visitor*);
 
     bool initializeMainWorld();
     WindowProxy* windowProxy(DOMWrapperWorld&);
@@ -147,16 +152,18 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
 
 private:
-    typedef HashMap<int, OwnPtr<WindowProxy> > IsolatedWorldMap;
+    explicit ScriptController(LocalFrame*);
+
+    typedef WillBeHeapHashMap<int, OwnPtrWillBeMember<WindowProxy> > IsolatedWorldMap;
     typedef HashMap<Widget*, NPObject*> PluginObjectMap;
 
     v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy, double* compilationFinishTime = 0);
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     const String* m_sourceURL;
     v8::Isolate* m_isolate;
 
-    OwnPtr<WindowProxy> m_windowProxy;
+    OwnPtrWillBeMember<WindowProxy> m_windowProxy;
     IsolatedWorldMap m_isolatedWorlds;
 
     // A mapping between Widgets and their corresponding script object.

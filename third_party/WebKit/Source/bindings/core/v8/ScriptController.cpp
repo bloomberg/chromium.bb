@@ -101,8 +101,15 @@ ScriptController::ScriptController(LocalFrame* frame)
 
 ScriptController::~ScriptController()
 {
-    // WindowProxy::clearForClose() must be invoked before destruction starts.
-    ASSERT(!m_windowProxy->isContextInitialized());
+}
+
+void ScriptController::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_frame);
+    visitor->trace(m_windowProxy);
+    visitor->trace(m_isolatedWorlds);
+#endif
 }
 
 void ScriptController::clearScriptObjects()
@@ -142,7 +149,7 @@ void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[])
 {
     // Keep LocalFrame (and therefore ScriptController) alive.
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     return ScriptController::callFunction(m_frame->document(), function, receiver, argc, info, m_isolate);
 }
 
@@ -192,7 +199,7 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
             *compilationFinishTime = WTF::monotonicallyIncreasingTime();
         }
         // Keep LocalFrame (and therefore ScriptController) alive.
-        RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
+        RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
         result = V8ScriptRunner::runCompiledScript(script, m_frame->document(), m_isolate);
         ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
     }
@@ -223,7 +230,7 @@ WindowProxy* ScriptController::existingWindowProxy(DOMWrapperWorld& world)
 
 WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world)
 {
-    WindowProxy* windowProxy = 0;
+    WindowProxy* windowProxy = nullptr;
     if (world.isMainWorld()) {
         windowProxy = m_windowProxy.get();
     } else {
@@ -231,7 +238,7 @@ WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world)
         if (iter != m_isolatedWorlds.end()) {
             windowProxy = iter->value.get();
         } else {
-            OwnPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_frame, world, m_isolate);
+            OwnPtrWillBeRawPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_frame, world, m_isolate);
             windowProxy = isolatedWorldWindowProxy.get();
             m_isolatedWorlds.set(world.worldId(), isolatedWorldWindowProxy.release());
         }
@@ -537,7 +544,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     // We need to hold onto the LocalFrame here because executing script can
     // destroy the frame.
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     RefPtrWillBeRawPtr<Document> ownerDocument(m_frame->document());
 
     const int javascriptSchemeLength = sizeof("javascript:") - 1;
@@ -600,7 +607,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
 
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         m_frame->loader().didAccessInitialDocument();
 

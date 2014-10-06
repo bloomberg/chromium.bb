@@ -104,7 +104,7 @@ namespace blink {
         FrameSelection& selection() const;
         InputMethodController& inputMethodController() const;
         FetchContext& fetchContext() const { return loader().fetchContext(); }
-        ScriptController& script();
+        ScriptController& script() const;
         SpellChecker& spellChecker() const;
         FrameConsole& console() const;
 
@@ -173,7 +173,7 @@ namespace blink {
         // Usually 0. Non-null if this is the top frame of PagePopup.
         RefPtrWillBeMember<Element> m_pagePopupOwner;
 
-        OwnPtr<ScriptController> m_script;
+        const OwnPtrWillBeMember<ScriptController> m_script;
         const OwnPtrWillBeMember<Editor> m_editor;
         const OwnPtrWillBeMember<SpellChecker> m_spellChecker;
         const OwnPtrWillBeMember<FrameSelection> m_selection;
@@ -207,7 +207,7 @@ namespace blink {
         return m_view.get();
     }
 
-    inline ScriptController& LocalFrame::script()
+    inline ScriptController& LocalFrame::script() const
     {
         return *m_script;
     }

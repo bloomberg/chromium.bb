@@ -74,9 +74,9 @@ static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* docum
     ASSERT(!document->isHTMLDocument() || (V8Document::toImpl(v8::Handle<v8::Object>::Cast(wrapper->GetPrototype())) == document));
 }
 
-PassOwnPtr<WindowProxy> WindowProxy::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
+PassOwnPtrWillBeRawPtr<WindowProxy> WindowProxy::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
 {
-    return adoptPtr(new WindowProxy(frame, &world, isolate));
+    return adoptPtrWillBeNoop(new WindowProxy(frame, &world, isolate));
 }
 
 WindowProxy::WindowProxy(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
@@ -84,6 +84,17 @@ WindowProxy::WindowProxy(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v
     , m_isolate(isolate)
     , m_world(world)
 {
+}
+
+WindowProxy::~WindowProxy()
+{
+    // clearForClose() or clearForNavigation() must be invoked before destruction starts.
+    ASSERT(!isContextInitialized());
+}
+
+void WindowProxy::trace(Visitor* visitor)
+{
+    visitor->trace(m_frame);
 }
 
 void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
