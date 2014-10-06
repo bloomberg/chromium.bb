@@ -55,6 +55,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     initiatorInfo.name = AtomicString(m_initiatorName);
     initiatorInfo.position = m_initiatorPosition;
     FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextPrefetch);
 
     if (m_isCORSEnabled)
         request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);

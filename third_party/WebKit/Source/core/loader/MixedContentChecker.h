@@ -32,6 +32,7 @@
 #define MixedContentChecker_h
 
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
 
@@ -48,7 +49,11 @@ class MixedContentChecker FINAL {
 public:
     explicit MixedContentChecker(LocalFrame*);
 
-    static bool shouldBlockFetch(LocalFrame*, const ResourceRequest&, const KURL&);
+    static bool shouldBlockFetch(LocalFrame* frame, const ResourceRequest& request, const KURL& url)
+    {
+        return shouldBlockFetch(frame, request.requestContext(), request.frameType(), url);
+    }
+    static bool shouldBlockFetch(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, const KURL&);
 
     bool canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
     {
@@ -83,6 +88,8 @@ private:
         ContextTypeShouldBeBlockable,
         ContextTypeBlockableUnlessLax
     };
+
+    static LocalFrame* inWhichFrameIsThisContentMixed(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, const KURL&);
 
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
