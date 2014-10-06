@@ -23,7 +23,7 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
                         const gfx::Vector2d& dest_offset,
-                        bool partial_update) OVERRIDE;
+                        bool partial_update) override;
 
    private:
     SkBitmap bitmap_;
@@ -38,7 +38,7 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
       int layer_id);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
-      PrioritizedResourceManager* manager) OVERRIDE;
+      PrioritizedResourceManager* manager) override;
   void PaintContentsRect(SkCanvas* canvas,
                          const gfx::Rect& source_rect);
 

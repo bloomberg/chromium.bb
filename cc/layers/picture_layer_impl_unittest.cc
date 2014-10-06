@@ -38,7 +38,7 @@ class MockCanvas : public SkCanvas {
  public:
   explicit MockCanvas(int w, int h) : SkCanvas(w, h) {}
 
-  virtual void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE {
+  virtual void drawRect(const SkRect& rect, const SkPaint& paint) override {
     // Capture calls before SkCanvas quickReject() kicks in.
     rects_.push_back(rect);
   }
@@ -71,7 +71,7 @@ class PictureLayerImplTest : public testing::Test {
   virtual ~PictureLayerImplTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InitializeRenderer();
   }
 
@@ -2237,14 +2237,14 @@ TEST_F(PictureLayerImplTest, PinchingTooSmall) {
 
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
-  virtual void InitializeRenderer() OVERRIDE {
+  virtual void InitializeRenderer() override {
     bool delegated_rendering = false;
     host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
         scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
         delegated_rendering));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     PictureLayerImplTest::SetUp();
 
     // Create some default active and pending trees.
@@ -3564,7 +3564,7 @@ class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
  public:
   PictureLayerImplTestWithDelegatingRenderer() : PictureLayerImplTest() {}
 
-  virtual void InitializeRenderer() OVERRIDE {
+  virtual void InitializeRenderer() override {
     host_impl_.InitializeRenderer(FakeOutputSurface::CreateDelegating3d());
   }
 };

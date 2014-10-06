@@ -50,7 +50,7 @@ class CC_EXPORT ColorAnimationCurve : public AnimationCurve {
   virtual SkColor GetValue(double t) const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const OVERRIDE;
+  virtual CurveType Type() const override;
 };
 
 class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
@@ -60,7 +60,7 @@ class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
   virtual float GetValue(double t) const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const OVERRIDE;
+  virtual CurveType Type() const override;
 };
 
 class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
@@ -86,7 +86,7 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   virtual bool MaximumScale(float* max_scale) const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const OVERRIDE;
+  virtual CurveType Type() const override;
 };
 
 class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
@@ -97,7 +97,7 @@ class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
   virtual bool HasFilterThatMovesPixels() const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const OVERRIDE;
+  virtual CurveType Type() const override;
 };
 
 }  // namespace cc

@@ -16,7 +16,7 @@ namespace {
 // These tests deal with picture layers.
 class LayerTreeHostPictureTest : public LayerTreeTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     // PictureLayer can only be used with impl side painting enabled.
     settings->impl_side_painting = true;
   }
@@ -24,7 +24,7 @@ class LayerTreeHostPictureTest : public LayerTreeTest {
 
 class LayerTreeHostPictureTestTwinLayer
     : public LayerTreeHostPictureTest {
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostPictureTest::SetupTree();
 
     scoped_refptr<FakePictureLayer> picture =
@@ -32,12 +32,12 @@ class LayerTreeHostPictureTestTwinLayer
     layer_tree_host()->root_layer()->AddChild(picture);
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     activates_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 2:
         // Drop the picture layer from the tree.
@@ -52,7 +52,7 @@ class LayerTreeHostPictureTestTwinLayer
     }
   }
 
-  virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* pending_root_impl = impl->pending_tree()->root_layer();
     LayerImpl* active_root_impl = impl->active_tree()->root_layer();
 
@@ -88,7 +88,7 @@ class LayerTreeHostPictureTestTwinLayer
     EXPECT_EQ(active_picture_impl, pending_picture_impl->twin_layer());
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* active_root_impl = impl->active_tree()->root_layer();
 
     if (active_root_impl->children().empty()) {
@@ -107,7 +107,7 @@ class LayerTreeHostPictureTestTwinLayer
       EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
   int activates_;

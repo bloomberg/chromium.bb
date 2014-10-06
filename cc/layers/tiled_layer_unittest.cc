@@ -69,7 +69,7 @@ class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
   }
 
   virtual void OnCreateAndInitializeOutputSurfaceAttempted(
-      bool success) OVERRIDE {
+      bool success) override {
     LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(success);
     output_surface_created_ = success;
     run_loop_.Quit();
@@ -1648,7 +1648,7 @@ class TrackingLayerPainter : public LayerPainter {
     return make_scoped_ptr(new TrackingLayerPainter());
   }
 
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) OVERRIDE {
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {
     painted_rect_ = content_rect;
   }
 
@@ -1674,7 +1674,7 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
   }
 
  private:
-  virtual LayerUpdater* Updater() const OVERRIDE {
+  virtual LayerUpdater* Updater() const override {
     return layer_updater_.get();
   }
   virtual ~UpdateTrackingTiledLayer() {}

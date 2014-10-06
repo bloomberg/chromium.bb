@@ -525,7 +525,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
                      color_space);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     GLRendererPixelTest::SetUp();
     video_resource_updater_.reset(new VideoResourceUpdater(
         output_surface_->context_provider(), resource_provider_.get()));

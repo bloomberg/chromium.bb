@@ -23,7 +23,7 @@ class ScopedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
                                             const SkBitmap& skbitmap) {
     return make_scoped_ptr(new ScopedUIResourceHolder(host, skbitmap));
   }
-  virtual UIResourceId id() OVERRIDE { return resource_->id(); }
+  virtual UIResourceId id() override { return resource_->id(); }
 
  private:
   ScopedUIResourceHolder(LayerTreeHost* host, const SkBitmap& skbitmap) {
@@ -39,7 +39,7 @@ class SharedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
     return make_scoped_ptr(new SharedUIResourceHolder(id));
   }
 
-  virtual UIResourceId id() OVERRIDE { return id_; }
+  virtual UIResourceId id() override { return id_; }
 
  private:
   explicit SharedUIResourceHolder(UIResourceId id) : id_(id) {}

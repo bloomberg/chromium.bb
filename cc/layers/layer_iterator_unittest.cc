@@ -31,7 +31,7 @@ class TestLayer : public Layer {
   int count_representing_contributing_surface_;
   int count_representing_itself_;
 
-  virtual bool DrawsContent() const OVERRIDE { return draws_content_; }
+  virtual bool DrawsContent() const override { return draws_content_; }
   void set_draws_content(bool draws_content) { draws_content_ = draws_content; }
 
  private:

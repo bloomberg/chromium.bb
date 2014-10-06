@@ -44,34 +44,34 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
         measure_commit_cost_(false) {
   }
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->throttle_frame_production = false;
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     BuildTree();
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {
+  virtual void BeginMainFrame(const BeginFrameArgs& args) override {
     if (begin_frame_driven_drawing_ && !TestEnded()) {
       layer_tree_host()->SetNeedsAnimate();
       layer_tree_host()->SetNextCommitForcesRedraw();
     }
   }
 
-  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
     if (measure_commit_cost_)
       commit_timer_.Start();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (measure_commit_cost_ && draw_timer_.IsWarmedUp()) {
       commit_timer_.NextLap();
     }
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (TestEnded() || CleanUpStarted())
       return;
     draw_timer_.NextLap();
@@ -91,7 +91,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
 
   virtual void BuildTree() {}
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     CHECK(!test_name_.empty()) << "Must SetTestName() before AfterTest().";
     perf_test::PrintResult("layer_tree_host_frame_time", "", test_name_,
                            1000 * draw_timer_.MsPerLap(), "us", true);
@@ -131,7 +131,7 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
     ASSERT_TRUE(base::ReadFileToString(json_file, &json_));
   }
 
-  virtual void BuildTree() OVERRIDE {
+  virtual void BuildTree() override {
     gfx::Size viewport = gfx::Size(720, 1038);
     layer_tree_host()->SetViewportSize(viewport);
     scoped_refptr<Layer> root = ParseTreeFromJson(json_,
@@ -178,7 +178,7 @@ TEST_F(LayerTreeHostPerfTestJsonReader,
 class LayerTreeHostPerfTestLeafInvalidates
     : public LayerTreeHostPerfTestJsonReader {
  public:
-  virtual void BuildTree() OVERRIDE {
+  virtual void BuildTree() override {
     LayerTreeHostPerfTestJsonReader::BuildTree();
 
     // Find a leaf layer.
@@ -188,7 +188,7 @@ class LayerTreeHostPerfTestLeafInvalidates
     }
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     if (TestEnded())
       return;
 
@@ -221,13 +221,13 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
       : LayerTreeHostPerfTestJsonReader() {
   }
 
-  virtual void BuildTree() OVERRIDE {
+  virtual void BuildTree() override {
     LayerTreeHostPerfTestJsonReader::BuildTree();
     scrollable_ = layer_tree_host()->root_layer()->children()[1];
     ASSERT_TRUE(scrollable_.get());
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     if (TestEnded())
       return;
     static const gfx::Vector2d delta = gfx::Vector2d(0, 10);
@@ -262,7 +262,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
         next_sync_point_(1),
         clean_up_started_(false) {}
 
-  virtual void BuildTree() OVERRIDE {
+  virtual void BuildTree() override {
     LayerTreeHostPerfTestJsonReader::BuildTree();
     tab_contents_ =
         static_cast<TextureLayer*>(
@@ -273,7 +273,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     ASSERT_TRUE(tab_contents_.get());
   }
 
-  virtual void WillCommit() OVERRIDE {
+  virtual void WillCommit() override {
     if (CleanUpStarted())
       return;
     gpu::Mailbox gpu_mailbox;
@@ -289,13 +289,13 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     tab_contents_->SetTextureMailbox(mailbox, callback.Pass());
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     if (CleanUpStarted())
       return;
     layer_tree_host()->SetNeedsCommit();
   }
 
-  virtual void CleanUpAndEndTest(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CleanUpAndEndTest(LayerTreeHostImpl* host_impl) override {
     clean_up_started_ = true;
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -310,7 +310,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     EndTest();
   }
 
-  virtual bool CleanUpStarted() OVERRIDE { return clean_up_started_; }
+  virtual bool CleanUpStarted() override { return clean_up_started_; }
 
  private:
   scoped_refptr<TextureLayer> tab_contents_;

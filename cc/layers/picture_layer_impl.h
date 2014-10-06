@@ -102,47 +102,47 @@ class CC_EXPORT PictureLayerImpl
   virtual ~PictureLayerImpl();
 
   // LayerImpl overrides.
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
   virtual void UpdateTiles(const Occlusion& occlusion_in_content_space,
-                           bool resourceless_software_draw) OVERRIDE;
-  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
-  virtual void DidBecomeActive() OVERRIDE;
-  virtual void DidBeginTracing() OVERRIDE;
-  virtual void ReleaseResources() OVERRIDE;
-  virtual skia::RefPtr<SkPicture> GetPicture() OVERRIDE;
+                           bool resourceless_software_draw) override;
+  virtual void NotifyTileStateChanged(const Tile* tile) override;
+  virtual void DidBecomeActive() override;
+  virtual void DidBeginTracing() override;
+  virtual void ReleaseResources() override;
+  virtual skia::RefPtr<SkPicture> GetPicture() override;
 
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(
     PictureLayerTiling* tiling,
-    const gfx::Rect& content_rect) OVERRIDE;
-  virtual PicturePileImpl* GetPile() OVERRIDE;
+    const gfx::Rect& content_rect) override;
+  virtual PicturePileImpl* GetPile() override;
   virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const OVERRIDE;
-  virtual const Region* GetInvalidation() OVERRIDE;
+      const gfx::Size& content_bounds) const override;
+  virtual const Region* GetInvalidation() override;
   virtual const PictureLayerTiling* GetTwinTiling(
-      const PictureLayerTiling* tiling) const OVERRIDE;
+      const PictureLayerTiling* tiling) const override;
   virtual PictureLayerTiling* GetRecycledTwinTiling(
-      const PictureLayerTiling* tiling) OVERRIDE;
-  virtual size_t GetMaxTilesForInterestArea() const OVERRIDE;
-  virtual float GetSkewportTargetTimeInSeconds() const OVERRIDE;
-  virtual int GetSkewportExtrapolationLimitInContentPixels() const OVERRIDE;
-  virtual WhichTree GetTree() const OVERRIDE;
+      const PictureLayerTiling* tiling) override;
+  virtual size_t GetMaxTilesForInterestArea() const override;
+  virtual float GetSkewportTargetTimeInSeconds() const override;
+  virtual int GetSkewportExtrapolationLimitInContentPixels() const override;
+  virtual WhichTree GetTree() const override;
 
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
 
   // Mask-related functions.
-  virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
+  virtual ResourceProvider::ResourceId ContentsResourceId() const override;
 
-  virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
+  virtual size_t GPUMemoryUsageInBytes() const override;
 
-  virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) OVERRIDE;
+  virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
 
   // Functions used by tile manager.
   PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
@@ -190,10 +190,10 @@ class CC_EXPORT PictureLayerImpl
   bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
 
   virtual void GetDebugBorderProperties(
-      SkColor* color, float* width) const OVERRIDE;
+      SkColor* color, float* width) const override;
   virtual void GetAllTilesForTracing(
-      std::set<const Tile*>* tiles) const OVERRIDE;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
+      std::set<const Tile*>* tiles) const override;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
 
   virtual void UpdateIdealScales();
   float MaximumTilingContentsScale() const;

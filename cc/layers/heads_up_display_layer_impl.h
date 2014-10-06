@@ -35,17 +35,17 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   virtual ~HeadsUpDisplayLayerImpl();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
+                        ResourceProvider* resource_provider) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
 
-  virtual void ReleaseResources() OVERRIDE;
+  virtual void ReleaseResources() override;
 
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
@@ -70,9 +70,9 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
-  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
 
   void UpdateHudContents();
   void DrawHudContents(SkCanvas* canvas);

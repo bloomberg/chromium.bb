@@ -56,12 +56,12 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   ColorSpace color_space;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
-      OVERRIDE;
+      override;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const OVERRIDE;
+  virtual void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

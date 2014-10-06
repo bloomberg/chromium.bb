@@ -23,7 +23,7 @@ class CC_EXPORT UnittestOnlyBenchmarkImpl : public MicroBenchmarkImpl {
                             const DoneCallback& callback);
   virtual ~UnittestOnlyBenchmarkImpl();
 
-  virtual void DidCompleteCommit(LayerTreeHostImpl* host) OVERRIDE;
+  virtual void DidCompleteCommit(LayerTreeHostImpl* host) override;
 };
 
 }  // namespace cc

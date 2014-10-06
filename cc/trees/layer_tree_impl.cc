@@ -50,16 +50,16 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
 
   // LayerScrollOffsetDelegate implementation.
   virtual void SetTotalScrollOffset(
-      const gfx::ScrollOffset& new_offset) OVERRIDE {
+      const gfx::ScrollOffset& new_offset) override {
     last_set_scroll_offset_ = new_offset;
     layer_tree_impl_->UpdateScrollOffsetDelegate();
   }
 
-  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE {
+  virtual gfx::ScrollOffset GetTotalScrollOffset() override {
     return layer_tree_impl_->GetDelegatedScrollOffset(layer_);
   }
 
-  virtual bool IsExternalFlingActive() const OVERRIDE {
+  virtual bool IsExternalFlingActive() const override {
     return delegate_->IsExternalFlingActive();
   }
 

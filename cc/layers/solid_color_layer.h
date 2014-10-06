@@ -18,9 +18,9 @@ class CC_EXPORT SolidColorLayer : public Layer {
   static scoped_refptr<SolidColorLayer> Create();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
-  virtual void SetBackgroundColor(SkColor color) OVERRIDE;
+  virtual void SetBackgroundColor(SkColor color) override;
 
  protected:
   SolidColorLayer();

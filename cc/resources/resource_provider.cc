@@ -143,7 +143,7 @@ class TextureIdAllocator : public IdAllocator {
   }
 
   // Overridden from IdAllocator:
-  virtual GLuint NextId() OVERRIDE {
+  virtual GLuint NextId() override {
     if (next_id_index_ == id_allocation_chunk_size_) {
       gl_->GenTextures(id_allocation_chunk_size_, ids_.get());
       next_id_index_ = 0;
@@ -166,7 +166,7 @@ class BufferIdAllocator : public IdAllocator {
   }
 
   // Overridden from IdAllocator:
-  virtual GLuint NextId() OVERRIDE {
+  virtual GLuint NextId() override {
     if (next_id_index_ == id_allocation_chunk_size_) {
       gl_->GenBuffers(id_allocation_chunk_size_, ids_.get());
       next_id_index_ = 0;
@@ -187,8 +187,8 @@ class QueryFence : public ResourceProvider::Fence {
       : gl_(gl), query_id_(query_id) {}
 
   // Overridden from ResourceProvider::Fence:
-  virtual void Set() OVERRIDE {}
-  virtual bool HasPassed() OVERRIDE {
+  virtual void Set() override {}
+  virtual bool HasPassed() override {
     unsigned available = 1;
     gl_->GetQueryObjectuivEXT(
         query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);

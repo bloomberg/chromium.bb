@@ -20,7 +20,7 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
   OverlayStrategySingleOnTop(OverlayCandidateValidator* capability_checker,
                              ResourceProvider* resource_provider);
   virtual bool Attempt(RenderPassList* render_passes_in_draw_order,
-                       OverlayCandidateList* candidate_list) OVERRIDE;
+                       OverlayCandidateList* candidate_list) override;
 
  private:
   OverlayCandidateValidator* capability_checker_;

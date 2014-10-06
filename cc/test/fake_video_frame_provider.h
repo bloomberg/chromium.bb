@@ -16,10 +16,10 @@ class FakeVideoFrameProvider : public VideoFrameProvider {
   FakeVideoFrameProvider();
   virtual ~FakeVideoFrameProvider();
 
-  virtual void SetVideoFrameProviderClient(Client* client) OVERRIDE;
-  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void SetVideoFrameProviderClient(Client* client) override;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>&)
-      OVERRIDE {}
+      override {}
 
   Client* client() { return client_; }
 

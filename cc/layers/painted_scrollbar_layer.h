@@ -20,32 +20,32 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                         public ContentsScalingLayer {
  public:
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   static scoped_refptr<PaintedScrollbarLayer> Create(
       scoped_ptr<Scrollbar> scrollbar,
       int scroll_layer_id);
 
-  virtual bool OpacityCanAnimateOnImplThread() const OVERRIDE;
-  virtual ScrollbarLayerInterface* ToScrollbarLayer() OVERRIDE;
+  virtual bool OpacityCanAnimateOnImplThread() const override;
+  virtual ScrollbarLayerInterface* ToScrollbarLayer() override;
 
   // ScrollbarLayerInterface
-  virtual int ScrollLayerId() const OVERRIDE;
-  virtual void SetScrollLayer(int layer_id) OVERRIDE;
-  virtual void SetClipLayer(int layer_id) OVERRIDE;
+  virtual int ScrollLayerId() const override;
+  virtual void SetScrollLayer(int layer_id) override;
+  virtual void SetClipLayer(int layer_id) override;
 
-  virtual ScrollbarOrientation orientation() const OVERRIDE;
+  virtual ScrollbarOrientation orientation() const override;
 
   // Layer interface
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
-  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
+  virtual void SetLayerTreeHost(LayerTreeHost* host) override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) override;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* content_bounds) OVERRIDE;
+                                      gfx::Size* content_bounds) override;
 
  protected:
   PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);

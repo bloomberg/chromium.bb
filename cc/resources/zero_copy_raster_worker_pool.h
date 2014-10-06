@@ -31,18 +31,18 @@ class CC_EXPORT ZeroCopyRasterWorkerPool : public RasterWorkerPool,
       ResourceProvider* resource_provider);
 
   // Overridden from RasterWorkerPool:
-  virtual Rasterizer* AsRasterizer() OVERRIDE;
+  virtual Rasterizer* AsRasterizer() override;
 
   // Overridden from Rasterizer:
-  virtual void SetClient(RasterizerClient* client) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
-  virtual void CheckForCompletedTasks() OVERRIDE;
+  virtual void SetClient(RasterizerClient* client) override;
+  virtual void Shutdown() override;
+  virtual void ScheduleTasks(RasterTaskQueue* queue) override;
+  virtual void CheckForCompletedTasks() override;
 
   // Overridden from RasterizerTaskClient:
   virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource) OVERRIDE;
-  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) OVERRIDE;
+      const Resource* resource) override;
+  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
 
  protected:
   ZeroCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,

@@ -23,7 +23,7 @@ static const int kTimeCheckInterval = 10;
 
 class MockLayerPainter : public LayerPainter {
  public:
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) OVERRIDE {
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {
   }
 };
 
@@ -38,13 +38,13 @@ class LayerPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
     layer_tree_host_->InitializeSingleThreaded(
         &fake_client_, base::MessageLoopProxy::current());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     layer_tree_host_->SetRootLayer(NULL);
     layer_tree_host_ = nullptr;
   }

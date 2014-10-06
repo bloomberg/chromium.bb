@@ -61,7 +61,7 @@ class CC_EXPORT ImageDecodeTask : public RasterizerTask {
   typedef std::vector<scoped_refptr<ImageDecodeTask> > Vector;
 
   // Overridden from RasterizerTask:
-  virtual ImageDecodeTask* AsImageDecodeTask() OVERRIDE;
+  virtual ImageDecodeTask* AsImageDecodeTask() override;
 
  protected:
   ImageDecodeTask();
@@ -73,7 +73,7 @@ class CC_EXPORT RasterTask : public RasterizerTask {
   typedef std::vector<scoped_refptr<RasterTask> > Vector;
 
   // Overridden from RasterizerTask:
-  virtual RasterTask* AsRasterTask() OVERRIDE;
+  virtual RasterTask* AsRasterTask() override;
 
   const Resource* resource() const { return resource_; }
   const ImageDecodeTask::Vector& dependencies() const { return dependencies_; }

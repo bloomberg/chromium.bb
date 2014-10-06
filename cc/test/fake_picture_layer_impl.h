@@ -34,19 +34,19 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
   virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const OVERRIDE;
+      const gfx::Size& content_bounds) const override;
 
-  virtual void DidBecomeActive() OVERRIDE;
+  virtual void DidBecomeActive() override;
   size_t did_become_active_call_count() {
     return did_become_active_call_count_;
   }
 
-  virtual bool HasValidTilePriorities() const OVERRIDE;
+  virtual bool HasValidTilePriorities() const override;
   void set_has_valid_tile_priorities(bool has_valid_priorities) {
     has_valid_tile_priorities_ = has_valid_priorities;
     use_set_valid_tile_priorities_flag_ = true;
@@ -115,7 +115,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   size_t release_resources_count() const { return release_resources_count_; }
   void reset_release_resources_count() { release_resources_count_ = 0; }
 
-  virtual void ReleaseResources() OVERRIDE;
+  virtual void ReleaseResources() override;
 
  protected:
   FakePictureLayerImpl(

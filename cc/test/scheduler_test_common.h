@@ -24,7 +24,7 @@ class FakeTimeSourceClient : public TimeSourceClient {
   bool TickCalled() const { return tick_called_; }
 
   // TimeSourceClient implementation.
-  virtual void OnTimerTick() OVERRIDE;
+  virtual void OnTimerTick() override;
 
  protected:
   bool tick_called_;
@@ -39,7 +39,7 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
   }
 
   void SetNow(base::TimeTicks time) { now_ = time; }
-  virtual base::TimeTicks Now() const OVERRIDE;
+  virtual base::TimeTicks Now() const override;
 
  protected:
   FakeDelayBasedTimeSource(base::TimeDelta interval,
@@ -67,8 +67,8 @@ class TestDelayBasedTimeSource : public DelayBasedTimeSource {
 
   // Overridden from DelayBasedTimeSource
   virtual ~TestDelayBasedTimeSource();
-  virtual base::TimeTicks Now() const OVERRIDE;
-  virtual std::string TypeString() const OVERRIDE;
+  virtual base::TimeTicks Now() const override;
+  virtual std::string TypeString() const override;
 
   scoped_refptr<TestNowSource> now_src_;
 };
@@ -89,8 +89,8 @@ struct FakeBeginFrameSource : public BeginFrameSourceMixIn {
   }
 
   // BeginFrameSource
-  virtual void DidFinishFrame(size_t remaining_frames) OVERRIDE;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
+  virtual void DidFinishFrame(size_t remaining_frames) override;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
 
   virtual ~FakeBeginFrameSource() {}
 };
@@ -110,7 +110,7 @@ class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
   TestBackToBackBeginFrameSource(scoped_refptr<TestNowSource> now_src,
                                  base::SingleThreadTaskRunner* task_runner);
 
-  virtual base::TimeTicks Now() OVERRIDE;
+  virtual base::TimeTicks Now() override;
 
   scoped_refptr<TestNowSource> now_src_;
 };
@@ -141,9 +141,9 @@ class TestSchedulerFrameSourcesConstructor
 
  protected:
   virtual BeginFrameSource* ConstructPrimaryFrameSource(
-      Scheduler* scheduler) OVERRIDE;
+      Scheduler* scheduler) override;
   virtual BeginFrameSource* ConstructBackgroundFrameSource(
-      Scheduler* scheduler) OVERRIDE;
+      Scheduler* scheduler) override;
 
   OrderedSimpleTaskRunner* test_task_runner_;
   TestNowSource* now_src_;
@@ -189,7 +189,7 @@ class TestScheduler : public Scheduler {
 
  protected:
   // Overridden from Scheduler.
-  virtual base::TimeTicks Now() const OVERRIDE;
+  virtual base::TimeTicks Now() const override;
 
  private:
   TestScheduler(

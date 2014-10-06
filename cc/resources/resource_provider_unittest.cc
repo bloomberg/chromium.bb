@@ -101,11 +101,11 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 
   // Force all textures to be consecutive numbers starting at "1",
   // so we easily can test for them.
-  virtual GLuint NextTextureId() OVERRIDE {
+  virtual GLuint NextTextureId() override {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id++;
   }
-  virtual void RetireTextureId(GLuint) OVERRIDE {}
+  virtual void RetireTextureId(GLuint) override {}
 };
 
 // Shared data between multiple ResourceProviderContext. This contains mailbox
@@ -168,7 +168,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return make_scoped_ptr(new ResourceProviderContext(shared_data));
   }
 
-  virtual GLuint insertSyncPoint() OVERRIDE {
+  virtual GLuint insertSyncPoint() override {
     uint32 sync_point = shared_data_->InsertSyncPoint();
     // Commit the produceTextureCHROMIUM calls at this point, so that
     // they're associated with the sync point.
@@ -183,7 +183,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return sync_point;
   }
 
-  virtual void waitSyncPoint(GLuint sync_point) OVERRIDE {
+  virtual void waitSyncPoint(GLuint sync_point) override {
     last_waited_sync_point_ = std::max(sync_point, last_waited_sync_point_);
   }
 
@@ -193,7 +193,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                                GLint levels,
                                GLuint internalformat,
                                GLint width,
-                               GLint height) OVERRIDE {
+                               GLint height) override {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_EQ(1, levels);
@@ -218,7 +218,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                           GLint border,
                           GLenum format,
                           GLenum type,
-                          const void* pixels) OVERRIDE {
+                          const void* pixels) override {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
@@ -238,7 +238,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                              GLsizei height,
                              GLenum format,
                              GLenum type,
-                             const void* pixels) OVERRIDE {
+                             const void* pixels) override {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
@@ -251,12 +251,12 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     SetPixels(xoffset, yoffset, width, height, pixels);
   }
 
-  virtual void genMailboxCHROMIUM(GLbyte* mailbox) OVERRIDE {
+  virtual void genMailboxCHROMIUM(GLbyte* mailbox) override {
     return shared_data_->GenMailbox(mailbox);
   }
 
   virtual void produceTextureCHROMIUM(GLenum target,
-                                      const GLbyte* mailbox) OVERRIDE {
+                                      const GLbyte* mailbox) override {
     CheckTextureIsBound(target);
 
     // Delay moving the texture into the mailbox until the next
@@ -270,7 +270,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   }
 
   virtual void consumeTextureCHROMIUM(GLenum target,
-                                      const GLbyte* mailbox) OVERRIDE {
+                                      const GLbyte* mailbox) override {
     CheckTextureIsBound(target);
     base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture =
@@ -3615,11 +3615,11 @@ INSTANTIATE_TEST_CASE_P(
 
 class TextureIdAllocationTrackingContext : public TestWebGraphicsContext3D {
  public:
-  virtual GLuint NextTextureId() OVERRIDE {
+  virtual GLuint NextTextureId() override {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id++;
   }
-  virtual void RetireTextureId(GLuint) OVERRIDE {}
+  virtual void RetireTextureId(GLuint) override {}
   GLuint PeekTextureId() {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id;

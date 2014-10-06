@@ -443,7 +443,7 @@ class TracedDebugInfo : public base::debug::ConvertableToTraceFormat {
   // This object takes ownership of the debug_info object.
   explicit TracedDebugInfo(blink::WebGraphicsLayerDebugInfo* debug_info)
       : debug_info_(debug_info) {}
-  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+  virtual void AppendAsTraceFormat(std::string* out) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     blink::WebString web_string;
     debug_info_->appendAsTraceFormat(&web_string);

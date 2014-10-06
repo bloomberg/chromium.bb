@@ -21,7 +21,7 @@ class CC_EXPORT ContentLayerPainter : public LayerPainter {
  public:
   static scoped_ptr<ContentLayerPainter> Create(ContentLayerClient* client);
 
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) OVERRIDE;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override;
 
  private:
   explicit ContentLayerPainter(ContentLayerClient* client);
@@ -38,33 +38,33 @@ class CC_EXPORT ContentLayer : public TiledLayer {
 
   void ClearClient();
 
-  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) OVERRIDE;
+  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
-      OVERRIDE;
+      override;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
-  virtual bool NeedMoreUpdates() OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
+  virtual bool NeedMoreUpdates() override;
 
-  virtual void SetContentsOpaque(bool contents_opaque) OVERRIDE;
+  virtual void SetContentsOpaque(bool contents_opaque) override;
 
-  virtual bool SupportsLCDText() const OVERRIDE;
+  virtual bool SupportsLCDText() const override;
 
-  virtual skia::RefPtr<SkPicture> GetPicture() const OVERRIDE;
+  virtual skia::RefPtr<SkPicture> GetPicture() const override;
 
-  virtual void OnOutputSurfaceCreated() OVERRIDE;
+  virtual void OnOutputSurfaceCreated() override;
 
  protected:
   explicit ContentLayer(ContentLayerClient* client);
   virtual ~ContentLayer();
 
-  virtual bool HasDrawableContent() const OVERRIDE;
+  virtual bool HasDrawableContent() const override;
 
   // TiledLayer implementation.
-  virtual LayerUpdater* Updater() const OVERRIDE;
+  virtual LayerUpdater* Updater() const override;
 
  private:
   // TiledLayer implementation.
-  virtual void CreateUpdaterIfNeeded() OVERRIDE;
+  virtual void CreateUpdaterIfNeeded() override;
 
   void UpdateCanUseLCDText();
 

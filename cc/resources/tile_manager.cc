@@ -59,7 +59,7 @@ class RasterTaskImpl : public RasterTask {
         reply_(reply) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
+  virtual void RunOnWorkerThread() override {
     TRACE_EVENT0("cc", "RasterizerTaskImpl::RunOnWorkerThread");
 
     DCHECK(picture_pile_.get());
@@ -75,14 +75,14 @@ class RasterTaskImpl : public RasterTask {
   }
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
     DCHECK(!raster_buffer_);
     raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
-  virtual void RunReplyOnOriginThread() OVERRIDE {
+  virtual void RunReplyOnOriginThread() override {
     DCHECK(!raster_buffer_);
     reply_.Run(analysis_, !HasFinishedRunning());
   }
@@ -172,7 +172,7 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
         reply_(reply) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
+  virtual void RunOnWorkerThread() override {
     TRACE_EVENT0("cc", "ImageDecodeTaskImpl::RunOnWorkerThread");
 
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
@@ -183,9 +183,9 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   }
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void RunReplyOnOriginThread() OVERRIDE {
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
+  virtual void RunReplyOnOriginThread() override {
     reply_.Run(!HasFinishedRunning());
   }
 

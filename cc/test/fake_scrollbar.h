@@ -18,17 +18,17 @@ class FakeScrollbar : public Scrollbar {
   virtual ~FakeScrollbar();
 
   // Scrollbar implementation.
-  virtual ScrollbarOrientation Orientation() const OVERRIDE;
-  virtual bool IsLeftSideVerticalScrollbar() const OVERRIDE;
-  virtual gfx::Point Location() const OVERRIDE;
-  virtual bool IsOverlay() const OVERRIDE;
-  virtual bool HasThumb() const OVERRIDE;
-  virtual int ThumbThickness() const OVERRIDE;
-  virtual int ThumbLength() const OVERRIDE;
-  virtual gfx::Rect TrackRect() const OVERRIDE;
+  virtual ScrollbarOrientation Orientation() const override;
+  virtual bool IsLeftSideVerticalScrollbar() const override;
+  virtual gfx::Point Location() const override;
+  virtual bool IsOverlay() const override;
+  virtual bool HasThumb() const override;
+  virtual int ThumbThickness() const override;
+  virtual int ThumbLength() const override;
+  virtual gfx::Rect TrackRect() const override;
   virtual void PaintPart(SkCanvas* canvas,
                          ScrollbarPart part,
-                         const gfx::Rect& content_rect) OVERRIDE;
+                         const gfx::Rect& content_rect) override;
 
   void set_location(const gfx::Point& location) { location_ = location; }
   void set_track_rect(const gfx::Rect& track_rect) { track_rect_ = track_rect; }

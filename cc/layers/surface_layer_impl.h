@@ -23,20 +23,20 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
 
   // LayerImpl overrides.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
 
  protected:
   SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
   virtual void GetDebugBorderProperties(SkColor* color,
-                                        float* width) const OVERRIDE;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+                                        float* width) const override;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  virtual const char* LayerTypeAsString() const override;
 
   SurfaceId surface_id_;
 

@@ -29,7 +29,7 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
 
   // UIResourceClient implementation.
   virtual UIResourceBitmap GetBitmap(UIResourceId uid,
-                                     bool resource_lost) OVERRIDE;
+                                     bool resource_lost) override;
   UIResourceId id() { return id_; }
 
  protected:

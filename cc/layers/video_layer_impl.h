@@ -31,16 +31,16 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
 
   // LayerImpl implementation.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
+                        ResourceProvider* resource_provider) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
-  virtual void DidBecomeActive() OVERRIDE;
-  virtual void ReleaseResources() OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
+  virtual void DidDraw(ResourceProvider* resource_provider) override;
+  virtual void DidBecomeActive() override;
+  virtual void ReleaseResources() override;
 
   void SetNeedsRedraw();
 
@@ -54,7 +54,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
                  int id,
                  media::VideoRotation video_rotation);
 
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
   scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl_;
 

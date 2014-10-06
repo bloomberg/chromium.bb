@@ -23,8 +23,8 @@ class CC_EXPORT PictureRecordBenchmark : public MicroBenchmark {
   virtual ~PictureRecordBenchmark();
 
   // Implements MicroBenchmark interface.
-  virtual void DidUpdateLayers(LayerTreeHost* host) OVERRIDE;
-  virtual void RunOnLayer(PictureLayer* layer) OVERRIDE;
+  virtual void DidUpdateLayers(LayerTreeHost* host) override;
+  virtual void RunOnLayer(PictureLayer* layer) override;
 
  private:
   void Run(Layer* layer);

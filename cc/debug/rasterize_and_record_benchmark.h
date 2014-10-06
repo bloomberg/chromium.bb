@@ -30,11 +30,11 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
   virtual ~RasterizeAndRecordBenchmark();
 
   // Implements MicroBenchmark interface.
-  virtual void DidUpdateLayers(LayerTreeHost* host) OVERRIDE;
-  virtual void RunOnLayer(PictureLayer* layer) OVERRIDE;
+  virtual void DidUpdateLayers(LayerTreeHost* host) override;
+  virtual void RunOnLayer(PictureLayer* layer) override;
 
   virtual scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
-      scoped_refptr<base::MessageLoopProxy> origin_loop) OVERRIDE;
+      scoped_refptr<base::MessageLoopProxy> origin_loop) override;
 
  private:
   void Run(Layer* layer);

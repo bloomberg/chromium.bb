@@ -29,7 +29,7 @@ class ExactPixelComparator : public PixelComparator {
   // and report the number of pixels with an error on LOG(ERROR). Differences
   // in the alpha channel are ignored.
   virtual bool Compare(const SkBitmap& actual_bmp,
-                       const SkBitmap& expected_bmp) const OVERRIDE;
+                       const SkBitmap& expected_bmp) const override;
 
  private:
   // Exclude alpha channel from comparison?
@@ -52,7 +52,7 @@ class FuzzyPixelComparator : public PixelComparator {
   // specified limits. Otherwise, returns false and reports the error metrics on
   // LOG(ERROR). Differences in the alpha channel are ignored.
   virtual bool Compare(const SkBitmap& actual_bmp,
-                       const SkBitmap& expected_bmp) const OVERRIDE;
+                       const SkBitmap& expected_bmp) const override;
 
  private:
   // Exclude alpha channel from comparison?

@@ -15,7 +15,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                                            public Layer {
  public:
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   static scoped_refptr<SolidColorScrollbarLayer> Create(
       ScrollbarOrientation orientation,
@@ -25,20 +25,20 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
       int scroll_layer_id);
 
   // Layer overrides.
-  virtual bool OpacityCanAnimateOnImplThread() const OVERRIDE;
-  virtual ScrollbarLayerInterface* ToScrollbarLayer() OVERRIDE;
+  virtual bool OpacityCanAnimateOnImplThread() const override;
+  virtual ScrollbarLayerInterface* ToScrollbarLayer() override;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) override;
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
+  virtual void SetNeedsDisplayRect(const gfx::RectF&) override;
 
   // ScrollbarLayerInterface
-  virtual int ScrollLayerId() const OVERRIDE;
-  virtual void SetScrollLayer(int layer_id) OVERRIDE;
-  virtual void SetClipLayer(int layer_id) OVERRIDE;
+  virtual int ScrollLayerId() const override;
+  virtual void SetScrollLayer(int layer_id) override;
+  virtual void SetClipLayer(int layer_id) override;
 
-  virtual ScrollbarOrientation orientation() const OVERRIDE;
+  virtual ScrollbarOrientation orientation() const override;
 
  protected:
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,

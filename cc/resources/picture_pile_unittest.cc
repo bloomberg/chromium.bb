@@ -96,7 +96,7 @@ class PicturePileTestBase {
 
 class PicturePileTest : public PicturePileTestBase, public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE { InitializeData(); }
+  virtual void SetUp() override { InitializeData(); }
 };
 
 TEST_F(PicturePileTest, SmallInvalidateInflated) {
@@ -402,7 +402,7 @@ enum Corner {
 class PicturePileResizeCornerTest : public PicturePileTestBase,
                                     public testing::TestWithParam<Corner> {
  protected:
-  virtual void SetUp() OVERRIDE { InitializeData(); }
+  virtual void SetUp() override { InitializeData(); }
 
   static gfx::Rect CornerSinglePixelRect(Corner corner, const gfx::Size& s) {
     switch (corner) {

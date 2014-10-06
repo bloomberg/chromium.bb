@@ -145,7 +145,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
     time_source_->SetActive(false);
   }
 
-  virtual void OnTimerTick() OVERRIDE {
+  virtual void OnTimerTick() override {
     // In single threaded mode we attempt to simulate changing the current
     // thread by maintaining a fake thread id. When we switch from one
     // thread to another, we construct DebugScopedSetXXXThread objects that

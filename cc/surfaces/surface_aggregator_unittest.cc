@@ -43,7 +43,7 @@ gfx::Size SurfaceSize() {
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   virtual void ReturnResources(
-      const ReturnedResourceArray& resources) OVERRIDE {}
+      const ReturnedResourceArray& resources) override {}
 };
 
 class SurfaceAggregatorTest : public testing::Test {
@@ -1061,7 +1061,7 @@ class ResourceTrackingSurfaceFactoryClient : public SurfaceFactoryClient {
   virtual ~ResourceTrackingSurfaceFactoryClient() {}
 
   virtual void ReturnResources(
-      const ReturnedResourceArray& resources) OVERRIDE {
+      const ReturnedResourceArray& resources) override {
     returned_resources_ = resources;
   }
 

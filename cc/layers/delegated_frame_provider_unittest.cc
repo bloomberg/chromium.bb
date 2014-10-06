@@ -62,14 +62,14 @@ class DelegatedFrameProviderTest
                  false);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     resource_collection_ = new DelegatedFrameResourceCollection;
     resource_collection_->SetClient(this);
   }
 
-  virtual void TearDown() OVERRIDE { resource_collection_->SetClient(NULL); }
+  virtual void TearDown() override { resource_collection_->SetClient(NULL); }
 
-  virtual void UnusedResourcesAreAvailable() OVERRIDE {
+  virtual void UnusedResourcesAreAvailable() override {
     resources_available_ = true;
     resource_collection_->TakeUnusedResourcesForChildCompositor(&resources_);
   }

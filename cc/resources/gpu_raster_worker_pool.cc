@@ -36,7 +36,7 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
+  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
     if (!surface_)
       return skia::AdoptRef(SkCreateNullCanvas());
 
@@ -48,7 +48,7 @@ class RasterBufferImpl : public RasterBuffer {
     canvas->save();
     return canvas;
   }
-  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {
+  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
     if (!surface_)
       return;
 

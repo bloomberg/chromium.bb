@@ -25,8 +25,8 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
   virtual ~FakeLayerTreeHost();
 
-  virtual void SetNeedsCommit() OVERRIDE;
-  virtual void SetNeedsFullTreeSync() OVERRIDE {}
+  virtual void SetNeedsCommit() override;
+  virtual void SetNeedsFullTreeSync() override {}
 
   using LayerTreeHost::SetRootLayer;
   using LayerTreeHost::root_layer;

@@ -22,11 +22,11 @@ class CC_EXPORT HeadsUpDisplayLayer : public ContentsScalingLayer {
 
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
  protected:
   HeadsUpDisplayLayer();
-  virtual bool HasDrawableContent() const OVERRIDE;
+  virtual bool HasDrawableContent() const override;
 
  private:
   virtual ~HeadsUpDisplayLayer();

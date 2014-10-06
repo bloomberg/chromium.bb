@@ -37,7 +37,7 @@ class BenchmarkRasterTask : public Task {
         best_time_(base::TimeDelta::Max()) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
+  virtual void RunOnWorkerThread() override {
     // Parameters for LapTimer.
     const int kTimeLimitMillis = 1;
     const int kWarmupRuns = 0;
@@ -96,46 +96,46 @@ class FixedInvalidationPictureLayerTilingClient
 
   virtual scoped_refptr<Tile> CreateTile(
       PictureLayerTiling* tiling,
-      const gfx::Rect& content_rect) OVERRIDE {
+      const gfx::Rect& content_rect) override {
     return base_client_->CreateTile(tiling, content_rect);
   }
 
-  virtual PicturePileImpl* GetPile() OVERRIDE {
+  virtual PicturePileImpl* GetPile() override {
     return base_client_->GetPile();
   }
 
   virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const OVERRIDE {
+      const gfx::Size& content_bounds) const override {
     return base_client_->CalculateTileSize(content_bounds);
   }
 
   // This is the only function that returns something different from the base
   // client.
-  virtual const Region* GetInvalidation() OVERRIDE { return &invalidation_; }
+  virtual const Region* GetInvalidation() override { return &invalidation_; }
 
   virtual const PictureLayerTiling* GetTwinTiling(
-      const PictureLayerTiling* tiling) const OVERRIDE {
+      const PictureLayerTiling* tiling) const override {
     return base_client_->GetTwinTiling(tiling);
   }
 
   virtual PictureLayerTiling* GetRecycledTwinTiling(
-      const PictureLayerTiling* tiling) OVERRIDE {
+      const PictureLayerTiling* tiling) override {
     return base_client_->GetRecycledTwinTiling(tiling);
   }
 
-  virtual size_t GetMaxTilesForInterestArea() const OVERRIDE {
+  virtual size_t GetMaxTilesForInterestArea() const override {
     return base_client_->GetMaxTilesForInterestArea();
   }
 
-  virtual float GetSkewportTargetTimeInSeconds() const OVERRIDE {
+  virtual float GetSkewportTargetTimeInSeconds() const override {
     return base_client_->GetSkewportTargetTimeInSeconds();
   }
 
-  virtual int GetSkewportExtrapolationLimitInContentPixels() const OVERRIDE {
+  virtual int GetSkewportExtrapolationLimitInContentPixels() const override {
     return base_client_->GetSkewportExtrapolationLimitInContentPixels();
   }
 
-  virtual WhichTree GetTree() const OVERRIDE { return base_client_->GetTree(); }
+  virtual WhichTree GetTree() const override { return base_client_->GetTree(); }
 
  private:
   PictureLayerTilingClient* base_client_;

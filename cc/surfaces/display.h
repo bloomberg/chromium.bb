@@ -52,32 +52,32 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   int GetMaxFramesPending();
 
   // OutputSurfaceClient implementation.
-  virtual void DeferredInitialize() OVERRIDE {}
-  virtual void ReleaseGL() OVERRIDE {}
+  virtual void DeferredInitialize() override {}
+  virtual void ReleaseGL() override {}
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) OVERRIDE;
-  virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
-  virtual void DidSwapBuffers() OVERRIDE;
-  virtual void DidSwapBuffersComplete() OVERRIDE;
-  virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {}
-  virtual void DidLoseOutputSurface() OVERRIDE;
+                                     base::TimeDelta interval) override;
+  virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
+  virtual void BeginFrame(const BeginFrameArgs& args) override {}
+  virtual void DidSwapBuffers() override;
+  virtual void DidSwapBuffersComplete() override;
+  virtual void ReclaimResources(const CompositorFrameAck* ack) override {}
+  virtual void DidLoseOutputSurface() override;
   virtual void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
       const gfx::Rect& clip,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
-      bool resourceless_software_draw) OVERRIDE {}
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
+      bool resourceless_software_draw) override {}
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   virtual void SetTreeActivationCallback(
-      const base::Closure& callback) OVERRIDE {}
+      const base::Closure& callback) override {}
 
   // RendererClient implementation.
-  virtual void SetFullRootLayerDamage() OVERRIDE {}
+  virtual void SetFullRootLayerDamage() override {}
 
   // SurfaceDamageObserver implementation.
-  virtual void OnSurfaceDamaged(SurfaceId surface) OVERRIDE;
+  virtual void OnSurfaceDamaged(SurfaceId surface) override;
 
  private:
   void InitializeRenderer();

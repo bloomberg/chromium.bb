@@ -62,7 +62,7 @@ class PixelTest : public testing::Test, RendererClient {
   void EnableExternalStencilTest();
 
   // RendererClient implementation.
-  virtual void SetFullRootLayerDamage() OVERRIDE {}
+  virtual void SetFullRootLayerDamage() override {}
 
  private:
   void ReadbackResult(base::Closure quit_run_loop,
@@ -85,7 +85,7 @@ class RendererPixelTest : public PixelTest {
   bool ExpandedViewport() const;
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 // Wrappers to differentiate renderers where the the output surface and viewport

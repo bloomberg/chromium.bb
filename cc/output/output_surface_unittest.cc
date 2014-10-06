@@ -61,8 +61,8 @@ class TestSoftwareOutputDevice : public SoftwareOutputDevice {
   virtual ~TestSoftwareOutputDevice();
 
   // Overriden from cc:SoftwareOutputDevice
-  virtual void DiscardBackbuffer() OVERRIDE;
-  virtual void EnsureBackbuffer() OVERRIDE;
+  virtual void DiscardBackbuffer() override;
+  virtual void EnsureBackbuffer() override;
 
   int discard_backbuffer_count() { return discard_backbuffer_count_; }
   int ensure_backbuffer_count() { return ensure_backbuffer_count_; }

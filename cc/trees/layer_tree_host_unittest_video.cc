@@ -22,7 +22,7 @@ class LayerTreeHostVideoTest : public LayerTreeTest {};
 class LayerTreeHostVideoTestSetNeedsDisplay
     : public LayerTreeHostVideoTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
     root->SetIsDrawable(true);
@@ -39,14 +39,14 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     LayerTreeHostVideoTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     num_draws_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
   virtual DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                            LayerTreeHostImpl::FrameData* frame,
-                                           DrawResult draw_result) OVERRIDE {
+                                           DrawResult draw_result) override {
     LayerImpl* root_layer = host_impl->active_tree()->root_layer();
     RenderSurfaceImpl* root_surface = root_layer->render_surface();
     gfx::RectF damage_rect =
@@ -70,7 +70,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     return draw_result;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     VideoLayerImpl* video = static_cast<VideoLayerImpl*>(
         host_impl->active_tree()->root_layer()->children()[0]);
 
@@ -82,7 +82,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     ++num_draws_;
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(2, num_draws_);
   }
 

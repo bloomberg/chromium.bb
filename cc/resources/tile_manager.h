@@ -183,11 +183,11 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void CleanUpReleasedTiles();
 
   // Overriden from RefCountedManager<Tile>:
-  virtual void Release(Tile* tile) OVERRIDE;
+  virtual void Release(Tile* tile) override;
 
   // Overriden from RasterizerClient:
-  virtual void DidFinishRunningTasks(TaskSet task_set) OVERRIDE;
-  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const OVERRIDE;
+  virtual void DidFinishRunningTasks(TaskSet task_set) override;
+  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const override;
 
   typedef std::vector<Tile*> TileVector;
   typedef std::set<Tile*> TileSet;

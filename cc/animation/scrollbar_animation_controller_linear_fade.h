@@ -23,7 +23,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
 
   virtual ~ScrollbarAnimationControllerLinearFade();
 
-  virtual void DidScrollUpdate() OVERRIDE;
+  virtual void DidScrollUpdate() override;
 
  protected:
   ScrollbarAnimationControllerLinearFade(
@@ -32,7 +32,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
       base::TimeDelta delay_before_starting,
       base::TimeDelta duration);
 
-  virtual void RunAnimationFrame(float progress) OVERRIDE;
+  virtual void RunAnimationFrame(float progress) override;
 
  private:
   float OpacityAtTime(base::TimeTicks now) const;

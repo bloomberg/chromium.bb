@@ -36,12 +36,12 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
   unsigned resource_id;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
-      OVERRIDE;
+      override;
 
   static const TileDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const OVERRIDE;
+  virtual void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

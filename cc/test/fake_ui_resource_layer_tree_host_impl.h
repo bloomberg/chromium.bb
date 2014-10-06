@@ -17,14 +17,14 @@ class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
   virtual ~FakeUIResourceLayerTreeHostImpl();
 
   virtual void CreateUIResource(UIResourceId uid,
-                                const UIResourceBitmap& bitmap) OVERRIDE;
+                                const UIResourceBitmap& bitmap) override;
 
-  virtual void DeleteUIResource(UIResourceId uid) OVERRIDE;
+  virtual void DeleteUIResource(UIResourceId uid) override;
 
   virtual ResourceProvider::ResourceId ResourceIdForUIResource(
-      UIResourceId uid) const OVERRIDE;
+      UIResourceId uid) const override;
 
-  virtual bool IsUIResourceOpaque(UIResourceId uid) const OVERRIDE;
+  virtual bool IsUIResourceOpaque(UIResourceId uid) const override;
 
  private:
   ResourceProvider::ResourceId fake_next_resource_id_;

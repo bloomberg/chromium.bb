@@ -30,28 +30,28 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   void SetLayerTreeHost(LayerTreeHost* host) { host_ = host; }
 
   // LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
-  virtual void DidBeginMainFrame() OVERRIDE {}
-  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {}
-  virtual void Layout() OVERRIDE {}
+  virtual void WillBeginMainFrame(int frame_id) override {}
+  virtual void DidBeginMainFrame() override {}
+  virtual void BeginMainFrame(const BeginFrameArgs& args) override {}
+  virtual void Layout() override {}
   virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
                                    const gfx::Vector2d& outer_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE {}
+                                   float top_controls_delta) override {}
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE {}
+                                   float top_controls_delta) override {}
 
-  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE;
-  virtual void DidInitializeOutputSurface() OVERRIDE {}
-  virtual void WillCommit() OVERRIDE {}
-  virtual void DidCommit() OVERRIDE {}
-  virtual void DidCommitAndDrawFrame() OVERRIDE {}
-  virtual void DidCompleteSwapBuffers() OVERRIDE {}
+  virtual void RequestNewOutputSurface(bool fallback) override;
+  virtual void DidInitializeOutputSurface() override {}
+  virtual void WillCommit() override {}
+  virtual void DidCommit() override {}
+  virtual void DidCommitAndDrawFrame() override {}
+  virtual void DidCompleteSwapBuffers() override {}
 
   // LayerTreeHostSingleThreadClient implementation.
-  virtual void DidPostSwapBuffers() OVERRIDE {}
-  virtual void DidAbortSwapBuffers() OVERRIDE {}
+  virtual void DidPostSwapBuffers() override {}
+  virtual void DidAbortSwapBuffers() override {}
 
  private:
   bool use_software_rendering_;

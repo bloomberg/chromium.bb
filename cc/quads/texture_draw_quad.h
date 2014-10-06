@@ -50,12 +50,12 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   bool flipped;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
-      OVERRIDE;
+      override;
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const OVERRIDE;
+  virtual void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

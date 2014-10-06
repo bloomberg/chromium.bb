@@ -101,14 +101,14 @@ class DelayBasedTimeSourceHighRes : public DelayBasedTimeSource {
   static scoped_refptr<DelayBasedTimeSourceHighRes> Create(
         base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner);
 
-  virtual base::TimeTicks Now() const OVERRIDE;
+  virtual base::TimeTicks Now() const override;
 
  protected:
   DelayBasedTimeSourceHighRes(base::TimeDelta interval,
                               base::SingleThreadTaskRunner* task_runner);
   virtual ~DelayBasedTimeSourceHighRes();
 
-  virtual std::string TypeString() const OVERRIDE;
+  virtual std::string TypeString() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSourceHighRes);

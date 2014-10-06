@@ -51,12 +51,12 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   ResourceFormat texture_format;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
-      OVERRIDE;
+      override;
 
   static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const OVERRIDE;
+  virtual void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

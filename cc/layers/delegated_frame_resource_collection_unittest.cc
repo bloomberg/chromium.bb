@@ -21,9 +21,9 @@ class DelegatedFrameResourceCollectionTest
  protected:
   DelegatedFrameResourceCollectionTest() : resources_available_(false) {}
 
-  virtual void SetUp() OVERRIDE { CreateResourceCollection(); }
+  virtual void SetUp() override { CreateResourceCollection(); }
 
-  virtual void TearDown() OVERRIDE { DestroyResourceCollection(); }
+  virtual void TearDown() override { DestroyResourceCollection(); }
 
   void CreateResourceCollection() {
     DCHECK(!resource_collection_.get());
@@ -46,7 +46,7 @@ class DelegatedFrameResourceCollectionTest
     return resources;
   }
 
-  virtual void UnusedResourcesAreAvailable() OVERRIDE {
+  virtual void UnusedResourcesAreAvailable() override {
     resources_available_ = true;
     resource_collection_->TakeUnusedResourcesForChildCompositor(
         &returned_resources_);

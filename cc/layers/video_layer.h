@@ -24,10 +24,10 @@ class CC_EXPORT VideoLayer : public Layer {
                                           media::VideoRotation video_rotation);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
 
  private:
   VideoLayer(VideoFrameProvider* provider, media::VideoRotation video_rotation);

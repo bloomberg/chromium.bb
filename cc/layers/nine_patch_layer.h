@@ -21,7 +21,7 @@ class CC_EXPORT NinePatchLayer : public UIResourceLayer {
  public:
   static scoped_refptr<NinePatchLayer> Create();
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
   // |border| is the space around the center rectangular region in layer space
   // (known as aperture in image space).  |border.x()| and |border.y()| are the
@@ -43,7 +43,7 @@ class CC_EXPORT NinePatchLayer : public UIResourceLayer {
   NinePatchLayer();
   virtual ~NinePatchLayer();
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   gfx::Rect border_;
   bool fill_center_;

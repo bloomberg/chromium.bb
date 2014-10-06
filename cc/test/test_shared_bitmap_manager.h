@@ -18,14 +18,14 @@ class TestSharedBitmapManager : public SharedBitmapManager {
   virtual ~TestSharedBitmapManager();
 
   virtual scoped_ptr<SharedBitmap> AllocateSharedBitmap(const gfx::Size& size)
-      OVERRIDE;
+      override;
 
   virtual scoped_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
-      const SharedBitmapId& id) OVERRIDE;
+      const SharedBitmapId& id) override;
 
   virtual scoped_ptr<SharedBitmap> GetBitmapForSharedMemory(
-      base::SharedMemory* memory) OVERRIDE;
+      base::SharedMemory* memory) override;
 
  private:
   base::Lock lock_;

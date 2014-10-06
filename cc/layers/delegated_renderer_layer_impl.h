@@ -25,19 +25,19 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   // LayerImpl overrides.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual bool HasDelegatedContent() const OVERRIDE;
-  virtual bool HasContributingDelegatedRenderPasses() const OVERRIDE;
-  virtual RenderPassId FirstContributingRenderPassId() const OVERRIDE;
+      override;
+  virtual bool HasDelegatedContent() const override;
+  virtual bool HasContributingDelegatedRenderPasses() const override;
+  virtual RenderPassId FirstContributingRenderPassId() const override;
   virtual RenderPassId NextContributingRenderPassId(
-      RenderPassId previous) const OVERRIDE;
-  virtual void ReleaseResources() OVERRIDE;
+      RenderPassId previous) const override;
+  virtual void ReleaseResources() override;
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
+                        ResourceProvider* resource_provider) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
@@ -86,7 +86,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       const gfx::Size& frame_size) const;
 
   // LayerImpl overrides.
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
   bool have_render_passes_to_push_;
   float inverse_device_scale_factor_;

@@ -39,9 +39,9 @@ class VideoFrameProviderClientImpl
 
   // VideoFrameProvider::Client implementation. These methods are all callable
   // on any thread.
-  virtual void StopUsingProvider() OVERRIDE;
-  virtual void DidReceiveFrame() OVERRIDE;
-  virtual void DidUpdateMatrix(const float* matrix) OVERRIDE;
+  virtual void StopUsingProvider() override;
+  virtual void DidReceiveFrame() override;
+  virtual void DidUpdateMatrix(const float* matrix) override;
 
  private:
   explicit VideoFrameProviderClientImpl(VideoFrameProvider* provider);

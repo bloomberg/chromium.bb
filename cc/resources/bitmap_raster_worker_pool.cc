@@ -23,10 +23,10 @@ class RasterBufferImpl : public RasterBuffer {
       : lock_(resource_provider, resource->id()) {}
 
   // Overridden from RasterBuffer:
-  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE {
+  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
     return skia::SharePtr(lock_.sk_canvas());
   }
-  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE {}
+  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {}
 
  private:
   ResourceProvider::ScopedWriteLockSoftware lock_;

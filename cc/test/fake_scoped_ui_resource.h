@@ -17,7 +17,7 @@ class FakeScopedUIResource : public ScopedUIResource {
   static scoped_ptr<FakeScopedUIResource> Create(LayerTreeHost* host);
 
   virtual UIResourceBitmap GetBitmap(UIResourceId uid,
-                                     bool resource_lost) OVERRIDE;
+                                     bool resource_lost) override;
   void ResetCounters();
 
   int resource_create_count;

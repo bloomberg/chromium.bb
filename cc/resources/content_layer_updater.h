@@ -22,9 +22,9 @@ class RenderingStatsInstrumentation;
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
  public:
   void set_rendering_stats_instrumentation(RenderingStatsInstrumentation* rsi);
-  virtual void SetOpaque(bool opaque) OVERRIDE;
-  virtual void SetFillsBoundsCompletely(bool fills_bounds) OVERRIDE;
-  virtual void SetBackgroundColor(SkColor background_color) OVERRIDE;
+  virtual void SetOpaque(bool opaque) override;
+  virtual void SetFillsBoundsCompletely(bool fills_bounds) override;
+  virtual void SetBackgroundColor(SkColor background_color) override;
 
  protected:
   ContentLayerUpdater(scoped_ptr<LayerPainter> painter,

@@ -32,7 +32,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
                         const gfx::Vector2d& dest_offset,
-                        bool partial_update) OVERRIDE;
+                        bool partial_update) override;
 
    private:
     BitmapContentLayerUpdater* updater_;
@@ -46,19 +46,19 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
       int layer_id);
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
-      PrioritizedResourceManager* manager) OVERRIDE;
+      PrioritizedResourceManager* manager) override;
   virtual void PrepareToUpdate(const gfx::Size& content_size,
                                const gfx::Rect& paint_rect,
                                const gfx::Size& tile_size,
                                float contents_width_scale,
-                               float contents_height_scale) OVERRIDE;
+                               float contents_height_scale) override;
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* resource,
                      const gfx::Rect& source_rect,
                      const gfx::Vector2d& dest_offset,
                      bool partial_update);
-  virtual void SetOpaque(bool opaque) OVERRIDE;
-  virtual void ReduceMemoryUsage() OVERRIDE;
+  virtual void SetOpaque(bool opaque) override;
+  virtual void ReduceMemoryUsage() override;
 
  protected:
   BitmapContentLayerUpdater(

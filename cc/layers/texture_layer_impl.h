@@ -23,16 +23,16 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   virtual ~TextureLayerImpl();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* layer_tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
+                        ResourceProvider* resource_provider) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const OVERRIDE;
-  virtual void ReleaseResources() OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  virtual void ReleaseResources() override;
 
   // These setter methods don't cause any implicit damage, so the texture client
   // must explicitly invalidate if they intend to cause a visible change in the
@@ -56,7 +56,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
  private:
   TextureLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
   void FreeTextureMailbox();
 
   ResourceProvider::ResourceId external_texture_resource_;

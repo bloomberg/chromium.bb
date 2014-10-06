@@ -24,7 +24,7 @@ class CC_EXPORT ImageLayerUpdater : public LayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
                         const gfx::Vector2d& dest_offset,
-                        bool partial_update) OVERRIDE;
+                        bool partial_update) override;
 
    private:
     ImageLayerUpdater* updater_;
@@ -35,7 +35,7 @@ class CC_EXPORT ImageLayerUpdater : public LayerUpdater {
   static scoped_refptr<ImageLayerUpdater> Create();
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
-      PrioritizedResourceManager*) OVERRIDE;
+      PrioritizedResourceManager*) override;
 
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* texture,

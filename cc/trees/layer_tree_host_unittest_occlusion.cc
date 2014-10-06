@@ -20,7 +20,7 @@ class TestLayer : public Layer {
   }
 
   virtual bool Update(ResourceUpdateQueue* update_queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE {
+                      const OcclusionTracker<Layer>* occlusion) override {
     if (!occlusion)
       return false;
 
@@ -60,18 +60,18 @@ class LayerTreeHostOcclusionTest : public LayerTreeTest {
         mask_(TestLayer::Create()) {
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     TestLayer* root = static_cast<TestLayer*>(layer_tree_host()->root_layer());
     VerifyOcclusion(root);
 
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   void VerifyOcclusion(TestLayer* layer) const {
     EXPECT_EQ(layer->expected_occlusion().ToString(),
@@ -99,7 +99,7 @@ class LayerTreeHostOcclusionTest : public LayerTreeTest {
   }
 
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->minimum_occlusion_tracking_size = gfx::Size();
   }
 
@@ -116,7 +116,7 @@ class LayerTreeHostOcclusionTest : public LayerTreeTest {
 class LayerTreeHostOcclusionTestOcclusionSurfaceClipping
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // The child layer is a surface and the grand_child is opaque, but clipped
     // to the child and root
     SetLayerPropertiesForTesting(
@@ -146,7 +146,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer is opaque, then it adds to the occlusion seen by the
     // root_.
     SetLayerPropertiesForTesting(
@@ -176,7 +176,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionTwoChildren
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // Add a second child to the root layer and the regions should merge
     SetLayerPropertiesForTesting(
         root_.get(), NULL, identity_matrix_,
@@ -209,7 +209,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionMask
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer has a mask on it, then it shouldn't contribute to
     // occlusion on stuff below it.
     SetLayerPropertiesForTesting(
@@ -242,7 +242,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionMask);
 class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer with a mask is below child2, then child2 should
     // contribute to occlusion on everything, and child shouldn't contribute
     // to the root_.
@@ -278,7 +278,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionOpacity
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer has a non-opaque opacity, then it shouldn't
     // contribute to occlusion on stuff below it
     SetLayerPropertiesForTesting(
@@ -311,7 +311,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionOpacity);
 class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer with non-opaque opacity is below child2, then
     // child2 should contribute to occlusion on everything, and child shouldn't
     // contribute to the root_.
@@ -347,7 +347,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionBlending
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer has a blend mode, then it shouldn't
     // contribute to occlusion on stuff below it
     SetLayerPropertiesForTesting(
@@ -380,7 +380,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionBlending);
 class LayerTreeHostOcclusionTestOcclusionBlendingBelowOcclusion
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer with a blend mode is below child2, then
     // child2 should contribute to occlusion on everything, and child shouldn't
     // contribute to the root_.
@@ -415,7 +415,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionOpacityFilter
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     FilterOperations filters;
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
 
@@ -467,7 +467,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostOcclusionTestOcclusionBlurFilter
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     gfx::Transform child_transform;
     child_transform.Translate(250.0, 250.0);
     child_transform.Rotate(90.0);
@@ -511,7 +511,7 @@ class LayerTreeHostOcclusionTestOcclusionCopyRequest
  public:
   static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer has copy request, and is below child2,
     // then child should not inherit occlusion from outside its subtree.
     // The child layer will still receive occlusion from inside, and
@@ -546,7 +546,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionCopyRequest);
 class LayerTreeHostOcclusionTestOcclusionReplica
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // If the child layer has copy request, and is below child2,
     // then child should not inherit occlusion from outside its subtree.
     // The child layer will still receive occlusion from inside, and
@@ -581,7 +581,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionReplica);
 class LayerTreeHostOcclusionTestManySurfaces
     : public LayerTreeHostOcclusionTest {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // We create enough RenderSurfaces that it will trigger Vector reallocation
     // while computing occlusion.
     std::vector<scoped_refptr<TestLayer> > layers;

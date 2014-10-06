@@ -23,9 +23,9 @@ class MockContentLayerClient : public ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {}
-  virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
-  virtual bool FillsBoundsCompletely() const OVERRIDE {
+      ContentLayerClient::GraphicsContextStatus gc_status) override {}
+  virtual void DidChangeLayerCanUseLCDText() override {}
+  virtual bool FillsBoundsCompletely() const override {
     return false;
   };
 };

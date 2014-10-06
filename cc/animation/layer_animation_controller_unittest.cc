@@ -867,13 +867,13 @@ class FakeAnimationDelegate : public AnimationDelegate {
 
   virtual void NotifyAnimationStarted(
       TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) OVERRIDE {
+      Animation::TargetProperty target_property) override {
     started_ = true;
   }
 
   virtual void NotifyAnimationFinished(
       TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) OVERRIDE {
+      Animation::TargetProperty target_property) override {
     finished_ = true;
   }
 

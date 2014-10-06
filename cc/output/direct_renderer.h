@@ -26,13 +26,13 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual ~DirectRenderer();
 
   virtual void DecideRenderPassAllocationsForFrame(
-      const RenderPassList& render_passes_in_draw_order) OVERRIDE;
-  virtual bool HasAllocatedResourcesForTesting(RenderPassId id) const OVERRIDE;
+      const RenderPassList& render_passes_in_draw_order) override;
+  virtual bool HasAllocatedResourcesForTesting(RenderPassId id) const override;
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          float device_scale_factor,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,
-                         bool disable_picture_quad_image_filtering) OVERRIDE;
+                         bool disable_picture_quad_image_filtering) override;
 
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();

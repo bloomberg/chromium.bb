@@ -27,10 +27,10 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
   virtual ~SyncPointClientImpl() {}
-  virtual uint32 InsertSyncPoint() OVERRIDE {
+  virtual uint32 InsertSyncPoint() override {
     return GLC(gl_, gl_->InsertSyncPointCHROMIUM());
   }
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+  virtual void WaitSyncPoint(uint32 sync_point) override {
     GLC(gl_, gl_->WaitSyncPointCHROMIUM(sync_point));
   }
 

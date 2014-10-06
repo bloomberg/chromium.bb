@@ -22,14 +22,14 @@ class MaskContentLayerClient : public ContentLayerClient {
   MaskContentLayerClient() {}
   virtual ~MaskContentLayerClient() {}
 
-  virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+  virtual void DidChangeLayerCanUseLCDText() override {}
 
-  virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
+  virtual bool FillsBoundsCompletely() const override { return false; }
 
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& rect,
-      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
+      ContentLayerClient::GraphicsContextStatus gc_status) override {
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(2));

@@ -17,13 +17,13 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
   void SetIOSurfaceProperties(uint32_t io_surface_id, const gfx::Size& size);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
 
  protected:
-  virtual bool HasDrawableContent() const OVERRIDE;
+  virtual bool HasDrawableContent() const override;
   IOSurfaceLayer();
 
  private:

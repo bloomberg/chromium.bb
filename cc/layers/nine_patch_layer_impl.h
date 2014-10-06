@@ -58,20 +58,20 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
                  bool fill_center);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
 
-  virtual base::DictionaryValue* LayerTreeAsJson() const OVERRIDE;
+  virtual base::DictionaryValue* LayerTreeAsJson() const override;
 
  protected:
   NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
   void CheckGeometryLimitations();
 

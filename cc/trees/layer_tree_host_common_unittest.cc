@@ -40,7 +40,7 @@ class LayerWithForcedDrawsContent : public Layer {
  public:
   LayerWithForcedDrawsContent() {}
 
-  virtual bool DrawsContent() const OVERRIDE;
+  virtual bool DrawsContent() const override;
 
  private:
   virtual ~LayerWithForcedDrawsContent() {}
@@ -55,9 +55,9 @@ class MockContentLayerClient : public ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {}
-  virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
-  virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
+      ContentLayerClient::GraphicsContextStatus gc_status) override {}
+  virtual void DidChangeLayerCanUseLCDText() override {}
+  virtual bool FillsBoundsCompletely() const override { return false; }
 };
 
 scoped_refptr<ContentLayer> CreateDrawableContentLayer(
@@ -4018,7 +4018,7 @@ class NoScaleContentLayer : public ContentLayer {
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* content_bounds) OVERRIDE {
+                                      gfx::Size* content_bounds) override {
     // Skip over the ContentLayer to the base Layer class.
     Layer::CalculateContentsScale(ideal_contents_scale,
                                   contents_scale_x,

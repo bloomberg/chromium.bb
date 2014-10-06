@@ -22,11 +22,11 @@ namespace {
 
 class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
     // Not enough memory available. Enforce on-demand rasterization.
     impl->SetMemoryPolicy(
         ManagedMemoryPolicy(1, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
@@ -34,7 +34,7 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) OVERRIDE {
+                                   bool result) override {
     // Find the PictureLayerImpl ask it to append quads to check their material.
     // The PictureLayerImpl is assumed to be the first child of the root layer
     // in the active tree.
@@ -64,14 +64,14 @@ class BlueYellowLayerClient : public ContentLayerClient {
   explicit BlueYellowLayerClient(gfx::Rect layer_rect)
       : layer_rect_(layer_rect) {}
 
-  virtual void DidChangeLayerCanUseLCDText() OVERRIDE { }
+  virtual void DidChangeLayerCanUseLCDText() override { }
 
-  virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
+  virtual bool FillsBoundsCompletely() const override { return false; }
 
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
+      ContentLayerClient::GraphicsContextStatus gc_status) override {
     SkPaint paint;
     paint.setColor(SK_ColorBLUE);
     canvas->drawRect(SkRect::MakeWH(layer_rect_.width(),
@@ -113,7 +113,7 @@ TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
 
 class LayerTreeHostOnDemandRasterPixelTestWithGpuRasterizationForced
     : public LayerTreeHostOnDemandRasterPixelTest {
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostOnDemandRasterPixelTest::InitializeSettings(settings);
     settings->gpu_rasterization_forced = true;
   }

@@ -159,12 +159,12 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
 
 class LayerTreeHostFiltersScaledPixelTest
     : public LayerTreeHostFiltersPixelTest {
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     // Required so that device scale is inherited by content scale.
     settings->layer_transforms_should_scale_layer_contents = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
     LayerTreePixelTest::SetupTree();
   }

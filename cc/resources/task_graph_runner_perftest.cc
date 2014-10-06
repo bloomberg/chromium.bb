@@ -27,7 +27,7 @@ class PerfTaskImpl : public Task {
   PerfTaskImpl() {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {}
+  virtual void RunOnWorkerThread() override {}
 
   void Reset() { did_run_ = false; }
 
@@ -45,11 +45,11 @@ class TaskGraphRunnerPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     task_graph_runner_ = make_scoped_ptr(new TaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE { task_graph_runner_ = nullptr; }
+  virtual void TearDown() override { task_graph_runner_ = nullptr; }
 
   void AfterTest(const std::string& test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult

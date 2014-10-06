@@ -30,7 +30,7 @@ class FakeLayerUpdater : public LayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
                         const gfx::Vector2d& dest_offset,
-                        bool partial_update) OVERRIDE;
+                        bool partial_update) override;
 
    private:
     FakeLayerUpdater* layer_;
@@ -42,13 +42,13 @@ class FakeLayerUpdater : public LayerUpdater {
   FakeLayerUpdater();
 
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
-      PrioritizedResourceManager* resource) OVERRIDE;
+      PrioritizedResourceManager* resource) override;
 
   virtual void PrepareToUpdate(const gfx::Size& content_size,
                                const gfx::Rect& paint_rect,
                                const gfx::Size& tile_size,
                                float contents_width_scale,
-                               float contents_height_scale) OVERRIDE;
+                               float contents_height_scale) override;
   // Sets the rect to invalidate during the next call to PrepareToUpdate().
   // After the next call to PrepareToUpdate() the rect is reset.
   void SetRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer* layer);
@@ -102,15 +102,15 @@ class FakeTiledLayer : public TiledLayer {
   using TiledLayer::NumPaintedTiles;
   using TiledLayer::IdlePaintRect;
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF& rect) OVERRIDE;
+  virtual void SetNeedsDisplayRect(const gfx::RectF& rect) override;
   const gfx::RectF& last_needs_display_rect() const {
     return last_needs_display_rect_;
   }
 
   virtual void SetTexturePriorities(
-      const PriorityCalculator& priority_calculator) OVERRIDE;
+      const PriorityCalculator& priority_calculator) override;
 
-  virtual PrioritizedResourceManager* ResourceManager() OVERRIDE;
+  virtual PrioritizedResourceManager* ResourceManager() override;
   FakeLayerUpdater* fake_layer_updater() { return fake_updater_.get(); }
   gfx::RectF update_rect() { return update_rect_; }
 
@@ -120,8 +120,8 @@ class FakeTiledLayer : public TiledLayer {
   void ResetNumDependentsNeedPushProperties();
 
  protected:
-  virtual LayerUpdater* Updater() const OVERRIDE;
-  virtual void CreateUpdaterIfNeeded() OVERRIDE {}
+  virtual LayerUpdater* Updater() const override;
+  virtual void CreateUpdaterIfNeeded() override {}
   virtual ~FakeTiledLayer();
 
  private:
@@ -141,7 +141,7 @@ class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* content_bounds) OVERRIDE;
+                                      gfx::Size* content_bounds) override;
 
  protected:
   virtual ~FakeTiledLayerWithScaledBounds();

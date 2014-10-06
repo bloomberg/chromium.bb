@@ -24,7 +24,7 @@ namespace {
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   virtual void ReturnResources(
-      const ReturnedResourceArray& resources) OVERRIDE {}
+      const ReturnedResourceArray& resources) override {}
 };
 
 class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {

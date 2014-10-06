@@ -256,7 +256,7 @@ class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
  public:
   BeginFrameSource* source_;
 
-  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE {
+  virtual void AsValueInto(base::debug::TracedValue* dict) const override {
     dict->SetString("type", "LoopingBeginFrameObserver");
     dict->BeginDictionary("source");
     source_->AsValueInto(dict);
@@ -265,7 +265,7 @@ class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
 
  protected:
   // BeginFrameObserverMixIn
-  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) OVERRIDE {
+  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override {
     return true;
   }
 };
@@ -297,7 +297,7 @@ class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
                                  base::SingleThreadTaskRunner* task_runner)
       : BackToBackBeginFrameSource(task_runner), now_src_(now_src) {}
 
-  virtual base::TimeTicks Now() OVERRIDE { return now_src_->Now(); }
+  virtual base::TimeTicks Now() override { return now_src_->Now(); }
 
   scoped_refptr<TestNowSource> now_src_;
 };
@@ -312,7 +312,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
   scoped_ptr<TestBackToBackBeginFrameSource> source_;
   scoped_ptr<MockBeginFrameObserver> obs_;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     now_src_ = TestNowSource::Create(1000);
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_, false));
@@ -323,7 +323,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     source_->AddObserver(obs_.get());
   }
 
-  virtual void TearDown() OVERRIDE { obs_.reset(); }
+  virtual void TearDown() override { obs_.reset(); }
 };
 
 const int64_t BackToBackBeginFrameSourceTest::kDeadline =
@@ -478,7 +478,7 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
   scoped_ptr<TestSyntheticBeginFrameSource> source_;
   scoped_ptr<MockBeginFrameObserver> obs_;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     now_src_ = TestNowSource::Create(1000);
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_, false));
@@ -488,7 +488,7 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
     source_->AddObserver(obs_.get());
   }
 
-  virtual void TearDown() OVERRIDE { obs_.reset(); }
+  virtual void TearDown() override { obs_.reset(); }
 };
 
 TEST_F(SyntheticBeginFrameSourceTest,
@@ -547,7 +547,7 @@ TEST_F(SyntheticBeginFrameSourceTest, VSyncChanges) {
 // BeginFrameSourceMultiplexer testing -----------------------------------
 class BeginFrameSourceMultiplexerTest : public ::testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     mux_ = BeginFrameSourceMultiplexer::Create();
 
     source1_store_ = make_scoped_ptr(new FakeBeginFrameSource());
@@ -559,7 +559,7 @@ class BeginFrameSourceMultiplexerTest : public ::testing::Test {
     source3_ = source3_store_.get();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Make sure the mux is torn down before the sources.
     mux_.reset();
   }

@@ -25,17 +25,17 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   };
 
   // Layer implementation.
-  virtual void SetIsMask(bool is_mask) OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void ReduceMemoryUsage() OVERRIDE;
-  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect) OVERRIDE;
-  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) OVERRIDE;
+  virtual void SetIsMask(bool is_mask) override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  virtual void ReduceMemoryUsage() override;
+  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect) override;
+  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
-      OVERRIDE;
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const OVERRIDE;
+      override;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
-  virtual void OnOutputSurfaceCreated() OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
+  virtual void OnOutputSurfaceCreated() override;
 
  protected:
   TiledLayer();
@@ -67,7 +67,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
 
   bool SkipsDraw() const { return skips_draw_; }
 
-  virtual bool HasDrawableContent() const OVERRIDE;
+  virtual bool HasDrawableContent() const override;
 
   // Virtual for testing
   virtual PrioritizedResourceManager* ResourceManager();
@@ -76,7 +76,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
 
  private:
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   void CreateTilerIfNeeded();
   void set_tiling_option(TilingOption tiling_option) {

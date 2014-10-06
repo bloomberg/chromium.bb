@@ -31,9 +31,9 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   bool mouse_is_over_scrollbar() const { return mouse_is_over_scrollbar_; }
   bool mouse_is_near_scrollbar() const { return mouse_is_near_scrollbar_; }
 
-  virtual void DidScrollUpdate() OVERRIDE;
-  virtual void DidMouseMoveOffScrollbar() OVERRIDE;
-  virtual void DidMouseMoveNear(float distance) OVERRIDE;
+  virtual void DidScrollUpdate() override;
+  virtual void DidMouseMoveOffScrollbar() override;
+  virtual void DidMouseMoveNear(float distance) override;
 
  protected:
   ScrollbarAnimationControllerThinning(
@@ -42,7 +42,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
       base::TimeDelta delay_before_starting,
       base::TimeDelta duration);
 
-  virtual void RunAnimationFrame(float progress) OVERRIDE;
+  virtual void RunAnimationFrame(float progress) override;
 
  private:
   // Describes whether the current animation should INCREASE (darken / thicken)

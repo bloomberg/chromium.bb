@@ -68,29 +68,29 @@ class ThreadProxyForTest : public ThreadProxy {
  private:
   TestHooks* test_hooks_;
 
-  virtual void ScheduledActionSendBeginMainFrame() OVERRIDE {
+  virtual void ScheduledActionSendBeginMainFrame() override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
     ThreadProxy::ScheduledActionSendBeginMainFrame();
     test_hooks_->ScheduledActionSendBeginMainFrame();
   }
 
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
+  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     DrawResult result = ThreadProxy::ScheduledActionDrawAndSwapIfPossible();
     test_hooks_->ScheduledActionDrawAndSwapIfPossible();
     return result;
   }
 
-  virtual void ScheduledActionAnimate() OVERRIDE {
+  virtual void ScheduledActionAnimate() override {
     ThreadProxy::ScheduledActionAnimate();
     test_hooks_->ScheduledActionAnimate();
   }
 
-  virtual void ScheduledActionCommit() OVERRIDE {
+  virtual void ScheduledActionCommit() override {
     ThreadProxy::ScheduledActionCommit();
     test_hooks_->ScheduledActionCommit();
   }
 
-  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
+  virtual void ScheduledActionBeginOutputSurfaceCreation() override {
     ThreadProxy::ScheduledActionBeginOutputSurfaceCreation();
     test_hooks_->ScheduledActionBeginOutputSurfaceCreation();
   }
@@ -141,65 +141,65 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}
 
-  virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE {
+  virtual void WillBeginImplFrame(const BeginFrameArgs& args) override {
     LayerTreeHostImpl::WillBeginImplFrame(args);
     test_hooks_->WillBeginImplFrameOnThread(this, args);
   }
 
-  virtual void BeginMainFrameAborted(bool did_handle) OVERRIDE {
+  virtual void BeginMainFrameAborted(bool did_handle) override {
     LayerTreeHostImpl::BeginMainFrameAborted(did_handle);
     test_hooks_->BeginMainFrameAbortedOnThread(this, did_handle);
   }
 
-  virtual void BeginCommit() OVERRIDE {
+  virtual void BeginCommit() override {
     LayerTreeHostImpl::BeginCommit();
     test_hooks_->BeginCommitOnThread(this);
   }
 
-  virtual void CommitComplete() OVERRIDE {
+  virtual void CommitComplete() override {
     LayerTreeHostImpl::CommitComplete();
     test_hooks_->CommitCompleteOnThread(this);
   }
 
-  virtual DrawResult PrepareToDraw(FrameData* frame) OVERRIDE {
+  virtual DrawResult PrepareToDraw(FrameData* frame) override {
     DrawResult draw_result = LayerTreeHostImpl::PrepareToDraw(frame);
     return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);
   }
 
   virtual void DrawLayers(FrameData* frame,
-                          base::TimeTicks frame_begin_time) OVERRIDE {
+                          base::TimeTicks frame_begin_time) override {
     LayerTreeHostImpl::DrawLayers(frame, frame_begin_time);
     test_hooks_->DrawLayersOnThread(this);
   }
 
-  virtual bool SwapBuffers(const LayerTreeHostImpl::FrameData& frame) OVERRIDE {
+  virtual bool SwapBuffers(const LayerTreeHostImpl::FrameData& frame) override {
     bool result = LayerTreeHostImpl::SwapBuffers(frame);
     test_hooks_->SwapBuffersOnThread(this, result);
     return result;
   }
 
-  virtual void DidSwapBuffersComplete() OVERRIDE {
+  virtual void DidSwapBuffersComplete() override {
     LayerTreeHostImpl::DidSwapBuffersComplete();
     test_hooks_->SwapBuffersCompleteOnThread(this);
   }
 
-  virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {
+  virtual void ReclaimResources(const CompositorFrameAck* ack) override {
     LayerTreeHostImpl::ReclaimResources(ack);
   }
 
-  virtual void UpdateVisibleTiles() OVERRIDE {
+  virtual void UpdateVisibleTiles() override {
     LayerTreeHostImpl::UpdateVisibleTiles();
     test_hooks_->UpdateVisibleTilesOnThread(this);
   }
 
-  virtual void NotifyReadyToActivate() OVERRIDE {
+  virtual void NotifyReadyToActivate() override {
     if (block_notify_ready_to_activate_for_testing_)
       notify_ready_to_activate_was_blocked_ = true;
     else
       client_->NotifyReadyToActivate();
   }
 
-  virtual void BlockNotifyReadyToActivateForTesting(bool block) OVERRIDE {
+  virtual void BlockNotifyReadyToActivateForTesting(bool block) override {
     block_notify_ready_to_activate_for_testing_ = block;
     if (!block && notify_ready_to_activate_was_blocked_) {
       NotifyReadyToActivate();
@@ -207,7 +207,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
   }
 
-  virtual void ActivateSyncTree() OVERRIDE {
+  virtual void ActivateSyncTree() override {
     test_hooks_->WillActivateTreeOnThread(this);
     LayerTreeHostImpl::ActivateSyncTree();
     DCHECK(!pending_tree());
@@ -215,24 +215,24 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface)
-      OVERRIDE {
+      override {
     bool success = LayerTreeHostImpl::InitializeRenderer(output_surface.Pass());
     test_hooks_->InitializedRendererOnThread(this, success);
     return success;
   }
 
-  virtual void SetVisible(bool visible) OVERRIDE {
+  virtual void SetVisible(bool visible) override {
     LayerTreeHostImpl::SetVisible(visible);
     test_hooks_->DidSetVisibleOnImplTree(this, visible);
   }
 
-  virtual void AnimateLayers(base::TimeTicks monotonic_time) OVERRIDE {
+  virtual void AnimateLayers(base::TimeTicks monotonic_time) override {
     test_hooks_->WillAnimateLayers(this, monotonic_time);
     LayerTreeHostImpl::AnimateLayers(monotonic_time);
     test_hooks_->AnimateLayers(this, monotonic_time);
   }
 
-  virtual void UpdateAnimationState(bool start_ready_animations) OVERRIDE {
+  virtual void UpdateAnimationState(bool start_ready_animations) override {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
     AnimationRegistrar::AnimationControllerMap::const_iterator iter =
@@ -246,7 +246,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->UpdateAnimationState(this, has_unfinished_animation);
   }
 
-  virtual base::TimeDelta LowFrequencyAnimationInterval() const OVERRIDE {
+  virtual base::TimeDelta LowFrequencyAnimationInterval() const override {
     return test_hooks_->LowFrequencyAnimationInterval();
   }
 
@@ -266,24 +266,24 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   }
   virtual ~LayerTreeHostClientForTesting() {}
 
-  virtual void WillBeginMainFrame(int frame_id) OVERRIDE {
+  virtual void WillBeginMainFrame(int frame_id) override {
     test_hooks_->WillBeginMainFrame();
   }
 
-  virtual void DidBeginMainFrame() OVERRIDE {
+  virtual void DidBeginMainFrame() override {
     test_hooks_->DidBeginMainFrame();
   }
 
-  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {
+  virtual void BeginMainFrame(const BeginFrameArgs& args) override {
     test_hooks_->BeginMainFrame(args);
   }
 
-  virtual void Layout() OVERRIDE { test_hooks_->Layout(); }
+  virtual void Layout() override { test_hooks_->Layout(); }
 
   virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
                                    const gfx::Vector2d& outer_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE {
+                                   float top_controls_delta) override {
     test_hooks_->ApplyViewportDeltas(inner_delta,
                                      outer_delta,
                                      page_scale,
@@ -291,38 +291,38 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   }
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float scale,
-                                   float top_controls_delta) OVERRIDE {
+                                   float top_controls_delta) override {
     test_hooks_->ApplyViewportDeltas(scroll_delta,
                                      scale,
                                      top_controls_delta);
   }
 
-  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE {
+  virtual void RequestNewOutputSurface(bool fallback) override {
     test_hooks_->RequestNewOutputSurface(fallback);
   }
 
-  virtual void DidInitializeOutputSurface() OVERRIDE {
+  virtual void DidInitializeOutputSurface() override {
     test_hooks_->DidInitializeOutputSurface();
   }
 
-  virtual void DidFailToInitializeOutputSurface() OVERRIDE {
+  virtual void DidFailToInitializeOutputSurface() override {
     test_hooks_->DidFailToInitializeOutputSurface();
   }
 
-  virtual void WillCommit() OVERRIDE { test_hooks_->WillCommit(); }
+  virtual void WillCommit() override { test_hooks_->WillCommit(); }
 
-  virtual void DidCommit() OVERRIDE { test_hooks_->DidCommit(); }
+  virtual void DidCommit() override { test_hooks_->DidCommit(); }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     test_hooks_->DidCommitAndDrawFrame();
   }
 
-  virtual void DidCompleteSwapBuffers() OVERRIDE {
+  virtual void DidCompleteSwapBuffers() override {
     test_hooks_->DidCompleteSwapBuffers();
   }
 
-  virtual void DidPostSwapBuffers() OVERRIDE {}
-  virtual void DidAbortSwapBuffers() OVERRIDE {}
+  virtual void DidPostSwapBuffers() override {}
+  virtual void DidAbortSwapBuffers() override {}
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
@@ -356,7 +356,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   }
 
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
-      LayerTreeHostImplClient* host_impl_client) OVERRIDE {
+      LayerTreeHostImplClient* host_impl_client) override {
     return LayerTreeHostImplForTesting::Create(
         test_hooks_,
         settings(),
@@ -366,7 +366,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
         rendering_stats_instrumentation());
   }
 
-  virtual void SetNeedsCommit() OVERRIDE {
+  virtual void SetNeedsCommit() override {
     if (!test_started_)
       return;
     LayerTreeHost::SetNeedsCommit();
@@ -374,7 +374,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 
   void set_test_started(bool started) { test_started_ = started; }
 
-  virtual void DidDeferCommit() OVERRIDE { test_hooks_->DidDeferCommit(); }
+  virtual void DidDeferCommit() override { test_hooks_->DidDeferCommit(); }
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,

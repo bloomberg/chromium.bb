@@ -135,7 +135,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
 
 class TestRenderPassSink : public RenderPassSink {
  public:
-  virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) OVERRIDE {
+  virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override {
     render_passes_.push_back(render_pass.Pass());
   }
 

@@ -81,7 +81,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
     tile_manager_->SetGlobalStateForTesting(state);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     tile_manager_.reset(NULL);
     picture_pile_ = NULL;
 
@@ -90,15 +90,15 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   // TileManagerClient implementation.
   virtual const std::vector<PictureLayerImpl*>& GetPictureLayers()
-      const OVERRIDE {
+      const override {
     return picture_layers_;
   }
-  virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
-  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
+  virtual void NotifyReadyToActivate() override { ready_to_activate_ = true; }
+  virtual void NotifyTileStateChanged(const Tile* tile) override {}
   virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
-                                TreePriority priority) OVERRIDE {}
+                                TreePriority priority) override {}
   virtual void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                                  TreePriority priority) OVERRIDE {}
+                                  TreePriority priority) override {}
 
   TileVector CreateTilesWithSize(int count,
                                  TilePriority active_priority,
@@ -514,7 +514,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     host_impl_.tile_manager()->SetGlobalStateForTesting(state);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InitializeRenderer();
     SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   }

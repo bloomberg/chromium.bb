@@ -75,22 +75,22 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetNeedsCommit1() : num_commits_(0), num_draws_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     PostSetNeedsCommitToMainThread();
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     num_draws_++;
     if (!impl->active_tree()->source_frame_number())
       EndTest();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     num_commits_++;
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_LE(1, num_commits_);
     EXPECT_LE(1, num_draws_);
   }
@@ -108,13 +108,13 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetNeedsCommit2() : num_commits_(0), num_draws_(0) {}
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     ++num_draws_;
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
@@ -128,7 +128,7 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(2, num_commits_);
     EXPECT_LE(1, num_draws_);
   }
@@ -143,7 +143,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 // Verify that we pass property values in PushPropertiesTo.
 class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
  protected:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->SetRootLayer(root);
@@ -158,16 +158,16 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
     DONE,
   };
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     index_ = STARTUP;
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     VerifyAfterValues(impl->active_tree()->root_layer());
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     SetBeforeValues(layer_tree_host()->root_layer());
     VerifyBeforeValues(layer_tree_host()->root_layer());
 
@@ -180,7 +180,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
     SetAfterValues(layer_tree_host()->root_layer());
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   void VerifyBeforeValues(Layer* layer) {
     EXPECT_EQ(gfx::Size(10, 10).ToString(), layer->bounds().ToString());
@@ -239,9 +239,9 @@ class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetNeedsRedraw() : num_commits_(0), num_draws_(0) {}
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_EQ(0, impl->active_tree()->source_frame_number());
     if (!num_draws_) {
       // Redraw again to verify that the second redraw doesn't commit.
@@ -252,12 +252,12 @@ class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {
     num_draws_++;
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_EQ(0, num_draws_);
     num_commits_++;
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_GE(2, num_draws_);
     EXPECT_EQ(1, num_commits_);
   }
@@ -279,7 +279,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
         invalid_rect_(10, 10, 20, 20),
         root_layer_(ContentLayer::Create(&client_)) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -290,7 +290,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     gfx::RectF root_damage_rect;
@@ -308,7 +308,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
     return draw_result;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (!num_draws_) {
       PostSetNeedsRedrawRectToMainThread(invalid_rect_);
     } else {
@@ -317,7 +317,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
     num_draws_++;
   }
 
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(2, num_draws_); }
+  virtual void AfterTest() override { EXPECT_EQ(2, num_draws_); }
 
  private:
   int num_draws_;
@@ -331,11 +331,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->layer_transforms_should_scale_layer_contents = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
 
@@ -347,14 +347,14 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->active_tree()->source_frame_number() == 1)
       EndTest();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // Changing the device scale factor causes a commit. It also changes
@@ -368,7 +368,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(gfx::Size(4, 4).ToString(),
               scaled_layer_->content_bounds().ToString());
   }
@@ -384,11 +384,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
 class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->layer_transforms_should_scale_layer_contents = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
 
@@ -405,14 +405,14 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->active_tree()->source_frame_number() == 1)
       EndTest();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // Changing the device scale factor causes a commit. It also changes
@@ -426,7 +426,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(gfx::Size(40, 40).ToString(),
               scrollbar_->content_bounds().ToString());
   }
@@ -448,7 +448,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
         invalid_rect_(10, 10, 20, 20),
         root_layer_(ContentLayer::Create(&client_)) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -456,7 +456,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (num_draws_ == 3 && host_impl->settings().impl_side_painting)
       host_impl->SetNeedsRedrawRect(invalid_rect_);
   }
@@ -464,7 +464,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     gfx::RectF root_damage_rect;
@@ -492,7 +492,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
     return draw_result;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     switch (num_draws_) {
       case 0:
       case 1:
@@ -519,7 +519,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
     num_draws_++;
   }
 
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(5, num_draws_); }
+  virtual void AfterTest() override { EXPECT_EQ(5, num_draws_); }
 
  private:
   int num_draws_;
@@ -538,7 +538,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
   LayerTreeHostTestUndrawnLayersDamageLater()
       : root_layer_(ContentLayer::Create(&client_)) {}
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(gfx::Size(50, 50));
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -557,12 +557,12 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     gfx::RectF root_damage_rect;
@@ -590,7 +590,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     return draw_result;
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // Test not owning the surface.
@@ -612,7 +612,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -632,7 +632,7 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
   LayerTreeHostTestUndrawnLayersPushContentBoundsLater()
       : root_layer_(Layer::Create()) {}
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(gfx::Size(20, 20));
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -649,9 +649,9 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     LayerImpl* root = host_impl->active_tree()->root_layer();
     LayerImpl* parent = root->children()[0];
     LayerImpl* child = parent->children()[0];
@@ -671,7 +671,7 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
     }
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         parent_layer_->SetOpacity(1.0f);
@@ -683,7 +683,7 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> root_layer_;
@@ -700,21 +700,21 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
  public:
   LayerTreeHostTestCommit() {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
 
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_EQ(gfx::Size(20, 20), impl->DrawViewportSize());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
 
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
@@ -728,20 +728,20 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   LayerTreeHostTestFrameTimeUpdatesAfterActivationFails()
       : frame_count_with_pending_tree_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
 
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_EQ(frame_count_with_pending_tree_, 0);
     impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                          const BeginFrameArgs& args) OVERRIDE {
+                                          const BeginFrameArgs& args) override {
     if (impl->pending_tree())
       frame_count_with_pending_tree_++;
 
@@ -753,7 +753,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     }
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (frame_count_with_pending_tree_ > 1) {
       EXPECT_NE(first_frame_time_.ToInternalValue(), 0);
       EXPECT_NE(first_frame_time_.ToInternalValue(),
@@ -765,12 +765,12 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     EXPECT_FALSE(impl->settings().impl_side_painting);
     EndTest();
   }
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     if (impl->settings().impl_side_painting)
       EXPECT_NE(frame_count_with_pending_tree_, 1);
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   int frame_count_with_pending_tree_;
@@ -786,14 +786,14 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
  public:
   LayerTreeHostTestFrameTimeUpdatesAfterDraw() : frame_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
 
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     frame_++;
     if (frame_ == 1) {
       first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
@@ -811,7 +811,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
     EndTest();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     // Ensure there isn't a commit between the two draws, to ensure that a
     // commit isn't required for updating the current frame time. We can
     // only check for this in the multi-threaded case, since in the single-
@@ -820,7 +820,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
       EXPECT_EQ(0, frame_);
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   int frame_;
@@ -835,7 +835,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
  public:
   LayerTreeHostTestStartPageScaleAnimation() {}
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     if (layer_tree_host()->settings().impl_side_painting) {
@@ -861,18 +861,18 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float scale,
-                                   float) OVERRIDE {
+                                   float) override {
     gfx::ScrollOffset offset = scroll_layer_->scroll_offset();
     scroll_layer_->SetScrollOffset(ScrollOffsetWithDelta(offset,
                                                          scroll_delta));
     layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     // We get one commit before the first draw, and the animation doesn't happen
     // until the second draw.
     switch (impl->active_tree()->source_frame_number()) {
@@ -892,7 +892,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     }
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         layer_tree_host()->StartPageScaleAnimation(
@@ -901,7 +901,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<Layer> scroll_layer_;
@@ -913,7 +913,7 @@ class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetVisible() : num_draws_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     PostSetNeedsCommitToMainThread();
     PostSetVisibleToMainThread(false);
     // This is suppressed while we're invisible.
@@ -922,13 +922,13 @@ class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
     PostSetVisibleToMainThread(true);
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_TRUE(impl->visible());
     ++num_draws_;
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(1, num_draws_); }
+  virtual void AfterTest() override { EXPECT_EQ(1, num_draws_); }
 
  private:
   int num_draws_;
@@ -945,13 +945,13 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
   virtual void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
-      ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
+      ContentLayerClient::GraphicsContextStatus gc_status) override {
     // Set layer opacity to 0.
     if (test_layer_)
       test_layer_->SetOpacity(0.f);
   }
-  virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
-  virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
+  virtual void DidChangeLayerCanUseLCDText() override {}
+  virtual bool FillsBoundsCompletely() const override { return false; }
 
  private:
   Layer* test_layer_;
@@ -968,7 +968,7 @@ class ContentLayerWithUpdateTracking : public ContentLayer {
   void ResetPaintContentsCount() { paint_contents_count_ = 0; }
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE {
+                      const OcclusionTracker<Layer>* occlusion) override {
     bool updated = ContentLayer::Update(queue, occlusion);
     paint_contents_count_++;
     return updated;
@@ -996,18 +996,18 @@ class LayerTreeHostTestOpacityChange : public LayerTreeHostTest {
     test_opacity_change_delegate_.SetTestLayer(update_check_layer_.get());
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->AddChild(update_check_layer_);
 
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     // Update() should have been called once.
     EXPECT_EQ(1, update_check_layer_->PaintContentsCount());
   }
@@ -1028,7 +1028,7 @@ class NoScaleContentLayer : public ContentLayer {
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* contentBounds) OVERRIDE {
+                                      gfx::Size* contentBounds) override {
     // Skip over the ContentLayer's method to the base Layer class.
     Layer::CalculateContentsScale(ideal_contents_scale,
                                   contents_scale_x,
@@ -1049,7 +1049,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
       : root_layer_(NoScaleContentLayer::Create(&client_)),
         child_layer_(ContentLayer::Create(&client_)) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(60, 60));
     layer_tree_host()->SetDeviceScaleFactor(1.5);
     EXPECT_EQ(gfx::Size(60, 60), layer_tree_host()->device_viewport_size());
@@ -1068,7 +1068,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     // Should only do one commit.
     EXPECT_EQ(0, impl->active_tree()->source_frame_number());
     // Device scale factor should come over to impl.
@@ -1134,7 +1134,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -1147,7 +1147,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
 // Verify atomicity of commits and reuse of textures.
 class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->texture_id_allocation_chunk_size = 1;
     // Make sure partial texture updates are turned off.
     settings->max_partial_texture_updates = 0;
@@ -1155,7 +1155,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     settings->scrollbar_animator = LayerTreeSettings::NoAnimator;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     layer_ = FakeContentLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(10, 20));
 
@@ -1172,12 +1172,12 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     drew_frame_ = -1;
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = TestContext();
@@ -1218,7 +1218,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     }
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     TestWebGraphicsContext3D* context = TestContext();
 
     if (drew_frame_ == impl->active_tree()->source_frame_number()) {
@@ -1235,12 +1235,12 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
       PostSetNeedsCommitToMainThread();
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     layer_->SetNeedsDisplay();
     scrollbar_->SetNeedsDisplay();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  protected:
   FakeContentLayerClient client_;
@@ -1255,7 +1255,7 @@ MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
 class LayerTreeHostTestDelegatingRendererAtomicCommit
     : public LayerTreeHostTestDirectRendererAtomicCommit {
  public:
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = TestContext();
@@ -1322,7 +1322,7 @@ static void SetLayerPropertiesForTesting(Layer* layer,
 class LayerTreeHostTestAtomicCommitWithPartialUpdate
     : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->texture_id_allocation_chunk_size = 1;
     // Allow one partial texture update.
     settings->max_partial_texture_updates = 1;
@@ -1330,7 +1330,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     settings->impl_side_painting = false;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     parent_ = FakeContentLayer::Create(&client_);
     parent_->SetBounds(gfx::Size(10, 20));
 
@@ -1344,9 +1344,9 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         parent_->SetNeedsDisplay();
@@ -1373,7 +1373,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     ASSERT_EQ(1u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = TestContext();
@@ -1463,7 +1463,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     }
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_LT(impl->active_tree()->source_frame_number(), 5);
 
     TestWebGraphicsContext3D* context = TestContext();
@@ -1480,7 +1480,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     context->ResetUsedTextures();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -1495,7 +1495,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     : public LayerTreeHostTest {
  protected:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_ = FakeContentLayer::Create(&client_);
     root_layer_->SetBounds(gfx::Size(100, 100));
 
@@ -1521,9 +1521,9 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     Renderer* renderer = host_impl->renderer();
     RenderPassId surface1_render_pass_id = host_impl->active_tree()
                                                ->root_layer()
@@ -1560,12 +1560,12 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     }
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     if (layer_tree_host()->source_frame_number() < 2)
       root_layer_->SetNeedsDisplay();
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_LE(2u, root_layer_->update_count());
     EXPECT_LE(2u, surface_layer1_->update_count());
     EXPECT_LE(2u, surface_layer2_->update_count());
@@ -1590,13 +1590,13 @@ class EvictionTestLayer : public Layer {
   }
 
   virtual bool Update(ResourceUpdateQueue*,
-                      const OcclusionTracker<Layer>*) OVERRIDE;
-  virtual bool DrawsContent() const OVERRIDE { return true; }
+                      const OcclusionTracker<Layer>*) override;
+  virtual bool DrawsContent() const override { return true; }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* impl) OVERRIDE;
-  virtual void SetTexturePriorities(const PriorityCalculator&) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* impl) override;
+  virtual void SetTexturePriorities(const PriorityCalculator&) override;
 
   bool HaveBackingTexture() const {
     return texture_.get() ? texture_->have_backing_texture() : false;
@@ -1629,7 +1629,7 @@ class EvictionTestLayerImpl : public LayerImpl {
 
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE {
+                           AppendQuadsData* append_quads_data) override {
     ASSERT_TRUE(has_texture_);
     ASSERT_NE(0u, layer_tree_impl()->resource_provider()->num_resources());
   }
@@ -1683,7 +1683,7 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
         impl_for_evict_textures_(0),
         num_commits_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetRootLayer(layer_);
     layer_tree_host()->SetViewportSize(gfx::Size(10, 20));
 
@@ -1733,7 +1733,7 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
   // the beginFrame/commit pair.
   // Commits 5+6 test the path where an eviction happens during the eviction
   // recovery path.
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (num_commits_) {
       case 1:
         EXPECT_TRUE(layer_->HaveBackingTexture());
@@ -1761,11 +1761,11 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     impl_for_evict_textures_ = impl;
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
@@ -1794,7 +1794,7 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -1810,7 +1810,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
   LayerTreeHostTestContinuousInvalidate()
       : num_commit_complete_(0), num_draw_layers_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
@@ -1823,24 +1823,24 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     if (num_draw_layers_ == 2)
       return;
     content_layer_->SetNeedsDisplay();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     if (num_draw_layers_ == 1)
       num_commit_complete_++;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     num_draw_layers_++;
     if (num_draw_layers_ == 2)
       EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     // Check that we didn't commit twice between first and second draw.
     EXPECT_EQ(1, num_commit_complete_);
   }
@@ -1859,14 +1859,14 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   LayerTreeHostTestDeferCommits()
       : num_commits_deferred_(0), num_complete_commits_(0) {}
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidDeferCommit() OVERRIDE {
+  virtual void DidDeferCommit() override {
     num_commits_deferred_++;
     layer_tree_host()->SetDeferCommits(false);
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     num_complete_commits_++;
     switch (num_complete_commits_) {
       case 1:
@@ -1883,7 +1883,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(1, num_commits_deferred_);
     EXPECT_EQ(2, num_complete_commits_);
   }
@@ -2056,7 +2056,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
         child_layer2_(FakeContentLayer::Create(&client_)),
         num_commits_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
     root_layer_->SetBounds(gfx::Size(100, 100));
     child_layer1_->SetBounds(gfx::Size(100, 100));
@@ -2068,7 +2068,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
   }
 
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
-                                       bool visible) OVERRIDE {
+                                       bool visible) override {
     if (visible) {
       // One backing should remain unevicted.
       EXPECT_EQ(
@@ -2086,7 +2086,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     EndTest();
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
@@ -2118,7 +2118,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -2145,14 +2145,14 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
     virtual void PaintContents(
         SkCanvas* canvas,
         const gfx::Rect& clip,
-        ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
+        ContentLayerClient::GraphicsContextStatus gc_status) override {
       ++paint_count_;
     }
-    virtual void DidChangeLayerCanUseLCDText() OVERRIDE {
+    virtual void DidChangeLayerCanUseLCDText() override {
       ++lcd_notification_count_;
       layer_->SetNeedsDisplay();
     }
-    virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
+    virtual bool FillsBoundsCompletely() const override { return false; }
 
    private:
     Layer* layer_;
@@ -2160,7 +2160,7 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
     int lcd_notification_count_;
   };
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<Layer> root_layer;
     if (layer_tree_host()->settings().impl_side_painting)
       root_layer = PictureLayer::Create(&client_);
@@ -2180,10 +2180,10 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-  virtual void AfterTest() OVERRIDE {}
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  virtual void AfterTest() override {}
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The first update consists of one LCD notification and one paint.
@@ -2228,11 +2228,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 // Verify that the BeginFrame notification is used to initiate rendering.
 class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->begin_frame_scheduling_enabled = true;
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     // This will trigger a SetNeedsBeginFrame which will trigger a
     // BeginFrame.
     PostSetNeedsCommitToMainThread();
@@ -2241,12 +2241,12 @@ class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EndTest();
     return DRAW_SUCCESS;
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   base::TimeTicks frame_time_;
@@ -2257,14 +2257,14 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestBeginFrameNotification);
 class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->begin_frame_scheduling_enabled = true;
     settings->using_synchronous_renderer_compositor = true;
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     // The BeginFrame notification is turned off now but will get enabled
     // once we return. End test while it's enabled.
     ImplThreadTaskRunner()->PostTask(
@@ -2273,7 +2273,7 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
                    base::Unretained(this)));
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(
@@ -2284,13 +2284,13 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   LayerTreeHostTestAbortedCommitDoesntStall()
       : commit_count_(0), commit_abort_count_(0), commit_complete_count_(0) {}
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->begin_frame_scheduling_enabled = true;
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     commit_count_++;
     if (commit_count_ == 4) {
       // After two aborted commits, request a real commit now to make sure a
@@ -2301,13 +2301,13 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   }
 
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                             bool did_handle) OVERRIDE {
+                                             bool did_handle) override {
     commit_abort_count_++;
     // Initiate another abortable commit.
     host_impl->SetNeedsCommit();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     commit_complete_count_++;
     if (commit_complete_count_ == 1) {
       // Initiate an abortable commit after the first commit.
@@ -2317,7 +2317,7 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(commit_count_, 5);
     EXPECT_EQ(commit_abort_count_, 3);
     EXPECT_EQ(commit_complete_count_, 2);
@@ -2330,7 +2330,7 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
 
 class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     : public LayerTreeHostTestAbortedCommitDoesntStall {
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
     settings->using_synchronous_renderer_compositor = true;
   }
@@ -2341,7 +2341,7 @@ MULTI_THREAD_TEST_F(
 
 class LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync
     : public LayerTreeHostTestAbortedCommitDoesntStall {
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
     settings->throttle_frame_production = false;
   }
@@ -2352,11 +2352,11 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync);
 class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     scoped_refptr<Layer> layer = PictureLayer::Create(&client_);
@@ -2365,13 +2365,13 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     layer_tree_host()->root_layer()->AddChild(layer);
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
 };
@@ -2391,13 +2391,13 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     virtual void PaintContents(
         SkCanvas* canvas,
         const gfx::Rect& clip,
-        ContentLayerClient::GraphicsContextStatus gc_status) OVERRIDE {
+        ContentLayerClient::GraphicsContextStatus gc_status) override {
       layer_->SetBounds(gfx::Size(2, 2));
     }
 
-    virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+    virtual void DidChangeLayerCanUseLCDText() override {}
 
-    virtual bool FillsBoundsCompletely() const OVERRIDE { return false; }
+    virtual bool FillsBoundsCompletely() const override { return false; }
 
    private:
     Layer* layer_;
@@ -2405,7 +2405,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
 
   LayerTreeHostTestChangeLayerPropertiesInPaintContents() : num_commits_(0) {}
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
     root_layer->SetIsDrawable(true);
     root_layer->SetBounds(gfx::Size(1, 1));
@@ -2416,10 +2416,10 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-  virtual void AfterTest() OVERRIDE {}
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  virtual void AfterTest() override {}
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     num_commits_++;
     if (num_commits_ == 1) {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
@@ -2445,7 +2445,7 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
     test_capabilities_.gpu.texture_rectangle = true;
   }
 
-  virtual GLuint createTexture() OVERRIDE {
+  virtual GLuint createTexture() override {
     return 1;
   }
   MOCK_METHOD1(activeTexture, void(GLenum texture));
@@ -2471,7 +2471,7 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
 class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
  protected:
   virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
-      OVERRIDE {
+      override {
     scoped_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = mock_context_owned.get();
@@ -2482,7 +2482,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
       return FakeOutputSurface::Create3d(mock_context_owned.Pass());
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     layer_tree_host()->root_layer()->SetIsDrawable(false);
@@ -2498,9 +2498,9 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     layer_tree_host()->root_layer()->AddChild(io_surface_layer);
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_EQ(0u, host_impl->resource_provider()->num_resources());
     // In WillDraw, the IOSurfaceLayer sets up the io surface texture.
 
@@ -2541,7 +2541,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     Mock::VerifyAndClearExpectations(&mock_context_);
     ResourceProvider* resource_provider = host_impl->resource_provider();
     EXPECT_EQ(1u, resource_provider->num_resources());
@@ -2573,14 +2573,14 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     return draw_result;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     Mock::VerifyAndClearExpectations(&mock_context_);
 
     EXPECT_CALL(*mock_context_, deleteTexture(1)).Times(AtLeast(1));
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   int io_surface_id_;
   MockIOSurfaceWebGraphicsContext3D* mock_context_;
@@ -2591,7 +2591,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestIOSurfaceDrawing);
 
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     frame_ = 0;
     PostSetNeedsCommitToMainThread();
   }
@@ -2600,7 +2600,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   // Round 2: commit only (no draw/swap)
   // Round 3: draw only (no commit)
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     int commit = layer_tree_host()->source_frame_number();
     switch (commit) {
       case 2:
@@ -2611,7 +2611,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
     }
   }
 
-  virtual void DidCompleteSwapBuffers() OVERRIDE {
+  virtual void DidCompleteSwapBuffers() override {
     int commit = layer_tree_host()->source_frame_number();
     ++frame_;
     switch (frame_) {
@@ -2628,7 +2628,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  protected:
   int frame_;
@@ -2645,12 +2645,12 @@ TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_GLRenderer) {
 
 class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     // PictureLayer can only be used with impl side painting enabled.
     settings->impl_side_painting = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     layer_ = FakePictureLayer::Create(&client_);
     // Force commits to not be aborted so new frames get drawn, otherwise
     // the renderer gets deferred initialized but nothing new needs drawing.
@@ -2659,7 +2659,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     did_initialize_gl_ = false;
     did_release_gl_ = false;
     last_source_frame_number_drawn_ = -1;  // Never drawn.
@@ -2667,7 +2667,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   }
 
   virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
-      OVERRIDE {
+      override {
     scoped_ptr<TestWebGraphicsContext3D> context3d(
         TestWebGraphicsContext3D::Create());
 
@@ -2676,7 +2676,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
         delegating_renderer());
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     ASSERT_TRUE(host_impl->RootLayer());
     FakePictureLayerImpl* layer_impl =
         static_cast<FakePictureLayerImpl*>(host_impl->RootLayer());
@@ -2733,7 +2733,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) OVERRIDE {
+                                   bool result) override {
     ASSERT_TRUE(result);
     DelegatedFrameData* delegated_frame_data =
         output_surface()->last_sent_frame().delegated_frame_data.get();
@@ -2750,7 +2750,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     host_impl->ReclaimResources(&ack);
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_TRUE(did_initialize_gl_);
     EXPECT_TRUE(did_release_gl_);
   }
@@ -2767,7 +2767,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
 
 class LayerTreeHostTestDeferredInitializeWithGpuRasterization
     : public LayerTreeHostTestDeferredInitialize {
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     // PictureLayer can only be used with impl side painting enabled.
     settings->impl_side_painting = true;
     settings->gpu_rasterization_enabled = true;
@@ -2782,13 +2782,13 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
  public:
   LayerTreeHostTestUIResource() : num_ui_resources_(0) {}
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->texture_id_allocation_chunk_size = 1;
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     int frame = layer_tree_host()->source_frame_number();
     switch (frame) {
       case 1:
@@ -2849,17 +2849,17 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     if (!layer_tree_host()->settings().impl_side_painting)
       PerformTest(impl);
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     if (layer_tree_host()->settings().impl_side_painting)
       PerformTest(impl);
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   // Must clear all resources before exiting.
@@ -2888,7 +2888,7 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
 
   virtual ~PushPropertiesCountingLayerImpl() {}
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE {
+  virtual void PushPropertiesTo(LayerImpl* layer) override {
     LayerImpl::PushPropertiesTo(layer);
     push_properties_count_++;
     // Push state to the active tree because we can only access it from there.
@@ -2897,7 +2897,7 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE {
+      override {
     return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
   }
 
@@ -2920,7 +2920,7 @@ class PushPropertiesCountingLayer : public Layer {
     return new PushPropertiesCountingLayer();
   }
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE {
+  virtual void PushPropertiesTo(LayerImpl* layer) override {
     Layer::PushPropertiesTo(layer);
     push_properties_count_++;
     if (persist_needs_push_properties_)
@@ -2928,7 +2928,7 @@ class PushPropertiesCountingLayer : public Layer {
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE {
+      override {
     return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
   }
 
@@ -2954,7 +2954,7 @@ class PushPropertiesCountingLayer : public Layer {
 
 class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
  protected:
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     num_commits_ = 0;
     expected_push_properties_root_ = 0;
     expected_push_properties_child_ = 0;
@@ -2965,7 +2965,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_ = PushPropertiesCountingLayer::Create();
     child_ = PushPropertiesCountingLayer::Create();
     child2_ = PushPropertiesCountingLayer::Create();
@@ -2984,7 +2984,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     ++num_commits_;
 
     EXPECT_EQ(expected_push_properties_root_, root_->push_properties_count());
@@ -3124,7 +3124,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
       ++expected_push_properties_leaf_layer_;
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   int num_commits_;
   FakeContentLayerClient client_;
@@ -3147,7 +3147,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestLayersPushProperties);
 class LayerTreeHostTestImplLayersPushProperties
     : public LayerTreeHostTestLayersPushProperties {
  protected:
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     expected_push_properties_root_impl_ = 0;
     expected_push_properties_child_impl_ = 0;
     expected_push_properties_grandchild_impl_ = 0;
@@ -3156,7 +3156,7 @@ class LayerTreeHostTestImplLayersPushProperties
     LayerTreeHostTestLayersPushProperties::BeginTest();
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     // These commits are in response to the changes made in
     // LayerTreeHostTestLayersPushProperties::DidCommitAndDrawFrame()
     switch (num_commits_) {
@@ -3347,9 +3347,9 @@ TEST_F(LayerTreeHostTestImplLayersPushProperties, DelegatingRenderer) {
 class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     : public LayerTreeHostTest {
  protected:
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_ = Layer::Create();
     root_->SetBounds(gfx::Size(1, 1));
 
@@ -3364,7 +3364,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 0:
         break;
@@ -3393,7 +3393,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   scoped_refptr<Layer> root_;
   scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer_;
@@ -3403,9 +3403,9 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestPropertyChangesDuringUpdateArePushed);
 
 class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
  protected:
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_ = PushPropertiesCountingLayer::Create();
     child_ = PushPropertiesCountingLayer::Create();
     root_->AddChild(child_);
@@ -3414,7 +3414,7 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 0:
         break;
@@ -3446,7 +3446,7 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   scoped_refptr<PushPropertiesCountingLayer> root_;
   scoped_refptr<PushPropertiesCountingLayer> child_;
@@ -3457,7 +3457,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestSetDrawableCausesCommit);
 class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
     : public LayerTreeHostTest {
  protected:
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     expected_push_properties_root_ = 0;
     expected_push_properties_child_ = 0;
     expected_push_properties_grandchild1_ = 0;
@@ -3466,7 +3466,7 @@ class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_ = PushPropertiesCountingLayer::Create();
     child_ = PushPropertiesCountingLayer::Create();
     grandchild1_ = PushPropertiesCountingLayer::Create();
@@ -3482,7 +3482,7 @@ class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<PushPropertiesCountingLayer> root_;
@@ -3500,7 +3500,7 @@ class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
 class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
@@ -3540,7 +3540,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush);
 class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
@@ -3623,7 +3623,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion);
 class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
@@ -3671,7 +3671,7 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
@@ -3739,7 +3739,7 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
@@ -3803,7 +3803,7 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
  protected:
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
@@ -3870,7 +3870,7 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
   LayerTreeHostTestTreeActivationCallback()
       : num_commits_(0), callback_count_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     EXPECT_TRUE(HasImplThread());
     PostSetNeedsCommitToMainThread();
   }
@@ -3878,7 +3878,7 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
@@ -3907,7 +3907,7 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
         host_impl, frame_data, draw_result);
   }
 
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(3, num_commits_); }
+  virtual void AfterTest() override { EXPECT_EQ(3, num_commits_); }
 
   void SetCallback(bool enable) {
     output_surface()->SetTreeActivationCallback(
@@ -3936,7 +3936,7 @@ class LayerInvalidateCausesDraw : public LayerTreeHostTest {
  public:
   LayerInvalidateCausesDraw() : num_commits_(0), num_draws_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     ASSERT_TRUE(!!invalidate_layer_.get())
         << "Derived tests must set this in SetupTree";
 
@@ -3944,23 +3944,23 @@ class LayerInvalidateCausesDraw : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     // After commit, invalidate the layer.  This should cause a commit.
     if (layer_tree_host()->source_frame_number() == 1)
       invalidate_layer_->SetNeedsDisplay();
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     num_draws_++;
     if (impl->active_tree()->source_frame_number() == 1)
       EndTest();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     num_commits_++;
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_GE(2, num_commits_);
     EXPECT_GE(2, num_draws_);
   }
@@ -3978,7 +3978,7 @@ class LayerInvalidateCausesDraw : public LayerTreeHostTest {
 // response to that invalidation.
 class LayerTreeHostTestVideoLayerInvalidate : public LayerInvalidateCausesDraw {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
     scoped_refptr<VideoLayer> video_layer =
         VideoLayer::Create(&provider_, media::VIDEO_ROTATION_0);
@@ -4001,7 +4001,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestVideoLayerInvalidate);
 class LayerTreeHostTestIOSurfaceLayerInvalidate
     : public LayerInvalidateCausesDraw {
  public:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
     scoped_refptr<IOSurfaceLayer> layer = IOSurfaceLayer::Create();
     layer->SetBounds(gfx::Size(10, 10));
@@ -4020,7 +4020,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 
 class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
  protected:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetPosition(gfx::Point());
     root_layer_->SetBounds(gfx::Size(10, 10));
@@ -4041,9 +4041,9 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The layer type used does not need to push properties every frame.
@@ -4063,7 +4063,7 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
     }
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* parent = root->children()[0];
     LayerImpl* child = parent->children()[0];
@@ -4075,7 +4075,7 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<SolidColorLayer> parent_layer_;
@@ -4086,11 +4086,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushHiddenLayer);
 
 class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_layer_ = FakePictureLayer::Create(&client_);
     root_layer_->SetBounds(gfx::Size(10, 10));
 
@@ -4098,21 +4098,21 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     // The viewport is empty, but we still need to update layers on the main
     // thread.
     layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     // The layer should be updated even though the viewport is empty, so we
     // are capable of drawing it on the impl tree.
     EXPECT_GT(root_layer_->update_count(), 0u);
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_layer_;
@@ -4126,7 +4126,7 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
       : num_will_begin_main_frames_(0), num_impl_commits_(0) {}
 
  protected:
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<SolidColorLayer> root_layer = SolidColorLayer::Create();
     root_layer->SetBounds(gfx::Size(200, 200));
     root_layer->SetIsDrawable(true);
@@ -4135,9 +4135,9 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void WillBeginMainFrame() OVERRIDE {
+  virtual void WillBeginMainFrame() override {
     num_will_begin_main_frames_++;
     switch (num_will_begin_main_frames_) {
       case 2:
@@ -4148,11 +4148,11 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
     }
   }
 
-  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
     num_impl_commits_++;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     switch (impl->SourceAnimationFrameNumber()) {
       case 1:
         // Prevent draws until commit.
@@ -4167,7 +4167,7 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     // Ensure that the commit was truly aborted.
     EXPECT_EQ(2, num_will_begin_main_frames_);
     EXPECT_EQ(1, num_impl_commits_);
@@ -4183,12 +4183,12 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestAbortEvictedTextures);
 
 class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
   virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
-      OVERRIDE {
+      override {
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();
     context_provider->SetMaxTransferBufferUsageBytes(1024 * 1024);
@@ -4198,7 +4198,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
       return FakeOutputSurface::Create3d(context_provider);
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
         FakePictureLayer::Create(&client_);
@@ -4209,9 +4209,9 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     TestWebGraphicsContext3D* context = TestContext();
 
     // Expect that the transfer buffer memory used is equal to the
@@ -4220,7 +4220,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -4235,14 +4235,14 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
  public:
   LayerTreeHostTestMemoryLimits() : num_commits_(0) {}
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void WillCommit() OVERRIDE {
+  virtual void WillCommit() override {
     // Some commits are aborted, so increment number of attempted commits here.
     num_commits_++;
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     switch (num_commits_) {
       case 1:
         // Verify default values.
@@ -4287,7 +4287,7 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     switch (num_commits_) {
       case 1:
         break;
@@ -4312,7 +4312,7 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   int num_commits_;
@@ -4330,7 +4330,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
         second_output_surface_memory_limit_(1234321) {}
 
   virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
-      OVERRIDE {
+      override {
     if (!first_context_provider_.get()) {
       first_context_provider_ = TestContextProvider::Create();
     } else {
@@ -4355,16 +4355,16 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     return output_surface.Pass();
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_ = FakeContentLayer::Create(&client_);
     root_->SetBounds(gfx::Size(20, 20));
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     // Lost context sometimes takes two frames to recreate. The third frame
     // is sometimes aborted, so wait until the fourth frame to verify that
     // the memory has been set, and the fifth frame to end the test.
@@ -4376,7 +4376,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* impl,
-                                   bool result) OVERRIDE {
+                                   bool result) override {
     switch (impl->active_tree()->source_frame_number()) {
       case 1:
         EXPECT_EQ(first_output_surface_memory_limit_,
@@ -4392,7 +4392,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   scoped_refptr<TestContextProvider> first_context_provider_;
   scoped_refptr<TestContextProvider> second_context_provider_;
@@ -4429,14 +4429,14 @@ class TestSwapPromise : public SwapPromise {
     result_->dtor_called = true;
   }
 
-  virtual void DidSwap(CompositorFrameMetadata* metadata) OVERRIDE {
+  virtual void DidSwap(CompositorFrameMetadata* metadata) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
     result_->did_swap_called = true;
   }
 
-  virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE {
+  virtual void DidNotSwap(DidNotSwapReason reason) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
@@ -4444,7 +4444,7 @@ class TestSwapPromise : public SwapPromise {
     result_->reason = reason;
   }
 
-  virtual int64 TraceId() const OVERRIDE { return 0; }
+  virtual int64 TraceId() const override { return 0; }
 
  private:
   // Not owned.
@@ -4456,16 +4456,16 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
   LayerTreeHostTestBreakSwapPromise()
       : commit_count_(0), commit_complete_count_(0) {}
 
-  virtual void WillBeginMainFrame() OVERRIDE {
+  virtual void WillBeginMainFrame() override {
     ASSERT_LE(commit_count_, 2);
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_[commit_count_]));
     layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     commit_count_++;
     if (commit_count_ == 2) {
       // This commit will finish.
@@ -4473,7 +4473,7 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     commit_complete_count_++;
     if (commit_complete_count_ == 1) {
       // This commit will be aborted because no actual update.
@@ -4483,7 +4483,7 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     // 3 commits are scheduled. 2 completes. 1 is aborted.
     EXPECT_EQ(commit_count_, 3);
     EXPECT_EQ(commit_complete_count_, 2);
@@ -4527,14 +4527,14 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
     : public LayerTreeHostTest {
  protected:
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     layer_tree_host()->SetDeferCommits(true);
     layer_tree_host()->SetNeedsCommit();
   }
 
-  virtual void DidDeferCommit() OVERRIDE {
+  virtual void DidDeferCommit() override {
     layer_tree_host()->SetVisible(false);
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
@@ -4543,11 +4543,11 @@ class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
   }
 
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                             bool did_handle) OVERRIDE {
+                                             bool did_handle) override {
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     {
       base::AutoLock lock(swap_promise_result_.lock);
       EXPECT_FALSE(swap_promise_result_.did_swap_called);
@@ -4566,16 +4566,16 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
     : public LayerTreeHostTest {
  protected:
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     if (TestEnded())
       return;
     layer_tree_host()->SetDeferCommits(true);
     layer_tree_host()->SetNeedsCommit();
   }
 
-  virtual void DidDeferCommit() OVERRIDE {
+  virtual void DidDeferCommit() override {
     layer_tree_host()->DidLoseOutputSurface();
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
@@ -4584,7 +4584,7 @@ class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
   }
 
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                             bool did_handle) OVERRIDE {
+                                             bool did_handle) override {
     EndTest();
     // This lets the test finally commit and exit.
     MainThreadTaskRunner()->PostTask(
@@ -4598,7 +4598,7 @@ class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
     layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(true);
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     {
       base::AutoLock lock(swap_promise_result_.lock);
       EXPECT_FALSE(swap_promise_result_.did_swap_called);
@@ -4625,15 +4625,15 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
 
   virtual ~SimpleSwapPromiseMonitor() {}
 
-  virtual void OnSetNeedsCommitOnMain() OVERRIDE {
+  virtual void OnSetNeedsCommitOnMain() override {
     (*set_needs_commit_count_)++;
   }
 
-  virtual void OnSetNeedsRedrawOnImpl() OVERRIDE {
+  virtual void OnSetNeedsRedrawOnImpl() override {
     ADD_FAILURE() << "Should not get called on main thread.";
   }
 
-  virtual void OnForwardScrollUpdateToMainThreadOnImpl() OVERRIDE {
+  virtual void OnForwardScrollUpdateToMainThreadOnImpl() override {
     ADD_FAILURE() << "Should not get called on main thread.";
   }
 
@@ -4643,9 +4643,9 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
 
 class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
  public:
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void WillBeginMainFrame() OVERRIDE {
+  virtual void WillBeginMainFrame() override {
     if (TestEnded())
       return;
 
@@ -4694,7 +4694,7 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
@@ -4702,18 +4702,18 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
 class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
     ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
   }
 
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     host_impl->EvictAllUIResources();
     // Existence of evicted UI resources will trigger NEW_CONTENT_TAKES_PRIORITY
     // mode. Active tree should require high-res to draw after entering this
@@ -4722,7 +4722,7 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     EXPECT_TRUE(host_impl->active_tree()->RequiresHighResToDraw());
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     int frame = layer_tree_host()->source_frame_number();
     switch (frame) {
       case 1:
@@ -4735,7 +4735,7 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_ptr<FakeScopedUIResource> ui_resource_;
@@ -4746,14 +4746,14 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
 
 class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
 
     EXPECT_FALSE(settings->gpu_rasterization_enabled);
     EXPECT_FALSE(settings->gpu_rasterization_forced);
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
@@ -4762,7 +4762,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     layer_tree_host()->root_layer()->AddChild(layer);
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
     PicturePile* pile = layer->GetPicturePileForTesting();
@@ -4782,18 +4782,18 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient layer_client_;
 };
@@ -4802,14 +4802,14 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDefault);
 
 class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
 
     EXPECT_FALSE(settings->gpu_rasterization_enabled);
     settings->gpu_rasterization_enabled = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
@@ -4818,7 +4818,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     layer_tree_host()->root_layer()->AddChild(layer);
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
     PicturePile* pile = layer->GetPicturePileForTesting();
@@ -4847,18 +4847,18 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient layer_client_;
 };
@@ -4867,14 +4867,14 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 
 class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
 
     EXPECT_FALSE(settings->gpu_rasterization_forced);
     settings->gpu_rasterization_forced = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
     scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
@@ -4883,7 +4883,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     layer_tree_host()->root_layer()->AddChild(layer);
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
     PicturePile* pile = layer->GetPicturePileForTesting();
@@ -4912,18 +4912,18 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient layer_client_;
 };
@@ -4938,7 +4938,7 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
  protected:
   enum { kExpectedNumCommits = 10 };
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(bounds_);
 
@@ -4958,7 +4958,7 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(
@@ -4976,11 +4976,11 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
                                           milliseconds_per_frame));
   }
 
-  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {
+  virtual void BeginMainFrame(const BeginFrameArgs& args) override {
     child_layer_->SetNeedsDisplay();
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_LE(kExpectedNumCommits, num_commits_);
     EXPECT_LE(kExpectedNumCommits, num_draws_);
     int update_count = content_layer_.get()
@@ -4989,12 +4989,12 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
     EXPECT_LE(kExpectedNumCommits, update_count);
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (++num_draws_ == kExpectedNumCommits)
       EndTest();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     ++num_commits_;
   }
 
@@ -5028,24 +5028,24 @@ class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
   LayerTreeHostTestActivateOnInvisible()
       : activation_count_(0), visible_(true) {}
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     // Kick off the test with a commit.
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
     // Make sure we don't activate using the notify signal from tile manager.
     host_impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
-  virtual void DidCommit() OVERRIDE { layer_tree_host()->SetVisible(false); }
+  virtual void DidCommit() override { layer_tree_host()->SetVisible(false); }
 
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
-                                       bool visible) OVERRIDE {
+                                       bool visible) override {
     visible_ = visible;
 
     // Once invisible, we can go visible again.
@@ -5057,12 +5057,12 @@ class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
     }
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     ++activation_count_;
     EXPECT_FALSE(visible_);
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     // Ensure we activated even though the signal was blocked.
     EXPECT_EQ(1, activation_count_);
     EXPECT_TRUE(visible_);

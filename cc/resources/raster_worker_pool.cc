@@ -39,7 +39,7 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
 
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     TaskGraphRunner::Run();
   }
 
@@ -62,15 +62,15 @@ class RasterFinishedTaskImpl : public RasterizerTask {
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
+  virtual void RunOnWorkerThread() override {
     TRACE_EVENT0("cc", "RasterFinishedTaskImpl::RunOnWorkerThread");
     RasterFinished();
   }
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void RunReplyOnOriginThread() OVERRIDE {}
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
+  virtual void RunReplyOnOriginThread() override {}
 
  protected:
   virtual ~RasterFinishedTaskImpl() {}

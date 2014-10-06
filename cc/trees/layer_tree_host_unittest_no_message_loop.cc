@@ -31,7 +31,7 @@ class NoMessageLoopOutputSurface : public OutputSurface {
   virtual ~NoMessageLoopOutputSurface() {}
 
   // OutputSurface overrides.
-  virtual void SwapBuffers(CompositorFrame* frame) OVERRIDE {
+  virtual void SwapBuffers(CompositorFrame* frame) override {
     DCHECK(client_);
     client_->DidSwapBuffers();
     client_->DidSwapBuffersComplete();
@@ -53,34 +53,34 @@ class LayerTreeHostNoMessageLoopTest
   virtual ~LayerTreeHostNoMessageLoopTest() {}
 
   // LayerTreeHostClient overrides.
-  virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
-  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {}
-  virtual void DidBeginMainFrame() OVERRIDE {}
-  virtual void Layout() OVERRIDE {}
+  virtual void WillBeginMainFrame(int frame_id) override {}
+  virtual void BeginMainFrame(const BeginFrameArgs& args) override {}
+  virtual void DidBeginMainFrame() override {}
+  virtual void Layout() override {}
   virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
                                    const gfx::Vector2d& outer_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE {}
+                                   float top_controls_delta) override {}
   virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
                                    float page_scale,
-                                   float top_controls_delta) OVERRIDE {}
-  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE {
+                                   float top_controls_delta) override {}
+  virtual void RequestNewOutputSurface(bool fallback) override {
     layer_tree_host_->SetOutputSurface(
         make_scoped_ptr<OutputSurface>(new NoMessageLoopOutputSurface));
   }
-  virtual void DidInitializeOutputSurface() OVERRIDE {
+  virtual void DidInitializeOutputSurface() override {
     did_initialize_output_surface_ = true;
   }
-  virtual void WillCommit() OVERRIDE {}
-  virtual void DidCommit() OVERRIDE { did_commit_ = true; }
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void WillCommit() override {}
+  virtual void DidCommit() override { did_commit_ = true; }
+  virtual void DidCommitAndDrawFrame() override {
     did_commit_and_draw_frame_ = true;
   }
-  virtual void DidCompleteSwapBuffers() OVERRIDE {}
+  virtual void DidCompleteSwapBuffers() override {}
 
   // LayerTreeHostSingleThreadClient overrides.
-  virtual void DidPostSwapBuffers() OVERRIDE {}
-  virtual void DidAbortSwapBuffers() OVERRIDE {}
+  virtual void DidPostSwapBuffers() override {}
+  virtual void DidAbortSwapBuffers() override {}
 
   void RunTest() {
     no_loop_thread_.Start();
@@ -88,7 +88,7 @@ class LayerTreeHostNoMessageLoopTest
   }
 
   // base::DelegateSimpleThread::Delegate override.
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     ASSERT_FALSE(base::MessageLoopProxy::current().get());
     RunTestWithoutMessageLoop();
     EXPECT_FALSE(base::MessageLoopProxy::current().get());
@@ -137,7 +137,7 @@ class LayerTreeHostNoMessageLoopTest
 class LayerTreeHostNoMessageLoopSmokeTest
     : public LayerTreeHostNoMessageLoopTest {
  protected:
-  virtual void RunTestWithoutMessageLoop() OVERRIDE {
+  virtual void RunTestWithoutMessageLoop() override {
     gfx::Size size(100, 100);
 
     // Set up root layer.
@@ -164,7 +164,7 @@ class LayerTreeHostNoMessageLoopDelegatedLayer
     : public LayerTreeHostNoMessageLoopTest,
       public DelegatedFrameResourceCollectionClient {
  protected:
-  virtual void RunTestWithoutMessageLoop() OVERRIDE {
+  virtual void RunTestWithoutMessageLoop() override {
     resource_collection_ = new DelegatedFrameResourceCollection;
     frame_provider_ = new DelegatedFrameProvider(
         resource_collection_.get(), CreateFrameDataWithResource(998));
@@ -198,7 +198,7 @@ class LayerTreeHostNoMessageLoopDelegatedLayer
   }
 
   // DelegatedFrameResourceCollectionClient overrides.
-  virtual void UnusedResourcesAreAvailable() OVERRIDE {}
+  virtual void UnusedResourcesAreAvailable() override {}
 
  private:
   scoped_ptr<DelegatedFrameData> CreateFrameDataWithResource(

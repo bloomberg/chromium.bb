@@ -24,7 +24,7 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
   LayerTreeHostReadbackPixelTest()
       : insert_copy_request_after_frame_count_(0) {}
 
-  virtual scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest() OVERRIDE {
+  virtual scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest() override {
     scoped_ptr<CopyOutputRequest> request;
 
     switch (test_type_) {
@@ -51,7 +51,7 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
     return request.Pass();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     if (insert_copy_request_after_frame_count_ == 0) {
       Layer* const target =
           readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
@@ -60,7 +60,7 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     if (insert_copy_request_after_frame_count_ ==
         layer_tree_host()->source_frame_number()) {
       Layer* const target =
@@ -920,17 +920,17 @@ class LayerTreeHostReadbackDeviceScalePixelTest
         green_client_(SK_ColorGREEN),
         blue_client_(SK_ColorBLUE) {}
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     // Cause the device scale factor to be inherited by contents scales.
     settings->layer_transforms_should_scale_layer_contents = true;
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
     LayerTreePixelTest::SetupTree();
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_EQ(device_scale_factor_,
               host_impl->active_tree()->device_scale_factor());
   }

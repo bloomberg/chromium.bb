@@ -26,7 +26,7 @@ class LayerTreeHostDamageTest : public LayerTreeTest {};
 // LayerTreeHost::SetNeedsRedraw should damage the whole viewport.
 class LayerTreeHostDamageTestSetNeedsRedraw
     : public LayerTreeHostDamageTest {
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // Viewport is 10x10.
     scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
     root->SetBounds(gfx::Size(10, 10));
@@ -35,12 +35,12 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     LayerTreeHostDamageTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     draw_count_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         layer_tree_host()->SetNeedsRedraw();
@@ -51,7 +51,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
@@ -77,7 +77,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     return draw_result;
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   int draw_count_;
   FakeContentLayerClient client_;
@@ -88,7 +88,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestSetNeedsRedraw);
 // LayerTreeHost::SetViewportSize should damage the whole viewport.
 class LayerTreeHostDamageTestSetViewportSize
     : public LayerTreeHostDamageTest {
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     // Viewport is 10x10.
     scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
     root->SetBounds(gfx::Size(10, 10));
@@ -97,12 +97,12 @@ class LayerTreeHostDamageTestSetViewportSize
     LayerTreeHostDamageTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     draw_count_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         layer_tree_host()->SetViewportSize(gfx::Size(15, 15));
@@ -113,7 +113,7 @@ class LayerTreeHostDamageTestSetViewportSize
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
@@ -139,7 +139,7 @@ class LayerTreeHostDamageTestSetViewportSize
     return draw_result;
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   int draw_count_;
   FakeContentLayerClient client_;
@@ -149,14 +149,14 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestSetViewportSize);
 
 class LayerTreeHostDamageTestNoDamageDoesNotSwap
     : public LayerTreeHostDamageTest {
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     expect_swap_and_succeed_ = 0;
     did_swaps_ = 0;
     did_swap_and_succeed_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
     root->SetBounds(gfx::Size(10, 10));
 
@@ -172,7 +172,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     int source_frame = host_impl->active_tree()->source_frame_number();
@@ -198,14 +198,14 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) OVERRIDE {
+                                   bool result) override {
     ++did_swaps_;
     if (result)
       ++did_swap_and_succeed_;
     EXPECT_EQ(expect_swap_and_succeed_, did_swap_and_succeed_);
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     int next_frame = layer_tree_host()->source_frame_number();
     switch (next_frame) {
       case 1:
@@ -224,7 +224,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(4, did_swaps_);
     EXPECT_EQ(2, expect_swap_and_succeed_);
     EXPECT_EQ(expect_swap_and_succeed_, did_swap_and_succeed_);
@@ -241,11 +241,11 @@ SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
     LayerTreeHostDamageTestNoDamageDoesNotSwap);
 
 class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     root_ = FakeContentLayer::Create(&client_);
     child_ = FakeContentLayer::Create(&client_);
 
@@ -261,7 +261,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
@@ -334,7 +334,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     return draw_result;
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() override {
     if (!TestEnded())
       layer_tree_host()->SetNeedsCommit();
 
@@ -344,7 +344,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> root_;
@@ -355,7 +355,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
 
 class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(400, 400));
     root_layer->SetMasksToBounds(true);
@@ -395,7 +395,7 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
 
 class LayerTreeHostDamageTestScrollbarDoesDamage
     : public LayerTreeHostScrollbarDamageTest {
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     did_swaps_ = 0;
     PostSetNeedsCommitToMainThread();
   }
@@ -403,7 +403,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer()->render_surface();
@@ -432,7 +432,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) OVERRIDE {
+                                   bool result) override {
     ++did_swaps_;
     EXPECT_TRUE(result);
     LayerImpl* root = host_impl->active_tree()->root_layer();
@@ -458,7 +458,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(4, did_swaps_);
   }
 
@@ -469,7 +469,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarDoesDamage);
 
 class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
     : public LayerTreeHostScrollbarDamageTest {
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     did_swaps_ = 0;
     PostSetNeedsCommitToMainThread();
   }
@@ -477,7 +477,7 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer()->render_surface();
@@ -508,7 +508,7 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) OVERRIDE {
+                                   bool result) override {
     ++did_swaps_;
     EXPECT_TRUE(result);
     LayerImpl* root = host_impl->active_tree()->root_layer();
@@ -535,7 +535,7 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
     }
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     EXPECT_EQ(3, did_swaps_);
   }
 
@@ -547,15 +547,15 @@ MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarCommitDoesNoDamage);
 class LayerTreeHostDamageTestVisibleTilesStillTriggerDraws
     : public LayerTreeHostDamageTest {
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void SetupTree() OVERRIDE {
+  virtual void SetupTree() override {
     scoped_refptr<FakePictureLayer> root = FakePictureLayer::Create(&client_);
     root->SetBounds(gfx::Size(500, 500));
     layer_tree_host()->SetRootLayer(root);
@@ -569,7 +569,7 @@ class LayerTreeHostDamageTestVisibleTilesStillTriggerDraws
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     prepare_to_draw_count_++;
     switch (prepare_to_draw_count_) {
@@ -600,7 +600,7 @@ class LayerTreeHostDamageTestVisibleTilesStillTriggerDraws
   }
 
   virtual void UpdateVisibleTilesOnThread(
-      LayerTreeHostImpl* host_impl) OVERRIDE {
+      LayerTreeHostImpl* host_impl) override {
     // Simulate creating some visible tiles (that trigger prepare-to-draws).
     // The first we make into a no-damage-frame during prepare-to-draw (see
     // above). This is to ensure we still get UpdateVisibleTiles calls after
@@ -618,13 +618,13 @@ class LayerTreeHostDamageTestVisibleTilesStillTriggerDraws
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool didSwap) OVERRIDE {
+                                   bool didSwap) override {
     if (!didSwap)
       return;
     ++swap_count_;
   }
 
-  virtual void AfterTest() OVERRIDE {
+  virtual void AfterTest() override {
     // We should keep getting update-visible-tiles calls
     // until we report there are no more incomplete-tiles.
     EXPECT_EQ(update_visible_tile_count_, 6);

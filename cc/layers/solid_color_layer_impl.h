@@ -31,16 +31,16 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
 
   // LayerImpl overrides.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
 
  protected:
   SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
   DISALLOW_COPY_AND_ASSIGN(SolidColorLayerImpl);
 };

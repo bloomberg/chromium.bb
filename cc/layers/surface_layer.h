@@ -21,12 +21,12 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   // Layer overrides.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
  protected:
   SurfaceLayer();
-  virtual bool HasDrawableContent() const OVERRIDE;
+  virtual bool HasDrawableContent() const override;
 
  private:
   virtual ~SurfaceLayer();

@@ -56,8 +56,8 @@ class FallbackFence : public ResourceProvider::Fence {
       : gl_(gl), has_passed_(true) {}
 
   // Overridden from ResourceProvider::Fence:
-  virtual void Set() OVERRIDE { has_passed_ = false; }
-  virtual bool HasPassed() OVERRIDE {
+  virtual void Set() override { has_passed_ = false; }
+  virtual bool HasPassed() override {
     if (!has_passed_) {
       has_passed_ = true;
       Synchronize();
@@ -251,11 +251,11 @@ class GLRenderer::SyncQuery {
         : query_(query) {}
 
     // Overridden from ResourceProvider::Fence:
-    virtual void Set() OVERRIDE {
+    virtual void Set() override {
       DCHECK(query_);
       query_->Set();
     }
-    virtual bool HasPassed() OVERRIDE {
+    virtual bool HasPassed() override {
       return !query_ || !query_->IsPending();
     }
 

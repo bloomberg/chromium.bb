@@ -23,16 +23,16 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   virtual ~TiledLayerImpl();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
+                        ResourceProvider* resource_provider) override;
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
 
-  virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
+  virtual ResourceProvider::ResourceId ContentsResourceId() const override;
 
   void set_skips_draw(bool skips_draw) { skips_draw_ = skips_draw; }
   void SetTilingData(const LayerTilingData& tiler);
@@ -42,12 +42,12 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
                           bool contents_swizzled);
   void PushInvalidTile(int i, int j);
 
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const OVERRIDE;
-  virtual void ReleaseResources() OVERRIDE;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  virtual void ReleaseResources() override;
 
   const LayerTilingData* TilingForTesting() const { return tiler_.get(); }
 
-  virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
+  virtual size_t GPUMemoryUsageInBytes() const override;
 
  protected:
   TiledLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -56,11 +56,11 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   bool HasResourceIdForTileAt(int i, int j) const;
 
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const
-      OVERRIDE;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
+      override;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
 
  private:
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
   DrawableTile* TileAt(int i, int j) const;
   DrawableTile* CreateTile(int i, int j);

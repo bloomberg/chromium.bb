@@ -21,10 +21,10 @@ class ScrollbarAnimationControllerLinearFadeTest
       : host_impl_(&proxy_, &shared_bitmap_manager_), needs_frame_count_(0) {}
 
   virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                        base::TimeDelta delay) OVERRIDE {
+                                        base::TimeDelta delay) override {
     start_fade_ = start_fade;
   }
-  virtual void SetNeedsScrollbarAnimationFrame() OVERRIDE {
+  virtual void SetNeedsScrollbarAnimationFrame() override {
     needs_frame_count_++;
   }
 

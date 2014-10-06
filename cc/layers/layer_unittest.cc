@@ -51,7 +51,7 @@ class MockLayerTreeHost : public LayerTreeHost {
 
 class MockLayerPainter : public LayerPainter {
  public:
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) OVERRIDE {
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {
   }
 };
 
@@ -62,11 +62,11 @@ class LayerTest : public testing::Test {
         fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     layer_tree_host_.reset(new StrictMock<MockLayerTreeHost>(&fake_client_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AnyNumber());
     parent_ = NULL;
@@ -1211,12 +1211,12 @@ class DrawsContentChangeLayer : public Layer {
     return make_scoped_refptr(new DrawsContentChangeLayer());
   }
 
-  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE {
+  virtual void SetLayerTreeHost(LayerTreeHost* host) override {
     Layer::SetLayerTreeHost(host);
     SetFakeDrawsContent(!fake_draws_content_);
   }
 
-  virtual bool HasDrawableContent() const OVERRIDE {
+  virtual bool HasDrawableContent() const override {
     return fake_draws_content_ && Layer::HasDrawableContent();
   }
 
@@ -1227,7 +1227,7 @@ class DrawsContentChangeLayer : public Layer {
 
  private:
   DrawsContentChangeLayer() : Layer(), fake_draws_content_(false) {}
-  virtual ~DrawsContentChangeLayer() OVERRIDE {}
+  virtual ~DrawsContentChangeLayer() override {}
 
   bool fake_draws_content_;
 };

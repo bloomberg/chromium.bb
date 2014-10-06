@@ -37,20 +37,20 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
 
   virtual ~MockTopControlsManagerClient() {}
 
-  virtual void DidChangeTopControlsPosition() OVERRIDE {
+  virtual void DidChangeTopControlsPosition() override {
     redraw_needed_ = true;
     update_draw_properties_needed_ = true;
   }
 
-  virtual bool HaveRootScrollLayer() const OVERRIDE {
+  virtual bool HaveRootScrollLayer() const override {
     return true;
   }
 
-  virtual void SetControlsTopOffset(float offset) OVERRIDE {
+  virtual void SetControlsTopOffset(float offset) override {
     top_controls_top_offset_ = offset;
   }
 
-  virtual float ControlsTopOffset() const OVERRIDE {
+  virtual float ControlsTopOffset() const override {
     return top_controls_top_offset_;
   }
 

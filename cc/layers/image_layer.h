@@ -20,27 +20,27 @@ class CC_EXPORT ImageLayer : public TiledLayer {
 
   // Layer implementation.
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
-      OVERRIDE;
+      override;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
-                                      gfx::Size* content_bounds) OVERRIDE;
-  virtual void OnOutputSurfaceCreated() OVERRIDE;
+                                      gfx::Size* content_bounds) override;
+  virtual void OnOutputSurfaceCreated() override;
 
   void SetBitmap(const SkBitmap& image);
 
  protected:
-  virtual bool HasDrawableContent() const OVERRIDE;
+  virtual bool HasDrawableContent() const override;
 
  private:
   ImageLayer();
   virtual ~ImageLayer();
 
   // TiledLayer Implementation.
-  virtual LayerUpdater* Updater() const OVERRIDE;
-  virtual void CreateUpdaterIfNeeded() OVERRIDE;
+  virtual LayerUpdater* Updater() const override;
+  virtual void CreateUpdaterIfNeeded() override;
 
   float ImageContentsScaleX() const;
   float ImageContentsScaleY() const;

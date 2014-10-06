@@ -21,9 +21,9 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
   void reset_update_count() { update_count_ = 0; }
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
   scoped_ptr<base::AutoReset<bool> > IgnoreSetNeedsCommit();
 

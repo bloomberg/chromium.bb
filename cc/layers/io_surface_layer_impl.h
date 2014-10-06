@@ -24,23 +24,23 @@ class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
   void SetIOSurfaceProperties(unsigned io_surface_id, const gfx::Size& size);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
-  virtual void PushPropertiesTo(LayerImpl* layer_tree_impl) OVERRIDE;
+      override;
+  virtual void PushPropertiesTo(LayerImpl* layer_tree_impl) override;
 
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                           AppendQuadsData* append_quads_data) OVERRIDE;
+                           AppendQuadsData* append_quads_data) override;
 
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) OVERRIDE;
-  virtual void ReleaseResources() OVERRIDE;
+                        ResourceProvider* resource_provider) override;
+  virtual void ReleaseResources() override;
 
  private:
   IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   void DestroyResource();
 
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
 
   unsigned io_surface_id_;
   gfx::Size io_surface_size_;

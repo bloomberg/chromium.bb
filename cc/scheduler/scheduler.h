@@ -150,14 +150,14 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   base::TimeTicks LastBeginImplFrameTime();
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  virtual void AsValueInto(base::debug::TracedValue* value) const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* value) const override;
 
   void SetContinuousPainting(bool continuous_painting) {
     state_machine_.SetContinuousPainting(continuous_painting);
   }
 
   // BeginFrameObserverMixin
-  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) OVERRIDE;
+  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
 
  protected:
   Scheduler(SchedulerClient* client,

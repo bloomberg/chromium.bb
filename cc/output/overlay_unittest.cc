@@ -40,7 +40,7 @@ void MailboxReleased(unsigned sync_point,
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
-  virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) OVERRIDE;
+  virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
 };
 
 void SingleOverlayValidator::CheckOverlaySupport(
@@ -62,7 +62,7 @@ class SingleOverlayProcessor : public OverlayProcessor {
   SingleOverlayProcessor(OutputSurface* surface,
                          ResourceProvider* resource_provider);
   // Virtual to allow testing different strategies.
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize() override;
 };
 
 SingleOverlayProcessor::SingleOverlayProcessor(
@@ -529,7 +529,7 @@ class OverlayInfoRendererGL : public GLRenderer {
 
   MOCK_METHOD2(DoDrawQuad, void(DrawingFrame* frame, const DrawQuad* quad));
 
-  virtual void FinishDrawingFrame(DrawingFrame* frame) OVERRIDE {
+  virtual void FinishDrawingFrame(DrawingFrame* frame) override {
     GLRenderer::FinishDrawingFrame(frame);
 
     if (!expect_overlays_) {
@@ -552,7 +552,7 @@ class OverlayInfoRendererGL : public GLRenderer {
 class FakeRendererClient : public RendererClient {
  public:
   // RendererClient methods.
-  virtual void SetFullRootLayerDamage() OVERRIDE {}
+  virtual void SetFullRootLayerDamage() override {}
 };
 
 class MockOverlayScheduler {

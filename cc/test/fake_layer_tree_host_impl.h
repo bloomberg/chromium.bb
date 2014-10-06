@@ -26,9 +26,9 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
     DidDrawAllLayers(frame_data);
   }
 
-  virtual void CreatePendingTree() OVERRIDE;
+  virtual void CreatePendingTree() override;
 
-  virtual BeginFrameArgs CurrentBeginFrameArgs() const OVERRIDE;
+  virtual BeginFrameArgs CurrentBeginFrameArgs() const override;
   void SetCurrentBeginFrameArgs(const BeginFrameArgs& args);
   void UpdateNumChildrenAndDrawPropertiesForActiveTree();
   static void UpdateNumChildrenAndDrawProperties(LayerTreeImpl* layerTree);

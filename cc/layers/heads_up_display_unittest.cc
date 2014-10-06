@@ -12,7 +12,7 @@ namespace {
 
 class HeadsUpDisplayTest : public LayerTreeTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
     // Enable the HUD without requiring text.
     settings->initial_debug_state.show_property_changed_rects = true;
   }
@@ -23,7 +23,7 @@ class DrawsContentLayer : public Layer {
   static scoped_refptr<DrawsContentLayer> Create() {
     return make_scoped_refptr(new DrawsContentLayer());
   }
-  virtual bool DrawsContent() const OVERRIDE { return true; }
+  virtual bool DrawsContent() const override { return true; }
 
  private:
   DrawsContentLayer() : Layer() {}
@@ -37,14 +37,14 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
         root_layer2_(DrawsContentLayer::Create()),
         num_commits_(0) {}
 
-  virtual void BeginTest() OVERRIDE {
+  virtual void BeginTest() override {
     root_layer1_->SetBounds(gfx::Size(30, 30));
     root_layer2_->SetBounds(gfx::Size(30, 30));
 
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommit() override {
     ++num_commits_;
 
     ASSERT_TRUE(layer_tree_host()->hud_layer());
@@ -86,7 +86,7 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
     }
   }
 
-  virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() override {}
 
  private:
   scoped_refptr<DrawsContentLayer> root_layer1_;

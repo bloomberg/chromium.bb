@@ -34,17 +34,17 @@ class LayerTreePixelTest : public LayerTreeTest {
   LayerTreePixelTest();
   virtual ~LayerTreePixelTest();
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE;
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) override;
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) override;
 
   virtual scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest();
 
   void ReadbackResult(scoped_ptr<CopyOutputResult> result);
 
-  virtual void BeginTest() OVERRIDE;
-  virtual void SetupTree() OVERRIDE;
-  virtual void AfterTest() OVERRIDE;
-  virtual void EndTest() OVERRIDE;
+  virtual void BeginTest() override;
+  virtual void SetupTree() override;
+  virtual void AfterTest() override;
+  virtual void EndTest() override;
 
   void TryEndTest();
 

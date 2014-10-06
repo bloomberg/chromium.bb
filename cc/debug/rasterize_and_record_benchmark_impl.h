@@ -27,8 +27,8 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
   virtual ~RasterizeAndRecordBenchmarkImpl();
 
   // Implements MicroBenchmark interface.
-  virtual void DidCompleteCommit(LayerTreeHostImpl* host) OVERRIDE;
-  virtual void RunOnLayer(PictureLayerImpl* layer) OVERRIDE;
+  virtual void DidCompleteCommit(LayerTreeHostImpl* host) override;
+  virtual void RunOnLayer(PictureLayerImpl* layer) override;
 
  private:
   void Run(LayerImpl* layer);

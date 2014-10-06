@@ -23,10 +23,10 @@ class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
  private:
   virtual void NotifyAnimationStarted(
       base::TimeTicks monotonic_time,
-      cc::Animation::TargetProperty target_property) OVERRIDE;
+      cc::Animation::TargetProperty target_property) override;
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      cc::Animation::TargetProperty target_property) OVERRIDE;
+      cc::Animation::TargetProperty target_property) override;
 
   blink::WebCompositorAnimationDelegate* delegate_;
 

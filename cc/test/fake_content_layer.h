@@ -17,7 +17,7 @@ class FakeContentLayer : public ContentLayer {
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE;
+      override;
 
   size_t update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
@@ -26,7 +26,7 @@ class FakeContentLayer : public ContentLayer {
   void reset_push_properties_count() { push_properties_count_ = 0; }
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) override;
 
   gfx::Rect LastPaintRect() const;
 
@@ -34,9 +34,9 @@ class FakeContentLayer : public ContentLayer {
     always_update_resources_ = always_update_resources;
   }
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual void OnOutputSurfaceCreated() OVERRIDE;
+  virtual void OnOutputSurfaceCreated() override;
   size_t output_surface_created_count() const {
     return output_surface_created_count_;
   }

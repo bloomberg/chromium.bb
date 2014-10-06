@@ -18,19 +18,19 @@ class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
   virtual ~PictureImageLayerImpl();
 
   // LayerImpl overrides.
-  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const override;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(
-      LayerTreeImpl* tree_impl) OVERRIDE;
+      LayerTreeImpl* tree_impl) override;
 
  protected:
   PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-  virtual bool ShouldAdjustRasterScale() const OVERRIDE;
-  virtual void RecalculateRasterScales() OVERRIDE;
+  virtual bool ShouldAdjustRasterScale() const override;
+  virtual void RecalculateRasterScales() override;
   virtual void GetDebugBorderProperties(
-      SkColor* color, float* width) const OVERRIDE;
+      SkColor* color, float* width) const override;
 
-  virtual void UpdateIdealScales() OVERRIDE;
+  virtual void UpdateIdealScales() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureImageLayerImpl);

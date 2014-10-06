@@ -14,7 +14,7 @@ class FakeRendererClient : public RendererClient {
   FakeRendererClient();
 
   // RendererClient methods.
-  virtual void SetFullRootLayerDamage() OVERRIDE;
+  virtual void SetFullRootLayerDamage() override;
 
   // Methods added for test.
   int set_full_root_layer_damage_count() const {

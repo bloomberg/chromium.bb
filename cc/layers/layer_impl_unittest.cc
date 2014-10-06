@@ -492,11 +492,11 @@ TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
 class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
  public:
   virtual void SetTotalScrollOffset(
-      const gfx::ScrollOffset& new_value) OVERRIDE {}
-  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE {
+      const gfx::ScrollOffset& new_value) override {}
+  virtual gfx::ScrollOffset GetTotalScrollOffset() override {
     return gfx::ScrollOffset(fixed_offset_);
   }
-  virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
+  virtual bool IsExternalFlingActive() const override { return false; }
 
   void set_fixed_offset(const gfx::Vector2dF& fixed_offset) {
     fixed_offset_ = fixed_offset;
@@ -542,13 +542,13 @@ TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
 class ScrollDelegateAccept : public LayerImpl::ScrollOffsetDelegate {
  public:
   virtual void SetTotalScrollOffset(
-      const gfx::ScrollOffset& new_value) OVERRIDE {
+      const gfx::ScrollOffset& new_value) override {
     current_offset_ = new_value;
   }
-  virtual gfx::ScrollOffset GetTotalScrollOffset() OVERRIDE {
+  virtual gfx::ScrollOffset GetTotalScrollOffset() override {
     return current_offset_;
   }
-  virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
+  virtual bool IsExternalFlingActive() const override { return false; }
 
  private:
   gfx::ScrollOffset current_offset_;

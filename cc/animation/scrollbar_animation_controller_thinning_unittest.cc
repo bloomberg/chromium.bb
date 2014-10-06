@@ -21,10 +21,10 @@ class ScrollbarAnimationControllerThinningTest
       : host_impl_(&proxy_, &shared_bitmap_manager_) {}
 
   virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                        base::TimeDelta delay) OVERRIDE {
+                                        base::TimeDelta delay) override {
     start_fade_ = start_fade;
   }
-  virtual void SetNeedsScrollbarAnimationFrame() OVERRIDE {}
+  virtual void SetNeedsScrollbarAnimationFrame() override {}
 
  protected:
   virtual void SetUp() {

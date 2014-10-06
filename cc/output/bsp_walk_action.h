@@ -23,7 +23,7 @@ class CC_EXPORT BspWalkAction {
 class CC_EXPORT BspWalkActionToVector : public BspWalkAction {
  public:
   explicit BspWalkActionToVector(std::vector<DrawPolygon*>* in_list);
-  virtual void operator()(DrawPolygon* item) OVERRIDE;
+  virtual void operator()(DrawPolygon* item) override;
 
  private:
   std::vector<DrawPolygon*>* list_;

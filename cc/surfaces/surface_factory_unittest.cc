@@ -20,7 +20,7 @@ class TestSurfaceFactoryClient : public SurfaceFactoryClient {
   virtual ~TestSurfaceFactoryClient() {}
 
   virtual void ReturnResources(
-      const ReturnedResourceArray& resources) OVERRIDE {
+      const ReturnedResourceArray& resources) override {
     returned_resources_.insert(
         returned_resources_.end(), resources.begin(), resources.end());
   }

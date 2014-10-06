@@ -29,7 +29,7 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
                                const gfx::Rect& paint_rect,
                                const gfx::Size& tile_size,
                                float contents_width_scale,
-                               float contents_height_scale) OVERRIDE;
+                               float contents_height_scale) override;
   void DrawPicture(SkCanvas* canvas);
 
  private:

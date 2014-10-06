@@ -92,10 +92,10 @@ class TestHooks : public AnimationDelegate {
   // Implementation of AnimationDelegate:
   virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                                       Animation::TargetProperty target_property)
-      OVERRIDE {}
+      override {}
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) OVERRIDE {}
+      Animation::TargetProperty target_property) override {}
 
   virtual void RequestNewOutputSurface(bool fallback) = 0;
 };
@@ -187,7 +187,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DestroyLayerTreeHost();
 
   // By default, output surface recreation is synchronous.
-  virtual void RequestNewOutputSurface(bool fallback) OVERRIDE;
+  virtual void RequestNewOutputSurface(bool fallback) override;
   // Override this for pixel tests, where you need a real output surface.
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback);
   // Override this for unit tests, which should not produce pixel output.

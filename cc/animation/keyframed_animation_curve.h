@@ -126,11 +126,11 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
   }
 
   // AnimationCurve implementation
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<AnimationCurve> Clone() const override;
 
   // BackgrounColorAnimationCurve implementation
-  virtual SkColor GetValue(double t) const OVERRIDE;
+  virtual SkColor GetValue(double t) const override;
 
  private:
   KeyframedColorAnimationCurve();
@@ -156,11 +156,11 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   }
 
   // AnimationCurve implementation
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<AnimationCurve> Clone() const override;
 
   // FloatAnimationCurve implementation
-  virtual float GetValue(double t) const OVERRIDE;
+  virtual float GetValue(double t) const override;
 
  private:
   KeyframedFloatAnimationCurve();
@@ -187,16 +187,16 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   }
 
   // AnimationCurve implementation
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<AnimationCurve> Clone() const override;
 
   // TransformAnimationCurve implementation
-  virtual gfx::Transform GetValue(double t) const OVERRIDE;
+  virtual gfx::Transform GetValue(double t) const override;
   virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                                    gfx::BoxF* bounds) const OVERRIDE;
-  virtual bool AffectsScale() const OVERRIDE;
-  virtual bool IsTranslation() const OVERRIDE;
-  virtual bool MaximumScale(float* max_scale) const OVERRIDE;
+                                    gfx::BoxF* bounds) const override;
+  virtual bool AffectsScale() const override;
+  virtual bool IsTranslation() const override;
+  virtual bool MaximumScale(float* max_scale) const override;
 
  private:
   KeyframedTransformAnimationCurve();
@@ -223,12 +223,12 @@ class CC_EXPORT KeyframedFilterAnimationCurve
   }
 
   // AnimationCurve implementation
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<AnimationCurve> Clone() const override;
 
   // FilterAnimationCurve implementation
-  virtual FilterOperations GetValue(double t) const OVERRIDE;
-  virtual bool HasFilterThatMovesPixels() const OVERRIDE;
+  virtual FilterOperations GetValue(double t) const override;
+  virtual bool HasFilterThatMovesPixels() const override;
 
  private:
   KeyframedFilterAnimationCurve();

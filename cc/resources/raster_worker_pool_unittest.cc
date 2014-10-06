@@ -53,7 +53,7 @@ class TestRasterTaskImpl : public RasterTask {
       : RasterTask(resource, dependencies), reply_(reply) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
+  virtual void RunOnWorkerThread() override {
     skia::RefPtr<SkCanvas> canvas = raster_buffer_->AcquireSkCanvas();
     DCHECK(canvas);
     canvas->drawColor(SK_ColorWHITE);
@@ -61,13 +61,13 @@ class TestRasterTaskImpl : public RasterTask {
   }
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
     raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
-  virtual void RunReplyOnOriginThread() OVERRIDE {
+  virtual void RunReplyOnOriginThread() override {
     reply_.Run(PicturePileImpl::Analysis(), !HasFinishedRunning());
   }
 
@@ -90,13 +90,13 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
       : TestRasterTaskImpl(resource, reply, dependencies), lock_(lock) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
+  virtual void RunOnWorkerThread() override {
     base::AutoLock lock(*lock_);
     TestRasterTaskImpl::RunOnWorkerThread();
   }
 
   // Overridden from RasterizerTask:
-  virtual void RunReplyOnOriginThread() OVERRIDE {}
+  virtual void RunReplyOnOriginThread() override {}
 
  protected:
   virtual ~BlockingTestRasterTaskImpl() {}
@@ -126,7 +126,7 @@ class RasterWorkerPoolTest
         timed_out_(false) {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     switch (GetParam()) {
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
         Create3dOutputSurfaceAndResourceProvider();
@@ -175,19 +175,19 @@ class RasterWorkerPoolTest
     raster_worker_pool_->AsRasterizer()->SetClient(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     raster_worker_pool_->AsRasterizer()->Shutdown();
     raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
   }
 
   // Overriden from RasterWorkerPoolClient:
-  virtual void DidFinishRunningTasks(TaskSet task_set) OVERRIDE {
+  virtual void DidFinishRunningTasks(TaskSet task_set) override {
     if (task_set == ALL) {
       raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
       base::MessageLoop::current()->Quit();
     }
   }
-  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const OVERRIDE {
+  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
     return TaskSetCollection();
   }
 

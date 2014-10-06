@@ -55,11 +55,11 @@ class MockLayer : public Layer {
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      OVERRIDE {
+      override {
     return MockLayerImpl::Create(tree_impl, layer_id_);
   }
 
-  virtual void PushPropertiesTo(LayerImpl* layer_impl) OVERRIDE {
+  virtual void PushPropertiesTo(LayerImpl* layer_impl) override {
     Layer::PushPropertiesTo(layer_impl);
 
     MockLayerImpl* mock_layer_impl = static_cast<MockLayerImpl*>(layer_impl);
@@ -91,7 +91,7 @@ class FakeLayerAnimationController : public LayerAnimationController {
   virtual ~FakeLayerAnimationController() {}
 
   virtual void PushAnimationUpdatesTo(LayerAnimationController* controller_impl)
-      OVERRIDE {
+      override {
     LayerAnimationController::PushAnimationUpdatesTo(controller_impl);
     synchronized_animations_ = true;
   }

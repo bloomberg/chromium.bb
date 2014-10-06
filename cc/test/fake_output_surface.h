@@ -92,12 +92,12 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-  virtual void SwapBuffers(CompositorFrame* frame) OVERRIDE;
+  virtual void SwapBuffers(CompositorFrame* frame) override;
 
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
+  virtual void SetNeedsBeginFrame(bool enable) override;
   bool needs_begin_frame() const { return needs_begin_frame_; }
 
-  virtual bool BindToClient(OutputSurfaceClient* client) OVERRIDE;
+  virtual bool BindToClient(OutputSurfaceClient* client) override;
 
   using OutputSurface::ReleaseGL;
   using OutputSurface::InitializeAndSetContext3d;
@@ -110,7 +110,7 @@ class FakeOutputSurface : public OutputSurface {
 
   void ReturnResource(unsigned id, CompositorFrameAck* ack);
 
-  virtual bool HasExternalStencilTest() const OVERRIDE;
+  virtual bool HasExternalStencilTest() const override;
 
   void set_has_external_stencil_test(bool has_test) {
     has_external_stencil_test_ = has_test;

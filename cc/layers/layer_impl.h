@@ -98,24 +98,24 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int id() const { return layer_id_; }
 
   // LayerAnimationValueProvider implementation.
-  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const OVERRIDE;
+  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const override;
 
   // LayerAnimationValueObserver implementation.
-  virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
-  virtual void OnOpacityAnimated(float opacity) OVERRIDE;
-  virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
+  virtual void OnFilterAnimated(const FilterOperations& filters) override;
+  virtual void OnOpacityAnimated(float opacity) override;
+  virtual void OnTransformAnimated(const gfx::Transform& transform) override;
   virtual void OnScrollOffsetAnimated(
-      const gfx::ScrollOffset& scroll_offset) OVERRIDE;
-  virtual void OnAnimationWaitingForDeletion() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
+      const gfx::ScrollOffset& scroll_offset) override;
+  virtual void OnAnimationWaitingForDeletion() override;
+  virtual bool IsActive() const override;
 
   // AnimationDelegate implementation.
   virtual void NotifyAnimationStarted(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) OVERRIDE{};
+      Animation::TargetProperty target_property) override{};
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) OVERRIDE;
+      Animation::TargetProperty target_property) override;
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
