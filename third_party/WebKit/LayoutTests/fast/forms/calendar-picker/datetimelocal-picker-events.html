@@ -25,7 +25,7 @@ var datetimelocal1 = document.getElementById('datetimelocal1');
 datetimelocal1.addEventListener('input', recordEvent, false);
 datetimelocal1.addEventListener('change', recordEvent, false);
 
-openPickerWithMock(datetimelocal1, test1);
+openPicker(datetimelocal1, test1);
 
 function test1() {
     debug('Choosing a new date value from the calendar picker. No events should be dispatched because the hour field and the minutes field are empty.');
@@ -41,7 +41,7 @@ function test1() {
 
 function test1AfterClosing() {
     datetimelocal1.value = "2013-01-21T17:49";
-    openPickerWithMock(datetimelocal1, test2);
+    openPicker(datetimelocal1, test2);
 }
 
 function test2() {

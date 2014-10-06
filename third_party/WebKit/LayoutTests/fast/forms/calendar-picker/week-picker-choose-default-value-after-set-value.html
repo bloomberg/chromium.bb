@@ -31,7 +31,7 @@ shouldBeEqualToString('input.value', '2000-W02');
 shouldBeUndefined('eventsCounter.input');
 shouldBeUndefined('eventsCounter.change');
 
-openPickerWithMock(input, test1);
+openPicker(input, test1);
 
 function test1() {
     eventSender.keyDown('leftArrow');

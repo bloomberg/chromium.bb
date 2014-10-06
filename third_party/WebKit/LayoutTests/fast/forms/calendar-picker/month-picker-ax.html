@@ -23,7 +23,7 @@ window.accessibilityController.setNotificationListener(function(axnode, type) {
 });
 var activeDescendantCounter = 0;
 var month1 = document.getElementById('month1');
-openPickerWithMock(month1, test1);
+openPicker(month1, test1);
 
 function test1() {
     eventSender.keyDown('rightArrow');

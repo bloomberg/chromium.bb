@@ -15,7 +15,7 @@ description("Tests if calendar picker key bindings work as expected.");
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPickerWithMock(document.getElementById('date'), test1);
+openPicker(document.getElementById('date'), test1);
 
 function test1() {
     debug('Check that page popup exists.');
@@ -165,7 +165,7 @@ function test1() {
     eventSender.keyDown('\n');
     shouldBeEqualToString('document.getElementById("date").value', '1999-12-26');
     waitUntilClosing(function() {
-        openPickerWithMock(document.getElementById("date"), test2);
+        openPicker(document.getElementById("date"), test2);
     });
 }
 
