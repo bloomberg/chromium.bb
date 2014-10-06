@@ -399,6 +399,9 @@ const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
+// Enables the plugin power saver feature.
+const char kEnablePluginPowerSaver[]        = "enable-plugin-power-saver";
+
 // Make the values returned to window.performance.memory more granular and more
 // up to date in shared worker. Without this flag, the memory information is
 // still available, but it is bucketized and updated less frequently. This flag

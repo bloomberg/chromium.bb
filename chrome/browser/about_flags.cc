@@ -1943,6 +1943,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableCredentialManagerAPI)
   },
+#if defined(ENABLE_PLUGINS)
+  {
+    "enable-plugin-power-saver",
+    IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_NAME,
+    IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnablePluginPowerSaver)
+  },
+#endif
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
