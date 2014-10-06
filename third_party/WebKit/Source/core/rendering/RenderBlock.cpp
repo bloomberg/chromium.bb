@@ -53,7 +53,6 @@
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTableCell.h"
@@ -3155,10 +3154,6 @@ void RenderBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
 
     adjustIntrinsicLogicalWidthsForColumns(minLogicalWidth, maxLogicalWidth);
-
-    // A horizontal marquee with inline children has no minimum width.
-    if (childrenInline() && isMarquee() && toRenderMarquee(this)->isHorizontal())
-        minLogicalWidth = 0;
 
     if (isTableCell()) {
         Length tableCellWidth = toRenderTableCell(this)->styleOrColLogicalWidth();

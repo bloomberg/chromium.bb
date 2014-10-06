@@ -6,19 +6,22 @@ marquee { border:2px solid green; margin: 0; white-space: normal; }
 </style>
 </head>
 <body>
-The two divs below should be on the same line, since they are display: inline-block.
+<p>The two divs below should be on the same line, since they are display: inline-block.</p>
 
 <center>
 <div>This is div one.</div><div>This is div two.</div>
 </center>
 
-The two marquees below should be on separate lines, since marquees fill the width of a containing
-block by default.
+<p>The two marquees below should be on separate lines, since marquees fill the width of a containing
+block by default.</p>
 
+<p>This test uses white characters to make the result image deterministic.
+(Otherwise, the result image changes depending on when the content_shell takes a snapshot.)
+In order to run this test manually, change the color to black.</p>
 
 <span>
-<marquee>This is div one.</marquee>
-<marquee>This is div two.</marquee>
+<marquee><span style="color:white">This is div one.</span></marquee>
+<marquee><span style="color:white">This is div two.</span></marquee>
 </span>
 
 </body>

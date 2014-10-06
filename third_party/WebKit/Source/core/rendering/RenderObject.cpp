@@ -65,7 +65,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"

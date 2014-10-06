@@ -23,43 +23,21 @@
 #ifndef HTMLMarqueeElement_h
 #define HTMLMarqueeElement_h
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/html/HTMLElement.h"
-#include "platform/Timer.h"
 
 namespace blink {
 
-class RenderMarquee;
-
-class HTMLMarqueeElement FINAL : public HTMLElement, private ActiveDOMObject {
+class HTMLMarqueeElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLMarqueeElement> create(Document&);
 
-    int minimumDelay() const;
-
-    // DOM Functions
-
-    void start();
-    virtual void stop() OVERRIDE;
-
-    void timerFired(Timer<HTMLMarqueeElement>*);
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) final;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) final;
+    virtual void removedFrom(ContainerNode*) final;
 
 private:
     explicit HTMLMarqueeElement(Document&);
-
-    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
-
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
-
-    // ActiveDOMObject
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
-
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-
-    RenderMarquee* renderMarquee() const;
 };
 
 } // namespace blink

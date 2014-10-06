@@ -1661,8 +1661,6 @@
             'rendering/RenderListItem.cpp',
             'rendering/RenderListMarker.cpp',
             'rendering/RenderListMarker.h',
-            'rendering/RenderMarquee.cpp',
-            'rendering/RenderMarquee.h',
             'rendering/RenderMedia.cpp',
             'rendering/RenderMedia.h',
             'rendering/RenderMediaControlElements.cpp',

@@ -5,8 +5,5 @@ Inspect Me
 [expanded] 
 element.style  { ()
 
-[expanded] 
-marquee[Attributes Style]  { ()
-
 
 

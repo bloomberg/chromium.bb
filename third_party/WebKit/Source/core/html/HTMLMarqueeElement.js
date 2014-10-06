@@ -70,39 +70,13 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
     function reflectBooleanAttribute(prototype, attributeName, propertyName) {
         Object.defineProperty(prototype, propertyName, {
             get: function() {
-                return this.hasAttribute(attributeName);
+                return this.getAttribute(attributeName);
             },
             set: function(value) {
                 if (value)
                     this.setAttribute(attributeName, '');
                 else
                     this.removeAttribute(attributeName);
-            },
-        });
-    }
-
-    function defineInlineEventHandler(prototype, eventName) {
-        var propertyName = 'on' + eventName;
-        // FIXME: We should use symbols here instead.
-        var functionPropertyName = propertyName + 'Function_';
-        var eventHandlerPropertyName = propertyName + 'EventHandler_';
-        Object.defineProperty(prototype, propertyName, {
-            get: function() {
-                var func = this[functionPropertyName];
-                return func || null;
-            },
-            set: function(value) {
-                var oldEventHandler = this[eventHandlerPropertyName];
-                if (oldEventHandler)
-                    this.removeEventListener(eventName, oldEventHandler);
-                // Notice that we wrap |value| in an anonymous function so that the
-                // author can't call removeEventListener themselves to unregister the
-                // inline event handler.
-                var newEventHandler = value ? function() { value.apply(this, arguments) } : null;
-                if (newEventHandler)
-                    this.addEventListener(eventName, newEventHandler);
-                this[functionPropertyName] = value;
-                this[eventHandlerPropertyName] = newEventHandler;
             },
         });
     }
@@ -116,15 +90,11 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
     reflectAttribute(HTMLMarqueeElementPrototype, 'width', 'width');
     reflectBooleanAttribute(HTMLMarqueeElementPrototype, 'truespeed', 'trueSpeed');
 
-    defineInlineEventHandler(HTMLMarqueeElementPrototype, 'start');
-    defineInlineEventHandler(HTMLMarqueeElementPrototype, 'finish');
-    defineInlineEventHandler(HTMLMarqueeElementPrototype, 'bounce');
-
     HTMLMarqueeElementPrototype.createdCallback = function() {
         var shadow = this.createShadowRoot();
         var style = document.createElement('style');
-    style.textContent = ':host { display: inline-block; width: -webkit-fill-available; overflow: hidden; text-align: initial; }' +
-            ':host([direction="up"]), :host([direction="down"]) { height: 200px; }';
+        style.textContent = ':host { display: inline-block; width: -webkit-fill-available; overflow: hidden; text-align: initial; }'
+            + ':host([direction="up"]), :host([direction="down"]) { overflow: initial; overflow-y: hidden; }';
         shadow.appendChild(style);
 
         var mover = document.createElement('div');
@@ -136,12 +106,13 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         this.mover_ = mover;
         this.player_ = null;
         this.continueCallback_ = null;
-
-        for (var i = 0; i < kPresentationalAttributes.length; ++i)
-            this.initializeAttribute_(kPresentationalAttributes[i]);
     };
 
     HTMLMarqueeElementPrototype.attachedCallback = function() {
+        for (var i = 0; i < kPresentationalAttributes.length; ++i) {
+            this.initializeAttribute_(kPresentationalAttributes[i]);
+        }
+
         this.start();
     };
 
@@ -172,8 +143,12 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
             break;
         case 'behavior':
         case 'direction':
+        case 'loop':
+        case 'scrollAmount':
+        case 'scrollDelay':
+        case 'trueSpeed':
+            // FIXME: Not implemented.
             this.stop();
-            this.loopCount_ = 0;
             this.start();
             break;
         }
@@ -232,7 +207,10 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
     });
 
     HTMLMarqueeElementPrototype.getGetMetrics_ = function() {
-        this.mover_.style.width = '-webkit-max-content';
+        if (this.direction === 'up' || this.direction === 'down')
+            this.mover_.style.height = '-webkit-max-content';
+        else
+            this.mover_.style.width = '-webkit-max-content';
 
         var moverStyle = getComputedStyle(this.mover_);
         var marqueeStyle = getComputedStyle(this);
@@ -243,7 +221,10 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         metrics.marqueeWidth = parseInt(marqueeStyle.width);
         metrics.marqueeHeight = parseInt(marqueeStyle.height);
 
-        this.mover_.style.width = '';
+        if (this.direction === 'up' || this.direction === 'down')
+            this.mover_.style.height = '';
+        else
+            this.mover_.style.width = '';
         return metrics;
     };
 
@@ -265,7 +246,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
             case kDirectionLeft:
             default:
                 parameters.transformBegin = 'translateX(' + metrics.marqueeWidth + 'px)';
-                parameters.transformEnd = 'translateX(-100%)';
+                parameters.transformEnd = 'translateX(-' + metrics.contentWidth + 'px)';
                 parameters.distance = totalWidth;
                 break;
             case kDirectionRight:
@@ -347,6 +328,13 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         return parameters
     };
 
+    function animationFinished_(event) {
+        var player = event.target;
+        var marquee = player.marquee_;
+        marquee.loopCount_++;
+        marquee.start();
+    };
+
     HTMLMarqueeElementPrototype.shouldContinue_ = function() {
         var loop = this.loop;
 
@@ -361,66 +349,49 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
 
     HTMLMarqueeElementPrototype.continue_ = function() {
         if (!this.shouldContinue_()) {
-            this.player_ = null;
-            this.dispatchEvent(new Event('finish', false, true));
+            return;
+        }
+
+        if (this.player_ && this.player_.playState === 'paused') {
+            this.player_.play();
             return;
         }
 
         var parameters = this.getAnimationParameters_();
-
+        var scrollDelay = this.scrollDelay;
+        if (scrollDelay < kMinimumScrollDelayMS && !this.trueSpeed)
+            scrollDelay = kDefaultScrollDelayMS;
         var player = this.mover_.animate([
             { transform: parameters.transformBegin },
             { transform: parameters.transformEnd },
         ], {
-            duration: parameters.distance * this.scrollDelay / this.scrollAmount,
+            duration: this.scrollAmount == 0 ? 0 : parameters.distance * scrollDelay / this.scrollAmount,
             fill: 'forwards',
         });
+        player.marquee_ = this;
+        player.onfinish = animationFinished_;
 
         this.player_ = player;
-
-        player.addEventListener('finish', function() {
-            if (player != this.player_)
-                return;
-            ++this.loopCount_;
-            this.continue_();
-            if (this.player_ && this.behavior === kBehaviorAlternate)
-                this.dispatchEvent(new Event('bounce', false, true));
-        }.bind(this));
     };
 
     HTMLMarqueeElementPrototype.start = function() {
-        if (this.continueCallback_ || this.player_)
+        if (this.continueCallback_)
             return;
         this.continueCallback_ = requestAnimationFrame(function() {
             this.continueCallback_ = null;
             this.continue_();
         }.bind(this));
-        this.dispatchEvent(new Event('start', false, true));
     };
 
     HTMLMarqueeElementPrototype.stop = function() {
-        if (!this.continueCallback_ && !this.player_)
-            return;
-
         if (this.continueCallback_) {
             cancelAnimationFrame(this.continueCallback_);
             this.continueCallback_ = null;
             return;
         }
 
-        // FIXME: Rather than canceling the animation, we really should just
-        // pause the animation, but the pause function is still flagged as
-        // experimental.
         if (this.player_) {
-            var player = this.player_;
-            this.player_ = null;
-            player.cancel();
+            this.player_.pause();
         }
     };
-
-    // FIXME: We have to inject this HTMLMarqueeElement as a custom element in order to make
-    // createdCallback, attachedCallback, detachedCallback and attributeChangedCallback workable.
-    // document.registerElement('i-marquee', {
-    //    prototype: HTMLMarqueeElementPrototype,
-    // });
 });

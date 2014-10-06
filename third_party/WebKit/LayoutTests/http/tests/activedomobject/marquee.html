@@ -11,12 +11,12 @@
 
         log('Before Reparenting');
         shouldBe('window.internals.activeDOMObjectCount(document)', 2);
-        shouldBe('window.internals.activeDOMObjectCount(iframe)', 3);
+        shouldBe('window.internals.activeDOMObjectCount(iframe)', 2);
 
         document.body.appendChild(window.iframe.querySelector('marquee'));
 
         log('After Reparenting');
-        shouldBe('window.internals.activeDOMObjectCount(document)', 3);
+        shouldBe('window.internals.activeDOMObjectCount(document)', 2);
         shouldBe('window.internals.activeDOMObjectCount(iframe)', 2);
     }
 </script>

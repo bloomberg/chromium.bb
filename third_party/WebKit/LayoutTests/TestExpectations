@@ -1295,6 +1295,12 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 
 crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 
+crbug.com/419667 fast/block/float/marquee-shrink-to-avoid-floats.html [ NeedsRebaseline ]
+crbug.com/419667 fast/html/marquee-scroll.html [ NeedsRebaseline ]
+crbug.com/419667 fast/inline-block/003.html [ NeedsRebaseline ]
+crbug.com/419667 fast/html/marquee-scrollamount.html [ NeedsRebaseline ]
+crbug.com/419667 fast/css/MarqueeLayoutTest.html [ NeedsRebaseline ]
+
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
