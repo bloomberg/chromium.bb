@@ -65,7 +65,7 @@ class CHROMEOS_EXPORT ManagedState {
   // type. See implementations for which properties are included.
   virtual void GetStateProperties(base::DictionaryValue* dictionary) const;
 
-  const ManagedType managed_type() const { return managed_type_; }
+  ManagedType managed_type() const { return managed_type_; }
   const std::string& path() const { return path_; }
   const std::string& name() const { return name_; }
   const std::string& type() const { return type_; }
