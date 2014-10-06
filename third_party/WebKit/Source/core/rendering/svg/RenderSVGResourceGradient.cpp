@@ -55,7 +55,6 @@ bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle*
     ASSERT(object);
     ASSERT(style);
     ASSERT(context);
-    ASSERT(resourceMode != ApplyToDefaultMode);
 
     clearInvalidationMask();
 

@@ -364,7 +364,6 @@ private:
 bool PaintingResourceScope::acquirePaintingResource(GraphicsContext*& context, RenderStyle* style, RenderSVGResourceModeFlags resourceModeFlags)
 {
     ASSERT(style);
-    ASSERT(resourceModeFlags != ApplyToDefaultMode);
     RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
@@ -530,8 +529,6 @@ void SVGInlineTextBox::paintDecoration(GraphicsContext* context, TextDecoration 
 void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDecoration decoration,
     const SVGTextFragment& fragment, RenderObject* decorationRenderer, RenderSVGResourceModeFlags resourceMode)
 {
-    ASSERT(resourceMode != ApplyToDefaultMode);
-
     RenderStyle* decorationStyle = decorationRenderer->style();
     ASSERT(decorationStyle);
 

@@ -34,6 +34,12 @@
 
 namespace blink {
 
+bool RenderSVGResource::applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short)
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
 RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, RenderObject* object, const RenderStyle* style, bool& hasFallback)
 {
     ASSERT(object);

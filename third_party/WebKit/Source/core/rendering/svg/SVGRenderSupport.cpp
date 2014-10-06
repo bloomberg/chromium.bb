@@ -396,8 +396,6 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
 
 void SVGRenderSupport::fillOrStrokePath(GraphicsContext* context, unsigned short resourceMode, const Path& path)
 {
-    ASSERT(resourceMode != ApplyToDefaultMode);
-
     if (resourceMode & ApplyToFillMode)
         context->fillPath(path);
     if (resourceMode & ApplyToStrokeMode)

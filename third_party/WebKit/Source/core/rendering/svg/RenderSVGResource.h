@@ -35,10 +35,9 @@ enum RenderSVGResourceType {
 
 // If this enum changes change the unsigned bitfields using it.
 enum RenderSVGResourceMode {
-    ApplyToDefaultMode = 1 << 0, // used for all resources except gradient/pattern
-    ApplyToFillMode    = 1 << 1,
-    ApplyToStrokeMode  = 1 << 2,
-    ApplyToTextMode    = 1 << 3 // used in combination with ApplyTo{Fill|Stroke}Mode
+    ApplyToFillMode    = 1 << 0,
+    ApplyToStrokeMode  = 1 << 1,
+    ApplyToTextMode    = 1 << 2 // used in combination with ApplyTo{Fill|Stroke}Mode
 };
 typedef unsigned RenderSVGResourceModeFlags;
 
@@ -55,7 +54,7 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) = 0;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) = 0;
+    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode);
     virtual void postApplyResource(RenderObject*, GraphicsContext*&) { }
 
     virtual RenderSVGResourceType resourceType() const = 0;

@@ -43,9 +43,6 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE;
-    virtual void postApplyResource(RenderObject*, GraphicsContext*&) OVERRIDE;
-
     // FIXME: Filters are also stateful resources that could benefit from having their state managed
     //        on the caller stack instead of the current hashmap. We should look at refactoring these
     //        into a general interface that can be shared.

@@ -66,13 +66,6 @@ void RenderSVGResourceClipper::removeClientFromCache(RenderObject* client, bool 
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceClipper::applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short)
-{
-    // Clippers are always applied using stateful methods.
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, GraphicsContext*& context, ClipperState& clipperState)
 {
     ASSERT(object);
@@ -206,12 +199,6 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     context->beginLayer(1, CompositeSourceIn, &paintInvalidationRect);
 
     return true;
-}
-
-void RenderSVGResourceClipper::postApplyResource(RenderObject*, GraphicsContext*&)
-{
-    // Clippers are always applied using stateful methods.
-    ASSERT_NOT_REACHED();
 }
 
 void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject*, GraphicsContext*& context, ClipperState& clipperState)

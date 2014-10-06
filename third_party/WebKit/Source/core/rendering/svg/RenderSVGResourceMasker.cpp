@@ -55,13 +55,11 @@ void RenderSVGResourceMasker::removeClientFromCache(RenderObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
-    GraphicsContext*& context, unsigned short resourceMode)
+bool RenderSVGResourceMasker::prepareEffect(RenderObject* object, RenderStyle*, GraphicsContext*& context)
 {
     ASSERT(object);
     ASSERT(context);
     ASSERT(style());
-    ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     clearInvalidationMask();
@@ -76,7 +74,7 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
     return true;
 }
 
-void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsContext*& context)
+void RenderSVGResourceMasker::finishEffect(RenderObject* object, GraphicsContext*& context)
 {
     ASSERT(object);
     ASSERT(context);

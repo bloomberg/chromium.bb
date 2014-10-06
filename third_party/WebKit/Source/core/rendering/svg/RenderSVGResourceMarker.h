@@ -52,8 +52,6 @@ public:
     virtual const AffineTransform& localToParentTransform() const OVERRIDE;
     AffineTransform markerTransformation(const FloatPoint& origin, float angle, float strokeWidth) const;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short) OVERRIDE { return false; }
-
     FloatPoint referencePoint() const;
     float angle() const;
     SVGMarkerUnitsType markerUnits() const { return toSVGMarkerElement(element())->markerUnits()->currentValue()->enumValue(); }

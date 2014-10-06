@@ -43,7 +43,7 @@ bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyl
     ASSERT(object);
     ASSERT(style);
     ASSERT(context);
-    ASSERT(resourceMode != ApplyToDefaultMode);
+    ASSERT_UNUSED(resourceMode, resourceMode);
 
     bool isRenderingMask = SVGRenderSupport::isRenderingMaskImage(*object);
     const SVGRenderStyle& svgStyle = style->svgStyle();
