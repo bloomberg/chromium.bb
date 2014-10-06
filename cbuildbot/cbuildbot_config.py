@@ -1064,8 +1064,7 @@ brillo_non_testable = brillo.derive(
   image_test=True,
 )
 
-beaglebone = non_testable_builder.derive(brillo_non_testable,
-                                         rootfs_verification=False)
+beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
 
 brillo_public_full = full.derive(non_testable_builder,
                                  brillo_non_testable)
@@ -2481,6 +2480,21 @@ _brillo_release.add_config('panther_embedded-minimal-release',
   signer_tests=False,
 )
 
+# beaglebone build doesn't generate signed images, so don't try to release them.
+_beaglebone_release = _brillo_release.derive(beaglebone, paygen=False,
+                                             signer_tests=False,
+                                             images=['base', 'test'])
+
+_config.add_group('beaglebone-release-group',
+  _beaglebone_release.add_config('beaglebone-release',
+    boards=['beaglebone'],
+  ),
+  _beaglebone_release.add_config('beaglebone_servo-release',
+    boards=['beaglebone_servo'],
+  ).derive(_grouped_variant_config),
+  important=True,
+)
+
 _non_testable_brillo_release = _brillo_release.derive(non_testable_builder)
 
 _non_testable_brillo_release.add_config('kayle-release',
@@ -2504,26 +2518,6 @@ _non_testable_brillo_release.add_config('urara-release',
   paygen=False,
   signer_tests=False,
   important=False,
-)
-
-_beaglebone_release = _non_testable_brillo_release.derive(beaglebone)
-
-_config.add_group('beaglebone-release-group',
-  _beaglebone_release.add_config('beaglebone-release',
-    boards=['beaglebone'],
-
-    # This build doesn't generate signed images, so don't try to release them.
-    paygen=False,
-    signer_tests=False,
-  ),
-  _beaglebone_release.add_config('beaglebone_servo-release',
-    boards=['beaglebone_servo'],
-
-    # This build doesn't generate signed images, so don't try to release them.
-    paygen=False,
-    signer_tests=False,
-  ).derive(_grouped_variant_config),
-  important=True,
 )
 
 _release.add_config('mipsel-o32-generic-release',
