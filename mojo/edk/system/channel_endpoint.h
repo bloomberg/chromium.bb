@@ -154,8 +154,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
     // Attached, possibly running or not.
     STATE_NORMAL,
     // "Zombie" states:
-    // Waiting for |DetachMessagePipeEndpoint()| before removing.
-    STATE_WAIT_LOCAL_DETACH,
     // Waiting for a |kSubtypeChannelRemoveMessagePipeEndpointAck| before
     // removing.
     STATE_WAIT_REMOTE_REMOVE_ACK,

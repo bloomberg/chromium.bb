@@ -53,7 +53,6 @@ void ChannelEndpoint::DetachFromMessagePipe() {
   // TODO(vtl): Once |message_pipe_| is under |lock_|, we should null it out
   // here. For now, get the channel to do so for us.
 
-  scoped_refptr<Channel> channel;
   {
     base::AutoLock locker(lock_);
     DCHECK(message_pipe_.get());
@@ -64,11 +63,8 @@ void ChannelEndpoint::DetachFromMessagePipe() {
     DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
     // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
     // here as well.
-    channel = channel_;
+    channel_->DetachEndpoint(this, local_id_, remote_id_);
   }
-  // Don't call this under |lock_|, since it'll call us back.
-  // TODO(vtl): This seems pretty suboptimal.
-  channel->DetachMessagePipeEndpoint(local_id_, remote_id_);
 }
 
 void ChannelEndpoint::AttachToChannel(Channel* channel,

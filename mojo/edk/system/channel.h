@@ -108,12 +108,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // |FlushWriteBufferAndShutdown()| or something like that.
   bool IsWriteBufferEmpty();
 
-  // This removes the message pipe/port's endpoint (with the given local ID and
-  // given remote ID, which should be |kInvalidEndpointId| if not yet running),
-  // returned by |AttachEndpoint()| from this channel. After this is called,
-  // |local_id| may be reused for another message pipe.
-  void DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                 MessageInTransit::EndpointId remote_id);
+  // This removes the given endpoint from this channel (|local_id| and
+  // |remote_id| are specified as an optimization; the latter should be
+  // |kInvalidEndpointId| if the endpoint is not yet running).
+  void DetachEndpoint(ChannelEndpoint* endpoint,
+                      MessageInTransit::EndpointId local_id,
+                      MessageInTransit::EndpointId remote_id);
 
   // See |RawChannel::GetSerializedPlatformHandleSize()|.
   size_t GetSerializedPlatformHandleSize() const;
