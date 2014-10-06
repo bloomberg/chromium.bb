@@ -11,10 +11,11 @@ function extensionFunctions()
 
 var initialize_ExtensionsTest = function()
 {
-WebInspector.ExtensionServerProxy._ensureExtensionServer();
 
-window.buildPlatformExtensionAPI = function(extensionInfo)
+WebInspector.extensionServerProxy._overridePlatformExtensionAPIForTest = function(extensionInfo)
 {
+    WebInspector.extensionServerProxy._extensionServer._registerHandler("evaluateForTestInFrontEnd", onEvaluate);
+
     function platformExtensionAPI(coreAPI)
     {
         window.webInspector = coreAPI;
@@ -30,7 +31,11 @@ InspectorTest._replyToExtension = function(requestId, port)
 
 function onEvaluate(message, port)
 {
-    var reply = WebInspector.extensionServer._dispatchCallback.bind(WebInspector.extensionServer, message.requestId, port);
+    function reply(param)
+    {
+        WebInspector.extensionServerProxy._extensionServer._dispatchCallback(message.requestId, port, param);
+    }
+
     try {
         eval(message.expression);
     } catch (e) {
@@ -38,8 +43,6 @@ function onEvaluate(message, port)
         InspectorTest.completeTest();
     }
 }
-
-WebInspector.extensionServer._registerHandler("evaluateForTestInFrontEnd", onEvaluate);
 
 InspectorTest.showPanel = function(panelId)
 {
@@ -50,6 +53,7 @@ InspectorTest.showPanel = function(panelId)
 
 InspectorTest.runExtensionTests = function()
 {
+    WebInspector.extensionServerProxy.setFrontendReady();
     RuntimeAgent.evaluate("location.href", "console", false, function(error, result) {
         if (error)
             return;
