@@ -39,7 +39,7 @@ class ViewportSurface : public SurfaceClient {
   void SubmitFrame();
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
+  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   SurfacePtr surface_;
   Gpu* gpu_service_;

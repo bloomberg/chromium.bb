@@ -131,10 +131,10 @@ class TreeChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-   virtual void OnTreeChanging(const TreeChangeParams& params) OVERRIDE {
+   virtual void OnTreeChanging(const TreeChangeParams& params) override {
      received_params_.push_back(params);
    }
-  virtual void OnTreeChanged(const TreeChangeParams& params) OVERRIDE {
+  virtual void OnTreeChanged(const TreeChangeParams& params) override {
     received_params_.push_back(params);
   }
 
@@ -367,13 +367,13 @@ class OrderChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   virtual void OnViewReordering(View* view,
                                 View* relative_view,
-                                OrderDirection direction) OVERRIDE {
+                                OrderDirection direction) override {
     OnViewReordered(view, relative_view, direction);
   }
 
   virtual void OnViewReordered(View* view,
                                View* relative_view,
-                               OrderDirection direction) OVERRIDE {
+                               OrderDirection direction) override {
     Change change;
     change.view = view;
     change.relative_view = relative_view;
@@ -514,7 +514,7 @@ class BoundsChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   virtual void OnViewBoundsChanging(View* view,
                                     const gfx::Rect& old_bounds,
-                                    const gfx::Rect& new_bounds) OVERRIDE {
+                                    const gfx::Rect& new_bounds) override {
     changes_.push_back(
         base::StringPrintf(
             "view=%s old_bounds=%s new_bounds=%s phase=changing",
@@ -524,7 +524,7 @@ class BoundsChangeObserver : public ViewObserver {
   }
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
+                                   const gfx::Rect& new_bounds) override {
     changes_.push_back(
         base::StringPrintf(
             "view=%s old_bounds=%s new_bounds=%s phase=changed",
@@ -575,13 +575,13 @@ class VisibilityChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewVisibilityChanging(View* view) OVERRIDE {
+  virtual void OnViewVisibilityChanging(View* view) override {
     changes_.push_back(
         base::StringPrintf("view=%s phase=changing visibility=%s",
                            ViewIdToString(view->id()).c_str(),
                            view->visible() ? "true" : "false"));
   }
-  virtual void OnViewVisibilityChanged(View* view) OVERRIDE {
+  virtual void OnViewVisibilityChanged(View* view) override {
     changes_.push_back(base::StringPrintf("view=%s phase=changed visibility=%s",
                                           ViewIdToString(view->id()).c_str(),
                                           view->visible() ? "true" : "false"));

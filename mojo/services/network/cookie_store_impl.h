@@ -19,9 +19,9 @@ class CookieStoreImpl : public InterfaceImpl<CookieStore> {
  private:
   // CookieStore methods:
   virtual void Get(const String& url,
-                   const Callback<void(String)>& callback) OVERRIDE;
+                   const Callback<void(String)>& callback) override;
   virtual void Set(const String& url, const String& cookie,
-                   const Callback<void(bool)>& callback) OVERRIDE;
+                   const Callback<void(bool)>& callback) override;
 
   NetworkContext* context_;
   GURL origin_;

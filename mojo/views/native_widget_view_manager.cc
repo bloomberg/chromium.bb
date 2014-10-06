@@ -32,7 +32,7 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   FocusRulesImpl() {}
   virtual ~FocusRulesImpl() {}
 
-  virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE {
+  virtual bool SupportsChildActivation(aura::Window* window) const override {
     return true;
   }
 
@@ -65,7 +65,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 
  private:
   // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     // See the comment in InputMethodEventFilter::OnKeyEvent() for details.
     if (event->IsTranslated()) {
       event->SetTranslated(false);
@@ -76,7 +76,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
   }
 
   // ui::internal::InputMethodDelegate:
-  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
     // See the comment in InputMethodEventFilter::DispatchKeyEventPostIME() for
     // details.
     ui::KeyEvent aura_event(event);

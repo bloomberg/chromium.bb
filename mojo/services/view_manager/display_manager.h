@@ -54,13 +54,13 @@ class MOJO_VIEW_MANAGER_EXPORT DisplayManager
   void Draw();
 
   // NativeViewportClient implementation.
-  virtual void OnDestroyed() OVERRIDE;
-  virtual void OnSizeChanged(SizePtr size) OVERRIDE;
+  virtual void OnDestroyed() override;
+  virtual void OnSizeChanged(SizePtr size) override;
   virtual void OnEvent(EventPtr event,
-                       const mojo::Callback<void()>& callback) OVERRIDE;
+                       const mojo::Callback<void()>& callback) override;
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
+  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   ConnectionManager* connection_manager_;
 

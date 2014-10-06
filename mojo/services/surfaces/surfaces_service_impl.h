@@ -26,7 +26,7 @@ class SurfacesServiceImpl : public InterfaceImpl<SurfacesService> {
 
   // InterfaceImpl<SurfacesService> implementation.
   virtual void CreateSurfaceConnection(const mojo::Callback<
-      void(mojo::SurfacePtr, uint32_t)>& callback) OVERRIDE;
+      void(mojo::SurfacePtr, uint32_t)>& callback) override;
 
  private:
   cc::SurfaceManager* manager_;

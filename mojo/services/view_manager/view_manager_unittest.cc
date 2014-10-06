@@ -276,7 +276,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
 
   // TestChangeTracker::Delegate:
-  virtual void OnChangeAdded() OVERRIDE {
+  virtual void OnChangeAdded() override {
     if (quit_count_ > 0 && --quit_count_ == 0)
       QuitCountReached();
   }
@@ -319,7 +319,7 @@ class TestViewManagerClientConnection
   }
 
   // InterfaceImpl:
-  virtual void OnConnectionEstablished() OVERRIDE {
+  virtual void OnConnectionEstablished() override {
     connection_.set_router(internal_state()->router());
     connection_.set_view_manager(client());
   }
@@ -329,43 +329,43 @@ class TestViewManagerClientConnection
       ConnectionSpecificId connection_id,
       const String& creator_url,
       ViewDataPtr root,
-      InterfaceRequest<ServiceProvider> services) OVERRIDE {
+      InterfaceRequest<ServiceProvider> services) override {
     tracker_.OnEmbed(connection_id, creator_url, root.Pass());
   }
   virtual void OnViewBoundsChanged(Id view_id,
                                    RectPtr old_bounds,
-                                   RectPtr new_bounds) OVERRIDE {
+                                   RectPtr new_bounds) override {
     tracker_.OnViewBoundsChanged(view_id, old_bounds.Pass(), new_bounds.Pass());
   }
   virtual void OnViewHierarchyChanged(Id view,
                                       Id new_parent,
                                       Id old_parent,
-                                      Array<ViewDataPtr> views) OVERRIDE {
+                                      Array<ViewDataPtr> views) override {
     tracker_.OnViewHierarchyChanged(view, new_parent, old_parent, views.Pass());
   }
   virtual void OnViewReordered(Id view_id,
                                Id relative_view_id,
-                               OrderDirection direction) OVERRIDE {
+                               OrderDirection direction) override {
     tracker_.OnViewReordered(view_id, relative_view_id, direction);
   }
-  virtual void OnViewDeleted(Id view) OVERRIDE { tracker_.OnViewDeleted(view); }
-  virtual void OnViewVisibilityChanged(uint32_t view, bool visible) OVERRIDE {
+  virtual void OnViewDeleted(Id view) override { tracker_.OnViewDeleted(view); }
+  virtual void OnViewVisibilityChanged(uint32_t view, bool visible) override {
     tracker_.OnViewVisibilityChanged(view, visible);
   }
-  virtual void OnViewDrawnStateChanged(uint32_t view, bool drawn) OVERRIDE {
+  virtual void OnViewDrawnStateChanged(uint32_t view, bool drawn) override {
     tracker_.OnViewDrawnStateChanged(view, drawn);
   }
   virtual void OnViewInputEvent(Id view_id,
                                 EventPtr event,
-                                const Callback<void()>& callback) OVERRIDE {
+                                const Callback<void()>& callback) override {
     tracker_.OnViewInputEvent(view_id, event.Pass());
   }
   virtual void Embed(
       const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
+      InterfaceRequest<ServiceProvider> service_provider) override {
     tracker_.DelegateEmbed(url);
   }
-  virtual void DispatchOnViewInputEvent(mojo::EventPtr event) OVERRIDE {
+  virtual void DispatchOnViewInputEvent(mojo::EventPtr event) override {
   }
 
  private:
@@ -387,7 +387,7 @@ class EmbedApplicationLoader : public ApplicationLoader,
   // ApplicationLoader implementation:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
+                    scoped_refptr<LoadCallbacks> callbacks) override {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (!shell_handle.is_valid())
       return;
@@ -396,18 +396,18 @@ class EmbedApplicationLoader : public ApplicationLoader,
     apps_.push_back(app.release());
   }
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE {}
+                                  const GURL& url) override {}
 
   // ApplicationDelegate implementation:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      OVERRIDE {
+      override {
     connection->AddService(this);
     return true;
   }
 
   // InterfaceFactory<ViewManagerClient> implementation:
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ViewManagerClient> request) OVERRIDE {
+                      InterfaceRequest<ViewManagerClient> request) override {
     BindToRequest(new TestViewManagerClientConnection, &request);
   }
 
@@ -457,7 +457,7 @@ class ViewManagerTest : public testing::Test {
         connection2_(NULL),
         connection3_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(ViewManagerProxy::IsInInitialState());
     test_helper_.Init();
 
@@ -484,7 +484,7 @@ class ViewManagerTest : public testing::Test {
     connection_->DoRunLoopUntilChangesCount(1);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (connection3_)
       connection3_->Destroy();
     if (connection2_)

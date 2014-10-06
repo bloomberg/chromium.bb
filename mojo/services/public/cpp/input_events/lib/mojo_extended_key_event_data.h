@@ -24,7 +24,7 @@ class MOJO_INPUT_EVENTS_EXPORT MojoExtendedKeyEventData
   uint16_t unmodified_text() const { return unmodified_text_; }
 
   // ui::ExtendedKeyEventData:
-  virtual ui::ExtendedKeyEventData* Clone() const OVERRIDE;
+  virtual ui::ExtendedKeyEventData* Clone() const override;
 
  private:
   const int32_t windows_key_code_;

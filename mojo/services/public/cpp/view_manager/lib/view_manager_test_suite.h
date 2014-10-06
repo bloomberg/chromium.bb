@@ -15,7 +15,7 @@ class ViewManagerTestSuite : public base::TestSuite {
   virtual ~ViewManagerTestSuite();
 
  protected:
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTestSuite);

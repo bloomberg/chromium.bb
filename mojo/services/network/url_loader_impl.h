@@ -5,7 +5,6 @@
 #ifndef MOJO_SERVICES_NETWORK_URL_LOADER_IMPL_H_
 #define MOJO_SERVICES_NETWORK_URL_LOADER_IMPL_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
@@ -30,19 +29,19 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   // URLLoader methods:
   virtual void Start(
       URLRequestPtr request,
-      const Callback<void(URLResponsePtr)>& callback) OVERRIDE;
+      const Callback<void(URLResponsePtr)>& callback) override;
   virtual void FollowRedirect(
-      const Callback<void(URLResponsePtr)>& callback) OVERRIDE;
+      const Callback<void(URLResponsePtr)>& callback) override;
   virtual void QueryStatus(
-      const Callback<void(URLLoaderStatusPtr)>& callback) OVERRIDE;
+      const Callback<void(URLLoaderStatusPtr)>& callback) override;
 
   // net::URLRequest::Delegate methods:
   virtual void OnReceivedRedirect(net::URLRequest* url_request,
                                   const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* url_request) OVERRIDE;
+                                  bool* defer_redirect) override;
+  virtual void OnResponseStarted(net::URLRequest* url_request) override;
   virtual void OnReadCompleted(net::URLRequest* url_request, int bytes_read)
-      OVERRIDE;
+      override;
 
   void SendError(
       int error,

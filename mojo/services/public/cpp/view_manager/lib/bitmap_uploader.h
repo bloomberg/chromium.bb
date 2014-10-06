@@ -43,7 +43,7 @@ class BitmapUploader : public SurfaceClient {
   uint32_t BindTextureForSize(const gfx::Size size);
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
+  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   ViewManagerClientImpl* client_;
   Id view_id_;

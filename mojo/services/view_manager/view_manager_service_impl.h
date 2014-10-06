@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
@@ -149,46 +148,46 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   // ViewManagerService:
   virtual void CreateView(Id transport_view_id,
-                          const Callback<void(ErrorCode)>& callback) OVERRIDE;
+                          const Callback<void(ErrorCode)>& callback) override;
   virtual void DeleteView(Id transport_view_id,
-                          const Callback<void(bool)>& callback) OVERRIDE;
+                          const Callback<void(bool)>& callback) override;
   virtual void AddView(Id parent_id,
                        Id child_id,
-                       const Callback<void(bool)>& callback) OVERRIDE;
+                       const Callback<void(bool)>& callback) override;
   virtual void RemoveViewFromParent(
       Id view_id,
-      const Callback<void(bool)>& callback) OVERRIDE;
+      const Callback<void(bool)>& callback) override;
   virtual void ReorderView(Id view_id,
                            Id relative_view_id,
                            OrderDirection direction,
-                           const Callback<void(bool)>& callback) OVERRIDE;
+                           const Callback<void(bool)>& callback) override;
   virtual void GetViewTree(
       Id view_id,
-      const Callback<void(Array<ViewDataPtr>)>& callback) OVERRIDE;
+      const Callback<void(Array<ViewDataPtr>)>& callback) override;
   virtual void SetViewSurfaceId(Id view_id,
                                 SurfaceIdPtr surface_id,
-                                const Callback<void(bool)>& callback) OVERRIDE;
+                                const Callback<void(bool)>& callback) override;
   virtual void SetViewBounds(Id view_id,
                              RectPtr bounds,
-                             const Callback<void(bool)>& callback) OVERRIDE;
+                             const Callback<void(bool)>& callback) override;
   virtual void SetViewVisibility(Id view_id,
                                  bool visible,
-                                 const Callback<void(bool)>& callback) OVERRIDE;
+                                 const Callback<void(bool)>& callback) override;
   virtual void Embed(const String& url,
                      Id view_id,
                      ServiceProviderPtr service_provider,
-                     const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
+                     const Callback<void(bool)>& callback) override;
+  virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) override;
 
   // InterfaceImpl:
   virtual void OnConnectionEstablished() override;
 
   // AccessPolicyDelegate:
-  virtual const base::hash_set<Id>& GetRootsForAccessPolicy() const OVERRIDE;
+  virtual const base::hash_set<Id>& GetRootsForAccessPolicy() const override;
   virtual bool IsViewKnownForAccessPolicy(
-      const ServerView* view) const OVERRIDE;
+      const ServerView* view) const override;
   virtual bool IsViewRootOfAnotherConnectionForAccessPolicy(
-      const ServerView* view) const OVERRIDE;
+      const ServerView* view) const override;
 
   ConnectionManager* connection_manager_;
 

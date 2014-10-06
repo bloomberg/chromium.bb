@@ -20,24 +20,24 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   virtual ~WindowManagerAccessPolicy();
 
   // AccessPolicy:
-  virtual bool CanRemoveViewFromParent(const ServerView* view) const OVERRIDE;
+  virtual bool CanRemoveViewFromParent(const ServerView* view) const override;
   virtual bool CanAddView(const ServerView* parent,
-                          const ServerView* child) const OVERRIDE;
+                          const ServerView* child) const override;
   virtual bool CanReorderView(const ServerView* view,
                               const ServerView* relative_view,
-                              OrderDirection direction) const OVERRIDE;
-  virtual bool CanDeleteView(const ServerView* view) const OVERRIDE;
-  virtual bool CanGetViewTree(const ServerView* view) const OVERRIDE;
+                              OrderDirection direction) const override;
+  virtual bool CanDeleteView(const ServerView* view) const override;
+  virtual bool CanGetViewTree(const ServerView* view) const override;
   virtual bool CanDescendIntoViewForViewTree(
-      const ServerView* view) const OVERRIDE;
-  virtual bool CanEmbed(const ServerView* view) const OVERRIDE;
-  virtual bool CanChangeViewVisibility(const ServerView* view) const OVERRIDE;
-  virtual bool CanSetViewSurfaceId(const ServerView* view) const OVERRIDE;
-  virtual bool CanSetViewBounds(const ServerView* view) const OVERRIDE;
+      const ServerView* view) const override;
+  virtual bool CanEmbed(const ServerView* view) const override;
+  virtual bool CanChangeViewVisibility(const ServerView* view) const override;
+  virtual bool CanSetViewSurfaceId(const ServerView* view) const override;
+  virtual bool CanSetViewBounds(const ServerView* view) const override;
   virtual bool ShouldNotifyOnHierarchyChange(
       const ServerView* view,
       const ServerView** new_parent,
-      const ServerView** old_parent) const OVERRIDE;
+      const ServerView** old_parent) const override;
 
  private:
   bool IsViewKnown(const ServerView* view) const;

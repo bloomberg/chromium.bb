@@ -27,7 +27,7 @@ class PlatformViewportMac : public PlatformViewport {
 
  private:
   // Overridden from PlatformViewport:
-  virtual void Init(const gfx::Rect& bounds) OVERRIDE {
+  virtual void Init(const gfx::Rect& bounds) override {
     [NSApplication sharedApplication];
 
     rect_ = bounds;
@@ -40,32 +40,32 @@ class PlatformViewportMac : public PlatformViewport {
     delegate_->OnBoundsChanged(rect_);
   }
 
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     [window_ orderFront:nil];
   }
 
-  virtual void Hide() OVERRIDE {
+  virtual void Hide() override {
     [window_ orderOut:nil];
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     // TODO(beng): perform this in response to NSWindow destruction.
     delegate_->OnDestroyed();
   }
 
-  virtual gfx::Size GetSize() OVERRIDE {
+  virtual gfx::Size GetSize() override {
     return rect_.size();
   }
 
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
+  virtual void SetBounds(const gfx::Rect& bounds) override {
     NOTIMPLEMENTED();
   }
 
-  virtual void SetCapture() OVERRIDE {
+  virtual void SetCapture() override {
     NOTIMPLEMENTED();
   }
 
-  virtual void ReleaseCapture() OVERRIDE {
+  virtual void ReleaseCapture() override {
     NOTIMPLEMENTED();
   }
 

@@ -40,17 +40,17 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
  private:
   // Overridden from internal::NativeWidgetAura:
   virtual void InitNativeWidget(
-      const views::Widget::InitParams& in_params) OVERRIDE;
+      const views::Widget::InitParams& in_params) override;
 
   // WindowTreeHostMojoDelegate:
-  virtual void CompositorContentsChanged(const SkBitmap& bitmap) OVERRIDE;
+  virtual void CompositorContentsChanged(const SkBitmap& bitmap) override;
 
   // ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE;
+  virtual void OnViewDestroyed(View* view) override;
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
+                                   const gfx::Rect& new_bounds) override;
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) override;
 
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
 

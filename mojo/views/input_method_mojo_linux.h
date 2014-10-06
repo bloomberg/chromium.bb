@@ -27,7 +27,7 @@ class InputMethodMojoLinux : public ui::InputMethodAuraLinux {
   virtual ~InputMethodMojoLinux();
 
   // Overriden from ui::InputMethodAuraLinux:
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodMojoLinux);

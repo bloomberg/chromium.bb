@@ -61,7 +61,7 @@ class ConnectApplicationLoader : public ApplicationLoader,
   // Overridden from ApplicationLoader:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
+                    scoped_refptr<LoadCallbacks> callbacks) override {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (!shell_handle.is_valid())
       return;
@@ -71,10 +71,10 @@ class ConnectApplicationLoader : public ApplicationLoader,
   }
 
   virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) OVERRIDE {}
+                                  const GURL& url) override {}
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      OVERRIDE {
+      override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }
@@ -83,10 +83,10 @@ class ConnectApplicationLoader : public ApplicationLoader,
   virtual void OnEmbed(ViewManager* view_manager,
                        View* root,
                        ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+                       scoped_ptr<ServiceProvider> imported_services) override {
     callback_.Run(view_manager, root);
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {}
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 
   ScopedVector<ApplicationImpl> apps_;
   LoadedCallback callback_;
@@ -104,7 +104,7 @@ class BoundsChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
+                                   const gfx::Rect& new_bounds) override {
     DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
@@ -137,7 +137,7 @@ class TreeSizeMatchesObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnTreeChanged(const TreeChangeParams& params) OVERRIDE {
+  virtual void OnTreeChanged(const TreeChangeParams& params) override {
     if (IsTreeCorrectSize())
       QuitRunLoop();
   }
@@ -174,7 +174,7 @@ class DestructionObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     std::set<Id>::iterator it = views_->find(view->id());
     if (it != views_->end())
       views_->erase(it);
@@ -216,7 +216,7 @@ class OrderChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   virtual void OnViewReordered(View* view,
                                View* relative_view,
-                               OrderDirection direction) OVERRIDE {
+                               OrderDirection direction) override {
     DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
@@ -246,7 +246,7 @@ class ViewTracker : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, view_);
     view_ = NULL;
   }
@@ -302,7 +302,7 @@ class ViewManagerTest : public testing::Test {
 
  private:
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ConnectApplicationLoader::LoadedCallback ready_callback = base::Bind(
         &ViewManagerTest::OnViewManagerLoaded, base::Unretained(this));
     test_helper_.Init();
@@ -539,7 +539,7 @@ class VisibilityChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewVisibilityChanged(View* view) OVERRIDE {
+  virtual void OnViewVisibilityChanged(View* view) override {
     EXPECT_EQ(view, view_);
     QuitRunLoop();
   }
@@ -601,7 +601,7 @@ class DrawnChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDrawnChanged(View* view) OVERRIDE {
+  virtual void OnViewDrawnChanged(View* view) override {
     EXPECT_EQ(view, view_);
     QuitRunLoop();
   }

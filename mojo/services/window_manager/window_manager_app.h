@@ -107,8 +107,8 @@ class WindowManagerApp
   // Overridden from WindowManagerDelegate:
   virtual void Embed(
       const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE;
-  virtual void DispatchEvent(EventPtr event) OVERRIDE;
+      InterfaceRequest<ServiceProvider> service_provider) override;
+  virtual void DispatchEvent(EventPtr event) override;
 
   // Overridden from ViewObserver:
   virtual void OnTreeChanged(

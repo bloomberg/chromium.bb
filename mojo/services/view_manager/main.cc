@@ -19,7 +19,7 @@ class ViewManagerApp : public ApplicationDelegate,
   virtual ~ViewManagerApp() {}
 
   virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) OVERRIDE {
+      ApplicationConnection* connection) override {
     context_.ConfigureIncomingConnection(connection);
     // TODO(sky): this needs some sort of authentication as well as making sure
     // we only ever have one active at a time.
@@ -29,7 +29,7 @@ class ViewManagerApp : public ApplicationDelegate,
 
   virtual void Create(
       ApplicationConnection* connection,
-      InterfaceRequest<ViewManagerInitService> request) OVERRIDE {
+      InterfaceRequest<ViewManagerInitService> request) override {
     BindToRequest(new ViewManagerInitServiceImpl(connection, &context_),
                   &request);
   }

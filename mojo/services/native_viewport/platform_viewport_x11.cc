@@ -31,7 +31,7 @@ class PlatformViewportX11 : public PlatformViewport,
 
  private:
   // Overridden from PlatformViewport:
-  virtual void Init(const gfx::Rect& bounds) OVERRIDE {
+  virtual void Init(const gfx::Rect& bounds) override {
     CHECK(!event_source_);
     CHECK(!platform_window_);
 
@@ -41,44 +41,44 @@ class PlatformViewportX11 : public PlatformViewport,
     platform_window_->SetBounds(bounds);
   }
 
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     platform_window_->Show();
   }
 
-  virtual void Hide() OVERRIDE {
+  virtual void Hide() override {
     platform_window_->Hide();
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     platform_window_->Close();
   }
 
-  virtual gfx::Size GetSize() OVERRIDE {
+  virtual gfx::Size GetSize() override {
     return bounds_.size();
   }
 
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
+  virtual void SetBounds(const gfx::Rect& bounds) override {
     platform_window_->SetBounds(bounds);
   }
 
-  virtual void SetCapture() OVERRIDE {
+  virtual void SetCapture() override {
     platform_window_->SetCapture();
   }
 
-  virtual void ReleaseCapture() OVERRIDE {
+  virtual void ReleaseCapture() override {
     platform_window_->ReleaseCapture();
   }
 
   // ui::PlatformWindowDelegate:
-  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {
+  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) override {
     bounds_ = new_bounds;
     delegate_->OnBoundsChanged(new_bounds);
   }
 
-  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE {
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) override {
   }
 
-  virtual void DispatchEvent(ui::Event* event) OVERRIDE {
+  virtual void DispatchEvent(ui::Event* event) override {
     delegate_->OnEvent(event);
 
     // We want to emulate the WM_CHAR generation behaviour of Windows.
@@ -113,26 +113,26 @@ class PlatformViewportX11 : public PlatformViewport,
     }
   }
 
-  virtual void OnCloseRequest() OVERRIDE {
+  virtual void OnCloseRequest() override {
     platform_window_->Close();
   }
 
-  virtual void OnClosed() OVERRIDE {
+  virtual void OnClosed() override {
     delegate_->OnDestroyed();
   }
 
-  virtual void OnWindowStateChanged(ui::PlatformWindowState state) OVERRIDE {
+  virtual void OnWindowStateChanged(ui::PlatformWindowState state) override {
   }
 
-  virtual void OnLostCapture() OVERRIDE {
+  virtual void OnLostCapture() override {
   }
 
   virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) OVERRIDE {
+      gfx::AcceleratedWidget widget) override {
     delegate_->OnAcceleratedWidgetAvailable(widget);
   }
 
-  virtual void OnActivationChanged(bool active) OVERRIDE {}
+  virtual void OnActivationChanged(bool active) override {}
 
   scoped_ptr<ui::PlatformEventSource> event_source_;
   scoped_ptr<ui::PlatformWindow> platform_window_;

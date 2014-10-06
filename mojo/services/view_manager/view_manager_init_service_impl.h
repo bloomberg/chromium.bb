@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/connection_manager.h"
 #include "mojo/services/view_manager/view_manager_export.h"
@@ -41,7 +40,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
   // ViewManagerInitService overrides:
   virtual void Embed(const String& url,
                      ServiceProviderPtr service_provider,
-                     const Callback<void(bool)>& callback) OVERRIDE;
+                     const Callback<void(bool)>& callback) override;
 
   ViewManagerInitServiceContext* context_;
 

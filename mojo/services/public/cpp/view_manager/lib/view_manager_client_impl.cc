@@ -80,7 +80,7 @@ class RootObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
+  virtual void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_);
     static_cast<ViewManagerClientImpl*>(
         ViewPrivate(root_).view_manager())->RemoveRoot(root_);

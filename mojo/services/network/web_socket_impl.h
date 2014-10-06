@@ -5,7 +5,6 @@
 #ifndef MOJO_SERVICES_NETWORK_WEB_SOCKET_IMPL_H_
 #define MOJO_SERVICES_NETWORK_WEB_SOCKET_IMPL_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/interfaces/network/web_socket.mojom.h"
@@ -31,12 +30,12 @@ class WebSocketImpl : public InterfaceImpl<WebSocket> {
                        Array<String> protocols,
                        const String& origin,
                        ScopedDataPipeConsumerHandle send_stream,
-                       WebSocketClientPtr client) OVERRIDE;
+                       WebSocketClientPtr client) override;
   virtual void Send(bool fin,
                     WebSocket::MessageType type,
-                    uint32_t num_bytes) OVERRIDE;
-  virtual void FlowControl(int64_t quota) OVERRIDE;
-  virtual void Close(uint16_t code, const String& reason) OVERRIDE;
+                    uint32_t num_bytes) override;
+  virtual void FlowControl(int64_t quota) override;
+  virtual void Close(uint16_t code, const String& reason) override;
 
   // Called with the data to send once it has been read from |send_stream_|.
   void DidReadFromSendStream(bool fin,

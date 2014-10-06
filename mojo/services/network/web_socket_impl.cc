@@ -72,25 +72,25 @@ struct WebSocketEventHandler : public net::WebSocketEventInterface {
   virtual ChannelState OnAddChannelResponse(
       bool fail,
       const std::string& selected_subprotocol,
-      const std::string& extensions) OVERRIDE;
+      const std::string& extensions) override;
   virtual ChannelState OnDataFrame(bool fin,
                                    WebSocketMessageType type,
-                                   const std::vector<char>& data) OVERRIDE;
-  virtual ChannelState OnClosingHandshake() OVERRIDE;
-  virtual ChannelState OnFlowControl(int64 quota) OVERRIDE;
+                                   const std::vector<char>& data) override;
+  virtual ChannelState OnClosingHandshake() override;
+  virtual ChannelState OnFlowControl(int64 quota) override;
   virtual ChannelState OnDropChannel(bool was_clean,
                                      uint16 code,
-                                     const std::string& reason) OVERRIDE;
-  virtual ChannelState OnFailChannel(const std::string& message) OVERRIDE;
+                                     const std::string& reason) override;
+  virtual ChannelState OnFailChannel(const std::string& message) override;
   virtual ChannelState OnStartOpeningHandshake(
-      scoped_ptr<net::WebSocketHandshakeRequestInfo> request) OVERRIDE;
+      scoped_ptr<net::WebSocketHandshakeRequestInfo> request) override;
   virtual ChannelState OnFinishOpeningHandshake(
-      scoped_ptr<net::WebSocketHandshakeResponseInfo> response) OVERRIDE;
+      scoped_ptr<net::WebSocketHandshakeResponseInfo> response) override;
   virtual ChannelState OnSSLCertificateError(
       scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
       const GURL& url,
       const net::SSLInfo& ssl_info,
-      bool fatal) OVERRIDE;
+      bool fatal) override;
 
   // Called once we've written to |receive_stream_|.
   void DidWriteToReceiveStream(bool fin,

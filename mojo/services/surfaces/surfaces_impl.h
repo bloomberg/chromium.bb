@@ -5,7 +5,6 @@
 #ifndef MOJO_SERVICES_SURFACES_SURFACES_IMPL_H_
 #define MOJO_SERVICES_SURFACES_SURFACES_IMPL_H_
 
-#include "base/compiler_specific.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -38,25 +37,25 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
   virtual ~SurfacesImpl();
 
   // Surface implementation.
-  virtual void CreateSurface(SurfaceIdPtr id, mojo::SizePtr size) OVERRIDE;
-  virtual void SubmitFrame(SurfaceIdPtr id, FramePtr frame) OVERRIDE;
-  virtual void DestroySurface(SurfaceIdPtr id) OVERRIDE;
+  virtual void CreateSurface(SurfaceIdPtr id, mojo::SizePtr size) override;
+  virtual void SubmitFrame(SurfaceIdPtr id, FramePtr frame) override;
+  virtual void DestroySurface(SurfaceIdPtr id) override;
   virtual void CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
                                        SurfaceIdPtr id,
-                                       mojo::SizePtr size) OVERRIDE;
+                                       mojo::SizePtr size) override;
 
   // SurfaceFactoryClient implementation.
   virtual void ReturnResources(
-      const cc::ReturnedResourceArray& resources) OVERRIDE;
+      const cc::ReturnedResourceArray& resources) override;
 
   // DisplayClient implementation.
-  virtual void DisplayDamaged() OVERRIDE;
-  virtual void DidSwapBuffers() OVERRIDE;
-  virtual void DidSwapBuffersComplete() OVERRIDE;
+  virtual void DisplayDamaged() override;
+  virtual void DidSwapBuffers() override;
+  virtual void DidSwapBuffersComplete() override;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) OVERRIDE;
-  virtual void OutputSurfaceLost() OVERRIDE;
-  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) OVERRIDE;
+                                     base::TimeDelta interval) override;
+  virtual void OutputSurfaceLost() override;
+  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
 
   cc::SurfaceFactory* factory() { return &factory_; }
 

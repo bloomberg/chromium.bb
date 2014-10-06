@@ -19,7 +19,7 @@ class WindowManagerTestSuite : public base::TestSuite {
   virtual ~WindowManagerTestSuite() {}
 
  protected:
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
 #if defined(USE_X11)
     // Each test ends up creating a new thread for the native viewport service.
     // In other words we'll use X on different threads, so tell it that.
