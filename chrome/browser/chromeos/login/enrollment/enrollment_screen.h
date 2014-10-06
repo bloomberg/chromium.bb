@@ -129,7 +129,6 @@ class EnrollmentScreen
   bool remora_token_sent_;
   std::string user_;
   std::string auth_token_;
-  int lockbox_init_duration_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);

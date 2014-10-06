@@ -49,7 +49,6 @@ EnrollmentScreen::EnrollmentScreen(
       enrollment_mode_(EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL),
       enrollment_failed_once_(false),
       remora_token_sent_(false),
-      lockbox_init_duration_(0),
       weak_ptr_factory_(this) {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
