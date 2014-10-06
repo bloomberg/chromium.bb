@@ -822,7 +822,7 @@ void DevToolsWindow::ActivateContents(WebContents* contents) {
   if (is_docked_) {
     WebContents* inspected_tab = GetInspectedWebContents();
     inspected_tab->GetDelegate()->ActivateContents(inspected_tab);
-  } else {
+  } else if (browser_) {
     browser_->window()->Activate();
   }
 }
@@ -968,6 +968,8 @@ bool DevToolsWindow::PreHandleGestureEvent(
 }
 
 void DevToolsWindow::ActivateWindow() {
+  if (life_stage_ != kLoadCompleted)
+    return;
   if (is_docked_ && GetInspectedBrowserWindow())
     main_web_contents_->Focus();
   else if (!is_docked_ && !browser_->window()->IsActive())
@@ -998,6 +1000,8 @@ void DevToolsWindow::InspectElementCompleted() {
 }
 
 void DevToolsWindow::MoveWindow(int x, int y) {
+  if (life_stage_ != kLoadCompleted)
+    return;
   if (!is_docked_) {
     gfx::Rect bounds = browser_->window()->GetBounds();
     bounds.Offset(x, y);
