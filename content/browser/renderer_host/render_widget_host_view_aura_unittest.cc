@@ -843,6 +843,49 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   EXPECT_FALSE(view_->has_composition_text_);
 }
 
+// Checks that sequence of IME-composition-event and mouse-event when mouse
+// clicking to cancel the composition.
+TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  ui::CompositionText composition_text;
+  composition_text.text = base::ASCIIToUTF16("|a|b");
+
+  // Focused segment
+  composition_text.underlines.push_back(
+      ui::CompositionUnderline(0, 3, 0xff000000, true, 0x78563412));
+
+  // Non-focused segment, with different background color.
+  composition_text.underlines.push_back(
+      ui::CompositionUnderline(3, 4, 0xff000000, false, 0xefcdab90));
+
+  // Caret is at the end. (This emulates Japanese MSIME 2007 and later)
+  composition_text.selection = gfx::Range(4);
+
+  view_->SetCompositionText(composition_text);
+  EXPECT_TRUE(view_->has_composition_text_);
+  sink_->ClearMessages();
+
+  // Simulates the mouse press.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED,
+                             gfx::Point(), gfx::Point(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  view_->OnMouseEvent(&mouse_event);
+
+  EXPECT_FALSE(view_->has_composition_text_);
+
+  EXPECT_EQ(2U, sink_->message_count());
+
+  if (sink_->message_count() == 2) {
+    // Verify mouse event happens after the confirm-composition event.
+    EXPECT_EQ(InputMsg_ImeConfirmComposition::ID,
+              sink_->GetMessageAt(0)->type());
+    EXPECT_EQ(InputMsg_HandleInputEvent::ID,
+              sink_->GetMessageAt(1)->type());
+  }
+}
+
 // Checks that touch-event state is maintained correctly.
 TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->InitAsChild(NULL);

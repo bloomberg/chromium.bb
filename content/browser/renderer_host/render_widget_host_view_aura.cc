@@ -1919,6 +1919,11 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (CanRendererHandleEvent(event) &&
              !(event->flags() & ui::EF_FROM_TOUCH)) {
+    // Confirm existing composition text on mouse press, to make sure
+    // the input caret won't be moved with an ongoing composition text.
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      FinishImeCompositionSession();
+
     blink::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);
@@ -1931,9 +1936,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       window_->SetCapture();
-      // Confirm existing composition text on mouse click events, to make sure
-      // the input caret won't be moved with an ongoing composition text.
-      FinishImeCompositionSession();
       break;
     case ui::ET_MOUSE_RELEASED:
       if (!NeedsMouseCapture())
@@ -1949,7 +1951,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   // In fullscreen mode which is typically used by flash, don't forward
   // the mouse events to the parent. The renderer and the plugin process
   // handle these events.
-  if (!is_fullscreen_ && window_->parent()->delegate() &&
+  if (!is_fullscreen_ && window_->parent() && window_->parent()->delegate() &&
       !(event->flags() & ui::EF_FROM_TOUCH)) {
     event->ConvertLocationToTarget(window_, window_->parent());
     window_->parent()->delegate()->OnMouseEvent(event);
@@ -2026,6 +2028,11 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
 
   if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
     return;
+
+  // Confirm existing composition text on TAP gesture, to make sure the input
+  // caret won't be moved with an ongoing composition text.
+  if (event->type() == ui::ET_GESTURE_TAP)
+    FinishImeCompositionSession();
 
   RenderViewHostDelegate* delegate = NULL;
   if (host_->IsRenderView())
