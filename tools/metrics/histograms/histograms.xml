@@ -19996,6 +19996,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.RememberedSystemNetworkCount">
+  <owner>quiche@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of 802.11 wireless networks
+    configured from the system configuration profile. This metric is sampled
+    each time a user configuration profile is loaded, such as when a user logs
+    in.
+
+    It might be surprising to have a system configuration profile metric sampled
+    when a user configuration profile is loaded. But this ensures that we have
+    equal numbers of samples for system and user configuration profiles.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.RememberedUserNetworkCount">
+  <owner>quiche@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of 802.11 wireless networks
+    configured from a user configuration profile. This metric is sampled each
+    time a user configuration profile is loaded, such as when a user logs in.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.ScanResult" enum="WiFiScanResult">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -56406,6 +56429,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ShillWiFiRememberedNetworkSecurityMode" separator=".">
+  <suffix name="802_1x" label="Network is secured with 802.1x"/>
+  <suffix name="none" label="Network is not secured"/>
+  <suffix name="psk" label="Network is security with WPA or WPA-2 (aka RSN)"/>
+  <suffix name="wep" label="Network employs WEP (Wired Equivalent Privacy)"/>
+  <affected-histogram name="Network.Shill.WiFi.RememberedSystemNetworkCount"/>
+  <affected-histogram name="Network.Shill.WiFi.RememberedUserNetworkCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ShowAppListWarmStartFast" separator="">
