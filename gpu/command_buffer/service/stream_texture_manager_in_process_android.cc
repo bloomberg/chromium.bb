@@ -137,7 +137,8 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(
                                 GL_RGBA,
                                 GL_UNSIGNED_BYTE,
                                 true);
-  texture_manager->SetLevelImage(texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image);
+  texture_manager->SetLevelImage(
+      texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get());
 
   {
     base::AutoLock lock(map_lock_);
