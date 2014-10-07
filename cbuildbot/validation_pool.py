@@ -2475,6 +2475,8 @@ class ValidationPool(object):
     submit = all(ShouldSubmitChangeInPreCQ(self.build_root, change)
                  for change in self.changes)
     new_status = self.STATUS_READY_TO_SUBMIT if submit else self.STATUS_PASSED
+    new_action = (constants.CL_ACTION_PRE_CQ_READY_TO_SUBMIT if submit
+                  else constants.CL_ACTION_PRE_CQ_PASSED)
     ok_statuses = (self.STATUS_PASSED, self.STATUS_READY_TO_SUBMIT)
 
     def ProcessChange(change):
@@ -2484,11 +2486,20 @@ class ValidationPool(object):
         if self._metadata:
           timestamp = int(time.time())
           build_id = self._metadata.GetValue('build_id')
+          # Record both a VERIFIED action for this builder, and also a pre-CQ
+          # PASSED status. In the future, not all pre-cq builders will
+          # necessarily write a PASSED status. Instead, the pre-cq-launcher will
+          # wait until the relevant builders have VERIFIED the CL, before
+          # marking it as PASSED.
           self._metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
                                         timestamp)
           ValidationPool._InsertCLActionToDatabase(build_id, change,
                                                    constants.CL_ACTION_VERIFIED)
-
+          # Mark changes with the new pre-cq status in database.
+          # This will be replaced by a call to UpdateCLPreCQStatus in a future
+          # CL.
+          ValidationPool._InsertCLActionToDatabase(
+              build_id, change, new_action)
 
     # Set the new statuses in parallel.
     inputs = [[change] for change in self.changes]
