@@ -56,7 +56,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
 
   virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
-      const base::FilePath& /*platform_path*/) OVERRIDE {
+      const base::FilePath& /*platform_path*/) override {
     // Move arg management to TestValidator?
     return new TestValidator(true, true, std::string("2"));
   }
@@ -76,7 +76,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
     virtual ~TestValidator() {}
 
     virtual void StartPreWriteValidation(
-        const ResultCallback& result_callback) OVERRIDE {
+        const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result_));
@@ -84,7 +84,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
 
     virtual void StartPostWriteValidation(
         const base::FilePath& dest_platform_path,
-        const ResultCallback& result_callback) OVERRIDE {
+        const ResultCallback& result_callback) override {
       base::File::Error result = write_result_;
       std::string unsafe = dest_platform_path.BaseName().AsUTF8Unsafe();
       if (unsafe.find(reject_string_) != std::string::npos) {

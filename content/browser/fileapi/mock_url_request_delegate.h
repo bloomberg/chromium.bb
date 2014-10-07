@@ -19,9 +19,9 @@ class MockURLRequestDelegate : public net::URLRequest::Delegate {
   MockURLRequestDelegate();
   virtual ~MockURLRequestDelegate();
 
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* request) override;
   virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE;
+                               int bytes_read) override;
   const std::string& response_data() const { return response_data_; }
 
  private:

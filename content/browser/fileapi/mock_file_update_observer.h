@@ -25,9 +25,9 @@ class MockFileUpdateObserver : public FileUpdateObserver {
   static UpdateObserverList CreateList(MockFileUpdateObserver* observer);
 
   // FileUpdateObserver overrides.
-  virtual void OnStartUpdate(const FileSystemURL& url) OVERRIDE;
-  virtual void OnUpdate(const FileSystemURL& url, int64 delta) OVERRIDE;
-  virtual void OnEndUpdate(const FileSystemURL& url) OVERRIDE;
+  virtual void OnStartUpdate(const FileSystemURL& url) override;
+  virtual void OnUpdate(const FileSystemURL& url, int64 delta) override;
+  virtual void OnEndUpdate(const FileSystemURL& url) override;
 
   void Enable() { is_ready_ = true; }
 

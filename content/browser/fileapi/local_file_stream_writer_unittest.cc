@@ -28,12 +28,12 @@ class LocalFileStreamWriterTest : public testing::Test {
   LocalFileStreamWriterTest()
       : file_thread_("FileUtilProxyTestFileThread") {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(file_thread_.Start());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Give another chance for deleted streams to perform Close.
     base::RunLoop().RunUntilIdle();
     file_thread_.Stop();

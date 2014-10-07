@@ -84,8 +84,8 @@ class FileWriterDelegateTest : public PlatformTest {
   FileWriterDelegateTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   int64 usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)
@@ -175,7 +175,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
         cursor_(0) {
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
@@ -183,7 +183,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
 
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE {
+                           int *bytes_read) override {
     if (remaining_bytes_ < buf_size)
       buf_size = static_cast<int>(remaining_bytes_);
 
@@ -196,7 +196,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
     return true;
   }
 
-  virtual int GetResponseCode() const OVERRIDE {
+  virtual int GetResponseCode() const override {
     return 200;
   }
 
@@ -218,20 +218,20 @@ class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
   virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     return new FileWriterDelegateTestJob(
         request, network_delegate, *content_data_);
   }
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+  virtual bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "blob";
   }
 
-  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+  virtual bool IsHandledURL(const GURL& url) const override {
     return url.SchemeIs("blob");
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }
 

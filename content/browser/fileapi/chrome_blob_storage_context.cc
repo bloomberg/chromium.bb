@@ -29,7 +29,7 @@ class BlobHandleImpl : public BlobHandle {
 
   virtual ~BlobHandleImpl() {}
 
-  virtual std::string GetUUID() OVERRIDE {
+  virtual std::string GetUUID() override {
     return handle_->uuid();
   }
 

@@ -51,7 +51,7 @@ class FileSystemBrowserTest : public ContentBrowserTest {
 
 class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     const int kInitialQuotaKilobytes = 5000;
     const int kTemporaryStorageQuotaMaxSize =
         kInitialQuotaKilobytes * 1024 * QuotaManager::kPerHostTemporaryPortion;

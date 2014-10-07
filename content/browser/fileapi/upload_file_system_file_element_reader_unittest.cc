@@ -36,7 +36,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
  public:
   UploadFileSystemFileElementReaderTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     file_system_context_ = CreateFileSystemContextForTesting(
@@ -74,7 +74,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     EXPECT_FALSE(reader_->IsInMemory());
   }
 
- virtual void TearDown() OVERRIDE {
+ virtual void TearDown() override {
     reader_.reset();
     base::RunLoop().RunUntilIdle();
  }

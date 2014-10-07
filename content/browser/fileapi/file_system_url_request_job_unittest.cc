@@ -92,20 +92,20 @@ class FileSystemURLRequestJobFactory : public net::URLRequestJobFactory {
   virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     return new storage::FileSystemURLRequestJob(
         request, network_delegate, storage_domain_, file_system_context_);
   }
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+  virtual bool IsHandledProtocol(const std::string& scheme) const override {
     return true;
   }
 
-  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+  virtual bool IsHandledURL(const GURL& url) const override {
     return true;
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -121,7 +121,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   FileSystemURLRequestJobTest() : weak_factory_(this) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // We use the main thread so that we can get the root path synchronously.
@@ -138,7 +138,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // FileReader posts a task to close the file in destructor.
     base::RunLoop().RunUntilIdle();
   }

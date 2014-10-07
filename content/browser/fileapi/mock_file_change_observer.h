@@ -23,13 +23,13 @@ class MockFileChangeObserver : public FileChangeObserver {
   static ChangeObserverList CreateList(MockFileChangeObserver* observer);
 
   // FileChangeObserver overrides.
-  virtual void OnCreateFile(const FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateFile(const FileSystemURL& url) override;
   virtual void OnCreateFileFrom(const FileSystemURL& url,
-                                const FileSystemURL& src) OVERRIDE;
-  virtual void OnRemoveFile(const FileSystemURL& url) OVERRIDE;
-  virtual void OnModifyFile(const FileSystemURL& url) OVERRIDE;
-  virtual void OnCreateDirectory(const FileSystemURL& url) OVERRIDE;
-  virtual void OnRemoveDirectory(const FileSystemURL& url) OVERRIDE;
+                                const FileSystemURL& src) override;
+  virtual void OnRemoveFile(const FileSystemURL& url) override;
+  virtual void OnModifyFile(const FileSystemURL& url) override;
+  virtual void OnCreateDirectory(const FileSystemURL& url) override;
+  virtual void OnRemoveDirectory(const FileSystemURL& url) override;
 
   void ResetCount() {
     create_file_count_ = 0;

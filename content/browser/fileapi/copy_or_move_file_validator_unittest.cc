@@ -201,7 +201,7 @@ class TestCopyOrMoveFileValidatorFactory
 
   virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
-      const base::FilePath& /*platform_path*/) OVERRIDE {
+      const base::FilePath& /*platform_path*/) override {
     return new TestCopyOrMoveFileValidator(validity_);
   }
 
@@ -219,7 +219,7 @@ class TestCopyOrMoveFileValidatorFactory
     virtual ~TestCopyOrMoveFileValidator() {}
 
     virtual void StartPreWriteValidation(
-        const ResultCallback& result_callback) OVERRIDE {
+        const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result_));
@@ -227,7 +227,7 @@ class TestCopyOrMoveFileValidatorFactory
 
     virtual void StartPostWriteValidation(
         const base::FilePath& dest_platform_path,
-        const ResultCallback& result_callback) OVERRIDE {
+        const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, write_result_));

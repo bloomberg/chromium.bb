@@ -73,16 +73,16 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                        StreamContext* stream_context);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelClosing() override;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& message) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~FileAPIMessageFilter();
 
-  virtual void BadMessageReceived() OVERRIDE;
+  virtual void BadMessageReceived() override;
 
  private:
   typedef storage::FileSystemOperationRunner::OperationID OperationID;

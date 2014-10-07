@@ -42,14 +42,14 @@ class FileSystemOperationRunnerTest : public testing::Test {
   FileSystemOperationRunnerTest() {}
   virtual ~FileSystemOperationRunnerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
     file_system_context_ =
         CreateFileSystemContextForTesting(NULL, base_dir);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     file_system_context_ = NULL;
     base::RunLoop().RunUntilIdle();
   }
