@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class GamepadButton FINAL : public GarbageCollected<GamepadButton>, public ScriptWrappable {
+class GamepadButton final : public GarbageCollected<GamepadButton>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static GamepadButton* create();

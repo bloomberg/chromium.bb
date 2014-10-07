@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class GamepadList FINAL : public GarbageCollected<GamepadList>, public ScriptWrappable {
+class GamepadList final : public GarbageCollected<GamepadList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static GamepadList* create()

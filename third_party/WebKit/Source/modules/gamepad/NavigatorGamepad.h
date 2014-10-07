@@ -43,7 +43,7 @@ class GamepadList;
 class Navigator;
 class WebKitGamepadList;
 
-class NavigatorGamepad FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
+class NavigatorGamepad final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     static NavigatorGamepad* from(Document&);
@@ -69,20 +69,20 @@ private:
     void didRemoveGamepadEventListeners();
 
     // DOMWindowProperty
-    virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
-    virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
+    virtual void willDestroyGlobalObjectInFrame() override;
+    virtual void willDetachGlobalObjectFromFrame() override;
 
     // PlatformEventController
-    virtual void registerWithDispatcher() OVERRIDE;
-    virtual void unregisterWithDispatcher() OVERRIDE;
-    virtual bool hasLastData() OVERRIDE;
-    virtual void didUpdateData() OVERRIDE;
-    virtual void pageVisibilityChanged() OVERRIDE;
+    virtual void registerWithDispatcher() override;
+    virtual void unregisterWithDispatcher() override;
+    virtual bool hasLastData() override;
+    virtual void didUpdateData() override;
+    virtual void pageVisibilityChanged() override;
 
     // DOMWindowLifecycleObserver
-    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveAllEventListeners(LocalDOMWindow*) OVERRIDE;
+    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+    virtual void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
     PersistentWillBeMember<GamepadList> m_gamepads;
     PersistentWillBeMember<WebKitGamepadList> m_webkitGamepads;
