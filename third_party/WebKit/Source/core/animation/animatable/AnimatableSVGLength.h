@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class AnimatableSVGLength FINAL : public AnimatableValue {
+class AnimatableSVGLength final : public AnimatableValue {
 public:
     virtual ~AnimatableSVGLength() { }
 
@@ -50,10 +50,10 @@ public:
         return m_length.get();
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { AnimatableValue::trace(visitor); }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
     AnimatableSVGLength(PassRefPtr<SVGLength> length)
@@ -61,8 +61,8 @@ private:
     {
     }
 
-    virtual AnimatableType type() const OVERRIDE { return TypeSVGLength; }
-    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    virtual AnimatableType type() const override { return TypeSVGLength; }
+    virtual bool equalTo(const AnimatableValue*) const override;
 
     RefPtr<SVGLength> m_length;
 };

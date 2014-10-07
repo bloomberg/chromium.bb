@@ -52,7 +52,7 @@ class StyleRuleKeyframes;
 
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
-class CSSAnimationUpdate FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
+class CSSAnimationUpdate final : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
 public:
     void startAnimation(AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> animation)
     {
@@ -161,7 +161,7 @@ private:
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForTransitions;
 };
 
-class CSSAnimations FINAL {
+class CSSAnimations final {
     WTF_MAKE_NONCOPYABLE(CSSAnimations);
     DISALLOW_ALLOCATION();
 public:
@@ -217,7 +217,7 @@ private:
     static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element* animatingElement, double timelineCurrentTime);
     static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element* animatingElement, double timelineCurrentTime);
 
-    class AnimationEventDelegate FINAL : public AnimationNode::EventDelegate {
+    class AnimationEventDelegate final : public AnimationNode::EventDelegate {
     public:
         AnimationEventDelegate(Element* target, const AtomicString& name)
             : m_target(target)
@@ -226,8 +226,8 @@ private:
             , m_previousIteration(nullValue())
         {
         }
-        virtual void onEventCondition(const AnimationNode*) OVERRIDE;
-        virtual void trace(Visitor*) OVERRIDE;
+        virtual void onEventCondition(const AnimationNode*) override;
+        virtual void trace(Visitor*) override;
 
     private:
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
@@ -237,7 +237,7 @@ private:
         double m_previousIteration;
     };
 
-    class TransitionEventDelegate FINAL : public AnimationNode::EventDelegate {
+    class TransitionEventDelegate final : public AnimationNode::EventDelegate {
     public:
         TransitionEventDelegate(Element* target, CSSPropertyID property)
             : m_target(target)
@@ -245,8 +245,8 @@ private:
             , m_previousPhase(AnimationNode::PhaseNone)
         {
         }
-        virtual void onEventCondition(const AnimationNode*) OVERRIDE;
-        virtual void trace(Visitor*) OVERRIDE;
+        virtual void onEventCondition(const AnimationNode*) override;
+        virtual void trace(Visitor*) override;
 
     private:
         RawPtrWillBeMember<Element> m_target;

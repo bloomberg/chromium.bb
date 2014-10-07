@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class AnimatableSVGPaint FINAL : public AnimatableValue {
+class AnimatableSVGPaint final : public AnimatableValue {
 public:
     virtual ~AnimatableSVGPaint() { }
     static PassRefPtrWillBeRawPtr<AnimatableSVGPaint> create(
@@ -61,15 +61,15 @@ public:
     const String& uri() const { return m_uri; };
     const String& visitedLinkURI() const { return m_visitedLinkURI; };
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_color);
         AnimatableValue::trace(visitor);
     }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableSVGPaint(SVGPaintType type, SVGPaintType visitedLinkType, PassRefPtrWillBeRawPtr<AnimatableColor> color, const String& uri, const String& visitedLinkURI)
@@ -80,8 +80,8 @@ private:
         , m_visitedLinkURI(visitedLinkURI)
     {
     }
-    virtual AnimatableType type() const OVERRIDE { return TypeSVGPaint; }
-    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    virtual AnimatableType type() const override { return TypeSVGPaint; }
+    virtual bool equalTo(const AnimatableValue*) const override;
 
     SVGPaintType m_type;
     SVGPaintType m_visitedLinkType;

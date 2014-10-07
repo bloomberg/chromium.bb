@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class AnimatableStrokeDasharrayList FINAL : public AnimatableRepeatable {
+class AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
 public:
     virtual ~AnimatableStrokeDasharrayList() { }
 
@@ -47,11 +47,11 @@ public:
 
     PassRefPtr<SVGLengthList> toSVGLengthList() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableStrokeDasharrayList(PassRefPtr<SVGLengthList>);
@@ -61,7 +61,7 @@ private:
     {
     }
 
-    virtual AnimatableType type() const OVERRIDE { return TypeStrokeDasharrayList; }
+    virtual AnimatableType type() const override { return TypeStrokeDasharrayList; }
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList, isStrokeDasharrayList());
