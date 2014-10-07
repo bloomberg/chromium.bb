@@ -140,9 +140,19 @@ void ScreenshotTester::Run(const std::string& test_name) {
     }
     ASSERT_TRUE(result.screenshots_match);
   } else {
-    Result result = CompareScreenshots(golden_screenshot, current_screenshot);
-    if (!result.screenshots_match) {
-      CHECK(SaveImage(golden_screenshot_path, current_screenshot));
+    bool golden_screenshot_needs_update;
+    if (golden_screenshot.get()) {
+      // There is a golden screenshot, so we need to check it first.
+      Result result = CompareScreenshots(golden_screenshot, current_screenshot);
+      golden_screenshot_needs_update = (!result.screenshots_match);
+    } else {
+      // There is no golden screenshot for this test at all.
+      golden_screenshot_needs_update = true;
+    }
+    if (golden_screenshot_needs_update) {
+      bool golden_screenshot_saved =
+          SaveImage(golden_screenshot_path, current_screenshot);
+      CHECK(golden_screenshot_saved);
     } else {
       VLOG(0) << "Golden screenshot does not differ from the current one, no "
                  "need to update";
