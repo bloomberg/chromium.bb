@@ -27,25 +27,8 @@ using pp::PassRef;
 using pp::Var;
 
 namespace {
-
-const char kExepectedVoucherFilename[] = "plugin.vch";
-
-// Check that the Hmonitor value is what it is expected to be for each platform.
-bool CheckExpectedHmonitorValue(bool success, int64_t hmonitor) {
-#if defined(PPAPI_OS_MACOSX)
-  // TODO(raymes): Verify the expected |hmonitor| value on Mac.
-  return success;
-#elif defined(PPAPI_OS_WIN)
-  MONITORINFO info = { sizeof(info) };
-  return success &&
-      ::GetMonitorInfo(reinterpret_cast<HMONITOR>(hmonitor), &info) == TRUE;
-#else
-  // Not implemented for other platforms, should return false.
-  return !success;
-#endif
+  const char kExepectedVoucherFilename[] = "plugin.vch";
 }
-
-}  // namespace
 
 TestFlashDRM::TestFlashDRM(TestingInstance* instance)
     : TestCase(instance),
@@ -93,13 +76,20 @@ std::string TestFlashDRM::TestGetDeviceID() {
 std::string TestFlashDRM::TestGetHmonitor() {
   DRM drm(instance_);
   int64_t hmonitor;
+#if defined(PPAPI_OS_WIN)
   while (true) {
-    bool success = drm.GetHmonitor(&hmonitor);
-    if (CheckExpectedHmonitorValue(success, hmonitor))
+    if (drm.GetHmonitor(&hmonitor)) {
+      MONITORINFO info = { sizeof(info) };
+      ASSERT_EQ(TRUE,
+                ::GetMonitorInfo(reinterpret_cast<HMONITOR>(hmonitor), &info));
       break;
-    else
-      PlatformSleep(30);
+    } else {
+      ::Sleep(30);
+    }
   }
+#else
+  ASSERT_FALSE(drm.GetHmonitor(&hmonitor));
+#endif
 
   PASS();
 }
