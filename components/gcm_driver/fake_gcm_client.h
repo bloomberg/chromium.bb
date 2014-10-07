@@ -72,8 +72,8 @@ class FakeGCMClient : public GCMClient {
                       const IncomingMessage& message);
   void DeleteMessages(const std::string& app_id);
 
-  static std::string GetRegistrationIdFromSenderIds(
-      const std::vector<std::string>& sender_ids);
+  std::string GetRegistrationIdFromSenderIds(
+      const std::vector<std::string>& sender_ids) const;
 
   Status status() const { return status_; }
 
@@ -94,6 +94,9 @@ class FakeGCMClient : public GCMClient {
                            const std::string& message_id);
 
   Delegate* delegate_;
+  // Increased at checkout in order to produce a different registration ID
+  // after checkout and re-checkin.
+  int sequence_id_;
   Status status_;
   StartMode start_mode_;
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;

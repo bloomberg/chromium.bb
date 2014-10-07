@@ -72,9 +72,9 @@ class GCMDriver {
   // been called, no other GCMDriver methods may be used.
   virtual void Shutdown();
 
-  // Call this method when the user signs in to a GAIA account.
-  // TODO(jianli): To be removed when sign-in enforcement is dropped.
+  // Called when the user signs in to or out of a GAIA account.
   virtual void OnSignedIn() = 0;
+  virtual void OnSignedOut() = 0;
 
   // Removes all the cached and persisted GCM data. If the GCM service is
   // restarted after the purge, a new Android ID will be obtained.

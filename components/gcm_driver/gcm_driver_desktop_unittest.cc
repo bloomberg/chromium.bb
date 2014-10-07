@@ -273,7 +273,7 @@ void GCMDriverTest::SignIn(const std::string& account_id) {
 }
 
 void GCMDriverTest::SignOut() {
-  driver_->Purge();
+  driver_->OnSignedOut();
   PumpIOLoop();
   PumpUILoop();
 }
@@ -379,6 +379,18 @@ TEST_F(GCMDriverTest, CreateByFieldTrial) {
   PumpIOLoop();
   EXPECT_TRUE(driver()->IsConnected());
   EXPECT_TRUE(gcm_connection_observer()->connected());
+
+  // Sign-in will not affect GCM state.
+  SignIn(kTestAccountID1);
+  PumpIOLoop();
+  EXPECT_TRUE(driver()->IsStarted());
+  EXPECT_TRUE(driver()->IsConnected());
+
+  // Sign-out will not affect GCM state.
+  SignOut();
+  PumpIOLoop();
+  EXPECT_TRUE(driver()->IsStarted());
+  EXPECT_TRUE(driver()->IsConnected());
 }
 
 TEST_F(GCMDriverTest, Shutdown) {
@@ -403,9 +415,13 @@ TEST_F(GCMDriverTest, SignInAndSignOutOnGCMEnabled) {
   SignIn(kTestAccountID1);
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
-  // GCMClient should be checked out after sign-out.
+  // GCMClient should be stopped out after sign-out.
+  // Note: Before we enable the feature that drops the sign-in enforcement and
+  // make GCM work for all users, GCM is only applicable to signed-in users.
+  // Once the users sign out, the GCM will be shut down while the GCM store
+  // remains intact.
   SignOut();
-  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, SignInAndSignOutOnGCMDisabled) {
@@ -420,9 +436,9 @@ TEST_F(GCMDriverTest, SignInAndSignOutOnGCMDisabled) {
   SignIn(kTestAccountID1);
   EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 
-  // Check-out should still be performed after sign-out.
+  // GCMClient should remain not started after sign-out.
   SignOut();
-  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, SignOutAndThenSignIn) {
@@ -433,9 +449,9 @@ TEST_F(GCMDriverTest, SignOutAndThenSignIn) {
   SignIn(kTestAccountID1);
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
-  // GCMClient should be checked out after sign-out.
+  // GCMClient should be stopped after sign-out.
   SignOut();
-  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 
   // Sign-in with a different account.
   SignIn(kTestAccountID2);
@@ -479,8 +495,8 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   // Sign out.
   SignOut();
 
-  // GCMClient should be checked out.
-  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
+  // GCMClient should be stopped.
+  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, StartOrStopGCMOnDemand) {
@@ -690,7 +706,7 @@ TEST_F(GCMDriverFunctionalTest, Register) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
+      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -711,7 +727,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithSameSenderIDs) {
   sender_ids.push_back("sender2");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
+      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -736,7 +752,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
+      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -744,7 +760,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
   // Make sender IDs different.
   sender_ids.push_back("sender2");
   const std::string expected_registration_id2 =
-      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
+      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
 
   // Calling register 2nd time with the different sender IDs will get back a new
   // registration ID.
@@ -754,7 +770,6 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
 }
 
 TEST_F(GCMDriverFunctionalTest, RegisterAfterSignOut) {
-  // This will trigger check-out.
   SignOut();
 
   std::vector<std::string> sender_ids;
@@ -763,6 +778,31 @@ TEST_F(GCMDriverFunctionalTest, RegisterAfterSignOut) {
 
   EXPECT_TRUE(registration_id().empty());
   EXPECT_EQ(GCMClient::NOT_SIGNED_IN, registration_result());
+}
+
+TEST_F(GCMDriverFunctionalTest, RegisterAfterSignOutAndSignInAgain) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  const std::string expected_registration_id =
+      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
+
+  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
+  EXPECT_EQ(expected_registration_id, registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+
+  // After signing out, the GCM is stopped and calling register should fail.
+  SignOut();
+  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
+  EXPECT_TRUE(registration_id().empty());
+  EXPECT_EQ(GCMClient::NOT_SIGNED_IN, registration_result());
+
+  // After signing in again, same registration ID should be returned because
+  // the GCM data is not affected.
+  SignIn(kTestAccountID1);
+
+  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
+  EXPECT_EQ(expected_registration_id, registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 }
 
 TEST_F(GCMDriverFunctionalTest, UnregisterExplicitly) {
@@ -866,7 +906,6 @@ TEST_F(GCMDriverFunctionalTest, Send) {
 }
 
 TEST_F(GCMDriverFunctionalTest, SendAfterSignOut) {
-  // This will trigger check-out.
   SignOut();
 
   GCMClient::OutgoingMessage message;

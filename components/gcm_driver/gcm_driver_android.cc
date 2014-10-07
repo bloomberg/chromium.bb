@@ -95,6 +95,9 @@ bool GCMDriverAndroid::RegisterBindings(JNIEnv* env) {
 void GCMDriverAndroid::OnSignedIn() {
 }
 
+void GCMDriverAndroid::OnSignedOut() {
+}
+
 void GCMDriverAndroid::Purge() {
 }
 

@@ -386,13 +386,18 @@ void GCMDriverDesktop::OnSignedIn() {
   EnsureStarted();
 }
 
+void GCMDriverDesktop::OnSignedOut() {
+  signed_in_ = false;
+
+  // When sign-in enforcement is not dropped, we will stop the GCM connection
+  // when the user signs out.
+  if (!GCMDriver::IsAllowedForAllUsers())
+    Stop();
+}
+
 void GCMDriverDesktop::Purge() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
-  // We still proceed with the check-out logic even if the check-in is not
-  // initiated in the current session. This will make sure that all the
-  // persisted data written previously will get purged.
-  signed_in_ = false;
   RemoveCachedData();
 
   io_thread_->PostTask(FROM_HERE,
