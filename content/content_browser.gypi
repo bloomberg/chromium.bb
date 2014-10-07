@@ -455,6 +455,8 @@
       'browser/devtools/embedded_worker_devtools_agent_host.h',
       'browser/devtools/embedded_worker_devtools_manager.cc',
       'browser/devtools/embedded_worker_devtools_manager.h',
+      'browser/devtools/protocol/color_picker.cc',
+      'browser/devtools/protocol/color_picker.h',
       'browser/devtools/protocol/devtools_protocol_client.cc',
       'browser/devtools/protocol/devtools_protocol_client.h',
       'browser/devtools/protocol/dom_handler.cc',

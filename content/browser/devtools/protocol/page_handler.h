@@ -5,8 +5,14 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_PAGE_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_PAGE_HANDLER_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+
+class SkBitmap;
 
 namespace content {
 
@@ -14,6 +20,8 @@ class RenderViewHostImpl;
 
 namespace devtools {
 namespace page {
+
+class ColorPicker;
 
 class PageHandler {
  public:
@@ -24,6 +32,11 @@ class PageHandler {
 
   void SetRenderViewHost(RenderViewHostImpl* host);
   void SetClient(scoped_ptr<Client> client);
+  void Detached();
+  void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
+  void OnVisibilityChanged(bool visible);
+  void DidAttachInterstitialPage();
+  void DidDetachInterstitialPage();
 
   Response Enable();
   Response Disable();
@@ -61,14 +74,42 @@ class PageHandler {
   Response SetColorPickerEnabled(bool enabled);
 
  private:
-  RenderViewHostImpl* host_;
-  scoped_ptr<Client> client_;
-  base::WeakPtrFactory<PageHandler> weak_factory_;
+  void UpdateTouchEventEmulationState();
+
+  void NotifyScreencastVisibility(bool visible);
+  void InnerSwapCompositorFrame();
+  void ScreencastFrameCaptured(
+      const std::string& format,
+      int quality,
+      const cc::CompositorFrameMetadata& metadata,
+      bool success,
+      const SkBitmap& bitmap);
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,
       const unsigned char* png_data,
       size_t png_size);
+
+  void OnColorPicked(int r, int g, int b, int a);
+
+  bool enabled_;
+  bool touch_emulation_enabled_;
+
+  bool screencast_enabled_;
+  std::string screencast_format_;
+  int screencast_quality_;
+  int screencast_max_width_;
+  int screencast_max_height_;
+  int capture_retry_count_;
+  bool has_last_compositor_frame_metadata_;
+  cc::CompositorFrameMetadata last_compositor_frame_metadata_;
+  base::TimeTicks last_frame_time_;
+
+  scoped_ptr<ColorPicker> color_picker_;
+
+  RenderViewHostImpl* host_;
+  scoped_ptr<Client> client_;
+  base::WeakPtrFactory<PageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);
 };

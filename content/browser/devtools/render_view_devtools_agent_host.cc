@@ -219,6 +219,7 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
   overrides_handler_->OnClientDetached();
   tracing_handler_->OnClientDetached();
   power_handler_->OnClientDetached();
+  page_handler_->Detached();
   ClientDetachedFromRenderer();
 
   // TODO(kaznacheev): Move this call back to DevToolsManager when
@@ -332,7 +333,7 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
 }
 
 void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
-  overrides_handler_->DidAttachInterstitialPage();
+  page_handler_->DidAttachInterstitialPage();
 
   if (!render_view_host_)
     return;
@@ -347,7 +348,7 @@ void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
 }
 
 void RenderViewDevToolsAgentHost::DidDetachInterstitialPage() {
-  overrides_handler_->DidDetachInterstitialPage();
+  page_handler_->DidDetachInterstitialPage();
 }
 
 void RenderViewDevToolsAgentHost::TitleWasSet(
@@ -365,7 +366,7 @@ void RenderViewDevToolsAgentHost::Observe(int type,
                                           const NotificationDetails& details) {
   if (type == content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
     bool visible = *Details<bool>(details).ptr();
-    overrides_handler_->OnVisibilityChanged(visible);
+    page_handler_->OnVisibilityChanged(visible);
   }
 }
 
@@ -478,14 +479,14 @@ void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
-  overrides_handler_->OnSwapCompositorFrame(param.b.metadata);
+  page_handler_->OnSwapCompositorFrame(param.b.metadata);
 }
 
 void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
   if (!render_view_host_)
     return;
-  overrides_handler_->OnSwapCompositorFrame(frame_metadata);
+  page_handler_->OnSwapCompositorFrame(frame_metadata);
 }
 
 void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(

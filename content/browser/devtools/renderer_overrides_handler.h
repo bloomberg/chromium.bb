@@ -42,16 +42,10 @@ class CONTENT_EXPORT RendererOverridesHandler
   virtual ~RendererOverridesHandler();
 
   void OnClientDetached();
-  void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
-  void OnVisibilityChanged(bool visible);
   void SetRenderViewHost(RenderViewHostImpl* host);
   void ClearRenderViewHost();
-  void DidAttachInterstitialPage();
-  void DidDetachInterstitialPage();
 
  private:
-  void InnerSwapCompositorFrame();
-
   // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
       GrantPermissionsForSetFileInputFiles(
@@ -66,69 +60,14 @@ class CONTENT_EXPORT RendererOverridesHandler
       scoped_refptr<DevToolsProtocol::Command> command);
 
   // Page domain.
-  scoped_refptr<DevToolsProtocol::Response> PageEnable(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageDisable(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageHandleJavaScriptDialog(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageNavigate(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageReload(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageGetNavigationHistory(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageNavigateToHistoryEntry(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageSetTouchEmulationEnabled(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageCanEmulate(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageCanScreencast(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageStartScreencast(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> PageStopScreencast(
-      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageQueryUsageAndQuota(
       scoped_refptr<DevToolsProtocol::Command>);
-  scoped_refptr<DevToolsProtocol::Response> PageSetColorPickerEnabled(
-      scoped_refptr<DevToolsProtocol::Command>);
-
-  void ScreencastFrameCaptured(
-      const std::string& format,
-      int quality,
-      const cc::CompositorFrameMetadata& metadata,
-      bool success,
-      const SkBitmap& bitmap);
 
   void PageQueryUsageAndQuotaCompleted(
      scoped_refptr<DevToolsProtocol::Command>,
      scoped_ptr<base::DictionaryValue> response_data);
 
-  void NotifyScreencastVisibility(bool visible);
-  void SetColorPickerEnabled(bool enabled);
-  void UpdateColorPickerFrame();
-  void ResetColorPickerFrame();
-  void ColorPickerFrameUpdated(bool succeeded, const SkBitmap& bitmap);
-  bool HandleMouseEvent(const blink::WebMouseEvent& event);
-  void UpdateColorPickerCursor();
-
-  void UpdateTouchEventEmulationState();
-
   RenderViewHostImpl* host_;
-  bool page_domain_enabled_;
-  scoped_refptr<DevToolsProtocol::Command> screencast_command_;
-  bool has_last_compositor_frame_metadata_;
-  cc::CompositorFrameMetadata last_compositor_frame_metadata_;
-  base::TimeTicks last_frame_time_;
-  int capture_retry_count_;
-  bool touch_emulation_enabled_;
-  bool color_picker_enabled_;
-  SkBitmap color_picker_frame_;
-  int last_cursor_x_;
-  int last_cursor_y_;
-  RenderWidgetHost::MouseEventCallback mouse_event_callback_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RendererOverridesHandler);
 };
