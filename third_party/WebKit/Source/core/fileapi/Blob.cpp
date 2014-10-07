@@ -43,10 +43,10 @@ namespace blink {
 
 namespace {
 
-class BlobURLRegistry FINAL : public URLRegistry {
+class BlobURLRegistry final : public URLRegistry {
 public:
-    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
-    virtual void unregisterURL(const KURL&) OVERRIDE;
+    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+    virtual void unregisterURL(const KURL&) override;
 
     static URLRegistry& registry();
 };

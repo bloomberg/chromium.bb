@@ -38,7 +38,7 @@ class ExecutionContext;
 struct FileMetadata;
 class KURL;
 
-class File FINAL : public Blob {
+class File final : public Blob {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // AllContentTypes should only be used when the full path/name are trusted; otherwise, it could
@@ -104,14 +104,14 @@ public:
         return new File(path, name, policy, File::IsNotUserVisible);
     }
 
-    virtual unsigned long long size() const OVERRIDE;
-    virtual Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const OVERRIDE;
-    virtual void close(ExecutionContext*, ExceptionState&) OVERRIDE;
+    virtual unsigned long long size() const override;
+    virtual Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const override;
+    virtual void close(ExecutionContext*, ExceptionState&) override;
 
-    virtual bool isFile() const OVERRIDE { return true; }
-    virtual bool hasBackingFile() const OVERRIDE { return m_hasBackingFile; }
+    virtual bool isFile() const override { return true; }
+    virtual bool hasBackingFile() const override { return m_hasBackingFile; }
 
-    virtual void appendTo(BlobData&) const OVERRIDE;
+    virtual void appendTo(BlobData&) const override;
 
     const String& path() const { ASSERT(hasValidFilePath()); return m_path; }
     const String name() const { return m_name; }

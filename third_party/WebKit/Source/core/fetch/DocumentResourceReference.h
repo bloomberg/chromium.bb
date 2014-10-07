@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class DocumentResourceReference FINAL : public DocumentResourceClient {
+class DocumentResourceReference final : public DocumentResourceClient {
 public:
     DocumentResourceReference(DocumentResource* document) : m_document(document) { m_document->addClient(this); }
     virtual ~DocumentResourceReference() { m_document->removeClient(this); }

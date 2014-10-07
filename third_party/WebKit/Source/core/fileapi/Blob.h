@@ -92,7 +92,7 @@ public:
     virtual void appendTo(BlobData&) const;
 
     // URLRegistrable to support PublicURLs.
-    virtual URLRegistry& registry() const OVERRIDE FINAL;
+    virtual URLRegistry& registry() const override final;
 
     void trace(Visitor*) { }
 

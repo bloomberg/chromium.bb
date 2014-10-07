@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class FileList FINAL : public GarbageCollected<FileList>, public ScriptWrappable {
+class FileList final : public GarbageCollected<FileList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static FileList* create()

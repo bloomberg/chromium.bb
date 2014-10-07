@@ -79,7 +79,7 @@ typedef PersistentHeapHashSetWillBeHeapHashSet<Member<FileReader> > FileReaderHa
 
 // FIXME: Oilpan: if ExecutionContext is moved to the heap, consider
 // making this object an ExecutionContext supplement (only.)
-class FileReader::ThrottlingController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FileReader::ThrottlingController>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
+class FileReader::ThrottlingController final : public NoBaseWillBeGarbageCollectedFinalized<FileReader::ThrottlingController>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 public:
     static ThrottlingController* from(ExecutionContext* context)

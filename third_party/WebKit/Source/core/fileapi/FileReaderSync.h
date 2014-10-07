@@ -44,7 +44,7 @@ class ExceptionState;
 class FileReaderLoader;
 class ExecutionContext;
 
-class FileReaderSync FINAL : public GarbageCollected<FileReaderSync>, public ScriptWrappable {
+class FileReaderSync final : public GarbageCollected<FileReaderSync>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static FileReaderSync* create()

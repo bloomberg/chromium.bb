@@ -58,7 +58,7 @@ public:
         }
 
     protected:
-        virtual void destroyDecodedDataIfPossible() OVERRIDE
+        virtual void destroyDecodedDataIfPossible() override
         {
             setDecodedSize(0);
         }
@@ -193,7 +193,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
             , m_dead(dead)
         { }
 
-        virtual void run() OVERRIDE
+        virtual void run() override
         {
             // The resource size has to be nonzero for this test to be meaningful, but
             // we do not rely on it having any particular value.
@@ -226,7 +226,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
         Task2(unsigned liveSizeWithoutDecode)
             : m_liveSizeWithoutDecode(liveSizeWithoutDecode) { }
 
-        virtual void run() OVERRIDE
+        virtual void run() override
         {
             // Next task: now, the live resource was evicted.
             ASSERT_EQ(0u, memoryCache()->deadSize());

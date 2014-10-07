@@ -50,7 +50,7 @@ class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 
-class FileReaderLoader FINAL : public ThreadableLoaderClient {
+class FileReaderLoader final : public ThreadableLoaderClient {
 public:
     enum ReadType {
         ReadAsArrayBuffer,
@@ -70,10 +70,10 @@ public:
     void cancel();
 
     // ThreadableLoaderClient
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(const char*, unsigned) OVERRIDE;
-    virtual void didFinishLoading(unsigned long, double) OVERRIDE;
-    virtual void didFail(const ResourceError&) OVERRIDE;
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) override;
+    virtual void didReceiveData(const char*, unsigned) override;
+    virtual void didFinishLoading(unsigned long, double) override;
+    virtual void didFail(const ResourceError&) override;
 
     String stringResult();
     PassRefPtr<ArrayBuffer> arrayBufferResult() const;
