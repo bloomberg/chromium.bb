@@ -69,7 +69,7 @@ bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
     }
     scoped_refptr<X509Certificate> verified_cert =
         X509Certificate::CreateFromDERCertChain(verified_chain_pieces);
-    if (verified_cert)
+    if (verified_cert.get())
       verify_result->verified_cert = verified_cert;
   }
 
