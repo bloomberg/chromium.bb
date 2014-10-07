@@ -109,11 +109,6 @@
               'files': [
                 'closure/closure_preinit.js',
               ],
-              'conditions': [
-                ['chromevox_compress_js==1', {
-                  'files': [ '<(closure_goog_dir)/base.js' ],
-                }],
-              ]
             },
             {
               'destination': '<(chromevox_dest_dir)/chromevox/injected',

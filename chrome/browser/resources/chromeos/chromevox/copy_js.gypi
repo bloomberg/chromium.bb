@@ -28,7 +28,10 @@
         '<@(js_files)',
       ],
       'outputs': [
-        '<!@(python <(js_bundler_path) <@(path_rewrite_flags) -d <(dest_dir) <@(js_files))'
+        # dest_dir is quoted below because it can contain build system
+        # variables such as PRODUCT_DIR that need to be passed back
+        # literally.
+        '<!@(python <(js_bundler_path) <@(path_rewrite_flags) -d \'<(dest_dir)\' <@(js_files))'
       ],
       'action': [
         'python',

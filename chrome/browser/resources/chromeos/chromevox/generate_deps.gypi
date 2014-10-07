@@ -28,7 +28,7 @@
         '<@(js_files)',
       ],
       'outputs': [
-        'deps_js_output_file',
+        '<(deps_js_output_file)',
       ],
       'action': [
         'python',
