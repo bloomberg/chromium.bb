@@ -33,8 +33,6 @@ import java.util.List;
  * ListAdapter to customize the view of items in the list.
  */
 class AppMenuAdapter extends BaseAdapter {
-    private static final int VIEW_TYPE_COUNT = 5;
-
     /**
      * Regular Android menu item that contains a title and an icon if icon is specified.
      */
@@ -61,6 +59,11 @@ class AppMenuAdapter extends BaseAdapter {
      * This is similar to {@link #TITLE_BUTTON_MENU_ITEM} but has some slight layout differences.
      */
     private static final int MENU_BUTTON_MENU_ITEM = 5;
+
+    /**
+     * The number of view types specified above.  If you add a view type you MUST increment this.
+     */
+    private static final int VIEW_TYPE_COUNT = 6;
 
     /** MenuItem Animation Constants */
     private static final int ENTER_ITEM_DURATION_MS = 350;
