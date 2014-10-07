@@ -1,19 +1,23 @@
 Test that tracing model correctly processes trace events.
 
-S simple1 100 - F simple1 101
-S simple2 110 - F simple2 111
-S nested 120 - F nested 126.999
-S nested 121.001 - F nested 126.1
-S stepInto 130 - T stepInto 130.2 - T stepInto 130.8 - F stepInto 131
-S stepPast 140 - p stepPast 140.22 - p stepPast 140.8 - F stepPast 141
-S nestedOverlapping1 150 - F nestedOverlapping1 153
-S nestedOverlapping2 151 - F nestedOverlapping2 154
-S nestedOverlapping3 152 - F nestedOverlapping3 155
-S nestedOverlapping4 153.5 - F nestedOverlapping4 154.5
-S nestedOverlapping5 154 - F nestedOverlapping5 155
-S nestedOverlapping6 154.5 - F nestedOverlapping6 155.5
-S nestedOverlapping7 155.5 - F nestedOverlapping7 156.5
-S nestedOverlapping8 157.5 - F nestedOverlapping8 158.5
-S unterminated 160 - F unterminated 162
-S multithread 160 - T multithread 161 - F multithread 162
+error: Begin/end event mismatch for nestable async event, nestableUnterminated vs. nestableEndWithoutBegin
+S simple1 100-101 - F simple1 101
+S simple2 110-111 - F simple2 111
+S nested 120-126.999 - F nested 126.999
+S nested 121.001-126.1 - F nested 126.1
+S stepInto 130-131 - T stepInto 130.2 - T stepInto 130.8 - F stepInto 131
+S stepPast 140-141 - p stepPast 140.22 - p stepPast 140.8 - F stepPast 141
+S nestedOverlapping1 150-153 - F nestedOverlapping1 153
+S nestedOverlapping2 151-154 - F nestedOverlapping2 154
+S nestedOverlapping3 152-155 - F nestedOverlapping3 155
+S nestedOverlapping4 153.5-154.5 - F nestedOverlapping4 154.5
+S nestedOverlapping5 154-155 - F nestedOverlapping5 155
+S nestedOverlapping6 154.5-155.5 - F nestedOverlapping6 155.5
+S nestedOverlapping7 155.5-156.5 - F nestedOverlapping7 156.5
+S nestedOverlapping8 157.5-158.5 - F nestedOverlapping8 158.5
+S unterminated 160-182 - F unterminated 182
+S multithread 160-162 - T multithread 161 - F multithread 162
+b nestableNested1 170-179
+b nestableNested2 171-177
+b nestableUnterminated 181
 

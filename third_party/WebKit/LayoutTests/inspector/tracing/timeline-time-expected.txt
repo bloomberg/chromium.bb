@@ -17,7 +17,7 @@ Root
 Running: testUnbalancedConsoleTime
 Root
 ----> FunctionCall
---------> b
+--------> a
 
 Running: testConsoleTimeWithoutConsoleTimeEnd
 Root

@@ -50,7 +50,15 @@ function test()
 
         { "cat": "blink.console", "name": "multithread", "ph": "S", "ts": 160000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
         { "cat": "blink.console", "name": "multithread", "ph": "T", "ts": 161000, "args": {"step": "step"}, "id": 1, "tid": 101, "pid": pid },
-        { "cat": "blink.console", "name": "multithread", "ph": "F", "ts": 162000, "args": {}, "id": 1, "tid": 102, "pid": pid }
+        { "cat": "blink.console", "name": "multithread", "ph": "F", "ts": 162000, "args": {}, "id": 1, "tid": 102, "pid": pid },
+
+        { "cat": "blink.console", "name": "nestableNested1", "ph": "b", "ts": 170000, "args": {}, "id": 123, "tid": mainThread, "pid": pid },
+        { "cat": "blink.console", "name": "nestableNested2", "ph": "b", "ts": 171000, "args": {"step": "n1"}, "id": 123, "tid": mainThread, "pid": pid },
+        { "cat": "blink.console", "name": "nestableNested2", "ph": "e", "ts": 177000, "args": {"step": "n2"}, "id": 123, "tid": mainThread, "pid": pid },
+        { "cat": "blink.console", "name": "nestableNested1", "ph": "e", "ts": 179000, "args": {}, "id": 123, "tid": mainThread, "pid": pid },
+
+        { "cat": "blink.console", "name": "nestableUnterminated", "ph": "b", "ts": 181000, "args": {}, "id": 124, "tid": mainThread, "pid": pid },
+        { "cat": "blink.console", "name": "nestableEndWithoutBegin", "ph": "e", "ts": 182000, "args": {}, "id": 124, "tid": mainThread, "pid": pid }
     ];
 
     var model = new WebInspector.TracingModel();
@@ -64,6 +72,8 @@ function test()
             if (j)
                 stepString += " - ";
             stepString += step.phase + " " + step.name + " " + step.startTime;
+            if (step.endTime)
+                stepString += "-" + step.endTime;
         }
         InspectorTest.addResult(stepString);
     }
