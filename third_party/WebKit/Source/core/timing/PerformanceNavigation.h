@@ -41,7 +41,7 @@ namespace blink {
 
 class LocalFrame;
 
-class PerformanceNavigation FINAL : public RefCountedWillBeGarbageCollected<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+class PerformanceNavigation final : public RefCountedWillBeGarbageCollected<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 public:
@@ -60,7 +60,7 @@ public:
     unsigned short type() const;
     unsigned short redirectCount() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit PerformanceNavigation(LocalFrame*);

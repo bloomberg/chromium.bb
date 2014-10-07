@@ -46,7 +46,7 @@ class ResourceRequest;
 class ResourceResponse;
 class ResourceTimingInfo;
 
-class PerformanceResourceTiming FINAL : public PerformanceEntry {
+class PerformanceResourceTiming final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
@@ -73,9 +73,9 @@ public:
     double responseStart() const;
     double responseEnd() const;
 
-    virtual bool isResource() OVERRIDE { return true; }
+    virtual bool isResource() override { return true; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);

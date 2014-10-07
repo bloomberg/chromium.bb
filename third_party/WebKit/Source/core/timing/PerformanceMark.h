@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class PerformanceMark FINAL : public PerformanceEntry {
+class PerformanceMark final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PerformanceMark> create(const String& name, double startTime)
@@ -41,9 +41,9 @@ public:
         return adoptRefWillBeNoop(new PerformanceMark(name, startTime));
     }
 
-    virtual bool isMark() OVERRIDE { return true; }
+    virtual bool isMark() override { return true; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         PerformanceEntry::trace(visitor);
     }

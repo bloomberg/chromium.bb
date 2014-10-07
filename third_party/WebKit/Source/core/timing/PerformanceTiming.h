@@ -45,7 +45,7 @@ struct DocumentTiming;
 class LocalFrame;
 class ResourceLoadTiming;
 
-class PerformanceTiming FINAL : public RefCountedWillBeGarbageCollected<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
+class PerformanceTiming final : public RefCountedWillBeGarbageCollected<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 public:
@@ -76,7 +76,7 @@ public:
     unsigned long long loadEventStart() const;
     unsigned long long loadEventEnd() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit PerformanceTiming(LocalFrame*);

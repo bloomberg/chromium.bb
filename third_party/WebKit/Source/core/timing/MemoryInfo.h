@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class MemoryInfo FINAL : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
+class MemoryInfo final : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MemoryInfo> create()
