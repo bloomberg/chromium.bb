@@ -36,42 +36,42 @@ class MockRenderThread : public RenderThread {
   IPC::TestSink& sink() { return sink_; }
 
   // RenderThread implementation:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual base::MessageLoop* GetMessageLoop() OVERRIDE;
-  virtual IPC::SyncChannel* GetChannel() OVERRIDE;
-  virtual std::string GetLocale() OVERRIDE;
-  virtual IPC::SyncMessageFilter* GetSyncMessageFilter() OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
+  virtual base::MessageLoop* GetMessageLoop() override;
+  virtual IPC::SyncChannel* GetChannel() override;
+  virtual std::string GetLocale() override;
+  virtual IPC::SyncMessageFilter* GetSyncMessageFilter() override;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
-      OVERRIDE;
-  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
-  virtual void RemoveRoute(int32 routing_id) OVERRIDE;
-  virtual int GenerateRoutingID() OVERRIDE;
-  virtual void AddFilter(IPC::MessageFilter* filter) OVERRIDE;
-  virtual void RemoveFilter(IPC::MessageFilter* filter) OVERRIDE;
-  virtual void AddObserver(RenderProcessObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
+      override;
+  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) override;
+  virtual void RemoveRoute(int32 routing_id) override;
+  virtual int GenerateRoutingID() override;
+  virtual void AddFilter(IPC::MessageFilter* filter) override;
+  virtual void RemoveFilter(IPC::MessageFilter* filter) override;
+  virtual void AddObserver(RenderProcessObserver* observer) override;
+  virtual void RemoveObserver(RenderProcessObserver* observer) override;
   virtual void SetResourceDispatcherDelegate(
-      ResourceDispatcherDelegate* delegate) OVERRIDE;
-  virtual void EnsureWebKitInitialized() OVERRIDE;
-  virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
-  virtual void RecordComputedAction(const std::string& action) OVERRIDE;
+      ResourceDispatcherDelegate* delegate) override;
+  virtual void EnsureWebKitInitialized() override;
+  virtual void RecordAction(const base::UserMetricsAction& action) override;
+  virtual void RecordComputedAction(const std::string& action) override;
   virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
-      size_t buffer_size) OVERRIDE;
-  virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
-  virtual void ScheduleIdleHandler(int64 initial_delay_ms) OVERRIDE;
-  virtual void IdleHandler() OVERRIDE;
-  virtual int64 GetIdleNotificationDelayInMs() const OVERRIDE;
+      size_t buffer_size) override;
+  virtual void RegisterExtension(v8::Extension* extension) override;
+  virtual void ScheduleIdleHandler(int64 initial_delay_ms) override;
+  virtual void IdleHandler() override;
+  virtual int64 GetIdleNotificationDelayInMs() const override;
   virtual void SetIdleNotificationDelayInMs(
-      int64 idle_notification_delay_in_ms) OVERRIDE;
-  virtual void UpdateHistograms(int sequence_number) OVERRIDE;
-  virtual int PostTaskToAllWebWorkers(const base::Closure& closure) OVERRIDE;
-  virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) OVERRIDE;
-  virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
+      int64 idle_notification_delay_in_ms) override;
+  virtual void UpdateHistograms(int sequence_number) override;
+  virtual int PostTaskToAllWebWorkers(const base::Closure& closure) override;
+  virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
+  virtual base::WaitableEvent* GetShutdownEvent() override;
 #if defined(OS_WIN)
-  virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
-  virtual void ReleaseCachedFonts() OVERRIDE;
+  virtual void PreCacheFont(const LOGFONT& log_font) override;
+  virtual void ReleaseCachedFonts() override;
 #endif
-  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
+  virtual ServiceRegistry* GetServiceRegistry() override;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.

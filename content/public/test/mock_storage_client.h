@@ -53,19 +53,19 @@ class MockStorageClient : public QuotaClient {
   base::Time IncrementMockTime();
 
   // QuotaClient methods.
-  virtual QuotaClient::ID id() const OVERRIDE;
-  virtual void OnQuotaManagerDestroyed() OVERRIDE;
+  virtual QuotaClient::ID id() const override;
+  virtual void OnQuotaManagerDestroyed() override;
   virtual void GetOriginUsage(const GURL& origin_url,
                               StorageType type,
-                              const GetUsageCallback& callback) OVERRIDE;
+                              const GetUsageCallback& callback) override;
   virtual void GetOriginsForType(StorageType type,
-                                 const GetOriginsCallback& callback) OVERRIDE;
+                                 const GetOriginsCallback& callback) override;
   virtual void GetOriginsForHost(StorageType type, const std::string& host,
-                                 const GetOriginsCallback& callback) OVERRIDE;
+                                 const GetOriginsCallback& callback) override;
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
-                                const DeletionCallback& callback) OVERRIDE;
-  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE;
+                                const DeletionCallback& callback) override;
+  virtual bool DoesSupport(storage::StorageType type) const override;
 
  private:
   void RunGetOriginUsage(const GURL& origin_url,

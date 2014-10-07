@@ -21,12 +21,12 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
       : null_task_runner_(new base::NullTaskRunner) {
   }
 
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     return &context_;
   }
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
+      GetNetworkTaskRunner() const override {
     return null_task_runner_;
   }
 

@@ -37,10 +37,10 @@ class BrowserTestBase : public testing::Test {
 
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Restores state configured in SetUp.
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // Override this to add any custom setup code that needs to be done on the
   // main thread after the browser is created and just before calling

@@ -42,17 +42,17 @@ class DownloadFileWithErrors: public DownloadFileImpl {
 
   virtual ~DownloadFileWithErrors();
 
-  virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
+  virtual void Initialize(const InitializeCallback& callback) override;
 
   // DownloadFile interface.
   virtual DownloadInterruptReason AppendDataToFile(
-      const char* data, size_t data_len) OVERRIDE;
+      const char* data, size_t data_len) override;
   virtual void RenameAndUniquify(
       const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) OVERRIDE;
+      const RenameCompletionCallback& callback) override;
   virtual void RenameAndAnnotate(
       const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) OVERRIDE;
+      const RenameCompletionCallback& callback) override;
 
  private:
   // Error generating helper.
@@ -265,7 +265,7 @@ class DownloadFileWithErrorsFactory : public DownloadFileFactory {
       bool calculate_hash,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer) OVERRIDE;
+      base::WeakPtr<DownloadDestinationObserver> observer) override;
 
   bool AddError(
       const TestFileErrorInjector::FileErrorInfo& error_info);

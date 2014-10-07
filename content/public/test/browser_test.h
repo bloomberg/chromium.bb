@@ -22,9 +22,9 @@ class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
  public:\
   GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\
  protected:\
-  virtual void RunTestOnMainThread() OVERRIDE;\
+  virtual void RunTestOnMainThread() override;\
  private:\
-  virtual void TestBody() OVERRIDE {}\
+  virtual void TestBody() override {}\
   static ::testing::TestInfo* const test_info_;\
   GTEST_DISALLOW_COPY_AND_ASSIGN_(\
       GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
@@ -51,9 +51,9 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
    public: \
     GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {} \
    protected: \
-    virtual void RunTestOnMainThread() OVERRIDE; \
+    virtual void RunTestOnMainThread() override; \
    private: \
-    virtual void TestBody() OVERRIDE {} \
+    virtual void TestBody() override {} \
     static int AddToRegistry() { \
       ::testing::UnitTest::GetInstance()->parameterized_test_registry(). \
           GetTestCasePatternHolder<test_case_name>(\

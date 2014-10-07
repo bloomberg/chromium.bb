@@ -203,8 +203,8 @@ class RenderViewHostTestHarness : public testing::Test {
 
  protected:
   // testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Derived classes should override this method to use a custom BrowserContext.
   // It is invoked by SetUp after threads were started.

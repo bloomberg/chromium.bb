@@ -240,8 +240,8 @@ class TitleWatcher : public WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) OVERRIDE;
+  virtual void DidStopLoading(RenderViewHost* render_view_host) override;
+  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 
   void TestTitle();
 
@@ -265,7 +265,7 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void WebContentsDestroyed() override;
 
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
@@ -294,8 +294,8 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
-                                   int exit_code) OVERRIDE;
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
+                                   int exit_code) override;
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   RenderProcessHost* render_process_host_;
   WatchType type_;
@@ -325,7 +325,7 @@ class DOMMessageQueue : public NotificationObserver {
   // Overridden NotificationObserver methods.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
  private:
   NotificationRegistrar registrar_;

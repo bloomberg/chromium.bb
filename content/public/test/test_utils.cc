@@ -77,9 +77,9 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
   virtual ~TaskObserver() {}
 
   // MessageLoop::TaskObserver overrides.
-  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
   }
-  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
     processed_ = true;
   }
 

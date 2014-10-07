@@ -27,12 +27,12 @@ class TestBrowserThreadImpl : public BrowserThreadImpl {
     Stop();
   }
 
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     notification_service_ = new NotificationServiceImpl;
     BrowserThreadImpl::Init();
   }
 
-  virtual void CleanUp() OVERRIDE {
+  virtual void CleanUp() override {
     delete notification_service_;
     notification_service_ = NULL;
     BrowserThreadImpl::CleanUp();

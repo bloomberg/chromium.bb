@@ -20,11 +20,11 @@ class ContentBrowserTest : public BrowserTestBase {
   virtual ~ContentBrowserTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // BrowserTestBase:
-  virtual void RunTestOnMainThreadLoop() OVERRIDE;
+  virtual void RunTestOnMainThreadLoop() override;
 
  protected:
   // Creates a new window and loads about:blank.

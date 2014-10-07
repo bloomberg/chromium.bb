@@ -27,24 +27,24 @@ class TestBrowserContext : public BrowserContext {
 
   void SetSpecialStoragePolicy(storage::SpecialStoragePolicy* policy);
 
-  virtual base::FilePath GetPath() const OVERRIDE;
-  virtual bool IsOffTheRecord() const OVERRIDE;
-  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual base::FilePath GetPath() const override;
+  virtual bool IsOffTheRecord() const override;
+  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  virtual net::URLRequestContextGetter* GetRequestContext() override;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
+      int renderer_child_id) override;
+  virtual net::URLRequestContextGetter* GetMediaRequestContext() override;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
+      int renderer_child_id) override;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,
-          bool in_memory) OVERRIDE;
-  virtual ResourceContext* GetResourceContext() OVERRIDE;
-  virtual BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
-  virtual PushMessagingService* GetPushMessagingService() OVERRIDE;
-  virtual SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
+          bool in_memory) override;
+  virtual ResourceContext* GetResourceContext() override;
+  virtual BrowserPluginGuestManager* GetGuestManager() override;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  virtual PushMessagingService* GetPushMessagingService() override;
+  virtual SSLHostStateDelegate* GetSSLHostStateDelegate() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);

@@ -17,12 +17,12 @@ class NestedMessagePumpAndroid : public base::MessagePumpForUI {
  public:
   NestedMessagePumpAndroid();
 
-  virtual void Run(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
-  virtual void ScheduleWork() OVERRIDE;
+  virtual void Run(Delegate* delegate) override;
+  virtual void Quit() override;
+  virtual void ScheduleWork() override;
   virtual void ScheduleDelayedWork(
-      const base::TimeTicks& delayed_work_time) OVERRIDE;
-  virtual void Start(Delegate* delegate) OVERRIDE;
+      const base::TimeTicks& delayed_work_time) override;
+  virtual void Start(Delegate* delegate) override;
 
   static bool RegisterJni(JNIEnv* env);
 

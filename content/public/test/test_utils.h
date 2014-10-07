@@ -174,7 +174,7 @@ class WindowedNotificationObserver : public NotificationObserver {
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
  private:
   bool seen_;
@@ -208,9 +208,9 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
 
  private:
   virtual void BrowserChildProcessHostConnected(
-      const ChildProcessData& data) OVERRIDE;
+      const ChildProcessData& data) override;
   virtual void BrowserChildProcessHostDisconnected(
-      const ChildProcessData& data) OVERRIDE;
+      const ChildProcessData& data) override;
 
   int child_thread_count_;
   scoped_refptr<MessageLoopRunner> runner_;

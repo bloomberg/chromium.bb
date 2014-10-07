@@ -98,10 +98,10 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void OnStop() {}
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   RenderView* render_view() const;
   int routing_id() const { return routing_id_; }

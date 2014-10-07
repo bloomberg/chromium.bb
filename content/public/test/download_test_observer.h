@@ -37,8 +37,8 @@ class DownloadUpdatedObserver : public DownloadItem::Observer {
 
  private:
   // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
-  virtual void OnDownloadDestroyed(DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadUpdated(DownloadItem* item) override;
+  virtual void OnDownloadDestroyed(DownloadItem* item) override;
 
   DownloadItem* item_;
   EventFilter filter_;
@@ -83,13 +83,13 @@ class DownloadTestObserver : public DownloadManager::Observer,
   bool IsFinished() const;
 
   // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(DownloadItem* download) override;
+  virtual void OnDownloadDestroyed(DownloadItem* download) override;
 
   // DownloadManager::Observer
   virtual void OnDownloadCreated(
-      DownloadManager* manager, DownloadItem* item) OVERRIDE;
-  virtual void ManagerGoingDown(DownloadManager* manager) OVERRIDE;
+      DownloadManager* manager, DownloadItem* item) override;
+  virtual void ManagerGoingDown(DownloadManager* manager) override;
 
   size_t NumDangerousDownloadsSeen() const;
 
@@ -181,7 +181,7 @@ class DownloadTestObserverTerminal : public DownloadTestObserver {
   virtual ~DownloadTestObserverTerminal();
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE;
+  virtual bool IsDownloadInFinalState(DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverTerminal);
 };
@@ -201,7 +201,7 @@ class DownloadTestObserverInProgress : public DownloadTestObserver {
   virtual ~DownloadTestObserverInProgress();
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE;
+  virtual bool IsDownloadInFinalState(DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInProgress);
 };
@@ -218,7 +218,7 @@ class DownloadTestObserverInterrupted : public DownloadTestObserver {
   virtual ~DownloadTestObserverInterrupted();
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE;
+  virtual bool IsDownloadInFinalState(DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInterrupted);
 };
@@ -242,11 +242,11 @@ class DownloadTestFlushObserver
   // DownloadsManager observer methods.
   virtual void OnDownloadCreated(
       DownloadManager* manager,
-      DownloadItem* item) OVERRIDE;
+      DownloadItem* item) override;
 
   // DownloadItem observer methods.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(DownloadItem* download) override;
+  virtual void OnDownloadDestroyed(DownloadItem* download) override;
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadTestFlushObserver>;

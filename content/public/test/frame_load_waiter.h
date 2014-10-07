@@ -20,7 +20,7 @@ class FrameLoadWaiter : public RenderFrameObserver {
   void Wait();
 
  private:
-  virtual void DidFinishLoad() OVERRIDE;
+  virtual void DidFinishLoad() override;
 
   base::RunLoop run_loop_;
 

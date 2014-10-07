@@ -30,26 +30,26 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   virtual ~Internal() {}
 
   // IPC::MessageFilter implementation:
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+  virtual void OnFilterAdded(IPC::Sender* sender) override {
     filter_->sender_ = sender;
     filter_->OnFilterAdded(sender);
   }
 
-  virtual void OnFilterRemoved() OVERRIDE {
+  virtual void OnFilterRemoved() override {
     filter_->OnFilterRemoved();
   }
 
-  virtual void OnChannelClosing() OVERRIDE {
+  virtual void OnChannelClosing() override {
     filter_->sender_ = NULL;
     filter_->OnChannelClosing();
   }
 
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  virtual void OnChannelConnected(int32 peer_pid) override {
     filter_->peer_pid_ = peer_pid;
     filter_->OnChannelConnected(peer_pid);
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     BrowserThread::ID thread = BrowserThread::IO;
     filter_->OverrideThreadForMessage(message, &thread);
 
@@ -79,7 +79,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   }
 
   virtual bool GetSupportedMessageClasses(
-      std::vector<uint32>* supported_message_classes) const OVERRIDE {
+      std::vector<uint32>* supported_message_classes) const override {
     supported_message_classes->assign(
         filter_->message_classes_to_filter().begin(),
         filter_->message_classes_to_filter().end());

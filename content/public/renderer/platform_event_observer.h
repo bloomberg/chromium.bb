@@ -71,7 +71,7 @@ class PlatformEventObserver : public PlatformEventObserverBase,
 
   // Called when a new IPC message is received. Must be used to listen to the
   // responses from the browser process if any expected.
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) override {
     return false;
   }
 

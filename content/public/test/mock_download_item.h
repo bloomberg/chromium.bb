@@ -24,8 +24,8 @@ class MockDownloadItem : public DownloadItem {
   // Management of observer lists is common in tests. So Add/RemoveObserver
   // methods are not mocks. In addition, any registered observers will receive a
   // OnDownloadDestroyed() notification when the mock is destroyed.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
 
   // Dispatches an OnDownloadOpened() notification to observers.
   void NotifyObserversDownloadOpened();

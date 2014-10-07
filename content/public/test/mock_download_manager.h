@@ -84,7 +84,7 @@ class MockDownloadManager : public DownloadManager {
   virtual void StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream,
-      const DownloadUrlParameters::OnStartedCallback& callback) OVERRIDE;
+      const DownloadUrlParameters::OnStartedCallback& callback) override;
 
   MOCK_METHOD2(MockStartDownload,
                void(DownloadCreateInfo*, ByteStreamReader*));
@@ -93,7 +93,7 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
-  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) OVERRIDE {
+  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override {
     DownloadUrlMock(params.get());
   }
   MOCK_METHOD1(AddObserver, void(Observer* observer));
@@ -117,7 +117,7 @@ class MockDownloadManager : public DownloadManager {
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
-      bool opened) OVERRIDE;
+      bool opened) override;
 
   MOCK_METHOD1(MockCreateDownloadItem,
                DownloadItem*(CreateDownloadItemAdapter adapter));

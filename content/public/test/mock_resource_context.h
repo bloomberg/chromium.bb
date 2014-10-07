@@ -26,8 +26,8 @@ class MockResourceContext : public ResourceContext {
   virtual ~MockResourceContext();
 
   // ResourceContext implementation:
-  virtual net::HostResolver* GetHostResolver() OVERRIDE;
-  virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+  virtual net::HostResolver* GetHostResolver() override;
+  virtual net::URLRequestContext* GetRequestContext() override;
 
  private:
   net::URLRequestContext* test_request_context_;

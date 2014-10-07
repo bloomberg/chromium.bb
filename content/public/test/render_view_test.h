@@ -132,9 +132,9 @@ class RenderViewTest : public testing::Test {
   virtual ContentRendererClient* CreateContentRendererClient();
 
   // testing::Test
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   base::MessageLoop msg_loop_;
   scoped_ptr<MockRenderProcess> mock_process_;

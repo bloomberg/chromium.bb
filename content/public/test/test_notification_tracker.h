@@ -71,7 +71,7 @@ class TestNotificationTracker : public NotificationObserver {
  protected:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
  private:
   NotificationRegistrar registrar_;
 
