@@ -45,7 +45,7 @@ class TestSigninClient : public SigninClient {
   virtual std::string GetSigninScopedDeviceId() override;
 
   // Does nothing.
-  virtual void ClearSigninScopedDeviceId() override;
+  virtual void OnSignedOut() override;
 
   // Returns the empty string.
   virtual std::string GetProductVersion() override;

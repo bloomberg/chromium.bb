@@ -11,6 +11,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
@@ -160,8 +162,12 @@ std::string ChromeSigninClient::GetSigninScopedDeviceId() {
   return signin_scoped_device_id;
 }
 
-void ChromeSigninClient::ClearSigninScopedDeviceId() {
+void ChromeSigninClient::OnSignedOut() {
   GetPrefs()->ClearPref(prefs::kGoogleServicesSigninScopedDeviceId);
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  cache.SetLocalAuthCredentialsOfProfileAtIndex(index, std::string());
 }
 
 net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {

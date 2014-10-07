@@ -45,7 +45,7 @@ std::string TestSigninClient::GetSigninScopedDeviceId() {
   return std::string();
 }
 
-void TestSigninClient::ClearSigninScopedDeviceId() {
+void TestSigninClient::OnSignedOut() {
 }
 
 net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
