@@ -19,20 +19,19 @@ compiled and used in a Native Client module. The library is included as part
 of Native Client SDK and is implemented in on top of Pepper API.
 
 Since Native Client modules cannot access the host machine's file system
-directly, nacl_io provides several alternative filesystem types which
-can be used by the application. For example, the Chrome browser supports the
-`HTML5 File System API
-<http://www.html5rocks.com/en/tutorials/file/filesystem/>`_ which provides
-access to a protected area of the local file system. This filesystem can
-be accessed by an HTML page using JavaScript commands, and also by a Native
-Client module using the Pepper :doc:`File IO API <file-io>`. With nacl_io
-a Native Client application can mount an HTML5 filesystem and access it via
-standard POSIX I/O function such as ``fopen``, ``fseek``, ``fread``,
-``fwrite``, and ``fclose``, or their low level UNIX counterparts ``open``,
-``lseek``, ``read``, ``write`` and ``close``.
+directly, nacl_io provides several alternative filesystem types which can be
+used by the application. For example, the Chrome browser supports the `HTML5
+File System API <http://www.html5rocks.com/en/tutorials/file/filesystem/>`_
+which provides access to a protected area of the local file system. This
+filesystem can be accessed by an HTML page using JavaScript commands, and also
+by a Native Client module using the Pepper :doc:`File IO API <file-io>`.
 
-As well as the HTML5 file system, nacl_io provides several other file system
-types which are described in the table below:
+With nacl_io a Native Client application can mount an HTML5 filesystem and
+access it via standard POSIX I/O function such as ``fopen``, ``fseek``,
+``fread``, ``fwrite``, and ``fclose``, or their low level UNIX counterparts
+``open``, ``lseek``, ``read``, ``write`` and ``close``. As well as the HTML5
+file system, nacl_io provides several other file system types which are
+described in the table below:
 
 =========== ==================================================================
 File System Description
@@ -64,6 +63,13 @@ to use nacl_io in a NaCl application:
 #. Make sure that file and socket API calls are all made from the background
    thread. This is because the main Pepper thread does not support the blocking
    behavior needed by the POSIX I/O operations.
+
+Logging in nacl_io
+==================
+
+Unlike most input/output for nacl_io, internal logging writes directly to the
+``stderr`` stream of the NaCl process. It deliberately bypasses the standard
+library functions implemented in nacl_io to avoid circular calls to itself.
 
 The nacl_io demo
 ================
@@ -212,7 +218,7 @@ below. Notice that it does not contain any PPAPI calls and looks like
     return 0;
   }
 
-Reference information
+Reference Information
 =====================
 
 The example discussed here is included in the SDK in the directory

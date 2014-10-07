@@ -86,9 +86,19 @@ calling fprintf() directly, or by using cover functions like these:
     fprintf(stderr,"logerr: %s\n",pMsg);
   }
 
-By default stdout and stderr will appear in Chrome's stdout and stderr stream
-but they can also be redirected as described below.
+.. _using-chromes-stdout-and-stderr:
 
+Using Chrome's stdout and stderr Streams
+----------------------------------------
+
+By default stdout and stderr will appear in Chrome's stdout and stderr stream
+but they can also be redirected to log files. (See the next section.) On Mac and
+Linux, launching Chrome from a terminal makes stderr and stdout appear in that
+terminal. If you launch Chrome this way, be sure it doesn't attach to an existing
+instance. One simple way to do this is to pass a new directory to chrome as your
+user data directory (``chrome --user-data-dir=<newdir>``). 
+
+.. _redirecting-output-to-log:
 
 Redirecting output to log files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,12 +189,11 @@ with a matching Chrome version N. If the version of the debug bitcode pexe
 does not match that of Chrome then the translation process may fail, and
 you will see an error message in the JavaScript console.
 
-Also, make sure you are passing the ``-g`` :ref:`compile option
-<compile_flags>` to ``pnacl-clang`` to enable generating debugging info.
-You might also want to omit ``-O2`` from the compile-time and link-time
-options, otherwise GDB not might be able to print variables' values when
-debugging (this is more of a problem with the PNaCl/LLVM toolchain than
-with GCC).
+Also, make sure you are passing the ``-g`` :ref:`compile option <compile_flags>`
+to ``pnacl-clang`` to enable generating debugging info.  You might also want to
+omit ``-O2`` from the compile-time and link-time options, otherwise GDB not
+might be able to print variables' values when debugging (this is more of a
+problem with the PNaCl/LLVM toolchain than with GCC).
 
 Once you have built a non-stable debug copy of the pexe, list the URL of
 that copy in your application's manifest file:
@@ -214,12 +223,13 @@ and run the ``debug_version.bc`` instead of ``release_version.pexe``.
 Once the debug version is loaded, you are ready to :ref:`run nacl-gdb
 <running_nacl_gdb>`
 
-Whether you publish the NMF file containing the debug URL to the release
-web server, is up to you. One reason to avoid publishing the debug URL
-is that it is only guaranteed to work for the Chrome version that matches
-the SDK version. Developers who may have left the ``--enable-nacl-debug``
-flag turned on may end up loading the debug copy of your application
-(which may or may not work, depending on their version of Chrome).
+Whether you publish the NMF file containing the debug URL to the
+release web server, is up to you. One reason to avoid publishing the
+debug URL is that it is only guaranteed to work for the Chrome version
+that matches the SDK version. Developers who may have left the
+``--enable-nacl-debug`` flag turned on may end up loading the debug
+copy of your application (which may or may not work, depending on
+their version of Chrome).
 
 
 Debugging PNaCl pexes (with older Pepper toolchains)
@@ -236,6 +246,7 @@ pepper 35 or later.)
   options.
 
 * Secondly, use ``pnacl-translate`` to convert your ``pexe`` to one or more
+
   ``nexe`` files.  For example:
 
   .. naclcode::
@@ -525,15 +536,13 @@ Linux; .bundle files on Mac) are loaded directly in either the Chrome renderer
 process or a separate plugin process, rather than in Native Client. Building a
 module as a trusted Pepper plugin allows you to use standard debuggers and
 development tools on your system, but when you're finished developing the
-plugin, you need to port it to Native Client (i.e., build the module with one
-of the toolchains in the NaCl SDK so that the module runs in Native Client).
-For details on this advanced development technique, see `Debugging a Trusted
-Plugin
+plugin, you need to port it to Native Client (i.e., build the module with one of
+the toolchains in the NaCl SDK so that the module runs in Native Client).  For
+details on this advanced development technique, see `Debugging a Trusted Plugin
 <http://www.chromium.org/nativeclient/how-tos/debugging-documentation/debugging-a-trusted-plugin>`_.
 Note that starting with the ``pepper_22`` bundle, the NaCl SDK for Windows
 includes pre-built libraries and library source code, making it much easier to
 build a module into a .DLL.
-
 
 .. |menu-icon| image:: /images/menu-icon.png
 .. |puzzle| image:: /images/puzzle.png

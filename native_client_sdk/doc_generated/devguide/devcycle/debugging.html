@@ -16,23 +16,24 @@ and measure your application&#8217;s performance.</p>
 <li><p class="first"><a class="reference internal" href="#basic-debugging" id="id5">Basic debugging</a></p>
 <ul class="small-gap">
 <li><a class="reference internal" href="#writing-messages-to-the-javascript-console" id="id6">Writing messages to the JavaScript console</a></li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-printf" id="id7">Debugging with printf</a></p>
+<li><a class="reference internal" href="#debugging-with-printf" id="id7">Debugging with printf</a></li>
+<li><p class="first"><a class="reference internal" href="#using-chrome-s-stdout-and-stderr-streams" id="id8">Using Chrome&#8217;s stdout and stderr Streams</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#redirecting-output-to-log-files" id="id8">Redirecting output to log files</a></li>
+<li><a class="reference internal" href="#redirecting-output-to-log-files" id="id9">Redirecting output to log files</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id9">Logging calls to Pepper interfaces</a></li>
-<li><a class="reference internal" href="#debugging-with-visual-studio" id="id10">Debugging with Visual Studio</a></li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id11">Debugging with nacl-gdb</a></p>
+<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id10">Logging calls to Pepper interfaces</a></li>
+<li><a class="reference internal" href="#debugging-with-visual-studio" id="id11">Debugging with Visual Studio</a></li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id12">Debugging with nacl-gdb</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#debugging-pnacl-pexes-pepper-35-or-later" id="id12">Debugging PNaCl pexes (Pepper 35 or later)</a></li>
-<li><a class="reference internal" href="#debugging-pnacl-pexes-with-older-pepper-toolchains" id="id13">Debugging PNaCl pexes (with older Pepper toolchains)</a></li>
-<li><a class="reference internal" href="#running-nacl-gdb" id="id14">Running nacl-gdb</a></li>
+<li><a class="reference internal" href="#debugging-pnacl-pexes-pepper-35-or-later" id="id13">Debugging PNaCl pexes (Pepper 35 or later)</a></li>
+<li><a class="reference internal" href="#debugging-pnacl-pexes-with-older-pepper-toolchains" id="id14">Debugging PNaCl pexes (with older Pepper toolchains)</a></li>
+<li><a class="reference internal" href="#running-nacl-gdb" id="id15">Running nacl-gdb</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#debugging-with-other-tools" id="id15">Debugging with other tools</a></li>
+<li><a class="reference internal" href="#debugging-with-other-tools" id="id16">Debugging with other tools</a></li>
 </ul>
 
 </div><h2 id="diagnostic-information">Diagnostic information</h2>
@@ -89,9 +90,14 @@ void errormsg(const char* pMsg){
   fprintf(stderr,&quot;logerr: %s\n&quot;,pMsg);
 }
 </pre>
+<h3 id="using-chrome-s-stdout-and-stderr-streams"><span id="using-chromes-stdout-and-stderr"></span>Using Chrome&#8217;s stdout and stderr Streams</h3>
 <p>By default stdout and stderr will appear in Chrome&#8217;s stdout and stderr stream
-but they can also be redirected as described below.</p>
-<h4 id="redirecting-output-to-log-files">Redirecting output to log files</h4>
+but they can also be redirected to log files. (See the next section.) On Mac and
+Linux, launching Chrome from a terminal makes stderr and stdout appear in that
+terminal. If you launch Chrome this way, be sure it doesn&#8217;t attach to an existing
+instance. One simple way to do this is to pass a new directory to chrome as your
+user data directory (<code>chrome --user-data-dir=&lt;newdir&gt;</code>).</p>
+<h4 id="redirecting-output-to-log-files"><span id="redirecting-output-to-log"></span>Redirecting output to log files</h4>
 <p>You can redirect stdout and stderr to output files by setting these environment
 variables:</p>
 <ul class="small-gap">
@@ -154,11 +160,11 @@ application created by a Pepper N SDK is only guaranteed to run
 with a matching Chrome version N. If the version of the debug bitcode pexe
 does not match that of Chrome then the translation process may fail, and
 you will see an error message in the JavaScript console.</p>
-<p>Also, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a> to <code>pnacl-clang</code> to enable generating debugging info.
-You might also want to omit <code>-O2</code> from the compile-time and link-time
-options, otherwise GDB not might be able to print variables&#8217; values when
-debugging (this is more of a problem with the PNaCl/LLVM toolchain than
-with GCC).</p>
+<p>Also, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a>
+to <code>pnacl-clang</code> to enable generating debugging info.  You might also want to
+omit <code>-O2</code> from the compile-time and link-time options, otherwise GDB not
+might be able to print variables&#8217; values when debugging (this is more of a
+problem with the PNaCl/LLVM toolchain than with GCC).</p>
 <p>Once you have built a non-stable debug copy of the pexe, list the URL of
 that copy in your application&#8217;s manifest file:</p>
 <pre class="prettyprint">
@@ -182,12 +188,13 @@ your local web server serves files from.</p>
 <p>When you run Chrome with <code>--enable-nacl-debug</code>, Chrome will translate
 and run the <code>debug_version.bc</code> instead of <code>release_version.pexe</code>.
 Once the debug version is loaded, you are ready to <a class="reference internal" href="#running-nacl-gdb"><em>run nacl-gdb</em></a></p>
-<p>Whether you publish the NMF file containing the debug URL to the release
-web server, is up to you. One reason to avoid publishing the debug URL
-is that it is only guaranteed to work for the Chrome version that matches
-the SDK version. Developers who may have left the <code>--enable-nacl-debug</code>
-flag turned on may end up loading the debug copy of your application
-(which may or may not work, depending on their version of Chrome).</p>
+<p>Whether you publish the NMF file containing the debug URL to the
+release web server, is up to you. One reason to avoid publishing the
+debug URL is that it is only guaranteed to work for the Chrome version
+that matches the SDK version. Developers who may have left the
+<code>--enable-nacl-debug</code> flag turned on may end up loading the debug
+copy of your application (which may or may not work, depending on
+their version of Chrome).</p>
 <h4 id="debugging-pnacl-pexes-with-older-pepper-toolchains">Debugging PNaCl pexes (with older Pepper toolchains)</h4>
 <p>If you want to use GDB to debug a program that is compiled with the PNaCl
 toolchain, you must convert the <code>pexe</code> file to a <code>nexe</code>.  (You can skip
@@ -197,8 +204,8 @@ pepper 35 or later.)</p>
 <li>Firstly, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a> to <code>pnacl-clang</code> to enable generating debugging info.
 You might also want to omit <code>-O2</code> from the compile-time and link-time
 options.</li>
-<li><p class="first">Secondly, use <code>pnacl-translate</code> to convert your <code>pexe</code> to one or more
-<code>nexe</code> files.  For example:</p>
+<li><p class="first">Secondly, use <code>pnacl-translate</code> to convert your <code>pexe</code> to one or more</p>
+<p><code>nexe</code> files.  For example:</p>
 <pre>
 nacl_sdk/pepper_&lt;version&gt;/toolchain/win_pnacl/bin/pnacl-translate \
   --allow-llvm-bitcode-input hello_world.pexe -arch x86-32 \
@@ -466,10 +473,9 @@ Linux; .bundle files on Mac) are loaded directly in either the Chrome renderer
 process or a separate plugin process, rather than in Native Client. Building a
 module as a trusted Pepper plugin allows you to use standard debuggers and
 development tools on your system, but when you&#8217;re finished developing the
-plugin, you need to port it to Native Client (i.e., build the module with one
-of the toolchains in the NaCl SDK so that the module runs in Native Client).
-For details on this advanced development technique, see <a class="reference external" href="http://www.chromium.org/nativeclient/how-tos/debugging-documentation/debugging-a-trusted-plugin">Debugging a Trusted
-Plugin</a>.
+plugin, you need to port it to Native Client (i.e., build the module with one of
+the toolchains in the NaCl SDK so that the module runs in Native Client).  For
+details on this advanced development technique, see <a class="reference external" href="http://www.chromium.org/nativeclient/how-tos/debugging-documentation/debugging-a-trusted-plugin">Debugging a Trusted Plugin</a>.
 Note that starting with the <code>pepper_22</code> bundle, the NaCl SDK for Windows
 includes pre-built libraries and library source code, making it much easier to
 build a module into a .DLL.</p>

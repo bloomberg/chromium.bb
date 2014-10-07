@@ -6,13 +6,14 @@
 <ul class="small-gap">
 <li><a class="reference internal" href="#introduction" id="id1">Introduction</a></li>
 <li><a class="reference internal" href="#using-nacl-io" id="id2">Using nacl_io</a></li>
-<li><p class="first"><a class="reference internal" href="#the-nacl-io-demo" id="id3">The nacl_io demo</a></p>
+<li><a class="reference internal" href="#logging-in-nacl-io" id="id3">Logging in nacl_io</a></li>
+<li><p class="first"><a class="reference internal" href="#the-nacl-io-demo" id="id4">The nacl_io demo</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#building-and-running-the-demo" id="id4">Building and running the demo</a></li>
-<li><a class="reference internal" href="#a-look-at-the-code" id="id5">A look at the code</a></li>
+<li><a class="reference internal" href="#building-and-running-the-demo" id="id5">Building and running the demo</a></li>
+<li><a class="reference internal" href="#a-look-at-the-code" id="id6">A look at the code</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reference-information" id="id6">Reference information</a></li>
+<li><a class="reference internal" href="#reference-information" id="id7">Reference Information</a></li>
 </ul>
 
 </div><h2 id="introduction">Introduction</h2>
@@ -22,18 +23,18 @@ Its primary function is to allow code that uses these standard APIs to be
 compiled and used in a Native Client module. The library is included as part
 of Native Client SDK and is implemented in on top of Pepper API.</p>
 <p>Since Native Client modules cannot access the host machine&#8217;s file system
-directly, nacl_io provides several alternative filesystem types which
-can be used by the application. For example, the Chrome browser supports the
-<a class="reference external" href="http://www.html5rocks.com/en/tutorials/file/filesystem/">HTML5 File System API</a> which provides
-access to a protected area of the local file system. This filesystem can
-be accessed by an HTML page using JavaScript commands, and also by a Native
-Client module using the Pepper <a class="reference internal" href="/native-client/devguide/coding/file-io.html"><em>File IO API</em></a>. With nacl_io
-a Native Client application can mount an HTML5 filesystem and access it via
-standard POSIX I/O function such as <code>fopen</code>, <code>fseek</code>, <code>fread</code>,
-<code>fwrite</code>, and <code>fclose</code>, or their low level UNIX counterparts <code>open</code>,
-<code>lseek</code>, <code>read</code>, <code>write</code> and <code>close</code>.</p>
-<p>As well as the HTML5 file system, nacl_io provides several other file system
-types which are described in the table below:</p>
+directly, nacl_io provides several alternative filesystem types which can be
+used by the application. For example, the Chrome browser supports the <a class="reference external" href="http://www.html5rocks.com/en/tutorials/file/filesystem/">HTML5
+File System API</a>
+which provides access to a protected area of the local file system. This
+filesystem can be accessed by an HTML page using JavaScript commands, and also
+by a Native Client module using the Pepper <a class="reference internal" href="/native-client/devguide/coding/file-io.html"><em>File IO API</em></a>.</p>
+<p>With nacl_io a Native Client application can mount an HTML5 filesystem and
+access it via standard POSIX I/O function such as <code>fopen</code>, <code>fseek</code>,
+<code>fread</code>, <code>fwrite</code>, and <code>fclose</code>, or their low level UNIX counterparts
+<code>open</code>, <code>lseek</code>, <code>read</code>, <code>write</code> and <code>close</code>. As well as the HTML5
+file system, nacl_io provides several other file system types which are
+described in the table below:</p>
 <table border="1" class="docutils">
 <colgroup>
 </colgroup>
@@ -77,6 +78,10 @@ options are explained in the <a class="reference internal" href="/native-client/
 thread. This is because the main Pepper thread does not support the blocking
 behavior needed by the POSIX I/O operations.</li>
 </ol>
+<h2 id="logging-in-nacl-io">Logging in nacl_io</h2>
+<p>Unlike most input/output for nacl_io, internal logging writes directly to the
+<code>stderr</code> stream of the NaCl process. It deliberately bypasses the standard
+library functions implemented in nacl_io to avoid circular calls to itself.</p>
 <h2 id="the-nacl-io-demo">The nacl_io demo</h2>
 <h3 id="building-and-running-the-demo">Building and running the demo</h3>
 <p>The demo application launches a Native Client module that mounts three file
@@ -203,7 +208,7 @@ int HandleFwrite(int num_params, char** params, char** output) {
   return 0;
 }
 </pre>
-<h2 id="reference-information">Reference information</h2>
+<h2 id="reference-information">Reference Information</h2>
 <p>The example discussed here is included in the SDK in the directory
 <code>examples/demo/nacl_io_demo</code>.</p>
 <p>The nacl_io library is included in the SDK toolchain and is not a part of the
