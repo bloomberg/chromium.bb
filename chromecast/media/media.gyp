@@ -66,6 +66,46 @@
       ],
     },
     {
+      'target_name': 'cma_backend',
+      'type': '<(component)',
+      'dependencies': [
+        'cma_base',
+        'media_base',
+        '../../base/base.gyp:base',
+        '../../media/media.gyp:media',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        'cma/backend/audio_pipeline_device.cc',
+        'cma/backend/audio_pipeline_device.h',
+        'cma/backend/media_clock_device.cc',
+        'cma/backend/media_clock_device.h',
+        'cma/backend/media_component_device.cc',
+        'cma/backend/media_component_device.h',
+        'cma/backend/media_pipeline_device.cc',
+        'cma/backend/media_pipeline_device.h',
+        'cma/backend/media_pipeline_device_fake.cc',
+        'cma/backend/media_pipeline_device_fake.h',
+        'cma/backend/media_pipeline_device_params.cc',
+        'cma/backend/media_pipeline_device_params.h',
+        'cma/backend/video_pipeline_device.cc',
+        'cma/backend/video_pipeline_device.h',
+      ],
+      'conditions': [
+        ['chromecast_branding=="Chrome"', {
+          'dependencies': [
+            '<(cast_internal_gyp):cma_backend_internal',
+          ],
+        }, {
+          'sources': [
+            'cma/backend/media_pipeline_device_fake_factory.cc',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'cma_ipc',
       'type': '<(component)',
       'dependencies': [
@@ -120,6 +160,7 @@
       'target_name': 'cast_media',
       'type': 'none',
       'dependencies': [
+        'cma_backend',
         'cma_base',
         'cma_filters',
         'cma_ipc',
@@ -140,6 +181,7 @@
         '../../testing/gtest.gyp:gtest_main',
       ],
       'sources': [
+        'cma/backend/audio_video_pipeline_device_unittest.cc',
         'cma/base/balanced_media_task_runner_unittest.cc',
         'cma/base/buffering_controller_unittest.cc',
         'cma/base/buffering_frame_provider_unittest.cc',
@@ -151,6 +193,8 @@
         'cma/test/frame_generator_for_test.h',
         'cma/test/frame_segmenter_for_test.cc',
         'cma/test/frame_segmenter_for_test.h',
+        'cma/test/media_component_device_feeder_for_test.cc',
+        'cma/test/media_component_device_feeder_for_test.h',
         'cma/test/mock_frame_consumer.cc',
         'cma/test/mock_frame_consumer.h',
         'cma/test/mock_frame_provider.cc',

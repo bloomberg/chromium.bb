@@ -17,7 +17,7 @@ class DecryptContextClearKey : public DecryptContext {
   explicit DecryptContextClearKey(crypto::SymmetricKey* key);
 
   // DecryptContext implementation.
-  virtual crypto::SymmetricKey* GetKey() const OVERRIDE;
+  virtual crypto::SymmetricKey* GetKey() const override;
 
  private:
   virtual ~DecryptContextClearKey();
