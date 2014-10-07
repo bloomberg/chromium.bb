@@ -218,11 +218,11 @@ private:
     void appendCSSStyleSheet(CSSStyleSheet*);
 
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
-    void matchUARules(ElementRuleCollector&, RuleSet*);
+    void matchRuleSet(ElementRuleCollector&, RuleSet*);
+    void matchUARules(ElementRuleCollector&);
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
     void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
-    void matchUARules(ElementRuleCollector&);
     void collectFeatures();
     void resetRuleFeatures();
 

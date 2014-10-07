@@ -438,23 +438,23 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
 
     CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
     RuleSet* userAgentStyleSheet = m_printMediaType ? defaultStyleSheets.defaultPrintStyle() : defaultStyleSheets.defaultStyle();
-    matchUARules(collector, userAgentStyleSheet);
+    matchRuleSet(collector, userAgentStyleSheet);
 
     // In quirks mode, we match rules from the quirks user agent sheet.
     if (document().inQuirksMode())
-        matchUARules(collector, defaultStyleSheets.defaultQuirksStyle());
+        matchRuleSet(collector, defaultStyleSheets.defaultQuirksStyle());
 
     // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
     if (document().isViewSource())
-        matchUARules(collector, defaultStyleSheets.defaultViewSourceStyle());
+        matchRuleSet(collector, defaultStyleSheets.defaultViewSourceStyle());
 
     if (document().isTransitionDocument())
-        matchUARules(collector, defaultStyleSheets.defaultTransitionStyle());
+        matchRuleSet(collector, defaultStyleSheets.defaultTransitionStyle());
 
     collector.setMatchingUARules(false);
 }
 
-void StyleResolver::matchUARules(ElementRuleCollector& collector, RuleSet* rules)
+void StyleResolver::matchRuleSet(ElementRuleCollector& collector, RuleSet* rules)
 {
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastUARule = collector.matchedResult().matchedProperties.size() - 1;
