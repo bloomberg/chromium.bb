@@ -87,9 +87,8 @@ ImageLoaderClient.recordPercentage = function(name, value) {
  */
 ImageLoaderClient.sendMessage_ = function(request, opt_callback) {
   opt_callback = opt_callback || function(response) {};
-  var sendMessage = chrome.runtime ? chrome.runtime.sendMessage :
-                                     chrome.extension.sendMessage;
-  sendMessage(ImageLoaderClient.EXTENSION_ID, request, opt_callback);
+  chrome.runtime.sendMessage(
+      ImageLoaderClient.EXTENSION_ID, request, opt_callback);
 };
 
 /**

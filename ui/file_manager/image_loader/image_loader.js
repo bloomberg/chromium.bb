@@ -34,7 +34,9 @@ function ImageLoader() {
       });
       return requestPromise;
     });
-    initPromises.push(new Promise(this.cache_.initialize.bind(this.cache_)));
+    initPromises.push(new Promise(function(resolve, reject) {
+      this.cache_.initialize(resolve);
+    }.bind(this)));
 
     // After all initialization promises are done, start the scheduler.
     Promise.all(initPromises).then(this.scheduler_.start.bind(this.scheduler_));
@@ -50,7 +52,7 @@ function ImageLoader() {
   }.bind(this));
 
   // Listen for incoming requests.
-  chrome.extension.onMessageExternal.addListener(
+  chrome.runtime.onMessageExternal.addListener(
       function(request, sender, sendResponse) {
         if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1) {
           // Sending a response may fail if the receiver already went offline.
@@ -63,7 +65,9 @@ function ImageLoader() {
               // Ignore the error.
             }
           };
-          return this.onMessage_(sender.id, request, failSafeSendResponse);
+          return this.onMessage_(sender.id,
+                                 /** @type {LoadImageRequest} */ (request),
+                                 failSafeSendResponse);
         }
       }.bind(this));
 }
@@ -84,7 +88,7 @@ ImageLoader.ALLOWED_CLIENTS = [
  * an image task.
  *
  * @param {string} senderId Sender's extension id.
- * @param {Object} request Request message as a hash array.
+ * @param {LoadImageRequest} request Request message as a hash array.
  * @param {function(Object)} callback Callback to be called to return response.
  * @return {boolean} True if the message channel should stay alive until the
  *     callback is called.

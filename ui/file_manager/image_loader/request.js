@@ -5,12 +5,23 @@
 'use strict';
 
 /**
+ * @typedef {{
+ *   cache: (boolean|undefined),
+ *   priority: (number|undefined),
+ *   taskId: number,
+ *   timestamp: (number|undefined),
+ *   url: string
+ * }}
+ */
+var LoadImageRequest;
+
+/**
  * Creates and starts downloading and then resizing of the image. Finally,
  * returns the image using the callback.
  *
  * @param {string} id Request ID.
  * @param {Cache} cache Cache object.
- * @param {Object} request Request message as a hash array.
+ * @param {LoadImageRequest} request Request message as a hash array.
  * @param {function(Object)} callback Callback used to send the response.
  * @constructor
  */
@@ -28,7 +39,7 @@ function Request(id, cache, request, callback) {
   this.cache_ = cache;
 
   /**
-   * @type {Object}
+   * @type {LoadImageRequest}
    * @private
    */
   this.request_ = request;
@@ -243,15 +254,17 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
   this.aborted_ = false;
 
   // Do not call any callbacks when aborting.
-  var onMaybeSuccess = function(contentType, response) {
-    if (!this.aborted_)
-      onSuccess(contentType, response);
-  }.bind(this);
+  var onMaybeSuccess = /** @type {function(string, Blob)} */ (
+      function(contentType, response) {
+        if (!this.aborted_)
+          onSuccess(contentType, response);
+      }.bind(this));
 
-  var onMaybeFailure = function(opt_code) {
-    if (!this.aborted_)
-      onFailure();
-  }.bind(this);
+  var onMaybeFailure = /** @type {function(number=)} */ (
+      function(opt_code) {
+        if (!this.aborted_)
+          onFailure();
+      }.bind(this));
 
   // Fetches the access token and makes an authorized call. If refresh is true,
   // then forces refreshing the access token.
@@ -284,7 +297,7 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
         null,
         noCacheUrl,
         onMaybeSuccess,
-        onMaybeSuccess);
+        onMaybeFailure);
     return;
   }
 
