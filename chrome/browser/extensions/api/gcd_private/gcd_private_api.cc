@@ -201,10 +201,12 @@ class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
   // local_discovery::PrivetV3Session::Request implementation.
   virtual std::string GetName() override;
   virtual const base::DictionaryValue& GetInput() override;
-  virtual void OnError(
-      local_discovery::PrivetURLFetcher::ErrorType error) override;
+  virtual void OnError() override;
   virtual void OnParsedJson(const base::DictionaryValue& value,
                             bool has_error) override;
+
+  void RunCallback(gcd_private::Status status,
+                   const base::DictionaryValue& value);
 
  private:
   std::string api_;
@@ -507,18 +509,23 @@ const base::DictionaryValue& GcdPrivateRequest::GetInput() {
   return *input_;
 }
 
-void GcdPrivateRequest::OnError(
-    local_discovery::PrivetURLFetcher::ErrorType error) {
-  callback_.Run(gcd_private::STATUS_CONNECTIONERROR, base::DictionaryValue());
-
+void GcdPrivateRequest::OnError() {
+  RunCallback(gcd_private::STATUS_CONNECTIONERROR, base::DictionaryValue());
   session_holder_->DeleteRequest(this);
 }
 
 void GcdPrivateRequest::OnParsedJson(const base::DictionaryValue& value,
                                      bool has_error) {
-  callback_.Run(gcd_private::STATUS_SUCCESS, value);
-
+  RunCallback(gcd_private::STATUS_SUCCESS, value);
   session_holder_->DeleteRequest(this);
+}
+
+void GcdPrivateRequest::RunCallback(gcd_private::Status status,
+                                    const base::DictionaryValue& value) {
+  if (callback_.is_null())
+    return;
+  callback_.Run(status, value);
+  callback_.Reset();
 }
 
 GcdPrivateSessionHolder::GcdPrivateSessionHolder(
@@ -581,16 +588,25 @@ void GcdPrivateSessionHolder::DeleteRequest(GcdPrivateRequest* request) {
 void GcdPrivateSessionHolder::OnSetupConfirmationNeeded(
     const std::string& confirmation_code,
     gcd_private::ConfirmationType confirmation_type) {
+  if (confirm_callback_.is_null())
+    return;
   confirm_callback_.Run(
       gcd_private::STATUS_SUCCESS, confirmation_code, confirmation_type);
-
   confirm_callback_.Reset();
 }
 
 void GcdPrivateSessionHolder::OnSessionStatus(gcd_private::Status status) {
-  session_established_callback_.Run(status);
-
-  session_established_callback_.Reset();
+  if (!session_established_callback_.is_null()) {
+    session_established_callback_.Run(status);
+    session_established_callback_.Reset();
+  }
+  // Fail all requests created before session established.
+  RequestVector tmp_requests;
+  tmp_requests.swap(requests_);
+  for (GcdPrivateRequest* request : tmp_requests) {
+    request->RunCallback(gcd_private::STATUS_SESSIONERROR,
+                         base::DictionaryValue());
+  }
 }
 
 GcdPrivateAPI::GcdPrivateAPI(content::BrowserContext* context)

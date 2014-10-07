@@ -24,7 +24,7 @@ class SetupRequest : public PrivetV3Session::Request {
   virtual std::string GetName() override { return "/privet/v3/setup/start"; }
   virtual const base::DictionaryValue& GetInput() override;
 
-  virtual void OnError(PrivetURLFetcher::ErrorType error) override;
+  virtual void OnError() override;
   virtual void OnParsedJson(const base::DictionaryValue& value,
                             bool has_error) override;
 
@@ -49,7 +49,7 @@ const base::DictionaryValue& SetupRequest::GetInput() {
   return input_;
 }
 
-void SetupRequest::OnError(PrivetURLFetcher::ErrorType error) {
+void SetupRequest::OnError() {
   setup_flow_->OnSetupError();
 }
 

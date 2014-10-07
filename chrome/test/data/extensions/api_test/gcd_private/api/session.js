@@ -10,6 +10,9 @@ onload = function() {
         chrome.test.assertEq("1234", confirmationInfo.code);
         chrome.test.assertEq("displayCode", confirmationInfo.type);
 
+        chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
+                                      onMessageSentFail);
+
         chrome.gcdPrivate.confirmCode(sessionId,
                                       "1234",
                                       onSessionEstablished.bind(null,
@@ -21,6 +24,10 @@ onload = function() {
 
         chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
                                       onMessageSent);
+      }
+
+      function onMessageSentFail(status, output) {
+        chrome.test.assertEq("sessionError", status);
       }
 
       function onMessageSent(status, output) {

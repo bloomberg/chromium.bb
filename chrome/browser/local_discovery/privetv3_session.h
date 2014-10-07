@@ -48,7 +48,7 @@ class PrivetV3Session {
 
     virtual std::string GetName() = 0;
     virtual const base::DictionaryValue& GetInput() = 0;
-    virtual void OnError(PrivetURLFetcher::ErrorType error) = 0;
+    virtual void OnError() = 0;
     virtual void OnParsedJson(const base::DictionaryValue& value,
                               bool has_error) = 0;
 

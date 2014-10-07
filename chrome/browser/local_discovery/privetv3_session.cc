@@ -69,7 +69,7 @@ void PrivetV3Session::FetcherDelegate::OnNeedPrivetToken(
 void PrivetV3Session::FetcherDelegate::OnError(
     PrivetURLFetcher* fetcher,
     PrivetURLFetcher::ErrorType error) {
-  request_->OnError(error);
+  request_->OnError();
 }
 
 void PrivetV3Session::FetcherDelegate::OnParsedJson(
@@ -118,7 +118,11 @@ void PrivetV3Session::ConfirmCode(const std::string& code) {
 }
 
 void PrivetV3Session::StartRequest(Request* request) {
-  CHECK(code_confirmed_);
+  if (!code_confirmed_) {
+    delegate_->OnSessionStatus(
+        extensions::api::gcd_private::STATUS_SESSIONERROR);
+    return;
+  }
 
   request->fetcher_delegate_.reset(
       new FetcherDelegate(weak_ptr_factory_.GetWeakPtr(), request));
