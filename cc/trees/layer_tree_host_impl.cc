@@ -861,13 +861,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     draw_result = DRAW_SUCCESS;
 
 #if DCHECK_IS_ON
-  for (size_t i = 0; i < frame->render_passes.size(); ++i) {
-    for (QuadList::Iterator iter = frame->render_passes[i]->quad_list.begin();
-         iter != frame->render_passes[i]->quad_list.end();
-         ++iter)
-      DCHECK(iter->shared_quad_state);
-    DCHECK(frame->render_passes_by_id.find(frame->render_passes[i]->id)
-           != frame->render_passes_by_id.end());
+  for (auto* render_pass : frame->render_passes) {
+    for (auto& quad : render_pass->quad_list)
+      DCHECK(quad.shared_quad_state);
+    DCHECK(frame->render_passes_by_id.find(render_pass->id) !=
+           frame->render_passes_by_id.end());
   }
 #endif
   DCHECK(frame->render_passes.back()->output_rect.origin().IsOrigin());

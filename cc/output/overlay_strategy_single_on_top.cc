@@ -28,8 +28,8 @@ bool OverlayStrategySingleOnTop::Attempt(
   DCHECK(root_render_pass);
 
   QuadList& quad_list = root_render_pass->quad_list;
-  QuadList::Iterator candidate_iterator = quad_list.end();
-  for (QuadList::Iterator it = quad_list.begin(); it != quad_list.end(); ++it) {
+  auto candidate_iterator = quad_list.end();
+  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     const DrawQuad* draw_quad = &*it;
     if (draw_quad->material == DrawQuad::TEXTURE_CONTENT) {
       const TextureDrawQuad& quad = *TextureDrawQuad::MaterialCast(draw_quad);
@@ -40,8 +40,7 @@ bool OverlayStrategySingleOnTop::Attempt(
       bool intersects = false;
       gfx::RectF rect = draw_quad->rect;
       draw_quad->quadTransform().TransformRect(&rect);
-      for (QuadList::Iterator overlap_iter = quad_list.begin();
-           overlap_iter != it;
+      for (auto overlap_iter = quad_list.cbegin(); overlap_iter != it;
            ++overlap_iter) {
         gfx::RectF overlap_rect = overlap_iter->rect;
         overlap_iter->quadTransform().TransformRect(&overlap_rect);

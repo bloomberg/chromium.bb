@@ -124,16 +124,11 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
                  &invalid_frame,
                  provider_->GetChildToParentMap(child_id),
                  &referenced_resources);
-  for (RenderPassList::iterator it = render_pass_list->begin();
-       it != render_pass_list->end();
-       ++it) {
-    QuadList& quad_list = (*it)->quad_list;
-    for (QuadList::Iterator quad_it = quad_list.begin();
-         quad_it != quad_list.end();
-         ++quad_it) {
-      quad_it->IterateResources(remap);
-    }
+  for (auto* render_pass : *render_pass_list) {
+    for (auto& quad : render_pass->quad_list)
+      quad.IterateResources(remap);
   }
+
   if (!invalid_frame)
     provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
 

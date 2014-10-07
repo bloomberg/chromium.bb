@@ -279,7 +279,7 @@ void ListContainer<BaseElementType>::EraseAndInvalidateAllPointers(
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstReverseIterator
-ListContainer<BaseElementType>::rbegin() const {
+ListContainer<BaseElementType>::crbegin() const {
   if (data_->IsEmpty())
     return ConstReverseIterator(data_.get(), 0, NULL, 0);
 
@@ -290,8 +290,20 @@ ListContainer<BaseElementType>::rbegin() const {
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstReverseIterator
-ListContainer<BaseElementType>::rend() const {
+ListContainer<BaseElementType>::crend() const {
   return ConstReverseIterator(data_.get(), 0, NULL, size());
+}
+
+template <typename BaseElementType>
+typename ListContainer<BaseElementType>::ConstReverseIterator
+ListContainer<BaseElementType>::rbegin() const {
+  return crbegin();
+}
+
+template <typename BaseElementType>
+typename ListContainer<BaseElementType>::ConstReverseIterator
+ListContainer<BaseElementType>::rend() const {
+  return crend();
 }
 
 template <typename BaseElementType>
@@ -313,7 +325,7 @@ ListContainer<BaseElementType>::rend() {
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstIterator
-ListContainer<BaseElementType>::begin() const {
+ListContainer<BaseElementType>::cbegin() const {
   if (data_->IsEmpty())
     return ConstIterator(data_.get(), 0, NULL, 0);
 
@@ -322,12 +334,24 @@ ListContainer<BaseElementType>::begin() const {
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstIterator
-ListContainer<BaseElementType>::end() const {
+ListContainer<BaseElementType>::cend() const {
   if (data_->IsEmpty())
     return ConstIterator(data_.get(), 0, NULL, size());
 
   size_t last_id = data_->list_count() - 1;
   return ConstIterator(data_.get(), last_id, NULL, size());
+}
+
+template <typename BaseElementType>
+typename ListContainer<BaseElementType>::ConstIterator
+ListContainer<BaseElementType>::begin() const {
+  return cbegin();
+}
+
+template <typename BaseElementType>
+typename ListContainer<BaseElementType>::ConstIterator
+ListContainer<BaseElementType>::end() const {
+  return cend();
 }
 
 template <typename BaseElementType>

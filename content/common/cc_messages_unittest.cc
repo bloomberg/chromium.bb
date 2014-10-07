@@ -480,9 +480,9 @@ TEST_F(CCMessagesTest, AllQuads) {
        ++cmp_iterator, ++in_iterator) {
     Compare(&*cmp_iterator, &*in_iterator);
   }
-  for (cc::QuadList::Iterator in_iter = pass_in->quad_list.begin(),
-                              cmp_iter = pass_cmp->quad_list.begin();
-       in_iter != pass_in->quad_list.end();
+  for (auto in_iter = pass_in->quad_list.cbegin(),
+            cmp_iter = pass_cmp->quad_list.cbegin();
+       in_iter != pass_in->quad_list.cend();
        ++in_iter, ++cmp_iter)
     Compare(&*cmp_iter, &*in_iter);
 
@@ -519,9 +519,9 @@ TEST_F(CCMessagesTest, AllQuads) {
        ++cmp_iterator, ++out_iterator) {
     Compare(&*cmp_iterator, &*out_iterator);
   }
-  for (cc::QuadList::Iterator out_iter = pass_out->quad_list.begin(),
-                              cmp_iter = pass_cmp->quad_list.begin();
-       out_iter != pass_out->quad_list.end();
+  for (auto out_iter = pass_out->quad_list.cbegin(),
+            cmp_iter = pass_cmp->quad_list.cbegin();
+       out_iter != pass_out->quad_list.cend();
        ++out_iter, ++cmp_iter)
     Compare(&*cmp_iter, &*out_iter);
 

@@ -360,8 +360,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
   const cc::SharedQuadState* last_sqs = nullptr;
   cc::SharedQuadStateList::ConstIterator next_sqs_iter =
       input.shared_quad_state_list.begin();
-  for (cc::QuadList::ConstIterator iter = input.quad_list.begin();
-       iter != input.quad_list.end();
+  for (auto iter = input.quad_list.cbegin(); iter != input.quad_list.cend();
        ++iter) {
     const cc::DrawQuad& quad = *iter;
     quads[iter.index()] = Quad::From(quad);

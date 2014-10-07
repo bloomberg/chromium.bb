@@ -70,8 +70,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   EXPECT_EQ(expected_quad_size, quads.size());
 
   Region remaining(visible_content_rect);
-  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
-       ++iter) {
+  for (auto iter = quads.cbegin(); iter != quads.cend(); ++iter) {
     gfx::Rect quad_rect = iter->rect;
 
     EXPECT_TRUE(visible_content_rect.Contains(quad_rect)) << iter.index();
@@ -90,9 +89,8 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   // Verify UV rects
   gfx::Rect bitmap_rect(bitmap_size);
   Region tex_remaining(bitmap_rect);
-  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
-       ++iter) {
-    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(&*iter);
+  for (const auto& quad : quads) {
+    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(&quad);
     gfx::RectF tex_rect =
         gfx::BoundingRect(tex_quad->uv_top_left, tex_quad->uv_bottom_right);
     tex_rect.Scale(bitmap_size.width(), bitmap_size.height());

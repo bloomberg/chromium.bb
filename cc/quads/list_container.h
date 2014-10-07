@@ -173,15 +173,21 @@ class CC_EXPORT ListContainer {
   // This function does not deallocate memory.
   void EraseAndInvalidateAllPointers(Iterator position);
 
+  ConstReverseIterator crbegin() const;
+  ConstReverseIterator crend() const;
   ConstReverseIterator rbegin() const;
   ConstReverseIterator rend() const;
   ReverseIterator rbegin();
   ReverseIterator rend();
+  ConstIterator cbegin() const;
+  ConstIterator cend() const;
   ConstIterator begin() const;
   ConstIterator end() const;
   Iterator begin();
   Iterator end();
 
+  // TODO(weiliangc): front(), back() and ElementAt() function should return
+  // reference, consistent with container-of-object.
   BaseElementType* front();
   BaseElementType* back();
   const BaseElementType* front() const;

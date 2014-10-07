@@ -62,13 +62,9 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
 
   DrawQuad::ResourceIteratorCallback add_resource_to_frame_callback =
       base::Bind(&AddResourceToFrame, resource_provider, delegated_frame.get());
-  for (size_t i = 0; i < delegated_frame->render_pass_list.size(); ++i) {
-    RenderPass* pass = delegated_frame->render_pass_list[i];
-    for (QuadList::Iterator iter = pass->quad_list.begin();
-         iter != pass->quad_list.end();
-         ++iter) {
-      iter->IterateResources(add_resource_to_frame_callback);
-    }
+  for (auto* pass : delegated_frame->render_pass_list) {
+    for (auto& quad : pass->quad_list)
+      quad.IterateResources(add_resource_to_frame_callback);
   }
 
   CreateChildIdIfNeeded(base::Bind(&NoopReturnCallback));

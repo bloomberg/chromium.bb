@@ -698,8 +698,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 
   ASSERT_EQ(7u, aggregated_quad_list.size());
 
-  for (QuadList::ConstIterator iter = aggregated_quad_list.begin();
-       iter != aggregated_quad_list.end();
+  for (auto iter = aggregated_quad_list.cbegin();
+       iter != aggregated_quad_list.cend();
        ++iter) {
     EXPECT_EQ(blend_modes[iter.index()], iter->shared_quad_state->blend_mode)
         << iter.index();
@@ -837,8 +837,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   // and the child surface draw quad's translation (8, 0).
   expected_root_pass_quad_transforms[1].Translate(8, 10);
 
-  for (QuadList::Iterator iter = aggregated_pass_list[1]->quad_list.begin();
-       iter != aggregated_pass_list[1]->quad_list.end();
+  for (auto iter = aggregated_pass_list[1]->quad_list.cbegin();
+       iter != aggregated_pass_list[1]->quad_list.cend();
        ++iter) {
     EXPECT_EQ(expected_root_pass_quad_transforms[iter.index()].ToString(),
               iter->quadTransform().ToString())

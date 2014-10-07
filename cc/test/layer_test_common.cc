@@ -40,11 +40,9 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                                   const gfx::Rect& rect) {
   Region remaining = rect;
 
-  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
-       ++iter) {
-    const DrawQuad* quad = &*iter;
+  for (auto iter = quads.cbegin(); iter != quads.cend(); ++iter) {
     gfx::RectF quad_rectf =
-        MathUtil::MapClippedRect(quad->quadTransform(), gfx::RectF(quad->rect));
+        MathUtil::MapClippedRect(iter->quadTransform(), gfx::RectF(iter->rect));
 
     // Before testing for exact coverage in the integer world, assert that
     // rounding will not round the rect incorrectly.
@@ -69,22 +67,19 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
                                              const gfx::Rect& occluded,
                                              size_t* partially_occluded_count) {
   // No quad should exist if it's fully occluded.
-  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
-       ++iter) {
+  for (const auto& quad : quads) {
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
-        iter->quadTransform(), iter->visible_rect);
+        quad.quadTransform(), quad.visible_rect);
     EXPECT_FALSE(occluded.Contains(target_visible_rect));
   }
 
   // Quads that are fully occluded on one axis only should be shrunken.
-  for (QuadList::ConstIterator iter = quads.begin(); iter != quads.end();
-       ++iter) {
-    const DrawQuad* quad = &*iter;
-    DCHECK(quad->quadTransform().IsIdentityOrIntegerTranslation());
+  for (const auto& quad : quads) {
+    DCHECK(quad.quadTransform().IsIdentityOrIntegerTranslation());
     gfx::Rect target_rect =
-        MathUtil::MapEnclosingClippedRect(quad->quadTransform(), quad->rect);
+        MathUtil::MapEnclosingClippedRect(quad.quadTransform(), quad.rect);
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
-        quad->quadTransform(), quad->visible_rect);
+        quad.quadTransform(), quad.visible_rect);
 
     bool fully_occluded_horizontal = target_rect.x() >= occluded.x() &&
                                      target_rect.right() <= occluded.right();
@@ -94,10 +89,10 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
         target_rect.Intersects(occluded) &&
         (fully_occluded_vertical || fully_occluded_horizontal);
     if (!should_be_occluded) {
-      EXPECT_EQ(quad->rect.ToString(), quad->visible_rect.ToString());
+      EXPECT_EQ(quad.rect.ToString(), quad.visible_rect.ToString());
     } else {
-      EXPECT_NE(quad->rect.ToString(), quad->visible_rect.ToString());
-      EXPECT_TRUE(quad->rect.Contains(quad->visible_rect));
+      EXPECT_NE(quad.rect.ToString(), quad.visible_rect.ToString());
+      EXPECT_TRUE(quad.rect.Contains(quad.visible_rect));
       ++(*partially_occluded_count);
     }
   }

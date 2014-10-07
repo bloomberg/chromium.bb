@@ -317,31 +317,31 @@ TEST(SurfaceLibTest, RenderPass) {
   EXPECT_EQ(opacity, round_trip_sqs->opacity);
   EXPECT_EQ(sorting_context_id, round_trip_sqs->sorting_context_id);
 
-  cc::QuadList::Iterator dq_iter = round_trip_pass->quad_list.begin();
+  cc::DrawQuad* round_trip_quad = round_trip_pass->quad_list.front();
   // First is solid color quad.
-  ASSERT_EQ(cc::DrawQuad::SOLID_COLOR, dq_iter->material);
-  EXPECT_EQ(rect, dq_iter->rect);
-  EXPECT_EQ(opaque_rect, dq_iter->opaque_rect);
-  EXPECT_EQ(visible_rect, dq_iter->visible_rect);
-  EXPECT_EQ(needs_blending, dq_iter->needs_blending);
+  ASSERT_EQ(cc::DrawQuad::SOLID_COLOR, round_trip_quad->material);
+  EXPECT_EQ(rect, round_trip_quad->rect);
+  EXPECT_EQ(opaque_rect, round_trip_quad->opaque_rect);
+  EXPECT_EQ(visible_rect, round_trip_quad->visible_rect);
+  EXPECT_EQ(needs_blending, round_trip_quad->needs_blending);
   const cc::SolidColorDrawQuad* round_trip_color_quad =
-      cc::SolidColorDrawQuad::MaterialCast(&*dq_iter);
+      cc::SolidColorDrawQuad::MaterialCast(round_trip_quad);
   EXPECT_EQ(arbitrary_color, round_trip_color_quad->color);
   EXPECT_EQ(force_anti_aliasing_off,
             round_trip_color_quad->force_anti_aliasing_off);
 
-  ++dq_iter;
+  round_trip_quad = round_trip_pass->quad_list.ElementAt(1);
   // Second is surface quad.
-  ASSERT_EQ(cc::DrawQuad::SURFACE_CONTENT, dq_iter->material);
+  ASSERT_EQ(cc::DrawQuad::SURFACE_CONTENT, round_trip_quad->material);
   const cc::SurfaceDrawQuad* round_trip_surface_quad =
-      cc::SurfaceDrawQuad::MaterialCast(&*dq_iter);
+      cc::SurfaceDrawQuad::MaterialCast(round_trip_quad);
   EXPECT_EQ(arbitrary_id, round_trip_surface_quad->surface_id);
 
-  ++dq_iter;
+  round_trip_quad = round_trip_pass->quad_list.ElementAt(2);
   // Third is texture quad.
-  ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, dq_iter->material);
+  ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, round_trip_quad->material);
   const cc::TextureDrawQuad* round_trip_texture_quad =
-      cc::TextureDrawQuad::MaterialCast(&*dq_iter);
+      cc::TextureDrawQuad::MaterialCast(round_trip_quad);
   EXPECT_EQ(resource_id, round_trip_texture_quad->resource_id);
   EXPECT_EQ(premultiplied_alpha, round_trip_texture_quad->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, round_trip_texture_quad->uv_top_left);
