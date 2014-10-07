@@ -23,13 +23,13 @@ class DataPipeProducerHandle : public Handle {
   // Copying and assignment allowed.
 };
 
-MOJO_COMPILE_ASSERT(sizeof(DataPipeProducerHandle) == sizeof(Handle),
-                    bad_size_for_cpp_DataPipeProducerHandle);
+static_assert(sizeof(DataPipeProducerHandle) == sizeof(Handle),
+              "Bad size for C++ DataPipeProducerHandle");
 
 typedef ScopedHandleBase<DataPipeProducerHandle> ScopedDataPipeProducerHandle;
-MOJO_COMPILE_ASSERT(sizeof(ScopedDataPipeProducerHandle) ==
-                        sizeof(DataPipeProducerHandle),
-                    bad_size_for_cpp_ScopedDataPipeProducerHandle);
+static_assert(sizeof(ScopedDataPipeProducerHandle) ==
+                  sizeof(DataPipeProducerHandle),
+              "Bad size for C++ ScopedDataPipeProducerHandle");
 
 class DataPipeConsumerHandle : public Handle {
  public:
@@ -39,13 +39,13 @@ class DataPipeConsumerHandle : public Handle {
   // Copying and assignment allowed.
 };
 
-MOJO_COMPILE_ASSERT(sizeof(DataPipeConsumerHandle) == sizeof(Handle),
-                    bad_size_for_cpp_DataPipeConsumerHandle);
+static_assert(sizeof(DataPipeConsumerHandle) == sizeof(Handle),
+              "Bad size for C++ DataPipeConsumerHandle");
 
 typedef ScopedHandleBase<DataPipeConsumerHandle> ScopedDataPipeConsumerHandle;
-MOJO_COMPILE_ASSERT(sizeof(ScopedDataPipeConsumerHandle) ==
-                        sizeof(DataPipeConsumerHandle),
-                    bad_size_for_cpp_ScopedDataPipeConsumerHandle);
+static_assert(sizeof(ScopedDataPipeConsumerHandle) ==
+                  sizeof(DataPipeConsumerHandle),
+              "Bad size for C++ ScopedDataPipeConsumerHandle");
 
 inline MojoResult CreateDataPipe(
     const MojoCreateDataPipeOptions* options,

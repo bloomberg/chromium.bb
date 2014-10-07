@@ -63,7 +63,7 @@ class MutexLock {
 };
 
 // Catch bug where variable name is omitted (e.g., |MutexLock (&mu)|).
-#define MutexLock(x) MOJO_COMPILE_ASSERT(0, mutex_lock_missing_variable_name);
+#define MutexLock(x) static_assert(0, "MutexLock() missing variable name");
 
 }  // namespace mojo
 

@@ -18,14 +18,14 @@ namespace {
 
 typedef uint32_t TestOptionsFlags;
 
-MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+static_assert(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 struct MOJO_ALIGNAS(8) TestOptions {
   uint32_t struct_size;
   TestOptionsFlags flags;
   uint32_t member1;
   uint32_t member2;
 };
-MOJO_COMPILE_ASSERT(sizeof(TestOptions) == 16, TestOptions_has_wrong_size);
+static_assert(sizeof(TestOptions) == 16, "TestOptions has wrong size");
 
 const uint32_t kSizeOfTestOptions = static_cast<uint32_t>(sizeof(TestOptions));
 

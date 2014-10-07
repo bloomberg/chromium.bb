@@ -111,9 +111,9 @@ class ScopedHandleBase {
   template <typename PassedHandleType>
   static ScopedHandleBase<HandleType> From(
       ScopedHandleBase<PassedHandleType> other) {
-    MOJO_COMPILE_ASSERT(
+    static_assert(
         sizeof(static_cast<PassedHandleType*>(static_cast<HandleType*>(0))),
-        HandleType_is_not_a_subtype_of_PassedHandleType);
+        "HandleType is not a subtype of PassedHandleType");
     return ScopedHandleBase<HandleType>(
         static_cast<HandleType>(other.release().value()));
   }
@@ -185,13 +185,12 @@ class Handle {
 };
 
 // Should have zero overhead.
-MOJO_COMPILE_ASSERT(sizeof(Handle) == sizeof(MojoHandle),
-                    bad_size_for_cpp_Handle);
+static_assert(sizeof(Handle) == sizeof(MojoHandle), "Bad size for C++ Handle");
 
 // The scoper should also impose no more overhead.
 typedef ScopedHandleBase<Handle> ScopedHandle;
-MOJO_COMPILE_ASSERT(sizeof(ScopedHandle) == sizeof(Handle),
-                    bad_size_for_cpp_ScopedHandle);
+static_assert(sizeof(ScopedHandle) == sizeof(Handle),
+              "Bad size for C++ ScopedHandle");
 
 inline MojoResult Wait(Handle handle,
                        MojoHandleSignals signals,

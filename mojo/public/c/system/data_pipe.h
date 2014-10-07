@@ -46,15 +46,15 @@ const MojoCreateDataPipeOptionsFlags
   ((MojoCreateDataPipeOptionsFlags)1 << 0)
 #endif
 
-MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 struct MOJO_ALIGNAS(8) MojoCreateDataPipeOptions {
   uint32_t struct_size;
   MojoCreateDataPipeOptionsFlags flags;
   uint32_t element_num_bytes;
   uint32_t capacity_num_bytes;
 };
-MOJO_COMPILE_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
-                    MojoCreateDataPipeOptions_has_wrong_size);
+MOJO_STATIC_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
+                   "MojoCreateDataPipeOptions has wrong size");
 
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
 // and |MojoBeginWriteData()|.

@@ -37,18 +37,17 @@ template <typename E, typename F, bool move_only = IsMoveOnlyType<E>::value>
 struct ArraySerializer;
 
 template <typename E, typename F> struct ArraySerializer<E, F, false> {
-  MOJO_COMPILE_ASSERT(sizeof(E) == sizeof(F), wrong_array_serializer);
+  static_assert(sizeof(E) == sizeof(F), "Incorrect array serializer");
   static size_t GetSerializedSize(const Array<E>& input) {
     return sizeof(Array_Data<F>) + Align(input.size() * sizeof(E));
   }
   template <bool element_is_nullable, typename ElementValidateParams>
   static void SerializeElements(
       Array<E> input, Buffer* buf, Array_Data<F>* output) {
-    MOJO_COMPILE_ASSERT(!element_is_nullable,
-                        Primitive_type_should_be_non_nullable);
-    MOJO_COMPILE_ASSERT(
-        (IsSame<ElementValidateParams, NoValidateParams>::value),
-        Primitive_type_should_not_have_array_validate_params);
+    static_assert(!element_is_nullable,
+                  "Primitive type should be non-nullable");
+    static_assert((IsSame<ElementValidateParams, NoValidateParams>::value),
+                  "Primitive type should not have array validate params");
 
     memcpy(output->storage(), &input.storage()[0], input.size() * sizeof(E));
   }
@@ -67,11 +66,10 @@ template <> struct ArraySerializer<bool, bool, false> {
   template <bool element_is_nullable, typename ElementValidateParams>
   static void SerializeElements(
       Array<bool> input, Buffer* buf, Array_Data<bool>* output) {
-    MOJO_COMPILE_ASSERT(!element_is_nullable,
-                        Primitive_type_should_be_non_nullable);
-    MOJO_COMPILE_ASSERT(
-        (IsSame<ElementValidateParams, NoValidateParams>::value),
-        Primitive_type_should_not_have_array_validate_params);
+    static_assert(!element_is_nullable,
+                  "Primitive type should be non-nullable");
+    static_assert((IsSame<ElementValidateParams, NoValidateParams>::value),
+                  "Primitive type should not have array validate params");
 
     // TODO(darin): Can this be a memcpy somehow instead of a bit-by-bit copy?
     for (size_t i = 0; i < input.size(); ++i)
@@ -95,9 +93,8 @@ template <typename H> struct ArraySerializer<ScopedHandleBase<H>, H, true> {
   static void SerializeElements(Array<ScopedHandleBase<H> > input,
                                 Buffer* buf,
                                 Array_Data<H>* output) {
-    MOJO_COMPILE_ASSERT(
-        (IsSame<ElementValidateParams, NoValidateParams>::value),
-        Handle_type_should_not_have_array_validate_params);
+    static_assert((IsSame<ElementValidateParams, NoValidateParams>::value),
+                  "Handle type should not have array validate params");
 
     for (size_t i = 0; i < input.size(); ++i) {
       output->at(i) = input[i].release();  // Transfer ownership of the handle.
@@ -157,8 +154,8 @@ template <typename S> struct ArraySerializer<S, typename S::Data_*, true> {
   template <typename T, typename Params>
   struct SerializeCaller {
     static void Run(T input, Buffer* buf, typename T::Data_** output) {
-      MOJO_COMPILE_ASSERT((IsSame<Params, NoValidateParams>::value),
-                          Struct_type_should_not_have_array_validate_params);
+      static_assert((IsSame<Params, NoValidateParams>::value),
+                    "Struct type should not have array validate params");
 
       Serialize_(input.Pass(), buf, output);
     }
@@ -187,10 +184,10 @@ template <> struct ArraySerializer<String, String_Data*, false> {
       Array<String> input,
       Buffer* buf,
       Array_Data<String_Data*>* output) {
-    MOJO_COMPILE_ASSERT(
+    static_assert(
         (IsSame<ElementValidateParams,
                 ArrayValidateParams<0, false, NoValidateParams> >::value),
-        String_type_has_unexpected_array_validate_params);
+        "String type has unexpected array validate params");
 
     for (size_t i = 0; i < input.size(); ++i) {
       String_Data* element;

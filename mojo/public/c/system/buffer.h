@@ -38,13 +38,13 @@ const MojoCreateSharedBufferOptionsFlags
   ((MojoCreateSharedBufferOptionsFlags)0)
 #endif
 
-MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 struct MOJO_ALIGNAS(8) MojoCreateSharedBufferOptions {
   uint32_t struct_size;
   MojoCreateSharedBufferOptionsFlags flags;
 };
-MOJO_COMPILE_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
-                    MojoCreateSharedBufferOptions_has_wrong_size);
+MOJO_STATIC_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
+                   "MojoCreateSharedBufferOptions has wrong size");
 
 // |MojoDuplicateBufferHandleOptions|: Used to specify parameters in duplicating
 // access to a shared buffer to |MojoDuplicateBufferHandle()|.
@@ -71,8 +71,8 @@ struct MojoDuplicateBufferHandleOptions {
   uint32_t struct_size;
   MojoDuplicateBufferHandleOptionsFlags flags;
 };
-MOJO_COMPILE_ASSERT(sizeof(MojoDuplicateBufferHandleOptions) == 8,
-                    MojoDuplicateBufferHandleOptions_has_wrong_size);
+MOJO_STATIC_ASSERT(sizeof(MojoDuplicateBufferHandleOptions) == 8,
+                   "MojoDuplicateBufferHandleOptions has wrong size");
 
 // |MojoMapBufferFlags|: Used to specify different modes to |MojoMapBuffer()|.
 //   |MOJO_MAP_BUFFER_FLAG_NONE| - No flags; default mode.

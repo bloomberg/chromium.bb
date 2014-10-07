@@ -31,13 +31,13 @@ const MojoCreateMessagePipeOptionsFlags
   ((MojoCreateMessagePipeOptionsFlags)0)
 #endif
 
-MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 struct MOJO_ALIGNAS(8) MojoCreateMessagePipeOptions {
   uint32_t struct_size;
   MojoCreateMessagePipeOptionsFlags flags;
 };
-MOJO_COMPILE_ASSERT(sizeof(MojoCreateMessagePipeOptions) == 8,
-                    MojoCreateMessagePipeOptions_has_wrong_size);
+MOJO_STATIC_ASSERT(sizeof(MojoCreateMessagePipeOptions) == 8,
+                   "MojoCreateMessagePipeOptions has wrong size");
 
 // |MojoWriteMessageFlags|: Used to specify different modes to
 // |MojoWriteMessage()|.

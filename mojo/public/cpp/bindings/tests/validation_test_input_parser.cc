@@ -275,7 +275,7 @@ bool ValidationTestInputParser::ParseSignedInteger(
 
 bool ValidationTestInputParser::ParseFloat(
     const DataType& type, const std::string& value_string) {
-  MOJO_COMPILE_ASSERT(sizeof(float) == 4, float_size_is_not_4);
+  static_assert(sizeof(float) == 4, "sizeof(float) is not 4");
 
   float value;
   if (sscanf(value_string.c_str(), "%f", &value) != 1)
@@ -287,7 +287,7 @@ bool ValidationTestInputParser::ParseFloat(
 
 bool ValidationTestInputParser::ParseDouble(const DataType& type,
                                             const std::string& value_string) {
-  MOJO_COMPILE_ASSERT(sizeof(double) == 8, double_size_is_not_8);
+  static_assert(sizeof(double) == 8, "sizeof(double) is not 8");
 
   double value;
   if (sscanf(value_string.c_str(), "%lf", &value) != 1)

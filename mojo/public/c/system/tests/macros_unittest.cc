@@ -34,14 +34,14 @@ TEST(MacrosTest, WarnUnusedResult) {
     abort();
 }
 
-// First test |MOJO_COMPILE_ASSERT()| in a global scope.
-MOJO_COMPILE_ASSERT(sizeof(int64_t) == 2 * sizeof(int32_t),
-                    bad_compile_assert_failure_in_global_scope);
+// First test |MOJO_STATIC_ASSERT()| in a global scope.
+MOJO_STATIC_ASSERT(sizeof(int64_t) == 2 * sizeof(int32_t),
+                   "Bad static_assert() failure in global scope");
 
 TEST(MacrosTest, CompileAssert) {
   // Then in a local scope.
-  MOJO_COMPILE_ASSERT(sizeof(int32_t) == 2 * sizeof(int16_t),
-                      bad_compile_assert_failure);
+  MOJO_STATIC_ASSERT(sizeof(int32_t) == 2 * sizeof(int16_t),
+                     "Bad static_assert() failure");
 }
 
 TEST(MacrosTest, Alignof) {

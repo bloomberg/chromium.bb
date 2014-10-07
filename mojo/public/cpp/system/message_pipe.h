@@ -23,13 +23,12 @@ class MessagePipeHandle : public Handle {
   // Copying and assignment allowed.
 };
 
-MOJO_COMPILE_ASSERT(sizeof(MessagePipeHandle) == sizeof(Handle),
-                    bad_size_for_cpp_MessagePipeHandle);
+static_assert(sizeof(MessagePipeHandle) == sizeof(Handle),
+              "Bad size for C++ MessagePipeHandle");
 
 typedef ScopedHandleBase<MessagePipeHandle> ScopedMessagePipeHandle;
-MOJO_COMPILE_ASSERT(sizeof(ScopedMessagePipeHandle) ==
-                        sizeof(MessagePipeHandle),
-                    bad_size_for_cpp_ScopedMessagePipeHandle);
+static_assert(sizeof(ScopedMessagePipeHandle) == sizeof(MessagePipeHandle),
+              "Bad size for C++ ScopedMessagePipeHandle");
 
 inline MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
                                     ScopedMessagePipeHandle* message_pipe0,

@@ -23,13 +23,13 @@ class SharedBufferHandle : public Handle {
   // Copying and assignment allowed.
 };
 
-MOJO_COMPILE_ASSERT(sizeof(SharedBufferHandle) == sizeof(Handle),
-                    bad_size_for_cpp_SharedBufferHandle);
+static_assert(sizeof(SharedBufferHandle) == sizeof(Handle),
+              "Bad size for C++ SharedBufferHandle");
 
 typedef ScopedHandleBase<SharedBufferHandle> ScopedSharedBufferHandle;
-MOJO_COMPILE_ASSERT(sizeof(ScopedSharedBufferHandle) ==
-                        sizeof(SharedBufferHandle),
-                    bad_size_for_cpp_ScopedSharedBufferHandle);
+static_assert(sizeof(ScopedSharedBufferHandle) ==
+                  sizeof(SharedBufferHandle),
+              "Bad size for C++ ScopedSharedBufferHandle");
 
 inline MojoResult CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,

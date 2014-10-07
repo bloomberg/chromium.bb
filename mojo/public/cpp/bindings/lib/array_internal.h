@@ -184,11 +184,10 @@ struct ArraySerializationHelper<T, false> {
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
-    MOJO_COMPILE_ASSERT(!element_is_nullable,
-                        Primitive_type_should_be_non_nullable);
-    MOJO_COMPILE_ASSERT(
-        (IsSame<ElementValidateParams, NoValidateParams>::value),
-        Primitive_type_should_not_have_array_validate_params);
+    static_assert(!element_is_nullable,
+                  "Primitive type should be non-nullable");
+    static_assert((IsSame<ElementValidateParams, NoValidateParams>::value),
+                  "Primitive type should not have array validate params");
     return true;
   }
 };
@@ -209,9 +208,8 @@ struct ArraySerializationHelper<Handle, true> {
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
-    MOJO_COMPILE_ASSERT(
-        (IsSame<ElementValidateParams, NoValidateParams>::value),
-        Handle_type_should_not_have_array_validate_params);
+    static_assert((IsSame<ElementValidateParams, NoValidateParams>::value),
+                  "Handle type should not have array validate params");
 
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (!element_is_nullable &&
@@ -307,9 +305,8 @@ struct ArraySerializationHelper<P*, false> {
   template <typename T, typename Params>
   struct ValidateCaller {
     static bool Run(const void* data, BoundsChecker* bounds_checker) {
-      MOJO_COMPILE_ASSERT(
-          (IsSame<Params, NoValidateParams>::value),
-          Struct_type_should_not_have_array_validate_params);
+      static_assert((IsSame<Params, NoValidateParams>::value),
+                    "Struct type should not have array validate params");
 
       return T::Validate(data, bounds_checker);
     }
@@ -423,7 +420,7 @@ class Array_Data {
 
   // Elements of type internal::ArrayDataTraits<T>::StorageType follow.
 };
-MOJO_COMPILE_ASSERT(sizeof(Array_Data<char>) == 8, bad_sizeof_Array_Data);
+static_assert(sizeof(Array_Data<char>) == 8, "Bad sizeof(Array_Data)");
 
 // UTF-8 encoded
 typedef Array_Data<char> String_Data;

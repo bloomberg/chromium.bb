@@ -21,20 +21,20 @@ struct MessageHeader : internal::StructHeader {
   uint32_t name;
   uint32_t flags;
 };
-MOJO_COMPILE_ASSERT(sizeof(MessageHeader) == 16, bad_sizeof_MessageHeader);
+static_assert(sizeof(MessageHeader) == 16, "Bad sizeof(MessageHeader)");
 
 struct MessageHeaderWithRequestID : MessageHeader {
   uint64_t request_id;
 };
-MOJO_COMPILE_ASSERT(sizeof(MessageHeaderWithRequestID) == 24,
-                    bad_sizeof_MessageHeaderWithRequestID);
+static_assert(sizeof(MessageHeaderWithRequestID) == 24,
+              "Bad sizeof(MessageHeaderWithRequestID)");
 
 struct MessageData {
   MessageHeader header;
 };
 
-MOJO_COMPILE_ASSERT(sizeof(MessageData) == sizeof(MessageHeader),
-                    bad_sizeof_MessageData);
+static_assert(sizeof(MessageData) == sizeof(MessageHeader),
+              "Bad sizeof(MessageData)");
 
 #pragma pack(pop)
 

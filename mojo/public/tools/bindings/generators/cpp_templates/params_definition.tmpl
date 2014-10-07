@@ -29,5 +29,5 @@ class {{class_name}} {
     header_.num_fields = {{struct.packed.packed_fields|length}};
   }
 };
-MOJO_COMPILE_ASSERT(sizeof({{class_name}}) == {{struct.packed|struct_size}},
-                    bad_sizeof_{{class_name}});
+static_assert(sizeof({{class_name}}) == {{struct.packed|struct_size}},
+              "Bad sizeof({{class_name}})");

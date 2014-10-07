@@ -165,12 +165,12 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
 // TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.
 // Note: This struct is not extensible (and only has 32-bit quantities), so it's
 // 32-bit-aligned.
-MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int32_t) == 4, int32_t_has_weird_alignment);
+MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int32_t) == 4, "int32_t has weird alignment");
 struct MOJO_ALIGNAS(4) MojoHandleSignalsState {
   MojoHandleSignals satisfied_signals;
   MojoHandleSignals satisfiable_signals;
 };
-MOJO_COMPILE_ASSERT(sizeof(MojoHandleSignalsState) == 8,
-                    MojoHandleSignalsState_has_wrong_size);
+MOJO_STATIC_ASSERT(sizeof(MojoHandleSignalsState) == 8,
+                   "MojoHandleSignalsState has wrong size");
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_TYPES_H_
