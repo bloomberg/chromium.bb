@@ -70,7 +70,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   void InitializeViewport(DrawingFrame* frame,
                           const gfx::Rect& draw_rect,
                           const gfx::Rect& viewport_rect,
-                          const gfx::Size& surface_size);
+                          const gfx::Size& surface_size,
+                          bool flip_y);
   gfx::Rect MoveFromDrawToWindowSpace(const gfx::Rect& draw_rect) const;
 
   bool NeedDeviceClip(const DrawingFrame* frame) const;
@@ -104,7 +105,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual void BeginDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingQuadList();
-  virtual bool FlippedFramebuffer() const = 0;
+  virtual bool FlippedRootFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DiscardBackbuffer() {}

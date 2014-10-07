@@ -107,11 +107,12 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
       *result_bitmap_, test_data_dir.Append(ref_file), comparator);
 }
 
-void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
+void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
+                                bool uses_main_gl_framebuffer) {
   enable_pixel_output_.reset(new gfx::DisableNullDrawGLBindings);
 
-  output_surface_.reset(
-      new PixelTestOutputSurface(new TestInProcessContextProvider));
+  output_surface_.reset(new PixelTestOutputSurface(
+      new TestInProcessContextProvider, uses_main_gl_framebuffer));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());

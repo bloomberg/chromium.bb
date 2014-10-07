@@ -81,9 +81,8 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
 void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                         const gfx::Rect& draw_rect,
                                         const gfx::Rect& viewport_rect,
-                                        const gfx::Size& surface_size) {
-  bool flip_y = FlippedFramebuffer();
-
+                                        const gfx::Size& surface_size,
+                                        bool flip_y) {
   DCHECK_GE(viewport_rect.x(), 0);
   DCHECK_GE(viewport_rect.y(), 0);
   DCHECK_LE(viewport_rect.right(), surface_size.width());
@@ -119,7 +118,7 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
   gfx::Rect window_rect = draw_rect;
   window_rect -= current_draw_rect_.OffsetFromOrigin();
   window_rect += current_viewport_rect_.OffsetFromOrigin();
-  if (FlippedFramebuffer())
+  if (FlippedRootFramebuffer())
     window_rect.set_y(current_surface_size_.height() - window_rect.bottom());
   return window_rect;
 }
@@ -279,7 +278,7 @@ bool DirectRenderer::NeedDeviceClip(const DrawingFrame* frame) const {
 gfx::Rect DirectRenderer::DeviceClipRectInWindowSpace(const DrawingFrame* frame)
     const {
   gfx::Rect device_clip_rect = frame->device_clip_rect;
-  if (FlippedFramebuffer())
+  if (FlippedRootFramebuffer())
     device_clip_rect.set_y(current_surface_size_.height() -
                            device_clip_rect.bottom());
   return device_clip_rect;
@@ -397,7 +396,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
     InitializeViewport(frame,
                        render_pass->output_rect,
                        frame->device_viewport_rect,
-                       output_surface_->SurfaceSize());
+                       output_surface_->SurfaceSize(),
+                       FlippedRootFramebuffer());
     return true;
   }
 

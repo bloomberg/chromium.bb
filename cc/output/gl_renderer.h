@@ -114,7 +114,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) override;
   virtual void BeginDrawingFrame(DrawingFrame* frame) override;
   virtual void FinishDrawingFrame(DrawingFrame* frame) override;
-  virtual bool FlippedFramebuffer() const override;
+  virtual bool FlippedRootFramebuffer() const override;
   virtual void EnsureScissorTestEnabled() override;
   virtual void EnsureScissorTestDisabled() override;
   virtual void CopyCurrentRenderPassToBitmap(
