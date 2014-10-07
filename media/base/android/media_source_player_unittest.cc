@@ -1618,7 +1618,15 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossReleaseAndStart) {
   PrerollDecoderToTime(true, target_timestamp, target_timestamp, true);
 }
 
-TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
+// Flaky on Android: crbug.com/419122.
+#if defined(OS_ANDROID)
+#define MAYBE_PrerollContinuesAcrossConfigChange \
+        DISABLED_PrerollContinuesAcrossConfigChange
+#else
+#define MAYBE_PrerollContinuesAcrossConfigChange \
+        PrerollContinuesAcrossConfigChange
+#endif
+TEST_F(MediaSourcePlayerTest, MAYBE_PrerollContinuesAcrossConfigChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test decoder job will resume media prerolling if interrupted by
