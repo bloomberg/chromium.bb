@@ -1236,6 +1236,13 @@ HRESULT ChromeAppViewAsh::OnAcceleratorKeyDown(
       if ((virtual_key == VK_F4) && ((keyboard_flags & ui::EF_ALT_DOWN) &&
           !(keyboard_flags & ui::EF_CONTROL_DOWN)))
         return S_OK;
+      // Don't send the EF_ALT_DOWN modifier along with the IPC message for
+      // the Alt or F10 key. The accelerator for VKEY_MENU is registered
+      // without modifiers in Chrome for historical reasons. Not sending the
+      // EF_ALT_DOWN modifier ensures that the accelerator is processed
+      // correctly.
+      if (virtual_key == winsys::VirtualKey_Menu)
+        keyboard_flags &= ~ui::EF_ALT_DOWN;
       ui_channel_->Send(new MetroViewerHostMsg_KeyDown(virtual_key,
                                                        status.RepeatCount,
                                                        status.ScanCode,
