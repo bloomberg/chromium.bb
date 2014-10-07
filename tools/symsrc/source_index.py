@@ -5,14 +5,14 @@
 
 """Usage: <win-path-to-pdb.pdb>
 This tool will take a PDB on the command line, extract the source files that
-were used in building the PDB, query SVN for which repository and revision
-these files are at, and then finally write this information back into the PDB
-in a format that the debugging tools understand.  This allows for automatic
-source debugging, as all of the information is contained in the PDB, and the
-debugger can go out and fetch the source files via SVN.
+were used in building the PDB, query the source server for which repository
+and revision these files are at, and then finally write this information back
+into the PDB in a format that the debugging tools understand.  This allows for
+automatic source debugging, as all of the information is contained in the PDB,
+and the debugger can go out and fetch the source files.
 
 You most likely want to run these immediately after a build, since the source
-input files need to match the generated PDB, and we want the correct SVN
+input files need to match the generated PDB, and we want the correct
 revision information for the exact files that were used for the build.
 
 The following files from a windbg + source server installation are expected
@@ -25,37 +25,128 @@ NOTE: Expected to run under a native win32 python, NOT cygwin.  All paths are
 dealt with as win32 paths, since we have to interact with the Microsoft tools.
 """
 
-import sys
 import os
+import optparse
+import sys
+import tempfile
 import time
 import subprocess
-import tempfile
+import win32api
+
+from collections import namedtuple
 
 # This serves two purposes.  First, it acts as a whitelist, and only files
 # from repositories listed here will be source indexed.  Second, it allows us
-# to map from one SVN URL to another, so we can map to external SVN servers.
+# to map from one URL to another, so we can map to external source servers.  It
+# also indicates if the source for this project will be retrieved in a base64
+# encoded format.
+# TODO(sebmarchand): Initialize this variable in the main function and pass it
+#     to the sub functions instead of having a global variable.
 REPO_MAP = {
-  "svn://chrome-svn/blink": "http://src.chromium.org/blink",
-  "svn://chrome-svn/chrome": "http://src.chromium.org/chrome",
-  "svn://chrome-svn/multivm": "http://src.chromium.org/multivm",
-  "svn://chrome-svn/native_client": "http://src.chromium.org/native_client",
-  "svn://chrome-svn.corp.google.com/blink": "http://src.chromium.org/blink",
-  "svn://chrome-svn.corp.google.com/chrome": "http://src.chromium.org/chrome",
-  "svn://chrome-svn.corp.google.com/multivm": "http://src.chromium.org/multivm",
-  "svn://chrome-svn.corp.google.com/native_client":
-      "http://src.chromium.org/native_client",
-  "svn://svn-mirror.golo.chromium.org/blink": "http://src.chromium.org/blink",
-  "svn://svn-mirror.golo.chromium.org/chrome": "http://src.chromium.org/chrome",
-  "svn://svn-mirror.golo.chromium.org/multivm":
-      "http://src.chromium.org/multivm",
-  "svn://svn-mirror.golo.chromium.org/native_client":
-      "http://src.chromium.org/native_client",
-  "http://v8.googlecode.com/svn": None,
-  "http://google-breakpad.googlecode.com/svn": None,
-  "http://googletest.googlecode.com/svn": None,
-  "http://open-vcdiff.googlecode.com/svn": None,
-  "http://google-url.googlecode.com/svn": None,
+    'http://src.chromium.org/svn': {
+        'url': 'https://src.chromium.org/chrome/'
+            '{file_path}?revision={revision}',
+        'base64': False
+    },
+    'https://src.chromium.org/svn': {
+        'url': 'https://src.chromium.org/chrome/'
+            '{file_path}?revision={revision}',
+        'base64': False
+    }
 }
+
+
+PROJECT_GROUPS = [
+  # Googlecode SVN projects
+  {
+    'projects': [
+      'angleproject',
+      'google-breakpad',
+      'google-cache-invalidation-api',
+      'google-url',
+      'googletest',
+      'leveldb',
+      'libphonenumber',
+      'libyuv',
+      'open-vcdiff',
+      'ots',
+      'sawbuck',
+      'sfntly',
+      'smhasher',
+      'v8',
+      'v8-i18n',
+      'webrtc',
+    ],
+    'public_url': 'https://%s.googlecode.com/svn-history/' \
+        'r{revision}/{file_path}',
+    'svn_urls': [
+        'svn://svn-mirror.golo.chromium.org/%s',
+        'http://src.chromium.org/%s',
+        'https://src.chromium.org/%s',
+        'http://%s.googlecode.com/svn',
+        'https://%s.googlecode.com/svn',
+    ],
+  },
+  # Googlecode Git projects
+  {
+    'projects': [
+      'syzygy',
+    ],
+    'public_url': 'https://%s.googlecode.com/git-history/' \
+        '{revision}/{file_path}',
+    'svn_urls': [
+        'https://code.google.com/p/%s/',
+    ],
+  },
+  # Chrome projects
+  {
+    'projects': [
+        'blink',
+        'chrome',
+        'multivm',
+        'native_client',
+    ],
+    'public_url': 'https://src.chromium.org/%s/' \
+        '{file_path}?revision={revision}',
+    'svn_urls': [
+        'svn://chrome-svn/%s',
+        'svn://chrome-svn.corp.google.com/%s',
+        'svn://svn-mirror.golo.chromium.org/%s',
+        'svn://svn.chromium.org/%s',
+    ],
+  },
+]
+
+# A named tuple used to store the information about a repository.
+#
+# It contains the following members:
+#     - repo: The URL of the repository;
+#     - rev: The revision (or hash) of the current checkout.
+#     - file_list: The list of files coming from this repository.
+#     - root_path: The root path of this checkout.
+#     - path_prefix: A prefix to apply to the filename of the files coming from
+#         this repository.
+RevisionInfo = namedtuple('RevisionInfo',
+                          ['repo', 'rev', 'files', 'root_path', 'path_prefix'])
+
+
+def GetCasedFilePath(filename):
+  """Return the correctly cased path for a given filename"""
+  return win32api.GetLongPathName(win32api.GetShortPathName(unicode(filename)))
+
+
+def FillRepositoriesMap():
+  """ Fill the repositories map with the whitelisted projects. """
+  for project_group in PROJECT_GROUPS:
+    for project in project_group['projects']:
+      for svn_url in project_group['svn_urls']:
+        REPO_MAP[svn_url % project] = {
+            'url': project_group['public_url'] % project,
+            'base64': False
+        }
+      REPO_MAP[project_group['public_url'] % project] = None
+
+FillRepositoriesMap()
 
 
 def FindFile(filename):
@@ -64,15 +155,39 @@ def FindFile(filename):
   return os.path.abspath(os.path.join(thisdir, filename))
 
 
+def RunCommand(*cmd, **kwargs):
+  """Runs a command.
+
+  Returns what have been printed to stdout by this command.
+
+  kwargs:
+    raise_on_failure: Indicates if an exception should be raised on failure, if
+        set to false then the function will return None.
+  """
+  kwargs.setdefault('stdin', subprocess.PIPE)
+  kwargs.setdefault('stdout', subprocess.PIPE)
+  kwargs.setdefault('stderr', subprocess.PIPE)
+  kwargs.setdefault('universal_newlines', True)
+  raise_on_failure = kwargs.pop('raise_on_failure', True)
+
+  proc = subprocess.Popen(cmd, **kwargs)
+  ret, err = proc.communicate()
+  if proc.returncode != 0:
+    if raise_on_failure:
+      print 'Error: %s' % err
+      raise subprocess.CalledProcessError(proc.returncode, cmd)
+    return
+
+  ret = (ret or '').rstrip('\n')
+  return ret
+
+
 def ExtractSourceFiles(pdb_filename):
   """Extract a list of local paths of the source files from a PDB."""
-  srctool = subprocess.Popen([FindFile('srctool.exe'), '-r', pdb_filename],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  filelist = srctool.stdout.read()
-  res = srctool.wait()
-  if res != 0 or filelist.startswith("srctool: "):
-    raise "srctool failed: " + filelist
-  return [x for x in filelist.split('\r\n') if len(x) != 0]
+  src_files = RunCommand(FindFile('srctool.exe'), '-r', pdb_filename)
+  if not src_files or src_files.startswith("srctool: "):
+    raise Exception("srctool failed: " + src_files)
+  return set(x.lower() for x in src_files.split('\n') if len(x) != 0)
 
 
 def ReadSourceStream(pdb_filename):
@@ -81,11 +196,11 @@ def ReadSourceStream(pdb_filename):
                               '-r', '-s:srcsrv',
                               '-p:%s' % pdb_filename],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  data = srctool.stdout.read()
-  res = srctool.wait()
+  data, _ = srctool.communicate()
 
-  if (res != 0 and res != -1) or data.startswith("pdbstr: "):
-    raise "pdbstr failed: " + data
+  if ((srctool.returncode != 0 and srctool.returncode != -1) or
+      data.startswith("pdbstr: ")):
+    raise Exception("pdbstr failed: " + data)
   return data
 
 
@@ -102,45 +217,244 @@ def WriteSourceStream(pdb_filename, data):
                               '-i:%s' % fname,
                               '-p:%s' % pdb_filename],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  data = srctool.stdout.read()
-  res = srctool.wait()
+  data, _ = srctool.communicate()
 
-  if (res != 0 and res != -1) or data.startswith("pdbstr: "):
-    raise "pdbstr failed: " + data
+  if ((srctool.returncode != 0 and srctool.returncode != -1) or
+      data.startswith("pdbstr: ")):
+    raise Exception("pdbstr failed: " + data)
 
   os.unlink(fname)
 
 
-# TODO for performance, we should probably work in directories instead of
-# files.  I'm scared of DEPS and generated files, so for now we query each
-# individual file, and don't make assumptions that all files in the same
-# directory are part of the same repository or at the same revision number.
-def ExtractSvnInfo(local_filename):
-  """Calls svn info to extract the repository, path, and revision."""
+def GetSVNRepoInfo(local_path):
+  """Calls svn info to extract the SVN information about a path."""
   # We call svn.bat to make sure and get the depot tools SVN and not cygwin.
-  srctool = subprocess.Popen(['svn.bat', 'info', local_filename],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  info = srctool.stdout.read()
-  res = srctool.wait()
-  if res != 0:
-    return None
+  info = RunCommand('svn.bat', 'info', local_path, raise_on_failure=False)
+  if not info:
+    return
   # Hack up into a dictionary of the fields printed by svn info.
-  vals = dict((y.split(': ', 2) for y in info.split('\r\n') if y))
-
-  root = vals['Repository Root']
-  if not vals['URL'].startswith(root):
-    raise "URL is not inside of the repository root?!?"
-  path = vals['URL'][len(root):]
-  rev  = int(vals['Revision'])
-
-  return [root, path, rev]
+  vals = dict((y.split(': ', 2) for y in info.split('\n') if y))
+  return vals
 
 
-def UpdatePDB(pdb_filename, verbose=False):
+def ExtractSVNInfo(local_filename):
+  """Checks if a file is coming from a svn repository and if so returns some
+  information about it.
+
+  Args:
+    local_filename: The name of the file that we want to check.
+
+  Returns:
+    None if the file doesn't come from a svn repository, otherwise it returns a
+    RevisionInfo tuple.
+  """
+  # Try to get the svn information about this file.
+  vals = GetSVNRepoInfo(local_filename)
+  if not vals:
+    return
+
+  repo = vals['Repository Root']
+  if not vals['URL'].startswith(repo):
+    raise Exception("URL is not inside of the repository root?!?")
+  rev  = vals['Revision']
+
+  svn_local_root = os.path.split(local_filename)[0]
+
+  # We need to look at the SVN URL of the current path to handle the case when
+  # we do a partial SVN checkout inside another checkout of the same repository.
+  # This happens in Chromium where we do some checkout of
+  # '/trunk/deps/third_party' in 'src/third_party'.
+  svn_root_url = os.path.dirname(vals['URL'])
+
+  # Don't try to list all the files from this repository as this seem to slow
+  # down the indexing, instead index one file at a time.
+  file_list = [local_filename.replace(svn_local_root, '').lstrip(os.path.sep)]
+
+  return RevisionInfo(repo=repo, rev=rev, files=file_list,
+      root_path=svn_local_root, path_prefix=svn_root_url.replace(repo, ''))
+
+
+def ExtractGitInfo(local_filename):
+  """Checks if a file is coming from a git repository and if so returns some
+  information about it.
+
+  Args:
+    local_filename: The name of the file that we want to check.
+
+  Returns:
+    None if the file doesn't come from a git repository, otherwise it returns a
+    RevisionInfo tuple.
+  """
+  # Starts by checking if this file is coming from a git repository. For that
+  # we'll start by calling 'git info' on this file; for this to work we need to
+  # make sure that the current working directory is correctly cased. It turns
+  # out that even on Windows the casing of the path passed in the |cwd| argument
+  # of subprocess.Popen matters and if it's not correctly cased then 'git info'
+  # will return None even if the file is coming from a git repository. This
+  # is not the case if we're just interested in checking if the path containing
+  # |local_filename| is coming from a git repository, in this case the casing
+  # doesn't matter.
+  local_filename = GetCasedFilePath(local_filename)
+  local_file_basename = os.path.basename(local_filename)
+  local_file_dir = os.path.dirname(local_filename)
+  file_info = RunCommand('git.bat', 'log', '-n', '1', local_file_basename,
+                          cwd=local_file_dir, raise_on_failure=False)
+
+  if not file_info:
+    return
+
+  # Get the revision of the master branch.
+  rev = RunCommand('git.bat', 'rev-parse', 'HEAD', cwd=local_file_dir)
+
+  # Get the url of the remote repository.
+  repo = RunCommand('git.bat', 'config', '--get', 'remote.origin.url',
+      cwd=local_file_dir)
+  # If the repository point to a local directory then we need to run this
+  # command one more time from this directory to get the repository url.
+  if os.path.isdir(repo):
+    repo = RunCommand('git.bat', 'config', '--get', 'remote.origin.url',
+        cwd=repo)
+
+  # Don't use the authenticated path.
+  repo = repo.replace('googlesource.com/a/', 'googlesource.com/')
+
+  # Get the relative file path for this file in the git repository.
+  git_path = RunCommand('git.bat', 'ls-tree', '--full-name', '--name-only',
+      'HEAD', local_file_basename, cwd=local_file_dir).replace('/','\\')
+
+  if not git_path:
+    return
+
+  git_root_path = local_filename.replace(git_path, '')
+
+  if repo not in REPO_MAP:
+    # Automatically adds the project coming from a git GoogleCode repository to
+    # the repository map. The files from these repositories are accessible via
+    # gitiles in a base64 encoded format.
+    if 'chromium.googlesource.com' in repo:
+      REPO_MAP[repo] = {
+          'url': '%s/+/{revision}/{file_path}?format=TEXT' % repo,
+          'base64': True
+      }
+
+  # Get the list of files coming from this repository.
+  git_file_list = RunCommand('git.bat', 'ls-tree', '--full-name', '--name-only',
+      'HEAD', '-r', cwd=git_root_path)
+
+  file_list = [x for x in git_file_list.splitlines() if len(x) != 0]
+
+  return RevisionInfo(repo=repo, rev=rev, files=file_list,
+      root_path=git_root_path, path_prefix=None)
+
+
+def IndexFilesFromRepo(local_filename, file_list, output_lines):
+  """Checks if a given file is a part of a revision control repository (svn or
+  git) and index all the files from this repository if it's the case.
+
+  Args:
+    local_filename: The filename of the current file.
+    file_list: The list of files that should be indexed.
+    output_lines: The source indexing lines that will be appended to the PDB.
+
+  Returns the number of indexed files.
+  """
+  indexed_files = 0
+
+  # Try to extract the revision info for the current file.
+  info = ExtractGitInfo(local_filename)
+  if not info:
+    info = ExtractSVNInfo(local_filename)
+
+  repo = info.repo
+  rev = info.rev
+  files = info.files
+  root_path = info.root_path.lower()
+
+  # Checks if we should index this file and if the source that we'll retrieve
+  # will be base64 encoded.
+  should_index = False
+  base_64 = False
+  if repo in REPO_MAP:
+    should_index = True
+    base_64 = REPO_MAP[repo].get('base64')
+  else:
+    repo = None
+
+  # Iterates over the files from this repo and index them if needed.
+  for file_iter in files:
+    current_filename = file_iter.lower()
+    full_file_path = os.path.normpath(os.path.join(root_path, current_filename))
+    # Checks if the file is in the list of files to be indexed.
+    if full_file_path in file_list:
+      if should_index:
+        source_url = ''
+        current_file = file_iter
+        # Prefix the filename with the prefix for this repository if needed.
+        if info.path_prefix:
+          current_file = os.path.join(info.path_prefix, current_file)
+        source_url = REPO_MAP[repo].get('url').format(revision=rev,
+            file_path=os.path.normpath(current_file).replace('\\', '/'))
+        output_lines.append('%s*%s*%s*%s*%s' % (full_file_path, current_file,
+            rev, source_url, 'base64.b64decode' if base_64 else ''))
+        indexed_files += 1
+        file_list.remove(full_file_path)
+
+  # The input file should have been removed from the list of files to index.
+  if indexed_files and local_filename in file_list:
+    print '%s shouldn\'t be in the list of files to index anymore.' % \
+        local_filename
+    # TODO(sebmarchand): Turn this into an exception once I've confirmed that
+    #     this doesn't happen on the official builder.
+    file_list.remove(local_filename)
+
+  return indexed_files
+
+
+def DirectoryIsUnderPublicVersionControl(local_dir):
+  # Checks if this directory is from a Git checkout.
+  info = RunCommand('git.bat', 'config', '--get', 'remote.origin.url',
+      cwd=local_dir, raise_on_failure=False)
+  if info:
+    return True
+
+  # If not checks if it's from a SVN checkout.
+  info = GetSVNRepoInfo(local_dir)
+  if info:
+    return True
+
+  return False
+
+
+def UpdatePDB(pdb_filename, verbose=True, build_dir=None, toolchain_dir=None):
   """Update a pdb file with source information."""
   dir_blacklist = { }
-  # TODO(deanm) look into "compressing" our output, by making use of vars
-  # and other things, so we don't need to duplicate the repo path and revs.
+
+  if build_dir:
+    # Blacklisting the build directory allows skipping the generated files, for
+    # Chromium this makes the indexing ~10x faster.
+    build_dir = (os.path.normpath(build_dir)).lower()
+    for directory, _, _ in os.walk(build_dir):
+      dir_blacklist[directory.lower()] = True
+    dir_blacklist[build_dir.lower()] = True
+
+  if toolchain_dir:
+    # Blacklisting the directories from the toolchain as we don't have revision
+    # info for them.
+    toolchain_dir = (os.path.normpath(toolchain_dir)).lower()
+    for directory, _, _ in os.walk(build_dir):
+      dir_blacklist[directory.lower()] = True
+    dir_blacklist[toolchain_dir.lower()] = True
+
+  # Writes the header of the source index stream.
+  #
+  # Here's the description of the variables used in the SRC_* macros (those
+  # variables have to be defined for every source file that we want to index):
+  #   var1: The file path.
+  #   var2: The name of the file without its path.
+  #   var3: The revision or the hash of this file's repository.
+  #   var4: The URL to this file.
+  #   var5: (optional) The python method to call to decode this file, e.g. for
+  #       a base64 encoded file this value should be 'base64.b64decode'.
   lines = [
     'SRCSRV: ini ------------------------------------------------',
     'VERSION=1',
@@ -148,77 +462,87 @@ def UpdatePDB(pdb_filename, verbose=False):
     'VERCTRL=Subversion',
     'DATETIME=%s' % time.asctime(),
     'SRCSRV: variables ------------------------------------------',
-    'SVN_EXTRACT_TARGET_DIR=%targ%\%fnbksl%(%var3%)\%var4%',
-    'SVN_EXTRACT_TARGET=%svn_extract_target_dir%\%fnfile%(%var1%)',
-    'SVN_EXTRACT_CMD=cmd /c mkdir "%svn_extract_target_dir%" && cmd /c svn cat "%var2%%var3%@%var4%" --non-interactive > "%svn_extract_target%"',
-    'SRCSRVTRG=%SVN_extract_target%',
-    'SRCSRVCMD=%SVN_extract_cmd%',
+    'SRC_EXTRACT_TARGET_DIR=%targ%\%fnbksl%(%var2%)\%var3%',
+    'SRC_EXTRACT_TARGET=%SRC_EXTRACT_TARGET_DIR%\%fnfile%(%var1%)',
+    'SRC_EXTRACT_CMD=cmd /c "mkdir "%SRC_EXTRACT_TARGET_DIR%" & python -c '
+        '"import urllib2, base64;'
+        'url = \\\"%var4%\\\";'
+        'u = urllib2.urlopen(url);'
+        'print %var5%(u.read());" > "%SRC_EXTRACT_TARGET%""',
+    'SRCSRVTRG=%SRC_EXTRACT_TARGET%',
+    'SRCSRVCMD=%SRC_EXTRACT_CMD%',
     'SRCSRV: source files ---------------------------------------',
   ]
 
   if ReadSourceStream(pdb_filename):
-    raise "PDB already has source indexing information!"
+    raise Exception("PDB already has source indexing information!")
 
   filelist = ExtractSourceFiles(pdb_filename)
-  for filename in filelist:
+  number_of_files = len(filelist)
+  indexed_files_total = 0
+  while filelist:
+    filename = next(iter(filelist))
     filedir = os.path.dirname(filename)
-
     if verbose:
-      print "Processing: %s" % filename
-    # This directory is blacklisted, either because it's not part of the SVN
+      print "[%d / %d] Processing: %s" % (number_of_files - len(filelist),
+          number_of_files, filename)
+
+    # This directory is blacklisted, either because it's not part of a
     # repository, or from one we're not interested in indexing.
     if dir_blacklist.get(filedir, False):
       if verbose:
         print "  skipping, directory is blacklisted."
+      filelist.remove(filename)
       continue
 
-    info = ExtractSvnInfo(filename)
+    # Skip the files that don't exist on the current machine.
+    if not os.path.exists(filename):
+      filelist.remove(filename)
+      continue
 
-    # Skip the file if it's not under an svn repository.  To avoid constantly
-    # querying SVN for files outside of SVN control (for example, the CRT
-    # sources), check if the directory is outside of SVN and blacklist it.
-    if not info:
-      if not ExtractSvnInfo(filedir):
+    # Try to index the current file and all the ones coming from the same
+    # repository.
+    indexed_files = IndexFilesFromRepo(filename, filelist, lines)
+    if not indexed_files:
+      if not DirectoryIsUnderPublicVersionControl(filedir):
         dir_blacklist[filedir] = True
-      if verbose:
-        print "  skipping, file is not in an SVN repository"
+        if verbose:
+          print "Adding %s to the blacklist." % filedir
+      filelist.remove(filename)
       continue
 
-    root = info[0]
-    path = info[1]
-    rev  = info[2]
+    indexed_files_total += indexed_files
 
-    # Check if file was from a svn repository we don't know about, or don't
-    # want to index.  Blacklist the entire directory.
-    if not REPO_MAP.has_key(info[0]):
-      if verbose:
-        print "  skipping, file is from an unknown SVN repository %s" % root
-      dir_blacklist[filedir] = True
-      continue
-
-    # We might want to map an internal repository URL to an external repository.
-    if REPO_MAP[root]:
-      root = REPO_MAP[root]
-
-    lines.append('%s*%s*%s*%s' % (filename, root, path, rev))
     if verbose:
-      print "  indexed file."
+      print "  %d files have been indexed." % indexed_files
 
   lines.append('SRCSRV: end ------------------------------------------------')
 
   WriteSourceStream(pdb_filename, '\r\n'.join(lines))
 
+  if verbose:
+    print "%d / %d files have been indexed." % (indexed_files_total,
+                                                number_of_files)
+
 
 def main():
-  if len(sys.argv) < 2 or len(sys.argv) > 3:
-    print "usage: file.pdb [-v]"
-    return 1
+  parser = optparse.OptionParser()
+  parser.add_option('-v', '--verbose', action='store_true', default=False)
+  parser.add_option('--build-dir', help='The original build directory, if set '
+      'all the files present in this directory (or one of its subdirectories) '
+      'will be skipped.')
+  parser.add_option('--toolchain-dir', help='The directory containing the '
+      'toolchain that has been used for this build. If set all the files '
+      'present in this directory (or one of its subdirectories) will be '
+      'skipped.')
+  options, args = parser.parse_args()
 
-  verbose = False
-  if len(sys.argv) == 3:
-    verbose = (sys.argv[2] == '-v')
+  if not args:
+    parser.error('Specify a pdb')
 
-  UpdatePDB(sys.argv[1], verbose=verbose)
+  for pdb in args:
+    UpdatePDB(pdb, options.verbose, options.build_dir)
+
   return 0
 
 
