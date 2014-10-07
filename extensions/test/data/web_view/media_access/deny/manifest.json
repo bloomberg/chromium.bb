@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview> media",
+  "description": "Loads a guest which requests media access permission",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

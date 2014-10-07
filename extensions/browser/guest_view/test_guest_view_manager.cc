@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/web_view/test_guest_view_manager.h"
+#include "extensions/browser/guest_view/test_guest_view_manager.h"
 
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"

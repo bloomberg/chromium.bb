@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/guest_view/web_view/web_view_apitest.h"
+
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -14,7 +16,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/browser/guest_view/web_view/test_guest_view_manager.h"
+#include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -73,96 +75,90 @@ scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
 
 namespace extensions {
 
-// This class intercepts download request from the guest.
-class WebViewAPITest : public AppShellTest {
- protected:
-  void LaunchApp(const std::string& app_location) {
-    base::FilePath test_data_dir;
-    PathService::Get(DIR_TEST_DATA, &test_data_dir);
-    test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
+WebViewAPITest::WebViewAPITest() {
+  GuestViewManager::set_factory_for_testing(&factory_);
+}
 
-    test_config_.SetString(kTestDataDirectory,
-                           net::FilePathToFileURL(test_data_dir).spec());
+void WebViewAPITest::LaunchApp(const std::string& app_location) {
+  base::FilePath test_data_dir;
+  PathService::Get(DIR_TEST_DATA, &test_data_dir);
+  test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
 
-    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+  test_config_.SetString(kTestDataDirectory,
+                         net::FilePathToFileURL(test_data_dir).spec());
 
-    ASSERT_TRUE(extension_system_->LoadApp(test_data_dir));
-    extension_system_->LaunchApp();
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
-    ExtensionTestMessageListener launch_listener("LAUNCHED", false);
-    ASSERT_TRUE(launch_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(extension_system_->LoadApp(test_data_dir));
+  extension_system_->LaunchApp();
 
-    const AppWindowRegistry::AppWindowList& app_window_list =
-        AppWindowRegistry::Get(browser_context_)->app_windows();
-    DCHECK(app_window_list.size() == 1);
-    embedder_web_contents_ = (*app_window_list.begin())->web_contents();
+  ExtensionTestMessageListener launch_listener("LAUNCHED", false);
+  ASSERT_TRUE(launch_listener.WaitUntilSatisfied());
+
+  const AppWindowRegistry::AppWindowList& app_window_list =
+      AppWindowRegistry::Get(browser_context_)->app_windows();
+  DCHECK(app_window_list.size() == 1);
+  embedder_web_contents_ = (*app_window_list.begin())->web_contents();
+}
+
+void WebViewAPITest::RunTest(const std::string& test_name,
+                             const std::string& app_location) {
+  LaunchApp(app_location);
+
+  ExtensionTestMessageListener done_listener("TEST_PASSED", false);
+  done_listener.set_failure_message("TEST_FAILED");
+  if (!content::ExecuteScript(
+          embedder_web_contents_,
+          base::StringPrintf("runTest('%s')", test_name.c_str()))) {
+    LOG(ERROR) << "Unable to start test.";
+    return;
+  }
+  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+}
+
+void WebViewAPITest::SetUpOnMainThread() {
+  AppShellTest::SetUpOnMainThread();
+
+  TestGetConfigFunction::set_test_config_state(&test_config_);
+  base::FilePath test_data_dir;
+  test_config_.SetInteger(kTestWebSocketPort, 0);
+}
+
+void WebViewAPITest::StartTestServer() {
+  // For serving guest pages.
+  if (!embedded_test_server()->InitializeAndWaitUntilReady()) {
+    LOG(ERROR) << "Failed to start test server.";
+    return;
   }
 
-  void RunTest(const std::string& test_name, const std::string& app_location) {
-    LaunchApp(app_location);
+  test_config_.SetInteger(kTestServerPort, embedded_test_server()->port());
 
-    ExtensionTestMessageListener done_listener("TEST_PASSED", false);
-    done_listener.set_failure_message("TEST_FAILED");
-    if (!content::ExecuteScript(
-            embedder_web_contents_,
-            base::StringPrintf("runTest('%s')", test_name.c_str()))) {
-      LOG(ERROR) << "Unable to start test.";
-      return;
-    }
-    ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&RedirectResponseHandler,
+                 kRedirectResponsePath,
+                 embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&EmptyResponseHandler, kEmptyResponsePath));
+}
+
+void WebViewAPITest::StopTestServer() {
+  if (!embedded_test_server()->ShutdownAndWaitUntilComplete()) {
+    LOG(ERROR) << "Failed to shutdown test server.";
   }
+}
 
-  virtual void SetUpOnMainThread() override {
-    AppShellTest::SetUpOnMainThread();
+void WebViewAPITest::TearDownOnMainThread() {
+  TestGetConfigFunction::set_test_config_state(nullptr);
 
-    TestGetConfigFunction::set_test_config_state(&test_config_);
-    base::FilePath test_data_dir;
-    test_config_.SetInteger(kTestWebSocketPort, 0);
-  }
+  AppShellTest::TearDownOnMainThread();
+}
 
-  void StartTestServer() {
-    // For serving guest pages.
-    if (!embedded_test_server()->InitializeAndWaitUntilReady()) {
-      LOG(ERROR) << "Failed to start test server.";
-      return;
-    }
-
-    test_config_.SetInteger(kTestServerPort, embedded_test_server()->port());
-
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&RedirectResponseHandler,
-                   kRedirectResponsePath,
-                   embedded_test_server()->GetURL(kRedirectResponseFullPath)));
-
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&EmptyResponseHandler, kEmptyResponsePath));
-  }
-
-  void StopTestServer() {
-    if (!embedded_test_server()->ShutdownAndWaitUntilComplete()) {
-      LOG(ERROR) << "Failed to shutdown test server.";
-    }
-  }
-
-  virtual void TearDownOnMainThread() override {
-    TestGetConfigFunction::set_test_config_state(nullptr);
-
-    AppShellTest::TearDownOnMainThread();
-  }
-
-  TestGuestViewManager* GetGuestViewManager() {
-    return static_cast<TestGuestViewManager*>(
-        TestGuestViewManager::FromBrowserContext(
-            ShellContentBrowserClient::Get()->GetBrowserContext()));
-  }
-
-  WebViewAPITest() { GuestViewManager::set_factory_for_testing(&factory_); }
-
- protected:
-  content::WebContents* embedder_web_contents_;
-  TestGuestViewManagerFactory factory_;
-  base::DictionaryValue test_config_;
-};
+TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
+  return static_cast<TestGuestViewManager*>(
+      TestGuestViewManager::FromBrowserContext(
+          ShellContentBrowserClient::Get()->GetBrowserContext()));
+}
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAllowTransparencyAttribute) {
   RunTest("testAllowTransparencyAttribute", "web_view/apitest");

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_TEST_GUEST_VIEW_MANAGER_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_TEST_GUEST_VIEW_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
 
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
@@ -52,4 +52,4 @@ class TestGuestViewManagerFactory : public GuestViewManagerFactory {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_TEST_GUEST_VIEW_MANAGER_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_

@@ -30,7 +30,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/browser/guest_view/web_view/test_guest_view_manager.h"
+#include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/test/extension_test_message_listener.h"
