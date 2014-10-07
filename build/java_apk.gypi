@@ -220,9 +220,23 @@
     }],
     ['native_lib_target != ""', {
       'variables': {
+        'conditions': [
+          ['use_chromium_linker == 1', {
+            'variables': {
+              'chromium_linker_path': [
+                '<(SHARED_LIB_DIR)/<(libchromium_android_linker)',
+              ],
+            }
+          }, {
+            'variables': {
+              'chromium_linker_path': [],
+            },
+          }],
+        ],
         'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
         'native_libs_paths': [
-          '<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)'
+          '<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)',
+          '<@(chromium_linker_path)'
         ],
         'package_input_paths': [
           '<(apk_package_native_libs_dir)/<(android_app_abi)/gdbserver',
@@ -242,23 +256,9 @@
       'actions': [
         {
           'variables': {
-            'conditions': [
-              ['use_chromium_linker == 1', {
-                'variables': {
-                  'linker_input_libraries': [
-                    '<(SHARED_LIB_DIR)/<(libchromium_android_linker)',
-                  ],
-                }
-              }, {
-                'variables': {
-                  'linker_input_libraries': [],
-                },
-              }],
-            ],
             'input_libraries': [
               '<@(native_libs_paths)',
               '<@(extra_native_libs)',
-              '<@(linker_input_libraries)',
             ],
           },
           'includes': ['../build/android/write_ordered_libraries.gypi'],
