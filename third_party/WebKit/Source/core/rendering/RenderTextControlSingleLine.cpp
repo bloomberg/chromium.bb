@@ -258,7 +258,7 @@ void RenderTextControlSingleLine::capsLockStateMayHaveChanged()
 
     if (shouldDrawCapsLockIndicator != m_shouldDrawCapsLockIndicator) {
         m_shouldDrawCapsLockIndicator = shouldDrawCapsLockIndicator;
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
     }
 }
 

@@ -2768,7 +2768,7 @@ void RenderLayer::filterNeedsPaintInvalidation()
         toElement(renderer()->node())->scheduleSVGFilterLayerUpdateHack();
     }
 
-    renderer()->setShouldDoFullPaintInvalidation(true);
+    renderer()->setShouldDoFullPaintInvalidation();
 }
 
 void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
@@ -2811,7 +2811,7 @@ void RenderLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
 
 void RenderLayer::setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
 {
-    renderer()->setShouldDoFullPaintInvalidation(true);
+    renderer()->setShouldDoFullPaintInvalidation();
 
     // Disable for reading compositingState() in isPaintInvalidationContainer() below.
     DisableCompositingQueryAsserts disabler;

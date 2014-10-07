@@ -303,7 +303,7 @@ static void forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendan
     // changing the previous position from our paint invalidation container, which is fine as
     // we want a full paint invalidation anyway.
     renderer->setPreviousPaintInvalidationRect(LayoutRect());
-    renderer->setShouldDoFullPaintInvalidation(true);
+    renderer->setShouldDoFullPaintInvalidation();
 
     for (RenderObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isPaintInvalidationContainer())

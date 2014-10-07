@@ -3249,7 +3249,7 @@ void HTMLMediaElement::mediaPlayerRepaint()
 
     updateDisplayState();
     if (renderer())
-        renderer()->setShouldDoFullPaintInvalidation(true);
+        renderer()->setShouldDoFullPaintInvalidation();
 }
 
 void HTMLMediaElement::mediaPlayerSizeChanged()

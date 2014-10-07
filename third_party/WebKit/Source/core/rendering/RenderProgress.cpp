@@ -61,7 +61,7 @@ void RenderProgress::updateFromElement()
     m_position = element->position();
 
     updateAnimationState();
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
     RenderBlockFlow::updateFromElement();
 }
 
@@ -78,7 +78,7 @@ bool RenderProgress::isDeterminate() const
 
 void RenderProgress::animationTimerFired(Timer<RenderProgress>*)
 {
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
     if (!m_animationTimer.isActive() && m_animating)
         m_animationTimer.startOneShot(m_animationRepeatInterval, FROM_HERE);
 }

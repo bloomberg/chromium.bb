@@ -305,7 +305,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
                 m_customCompositionUnderlines[i].endOffset += baseOffset;
             }
             if (baseNode->renderer())
-                baseNode->renderer()->setShouldDoFullPaintInvalidation(true);
+                baseNode->renderer()->setShouldDoFullPaintInvalidation();
 
             unsigned start = std::min(baseOffset + selectionStart, extentOffset);
             unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
@@ -343,7 +343,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
             m_customCompositionUnderlines[i].endOffset += m_compositionStart;
         }
         if (baseNode->renderer())
-            baseNode->renderer()->setShouldDoFullPaintInvalidation(true);
+            baseNode->renderer()->setShouldDoFullPaintInvalidation();
         return;
     }
 

@@ -355,7 +355,7 @@ void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
         return;
     m_wasFocusedByMouse = false;
     if (renderer())
-        renderer()->setShouldDoFullPaintInvalidation(true);
+        renderer()->setShouldDoFullPaintInvalidation();
 }
 
 short HTMLFormControlElement::tabIndex() const

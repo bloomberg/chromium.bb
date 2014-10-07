@@ -307,7 +307,7 @@ void HTMLCanvasElement::reset()
                     renderBox()->contentChanged(CanvasChanged);
             }
             if (hadImageBuffer)
-                renderer->setShouldDoFullPaintInvalidation(true);
+                renderer->setShouldDoFullPaintInvalidation();
         }
     }
 

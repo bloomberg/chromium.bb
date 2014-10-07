@@ -74,7 +74,7 @@ void RenderFileUploadControl::updateFromElement()
     FileList* files = input->files();
     ASSERT(files);
     if (files && files->isEmpty())
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
 }
 
 static int nodeWidth(Node* node)

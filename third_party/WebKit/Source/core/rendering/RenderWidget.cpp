@@ -272,7 +272,7 @@ void RenderWidget::updateOnWidgetChange()
     } else {
         widget->show();
         // FIXME: Why do we issue a full paint invalidation in this case, but not the other?
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
     }
 }
 

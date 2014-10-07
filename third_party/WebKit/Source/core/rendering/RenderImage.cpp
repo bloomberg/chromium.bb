@@ -394,7 +394,7 @@ void RenderImage::layout()
     LayoutRect oldContentRect = replacedContentRect();
     RenderReplaced::layout();
     if (replacedContentRect() != oldContentRect)
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
     updateInnerContentRect();
 }
 

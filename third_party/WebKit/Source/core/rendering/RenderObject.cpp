@@ -1741,7 +1741,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     if (updatedDiff.needsPaintInvalidationLayer())
         toRenderLayerModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
 }
 
 static inline bool rendererHasBackground(const RenderObject* renderer)
@@ -2626,7 +2626,7 @@ void RenderObject::scheduleRelayout()
 void RenderObject::forceLayout()
 {
     setSelfNeedsLayout(true);
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
     layout();
 }
 
@@ -3082,15 +3082,7 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
     return objectIsRelayoutBoundary(this);
 }
 
-void RenderObject::setShouldDoFullPaintInvalidation(bool b, MarkingBehavior markBehavior)
-{
-    if (b)
-        setShouldDoFullPaintInvalidationWithReason(InvalidationFull, markBehavior);
-    else
-        m_bitfields.setFullPaintInvalidationReason(InvalidationNone);
-}
-
-void RenderObject::setShouldDoFullPaintInvalidationWithReason(InvalidationReason reason, MarkingBehavior markBehavior)
+void RenderObject::setShouldDoFullPaintInvalidationWithReason(InvalidationReason reason)
 {
     // Only full invalidation reasons are allowed.
     ASSERT(reason != InvalidationNone && reason != InvalidationIncremental);
@@ -3098,18 +3090,16 @@ void RenderObject::setShouldDoFullPaintInvalidationWithReason(InvalidationReason
     // RenderText objects don't know how to invalidate paint for themselves, since they don't know how to compute their bounds.
     // Instead the parent fully invalidate when any text needs full paint invalidation.
     if (isText()) {
-        parent()->setShouldDoFullPaintInvalidationWithReason(reason, markBehavior);
+        parent()->setShouldDoFullPaintInvalidationWithReason(reason);
         return;
     }
 
     if (m_bitfields.fullPaintInvalidationReason() == InvalidationNone)
         m_bitfields.setFullPaintInvalidationReason(reason);
 
-    if (markBehavior == MarkContainingBlockChain) {
-        ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
-        frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called not during FrameView::updateLayoutAndStyleForPainting().
-        markContainingBlockChainForPaintInvalidation();
-    }
+    ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
+    frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called not during FrameView::updateLayoutAndStyleForPainting().
+    markContainingBlockChainForPaintInvalidation();
 }
 
 void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
@@ -3117,7 +3107,7 @@ void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& pai
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.
     ASSERT(paintInvalidationState.forceCheckForPaintInvalidation() || paintInvalidationStateIsDirty());
-    setShouldDoFullPaintInvalidation(false);
+    clearShouldDoFullPaintInvalidation();
     setNeededLayoutBecauseOfChildren(false);
     setShouldInvalidateOverflowForPaint(false);
     setLayoutDidGetCalled(false);

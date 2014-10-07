@@ -1377,7 +1377,7 @@ void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& pa
 void RenderTableSection::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
 }
 
 void RenderTableSection::recalcCells()

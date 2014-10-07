@@ -142,7 +142,7 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
                 return;
             }
         }
-        it->key->setShouldDoFullPaintInvalidation(true);
+        it->key->setShouldDoFullPaintInvalidation();
     }
 
     m_liveResizeOptimizationIsActive = false;

@@ -116,7 +116,7 @@ LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderL
 void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Issue paint invalidation of only the rect the image paints in.
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
 }
 
 void RenderTableCol::clearPreferredLogicalWidthsDirtyBits()

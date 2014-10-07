@@ -299,7 +299,7 @@ void FileInputType::setFiles(FileList* files)
     input->setNeedsValidityCheck();
 
     if (input->renderer())
-        input->renderer()->setShouldDoFullPaintInvalidation(true);
+        input->renderer()->setShouldDoFullPaintInvalidation();
 
     if (pathsChanged) {
         // This call may cause destruction of this instance.

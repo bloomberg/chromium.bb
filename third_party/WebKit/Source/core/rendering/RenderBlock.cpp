@@ -1027,7 +1027,7 @@ void RenderBlock::makeChildrenNonInline(RenderObject *insertionPoint)
         ASSERT(!c->isInline());
 #endif
 
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
 }
 
 void RenderBlock::removeLeftoverAnonymousBlock(RenderBlock* child)

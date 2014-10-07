@@ -1016,8 +1016,9 @@ public:
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
 
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != InvalidationNone; }
-    void setShouldDoFullPaintInvalidation(bool, MarkingBehavior = MarkContainingBlockChain);
-    void setShouldDoFullPaintInvalidationWithReason(InvalidationReason, MarkingBehavior = MarkContainingBlockChain);
+    void setShouldDoFullPaintInvalidation() { setShouldDoFullPaintInvalidationWithReason(InvalidationFull); }
+    void setShouldDoFullPaintInvalidationWithReason(InvalidationReason);
+    void clearShouldDoFullPaintInvalidation() { m_bitfields.setFullPaintInvalidationReason(InvalidationNone); }
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
@@ -1407,7 +1408,7 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
 inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     setNeedsLayout(markParents, layouter);
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
 }
 
 inline void RenderObject::clearNeedsLayout()

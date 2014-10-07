@@ -1240,7 +1240,7 @@ void FrameView::scrollContentsIfNeededRecursive()
 // FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
 static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const RenderLayer* layer)
 {
-    layer->renderer()->setShouldDoFullPaintInvalidation(true);
+    layer->renderer()->setShouldDoFullPaintInvalidation();
 
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
         // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.

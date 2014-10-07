@@ -190,7 +190,7 @@ void RenderTableRow::layout()
     if (selfNeedsLayout() && checkForPaintInvalidation()) {
         for (RenderTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
             // FIXME: Is this needed when issuing paint invalidations after layout?
-            cell->setShouldDoFullPaintInvalidation(true);
+            cell->setShouldDoFullPaintInvalidation();
         }
     }
 
@@ -228,7 +228,7 @@ void RenderTableRow::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 void RenderTableRow::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.
-    setShouldDoFullPaintInvalidation(true);
+    setShouldDoFullPaintInvalidation();
 }
 
 RenderTableRow* RenderTableRow::createAnonymous(Document* document)

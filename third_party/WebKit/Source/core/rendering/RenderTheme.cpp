@@ -628,7 +628,7 @@ bool RenderTheme::stateChanged(RenderObject* o, ControlState state) const
     if (state == PressedControlState && !isEnabled(o))
         return false;
 
-    o->setShouldDoFullPaintInvalidation(true);
+    o->setShouldDoFullPaintInvalidation();
     return true;
 }
 

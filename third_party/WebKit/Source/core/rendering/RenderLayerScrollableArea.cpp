@@ -403,7 +403,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     // Just schedule a full paint invalidation of our object.
     if (requiresPaintInvalidation)
-        box().setShouldDoFullPaintInvalidation(true);
+        box().setShouldDoFullPaintInvalidation();
 
     // Schedule the scroll DOM event.
     if (box().node())

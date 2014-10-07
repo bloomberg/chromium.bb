@@ -146,7 +146,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
         // the canvas. Just dirty the entire canvas when our style changes substantially.
         if ((diff.needsPaintInvalidation() || diff.needsLayout()) && node()
             && (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
-            view()->setShouldDoFullPaintInvalidation(true);
+            view()->setShouldDoFullPaintInvalidation();
 
             if (oldStyle->hasEntirelyFixedBackground() != newStyle.hasEntirelyFixedBackground())
                 view()->compositor()->setNeedsUpdateFixedBackground();
@@ -157,7 +157,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
         if (diff.needsFullLayout() && parent() && oldStyle->position() != newStyle.position()) {
             markContainingBlocksForLayout();
             if (oldStyle->position() == StaticPosition)
-                setShouldDoFullPaintInvalidation(true);
+                setShouldDoFullPaintInvalidation();
             else if (newStyle.hasOutOfFlowPosition())
                 parent()->setChildNeedsLayout();
             if (isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
@@ -166,7 +166,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
     // FIXME: This branch runs when !oldStyle, which means that layout was never called
     // so what's the point in invalidating the whole view that we never painted?
     } else if (isBody()) {
-        view()->setShouldDoFullPaintInvalidation(true);
+        view()->setShouldDoFullPaintInvalidation();
     }
 
     RenderBoxModelObject::styleWillChange(diff, newStyle);
@@ -1255,7 +1255,7 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
     if ((style()->borderImage().image() && style()->borderImage().image()->data() == image) ||
         (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
         return;
     }
 
@@ -1273,7 +1273,7 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
 {
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            setShouldDoFullPaintInvalidation(true);
+            setShouldDoFullPaintInvalidation();
             return true;
         }
     }

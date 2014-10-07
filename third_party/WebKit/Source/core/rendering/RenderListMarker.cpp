@@ -1166,7 +1166,7 @@ void RenderListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
     if (width() != m_image->imageSize(this, style()->effectiveZoom()).width() || height() != m_image->imageSize(this, style()->effectiveZoom()).height() || m_image->errorOccurred())
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     else
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation();
 }
 
 void RenderListMarker::updateMarginsAndContent()
