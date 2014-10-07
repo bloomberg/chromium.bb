@@ -14,30 +14,30 @@
 
 namespace blink {
 
-class NullExecutionContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
+class NullExecutionContext final : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 public:
     NullExecutionContext();
 
-    virtual void disableEval(const String&) OVERRIDE { }
-    virtual String userAgent(const KURL&) const OVERRIDE { return String(); }
+    virtual void disableEval(const String&) override { }
+    virtual String userAgent(const KURL&) const override { return String(); }
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
+    virtual void postTask(PassOwnPtr<ExecutionContextTask>) override;
 
-    virtual EventTarget* errorEventTarget() OVERRIDE { return 0; }
-    virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
+    virtual EventTarget* errorEventTarget() override { return 0; }
+    virtual EventQueue* eventQueue() const override { return m_queue.get(); }
 
-    virtual bool tasksNeedSuspension() OVERRIDE { return m_tasksNeedSuspension; }
+    virtual bool tasksNeedSuspension() override { return m_tasksNeedSuspension; }
     void setTasksNeedSuspension(bool flag) { m_tasksNeedSuspension = flag; }
 
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE { }
-    virtual void didUpdateSecurityOrigin() OVERRIDE { }
-    virtual SecurityContext& securityContext() OVERRIDE { return *this; }
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
+    virtual void didUpdateSecurityOrigin() override { }
+    virtual SecurityContext& securityContext() override { return *this; }
 
     double timerAlignmentInterval() const;
 
-    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE { }
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE { }
+    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 
     void trace(Visitor* visitor)
     {
@@ -49,13 +49,13 @@ public:
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
-    virtual void refExecutionContext() OVERRIDE { ref(); }
-    virtual void derefExecutionContext() OVERRIDE { deref(); }
+    virtual void refExecutionContext() override { ref(); }
+    virtual void derefExecutionContext() override { deref(); }
 #endif
 
 protected:
-    virtual const KURL& virtualURL() const OVERRIDE { return m_dummyURL; }
-    virtual KURL virtualCompleteURL(const String&) const OVERRIDE { return m_dummyURL; }
+    virtual const KURL& virtualURL() const override { return m_dummyURL; }
+    virtual KURL virtualCompleteURL(const String&) const override { return m_dummyURL; }
 
 private:
     bool m_tasksNeedSuspension;

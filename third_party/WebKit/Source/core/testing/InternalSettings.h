@@ -44,10 +44,10 @@ class Page;
 class Settings;
 
 #if ENABLE(OILPAN)
-class InternalSettings FINAL : public InternalSettingsGenerated, public HeapSupplement<Page> {
+class InternalSettings final : public InternalSettingsGenerated, public HeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
 #else
-class InternalSettings FINAL : public InternalSettingsGenerated {
+class InternalSettings final : public InternalSettingsGenerated {
 #endif
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -120,7 +120,7 @@ public:
     void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
     void setLaxMixedContentCheckingEnabled(bool);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     void setAvailablePointerTypes(const String&, ExceptionState&);
     void setPrimaryPointerType(const String&, ExceptionState&);

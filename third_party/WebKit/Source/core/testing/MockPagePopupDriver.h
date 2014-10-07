@@ -39,7 +39,7 @@ class MockPagePopup;
 class PagePopup;
 class PagePopupController;
 
-class MockPagePopupDriver FINAL : public PagePopupDriver {
+class MockPagePopupDriver final : public PagePopupDriver {
 public:
     static PassOwnPtr<MockPagePopupDriver> create(LocalFrame* mainFrame);
     virtual ~MockPagePopupDriver();
@@ -49,9 +49,9 @@ private:
     MockPagePopupDriver(LocalFrame* mainFrame);
 
     // PagePopupDriver functions:
-    virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) OVERRIDE;
-    virtual void closePagePopup(PagePopup*) OVERRIDE;
-    virtual LocalDOMWindow* pagePopupWindow() OVERRIDE { return nullptr; }
+    virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) override;
+    virtual void closePagePopup(PagePopup*) override;
+    virtual LocalDOMWindow* pagePopupWindow() override { return nullptr; }
 
     RefPtr<MockPagePopup> m_mockPagePopup;
     LocalFrame* m_mainFrame;

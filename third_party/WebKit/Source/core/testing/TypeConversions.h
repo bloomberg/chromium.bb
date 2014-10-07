@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class TypeConversions FINAL : public GarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
+class TypeConversions final : public GarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static TypeConversions* create()

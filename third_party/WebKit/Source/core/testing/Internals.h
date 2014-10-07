@@ -74,7 +74,7 @@ template <typename NodeType> class StaticNodeTypeList;
 typedef StaticNodeTypeList<Node> StaticNodeList;
 class TypeConversions;
 
-class Internals FINAL : public GarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
+class Internals final : public GarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Internals* create(Document*);

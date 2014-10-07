@@ -40,7 +40,7 @@
 
 namespace blink {
 
-class GCObservation FINAL : public GarbageCollectedFinalized<GCObservation>, public ScriptWrappable {
+class GCObservation final : public GarbageCollectedFinalized<GCObservation>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static GCObservation* create(v8::Handle<v8::Value> observedValue)

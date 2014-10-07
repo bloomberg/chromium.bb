@@ -148,11 +148,11 @@ namespace blink {
 
 namespace {
 
-class InternalsIterator FINAL : public Iterator {
+class InternalsIterator final : public Iterator {
 public:
     InternalsIterator() : m_current(0) { }
 
-    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exceptionState) OVERRIDE
+    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exceptionState) override
     {
         v8::Isolate* isolate = scriptState->isolate();
         int value = m_current * m_current;
@@ -162,7 +162,7 @@ public:
         return ScriptValue(scriptState, v8IteratorResult(scriptState, value));
     }
 
-    virtual ScriptValue next(ScriptState* scriptState, ScriptValue value, ExceptionState& exceptionState) OVERRIDE
+    virtual ScriptValue next(ScriptState* scriptState, ScriptValue value, ExceptionState& exceptionState) override
     {
         exceptionState.throwTypeError("Not implemented");
         return ScriptValue();
@@ -2117,7 +2117,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue value) OVERRIDE
+    virtual ScriptValue call(ScriptValue value) override
     {
         v8::Local<v8::Value> v8Value = value.v8Value();
         ASSERT(v8Value->IsNumber());

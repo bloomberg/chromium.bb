@@ -44,7 +44,7 @@ class ClientRectList;
 class LayerRect;
 class Node;
 
-class LayerRectList FINAL : public GarbageCollected<LayerRectList>, public ScriptWrappable {
+class LayerRectList final : public GarbageCollected<LayerRectList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static LayerRectList* create()

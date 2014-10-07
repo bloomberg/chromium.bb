@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class InternalProfilers FINAL : public GarbageCollected<InternalProfilers>, public ScriptWrappable {
+class InternalProfilers final : public GarbageCollected<InternalProfilers>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     InternalProfilers();

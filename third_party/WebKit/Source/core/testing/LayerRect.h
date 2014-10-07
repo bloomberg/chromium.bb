@@ -43,7 +43,7 @@ namespace blink {
 
 class Node;
 
-class LayerRect FINAL : public GarbageCollectedFinalized<LayerRect>, public ScriptWrappable {
+class LayerRect final : public GarbageCollectedFinalized<LayerRect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static LayerRect* create(PassRefPtrWillBeRawPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
