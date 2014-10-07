@@ -15,7 +15,7 @@ namespace {
 
 class ObjectProxyTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     Bus::Options bus_options;
     bus_options.bus_type = Bus::SESSION;
     bus_options.connection_type = Bus::PRIVATE;
@@ -25,7 +25,7 @@ class ObjectProxyTest : public testing::Test {
         "org.chromium.TestService", ObjectPath("/org/chromium/TestObject"));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     bus_->ShutdownAndBlock();
   }
 

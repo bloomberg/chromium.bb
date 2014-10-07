@@ -32,14 +32,14 @@ class MockObjectProxy : public ObjectProxy {
   virtual scoped_ptr<Response> CallMethodAndBlockWithErrorDetails(
       MethodCall* method_call,
       int timeout_ms,
-      ScopedDBusError* error) OVERRIDE {
+      ScopedDBusError* error) override {
     return scoped_ptr<Response>(
         MockCallMethodAndBlockWithErrorDetails(method_call, timeout_ms, error));
   }
   MOCK_METHOD2(MockCallMethodAndBlock, Response*(MethodCall* method_call,
                                                  int timeout_ms));
   virtual scoped_ptr<Response> CallMethodAndBlock(MethodCall* method_call,
-                                                  int timeout_ms) OVERRIDE {
+                                                  int timeout_ms) override {
     return scoped_ptr<Response>(MockCallMethodAndBlock(method_call,
                                                        timeout_ms));
   }
