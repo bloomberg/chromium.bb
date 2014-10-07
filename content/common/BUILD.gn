@@ -251,9 +251,11 @@ source_set("common") {
         "gpu/media/vaapi_h264_decoder.h",
         "gpu/media/vaapi_video_decode_accelerator.cc",
         "gpu/media/vaapi_video_decode_accelerator.h",
+        "gpu/media/vaapi_video_encode_accelerator.cc",
+        "gpu/media/vaapi_video_encode_accelerator.h",
         "gpu/media/vaapi_wrapper.cc",
         "gpu/media/vaapi_wrapper.h",
-      ]
+      ] + get_target_outputs(":libva_generate_stubs")
       configs += [
         "//third_party/libva:libva_config",
         "//third_party/libyuv:libyuv_config",
