@@ -70,8 +70,21 @@ class FakeServer {
   // authentication error.
   void SetUnauthenticated();
 
-  // Return |error_type| on next sync request.
+  // Force the server to return |error_type| in the error_code field of
+  // ClientToServerResponse on all subsequent sync requests. This method should
+  // not be called if TriggerActionableError has previously been called.
+  // TODO(pvalenzuela): Return a bool here to indicate whether the call
+  // succeeded.
   void TriggerError(const sync_pb::SyncEnums::ErrorType& error_type);
+
+  // Force the server to return the given data as part of the error field of
+  // ClientToServerResponse on all subsequent sync requests. This method should
+  // not be called if TriggerError has previously been called.
+  bool TriggerActionableError(
+    const sync_pb::SyncEnums::ErrorType& error_type,
+    const std::string& description,
+    const std::string& url,
+    const sync_pb::SyncEnums::Action& action);
 
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
@@ -145,7 +158,13 @@ class FakeServer {
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
 
+  // Used as the error_code field of ClientToServerResponse on all responses
+  // except when |triggered_actionable_error_| is set.
   sync_pb::SyncEnums::ErrorType error_type_;
+
+  // Used as the error field of ClientToServerResponse when its pointer is not
+  // NULL.
+  scoped_ptr<sync_pb::ClientToServerResponse_Error> triggered_actionable_error_;
 
   // FakeServer's observers.
   ObserverList<Observer, true> observers_;

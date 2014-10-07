@@ -127,19 +127,20 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
 }
 
-IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, ActionableErrorTest) {
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  syncer::SyncProtocolError protocol_error;
-  protocol_error.error_type = syncer::TRANSIENT_ERROR;
-  protocol_error.action = syncer::UPGRADE_CLIENT;
-  protocol_error.error_description = "Not My Fault";
-  protocol_error.url = "www.google.com";
-  TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
+  std::string description = "Not My Fault";
+  std::string url = "www.google.com";
+  EXPECT_TRUE(GetFakeServer()->TriggerActionableError(
+      sync_pb::SyncEnums::TRANSIENT_ERROR,
+      description,
+      url,
+      sync_pb::SyncEnums::UPGRADE_CLIENT));
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
@@ -152,11 +153,10 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, ActionableErrorTest) {
 
   ProfileSyncService::Status status;
   GetSyncService((0))->QueryDetailedSyncStatus(&status);
-  ASSERT_EQ(status.sync_protocol_error.error_type, protocol_error.error_type);
-  ASSERT_EQ(status.sync_protocol_error.action, protocol_error.action);
-  ASSERT_EQ(status.sync_protocol_error.url, protocol_error.url);
-  ASSERT_EQ(status.sync_protocol_error.error_description,
-      protocol_error.error_description);
+  ASSERT_EQ(status.sync_protocol_error.error_type, syncer::TRANSIENT_ERROR);
+  ASSERT_EQ(status.sync_protocol_error.action, syncer::UPGRADE_CLIENT);
+  ASSERT_EQ(status.sync_protocol_error.url, url);
+  ASSERT_EQ(status.sync_protocol_error.error_description, description);
 }
 
 // Disabled, http://crbug.com/351160 .
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
       protocol_error.error_description);
 }
 
-IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, DisableDatatypeWhileRunning) {
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, DisableDatatypeWhileRunning) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   syncer::ModelTypeSet synced_datatypes =
       GetSyncService((0))->GetActiveDataTypes();

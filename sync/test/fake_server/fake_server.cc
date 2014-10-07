@@ -227,14 +227,17 @@ void FakeServer::HandleCommand(const string& request,
   bool parsed = message.ParseFromString(request);
   CHECK(parsed) << "Unable to parse the ClientToServerMessage.";
 
-  sync_pb::SyncEnums_ErrorType error_code;
   sync_pb::ClientToServerResponse response_proto;
 
   if (message.has_store_birthday() &&
       message.store_birthday() != store_birthday_) {
-    error_code = sync_pb::SyncEnums::NOT_MY_BIRTHDAY;
+    response_proto.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
   } else if (error_type_ != sync_pb::SyncEnums::SUCCESS) {
-    error_code = error_type_;
+    response_proto.set_error_code(error_type_);
+  } else if (triggered_actionable_error_.get()) {
+    sync_pb::ClientToServerResponse_Error* error =
+        response_proto.mutable_error();
+    error->CopyFrom(*(triggered_actionable_error_.get()));
   } else {
     bool success = false;
     switch (message.message_contents()) {
@@ -259,10 +262,9 @@ void FakeServer::HandleCommand(const string& request,
       return;
     }
 
-    error_code = sync_pb::SyncEnums::SUCCESS;
+    response_proto.set_error_code(sync_pb::SyncEnums::SUCCESS);
   }
 
-  response_proto.set_error_code(error_code);
   response_proto.set_store_birthday(store_birthday_);
   callback.Run(0, net::HTTP_OK, response_proto.SerializeAsString());
 }
@@ -503,13 +505,30 @@ void FakeServer::SetUnauthenticated() {
   authenticated_ = false;
 }
 
-// TODO(pvalenzuela): comments from Richard: we should look at
-// mock_connection_manager.cc and take it as a warning. This style of injecting
-// errors works when there's one or two conditions we care about, but it can
-// eventually lead to a hairball once we have many different conditions and
-// triggering logic.
 void FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
+  CHECK(!triggered_actionable_error_.get())
+      << "Only one type of error can be triggered at any given time.";
   error_type_ = error_type;
+}
+
+bool FakeServer::TriggerActionableError(
+    const sync_pb::SyncEnums::ErrorType& error_type,
+    const string& description,
+    const string& url,
+    const sync_pb::SyncEnums::Action& action) {
+  if (error_type_ != sync_pb::SyncEnums::SUCCESS) {
+    DVLOG(1) << "Only one type of error can be triggered at any given time.";
+    return false;
+  }
+
+  sync_pb::ClientToServerResponse_Error* error =
+      new sync_pb::ClientToServerResponse_Error();
+  error->set_error_type(error_type);
+  error->set_error_description(description);
+  error->set_url(url);
+  error->set_action(action);
+  triggered_actionable_error_.reset(error);
+  return true;
 }
 
 void FakeServer::AddObserver(Observer* observer) {
