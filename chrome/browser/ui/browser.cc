@@ -181,6 +181,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -329,20 +330,21 @@ class Browser::InterstitialObserver : public content::WebContentsObserver {
 // Browser, Constructors, Creation, Showing:
 
 Browser::Browser(const CreateParams& params)
-    : type_(params.type),
+    : extension_registry_observer_(this),
+      type_(params.type),
       profile_(params.profile),
       window_(NULL),
       tab_strip_model_delegate_(new chrome::BrowserTabStripModelDelegate(this)),
-      tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
-                                         params.profile)),
+      tab_strip_model_(
+          new TabStripModel(tab_strip_model_delegate_.get(), params.profile)),
       app_name_(params.app_name),
       is_trusted_source_(params.trusted_source),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       override_bounds_(params.initial_bounds),
       initial_show_state_(params.initial_show_state),
       is_session_restore_(params.is_session_restore),
-      host_desktop_type_(BrowserWindow::AdjustHostDesktopType(
-          params.host_desktop_type)),
+      host_desktop_type_(
+          BrowserWindow::AdjustHostDesktopType(params.host_desktop_type)),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
       toolbar_model_delegate_(new BrowserToolbarModelDelegate(this)),
@@ -374,15 +376,8 @@ Browser::Browser(const CreateParams& params)
   search_model_.reset(new SearchModel());
   search_delegate_.reset(new SearchDelegate(search_model_.get()));
 
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
@@ -459,6 +454,7 @@ Browser::~Browser() {
   // destruction will unload extensions and reentrant calls to Browser:: should
   // be avoided while it is being torn down.
   registrar_.RemoveAll();
+  extension_registry_observer_.RemoveAll();
 
   // The tab strip should not have any tabs at this point.
   DCHECK(tab_strip_model_->empty());
@@ -1956,72 +1952,12 @@ void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      chrome::UpdateCommandEnabled(
-          this,
-          IDC_BOOKMARK_PAGE,
-          !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
-      chrome::UpdateCommandEnabled(
-          this,
-          IDC_BOOKMARK_ALL_TABS,
-          !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
-
-      if (window()->GetLocationBar())
-        window()->GetLocationBar()->UpdatePageActions();
-
-      const extensions::UnloadedExtensionInfo* extension_info =
-          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-
-      // Close any tabs from the unloaded extension, unless it's terminated,
-      // in which case let the sad tabs remain.
-      if (extension_info->reason !=
-          extensions::UnloadedExtensionInfo::REASON_TERMINATE) {
-        const Extension* extension = extension_info->extension;
-        // Iterate backwards as we may remove items while iterating.
-        for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
-          WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
-          // Two cases are handled here:
-          // - The scheme check is for when an extension page is loaded in a
-          //   tab, e.g. chrome-extension://id/page.html.
-          // - The extension_app check is for apps, which can have non-extension
-          //   schemes, e.g. https://mail.google.com if you have the Gmail app
-          //   installed.
-          if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
-               web_contents->GetURL().host() == extension->id()) ||
-              (extensions::TabHelper::FromWebContents(
-                   web_contents)->extension_app() == extension)) {
-            tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
-          }
-        }
-      }
-      break;
-    }
-
     case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile) && window()->GetLocationBar())
         window()->GetLocationBar()->InvalidatePageActions();
       break;
     }
-
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      chrome::UpdateCommandEnabled(
-          this,
-          IDC_BOOKMARK_PAGE,
-          !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
-      chrome::UpdateCommandEnabled(
-          this,
-          IDC_BOOKMARK_ALL_TABS,
-          !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
-    // fallthrough
-    case extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-      // During window creation on Windows we may end up calling into
-      // SHAppBarMessage, which internally spawns a nested message loop. This
-      // makes it possible for us to end up here before window creation has
-      // completed, at which point window_ is NULL. See 94752 for details.
-      if (window() && window()->GetLocationBar())
-        window()->GetLocationBar()->UpdatePageActions();
-      break;
 
 #if defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
@@ -2041,6 +1977,71 @@ void Browser::Observe(int type,
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Browser, extensions::ExtensionRegistryObserver implementation:
+
+void Browser::OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                     const extensions::Extension* extension,
+                                     extensions::UninstallReason reason) {
+  // During window creation on Windows we may end up calling into
+  // SHAppBarMessage, which internally spawns a nested message loop.This
+  // makes it possible for us to end up here before window creation has
+  // completed, at which point window_ is NULL. See 94752 for details.
+
+  if (window() && window()->GetLocationBar())
+    window()->GetLocationBar()->UpdatePageActions();
+}
+
+void Browser::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                const extensions::Extension* extension) {
+  chrome::UpdateCommandEnabled(
+      this,
+      IDC_BOOKMARK_PAGE,
+      !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
+  chrome::UpdateCommandEnabled(
+      this,
+      IDC_BOOKMARK_ALL_TABS,
+      !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
+}
+
+void Browser::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  chrome::UpdateCommandEnabled(
+      this,
+      IDC_BOOKMARK_PAGE,
+      !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
+  chrome::UpdateCommandEnabled(
+      this,
+      IDC_BOOKMARK_ALL_TABS,
+      !chrome::ShouldRemoveBookmarkOpenPagesUI(profile_));
+  if (window()->GetLocationBar())
+    window()->GetLocationBar()->UpdatePageActions();
+
+  // Close any tabs from the unloaded extension, unless it's terminated,
+  // in which case let the sad tabs remain.
+  if (reason != extensions::UnloadedExtensionInfo::REASON_TERMINATE) {
+    // Iterate backwards as we may remove items while iterating.
+    for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
+      WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
+      // Two cases are handled here:
+
+      // - The scheme check is for when an extension page is loaded in a
+      // tab, e.g. chrome-extension://id/page.html.
+      // - The extension_app check is for apps, which can have non-extension
+      // schemes, e.g. https://mail.google.com if you have the Gmail app
+      // installed.
+      if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
+           web_contents->GetURL().host() == extension->id()) ||
+          (extensions::TabHelper::FromWebContents(web_contents)
+               ->extension_app() == extension)) {
+        tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
+      }
+    }
   }
 }
 

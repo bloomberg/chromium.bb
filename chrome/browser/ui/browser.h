@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_zoom.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -77,6 +79,7 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 class WindowController;
 }
 
@@ -105,6 +108,7 @@ class Browser : public TabStripModelObserver,
                 public ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
+                public extensions::ExtensionRegistryObserver,
                 public ui::SelectFileDialog::Listener {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
@@ -712,6 +716,19 @@ class Browser : public TabStripModelObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
 
+  // Overridden from extensions::ExtensionRegistryObserver:
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // Command and state updating ///////////////////////////////////////////////
 
   // Handle changes to kDevTools preference.
@@ -824,6 +841,10 @@ class Browser : public TabStripModelObserver,
   std::vector<InterstitialObserver*> interstitial_observers_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 
