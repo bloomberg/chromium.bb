@@ -9,6 +9,7 @@ encodes their contents as an array of C strings that gets compiled in to Chrome
 and loaded at runtime."""
 
 
+import ast
 import json
 import os
 import sys
@@ -17,13 +18,31 @@ import sys
 # A whitelist of domains that the script will accept when baking configs in to
 # Chrome, to ensure incorrect ones are not added accidentally. Subdomains of
 # whitelist entries are also allowed (e.g. maps.google.com, ssl.gstatic.com).
-DOMAIN_WHITELIST = ('2mdn.net', 'admob.com', 'doubleclick.net', 'ggpht.com',
-                    'google.cn', 'google.co.uk', 'google.com', 'google.com.au',
-                    'google.de', 'google.fr', 'google.it', 'google.jp',
-                    'google.org', 'google.ru', 'googleadservices.com',
-                    'googleapis.com', 'googlesyndication.com',
-                    'googleusercontent.com', 'googlevideo.com', 'gstatic.com',
-                    'gvt1.com', 'youtube.com', 'ytimg.com')
+DOMAIN_WHITELIST = (
+  'admob.com',
+  'doubleclick.net',
+  'ggpht.com',
+  'google.cn',
+  'google.co.uk',
+  'google.com',
+  'google.com.au',
+  'google.de',
+  'google.fr',
+  'google.it',
+  'google.jp',
+  'google.org',
+  'google.ru',
+  'googleadservices.com',
+  'googleapis.com',
+  'googlesyndication.com',
+  'googleusercontent.com',
+  'googlevideo.com',
+  'gstatic.com',
+  'gvt1.com',
+  's0.2mdn.net',
+  'youtube.com',
+  'ytimg.com'
+)
 
 
 CC_HEADER = """// Copyright (C) 2014 The Chromium Authors. All rights reserved.
@@ -52,6 +71,26 @@ CC_FOOTER = """  NULL
 """
 
 
+def get_child(node, children_key, child_key, child_value):
+  children = node[children_key]
+  for child in children:
+    if child[child_key] == child_value:
+      return child
+  raise KeyError("Couldn't find child with %s = %s in %s" %
+                 (child_key, child_value, children_key))
+
+
+def read_json_files_from_gypi(gypi_file):
+  with open(gypi_file, 'r') as f:
+    gypi_text = f.read()
+  gypi_ast = ast.literal_eval(gypi_text)
+  target = get_child(gypi_ast, 'targets', 'target_name', 'domain_reliability')
+  action = get_child(target, 'actions', 'action_name', 'bake_in_configs')
+  json_files = action['variables']['baked_in_configs']
+  gypi_path = os.path.dirname(gypi_file)
+  return [ os.path.join(gypi_path, f) for f in json_files ]
+
+
 def domain_is_whitelisted(domain):
   return any(domain == e or domain.endswith('.' + e)  for e in DOMAIN_WHITELIST)
 
@@ -77,20 +116,28 @@ def quote_and_wrap_text(text, width=79, prefix='  "', suffix='"'):
 
 
 def main():
-  if len(sys.argv) < 3:
-    print >> sys.stderr, ('Usage: %s <JSON files...> <output C++ file>' %
+  if len(sys.argv) != 3:
+    print >> sys.stderr, ('Usage: %s <input .gypi file> <output C++ file>' %
                           sys.argv[0])
     print >> sys.stderr, sys.modules[__name__].__doc__
     return 1
+  gypi_file = sys.argv[1]
+  cpp_file = sys.argv[2]
+
+  json_files = read_json_files_from_gypi(gypi_file)
 
   cpp_code = CC_HEADER
   found_invalid_config = False
-  for json_file in sys.argv[1:-1]:
+  for json_file in json_files:
     with open(json_file, 'r') as f:
       json_text = f.read()
-    config = json.loads(json_text)
+    try:
+      config = json.loads(json_text)
+    except ValueError:
+      print >> sys.stderr, "%s: error parsing JSON" % json_file
+      raise
     if 'monitored_domain' not in config:
-      print >> sys.stderr, ('%s: no monitored_domain found' % json_file)
+      print >> sys.stderr, '%s: no monitored_domain found' % json_file
       found_invalid_config = True
       continue
     domain = config['monitored_domain']
@@ -107,7 +154,7 @@ def main():
   if found_invalid_config:
     return 1
 
-  with open(sys.argv[-1], 'wb') as f:
+  with open(cpp_file, 'wb') as f:
     f.write(cpp_code)
 
   return 0

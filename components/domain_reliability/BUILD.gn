@@ -7,19 +7,74 @@ action("bake_in_configs") {
   script = "bake_in_configs.py"
 
   inputs = [
+    "baked_in_configs/accounts_google_com.json",
+    "baked_in_configs/ad_doubleclick_net.json",
     "baked_in_configs/apis_google_com.json",
+    "baked_in_configs/c_admob_com.json",
+    "baked_in_configs/clients2_google_com.json",
+    "baked_in_configs/csi_gstatic_com.json",
     "baked_in_configs/ddm_google_com.json",
+    "baked_in_configs/docs_google_com.json",
     "baked_in_configs/drive_google_com.json",
+    "baked_in_configs/e_admob_com.json",
+    "baked_in_configs/fonts_googleapis_com.json",
+    "baked_in_configs/googleads4_g_doubleclick_net.json",
+    "baked_in_configs/googleads_g_doubleclick_net.json",
+    "baked_in_configs/gstatic_com.json",
+    "baked_in_configs/lh3_ggpht_com.json",
+    "baked_in_configs/lh4_ggpht_com.json",
+    "baked_in_configs/lh5_ggpht_com.json",
+    "baked_in_configs/lh6_ggpht_com.json",
     "baked_in_configs/mail_google_com.json",
+    "baked_in_configs/media_admob_com.json",
+    "baked_in_configs/pagead2_googlesyndication_com.json",
+    "baked_in_configs/partner_googleadservices_com.json",
+    "baked_in_configs/pubads_g_doubleclick_net.json",
+    "baked_in_configs/redirector_googlevideo_com.json",
+    "baked_in_configs/redirector_gvt1_com.json",
+    "baked_in_configs/s0_2mdn_net.json",
     "baked_in_configs/ssl_gstatic_com.json",
+    "baked_in_configs/star_admob_com.json",
+    "baked_in_configs/star_doubleclick_net.json",
+    "baked_in_configs/star_g_doubleclick_net.json",
+    "baked_in_configs/star_ggpht_com.json",
+    "baked_in_configs/star_google_cn.json",
+    "baked_in_configs/star_google_co_uk.json",
+    "baked_in_configs/star_google_com.json",
+    "baked_in_configs/star_google_com_au.json",
+    "baked_in_configs/star_google_de.json",
+    "baked_in_configs/star_google_fr.json",
+    "baked_in_configs/star_google_it.json",
+    "baked_in_configs/star_google_jp.json",
+    "baked_in_configs/star_google_org.json",
+    "baked_in_configs/star_google_ru.json",
+    "baked_in_configs/star_googleadservices_com.json",
+    "baked_in_configs/star_googleapis_com.json",
+    "baked_in_configs/star_googlesyndication_com.json",
+    "baked_in_configs/star_googleusercontent_com.json",
+    "baked_in_configs/star_googlevideo_com.json",
+    "baked_in_configs/star_gstatic_com.json",
+    "baked_in_configs/star_gvt1_com.json",
+    "baked_in_configs/star_youtube_com.json",
+    "baked_in_configs/star_ytimg_com.json",
+    "baked_in_configs/t0_gstatic_com.json",
+    "baked_in_configs/t1_gstatic_com.json",
+    "baked_in_configs/t2_gstatic_com.json",
+    "baked_in_configs/t3_gstatic_com.json",
+    "baked_in_configs/themes_googleusercontent_com.json",
     "baked_in_configs/www_google_com.json",
+    "baked_in_configs/www_googleadservices_com.json",
+    "baked_in_configs/www_gstatic_com.json",
     "baked_in_configs/www_youtube_com.json",
   ]
   outputs = [
     "$target_gen_dir/baked_in_configs.cc",
   ]
 
-  args = rebase_path(inputs, root_build_dir) +
+  # The actual list of JSON files will overflow the command line length limit
+  # on Windows, so pass the name of the .gypi file and bake_in_configs.py will
+  # read the filenames out of it manually.
+  args = [ rebase_path("../domain_reliability.gypi", root_build_dir) ] +
          rebase_path(outputs, root_build_dir)
 }
 
