@@ -311,8 +311,7 @@ component("platform") {
   }
   if (use_openmax_dl_fft) {
     include_dirs += [ "//third_party/openmax_dl" ]
-    # TODO(GYP)
-    # deps += [ "//third_party/openmax_dl/dl" ]
+    deps += [ "//third_party/openmax_dl/dl" ]
   }
 }
 
