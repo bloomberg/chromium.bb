@@ -417,9 +417,9 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to finding overlays."""
 
-  FAKE, PUB_PRIV, PUB_ONLY, PUB2_ONLY, PRIV_ONLY = (
-      'fake!board', 'pub-priv-board', 'pub-only-board', 'pub2-only-board',
-      'priv-only-board',
+  FAKE, PUB_PRIV, PUB_PRIV_VARIANT, PUB_ONLY, PUB2_ONLY, PRIV_ONLY = (
+      'fake!board', 'pub-priv-board', 'pub-priv-variant-board',
+      'pub-only-board', 'pub2-only-board', 'priv-only-board',
   )
   PRIVATE = constants.PRIVATE_OVERLAYS
   PUBLIC = constants.PUBLIC_OVERLAYS
@@ -440,9 +440,11 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
                 D('overlay-%s' % self.PUB_ONLY, board_overlay_files),
                 D('overlay-%s' % self.PUB2_ONLY, board_overlay_files),
                 D('overlay-%s' % self.PUB_PRIV, board_overlay_files),
+                D('overlay-%s' % self.PUB_PRIV_VARIANT, board_overlay_files),
             )),
             D('private-overlays', (
                 D('overlay-%s' % self.PUB_PRIV, board_overlay_files),
+                D('overlay-%s' % self.PUB_PRIV_VARIANT, board_overlay_files),
                 D('overlay-%s' % self.PRIV_ONLY, board_overlay_files),
             )),
             D('third_party', (
@@ -458,7 +460,8 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     conf_path = os.path.join(self.tempdir, 'src', '%(private)soverlays',
                              'overlay-%(board)s', 'metadata', 'layout.conf')
 
-    for board in (self.PUB_PRIV, self.PUB_ONLY, self.PUB2_ONLY):
+    for board in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PUB_ONLY,
+                  self.PUB2_ONLY):
       settings = {
           'board': board,
           'private': '',
@@ -467,7 +470,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
       osutils.WriteFile(conf_path % settings,
                         conf_data % settings)
 
-    for board in (self.PUB_PRIV, self.PRIV_ONLY):
+    for board in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PRIV_ONLY):
       settings = {
           'board': board,
           'private': 'private-',
@@ -486,8 +489,8 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
 
     # Now build up the list of overlays that we'll use in tests below.
     self.overlays = {}
-    for b in (None, self.FAKE, self.PUB_PRIV, self.PUB_ONLY, self.PUB2_ONLY,
-              self.PRIV_ONLY):
+    for b in (None, self.FAKE, self.PUB_PRIV, self.PUB_PRIV_VARIANT,
+              self.PUB_ONLY, self.PUB2_ONLY, self.PRIV_ONLY):
       self.overlays[b] = d = {}
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
         try:
@@ -543,7 +546,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     """
     for o in (self.PUBLIC, self.BOTH):
       self.assertLess(set(self.overlays[self.FAKE][o]),
-                          set(self.overlays[self.PUB_PRIV][o]))
+                      set(self.overlays[self.PUB_PRIV][o]))
 
   def testAllBoards(self):
     """If we specify board=None, all overlays should be returned."""
@@ -579,17 +582,28 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
 
   def testFoundPrivateOverlays(self):
     """Verify that private boards had their overlays located."""
-    for b in (self.PUB_PRIV, self.PRIV_ONLY):
+    for b in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PRIV_ONLY):
       self.assertNotEqual(self.overlays[b][self.PRIVATE], [])
     self.assertNotEqual(self.overlays[self.PUB_PRIV][self.BOTH],
                         self.overlays[self.PUB_PRIV][self.PRIVATE])
+    self.assertNotEqual(self.overlays[self.PUB_PRIV_VARIANT][self.BOTH],
+                        self.overlays[self.PUB_PRIV_VARIANT][self.PRIVATE])
 
   def testFoundPublicOverlays(self):
     """Verify that public boards had their overlays located."""
-    for b in (self.PUB_PRIV, self.PUB_ONLY, self.PUB2_ONLY):
+    for b in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PUB_ONLY,
+              self.PUB2_ONLY):
       self.assertNotEqual(self.overlays[b][self.PUBLIC], [])
     self.assertNotEqual(self.overlays[self.PUB_PRIV][self.BOTH],
                         self.overlays[self.PUB_PRIV][self.PUBLIC])
+    self.assertNotEqual(self.overlays[self.PUB_PRIV_VARIANT][self.BOTH],
+                        self.overlays[self.PUB_PRIV_VARIANT][self.PUBLIC])
+
+  def testFoundParentOverlays(self):
+    """Verify that the overlays for a parent board are found."""
+    for d in self.PUBLIC, self.PRIVATE:
+      self.assertTrue(self.overlays[self.PUB_PRIV][d] <
+                      self.overlays[self.PUB_PRIV_VARIANT][d])
 
 
 class UtilFuncsTest(cros_test_lib.TempDirTestCase):

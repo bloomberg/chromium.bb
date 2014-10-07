@@ -111,6 +111,8 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
         seen.add(master)
         _AddRepo(master)
         ret.append(overlays[master]['path'])
+        if not master.endswith('-private'):
+          _AddRepo('%s-private' % master, True)
     return True
 
   # Legacy: load the global configs.  In the future, this should be found
