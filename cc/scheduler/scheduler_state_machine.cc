@@ -326,7 +326,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_IDLE)
     return false;
 
-  // We want to clear the pipline of any pending draws and activations
+  // We want to clear the pipeline of any pending draws and activations
   // before starting output surface initialization. This allows us to avoid
   // weird corner cases where we abort draws or force activation while we
   // are initializing the output surface.
@@ -341,7 +341,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 bool SchedulerStateMachine::ShouldDraw() const {
   // If we need to abort draws, we should do so ASAP since the draw could
   // be blocking other important actions (like output surface initialization),
-  // from occuring. If we are waiting for the first draw, then perfom the
+  // from occurring. If we are waiting for the first draw, then perform the
   // aborted draw to keep things moving. If we are not waiting for the first
   // draw however, we don't want to abort for no reason.
   if (PendingDrawsShouldBeAborted())
@@ -484,14 +484,6 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
 
   // We shouldn't normally accept commits if there isn't an OutputSurface.
   if (!HasInitializedOutputSurface())
-    return false;
-
-  // SwapAck throttle the BeginMainFrames unless we just swapped.
-  // TODO(brianderson): Remove this restriction to improve throughput.
-  bool just_swapped_in_deadline =
-      begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
-      HasSwappedThisFrame();
-  if (pending_swaps_ >= max_pending_swaps_ && !just_swapped_in_deadline)
     return false;
 
   if (skip_begin_main_frame_to_reduce_latency_)

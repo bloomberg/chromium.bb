@@ -1331,11 +1331,12 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   EXPECT_TRUE(client.needs_begin_frames());
   client.Reset();
 
-  // While swap throttled, BeginRetroFrames should trigger BeginImplFrames
-  // but not a BeginMainFrame or draw.
+  // While swap throttled, BeginRetroFrames should trigger BeginImplFrames and
+  // BeginMainFrame, but not draw.
   scheduler->SetNeedsCommit();
   client.task_runner().RunPendingTasks();  // Run posted BeginRetroFrame.
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 1);
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frames());
   client.Reset();
@@ -1350,7 +1351,7 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
 
   // Take us out of a swap throttled state.
   scheduler->DidSwapBuffersComplete();
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 0, 1);
+  EXPECT_EQ(0, client.num_actions_());
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frames());
   client.Reset();
@@ -1510,18 +1511,19 @@ void BeginFramesNotFromClient_SwapThrottled(bool begin_frame_scheduling_enabled,
   EXPECT_FALSE(client.needs_begin_frames());
   client.Reset();
 
-  // While swap throttled, BeginFrames should trigger BeginImplFrames,
-  // but not a BeginMainFrame or draw.
+  // While swap throttled, BeginFrames should trigger BeginImplFrames and
+  // BeginMainFrame, but not draw.
   scheduler->SetNeedsCommit();
   client.task_runner().RunPendingTasks();  // Run posted BeginFrame.
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 1);
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(client.needs_begin_frames());
   client.Reset();
 
   // Take us out of a swap throttled state.
   scheduler->DidSwapBuffersComplete();
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 0, 1);
+  EXPECT_EQ(0, client.num_actions_());
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(client.needs_begin_frames());
   client.Reset();
