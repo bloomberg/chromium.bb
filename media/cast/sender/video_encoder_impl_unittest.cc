@@ -108,9 +108,8 @@ class VideoEncoderImplTest : public ::testing::Test {
   void CreateEncoder() {
     test_video_encoder_callback_ = new TestVideoEncoderCallback(
         video_config_.max_number_of_video_buffers_used != 1);
-    video_encoder_.reset(new VideoEncoderImpl(
-        cast_environment_, video_config_,
-        0 /* useless arg to be removed in later change */));
+    video_encoder_.reset(
+        new VideoEncoderImpl(cast_environment_, video_config_));
   }
 
   void AdvanceClockAndVideoFrameTimestamp() {

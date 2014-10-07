@@ -56,18 +56,18 @@ VideoSender::VideoSender(
         video_config.max_frame_rate,
         video_config.min_playout_delay,
         video_config.max_playout_delay,
-        NewFixedCongestionControl(
-            (video_config.min_bitrate + video_config.max_bitrate) / 2)),
+        video_config.use_external_encoder ?
+            NewFixedCongestionControl(
+                (video_config.min_bitrate + video_config.max_bitrate) / 2) :
+            NewAdaptiveCongestionControl(cast_environment->Clock(),
+                                         video_config.max_bitrate,
+                                         video_config.min_bitrate,
+                                         video_config.max_frame_rate)),
       frames_in_encoder_(0),
       last_bitrate_(0),
       playout_delay_change_cb_(playout_delay_change_cb),
       weak_factory_(this) {
   cast_initialization_status_ = STATUS_VIDEO_UNINITIALIZED;
-  VLOG(1) << "max_unacked_frames is " << max_unacked_frames_
-          << " for target_playout_delay="
-          << target_playout_delay_.InMilliseconds() << " ms"
-          << " and max_frame_rate=" << video_config.max_frame_rate;
-  DCHECK_GT(max_unacked_frames_, 0);
 
   if (video_config.use_external_encoder) {
     video_encoder_.reset(new ExternalVideoEncoder(
@@ -79,13 +79,7 @@ VideoSender::VideoSender(
         create_video_encode_mem_cb));
   } else {
     // Software encoder is initialized immediately.
-    congestion_control_.reset(
-        NewAdaptiveCongestionControl(cast_environment->Clock(),
-                                     video_config.max_bitrate,
-                                     video_config.min_bitrate,
-                                     max_unacked_frames_));
-    video_encoder_.reset(new VideoEncoderImpl(
-        cast_environment, video_config, max_unacked_frames_));
+    video_encoder_.reset(new VideoEncoderImpl(cast_environment, video_config));
     cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
   }
 

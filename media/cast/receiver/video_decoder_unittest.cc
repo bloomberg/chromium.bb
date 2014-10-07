@@ -40,7 +40,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
  public:
   VideoDecoderTest()
       : cast_environment_(new StandaloneCastEnvironment()),
-        vp8_encoder_(GetVideoSenderConfigForTest(), 0),
+        vp8_encoder_(GetVideoSenderConfigForTest()),
         cond_(&lock_) {
     vp8_encoder_.Initialize();
   }

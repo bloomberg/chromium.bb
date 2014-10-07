@@ -27,11 +27,13 @@ class AdaptiveCongestionControl : public CongestionControl {
   AdaptiveCongestionControl(base::TickClock* clock,
                             uint32 max_bitrate_configured,
                             uint32 min_bitrate_configured,
-                            size_t max_unacked_frames);
+                            double max_frame_rate);
 
   virtual ~AdaptiveCongestionControl() override;
 
   virtual void UpdateRtt(base::TimeDelta rtt) override;
+
+  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) OVERRIDE;
 
   // Called when an encoded frame is sent to the transport.
   virtual void SendFrameToTransport(uint32 frame_id,
@@ -61,6 +63,8 @@ class AdaptiveCongestionControl : public CongestionControl {
   // Get the FrameStats for a given |frame_id|.
   // Note: Older FrameStats will be removed automatically.
   FrameStats* GetFrameStats(uint32 frame_id);
+  // Discard old FrameStats.
+  void PruneFrameStats();
   // Calculate a safe bitrate. This is based on how much we've been
   // sending in the past.
   double CalculateSafeBitrate();
@@ -76,6 +80,7 @@ class AdaptiveCongestionControl : public CongestionControl {
   base::TickClock* const clock_;  // Not owned by this class.
   const uint32 max_bitrate_configured_;
   const uint32 min_bitrate_configured_;
+  const double max_frame_rate_;
   std::deque<FrameStats> frame_stats_;
   uint32 last_frame_stats_;
   uint32 last_acked_frame_;
@@ -94,6 +99,9 @@ class FixedCongestionControl : public CongestionControl {
   virtual ~FixedCongestionControl() override {}
 
   virtual void UpdateRtt(base::TimeDelta rtt) override {
+  }
+
+  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) OVERRIDE {
   }
 
   // Called when an encoded frame is sent to the transport.
@@ -122,11 +130,11 @@ CongestionControl* NewAdaptiveCongestionControl(
     base::TickClock* clock,
     uint32 max_bitrate_configured,
     uint32 min_bitrate_configured,
-    size_t max_unacked_frames) {
+    double max_frame_rate) {
   return new AdaptiveCongestionControl(clock,
                                        max_bitrate_configured,
                                        min_bitrate_configured,
-                                       max_unacked_frames);
+                                       max_frame_rate);
 }
 
 CongestionControl* NewFixedCongestionControl(uint32 bitrate) {
@@ -150,14 +158,15 @@ AdaptiveCongestionControl::AdaptiveCongestionControl(
     base::TickClock* clock,
     uint32 max_bitrate_configured,
     uint32 min_bitrate_configured,
-    size_t max_unacked_frames)
+    double max_frame_rate)
     : clock_(clock),
       max_bitrate_configured_(max_bitrate_configured),
       min_bitrate_configured_(min_bitrate_configured),
+      max_frame_rate_(max_frame_rate),
       last_frame_stats_(static_cast<uint32>(-1)),
       last_acked_frame_(static_cast<uint32>(-1)),
       last_encoded_frame_(static_cast<uint32>(-1)),
-      history_size_(max_unacked_frames + kHistorySize),
+      history_size_(kHistorySize),
       acked_bits_in_history_(0) {
   DCHECK_GE(max_bitrate_configured, min_bitrate_configured) << "Invalid config";
   frame_stats_.resize(2);
@@ -173,6 +182,17 @@ AdaptiveCongestionControl::~AdaptiveCongestionControl() {}
 
 void AdaptiveCongestionControl::UpdateRtt(base::TimeDelta rtt) {
   rtt_ = (7 * rtt_ + rtt) / 8;
+}
+
+void AdaptiveCongestionControl::UpdateTargetPlayoutDelay(
+    base::TimeDelta delay) {
+  const int max_unacked_frames =
+      std::min(kMaxUnackedFrames,
+               1 + static_cast<int>(delay * max_frame_rate_ /
+                                    base::TimeDelta::FromSeconds(1)));
+  DCHECK_GT(max_unacked_frames, 0);
+  history_size_ = max_unacked_frames + kHistorySize;
+  PruneFrameStats();
 }
 
 // Calculate how much "dead air" there is between two frames.
@@ -205,7 +225,16 @@ AdaptiveCongestionControl::GetFrameStats(uint32 frame_id) {
     last_frame_stats_ += offset;
     offset = 0;
   }
-  while (frame_stats_.size() > history_size_) {
+  PruneFrameStats();
+  offset += frame_stats_.size() - 1;
+  if (offset < 0 || offset >= static_cast<int32>(frame_stats_.size())) {
+    return NULL;
+  }
+  return &frame_stats_[offset];
+}
+
+void AdaptiveCongestionControl::PruneFrameStats() {
+ while (frame_stats_.size() > history_size_) {
     DCHECK_GT(frame_stats_.size(), 1UL);
     DCHECK(!frame_stats_[0].ack_time.is_null());
     acked_bits_in_history_ -= frame_stats_[0].frame_size;
@@ -215,11 +244,6 @@ AdaptiveCongestionControl::GetFrameStats(uint32 frame_id) {
     DCHECK_GE(dead_time_in_history_.InSecondsF(), 0.0);
     frame_stats_.pop_front();
   }
-  offset += frame_stats_.size() - 1;
-  if (offset < 0 || offset >= static_cast<int32>(frame_stats_.size())) {
-    return NULL;
-  }
-  return &frame_stats_[offset];
 }
 
 void AdaptiveCongestionControl::AckFrame(uint32 frame_id,

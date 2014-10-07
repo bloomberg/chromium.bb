@@ -125,10 +125,6 @@ class FrameSender {
   // Max encoded frames generated per second.
   double max_frame_rate_;
 
-  // Maximum number of outstanding frames before the encoding and sending of
-  // new frames shall halt.
-  int max_unacked_frames_;
-
   // Counts how many RTCP reports are being "aggressively" sent (i.e., one per
   // frame) at the start of the session.  Once a threshold is reached, RTCP
   // reports are instead sent at the configured interval + random drift.

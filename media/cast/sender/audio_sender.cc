@@ -39,8 +39,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
       samples_in_encoder_(0),
       weak_factory_(this) {
   cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
-  VLOG(1) << "max_unacked_frames " << max_unacked_frames_;
-  DCHECK_GT(max_unacked_frames_, 0);
 
   if (!audio_config.use_external_encoder) {
     audio_encoder_.reset(

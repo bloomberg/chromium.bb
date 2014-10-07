@@ -16,6 +16,8 @@ namespace cast {
 
 static const uint32 kMaxBitrateConfigured = 5000000;
 static const uint32 kMinBitrateConfigured = 500000;
+static const int64 kFrameDelayMs = 33;
+static const double kMaxFrameRate = 1000.0 / kFrameDelayMs;
 static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const double kTargetEmptyBufferFraction = 0.9;
 
@@ -26,7 +28,13 @@ class CongestionControlTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     congestion_control_.reset(NewAdaptiveCongestionControl(
-        &testing_clock_, kMaxBitrateConfigured, kMinBitrateConfigured, 10));
+        &testing_clock_, kMaxBitrateConfigured, kMinBitrateConfigured,
+        kMaxFrameRate));
+    const int max_unacked_frames = 10;
+    const base::TimeDelta target_playout_delay =
+        (max_unacked_frames - 1) * base::TimeDelta::FromSeconds(1) /
+        kMaxFrameRate;
+    congestion_control_->UpdateTargetPlayoutDelay(target_playout_delay);
   }
 
   void AckFrame(uint32 frame_id) {
@@ -60,17 +68,16 @@ class CongestionControlTest : public ::testing::Test {
 };
 
 TEST_F(CongestionControlTest, SimpleRun) {
-  uint32 frame_delay = 33;
   uint32 frame_size = 10000 * 8;
   Run(500,
       frame_size,
       base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMilliseconds(frame_delay),
+      base::TimeDelta::FromMilliseconds(kFrameDelayMs),
       base::TimeDelta::FromMilliseconds(45));
   // Empty the buffer.
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(100));
 
-  uint32 safe_bitrate = frame_size * 1000 / frame_delay;
+  uint32 safe_bitrate = frame_size * 1000 / kFrameDelayMs;
   uint32 bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
       base::TimeDelta::FromMilliseconds(300));

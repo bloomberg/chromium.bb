@@ -106,17 +106,20 @@ void FrameSender::OnMeasuredRoundTripTime(base::TimeDelta rtt) {
 
 void FrameSender::SetTargetPlayoutDelay(
     base::TimeDelta new_target_playout_delay) {
+  if (send_target_playout_delay_ &&
+      target_playout_delay_ == new_target_playout_delay) {
+    return;
+  }
   new_target_playout_delay = std::max(new_target_playout_delay,
                                       min_playout_delay_);
   new_target_playout_delay = std::min(new_target_playout_delay,
                                       max_playout_delay_);
+  VLOG(2) << SENDER_SSRC << "Target playout delay changing from "
+          << target_playout_delay_.InMilliseconds() << " ms to "
+          << new_target_playout_delay.InMilliseconds() << " ms.";
   target_playout_delay_ = new_target_playout_delay;
-  max_unacked_frames_ =
-      std::min(kMaxUnackedFrames,
-               1 + static_cast<int>(target_playout_delay_ *
-                                    max_frame_rate_ /
-                                    base::TimeDelta::FromSeconds(1)));
   send_target_playout_delay_ = true;
+  congestion_control_->UpdateTargetPlayoutDelay(target_playout_delay_);
 }
 
 void FrameSender::ResendCheck() {

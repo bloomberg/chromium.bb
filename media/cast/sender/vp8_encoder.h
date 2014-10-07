@@ -21,7 +21,7 @@ namespace cast {
 
 class Vp8Encoder : public SoftwareVideoEncoder {
  public:
-  Vp8Encoder(const VideoSenderConfig& video_config, int max_unacked_frames);
+  explicit Vp8Encoder(const VideoSenderConfig& video_config);
 
   virtual ~Vp8Encoder();
 

@@ -30,8 +30,7 @@ class VideoEncoderImpl : public VideoEncoder {
       FrameEncodedCallback;
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
-                   const VideoSenderConfig& video_config,
-                   int max_unacked_frames);
+                   const VideoSenderConfig& video_config);
 
   virtual ~VideoEncoderImpl();
 

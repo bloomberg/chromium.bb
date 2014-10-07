@@ -22,6 +22,9 @@ class CongestionControl {
   // Called with latest measured rtt value.
   virtual void UpdateRtt(base::TimeDelta rtt) = 0;
 
+  // Called with an updated target playout delay value.
+  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) = 0;
+
   // Called when an encoded frame is sent to the transport.
   virtual void SendFrameToTransport(uint32 frame_id,
                                     size_t frame_size,
@@ -38,7 +41,7 @@ CongestionControl* NewAdaptiveCongestionControl(
     base::TickClock* clock,
     uint32 max_bitrate_configured,
     uint32 min_bitrate_configured,
-    size_t max_unacked_frames);
+    double max_frame_rate);
 
 CongestionControl* NewFixedCongestionControl(uint32 bitrate);
 

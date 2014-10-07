@@ -15,8 +15,7 @@ namespace cast {
 
 static const uint32 kMinIntra = 300;
 
-Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
-                       int max_unacked_frames)
+Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
     : cast_config_(video_config),
       use_multiple_video_buffers_(
           cast_config_.max_number_of_video_buffers_used ==

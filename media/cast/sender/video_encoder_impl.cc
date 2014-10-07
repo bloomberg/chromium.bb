@@ -54,11 +54,10 @@ void EncodeVideoFrameOnEncoderThread(
 
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
-    const VideoSenderConfig& video_config,
-    int max_unacked_frames)
+    const VideoSenderConfig& video_config)
     : cast_environment_(cast_environment) {
   if (video_config.codec == CODEC_VIDEO_VP8) {
-    encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
+    encoder_.reset(new Vp8Encoder(video_config));
     cast_environment_->PostTask(CastEnvironment::VIDEO,
                                 FROM_HERE,
                                 base::Bind(&InitializeEncoderOnEncoderThread,
