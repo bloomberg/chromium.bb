@@ -5,17 +5,23 @@
 #include "device/hid/hid_connection_mac.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/mac/foundation_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/hid/hid_connection_mac.h"
 
 namespace device {
 
-HidConnectionMac::HidConnectionMac(HidDeviceInfo device_info)
+HidConnectionMac::HidConnectionMac(
+    HidDeviceInfo device_info,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : HidConnection(device_info),
-      device_(device_info.device_id, base::scoped_policy::RETAIN) {
-  message_loop_ = base::MessageLoopProxy::current();
-
+      device_(device_info.device_id, base::scoped_policy::RETAIN),
+      ui_task_runner_(ui_task_runner) {
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(task_runner_.get());
   DCHECK(device_.get());
 
   size_t expected_report_size = device_info.max_input_report_size;
@@ -23,31 +29,36 @@ HidConnectionMac::HidConnectionMac(HidDeviceInfo device_info)
     expected_report_size++;
   }
   inbound_buffer_.resize(expected_report_size);
-  if (inbound_buffer_.size() > 0) {
-    IOHIDDeviceRegisterInputReportCallback(
-        device_.get(),
-        &inbound_buffer_[0],
-        inbound_buffer_.size(),
-        &HidConnectionMac::InputReportCallback,
-        this);
-  }
+
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&HidConnectionMac::StartInputReportCallbacks, this));
 }
 
 HidConnectionMac::~HidConnectionMac() {
-  if (inbound_buffer_.size() > 0) {
-    // Unregister the input report callback before this object is freed.
-    IOHIDDeviceRegisterInputReportCallback(
-        device_.get(), &inbound_buffer_[0], inbound_buffer_.size(), NULL, this);
+}
+
+void HidConnectionMac::PlatformClose() {
+  // To avoid a race between input reports delivered on the UI thread and
+  // closing this connection from its native thread the callback must be
+  // unregistered on the UI thread. It is safe to pass the this pointer
+  // unretained because StartInputReportCallbacks still holds a reference to it.
+  // We don't want this closure, which will be release on the UI thread, to be
+  // the final reference. StopInputReportCallbacks will use ReleaseSoon() to
+  // release this back on the native thread.
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&HidConnectionMac::StopInputReportCallbacks,
+                 base::Unretained(this)));
+
+  while (!pending_reads_.empty()) {
+    pending_reads_.front().callback.Run(false, NULL, 0);
+    pending_reads_.pop();
   }
-  Flush();
 }
 
 void HidConnectionMac::PlatformRead(const ReadCallback& callback) {
-  if (!device_) {
-    callback.Run(false, NULL, 0);
-    return;
-  }
-
+  DCHECK(thread_checker().CalledOnValidThread());
   PendingHidRead pending_read;
   pending_read.callback = callback;
   pending_reads_.push(pending_read);
@@ -62,16 +73,16 @@ void HidConnectionMac::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
 
 void HidConnectionMac::PlatformGetFeatureReport(uint8_t report_id,
                                                 const ReadCallback& callback) {
-  if (!device_) {
-    callback.Run(false, NULL, 0);
-    return;
-  }
-
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(device_info().max_feature_report_size));
   CFIndex report_size = buffer->size();
+
+  // The IOHIDDevice object is shared with the UI thread and so this function
+  // should probably be called there but it may block and the asynchronous
+  // version is NOT IMPLEMENTED. I've examined the open source implementation
+  // of this function and believe it to be thread-safe.
   IOReturn result =
-      IOHIDDeviceGetReport(device_,
+      IOHIDDeviceGetReport(device_.get(),
                            kIOHIDReportTypeFeature,
                            report_id,
                            reinterpret_cast<uint8_t*>(buffer->data()),
@@ -79,7 +90,8 @@ void HidConnectionMac::PlatformGetFeatureReport(uint8_t report_id,
   if (result == kIOReturnSuccess) {
     callback.Run(true, buffer, report_size);
   } else {
-    VLOG(1) << "Failed to get feature report: " << result;
+    VLOG(1) << "Failed to get feature report: " << base::StringPrintf("0x%08x",
+                                                                      result);
     callback.Run(false, NULL, 0);
   }
 }
@@ -91,6 +103,31 @@ void HidConnectionMac::PlatformSendFeatureReport(
   WriteReport(kIOHIDReportTypeFeature, buffer, size, callback);
 }
 
+void HidConnectionMac::StartInputReportCallbacks() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  if (inbound_buffer_.size() > 0) {
+    AddRef();  // Hold a reference to this while this callback is registered.
+    IOHIDDeviceRegisterInputReportCallback(
+        device_.get(),
+        &inbound_buffer_[0],
+        inbound_buffer_.size(),
+        &HidConnectionMac::InputReportCallback,
+        this);
+  }
+}
+
+void HidConnectionMac::StopInputReportCallbacks() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  if (inbound_buffer_.size() > 0) {
+    IOHIDDeviceRegisterInputReportCallback(
+        device_.get(), &inbound_buffer_[0], inbound_buffer_.size(), NULL, this);
+    // Release the reference to this taken by StartInputReportCallbacks but do
+    // so on the right thread as this is likely the final reference.
+    task_runner_->ReleaseSoon(FROM_HERE, this);
+  }
+}
+
+// static
 void HidConnectionMac::InputReportCallback(void* context,
                                            IOReturn result,
                                            void* sender,
@@ -98,12 +135,14 @@ void HidConnectionMac::InputReportCallback(void* context,
                                            uint32_t report_id,
                                            uint8_t* report_bytes,
                                            CFIndex report_length) {
+  HidConnectionMac* connection = static_cast<HidConnectionMac*>(context);
+  DCHECK(connection->ui_task_runner_->BelongsToCurrentThread());
   if (result != kIOReturnSuccess) {
-    VLOG(1) << "Failed to read input report: " << result;
+    VLOG(1) << "Failed to read input report: " << base::StringPrintf("0x%08x",
+                                                                     result);
     return;
   }
 
-  HidConnectionMac* connection = static_cast<HidConnectionMac*>(context);
   scoped_refptr<net::IOBufferWithSize> buffer;
   if (connection->device_info().has_report_id) {
     // report_id is already contained in report_bytes
@@ -115,45 +154,9 @@ void HidConnectionMac::InputReportCallback(void* context,
     memcpy(buffer->data() + 1, report_bytes, report_length);
   }
 
-  connection->message_loop_->PostTask(
+  connection->task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&HidConnectionMac::ProcessInputReport, connection, buffer));
-}
-
-void HidConnectionMac::WriteReport(IOHIDReportType type,
-                                   scoped_refptr<net::IOBuffer> buffer,
-                                   size_t size,
-                                   const WriteCallback& callback) {
-  if (!device_) {
-    callback.Run(false);
-    return;
-  }
-
-  uint8_t* data = reinterpret_cast<uint8_t*>(buffer->data());
-  DCHECK(size >= 1);
-  uint8_t report_id = data[0];
-  if (report_id == 0) {
-    // OS X only expects the first byte of the buffer to be the report ID if the
-    // report ID is non-zero.
-    ++data;
-    --size;
-  }
-
-  IOReturn res =
-      IOHIDDeviceSetReport(device_.get(), type, report_id, data, size);
-  if (res == kIOReturnSuccess) {
-    callback.Run(true);
-  } else {
-    VLOG(1) << "Failed to set report: " << res;
-    callback.Run(false);
-  }
-}
-
-void HidConnectionMac::Flush() {
-  while (!pending_reads_.empty()) {
-    pending_reads_.front().callback.Run(false, NULL, 0);
-    pending_reads_.pop();
-  }
 }
 
 void HidConnectionMac::ProcessInputReport(
@@ -176,6 +179,34 @@ void HidConnectionMac::ProcessReadQueue() {
     if (CompleteRead(report.buffer, report.size, read.callback)) {
       pending_reads_.pop();
     }
+  }
+}
+
+void HidConnectionMac::WriteReport(IOHIDReportType report_type,
+                                   scoped_refptr<net::IOBuffer> buffer,
+                                   size_t size,
+                                   const WriteCallback& callback) {
+  uint8_t* data = reinterpret_cast<uint8_t*>(buffer->data());
+  DCHECK_GE(size, 1u);
+  uint8_t report_id = data[0];
+  if (report_id == 0) {
+    // OS X only expects the first byte of the buffer to be the report ID if the
+    // report ID is non-zero.
+    ++data;
+    --size;
+  }
+
+  // The IOHIDDevice object is shared with the UI thread and so this function
+  // should probably be called there but it may block and the asynchronous
+  // version is NOT IMPLEMENTED. I've examined the open source implementation
+  // of this function and believe it to be thread-safe.
+  IOReturn result =
+      IOHIDDeviceSetReport(device_.get(), report_type, report_id, data, size);
+  if (result == kIOReturnSuccess) {
+    callback.Run(true);
+  } else {
+    VLOG(1) << "Failed to set report: " << base::StringPrintf("0x%08x", result);
+    callback.Run(false);
   }
 }
 

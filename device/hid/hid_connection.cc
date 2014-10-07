@@ -64,12 +64,21 @@ bool HasProtectedCollection(const HidDeviceInfo& device_info) {
 }  // namespace
 
 HidConnection::HidConnection(const HidDeviceInfo& device_info)
-    : device_info_(device_info) {
+    : device_info_(device_info), closed_(false) {
   has_protected_collection_ = HasProtectedCollection(device_info);
 }
 
 HidConnection::~HidConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(closed_);
+}
+
+void HidConnection::Close() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!closed_);
+
+  PlatformClose();
+  closed_ = true;
 }
 
 void HidConnection::Read(const ReadCallback& callback) {

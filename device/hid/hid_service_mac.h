@@ -15,7 +15,7 @@
 #include "device/hid/hid_service.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace device {
@@ -24,7 +24,7 @@ class HidConnection;
 
 class HidServiceMac : public HidService {
  public:
-  HidServiceMac();
+  HidServiceMac(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
       override;
@@ -53,8 +53,11 @@ class HidServiceMac : public HidService {
   // Platform HID Manager
   base::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_;
 
-  // The message loop for the thread on which this service was created.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  // The task runner for the thread on which this service was created.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // The task runner for the UI thread of the application using this service.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceMac);
 };

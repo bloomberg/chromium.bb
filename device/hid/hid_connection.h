@@ -30,6 +30,10 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   const HidDeviceInfo& device_info() const { return device_info_; }
   bool has_protected_collection() const { return has_protected_collection_; }
   const base::ThreadChecker& thread_checker() const { return thread_checker_; }
+  bool closed() const { return closed_; }
+
+  // Closes the connection. This must be called before the object is freed.
+  void Close();
 
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always returned in the first byte of the buffer.
@@ -58,6 +62,7 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   explicit HidConnection(const HidDeviceInfo& device_info);
   virtual ~HidConnection();
 
+  virtual void PlatformClose() = 0;
   virtual void PlatformRead(const ReadCallback& callback) = 0;
   virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                              size_t size,
@@ -83,6 +88,7 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   const HidDeviceInfo device_info_;
   bool has_protected_collection_;
   base::ThreadChecker thread_checker_;
+  bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnection);
 };

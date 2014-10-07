@@ -51,7 +51,7 @@ HidService* HidService::GetInstance(
 #if defined(OS_LINUX) && defined(USE_UDEV)
     g_service = new HidServiceLinux(ui_task_runner);
 #elif defined(OS_MACOSX)
-    g_service = new HidServiceMac();
+    g_service = new HidServiceMac(ui_task_runner);
 #elif defined(OS_WIN)
     g_service = new HidServiceWin();
 #endif

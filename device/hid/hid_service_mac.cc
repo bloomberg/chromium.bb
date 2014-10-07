@@ -12,13 +12,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/hid/hid_connection_mac.h"
 
@@ -144,10 +145,11 @@ void GetCollectionInfos(IOHIDDeviceRef device,
 
 }  // namespace
 
-HidServiceMac::HidServiceMac() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  message_loop_ = base::MessageLoopProxy::current();
-  DCHECK(message_loop_.get());
+HidServiceMac::HidServiceMac(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ui_task_runner_(ui_task_runner) {
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(task_runner_.get());
   hid_manager_.reset(IOHIDManagerCreate(NULL, 0));
   if (!hid_manager_) {
     LOG(ERROR) << "Failed to initialize HidManager";
@@ -195,10 +197,10 @@ void HidServiceMac::AddDeviceCallback(void* context,
   // Claim ownership of the device.
   CFRetain(hid_device);
   HidServiceMac* service = HidServiceFromContext(context);
-  service->message_loop_->PostTask(FROM_HERE,
-                                   base::Bind(&HidServiceMac::PlatformAddDevice,
-                                              base::Unretained(service),
-                                              base::Unretained(hid_device)));
+  service->task_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&HidServiceMac::PlatformAddDevice,
+                                             base::Unretained(service),
+                                             base::Unretained(hid_device)));
 }
 
 void HidServiceMac::RemoveDeviceCallback(void* context,
@@ -207,7 +209,7 @@ void HidServiceMac::RemoveDeviceCallback(void* context,
                                          IOHIDDeviceRef hid_device) {
   DCHECK(CFRunLoopGetMain() == CFRunLoopGetCurrent());
   HidServiceMac* service = HidServiceFromContext(context);
-  service->message_loop_->PostTask(
+  service->task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&HidServiceMac::PlatformRemoveDevice,
                  base::Unretained(service),
@@ -273,7 +275,8 @@ scoped_refptr<HidConnection> HidServiceMac::Connect(
   HidDeviceInfo device_info;
   if (!GetDeviceInfo(device_id, &device_info))
     return NULL;
-  return scoped_refptr<HidConnection>(new HidConnectionMac(device_info));
+  return scoped_refptr<HidConnection>(
+      new HidConnectionMac(device_info, ui_task_runner_));
 }
 
 }  // namespace device

@@ -23,6 +23,7 @@ class HidConnectionLinux : public HidConnection,
   virtual ~HidConnectionLinux();
 
   // HidConnection implementation.
+  virtual void PlatformClose() override;
   virtual void PlatformRead(const ReadCallback& callback) override;
   virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                              size_t size,

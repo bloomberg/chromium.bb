@@ -15,7 +15,7 @@
 #include "device/hid/hid_connection.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -26,12 +26,15 @@ namespace device {
 
 class HidConnectionMac : public HidConnection {
  public:
-  explicit HidConnectionMac(HidDeviceInfo device_info);
+  explicit HidConnectionMac(
+      HidDeviceInfo device_info,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
  private:
   virtual ~HidConnectionMac();
 
   // HidConnection implementation.
+  virtual void PlatformClose() override;
   virtual void PlatformRead(const ReadCallback& callback) override;
   virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                              size_t size,
@@ -43,6 +46,8 @@ class HidConnectionMac : public HidConnection {
       size_t size,
       const WriteCallback& callback) override;
 
+  void StartInputReportCallbacks();
+  void StopInputReportCallbacks();
   static void InputReportCallback(void* context,
                                   IOReturn result,
                                   void* sender,
@@ -50,18 +55,17 @@ class HidConnectionMac : public HidConnection {
                                   uint32_t report_id,
                                   uint8_t* report_bytes,
                                   CFIndex report_length);
+  void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
+  void ProcessReadQueue();
 
-  void WriteReport(IOHIDReportType type,
+  void WriteReport(IOHIDReportType report_type,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t size,
                    const WriteCallback& callback);
 
-  void Flush();
-  void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
-  void ProcessReadQueue();
-
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   std::vector<uint8_t> inbound_buffer_;
 
   std::queue<PendingHidReport> pending_reports_;

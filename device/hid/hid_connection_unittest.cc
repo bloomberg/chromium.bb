@@ -149,6 +149,8 @@ TEST_F(HidConnectionTest, ReadWrite) {
       ASSERT_EQ(i + j - 1, read_callback.buffer()->data()[j]);
     }
   }
+
+  conn->Close();
 }
 
 }  // namespace device

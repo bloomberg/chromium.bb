@@ -72,6 +72,9 @@ HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
 }
 
 HidConnectionLinux::~HidConnectionLinux() {
+}
+
+void HidConnectionLinux::PlatformClose() {
   Disconnect();
   Flush();
 }
