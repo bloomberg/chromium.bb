@@ -24,8 +24,8 @@ class PrintingContextTest : public PrintingTest<testing::Test>,
   }
 
   // PrintingContext::Delegate methods.
-  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
-  virtual std::string GetAppLocale() OVERRIDE { return std::string(); }
+  virtual gfx::NativeView GetParentView() override { return NULL; }
+  virtual std::string GetAppLocale() override { return std::string(); }
 
  protected:
   PrintingContext::Result result() const { return result_; }
@@ -42,7 +42,7 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
  protected:
   // This is a fake PrintDlgEx implementation that sets the right fields in
   // |lppd| to trigger a bug in older revisions of PrintingContext.
-  HRESULT ShowPrintDialog(PRINTDLGEX* lppd) OVERRIDE {
+  HRESULT ShowPrintDialog(PRINTDLGEX* lppd) override {
     // The interesting bits:
     // Pretend the user hit print
     lppd->dwResultAction = PD_RESULT_PRINT;

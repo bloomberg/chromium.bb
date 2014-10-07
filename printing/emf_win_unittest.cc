@@ -41,8 +41,8 @@ class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
   }
 
   // PrintingContext::Delegate methods.
-  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
-  virtual std::string GetAppLocale() OVERRIDE { return std::string(); }
+  virtual gfx::NativeView GetParentView() override { return NULL; }
+  virtual std::string GetAppLocale() override { return std::string(); }
 };
 
 const uint32 EMF_HEADER_SIZE = 128;

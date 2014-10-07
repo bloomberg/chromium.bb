@@ -40,19 +40,19 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   virtual void AskUserForSettings(
       int max_pages,
       bool has_selection,
-      const PrintSettingsCallback& callback) OVERRIDE;
-  virtual gfx::Size GetPdfPaperSizeDeviceUnits() OVERRIDE;
-  virtual Result UseDefaultSettings() OVERRIDE;
+      const PrintSettingsCallback& callback) override;
+  virtual gfx::Size GetPdfPaperSizeDeviceUnits() override;
+  virtual Result UseDefaultSettings() override;
   virtual Result UpdatePrinterSettings(bool external_preview,
-                                       bool show_system_dialog) OVERRIDE;
-  virtual Result InitWithSettings(const PrintSettings& settings) OVERRIDE;
-  virtual Result NewDocument(const base::string16& document_name) OVERRIDE;
-  virtual Result NewPage() OVERRIDE;
-  virtual Result PageDone() OVERRIDE;
-  virtual Result DocumentDone() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual void ReleaseContext() OVERRIDE;
-  virtual gfx::NativeDrawingContext context() const OVERRIDE;
+                                       bool show_system_dialog) override;
+  virtual Result InitWithSettings(const PrintSettings& settings) override;
+  virtual Result NewDocument(const base::string16& document_name) override;
+  virtual Result NewPage() override;
+  virtual Result PageDone() override;
+  virtual Result DocumentDone() override;
+  virtual void Cancel() override;
+  virtual void ReleaseContext() override;
+  virtual gfx::NativeDrawingContext context() const override;
 
  private:
   base::string16 document_name_;

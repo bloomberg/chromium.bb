@@ -54,37 +54,37 @@ class PRINTING_EXPORT Emf : public Metafile {
   bool InitFromFile(const base::FilePath& metafile_path);
 
   // Metafile methods.
-  virtual bool Init() OVERRIDE;
+  virtual bool Init() override;
   virtual bool InitFromData(const void* src_buffer,
-                            uint32 src_buffer_size) OVERRIDE;
+                            uint32 src_buffer_size) override;
 
   virtual SkBaseDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size, const gfx::Rect& content_area,
-      const float& scale_factor) OVERRIDE;
+      const float& scale_factor) override;
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
   // when hdc_ is non-NULL. |page_size|, |content_area|, and |scale_factor| are
   // ignored.
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
-                         const float& scale_factor) OVERRIDE;
-  virtual bool FinishPage() OVERRIDE;
-  virtual bool FinishDocument() OVERRIDE;
+                         const float& scale_factor) override;
+  virtual bool FinishPage() override;
+  virtual bool FinishDocument() override;
 
-  virtual uint32 GetDataSize() const OVERRIDE;
-  virtual bool GetData(void* buffer, uint32 size) const OVERRIDE;
+  virtual uint32 GetDataSize() const override;
+  virtual bool GetData(void* buffer, uint32 size) const override;
 
   // Should be passed to Playback to keep the exact same size.
-  virtual gfx::Rect GetPageBounds(unsigned int page_number) const OVERRIDE;
+  virtual gfx::Rect GetPageBounds(unsigned int page_number) const override;
 
-  virtual unsigned int GetPageCount() const OVERRIDE { return 1; }
+  virtual unsigned int GetPageCount() const override { return 1; }
 
-  virtual HDC context() const OVERRIDE {
+  virtual HDC context() const override {
     return hdc_;
   }
 
-  virtual bool Playback(HDC hdc, const RECT* rect) const OVERRIDE;
-  virtual bool SafePlayback(HDC hdc) const OVERRIDE;
+  virtual bool Playback(HDC hdc, const RECT* rect) const override;
+  virtual bool SafePlayback(HDC hdc) const override;
 
   HENHMETAFILE emf() const { return emf_; }
 

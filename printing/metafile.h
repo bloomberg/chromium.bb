@@ -163,7 +163,7 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
 
   bool GetDataAsVector(std::vector<char>* buffer) const;
 
-  virtual bool SaveTo(base::File* file) const OVERRIDE;
+  virtual bool SaveTo(base::File* file) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Metafile);
