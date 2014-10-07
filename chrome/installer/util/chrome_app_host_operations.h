@@ -18,41 +18,41 @@ class ChromeAppHostOperations : public ProductOperations {
   ChromeAppHostOperations() {}
 
   virtual void ReadOptions(const MasterPreferences& prefs,
-                           std::set<base::string16>* options) const OVERRIDE;
+                           std::set<base::string16>* options) const override;
 
   virtual void ReadOptions(const base::CommandLine& uninstall_command,
-                           std::set<base::string16>* options) const OVERRIDE;
+                           std::set<base::string16>* options) const override;
 
   virtual void AddKeyFiles(
       const std::set<base::string16>& options,
-      std::vector<base::FilePath>* key_files) const OVERRIDE;
+      std::vector<base::FilePath>* key_files) const override;
 
   virtual void AddComDllList(
       const std::set<base::string16>& options,
-      std::vector<base::FilePath>* com_dll_list) const OVERRIDE;
+      std::vector<base::FilePath>* com_dll_list) const override;
 
   virtual void AppendProductFlags(const std::set<base::string16>& options,
-                                  base::CommandLine* cmd_line) const OVERRIDE;
+                                  base::CommandLine* cmd_line) const override;
 
   virtual void AppendRenameFlags(const std::set<base::string16>& options,
-                                 base::CommandLine* cmd_line) const OVERRIDE;
+                                 base::CommandLine* cmd_line) const override;
 
   virtual bool SetChannelFlags(const std::set<base::string16>& options,
                                bool set,
-                               ChannelInfo* channel_info) const OVERRIDE;
+                               ChannelInfo* channel_info) const override;
 
   virtual bool ShouldCreateUninstallEntry(
-      const std::set<base::string16>& options) const OVERRIDE;
+      const std::set<base::string16>& options) const override;
 
   virtual void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
       const base::FilePath& target_exe,
-      ShellUtil::ShortcutProperties* properties) const OVERRIDE;
+      ShellUtil::ShortcutProperties* properties) const override;
 
   virtual void LaunchUserExperiment(const base::FilePath& setup_path,
                                     const std::set<base::string16>& options,
                                     InstallStatus status,
-                                    bool system_level) const OVERRIDE;
+                                    bool system_level) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeAppHostOperations);

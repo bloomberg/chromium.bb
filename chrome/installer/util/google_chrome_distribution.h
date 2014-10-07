@@ -32,56 +32,56 @@ class GoogleChromeDistribution : public BrowserDistribution {
   virtual void DoPostUninstallOperations(
       const Version& version,
       const base::FilePath& local_data_path,
-      const base::string16& distribution_data) OVERRIDE;
+      const base::string16& distribution_data) override;
 
-  virtual base::string16 GetActiveSetupGuid() OVERRIDE;
+  virtual base::string16 GetActiveSetupGuid() override;
 
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
+  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) override;
 
-  virtual base::string16 GetIconFilename() OVERRIDE;
+  virtual base::string16 GetIconFilename() override;
 
-  virtual int GetIconIndex(ShortcutType shortcut_type) OVERRIDE;
+  virtual int GetIconIndex(ShortcutType shortcut_type) override;
 
-  virtual base::string16 GetBaseAppName() OVERRIDE;
+  virtual base::string16 GetBaseAppName() override;
 
-  virtual base::string16 GetBaseAppId() OVERRIDE;
+  virtual base::string16 GetBaseAppId() override;
 
-  virtual base::string16 GetBrowserProgIdPrefix() OVERRIDE;
+  virtual base::string16 GetBrowserProgIdPrefix() override;
 
-  virtual base::string16 GetBrowserProgIdDesc() OVERRIDE;
+  virtual base::string16 GetBrowserProgIdDesc() override;
 
-  virtual base::string16 GetInstallSubDir() OVERRIDE;
+  virtual base::string16 GetInstallSubDir() override;
 
-  virtual base::string16 GetPublisherName() OVERRIDE;
+  virtual base::string16 GetPublisherName() override;
 
-  virtual base::string16 GetAppDescription() OVERRIDE;
+  virtual base::string16 GetAppDescription() override;
 
-  virtual std::string GetSafeBrowsingName() OVERRIDE;
+  virtual std::string GetSafeBrowsingName() override;
 
-  virtual std::string GetNetworkStatsServer() const OVERRIDE;
+  virtual std::string GetNetworkStatsServer() const override;
 
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.
-  virtual base::string16 GetDistributionData(HKEY root_key) OVERRIDE;
+  virtual base::string16 GetDistributionData(HKEY root_key) override;
 
-  virtual base::string16 GetUninstallLinkName() OVERRIDE;
+  virtual base::string16 GetUninstallLinkName() override;
 
-  virtual base::string16 GetUninstallRegPath() OVERRIDE;
+  virtual base::string16 GetUninstallRegPath() override;
 
   virtual bool GetCommandExecuteImplClsid(
-      base::string16* handler_class_uuid) OVERRIDE;
+      base::string16* handler_class_uuid) override;
 
-  virtual bool AppHostIsSupported() OVERRIDE;
+  virtual bool AppHostIsSupported() override;
 
   virtual void UpdateInstallStatus(
       bool system_install,
       installer::ArchiveType archive_type,
-      installer::InstallStatus install_status) OVERRIDE;
+      installer::InstallStatus install_status) override;
 
-  virtual bool ShouldSetExperimentLabels() OVERRIDE;
+  virtual bool ShouldSetExperimentLabels() override;
 
-  virtual bool HasUserExperiments() OVERRIDE;
+  virtual bool HasUserExperiments() override;
 
  protected:
   // Disallow construction from others.

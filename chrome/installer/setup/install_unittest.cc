@@ -33,7 +33,7 @@ namespace {
 
 class CreateVisualElementsManifestTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
 
@@ -46,7 +46,7 @@ class CreateVisualElementsManifestTest : public testing::Test {
         test_dir_.path().Append(installer::kVisualElementsManifest);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Clean up test directory manually so we can fail if it leaks.
     ASSERT_TRUE(test_dir_.Delete());
   }
@@ -66,7 +66,7 @@ class CreateVisualElementsManifestTest : public testing::Test {
 
 class InstallShortcutTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EXPECT_EQ(S_OK, CoInitialize(NULL));
 
     dist_ = BrowserDistribution::GetDistribution();
@@ -139,7 +139,7 @@ class InstallShortcutTest : public testing::Test {
         fake_user_desktop_.path().Append(alternate_shortcut_name);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Try to unpin potentially pinned shortcuts (although pinning isn't tested,
     // the call itself might still have pinned the Start Menu shortcuts).
     base::win::TaskbarUnpinShortcutLink(

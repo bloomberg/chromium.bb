@@ -114,53 +114,53 @@ class InstallationValidator {
   // Validation rules for the Chrome browser.
   class ChromeRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
+    virtual BrowserDistribution::Type distribution_type() const override;
     virtual void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
     virtual void AddRenameSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   // Validation rules for Chrome Frame.
   class ChromeFrameRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
+    virtual BrowserDistribution::Type distribution_type() const override;
     virtual void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
     virtual void AddRenameSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   // Validation rules for Chrome App Host.
   class ChromeAppHostRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
+    virtual BrowserDistribution::Type distribution_type() const override;
     virtual void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
     virtual void AddRenameSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   // Validation rules for the multi-install Chrome binaries.
   class ChromeBinariesRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
+    virtual BrowserDistribution::Type distribution_type() const override;
     virtual void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
     virtual void AddRenameSwitchExpectations(
         const ProductContext& ctx,
-        SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
+        SwitchExpectations* expectations) const override;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   struct ProductContext {

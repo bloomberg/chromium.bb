@@ -13,47 +13,47 @@
 
 class ChromeAppHostDistribution : public BrowserDistribution {
  public:
-  virtual base::string16 GetDisplayName() OVERRIDE;
+  virtual base::string16 GetDisplayName() override;
 
-  virtual base::string16 GetBrowserProgIdPrefix() OVERRIDE;
+  virtual base::string16 GetBrowserProgIdPrefix() override;
 
-  virtual base::string16 GetBrowserProgIdDesc() OVERRIDE;
+  virtual base::string16 GetBrowserProgIdDesc() override;
 
   // This can only be called with SHORTCUT_APP_LAUNCHER for |shortcut_type|.
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
+  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) override;
 
-  virtual base::string16 GetIconFilename() OVERRIDE;
+  virtual base::string16 GetIconFilename() override;
 
-  virtual base::string16 GetBaseAppName() OVERRIDE;
+  virtual base::string16 GetBaseAppName() override;
 
-  virtual base::string16 GetBaseAppId() OVERRIDE;
+  virtual base::string16 GetBaseAppId() override;
 
-  virtual base::string16 GetInstallSubDir() OVERRIDE;
+  virtual base::string16 GetInstallSubDir() override;
 
-  virtual base::string16 GetPublisherName() OVERRIDE;
+  virtual base::string16 GetPublisherName() override;
 
-  virtual base::string16 GetAppDescription() OVERRIDE;
+  virtual base::string16 GetAppDescription() override;
 
-  virtual base::string16 GetLongAppDescription() OVERRIDE;
+  virtual base::string16 GetLongAppDescription() override;
 
-  virtual std::string GetSafeBrowsingName() OVERRIDE;
+  virtual std::string GetSafeBrowsingName() override;
 
-  virtual std::string GetNetworkStatsServer() const OVERRIDE;
+  virtual std::string GetNetworkStatsServer() const override;
 
-  virtual base::string16 GetUninstallLinkName() OVERRIDE;
+  virtual base::string16 GetUninstallLinkName() override;
 
-  virtual base::string16 GetUninstallRegPath() OVERRIDE;
+  virtual base::string16 GetUninstallRegPath() override;
 
-  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
+  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
 
-  virtual bool CanCreateDesktopShortcuts() OVERRIDE;
+  virtual bool CanCreateDesktopShortcuts() override;
 
   virtual bool GetCommandExecuteImplClsid(
-      base::string16* handler_class_uuid) OVERRIDE;
+      base::string16* handler_class_uuid) override;
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,
-      installer::InstallStatus install_status) OVERRIDE;
+      installer::InstallStatus install_status) override;
 
  protected:
   friend class BrowserDistribution;

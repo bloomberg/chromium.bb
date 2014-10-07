@@ -23,9 +23,9 @@ class DeleteRegKeyWorkItem : public WorkItem {
  public:
   virtual ~DeleteRegKeyWorkItem();
 
-  virtual bool Do() OVERRIDE;
+  virtual bool Do() override;
 
-  virtual void Rollback() OVERRIDE;
+  virtual void Rollback() override;
 
  private:
   friend class WorkItem;

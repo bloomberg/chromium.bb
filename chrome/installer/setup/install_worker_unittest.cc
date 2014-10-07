@@ -491,7 +491,7 @@ const wchar_t old_elevation_key[] =
 class OldIELowRightsTests : public InstallWorkerTest,
   public ::testing::WithParamInterface<std::tr1::tuple<bool, bool> > {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InstallWorkerTest::SetUp();
 
     const ParamType& param = GetParam();

@@ -165,7 +165,7 @@ class InstallUtil {
    public:
     explicit ValueEquals(const base::string16& value_to_match)
         : value_to_match_(value_to_match) { }
-    virtual bool Evaluate(const base::string16& value) const OVERRIDE;
+    virtual bool Evaluate(const base::string16& value) const override;
    protected:
     base::string16 value_to_match_;
    private:
@@ -191,7 +191,7 @@ class InstallUtil {
    public:
     explicit ProgramCompare(const base::FilePath& path_to_match);
     virtual ~ProgramCompare();
-    virtual bool Evaluate(const base::string16& value) const OVERRIDE;
+    virtual bool Evaluate(const base::string16& value) const override;
     bool EvaluatePath(const base::FilePath& path) const;
 
    protected:

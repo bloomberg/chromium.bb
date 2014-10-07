@@ -34,7 +34,7 @@ const wchar_t kTestExperimentLabel[] = L"test_label_value";
 // and user settings.
 class GoogleUpdateSettingsTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
     registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
   }
@@ -858,7 +858,7 @@ class GetUninstallCommandLine : public GoogleUpdateSettingsTest,
  protected:
   static const wchar_t kDummyCommand[];
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     GoogleUpdateSettingsTest::SetUp();
     system_install_ = GetParam();
     root_key_ = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -917,7 +917,7 @@ class GetGoogleUpdateVersion : public GoogleUpdateSettingsTest,
  protected:
   static const wchar_t kDummyVersion[];
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     GoogleUpdateSettingsTest::SetUp();
     system_install_ = GetParam();
     root_key_ = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -1035,7 +1035,7 @@ class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
   static void SetUpTestCase();
   static void TearDownTestCase();
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
   static void MakeChromeMultiInstall(HKEY root_key);
   static void ApplySetting(StatsState::StateSetting setting,
                            HKEY root_key,

@@ -30,16 +30,16 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
   }
 
   // FirewallManager methods.
-  virtual bool CanUseLocalPorts() OVERRIDE {
+  virtual bool CanUseLocalPorts() override {
     return !manager_.IsFirewallEnabled() || manager_.HasAnyRule();
   };
 
-  virtual bool AddFirewallRules() OVERRIDE {
+  virtual bool AddFirewallRules() override {
     return manager_.AddUDPRule(GetMdnsRuleName(), GetMdnsRuleDescription(),
                                kDefaultMdnsPort);
   }
 
-  virtual void RemoveFirewallRules() OVERRIDE {
+  virtual void RemoveFirewallRules() override {
     manager_.DeleteAllRules();
   }
 
@@ -74,18 +74,18 @@ class FirewallManagerLegacyImpl : public FirewallManager {
   }
 
   // FirewallManager methods.
-  virtual bool CanUseLocalPorts() OVERRIDE {
+  virtual bool CanUseLocalPorts() override {
     return !manager_.IsFirewallEnabled() ||
         manager_.GetAllowIncomingConnection(NULL);
   };
 
-  virtual bool AddFirewallRules() OVERRIDE {
+  virtual bool AddFirewallRules() override {
     // Change nothing if rule is set.
     return manager_.GetAllowIncomingConnection(NULL) ||
         manager_.SetAllowIncomingConnection(true);
   }
 
-  virtual void RemoveFirewallRules() OVERRIDE {
+  virtual void RemoveFirewallRules() override {
     manager_.DeleteRule();
   }
 

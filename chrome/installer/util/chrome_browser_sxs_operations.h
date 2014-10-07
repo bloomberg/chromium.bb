@@ -17,10 +17,10 @@ class ChromeBrowserSxSOperations : public ChromeBrowserOperations {
   ChromeBrowserSxSOperations() {}
 
   virtual void AppendProductFlags(const std::set<base::string16>& options,
-                                  base::CommandLine* cmd_line) const OVERRIDE;
+                                  base::CommandLine* cmd_line) const override;
 
   virtual void AppendRenameFlags(const std::set<base::string16>& options,
-                                 base::CommandLine* cmd_line) const OVERRIDE;
+                                 base::CommandLine* cmd_line) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserSxSOperations);

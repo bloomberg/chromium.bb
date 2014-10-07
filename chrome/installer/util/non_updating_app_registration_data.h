@@ -15,10 +15,10 @@ class NonUpdatingAppRegistrationData : public AppRegistrationData {
  public:
   explicit NonUpdatingAppRegistrationData(const base::string16& key_path);
   virtual ~NonUpdatingAppRegistrationData();
-  virtual base::string16 GetAppGuid() const OVERRIDE;
-  virtual base::string16 GetStateKey() const OVERRIDE;
-  virtual base::string16 GetStateMediumKey() const OVERRIDE;
-  virtual base::string16 GetVersionKey() const OVERRIDE;
+  virtual base::string16 GetAppGuid() const override;
+  virtual base::string16 GetStateKey() const override;
+  virtual base::string16 GetStateMediumKey() const override;
+  virtual base::string16 GetVersionKey() const override;
 
  private:
   const base::string16 key_path_;

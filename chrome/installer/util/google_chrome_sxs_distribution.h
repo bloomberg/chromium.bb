@@ -19,23 +19,23 @@
 // system level install and setting as default browser.
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
-  virtual base::string16 GetBaseAppName() OVERRIDE;
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
-  virtual int GetIconIndex(ShortcutType shortcut_type) OVERRIDE;
+  virtual base::string16 GetBaseAppName() override;
+  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) override;
+  virtual int GetIconIndex(ShortcutType shortcut_type) override;
   virtual base::string16 GetStartMenuShortcutSubfolder(
-      Subfolder subfolder_type) OVERRIDE;
-  virtual base::string16 GetBaseAppId() OVERRIDE;
-  virtual base::string16 GetBrowserProgIdPrefix() OVERRIDE;
-  virtual base::string16 GetBrowserProgIdDesc() OVERRIDE;
-  virtual base::string16 GetInstallSubDir() OVERRIDE;
-  virtual base::string16 GetUninstallRegPath() OVERRIDE;
-  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
-  virtual bool GetChromeChannel(base::string16* channel) OVERRIDE;
+      Subfolder subfolder_type) override;
+  virtual base::string16 GetBaseAppId() override;
+  virtual base::string16 GetBrowserProgIdPrefix() override;
+  virtual base::string16 GetBrowserProgIdDesc() override;
+  virtual base::string16 GetInstallSubDir() override;
+  virtual base::string16 GetUninstallRegPath() override;
+  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
+  virtual bool GetChromeChannel(base::string16* channel) override;
   virtual bool GetCommandExecuteImplClsid(
-      base::string16* handler_class_uuid) OVERRIDE;
-  virtual bool AppHostIsSupported() OVERRIDE;
-  virtual bool ShouldSetExperimentLabels() OVERRIDE;
-  virtual bool HasUserExperiments() OVERRIDE;
+      base::string16* handler_class_uuid) override;
+  virtual bool AppHostIsSupported() override;
+  virtual bool ShouldSetExperimentLabels() override;
+  virtual bool HasUserExperiments() override;
   // returns the channel name for GoogleChromeSxSDistribution
   static base::string16 ChannelName();
  private:

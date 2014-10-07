@@ -16,7 +16,7 @@ class LegacyFirewallManagerTest : public ::testing::Test {
 
  protected:
   // Sets up the test fixture.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
     if (GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level) &&
         level != base::HIGH_INTEGRITY) {
@@ -31,7 +31,7 @@ class LegacyFirewallManagerTest : public ::testing::Test {
   }
 
   // Tears down the test fixture.
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (!skip_test_)
       manager_.DeleteRule();
   }
