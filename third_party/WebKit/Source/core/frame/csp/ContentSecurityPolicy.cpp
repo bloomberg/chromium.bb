@@ -89,6 +89,10 @@ const char ContentSecurityPolicy::PluginTypes[] = "plugin-types";
 const char ContentSecurityPolicy::ReflectedXSS[] = "reflected-xss";
 const char ContentSecurityPolicy::Referrer[] = "referrer";
 
+// Manifest Directives
+// https://w3c.github.io/manifest/#content-security-policy
+const char ContentSecurityPolicy::ManifestSrc[] = "manifest-src";
+
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, ConnectSrc)
@@ -109,6 +113,7 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, PluginTypes)
         || equalIgnoringCase(name, ReflectedXSS)
         || equalIgnoringCase(name, Referrer)
+        || equalIgnoringCase(name, ManifestSrc)
     );
 }
 
@@ -529,6 +534,11 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(const KURL& url, Conten
     }
 
     return isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus);
+}
+
+bool ContentSecurityPolicy::allowManifestFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    return isAllowedByAllWithURL<&CSPDirectiveList::allowManifestFromSource>(m_policies, url, reportingStatus);
 }
 
 bool ContentSecurityPolicy::isActive() const

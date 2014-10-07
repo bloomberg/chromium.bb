@@ -37,6 +37,7 @@
 namespace blink {
 
 class WebURL;
+class WebURLResponse;
 
 namespace URLTestHelpers {
 
@@ -54,6 +55,7 @@ inline blink::KURL toKURL(const std::string& url)
 void registerMockedURLFromBaseURL(const WebString& baseURL, const WebString& fileName, const WebString& mimeType = WebString::fromUTF8("text/html"));
 void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& mimeType = WebString::fromUTF8("text/html"));
 void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, const WebString& mimeType);
+void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse);
 
 } // namespace URLTestHelpers
 } // namespace blink

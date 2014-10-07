@@ -9,6 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/ParsingUtilities.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
@@ -207,6 +208,8 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
         prefix = "Refused to load the image '";
     else if (ContentSecurityPolicy::MediaSrc == effectiveDirective)
         prefix = "Refused to load media from '";
+    else if (ContentSecurityPolicy::ManifestSrc == effectiveDirective)
+        prefix = "Refused to load manifest from '";
     else if (ContentSecurityPolicy::ObjectSrc == effectiveDirective)
         prefix = "Refused to load plugin data from '";
     else if (ContentSecurityPolicy::ScriptSrc == effectiveDirective)
@@ -338,6 +341,13 @@ bool CSPDirectiveList::allowMediaFromSource(const KURL& url, ContentSecurityPoli
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkSourceAndReportViolation(operativeDirective(m_mediaSrc.get()), url, ContentSecurityPolicy::MediaSrc) :
         checkSource(operativeDirective(m_mediaSrc.get()), url);
+}
+
+bool CSPDirectiveList::allowManifestFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    return reportingStatus == ContentSecurityPolicy::SendReport ?
+        checkSourceAndReportViolation(operativeDirective(m_manifestSrc.get()), url, ContentSecurityPolicy::ManifestSrc) :
+        checkSource(operativeDirective(m_manifestSrc.get()), url);
 }
 
 bool CSPDirectiveList::allowConnectToSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -673,6 +683,11 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         parseReflectedXSS(name, value);
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::Referrer)) {
         parseReferrer(name, value);
+    } else if (m_policy->experimentalFeaturesEnabled()) {
+        if (equalIgnoringCase(name, ContentSecurityPolicy::ManifestSrc))
+            setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
+        else
+            m_policy->reportUnsupportedDirective(name);
     } else {
         m_policy->reportUnsupportedDirective(name);
     }

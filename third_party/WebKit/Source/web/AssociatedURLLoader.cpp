@@ -318,6 +318,7 @@ void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURL
 
 void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebURLLoaderClient* client)
 {
+    ASSERT(!m_loader);
     ASSERT(!m_client);
 
     m_client = client;
@@ -358,7 +359,9 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         Document* webcoreDocument = m_frameImpl->frame()->document();
         ASSERT(webcoreDocument);
         m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), webcoreRequest, options, resourceLoaderOptions);
-    } else {
+    }
+
+    if (!m_loader) {
         // FIXME: return meaningful error codes.
         m_clientAdapter->setDelayedError(ResourceError());
     }

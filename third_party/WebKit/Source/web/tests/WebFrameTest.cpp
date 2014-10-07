@@ -49,7 +49,9 @@
 #include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/events/MouseEvent.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -152,6 +154,7 @@ class WebFrameTest : public testing::Test {
 protected:
     WebFrameTest()
         : m_baseURL("http://www.test.com/")
+        , m_notBaseURL("http://www.nottest.com/")
         , m_chromeURL("chrome://")
     {
     }
@@ -169,6 +172,17 @@ protected:
     void registerMockedChromeURLLoad(const std::string& fileName)
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_chromeURL.c_str()), WebString::fromUTF8(fileName.c_str()));
+    }
+
+
+    void registerMockedHttpURLLoadWithCSP(const std::string& fileName, const std::string& csp, bool reportOnly = false)
+    {
+        WebURLResponse response;
+        response.initialize();
+        response.setMIMEType("text/html");
+        response.addHTTPHeaderField(reportOnly ? WebString("Content-Security-Policy-Report-Only") : WebString("Content-Security-Policy"), WebString::fromUTF8(csp));
+        std::string fullString = m_baseURL + fileName;
+        URLTestHelpers::registerMockedURLLoadWithCustomResponse(toKURL(fullString.c_str()), WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8(""), response);
     }
 
     void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
@@ -223,6 +237,7 @@ protected:
     }
 
     std::string m_baseURL;
+    std::string m_notBaseURL;
     std::string m_chromeURL;
 };
 
@@ -6214,6 +6229,71 @@ TEST_F(WebFrameTest, NotifyManifestChange)
 
     EXPECT_EQ(14, webFrameClient.manifestChangeCount());
 }
+
+static ResourcePtr<Resource> fetchManifest(Document* document, const KURL& url)
+{
+    FetchRequest fetchRequest = FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
+    fetchRequest.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextManifest);
+
+    return document->fetcher()->fetchSynchronously(fetchRequest);
+}
+
+TEST_F(WebFrameTest, ManifestFetch)
+{
+    registerMockedHttpURLLoad("foo.html");
+    registerMockedHttpURLLoad("link-manifest-fetch.json");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
+    Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
+
+    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_baseURL + "link-manifest-fetch.json"));
+
+    EXPECT_TRUE(resource->isLoaded());
+}
+
+TEST_F(WebFrameTest, ManifestCSPFetchAllow)
+{
+    URLTestHelpers::registerMockedURLLoad(toKURL(m_notBaseURL + "link-manifest-fetch.json"), "link-manifest-fetch.json");
+    registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src *");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
+    Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
+
+    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+
+    EXPECT_TRUE(resource->isLoaded());
+}
+
+TEST_F(WebFrameTest, ManifestCSPFetchSelf)
+{
+    URLTestHelpers::registerMockedURLLoad(toKURL(m_notBaseURL + "link-manifest-fetch.json"), "link-manifest-fetch.json");
+    registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
+    Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
+
+    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+
+    EXPECT_EQ(0, resource.get()); // Fetching resource wasn't allowed.
+}
+
+TEST_F(WebFrameTest, ManifestCSPFetchSelfReportOnly)
+{
+    URLTestHelpers::registerMockedURLLoad(toKURL(m_notBaseURL + "link-manifest-fetch.json"), "link-manifest-fetch.json");
+    registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'", /* report only */ true);
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
+    Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
+
+    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+
+    EXPECT_TRUE(resource->isLoaded());
+}
+
 
 TEST_F(WebFrameTest, ReloadBypassingCache)
 {

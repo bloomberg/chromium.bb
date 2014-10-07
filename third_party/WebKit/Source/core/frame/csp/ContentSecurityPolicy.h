@@ -75,7 +75,7 @@ public:
     static const char ScriptSrc[];
     static const char StyleSrc[];
 
-    // CSP 1.1 Directives
+    // CSP Level 2 Directives
     static const char BaseURI[];
     static const char ChildSrc[];
     static const char FormAction[];
@@ -83,6 +83,10 @@ public:
     static const char PluginTypes[];
     static const char ReflectedXSS[];
     static const char Referrer[];
+
+    // Manifest Directives (to be merged into CSP Level 2)
+    // https://w3c.github.io/manifest/#content-security-policy
+    static const char ManifestSrc[];
 
     enum ReportingStatus {
         SendReport,
@@ -126,6 +130,8 @@ public:
     bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
     bool allowChildContextFromSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowWorkerContextFromSource(const KURL&, ReportingStatus = SendReport) const;
+
+    bool allowManifestFromSource(const KURL&, ReportingStatus = SendReport) const;
 
     // The nonce and hash allow functions are guaranteed to not have any side
     // effects, including reporting.

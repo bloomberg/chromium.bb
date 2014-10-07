@@ -57,6 +57,11 @@ void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, con
     response.setMIMEType(mimeType);
     response.setHTTPStatusCode(200);
 
+    registerMockedURLLoadWithCustomResponse(fullURL, fileName, relativeBaseDirectory, response);
+}
+
+void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse response)
+{
     // Physical file path for the mock = <webkitRootDir> + relativeBaseDirectory + fileName.
     std::string filePath = std::string(Platform::current()->unitTestSupport()->webKitRootDir().utf8().data());
     filePath.append("/Source/web/tests/data/");

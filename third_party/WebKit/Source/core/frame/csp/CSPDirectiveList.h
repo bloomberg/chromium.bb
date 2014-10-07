@@ -46,6 +46,7 @@ public:
     bool allowStyleFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowFontFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowMediaFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowManifestFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowConnectToSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowFormAction(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowBaseURI(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
@@ -127,6 +128,7 @@ private:
     OwnPtr<SourceListDirective> m_frameSrc;
     OwnPtr<SourceListDirective> m_imgSrc;
     OwnPtr<SourceListDirective> m_mediaSrc;
+    OwnPtr<SourceListDirective> m_manifestSrc;
     OwnPtr<SourceListDirective> m_objectSrc;
     OwnPtr<SourceListDirective> m_scriptSrc;
     OwnPtr<SourceListDirective> m_styleSrc;

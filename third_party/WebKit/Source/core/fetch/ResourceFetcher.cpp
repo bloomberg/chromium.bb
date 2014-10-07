@@ -558,6 +558,12 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
             return false;
     }
 
+    // FIXME: Once we use RequestContext for CSP (http://crbug.com/390497), remove this extra check.
+    if (resourceRequest.requestContext() == WebURLRequest::RequestContextManifest) {
+        if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, cspReporting))
+            return false;
+    }
+
     // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
     // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
     // block them at some point in the future.
