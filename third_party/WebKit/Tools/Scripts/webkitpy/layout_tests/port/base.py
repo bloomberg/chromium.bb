@@ -1056,6 +1056,10 @@ class Port(object):
             'CHROME_DEVEL_SANDBOX',
             'CHROME_IPC_LOGGING',
             'ASAN_OPTIONS',
+            'TSAN_OPTIONS',
+            'MSAN_OPTIONS',
+            'LSAN_OPTIONS',
+            'UBSAN_OPTIONS',
             'VALGRIND_LIB',
             'VALGRIND_LIB_INNER',
         ]
