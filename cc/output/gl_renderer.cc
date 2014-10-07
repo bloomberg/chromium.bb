@@ -2195,9 +2195,7 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
 
 void GLRenderer::FinishDrawingQuadList() { FlushTextureQuadCache(); }
 
-bool GLRenderer::FlippedRootFramebuffer() const {
-  return output_surface_->capabilities().uses_default_gl_framebuffer;
-}
+bool GLRenderer::FlippedFramebuffer() const { return true; }
 
 void GLRenderer::EnsureScissorTestEnabled() {
   if (is_scissor_enabled_)
@@ -2356,8 +2354,7 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
                                        swap_buffer_rect_.height();
     compositor_frame.gl_frame_data->sub_buffer_rect =
         gfx::Rect(swap_buffer_rect_.x(),
-                  FlippedRootFramebuffer() ? flipped_y_pos_of_rect_bottom
-                                           : swap_buffer_rect_.y(),
+                  flipped_y_pos_of_rect_bottom,
                   swap_buffer_rect_.width(),
                   swap_buffer_rect_.height());
   } else {
@@ -2697,12 +2694,8 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
              GL_FRAMEBUFFER_COMPLETE ||
          IsContextLost());
 
-  bool flipped_framebuffer = true;
-  InitializeViewport(frame,
-                     target_rect,
-                     gfx::Rect(target_rect.size()),
-                     target_rect.size(),
-                     flipped_framebuffer);
+  InitializeViewport(
+      frame, target_rect, gfx::Rect(target_rect.size()), target_rect.size());
   return true;
 }
 

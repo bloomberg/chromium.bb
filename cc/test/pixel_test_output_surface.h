@@ -12,8 +12,7 @@ namespace cc {
 class PixelTestOutputSurface : public OutputSurface {
  public:
   explicit PixelTestOutputSurface(
-      scoped_refptr<ContextProvider> context_provider,
-      bool uses_main_gl_framebuffer);
+      scoped_refptr<ContextProvider> context_provider);
   explicit PixelTestOutputSurface(
       scoped_ptr<SoftwareOutputDevice> software_device);
 

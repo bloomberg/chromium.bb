@@ -127,7 +127,7 @@ void SoftwareRenderer::ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {
   output_device_->ReclaimSoftwareFrame(ack.last_software_frame_id);
 }
 
-bool SoftwareRenderer::FlippedRootFramebuffer() const {
+bool SoftwareRenderer::FlippedFramebuffer() const {
   return false;
 }
 
@@ -162,12 +162,10 @@ bool SoftwareRenderer::BindFramebufferToTexture(
       new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));
   current_canvas_ = current_framebuffer_lock_->sk_canvas();
-  bool flipped_framebuffer = false;
   InitializeViewport(frame,
                      target_rect,
                      gfx::Rect(target_rect.size()),
-                     target_rect.size(),
-                     flipped_framebuffer);
+                     target_rect.size());
   return true;
 }
 

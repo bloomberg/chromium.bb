@@ -28,7 +28,6 @@ GpuSurfacelessBrowserCompositorOutputSurface::
                                         vsync_manager,
                                         overlay_candidate_validator.Pass()),
       internalformat_(internalformat) {
-  capabilities_.uses_default_gl_framebuffer = false;
 }
 
 GpuSurfacelessBrowserCompositorOutputSurface::

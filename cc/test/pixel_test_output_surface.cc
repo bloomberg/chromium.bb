@@ -10,11 +10,8 @@
 namespace cc {
 
 PixelTestOutputSurface::PixelTestOutputSurface(
-    scoped_refptr<ContextProvider> context_provider,
-    bool uses_main_gl_framebuffer)
-    : OutputSurface(context_provider), external_stencil_test_(false) {
-  capabilities_.uses_default_gl_framebuffer = uses_main_gl_framebuffer;
-}
+    scoped_refptr<ContextProvider> context_provider)
+    : OutputSurface(context_provider), external_stencil_test_(false) {}
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device)

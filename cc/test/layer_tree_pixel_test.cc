@@ -53,9 +53,8 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
 
     case GL_WITH_DEFAULT:
     case GL_WITH_BITMAP: {
-      bool uses_default_gl_framebuffer = true;
-      output_surface = make_scoped_ptr(new PixelTestOutputSurface(
-          new TestInProcessContextProvider, uses_default_gl_framebuffer));
+      output_surface = make_scoped_ptr(
+          new PixelTestOutputSurface(new TestInProcessContextProvider));
       break;
     }
   }
