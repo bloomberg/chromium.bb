@@ -4,25 +4,16 @@
 
 #include "config.h"
 #include "platform/scheduler/TracedTask.h"
+#include "platform/scheduler/Scheduler.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
+namespace internal {
 
 volatile int TracedTask::s_nextFlowTraceID = 0;
 
-void TracedTask::run() const
-{
-    TRACE_EVENT_FLOW_END0("blink", m_traceName, MANGLE(m_flowTraceID));
-
-    TRACE_EVENT2("blink", m_traceName,
-        "src_file", m_location.fileName(),
-        "src_func", m_location.functionName());
-
-    m_task();
-}
-
-TracedTask::TracedTask(const Task& task, const TraceLocation& location, const char* traceName)
-    : m_task(task)
-    , m_location(location)
+TracedTask::TracedTask(const TraceLocation& location, const char* traceName)
+    : m_location(location)
     , m_traceName(traceName)
 {
     bool tracingEnabled;
@@ -38,4 +29,69 @@ TracedTask::TracedTask(const Task& task, const TraceLocation& location, const ch
     }
 }
 
+TraceLocation TracedTask::getLocation() const
+{
+    return m_location;
+}
+
+const char* TracedTask::getTraceName() const
+{
+    return m_traceName;
+}
+
+void TracedTask::endFlowTraceEvent() const
+{
+    TRACE_EVENT_FLOW_END0("blink", m_traceName, MANGLE(m_flowTraceID));
+}
+
+TracedTask::~TracedTask() { }
+
+TracedStandardTask::TracedStandardTask(const Task& task, const TraceLocation& location, const char* traceName)
+    : TracedTask(location, traceName)
+    , m_task(task) { }
+
+TracedStandardTask::~TracedStandardTask() { }
+
+// static
+PassOwnPtr<TracedStandardTask> TracedStandardTask::Create(const Task& task, const TraceLocation& location, const char* traceName)
+{
+    return adoptPtr(new TracedStandardTask(task, location, traceName));
+}
+
+void TracedStandardTask::run() const
+{
+    endFlowTraceEvent();
+    TRACE_EVENT2("blink", getTraceName(),
+        "src_file", getLocation().fileName(),
+        "src_func", getLocation().functionName());
+
+    m_task();
+}
+
+TracedIdleTask::TracedIdleTask(const IdleTask& idleTask, const TraceLocation& location, const char* traceName)
+    : TracedTask(location, traceName)
+    , m_idleTask(idleTask)
+{
+    ASSERT(Scheduler::shared());
+}
+
+TracedIdleTask::~TracedIdleTask() { }
+
+// static
+PassOwnPtr<TracedIdleTask> TracedIdleTask::Create(const IdleTask& idleTask, const TraceLocation& location, const char* traceName)
+{
+    return adoptPtr(new TracedIdleTask(idleTask, location, traceName));
+}
+
+void TracedIdleTask::run() const
+{
+    endFlowTraceEvent();
+    TRACE_EVENT2("blink", getTraceName(),
+        "src_file", getLocation().fileName(),
+        "src_func", getLocation().functionName());
+
+    m_idleTask(Scheduler::shared()->currentFrameDeadlineForIdleTasks());
+}
+
+} // namespace internal
 } // namespace blink

@@ -20,32 +20,6 @@ namespace {
 // The time we should stay in CompositorPriority mode for, after a touch event.
 double kLowSchedulerPolicyAfterTouchTimeSeconds = 0.1;
 
-// Can be created from any thread.
-// Note if the scheduler gets shutdown, this may be run after.
-class MainThreadIdleTaskAdapter : public WebThread::Task {
-public:
-    MainThreadIdleTaskAdapter(const Scheduler::IdleTask& idleTask, double allottedTimeMs, const TraceLocation& location)
-        : m_idleTask(idleTask)
-        , m_allottedTimeMs(allottedTimeMs)
-        , m_location(location)
-    {
-    }
-
-    // WebThread::Task implementation.
-    virtual void run() OVERRIDE
-    {
-        TRACE_EVENT2("blink", "MainThreadIdleTaskAdapter::run",
-            "src_file", m_location.fileName(),
-            "src_func", m_location.functionName());
-        m_idleTask(m_allottedTimeMs);
-    }
-
-private:
-    Scheduler::IdleTask m_idleTask;
-    double m_allottedTimeMs;
-    TraceLocation m_location;
-};
-
 } // namespace
 
 // Typically only created from compositor or render threads.
@@ -54,7 +28,7 @@ class Scheduler::MainThreadPendingHighPriorityTaskRunner : public WebThread::Tas
 public:
     MainThreadPendingHighPriorityTaskRunner(
         const Scheduler::Task& task, const TraceLocation& location, const char* traceName)
-        : m_task(task, location, traceName)
+        : m_task(internal::TracedStandardTask::Create(task, location, traceName))
     {
         ASSERT(Scheduler::shared());
     }
@@ -62,7 +36,7 @@ public:
     // WebThread::Task implementation.
     virtual void run() OVERRIDE
     {
-        m_task.run();
+        m_task->run();
         if (Scheduler* scheduler = Scheduler::shared()) {
             scheduler->updatePolicy();
             scheduler->didRunHighPriorityTask();
@@ -70,7 +44,7 @@ public:
     }
 
 private:
-    TracedTask m_task;
+    OwnPtr<internal::TracedStandardTask> m_task;
 };
 
 // Can be created from any thread.
@@ -79,7 +53,7 @@ class Scheduler::MainThreadPendingTaskRunner : public WebThread::Task {
 public:
     MainThreadPendingTaskRunner(
         const Scheduler::Task& task, const TraceLocation& location, const char* traceName)
-        : m_task(task, location, traceName)
+        : m_task(internal::TracedStandardTask::Create(task, location, traceName))
     {
         ASSERT(Scheduler::shared());
     }
@@ -87,14 +61,38 @@ public:
     // WebThread::Task implementation.
     virtual void run() OVERRIDE
     {
-        m_task.run();
+        m_task->run();
         if (Scheduler* scheduler = Scheduler::shared()) {
             scheduler->updatePolicy();
         }
     }
 
-    TracedTask m_task;
+private:
+    OwnPtr<internal::TracedStandardTask> m_task;
 };
+
+
+// Can be created from any thread.
+// Note if the scheduler gets shutdown, this may be run after.
+class Scheduler::MainThreadPendingIdleTaskRunner : public WebThread::Task {
+public:
+    MainThreadPendingIdleTaskRunner()
+    {
+        ASSERT(Scheduler::shared());
+    }
+
+    // WebThread::Task implementation.
+    virtual void run() OVERRIDE
+    {
+        if (Scheduler* scheduler = Scheduler::shared()) {
+            scheduler->maybeRunPendingIdleTask();
+            // If possible, run the next idle task by reposting on the main thread.
+            scheduler->maybePostMainThreadPendingIdleTask();
+        }
+    }
+
+};
+
 
 Scheduler* Scheduler::s_sharedScheduler = nullptr;
 
@@ -117,6 +115,7 @@ Scheduler* Scheduler::shared()
 Scheduler::Scheduler()
     : m_sharedTimerFunction(nullptr)
     , m_mainThread(blink::Platform::current()->currentThread())
+    , m_estimatedNextBeginFrameSeconds(0)
     , m_highPriorityTaskCount(0)
     , m_highPriorityTaskRunnerPosted(false)
     , m_compositorPriorityPolicyEndTimeSeconds(0)
@@ -128,20 +127,19 @@ Scheduler::~Scheduler()
 {
 }
 
-void Scheduler::willBeginFrame(const WebBeginFrameArgs& args)
+void Scheduler::willBeginFrame(double estimatedNextBeginFrameSeconds)
 {
-    // TODO: Use frame deadline and interval to schedule idle tasks.
+    ASSERT(isMainThread());
+    m_currentFrameCommitted = false;
+    m_estimatedNextBeginFrameSeconds = estimatedNextBeginFrameSeconds;
+    // TODO: Schedule a deferred task here to run idle work if didCommitFrameToCompositor never gets called.
 }
 
 void Scheduler::didCommitFrameToCompositor()
 {
-    // TODO: Trigger the frame deadline immediately.
-}
-
-void Scheduler::scheduleIdleTask(const TraceLocation& location, const IdleTask& idleTask)
-{
-    // TODO: send a real allottedTime here.
-    m_mainThread->postTask(new MainThreadIdleTaskAdapter(idleTask, 0, location));
+    ASSERT(isMainThread());
+    m_currentFrameCommitted = true;
+    maybePostMainThreadPendingIdleTask();
 }
 
 void Scheduler::postHighPriorityTaskInternal(const TraceLocation& location, const Task& task, const char* traceName)
@@ -155,6 +153,12 @@ void Scheduler::didRunHighPriorityTask()
 {
     atomicDecrement(&m_highPriorityTaskCount);
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.scheduler"), "PendingHighPriorityTasks", m_highPriorityTaskCount);
+}
+
+void Scheduler::postIdleTaskInternal(const TraceLocation& location, const IdleTask& idleTask, const char* traceName)
+{
+    Locker<Mutex> lock(m_pendingIdleTasksMutex);
+    m_pendingIdleTasks.append(internal::TracedIdleTask::Create(idleTask, location, traceName));
 }
 
 void Scheduler::postTask(const TraceLocation& location, const Task& task)
@@ -188,7 +192,21 @@ void Scheduler::postIpcTask(const TraceLocation& location, const Task& task)
 
 void Scheduler::postIdleTask(const TraceLocation& location, const IdleTask& idleTask)
 {
-    scheduleIdleTask(location, idleTask);
+    postIdleTaskInternal(location, idleTask, "Scheduler::IdleTask");
+}
+
+bool Scheduler::maybePostMainThreadPendingIdleTask()
+{
+    ASSERT(isMainThread());
+    TRACE_EVENT0("blink", "Scheduler::maybePostMainThreadPendingIdleTask");
+    if (canRunIdleTask()) {
+        Locker<Mutex> lock(m_pendingIdleTasksMutex);
+        if (!m_pendingIdleTasks.isEmpty()) {
+            m_mainThread->postTask(new MainThreadPendingIdleTaskRunner());
+            return true;
+        }
+    }
+    return false;
 }
 
 void Scheduler::tickSharedTimer()
@@ -240,6 +258,38 @@ bool Scheduler::shouldYieldForHighPriorityWork() const
     // should be cheaper.
     // NOTE it's possible the barrier read is overkill here, since delayed yielding isn't a big deal.
     return acquireLoad(&m_highPriorityTaskCount) != 0;
+}
+
+bool Scheduler::maybeRunPendingIdleTask()
+{
+    ASSERT(isMainThread());
+    if (!canRunIdleTask())
+        return false;
+
+    takeFirstPendingIdleTask()->run();
+    return true;
+}
+
+PassOwnPtr<internal::TracedIdleTask> Scheduler::takeFirstPendingIdleTask()
+{
+    Locker<Mutex> lock(m_pendingIdleTasksMutex);
+    ASSERT(!m_pendingIdleTasks.isEmpty());
+    return m_pendingIdleTasks.takeFirst();
+}
+
+double Scheduler::currentFrameDeadlineForIdleTasks() const
+{
+    ASSERT(isMainThread());
+    // TODO: Make idle time more fine-grain chunks when in Compositor priority.
+    return m_estimatedNextBeginFrameSeconds;
+}
+
+bool Scheduler::canRunIdleTask() const
+{
+    ASSERT(isMainThread());
+    return m_currentFrameCommitted
+        && !shouldYieldForHighPriorityWork()
+        && (m_estimatedNextBeginFrameSeconds > Platform::current()->monotonicallyIncreasingTime());
 }
 
 Scheduler::SchedulerPolicy Scheduler::schedulerPolicy() const

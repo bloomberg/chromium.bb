@@ -23,15 +23,15 @@ class PLATFORM_EXPORT Scheduler {
     WTF_MAKE_NONCOPYABLE(Scheduler);
 public:
     typedef Function<void()> Task;
-    // An IdleTask is passed an allotted time in CLOCK_MONOTONIC milliseconds and is expected to complete within this timeframe.
-    typedef Function<void(double allottedTimeMs)> IdleTask;
+    // An IdleTask is passed a deadline in CLOCK_MONOTONIC seconds and is expected to complete before this deadline.
+    typedef Function<void(double deadlineSeconds)> IdleTask;
 
     static Scheduler* shared();
     static void initializeOnMainThread();
     static void shutdown();
 
     // Called to notify about the start of a new frame.
-    void willBeginFrame(const WebBeginFrameArgs&);
+    void willBeginFrame(double estimatedNextBeginFrameSeconds);
 
     // Called to notify that a previously begun frame was committed.
     void didCommitFrameToCompositor();
@@ -42,7 +42,9 @@ public:
     void postCompositorTask(const TraceLocation&, const Task&);
     void postIpcTask(const TraceLocation&, const Task&);
     void postTask(const TraceLocation&, const Task&); // For generic (low priority) tasks.
-    void postIdleTask(const TraceLocation&, const IdleTask&); // For non-critical tasks which may be reordered relative to other task types.
+    // For non-critical tasks which may be reordered relative to other task types and may be starved
+    // for an arbitrarily long time if no idle time is available.
+    void postIdleTask(const TraceLocation&, const IdleTask&);
 
     // Tells the scheduler that the system received an input event. This causes the scheduler to go into
     // Compositor Priority mode for a short duration.
@@ -59,9 +61,14 @@ public:
     void setSharedTimerFireInterval(double);
     void stopSharedTimer();
 
+    // Returns the deadline, in CLOCK_MONOTONIC seconds, which an idle task should
+    // finish by for the current frame.
+    double currentFrameDeadlineForIdleTasks() const;
+
 protected:
     class MainThreadPendingTaskRunner;
     class MainThreadPendingHighPriorityTaskRunner;
+    class MainThreadPendingIdleTaskRunner;
     friend class MainThreadPendingTaskRunner;
     friend class MainThreadPendingHighPriorityTaskRunner;
 
@@ -73,8 +80,8 @@ protected:
     Scheduler();
     virtual ~Scheduler();
 
-    void scheduleIdleTask(const TraceLocation&, const IdleTask&);
     void postHighPriorityTaskInternal(const TraceLocation&, const Task&, const char* traceName);
+    void postIdleTaskInternal(const TraceLocation&, const IdleTask&, const char* traceName);
     void didRunHighPriorityTask();
 
     static void sharedTimerAdapter();
@@ -84,8 +91,16 @@ protected:
     // Only does work in CompositorPriority mode. Returns true if any work was done.
     bool runPendingHighPriorityTasksIfInCompositorPriority();
 
-    // Returns true if any work was done.
-    bool executeHighPriorityTasks(Deque<TracedTask>&);
+    // Returns true if an idle task was posted to the main thread for execution.
+    bool maybePostMainThreadPendingIdleTask();
+
+    // Only does work if canRunIdleTask. Returns true if any work was done.
+    bool maybeRunPendingIdleTask();
+
+    PassOwnPtr<internal::TracedIdleTask> takeFirstPendingIdleTask();
+
+    // Returns true if the scheduler can run idle tasks at this time.
+    bool canRunIdleTask() const;
 
     // Return the current SchedulerPolicy.
     SchedulerPolicy schedulerPolicy() const;
@@ -105,6 +120,12 @@ protected:
 
     WebThread* m_mainThread;
 
+    // This mutex protects calls to the pending idle task queue.
+    Mutex m_pendingIdleTasksMutex;
+    Deque<OwnPtr<internal::TracedIdleTask>> m_pendingIdleTasks;
+
+    bool m_currentFrameCommitted;
+    double m_estimatedNextBeginFrameSeconds;
     // Declared volatile as it is atomically incremented.
     volatile int m_highPriorityTaskCount;
 

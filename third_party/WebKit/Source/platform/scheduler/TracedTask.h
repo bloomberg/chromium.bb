@@ -10,6 +10,7 @@
 #include "platform/TraceLocation.h"
 
 namespace blink {
+namespace internal {
 
 #ifdef MANGLE_COMPILES_ON_WIN_OK
 // TODO: Once win version compiles correctly when using TRACE_ID_MANGLE remove
@@ -21,23 +22,51 @@ namespace blink {
 
 class TracedTask {
 public:
-    typedef Function<void()> Task;
+    virtual void run() const = 0;
+    virtual ~TracedTask();
 
-    void run() const;
+protected:
+    TracedTask(const TraceLocation&, const char* traceName);
+    TraceLocation getLocation() const;
+    const char* getTraceName() const;
+    void endFlowTraceEvent() const;
 
 private:
-    friend class Scheduler;
-    TracedTask(const Task&, const TraceLocation&, const char* traceName);
-
     // Declared volatile as it is atomically incremented.
     static volatile int s_nextFlowTraceID;
 
     uint64_t m_flowTraceID;
-    Task m_task;
     TraceLocation m_location;
     const char* m_traceName;
 };
 
+class TracedStandardTask : public TracedTask {
+public:
+    typedef Function<void()> Task;
+
+    static PassOwnPtr<TracedStandardTask> Create(const Task&, const TraceLocation&, const char* traceName);
+    virtual void run() const;
+    virtual ~TracedStandardTask();
+
+private:
+    TracedStandardTask(const Task&, const TraceLocation&, const char* traceName);
+    Task m_task;
+};
+
+class TracedIdleTask : public TracedTask {
+public:
+    typedef Function<void(double deadlineSeconds)> IdleTask;
+
+    static PassOwnPtr<TracedIdleTask> Create(const IdleTask&, const TraceLocation&, const char* traceName);
+    virtual void run() const;
+    virtual ~TracedIdleTask();
+
+private:
+    TracedIdleTask(const IdleTask&, const TraceLocation&, const char* traceName);
+    IdleTask m_idleTask;
+};
+
+} // namespace internal
 } // namespace blink
 
 #endif // TracedTask_h

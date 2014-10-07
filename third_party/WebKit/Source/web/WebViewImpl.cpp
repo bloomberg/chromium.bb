@@ -1820,7 +1820,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!validFrameTime.lastFrameTimeMonotonic)
         validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
 
-    Scheduler::shared()->willBeginFrame(validFrameTime);
+    Scheduler::shared()->willBeginFrame(validFrameTime.lastFrameTimeMonotonic + validFrameTime.interval);
 
     // Create synthetic wheel events as necessary for fling.
     if (m_gestureAnimation) {

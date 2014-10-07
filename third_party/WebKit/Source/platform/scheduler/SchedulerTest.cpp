@@ -188,9 +188,21 @@ public:
         m_platformSupport.runPendingTasks();
     }
 
+    void enableIdleTasks()
+    {
+        m_platformSupport.setMonotonicTimeForTest(0);
+        m_scheduler->willBeginFrame(1);
+        m_scheduler->didCommitFrameToCompositor();
+    }
+
     void appendToVector(std::string value)
     {
         m_order.push_back(value);
+    }
+
+    void appendToVectorIdleTask(std::string value, double deadline)
+    {
+        appendToVector(value);
     }
 
     void appendToVectorReentrantTask()
@@ -219,7 +231,6 @@ public:
             return;
         m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVectorReentrantCompositorTask, this));
     }
-
 protected:
     SchedulerTestingPlatformSupport m_platformSupport;
     SchedulerForTest* m_scheduler;
@@ -239,9 +250,11 @@ void unorderedTestTask(int value, int* result)
     *result += value;
 }
 
-void idleTestTask(int value, int* result, double allottedTime)
+void idleTestTask(bool* taskRun, double expectedDeadline, double deadlineSeconds)
 {
-    *result += value;
+    EXPECT_FALSE(*taskRun);
+    EXPECT_EQ(expectedDeadline, deadlineSeconds);
+    *taskRun = true;
 }
 
 TEST_F(SchedulerTest, TestPostTask)
@@ -293,14 +306,30 @@ TEST_F(SchedulerTest, TestSharedTimer)
 
 TEST_F(SchedulerTest, TestIdleTask)
 {
-    // TODO: Check task allottedTime when implemented in the scheduler.
-    int result = 0;
-    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&idleTestTask, 1, &result));
-    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&idleTestTask, 1, &result));
-    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&idleTestTask, 1, &result));
-    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&idleTestTask, 1, &result));
+    bool taskRun = false;
+    double firstDeadline = 1.1;
+    double secondDeadline = 2.3;
+    m_platformSupport.setMonotonicTimeForTest(0.1);
+
+    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&idleTestTask, &taskRun, secondDeadline));
+
     runPendingTasks();
-    EXPECT_EQ(4, result);
+    EXPECT_FALSE(taskRun); // Shouldn't run yet as no willBeginFrame.
+
+    m_scheduler->willBeginFrame(firstDeadline);
+    runPendingTasks();
+    EXPECT_FALSE(taskRun); // Shouldn't run yet as no didCommitFrameToCompositor.
+
+    m_platformSupport.setMonotonicTimeForTest(firstDeadline + 0.1);
+    m_scheduler->didCommitFrameToCompositor();
+    runPendingTasks();
+    EXPECT_FALSE(taskRun); // We missed the deadline.
+
+    m_scheduler->willBeginFrame(secondDeadline);
+    m_platformSupport.setMonotonicTimeForTest(secondDeadline - 0.1);
+    m_scheduler->didCommitFrameToCompositor();
+    runPendingTasks();
+    EXPECT_TRUE(taskRun);
 }
 
 TEST_F(SchedulerTest, TestTaskPrioritization_normalPolicy)
@@ -333,6 +362,9 @@ TEST_F(SchedulerTest, TestTasksRunAfterShutdown)
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("2")));
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("3")));
     m_scheduler->postIpcTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("4")));
+    // Idle task should not be run if scheduler is shutdown, but should not crash when flushed.
+    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&SchedulerTest::appendToVectorIdleTask, this, std::string("Not Run")));
+    enableIdleTasks();
 
     Scheduler::shutdown();
     EXPECT_TRUE(m_order.empty());
