@@ -958,8 +958,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/hit-test-end-of-colum
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/hit-test-end-of-column.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/hit-test-gap-between-pages-flipped.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/hit-test-gap-between-pages.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/layers-in-multicol.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/layers-split-across-columns.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/margin-collapse.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/max-height-columns-block.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/nested-columns.html [ Skip ]
