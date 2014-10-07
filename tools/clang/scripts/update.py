@@ -153,6 +153,18 @@ def GetVSVersion():
   return vs_version
 
 
+def SubversionCmakeArg():
+  # Since cmake's find_program can only find .exe and .com,
+  # svn.bat in depot_tools will be ignored.
+  default_pathext = ('.com', '.exe', '.bat', '.cmd')
+  for path in os.environ.get('PATH', '').split(os.pathsep):
+    for ext in default_pathext:
+      candidate = os.path.join(path, 'svn' + ext)
+      if os.path.isfile(candidate):
+        return '-DSubversion_SVN_EXECUTABLE=%s' % candidate
+  return ''
+
+
 def UpdateClang():
   print 'Updating Clang to %s...' % (LLVM_WIN_REVISION)
   if LLVM_WIN_REVISION != 'HEAD' and ReadStampFile() == LLVM_WIN_REVISION:
@@ -175,7 +187,7 @@ def UpdateClang():
 
   RunCommand(GetVSVersion().SetupScript('x64') +
              ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
-              '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
+              '-DLLVM_ENABLE_ASSERTIONS=ON', SubversionCmakeArg(), LLVM_DIR])
   RunCommand(GetVSVersion().SetupScript('x64') + ['&&', 'ninja', 'all'])
 
   # Do an x86 build of compiler-rt to get the 32-bit ASan run-time.
