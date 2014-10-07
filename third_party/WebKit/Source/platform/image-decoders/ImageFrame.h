@@ -70,7 +70,12 @@ public:
 
     ImageFrame();
 
-    ImageFrame(const ImageFrame& other) { operator=(other); }
+    // The assignment operator reads m_hasAlpha (inside setStatus()) before it
+    // sets it (in setHasAlpha()).  This doesn't cause any problems, since the
+    // setHasAlpha() call ensures all state is set correctly, but it means we
+    // need to initialize m_hasAlpha to some value before calling the operator
+    // lest any tools complain about using an uninitialized value.
+    ImageFrame(const ImageFrame& other) : m_hasAlpha(false) { operator=(other); }
 
     // For backends which refcount their data, this operator doesn't need to
     // create a new copy of the image data, only increase the ref count.
