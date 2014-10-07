@@ -1127,6 +1127,11 @@ crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure
 
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
+crbug.com/420049 [ Mac ] fast/forms/text-control-intrinsic-widths.html [ NeedsRebaseline ]
+crbug.com/420049 [ Mac ] fast/forms/search/search-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/420049 [ Mac ] svg/custom/svg-fonts-in-text-controls.html [ NeedsRebaseline ]
+crbug.com/420049 [ Mac ] fast/forms/textarea-width.html [ NeedsRebaseline ]
+
 crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
 # crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]

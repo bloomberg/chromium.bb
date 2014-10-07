@@ -194,6 +194,12 @@ void SimpleFontData::platformInit()
     // arbitrary but comes pretty close to the expected value in most cases.
     if (m_maxCharWidth < 1)
         m_maxCharWidth = ascent * 2;
+#elif OS(MACOSX)
+    // FIXME: The current avg/max character width calculation is not ideal,
+    // it should check either the OS2 table or, better yet, query FontMetrics.
+    // Sadly FontMetrics provides incorrect data on Mac at the moment.
+    // https://crbug.com/420901
+    m_maxCharWidth = std::max(m_avgCharWidth, m_fontMetrics.floatAscent());
 #else
     // FIXME: This seems incorrect and should probably use fMaxCharWidth as
     // the code path above.
@@ -201,9 +207,11 @@ void SimpleFontData::platformInit()
     m_maxCharWidth = SkScalarRoundToInt(xRange * SkScalarRoundToInt(m_platformData.size()));
 #endif
 
+#if !OS(MACOSX)
     if (metrics.fAvgCharWidth) {
         m_avgCharWidth = SkScalarRoundToInt(metrics.fAvgCharWidth);
     } else {
+#endif
         m_avgCharWidth = xHeight;
 
         GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
@@ -221,7 +229,9 @@ void SimpleFontData::platformInit()
                 m_avgCharWidth = widthForGlyph(xGlyph);
             }
         }
+#if !OS(MACOSX)
     }
+#endif
 
     if (int unitsPerEm = face->getUnitsPerEm())
         m_fontMetrics.setUnitsPerEm(unitsPerEm);
