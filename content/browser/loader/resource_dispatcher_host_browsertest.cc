@@ -36,7 +36,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
   ResourceDispatcherHostBrowserTest() : got_downloads_(false) {}
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -52,7 +52,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
 
   virtual void OnDownloadCreated(
       DownloadManager* manager,
-      DownloadItem* item) OVERRIDE {
+      DownloadItem* item) override {
     if (!got_downloads_)
       got_downloads_ = !!manager->InProgressCount();
   }

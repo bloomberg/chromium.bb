@@ -168,7 +168,7 @@ class ResourceScheduler::ScheduledResourceRequest
 
  private:
   // ResourceMessageDelegate interface:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(ScheduledResourceRequest, message)
       IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, DidChangePriority)
@@ -178,11 +178,11 @@ class ResourceScheduler::ScheduledResourceRequest
   }
 
   // ResourceThrottle interface:
-  virtual void WillStartRequest(bool* defer) OVERRIDE {
+  virtual void WillStartRequest(bool* defer) override {
     deferred_ = *defer = !ready_;
   }
 
-  virtual const char* GetNameForLogging() const OVERRIDE {
+  virtual const char* GetNameForLogging() const override {
     return "ResourceScheduler";
   }
 

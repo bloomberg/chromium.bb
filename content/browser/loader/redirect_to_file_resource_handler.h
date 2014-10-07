@@ -57,15 +57,15 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
 
   // LayeredResourceHandler implementation:
   virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) OVERRIDE;
-  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
+                                 bool* defer) override;
+  virtual bool OnWillStart(const GURL& url, bool* defer) override;
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE;
+                          int min_size) override;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
 
  private:
   void DidCreateTemporaryFile(base::File::Error error_code,

@@ -223,7 +223,7 @@ class TestFilter : public ResourceMessageFilter {
   int received_after_canceled() const { return received_after_canceled_; }
 
   // ResourceMessageFilter override
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     // No messages should be received when the process has been canceled.
     if (canceled_)
       received_after_canceled_++;
@@ -265,7 +265,7 @@ class ForwardingFilter : public TestFilter {
   }
 
   // TestFilter override
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     return dest_->Send(msg);
   }
 
@@ -286,7 +286,7 @@ class URLRequestTestDelayedNetworkJob : public net::URLRequestTestJob {
       : net::URLRequestTestJob(request, network_delegate) {}
 
   // Only start if not deferred for network start.
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     bool defer = false;
     NotifyBeforeNetworkStart(&defer);
     if (defer)
@@ -294,7 +294,7 @@ class URLRequestTestDelayedNetworkJob : public net::URLRequestTestJob {
     net::URLRequestTestJob::Start();
   }
 
-  virtual void ResumeNetworkStart() OVERRIDE {
+  virtual void ResumeNetworkStart() override {
     net::URLRequestTestJob::StartAsync();
   }
 
@@ -333,7 +333,7 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
   }
 
   // Do nothing until you're told to.
-  virtual void Start() OVERRIDE {}
+  virtual void Start() override {}
 
   // Finish starting a URL request whose job is an instance of
   // URLRequestTestDelayedStartJob.  It is illegal to call this routine
@@ -414,7 +414,7 @@ class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
   virtual ~URLRequestTestDelayedCompletionJob() {}
 
  private:
-  virtual bool NextReadAsync() OVERRIDE { return true; }
+  virtual bool NextReadAsync() override { return true; }
 };
 
 class URLRequestBigJob : public net::URLRequestSimpleJob {
@@ -427,7 +427,7 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE {
+                      const net::CompletionCallback& callback) const override {
     *mime_type = "text/plain";
     *charset = "UTF-8";
 
@@ -494,17 +494,17 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+  virtual bool IsHandledProtocol(const std::string& scheme) const override {
     return supported_schemes_.count(scheme) > 0;
   }
 
-  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+  virtual bool IsHandledURL(const GURL& url) const override {
     return supported_schemes_.count(url.scheme()) > 0;
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -539,7 +539,7 @@ class TransfersAllNavigationsContentBrowserClient
  public:
   virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                               const GURL& current_url,
-                                              const GURL& new_url) OVERRIDE {
+                                              const GURL& new_url) override {
     return true;
   }
 };
@@ -572,7 +572,7 @@ class GenericResourceThrottle : public ResourceThrottle {
   }
 
   // ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) OVERRIDE {
+  virtual void WillStartRequest(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
     if (flags_ & DEFER_STARTING_REQUEST) {
       active_throttle_ = this;
@@ -588,7 +588,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual void WillProcessResponse(bool* defer) OVERRIDE {
+  virtual void WillProcessResponse(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
     if (flags_ & DEFER_PROCESSING_RESPONSE) {
       active_throttle_ = this;
@@ -596,7 +596,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual void WillStartUsingNetwork(bool* defer) OVERRIDE {
+  virtual void WillStartUsingNetwork(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
 
     if (flags_ & DEFER_NETWORK_START) {
@@ -605,7 +605,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual const char* GetNameForLogging() const OVERRIDE {
+  virtual const char* GetNameForLogging() const override {
     return "GenericResourceThrottle";
   }
 
@@ -662,7 +662,7 @@ class TestResourceDispatcherHostDelegate
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
       ResourceType resource_type,
-      ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
+      ScopedVector<ResourceThrottle>* throttles) override {
     if (user_data_) {
       const void* key = user_data_.get();
       request->SetUserData(key, user_data_.release());
@@ -729,7 +729,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   // IPC::Sender implementation
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     accum_.AddMessage(*msg);
 
     if (send_data_received_acks_ &&
@@ -751,7 +751,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   friend class TestURLRequestJobFactory;
 
   // testing::Test
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(0);
     HandleScheme("test");
   }

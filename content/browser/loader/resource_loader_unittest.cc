@@ -64,7 +64,7 @@ class ClientCertStoreStub : public net::ClientCertStore {
   // net::ClientCertStore:
   virtual void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
                               net::CertificateList* selected_certs,
-                              const base::Closure& callback) OVERRIDE {
+                              const base::Closure& callback) override {
     ++request_count_;
     requested_authorities_ = cert_request_info.cert_authorities;
     *selected_certs = response_;
@@ -127,39 +127,39 @@ class ResourceHandlerStub : public ResourceHandler {
   }
 
   // ResourceHandler implementation:
-  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
+  virtual bool OnUploadProgress(uint64 position, uint64 size) override {
     NOTREACHED();
     return true;
   }
 
   virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
-                                   bool* defer) OVERRIDE {
+                                   bool* defer) override {
     NOTREACHED();
     return true;
   }
 
   virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) OVERRIDE {
+                                 bool* defer) override {
     EXPECT_FALSE(response_.get());
     response_ = response;
     return true;
   }
 
-  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE {
+  virtual bool OnWillStart(const GURL& url, bool* defer) override {
     EXPECT_TRUE(start_url_.is_empty());
     start_url_ = url;
     *defer = defer_request_on_will_start_;
     return true;
   }
 
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE {
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override {
     return true;
   }
 
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE {
+                          int min_size) override {
     EXPECT_TRUE(expect_reads_);
     EXPECT_FALSE(received_on_will_read_);
     EXPECT_FALSE(received_eof_);
@@ -171,7 +171,7 @@ class ResourceHandlerStub : public ResourceHandler {
     return true;
   }
 
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE {
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) override {
     EXPECT_TRUE(received_on_will_read_);
     EXPECT_TRUE(expect_reads_);
     EXPECT_FALSE(received_response_completed_);
@@ -192,7 +192,7 @@ class ResourceHandlerStub : public ResourceHandler {
 
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
-                                   bool* defer) OVERRIDE {
+                                   bool* defer) override {
     EXPECT_FALSE(received_response_completed_);
     if (status.is_success() && expect_reads_)
       EXPECT_TRUE(received_eof_);
@@ -201,7 +201,7 @@ class ResourceHandlerStub : public ResourceHandler {
     status_ = status;
   }
 
-  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE {
+  virtual void OnDataDownloaded(int bytes_downloaded) override {
     EXPECT_FALSE(expect_reads_);
     total_bytes_downloaded_ += bytes_downloaded;
   }
@@ -234,7 +234,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
       int render_view_id,
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback) OVERRIDE {
+      const base::Callback<void(net::X509Certificate*)>& callback) override {
     ++call_count_;
     passed_certs_ = cert_request_info->client_certs;
   }
@@ -257,7 +257,7 @@ class ResourceContextStub : public MockResourceContext {
   explicit ResourceContextStub(net::URLRequestContext* test_request_context)
       : MockResourceContext(test_request_context) {}
 
-  virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() OVERRIDE {
+  virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() override {
     return dummy_cert_store_.Pass();
   }
 
@@ -308,7 +308,7 @@ class ResourceLoaderTest : public testing::Test,
     return leaf_handler.PassAs<ResourceHandler>();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     const int kRenderProcessId = 1;
     const int kRenderViewId = 2;
 
@@ -338,18 +338,18 @@ class ResourceLoaderTest : public testing::Test,
   // ResourceLoaderDelegate:
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) OVERRIDE {
+      net::AuthChallengeInfo* auth_info) override {
     return NULL;
   }
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
-                                      const GURL& url) OVERRIDE {
+                                      const GURL& url) override {
     return false;
   }
-  virtual void DidStartRequest(ResourceLoader* loader) OVERRIDE {}
+  virtual void DidStartRequest(ResourceLoader* loader) override {}
   virtual void DidReceiveRedirect(ResourceLoader* loader,
-                                  const GURL& new_url) OVERRIDE {}
-  virtual void DidReceiveResponse(ResourceLoader* loader) OVERRIDE {}
-  virtual void DidFinishLoading(ResourceLoader* loader) OVERRIDE {}
+                                  const GURL& new_url) override {}
+  virtual void DidReceiveResponse(ResourceLoader* loader) override {}
+  virtual void DidFinishLoading(ResourceLoader* loader) override {}
 
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -501,7 +501,7 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
 
   virtual scoped_ptr<ResourceHandler> WrapResourceHandler(
       scoped_ptr<ResourceHandlerStub> leaf_handler,
-      net::URLRequest* request) OVERRIDE {
+      net::URLRequest* request) override {
     leaf_handler->set_expect_reads(false);
 
     // Make a temporary file.

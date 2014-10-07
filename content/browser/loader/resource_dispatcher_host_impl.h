@@ -78,8 +78,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static ResourceDispatcherHostImpl* Get();
 
   // ResourceDispatcherHost implementation:
-  virtual void SetDelegate(ResourceDispatcherHostDelegate* delegate) OVERRIDE;
-  virtual void SetAllowCrossOriginAuthPrompt(bool value) OVERRIDE;
+  virtual void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
+  virtual void SetAllowCrossOriginAuthPrompt(bool value) override;
   virtual DownloadInterruptReason BeginDownload(
       scoped_ptr<net::URLRequest> request,
       const Referrer& referrer,
@@ -90,11 +90,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool prefer_cache,
       scoped_ptr<DownloadSaveInfo> save_info,
       uint32 download_id,
-      const DownloadStartedCallback& started_callback) OVERRIDE;
-  virtual void ClearLoginDelegateForRequest(net::URLRequest* request) OVERRIDE;
-  virtual void BlockRequestsForRoute(int child_id, int route_id) OVERRIDE;
+      const DownloadStartedCallback& started_callback) override;
+  virtual void ClearLoginDelegateForRequest(net::URLRequest* request) override;
+  virtual void BlockRequestsForRoute(int child_id, int route_id) override;
   virtual void ResumeBlockedRequestsForRoute(
-      int child_id, int route_id) OVERRIDE;
+      int child_id, int route_id) override;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -291,14 +291,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // ResourceLoaderDelegate implementation:
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) OVERRIDE;
+      net::AuthChallengeInfo* auth_info) override;
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
-                                      const GURL& url) OVERRIDE;
-  virtual void DidStartRequest(ResourceLoader* loader) OVERRIDE;
+                                      const GURL& url) override;
+  virtual void DidStartRequest(ResourceLoader* loader) override;
   virtual void DidReceiveRedirect(ResourceLoader* loader,
-                                  const GURL& new_url) OVERRIDE;
-  virtual void DidReceiveResponse(ResourceLoader* loader) OVERRIDE;
-  virtual void DidFinishLoading(ResourceLoader* loader) OVERRIDE;
+                                  const GURL& new_url) override;
+  virtual void DidReceiveResponse(ResourceLoader* loader) override;
+  virtual void DidFinishLoading(ResourceLoader* loader) override;
 
   // An init helper that runs on the IO thread.
   void OnInit();

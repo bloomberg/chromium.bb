@@ -32,22 +32,22 @@ class BufferedResourceHandler
 
  private:
   // ResourceHandler implementation:
-  virtual void SetController(ResourceController* controller) OVERRIDE;
+  virtual void SetController(ResourceController* controller) override;
   virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) OVERRIDE;
+                                 bool* defer) override;
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE;
+                          int min_size) override;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
 
   // ResourceController implementation:
-  virtual void Resume() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual void CancelAndIgnore() OVERRIDE;
-  virtual void CancelWithError(int error_code) OVERRIDE;
+  virtual void Resume() override;
+  virtual void Cancel() override;
+  virtual void CancelAndIgnore() override;
+  virtual void CancelWithError(int error_code) override;
 
   bool ProcessResponse(bool* defer);
 

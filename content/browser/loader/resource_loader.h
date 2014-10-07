@@ -58,30 +58,30 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // net::URLRequest::Delegate implementation:
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const net::RedirectInfo& redirect_info,
-                                  bool* defer) OVERRIDE;
+                                  bool* defer) override;
   virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* info) OVERRIDE;
+                              net::AuthChallengeInfo* info) override;
   virtual void OnCertificateRequested(net::URLRequest* request,
-                                      net::SSLCertRequestInfo* info) OVERRIDE;
+                                      net::SSLCertRequestInfo* info) override;
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      const net::SSLInfo& info,
-                                     bool fatal) OVERRIDE;
+                                     bool fatal) override;
   virtual void OnBeforeNetworkStart(net::URLRequest* request,
-                                    bool* defer) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+                                    bool* defer) override;
+  virtual void OnResponseStarted(net::URLRequest* request) override;
   virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE;
+                               int bytes_read) override;
 
   // SSLErrorHandler::Delegate implementation:
   virtual void CancelSSLRequest(int error,
-                                const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest() OVERRIDE;
+                                const net::SSLInfo* ssl_info) override;
+  virtual void ContinueSSLRequest() override;
 
   // ResourceController implementation:
-  virtual void Resume() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual void CancelAndIgnore() OVERRIDE;
-  virtual void CancelWithError(int error_code) OVERRIDE;
+  virtual void Resume() override;
+  virtual void Cancel() override;
+  virtual void CancelAndIgnore() override;
+  virtual void CancelWithError(int error_code) override;
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);

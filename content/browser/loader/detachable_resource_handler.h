@@ -47,29 +47,29 @@ class DetachableResourceHandler : public ResourceHandler,
   }
 
   // ResourceHandler implementation:
-  virtual void SetController(ResourceController* controller) OVERRIDE;
-  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
+  virtual void SetController(ResourceController* controller) override;
+  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
   virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
   virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) OVERRIDE;
-  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE;
+                                 bool* defer) override;
+  virtual bool OnWillStart(const GURL& url, bool* defer) override;
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE;
+                          int min_size) override;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
-                                   bool* defer) OVERRIDE;
-  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE;
+                                   bool* defer) override;
+  virtual void OnDataDownloaded(int bytes_downloaded) override;
 
   // ResourceController implementation:
-  virtual void Resume() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual void CancelAndIgnore() OVERRIDE;
-  virtual void CancelWithError(int error_code) OVERRIDE;
+  virtual void Resume() override;
+  virtual void Cancel() override;
+  virtual void CancelAndIgnore() override;
+  virtual void CancelWithError(int error_code) override;
 
  private:
   scoped_ptr<ResourceHandler> next_handler_;

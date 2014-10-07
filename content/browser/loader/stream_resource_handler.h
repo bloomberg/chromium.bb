@@ -31,39 +31,39 @@ class StreamResourceHandler : public StreamWriteObserver,
                         const GURL& origin);
   virtual ~StreamResourceHandler();
 
-  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
+  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
 
   // Not needed, as this event handler ought to be the final resource.
   virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* resp,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
 
   virtual bool OnResponseStarted(ResourceResponse* resp,
-                                 bool* defer) OVERRIDE;
+                                 bool* defer) override;
 
-  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
+  virtual bool OnWillStart(const GURL& url, bool* defer) override;
 
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE;
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
 
   // Create a new buffer to store received data.
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE;
+                          int min_size) override;
 
   // A read was completed, forward the data to the Stream.
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
 
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& sec_info,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
 
-  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE;
+  virtual void OnDataDownloaded(int bytes_downloaded) override;
 
   Stream* stream() { return stream_.get(); }
 
  private:
-  virtual void OnSpaceAvailable(Stream* stream) OVERRIDE;
-  virtual void OnClose(Stream* stream) OVERRIDE;
+  virtual void OnSpaceAvailable(Stream* stream) override;
+  virtual void OnClose(Stream* stream) override;
 
   scoped_refptr<Stream> stream_;
   scoped_refptr<net::IOBuffer> read_buffer_;

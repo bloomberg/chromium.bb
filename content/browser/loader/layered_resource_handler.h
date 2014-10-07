@@ -24,24 +24,24 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
   virtual ~LayeredResourceHandler();
 
   // ResourceHandler implementation:
-  virtual void SetController(ResourceController* controller) OVERRIDE;
-  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
+  virtual void SetController(ResourceController* controller) override;
+  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
   virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
   virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) OVERRIDE;
-  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE;
+                                 bool* defer) override;
+  virtual bool OnWillStart(const GURL& url, bool* defer) override;
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE;
+                          int min_size) override;
   virtual bool OnReadCompleted(int bytes_read,
-                               bool* defer) OVERRIDE;
+                               bool* defer) override;
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
-                                   bool* defer) OVERRIDE;
-  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE;
+                                   bool* defer) override;
+  virtual void OnDataDownloaded(int bytes_downloaded) override;
 
   scoped_ptr<ResourceHandler> next_handler_;
 };

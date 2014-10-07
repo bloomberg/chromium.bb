@@ -65,7 +65,7 @@ class TestRequest : public ResourceController {
     started_ = !deferred;
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     // Alert the scheduler that the request can be deleted.
     throttle_.reset(0);
   }
@@ -74,9 +74,9 @@ class TestRequest : public ResourceController {
 
  protected:
   // ResourceController interface:
-  virtual void CancelAndIgnore() OVERRIDE {}
-  virtual void CancelWithError(int error_code) OVERRIDE {}
-  virtual void Resume() OVERRIDE { started_ = true; }
+  virtual void CancelAndIgnore() override {}
+  virtual void CancelWithError(int error_code) override {}
+  virtual void Resume() override { started_ = true; }
 
  private:
   bool started_;
@@ -95,7 +95,7 @@ class CancelingTestRequest : public TestRequest {
   }
 
  private:
-  virtual void Resume() OVERRIDE {
+  virtual void Resume() override {
     TestRequest::Resume();
     request_to_cancel_.reset();
   }
@@ -105,8 +105,8 @@ class CancelingTestRequest : public TestRequest {
 
 class FakeResourceContext : public ResourceContext {
  private:
-  virtual net::HostResolver* GetHostResolver() OVERRIDE { return NULL; }
-  virtual net::URLRequestContext* GetRequestContext() OVERRIDE { return NULL; }
+  virtual net::HostResolver* GetHostResolver() override { return NULL; }
+  virtual net::URLRequestContext* GetRequestContext() override { return NULL; }
 };
 
 class FakeResourceMessageFilter : public ResourceMessageFilter {
