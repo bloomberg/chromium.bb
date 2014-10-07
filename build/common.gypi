@@ -1470,11 +1470,6 @@
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
 
-    # Chrome OS: whether to build ChromeVox from sources in the Chromium
-    # repository rather than using precompiled JavaScript in
-    # chrome/third_party/chromevox.  This is still experimental.
-    'use_migrated_chromevox%': 1,
-
     'conditions': [
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {

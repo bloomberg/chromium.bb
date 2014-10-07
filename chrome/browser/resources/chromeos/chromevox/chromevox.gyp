@@ -6,8 +6,7 @@
   'conditions': [
     ['chromeos==1', {
       'variables': {
-        # Whether to compress the 4 main ChromeVox scripts.  Applicable if
-        # use_migrated_chromevox is true.
+        # Whether to compress the 4 main ChromeVox scripts.
         'chromevox_compress_js%': '1',
         'background_script_loader_file': 'chromevox/background/loader.js',
         'content_script_loader_file': 'chromevox/injected/loader.js',
@@ -46,7 +45,7 @@
                 '<(DEPTH)/third_party/liblouis/liblouis_nacl.gyp:liblouis_nacl_wrapper_nacl',
               ],
             }],
-            ['use_migrated_chromevox==1 and chromevox_compress_js==1', {
+            ['chromevox_compress_js==1', {
               'dependencies': [
                 'chromevox_content_script',
                 'chromevox_background_script',
@@ -54,7 +53,7 @@
                 'chromevox_kbexplorer_script',
               ],
             }],
-            ['use_migrated_chromevox==1 and chromevox_compress_js==0', {
+            ['chromevox_compress_js==0', {
               'dependencies': [
                 'chromevox_copied_scripts',
               ],
@@ -111,7 +110,7 @@
                 'closure/closure_preinit.js',
               ],
               'conditions': [
-                ['use_migrated_chromevox==0 or chromevox_compress_js==1', {
+                ['chromevox_compress_js==1', {
                   'files': [ '<(closure_goog_dir)/base.js' ],
                 }],
               ]
@@ -207,7 +206,7 @@
         },
       ],
       'conditions': [
-        ['use_migrated_chromevox==1 and chromevox_compress_js==1', {
+        ['chromevox_compress_js==1', {
           'targets': [
             {
               'target_name': 'chromevox_content_script',
@@ -248,7 +247,7 @@
           ],
         },
         ],
-        ['use_migrated_chromevox==1 and chromevox_compress_js==0', {
+        ['chromevox_compress_js==0', {
           'targets': [
             {
               'target_name': 'chromevox_copied_scripts',

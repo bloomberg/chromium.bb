@@ -28,21 +28,6 @@
               ],
             },
           ],
-          'conditions': [
-            ['use_migrated_chromevox==0', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox',
-                  'files': [
-                    'chromeVoxChromeBackgroundScript.js',
-                    'chromeVoxChromeOptionsScript.js',
-                    'chromeVoxChromePageScript.js',
-                    'chromeVoxKbExplorerScript.js',
-                  ],
-                },
-              ],
-            }],
-          ],
         },
       ],
     }],
