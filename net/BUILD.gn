@@ -197,8 +197,11 @@ component("net") {
       "cert/ct_objects_extractor_nss.cc",
       "cert/jwk_serializer_nss.cc",
       "cert/scoped_nss_types.h",
+      "cert/test_root_certs_nss.cc",
       "cert/x509_util_nss.cc",
       "cert/x509_util_nss.h",
+      "ocsp/nss_ocsp.cc",
+      "ocsp/nss_ocsp.h",
       "quic/crypto/aead_base_decrypter_nss.cc",
       "quic/crypto/aead_base_encrypter_nss.cc",
       "quic/crypto/aes_128_gcm_12_decrypter_nss.cc",
@@ -244,9 +247,6 @@ component("net") {
       sources -= [
         "cert/cert_verify_proc_nss.cc",
         "cert/cert_verify_proc_nss.h",
-        "cert/test_root_certs_nss.cc",
-        "ocsp/nss_ocsp.cc",
-        "ocsp/nss_ocsp.h",
       ]
     }
   } else {
@@ -317,7 +317,7 @@ component("net") {
     ]
   }
 
-  if (use_glib) {
+  if (use_glib && !is_chromeos) {
     configs += [ "//build/config/linux:gconf" ]
     deps += [ "//build/config/linux:gio" ]
   }
@@ -340,7 +340,7 @@ component("net") {
       "third_party/mozilla_security_manager/nsPKCS12Blob.h",
     ]
 
-    if (!is_ios) {
+    if (!is_ios && !use_openssl) {
       # These files are part of the partial implementation of NSS on iOS so
       # keep them in that case.
       sources -= [
@@ -849,7 +849,7 @@ if (!is_ios && !is_android) {
         "//base",
       ]
 
-      if (is_linux) {
+      if (is_desktop_linux) {
         configs += [
           "//build/config/linux:gconf",
           "//build/config/linux:glib",
