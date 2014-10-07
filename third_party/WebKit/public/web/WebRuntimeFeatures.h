@@ -69,8 +69,6 @@ public:
 
     BLINK_EXPORT static void enableFileSystem(bool);
 
-    BLINK_EXPORT static void enableGamepad(bool);
-
     BLINK_EXPORT static void enableLocalStorage(bool);
 
     BLINK_EXPORT static void enableMediaPlayer(bool);

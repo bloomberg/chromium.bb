@@ -60,7 +60,6 @@ FileAPIBlobClose status=experimental
 FileConstructor status=stable
 FileSystem status=stable
 FullscreenUnprefixed status=test
-Gamepad status=stable
 Geofencing status=test
 GeometryInterfaces status=test
 // Temporary setting to allow easy rollback of change to hover media feature.

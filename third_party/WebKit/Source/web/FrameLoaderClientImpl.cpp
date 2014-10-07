@@ -118,8 +118,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::deviceLightEnabled())
                 DeviceLightController::from(*document);
-            if (RuntimeEnabledFeatures::gamepadEnabled())
-                NavigatorGamepad::from(*document);
+            NavigatorGamepad::from(*document);
             if (RuntimeEnabledFeatures::serviceWorkerEnabled())
                 NavigatorServiceWorker::from(*document);
         }

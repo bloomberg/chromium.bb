@@ -125,11 +125,6 @@ void WebRuntimeFeatures::enableFileSystem(bool enable)
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableGamepad(bool enable)
-{
-    RuntimeEnabledFeatures::setGamepadEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableLocalStorage(bool enable)
 {
     RuntimeEnabledFeatures::setLocalStorageEnabled(enable);
