@@ -199,20 +199,18 @@ class LocalFileSyncService
       const PrepareChangeCallback& callback,
       SyncStatusCode status);
 
-  // Runs local_sync_callback_ and resets it.
-  void RunLocalSyncCallback(SyncStatusCode status,
-                            const storage::FileSystemURL& url);
-
   // Callback for ApplyRemoteChange.
   void DidApplyRemoteChange(
       const SyncStatusCallback& callback,
       SyncStatusCode status);
 
   // Callbacks for ProcessLocalChange.
-  void DidGetFileForLocalSync(SyncStatusCode status,
+  void DidGetFileForLocalSync(const SyncFileCallback& callback,
+                              SyncStatusCode status,
                               const LocalFileSyncInfo& sync_file_info,
                               storage::ScopedFile snapshot);
-  void ProcessNextChangeForURL(storage::ScopedFile snapshot,
+  void ProcessNextChangeForURL(const SyncFileCallback& callback,
+                               storage::ScopedFile snapshot,
                                const LocalFileSyncInfo& sync_file_info,
                                const FileChange& last_change,
                                const FileChangeList& changes,
@@ -236,10 +234,6 @@ class LocalFileSyncService
   std::set<GURL> pending_origins_with_changes_;
 
   OriginChangeMap origin_change_map_;
-
-  // This callback is non-null while a local sync is running (i.e.
-  // ProcessLocalChange has been called and has not been returned yet).
-  SyncFileCallback local_sync_callback_;
 
   LocalChangeProcessor* local_change_processor_;
   GetLocalChangeProcessorCallback get_local_change_processor_;

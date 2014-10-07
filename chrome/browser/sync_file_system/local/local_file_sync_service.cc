@@ -158,18 +158,15 @@ void LocalFileSyncService::ProcessLocalChange(
     callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
     return;
   }
-  DCHECK(local_sync_callback_.is_null());
   DCHECK(!origin.is_empty());
   DCHECK(ContainsKey(origin_to_contexts_, origin));
 
   DVLOG(1) << "Starting ProcessLocalChange";
 
-  local_sync_callback_ = callback;
-
   sync_context_->GetFileForLocalSync(
       origin_to_contexts_[origin],
       base::Bind(&LocalFileSyncService::DidGetFileForLocalSync,
-                 AsWeakPtr()));
+                 AsWeakPtr(), callback));
 }
 
 void LocalFileSyncService::SetLocalChangeProcessor(
@@ -402,17 +399,6 @@ void LocalFileSyncService::DidInitializeForRemoteSync(
   PrepareForProcessRemoteChange(url, callback);
 }
 
-void LocalFileSyncService::RunLocalSyncCallback(
-    SyncStatusCode status,
-    const FileSystemURL& url) {
-  DVLOG(1) << "Local sync is finished with: " << status
-           << " on " << url.DebugString();
-  DCHECK(!local_sync_callback_.is_null());
-  SyncFileCallback callback = local_sync_callback_;
-  local_sync_callback_.Reset();
-  callback.Run(status, url);
-}
-
 void LocalFileSyncService::DidApplyRemoteChange(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
@@ -423,18 +409,16 @@ void LocalFileSyncService::DidApplyRemoteChange(
 }
 
 void LocalFileSyncService::DidGetFileForLocalSync(
+    const SyncFileCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
     storage::ScopedFile snapshot) {
-  DCHECK(!local_sync_callback_.is_null());
   if (status != SYNC_STATUS_OK) {
-    RunLocalSyncCallback(status, sync_file_info.url);
+    callback.Run(status, sync_file_info.url);
     return;
   }
   if (sync_file_info.changes.empty()) {
     // There's a slight chance this could happen.
-    SyncFileCallback callback = local_sync_callback_;
-    local_sync_callback_.Reset();
     ProcessLocalChange(callback);
     return;
   }
@@ -449,11 +433,13 @@ void LocalFileSyncService::DidGetFileForLocalSync(
       sync_file_info.metadata,
       sync_file_info.url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), base::Passed(&snapshot), sync_file_info,
+                 AsWeakPtr(), callback,
+                 base::Passed(&snapshot), sync_file_info,
                  next_change, sync_file_info.changes.PopAndGetNewList()));
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
+    const SyncFileCallback& callback,
     storage::ScopedFile snapshot,
     const LocalFileSyncInfo& sync_file_info,
     const FileChange& processed_change,
@@ -471,7 +457,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
         sync_file_info.metadata,
         sync_file_info.url,
         base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                   AsWeakPtr(), base::Passed(&snapshot),
+                   AsWeakPtr(), callback, base::Passed(&snapshot),
                    sync_file_info, processed_change, changes));
     return;
   }
@@ -487,8 +473,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
     DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
     sync_context_->FinalizeSnapshotSync(
         origin_to_contexts_[url.origin()], url, status,
-        base::Bind(&LocalFileSyncService::RunLocalSyncCallback,
-                   AsWeakPtr(), status, url));
+        base::Bind(callback, status, url));
     return;
   }
 
@@ -499,7 +484,8 @@ void LocalFileSyncService::ProcessNextChangeForURL(
       sync_file_info.metadata,
       url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), base::Passed(&snapshot), sync_file_info,
+                 AsWeakPtr(), callback,
+                 base::Passed(&snapshot), sync_file_info,
                  next_change, changes.PopAndGetNewList()));
 }
 
