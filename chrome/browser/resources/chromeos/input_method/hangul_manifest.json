@@ -4,8 +4,12 @@
   "version": "1.0.0.0",
   "description": "Korean input method on Chrome OS",
   "permissions": [
+    "accessibilityFeatures.read",
     "input",
-    "unlimitedStorage"
+    "inputMethodPrivate",
+    "metricsPrivate",
+    "unlimitedStorage",
+    "virtualKeyboardPrivate"
   ],
   "manifest_version": 2,
   "minimum_chrome_version": "22",
