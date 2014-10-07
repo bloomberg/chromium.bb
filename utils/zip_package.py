@@ -7,6 +7,7 @@
 import atexit
 import collections
 import cStringIO as StringIO
+import hashlib
 import os
 import pkgutil
 import re
@@ -292,3 +293,26 @@ def cleanup_extracted_resources():
         os.remove(_extracted_files.pop())
       except OSError:
         pass
+
+
+def generate_version():
+  """Generates the sha-1 based on the content of this zip.
+
+  It is hashing the content of the zip, not the compressed bits. The compression
+  has other side effects that kicks in, like zlib's library version, compression
+  level, order in which the files were specified, etc.
+  """
+  assert is_zipped_module(sys.modules['__main__'])
+  result = hashlib.sha1()
+  # TODO(maruel): This function still has to be compatible with python 2.6. Use
+  # a with statement once every bots are upgraded to 2.7.
+  z = zipfile.ZipFile(get_main_script_path(), 'r')
+  for item in sorted(z.namelist()):
+    f = z.open(item)
+    result.update(item)
+    result.update('\x00')
+    result.update(f.read())
+    result.update('\x00')
+    f.close()
+  z.close()
+  return result.hexdigest()
