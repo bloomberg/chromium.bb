@@ -50,9 +50,6 @@ const int kMacFontSizeDelta = -1;
 // Update the button image after ensuring its dimensions are |kIconSize|.
 - (void)updateButtonImage;
 
-// Ensure the page this item is on is the visible page in the grid.
-- (void)ensureVisible;
-
 // Add or remove a progress bar from the view.
 - (void)setItemIsInstalling:(BOOL)isInstalling;
 
@@ -74,7 +71,6 @@ class ItemModelObserverBridge : public app_list::AppListItemObserver {
 
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemNameChanged() OVERRIDE;
-  virtual void ItemHighlightedChanged() OVERRIDE;
   virtual void ItemIsInstallingChanged() OVERRIDE;
   virtual void ItemPercentDownloadedChanged() OVERRIDE;
 
@@ -116,11 +112,6 @@ void ItemModelObserverBridge::ItemIconChanged() {
 
 void ItemModelObserverBridge::ItemNameChanged() {
   [parent_ updateButtonTitle];
-}
-
-void ItemModelObserverBridge::ItemHighlightedChanged() {
-  if (model_->highlighted())
-    [parent_ ensureVisible];
 }
 
 void ItemModelObserverBridge::ItemIsInstallingChanged() {
@@ -357,19 +348,10 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   return imageRep;
 }
 
-- (void)ensureVisible {
-  NSCollectionView* collectionView = [self collectionView];
-  AppsGridController* gridController =
-      base::mac::ObjCCastStrict<AppsGridController>([collectionView delegate]);
-  size_t pageIndex = [gridController pageIndexForCollectionView:collectionView];
-  [gridController scrollToPage:pageIndex];
-}
-
 - (void)setItemIsInstalling:(BOOL)isInstalling {
   if (!isInstalling == !progressIndicator_)
     return;
 
-  [self ensureVisible];
   if (!isInstalling) {
     [progressIndicator_ removeFromSuperview];
     progressIndicator_.reset();

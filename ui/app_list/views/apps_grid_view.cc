@@ -492,15 +492,6 @@ bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
   return selected_view_ == view;
 }
 
-void AppsGridView::EnsureViewVisible(const AppListItemView* view) {
-  if (pagination_model_.has_transition())
-    return;
-
-  Index index = GetIndexOfView(view);
-  if (IsValidIndex(index))
-    pagination_model_.SelectPage(index.page, false);
-}
-
 void AppsGridView::InitiateDrag(AppListItemView* view,
                                 Pointer pointer,
                                 const ui::LocatedEvent& event) {
@@ -1089,6 +1080,14 @@ int AppsGridView::GetModelIndexFromIndex(const Index& index) const {
   return index.page * tiles_per_page() + index.slot;
 }
 
+void AppsGridView::EnsureViewVisible(const Index& index) {
+  if (pagination_model_.has_transition())
+    return;
+
+  if (IsValidIndex(index))
+    pagination_model_.SelectPage(index.page, false);
+}
+
 void AppsGridView::SetSelectedItemByIndex(const Index& index) {
   if (GetIndexOfView(selected_view_) == index)
     return;
@@ -1100,7 +1099,7 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
   if (selected_view_)
     selected_view_->SchedulePaint();
 
-  EnsureViewVisible(new_selection);
+  EnsureViewVisible(index);
   selected_view_ = new_selection;
   selected_view_->SchedulePaint();
   selected_view_->NotifyAccessibilityEvent(
@@ -2024,6 +2023,13 @@ void AppsGridView::OnListItemMoved(size_t from_index,
 
   UpdatePaging();
   AnimateToIdealBounds();
+}
+
+void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {
+  AppListItemView* view = GetItemViewAt(index);
+  view->SetItemIsHighlighted(highlight);
+  if (highlight)
+    EnsureViewVisible(GetIndexFromModelIndex(index));
 }
 
 void AppsGridView::TotalPagesChanged() {

@@ -38,7 +38,6 @@ ExtensionAppModelBuilder::ExtensionAppModelBuilder(
       profile_(NULL),
       controller_(controller),
       model_(NULL),
-      highlighted_app_pending_(false),
       tracker_(NULL),
       extension_registry_(NULL) {
 }
@@ -151,7 +150,6 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
                           params.extension_name,
                           resized,
                           params.is_platform_app));
-  SetHighlightedApp(params.extension_id);
 }
 
 void ExtensionAppModelBuilder::OnDownloadProgress(
@@ -188,7 +186,6 @@ void ExtensionAppModelBuilder::OnExtensionLoaded(
                           "",
                           gfx::ImageSkia(),
                           extension->is_platform_app()));
-  UpdateHighlight();
 }
 
 void ExtensionAppModelBuilder::OnExtensionUnloaded(
@@ -222,11 +219,6 @@ void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(
   ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
   if (existing_item)
     existing_item->Reload();
-}
-
-void ExtensionAppModelBuilder::OnAppInstalledToAppList(
-    const std::string& extension_id) {
-  SetHighlightedApp(extension_id);
 }
 
 void ExtensionAppModelBuilder::OnShutdown() {
@@ -267,7 +259,6 @@ void ExtensionAppModelBuilder::BuildModel() {
   extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
 
   PopulateApps();
-  UpdateHighlight();
 
   // Start observing after model is built.
   if (tracker_)
@@ -300,20 +291,6 @@ void ExtensionAppModelBuilder::InsertApp(scoped_ptr<ExtensionAppItem> app) {
   model_->AddItem(app.PassAs<app_list::AppListItem>());
 }
 
-void ExtensionAppModelBuilder::SetHighlightedApp(
-    const std::string& extension_id) {
-  if (extension_id == highlight_app_id_)
-    return;
-  ExtensionAppItem* old_app = GetExtensionAppItem(highlight_app_id_);
-  if (old_app)
-    old_app->SetHighlighted(false);
-  highlight_app_id_ = extension_id;
-  ExtensionAppItem* new_app = GetExtensionAppItem(highlight_app_id_);
-  highlighted_app_pending_ = !new_app;
-  if (new_app)
-    new_app->SetHighlighted(true);
-}
-
 ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(
     const std::string& extension_id) {
   app_list::AppListItem* item = model_->FindItem(extension_id);
@@ -322,17 +299,6 @@ ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(
       << "App Item matching id: " << extension_id
       << " has incorrect type: '" << item->GetItemType() << "'";
   return static_cast<ExtensionAppItem*>(item);
-}
-
-void ExtensionAppModelBuilder::UpdateHighlight() {
-  DCHECK(model_);
-  if (!highlighted_app_pending_ || highlight_app_id_.empty())
-    return;
-  ExtensionAppItem* item = GetExtensionAppItem(highlight_app_id_);
-  if (!item)
-    return;
-  item->SetHighlighted(true);
-  highlighted_app_pending_ = false;
 }
 
 void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,

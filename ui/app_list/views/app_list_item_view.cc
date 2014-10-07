@@ -274,15 +274,11 @@ void AppListItemView::SetItemName(const base::string16& display_name,
 
 void AppListItemView::SetItemIsHighlighted(bool is_highlighted) {
   is_highlighted_ = is_highlighted;
-  apps_grid_view_->EnsureViewVisible(this);
   SchedulePaint();
 }
 
 void AppListItemView::SetItemIsInstalling(bool is_installing) {
   is_installing_ = is_installing;
-  if (is_installing_)
-    apps_grid_view_->EnsureViewVisible(this);
-
   if (ui_state_ == UI_STATE_NORMAL) {
     title_->SetVisible(!is_installing);
     progress_bar_->SetVisible(is_installing);
@@ -390,9 +386,9 @@ void AppListItemView::StateChanged() {
   } else {
     if (!is_folder_ui_enabled)
       apps_grid_view_->ClearSelectedView(this);
-    is_highlighted_ = false;
+    SetItemIsHighlighted(false);
     if (item_weak_)
-      item_weak_->SetHighlighted(false);
+      item_weak_->set_highlighted(false);
     title_->SetEnabledColor(kGridTitleColor);
   }
   title_->Invalidate();
@@ -541,10 +537,6 @@ void AppListItemView::ItemIconChanged() {
 void AppListItemView::ItemNameChanged() {
   SetItemName(base::UTF8ToUTF16(item_weak_->GetDisplayName()),
               base::UTF8ToUTF16(item_weak_->name()));
-}
-
-void AppListItemView::ItemHighlightedChanged() {
-  SetItemIsHighlighted(item_weak_->highlighted());
 }
 
 void AppListItemView::ItemIsInstallingChanged() {

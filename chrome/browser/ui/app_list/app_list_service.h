@@ -72,19 +72,19 @@ class AppListService {
   // current browser process.
   virtual void Show() = 0;
 
-  // Create the app list UI, and maintain its state, but do not show it.
-  virtual void CreateForProfile(Profile* requested_profile) = 0;
-
   // Show the app list for the given profile. If it differs from the profile the
   // app list is currently showing, repopulate the app list and save the new
   // profile to local prefs as the default app list profile.
   virtual void ShowForProfile(Profile* requested_profile) = 0;
 
-  // Show the app list due to a trigger which was not an explicit user action
-  // to show the app list. E.g. the auto-show when installing an app. This
-  // permits UMA to distinguish between a user discovering the app list shortcut
-  // themselves versus having it shown for them automatically.
-  virtual void AutoShowForProfile(Profile* requested_profile) = 0;
+  // Shows the app list, and reveals the page that contains |extension_id|. This
+  // should only be called for things that show in the app list, and only when
+  // they begin or complete installing. If |start_discovery_tracking| is set,
+  // the app launcher will not actually be shown, but will start tracking UMA
+  // for app launcher discovery.
+  virtual void ShowForAppInstall(Profile* profile,
+                                 const std::string& extension_id,
+                                 bool start_discovery_tracking) = 0;
 
   // Dismiss the app list.
   virtual void DismissAppList() = 0;

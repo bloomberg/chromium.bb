@@ -54,13 +54,18 @@ class AppListServiceImpl : public AppListService,
       const base::FilePath& user_data_dir) override;
   virtual void SetProfilePath(const base::FilePath& profile_path) override;
   virtual void Show() override;
-  virtual void AutoShowForProfile(Profile* requested_profile) override;
+  virtual void ShowForAppInstall(Profile* profile,
+                                 const std::string& extension_id,
+                                 bool start_discovery_tracking) override;
   virtual void EnableAppList(Profile* initial_profile,
                              AppListEnableSource enable_source) override;
   virtual void CreateShortcut() override;
 
  protected:
   AppListServiceImpl();
+
+  // Create the app list UI, and maintain its state, but do not show it.
+  virtual void CreateForProfile(Profile* requested_profile) = 0;
 
   // Destroy the app list. Called when the profile that the app list is showing
   // is being deleted.

@@ -26,10 +26,6 @@ void AppListServiceViews::Init(Profile* initial_profile) {
   PerformStartupChecks(initial_profile);
 }
 
-void AppListServiceViews::CreateForProfile(Profile* requested_profile) {
-  shower_.CreateViewForProfile(requested_profile);
-}
-
 void AppListServiceViews::ShowForProfile(Profile* requested_profile) {
   DCHECK(requested_profile);
 
@@ -62,6 +58,10 @@ Profile* AppListServiceViews::GetCurrentAppListProfile() {
 
 AppListControllerDelegate* AppListServiceViews::GetControllerDelegate() {
   return controller_delegate_.get();
+}
+
+void AppListServiceViews::CreateForProfile(Profile* requested_profile) {
+  shower_.CreateViewForProfile(requested_profile);
 }
 
 void AppListServiceViews::DestroyAppList() {

@@ -65,8 +65,6 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   virtual void OnInstallFailure(const std::string& extension_id) override;
   virtual void OnDisabledExtensionUpdated(
       const extensions::Extension* extension) override;
-  virtual void OnAppInstalledToAppList(
-      const std::string& extension_id) override;
   virtual void OnShutdown() override;
 
   // extensions::ExtensionRegistryObserver.
@@ -100,16 +98,6 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   // Inserts an app based on app ordinal prefs.
   void InsertApp(scoped_ptr<ExtensionAppItem> app);
 
-  // Sets which app is intended to be highlighted. Will remove the highlight
-  // from a currently highlighted app.
-  void SetHighlightedApp(const std::string& extension_id);
-
-  // Sets the application app with |highlight_app_id_| in |model_| as
-  // highlighted if |highlighted_app_pending_| is true. If such an app is found,
-  // reset |highlighted_app_pending_| so that won't be highlighted again until
-  // another call to SetHighlightedApp() is made.
-  void UpdateHighlight();
-
   // Returns app instance matching |extension_id| or NULL.
   ExtensionAppItem* GetExtensionAppItem(const std::string& extension_id);
 
@@ -140,12 +128,6 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
 
   // Unowned pointer to the app list model.
   app_list::AppListModel* model_;
-
-  std::string highlight_app_id_;
-
-  // True if we haven't set |highlight_app_id_| to be highlighted. This happens
-  // if we try to highlight an app that doesn't exist in the list yet.
-  bool highlighted_app_pending_;
 
   // We listen to this to show app installing progress.
   extensions::InstallTracker* tracker_;

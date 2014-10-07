@@ -17,9 +17,6 @@ class APP_LIST_EXPORT AppListItemObserver {
   // Invoked after item's name is changed.
   virtual void ItemNameChanged() {}
 
-  // Invoked after item's highlighted state is changed.
-  virtual void ItemHighlightedChanged() {}
-
   // Invoked after item begins or finishes installing.
   virtual void ItemIsInstallingChanged() {}
 

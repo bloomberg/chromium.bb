@@ -134,7 +134,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // AppListItemObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemNameChanged() OVERRIDE;
-  virtual void ItemHighlightedChanged() OVERRIDE;
   virtual void ItemIsInstallingChanged() OVERRIDE;
   virtual void ItemPercentDownloadedChanged() OVERRIDE;
   virtual void ItemBeingDestroyed() OVERRIDE;

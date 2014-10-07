@@ -26,7 +26,6 @@ class AppListServiceAsh : public AppListServiceImpl {
   // AppListService overrides:
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) override;
-  virtual void CreateForProfile(Profile* default_profile) override;
   virtual void ShowForProfile(Profile* default_profile) override;
   virtual bool IsAppListVisible() const override;
   virtual void DismissAppList() override;
@@ -37,6 +36,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   virtual AppListControllerDelegate* GetControllerDelegate() override;
 
   // ApplistServiceImpl overrides:
+  virtual void CreateForProfile(Profile* default_profile) override;
   virtual void DestroyAppList() override;
 
   scoped_ptr<AppListControllerDelegateAsh> controller_delegate_;

@@ -383,20 +383,6 @@ Profile* AppListServiceMac::GetCurrentAppListProfile() {
   return profile_;
 }
 
-void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
-  if (profile_ == requested_profile)
-    return;
-
-  profile_ = requested_profile;
-
-  if (!window_controller_)
-    window_controller_.reset([[AppListWindowController alloc] init]);
-
-  [[window_controller_ appListViewController] setDelegate:nil];
-  [[window_controller_ appListViewController]
-      setDelegate:GetViewDelegate(profile_)];
-}
-
 void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
   InvalidatePendingProfileLoads();
 
@@ -450,6 +436,20 @@ void AppListServiceMac::EnableAppList(Profile* initial_profile,
 void AppListServiceMac::CreateShortcut() {
   CreateAppListShim(GetProfilePath(
       g_browser_process->profile_manager()->user_data_dir()));
+}
+
+void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
+  if (profile_ == requested_profile)
+    return;
+
+  profile_ = requested_profile;
+
+  if (!window_controller_)
+    window_controller_.reset([[AppListWindowController alloc] init]);
+
+  [[window_controller_ appListViewController] setDelegate:nil];
+  [[window_controller_ appListViewController]
+      setDelegate:GetViewDelegate(profile_)];
 }
 
 void AppListServiceMac::DestroyAppList() {

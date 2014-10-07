@@ -484,10 +484,8 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
   if (IsAppLauncherEnabled() && approval_->manifest->is_app()) {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
-    if (approval_->enable_launcher)
-      app_list_service->CreateForProfile(GetProfile());
-    else
-      app_list_service->AutoShowForProfile(GetProfile());
+    app_list_service->ShowForAppInstall(
+        GetProfile(), params->expected_id, approval_->enable_launcher);
   }
 
   // If the target extension has already been installed ephemerally and is

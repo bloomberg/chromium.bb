@@ -45,7 +45,7 @@ class APP_LIST_EXPORT AppListItem {
   // Should only be used in tests; otheriwse use GetDisplayName().
   const std::string& short_name() const { return short_name_; }
 
-  void SetHighlighted(bool highlighted);
+  void set_highlighted(bool highlighted) { highlighted_ = highlighted; }
   bool highlighted() const { return highlighted_; }
 
   void SetIsInstalling(bool is_installing);

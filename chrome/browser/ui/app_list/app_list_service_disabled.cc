@@ -32,24 +32,21 @@ class AppListServiceDisabled : public AppListService {
   virtual void SetProfilePath(const base::FilePath& profile_path) override {}
 
   virtual void Show() override {}
-  virtual void CreateForProfile(Profile* profile) override {}
   virtual void ShowForProfile(Profile* profile) override {}
-  virtual void AutoShowForProfile(Profile* profile) override {}
+  virtual void ShowForAppInstall(Profile* profile,
+                                 const std::string& extension_id,
+                                 bool start_discovery_tracking) override {}
   virtual void DismissAppList() override {}
 
   virtual Profile* GetCurrentAppListProfile() override { return NULL; }
   virtual bool IsAppListVisible() const override { return false; }
   virtual void EnableAppList(Profile* initial_profile,
                              AppListEnableSource enable_source) override {}
+  virtual gfx::NativeWindow GetAppListWindow() override { return NULL; }
   virtual AppListControllerDelegate* GetControllerDelegate() override {
     return NULL;
   }
-
   virtual void CreateShortcut() override {}
-
-  virtual gfx::NativeWindow GetAppListWindow() override {
-    return NULL;
-  }
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceDisabled);
 };

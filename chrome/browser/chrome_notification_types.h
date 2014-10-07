@@ -584,11 +584,6 @@ enum NotificationType {
   // which was installed.
   NOTIFICATION_APP_INSTALLED_TO_NTP,
 
-  // Similar to NOTIFICATION_APP_INSTALLED_TO_NTP but used to notify ash AppList
-  // about installed app. Source is the profile in which the app is installed
-  // and Details is the string ID of the extension.
-  NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-
 #if defined(USE_ASH)
   // Sent when wallpaper show animation has finished.
   NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,

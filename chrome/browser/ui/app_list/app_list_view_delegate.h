@@ -64,16 +64,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
- private:
-  // Updates the speech webview and start page for the current |profile_|.
-  void SetUpSearchUI();
-
-  // Updates the app list's ProfileMenuItems for the current |profile_|.
-  void SetUpProfileSwitcher();
-
-  // Updates the app list's custom launcher pages for the current |profile_|.
-  void SetUpCustomLauncherPages();
-
   // Overridden from app_list::AppListViewDelegate:
   virtual bool ForceNativeDesktop() const override;
   virtual void SetProfileByPath(const base::FilePath& profile_path) override;
@@ -114,6 +104,16 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       app_list::AppListViewDelegateObserver* observer) override;
   virtual void RemoveObserver(
       app_list::AppListViewDelegateObserver* observer) override;
+
+ private:
+  // Updates the speech webview and start page for the current |profile_|.
+  void SetUpSearchUI();
+
+  // Updates the app list's ProfileMenuItems for the current |profile_|.
+  void SetUpProfileSwitcher();
+
+  // Updates the app list's custom launcher pages for the current |profile_|.
+  void SetUpCustomLauncherPages();
 
   // Overridden from app_list::StartPageObserver:
   virtual void OnSpeechResult(const base::string16& result,

@@ -228,8 +228,8 @@ TEST_F(AppListServiceUnitTest, UMAPrefStates) {
             local_state_->GetInteger(prefs::kAppListEnableMethod));
   EXPECT_EQ(0, local_state_->GetInt64(prefs::kAppListEnableTime));
 
-  // An auto-show here should keep the recorded enable method.
-  service_->AutoShowForProfile(profile1_.get());
+  // An app install auto-show here should keep the recorded enable method.
+  service_->ShowForAppInstall(profile1_.get(), "", false);
   EXPECT_EQ(AppListService::ENABLE_FOR_APP_INSTALL,
             local_state_->GetInteger(prefs::kAppListEnableMethod));
 
@@ -244,7 +244,7 @@ TEST_F(AppListServiceUnitTest, UMAPrefStates) {
 
   // An auto-show here should update the enable method to prevent recording it
   // as ENABLE_FOR_APP_INSTALL.
-  service_->AutoShowForProfile(profile1_.get());
+  service_->ShowForAppInstall(profile1_.get(), "", false);
   EXPECT_EQ(AppListService::ENABLE_SHOWN_UNDISCOVERED,
             local_state_->GetInteger(prefs::kAppListEnableMethod));
 }

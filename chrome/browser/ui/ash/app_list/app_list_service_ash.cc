@@ -29,8 +29,6 @@ base::FilePath AppListServiceAsh::GetProfilePath(
   return ChromeLauncherController::instance()->profile()->GetPath();
 }
 
-void AppListServiceAsh::CreateForProfile(Profile* default_profile) {}
-
 void AppListServiceAsh::ShowForProfile(Profile* default_profile) {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.
@@ -61,6 +59,9 @@ Profile* AppListServiceAsh::GetCurrentAppListProfile() {
 
 AppListControllerDelegate* AppListServiceAsh::GetControllerDelegate() {
   return controller_delegate_.get();
+}
+
+void AppListServiceAsh::CreateForProfile(Profile* default_profile) {
 }
 
 void AppListServiceAsh::DestroyAppList() {

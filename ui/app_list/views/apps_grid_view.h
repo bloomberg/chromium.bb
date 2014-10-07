@@ -94,10 +94,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void ClearAnySelectedView();
   bool IsSelectedView(const AppListItemView* view) const;
 
-  // Ensures the view is visible. Note that if there is a running page
-  // transition, this does nothing.
-  void EnsureViewVisible(const AppListItemView* view);
-
   void InitiateDrag(AppListItemView* view,
                     Pointer pointer,
                     const ui::LocatedEvent& event);
@@ -269,6 +265,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   Index GetIndexFromModelIndex(int model_index) const;
   int GetModelIndexFromIndex(const Index& index) const;
 
+  // Ensures the view is visible. Note that if there is a running page
+  // transition, this does nothing.
+  void EnsureViewVisible(const Index& index);
+
   void SetSelectedItemByIndex(const Index& index);
   bool IsValidIndex(const Index& index) const;
 
@@ -377,6 +377,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
                                AppListItem* item) OVERRIDE;
+  virtual void OnAppListItemHighlight(size_t index, bool highlight) OVERRIDE;
 
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;

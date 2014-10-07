@@ -111,6 +111,15 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
     [parent_ listItemMovedFromIndex:from_index
                        toModelIndex:to_index];
   }
+  virtual void OnAppListItemHighlight(size_t index, bool highlight) OVERRIDE {
+    // NSCollectionView (or -[AppsGridController scrollToPage]) ensures only one
+    // item is highlighted, so clearing a highlight isn't necessary.
+    if (!highlight)
+      return;
+
+    [parent_ selectItemAtIndex:index];
+    [parent_ scrollToPage:index / kItemsPerPage];
+  }
 
   AppsGridController* parent_;  // Weak, owns us.
 

@@ -151,13 +151,9 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
                                             const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  AppListService::Get(chrome::HOST_DESKTOP_TYPE_ASH)->
-      ShowForProfile(profile);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-      content::Source<Profile>(profile),
-      content::Details<const std::string>(&app_id));
+  // App Launcher always enabled on ChromeOS, so always handled in
+  // OnInstallSuccess.
+  NOTREACHED();
 #else
   Browser* browser = FindOrCreateVisibleBrowser(profile);
   if (browser) {
@@ -248,13 +244,8 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
     if (IsAppLauncherEnabled()) {
       // TODO(tapted): ExtensionInstallUI should retain the desktop type from
       // the browser used to initiate the flow. http://crbug.com/308360.
-      AppListService::Get(chrome::GetActiveDesktop())->
-          ShowForProfile(current_profile);
-
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-          content::Source<Profile>(current_profile),
-          content::Details<const std::string>(&extension->id()));
+      AppListService::Get(chrome::GetActiveDesktop())
+          ->ShowForAppInstall(current_profile, extension->id(), false);
       return;
     }
 

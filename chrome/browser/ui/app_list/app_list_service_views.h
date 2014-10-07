@@ -32,7 +32,6 @@ class AppListServiceViews : public AppListServiceImpl,
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) override;
-  virtual void CreateForProfile(Profile* requested_profile) override;
   virtual void ShowForProfile(Profile* requested_profile) override;
   virtual void DismissAppList() override;
   virtual bool IsAppListVisible() const override;
@@ -41,6 +40,7 @@ class AppListServiceViews : public AppListServiceImpl,
   virtual AppListControllerDelegate* GetControllerDelegate() override;
 
   // AppListServiceImpl overrides:
+  virtual void CreateForProfile(Profile* requested_profile) override;
   virtual void DestroyAppList() override;
 
   // AppListShowerDelegate overrides:
