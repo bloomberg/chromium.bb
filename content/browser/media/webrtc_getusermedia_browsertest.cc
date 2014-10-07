@@ -126,15 +126,15 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
     // Put getUserMedia to work and let it run for a couple of seconds.
     DCHECK(time_to_sample_secs);
     ExecuteJavascriptAndWaitForOk(
-        base::StringPrintf("%s({video: true});",
+        base::StringPrintf("%s({video: true}, 'myStreamName');",
                            kGetUserMediaAndGetStreamUp));
 
     // Now the stream is up and running, start collecting traces.
     StartTracing();
 
-    // Let the stream run for a while in javascript.
     ExecuteJavascriptAndWaitForOk(
-        base::StringPrintf("waitAndStopVideoTrack(%d);", time_to_sample_secs));
+        base::StringPrintf("waitAndStopVideoTrack(window['myStreamName'], %d);",
+                           time_to_sample_secs));
 
     // Wait until the page title changes to "OK". Do not sleep() here since that
     // would stop both this code and the browser underneath.
