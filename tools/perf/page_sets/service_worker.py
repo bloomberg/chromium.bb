@@ -11,7 +11,7 @@ archive_data_file_path = 'data/service_worker.json'
 
 class ServiceWorkerPage(page.Page):
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage()
+    action_runner.NavigateToPage(self)
     action_runner.WaitForJavaScriptCondition('window.done')
 
 
