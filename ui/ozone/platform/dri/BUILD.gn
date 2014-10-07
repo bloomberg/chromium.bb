@@ -11,8 +11,8 @@ pkg_config("libdrm") {
 
 source_set("dri_common") {
   sources = [
-    "crtc_state.cc",
-    "crtc_state.h",
+    "crtc_controller.cc",
+    "crtc_controller.h",
     "display_mode_dri.cc",
     "display_mode_dri.h",
     "display_snapshot_dri.cc",
@@ -46,6 +46,8 @@ source_set("dri_common") {
     "hardware_display_controller.h",
     "native_display_delegate_dri.cc",
     "native_display_delegate_dri.h",
+    "overlay_plane.cc",
+    "overlay_plane.h",
     "scoped_drm_types.cc",
     "scoped_drm_types.h",
     "screen_manager.cc",

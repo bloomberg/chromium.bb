@@ -14,7 +14,7 @@
 
 namespace ui {
 
-class HardwareDisplayController;
+class CrtcController;
 
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
 class MockDriWrapper : public ui::DriWrapper {
@@ -113,7 +113,7 @@ class MockDriWrapper : public ui::DriWrapper {
 
   std::vector<skia::RefPtr<SkSurface> > buffers_;
 
-  std::queue<HardwareDisplayController*> controllers_;
+  std::queue<CrtcController*> controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };

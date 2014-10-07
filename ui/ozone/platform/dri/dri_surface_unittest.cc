@@ -7,7 +7,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "ui/ozone/platform/dri/crtc_state.h"
+#include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
@@ -26,10 +26,8 @@ const uint32_t kDefaultConnector = 2;
 class MockDriWindowDelegate : public ui::DriWindowDelegate {
  public:
   MockDriWindowDelegate(ui::DriWrapper* drm) {
-    controller_.reset(new ui::HardwareDisplayController(
-        drm,
-        make_scoped_ptr(
-            new ui::CrtcState(drm, kDefaultCrtc, kDefaultConnector))));
+    controller_.reset(new ui::HardwareDisplayController(make_scoped_ptr(
+        new ui::CrtcController(drm, kDefaultCrtc, kDefaultConnector))));
     scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm));
     SkImageInfo info = SkImageInfo::MakeN32Premul(kDefaultMode.hdisplay,
                                                   kDefaultMode.vdisplay);

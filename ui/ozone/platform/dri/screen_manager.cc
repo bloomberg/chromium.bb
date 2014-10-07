@@ -9,8 +9,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/ozone/platform/dri/crtc_state.h"
+#include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_util.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
@@ -24,7 +25,9 @@ ScreenManager::ScreenManager(DriWrapper* dri,
 ScreenManager::~ScreenManager() {
 }
 
-void ScreenManager::AddDisplayController(uint32_t crtc, uint32_t connector) {
+void ScreenManager::AddDisplayController(DriWrapper* dri,
+                                         uint32_t crtc,
+                                         uint32_t connector) {
   HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
   // TODO(dnicoara): Turn this into a DCHECK when async display configuration is
   // properly supported. (When there can't be a race between forcing initial
@@ -36,7 +39,7 @@ void ScreenManager::AddDisplayController(uint32_t crtc, uint32_t connector) {
   }
 
   controllers_.push_back(new HardwareDisplayController(
-      dri_, scoped_ptr<CrtcState>(new CrtcState(dri_, crtc, connector))));
+      scoped_ptr<CrtcController>(new CrtcController(dri, crtc, connector))));
 }
 
 void ScreenManager::RemoveDisplayController(uint32_t crtc) {
@@ -72,8 +75,7 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
   // mirror mode, subsequent calls configuring the other controllers will
   // restore mirror mode.
   if (controller->IsMirrored()) {
-    controller =
-        new HardwareDisplayController(dri_, controller->RemoveCrtc(crtc));
+    controller = new HardwareDisplayController(controller->RemoveCrtc(crtc));
     controllers_.push_back(controller);
     it = controllers_.end() - 1;
   }
@@ -92,7 +94,7 @@ bool ScreenManager::DisableDisplayController(uint32_t crtc) {
   if (it != controllers_.end()) {
     if ((*it)->IsMirrored()) {
       HardwareDisplayController* controller =
-          new HardwareDisplayController(dri_, (*it)->RemoveCrtc(crtc));
+          new HardwareDisplayController((*it)->RemoveCrtc(crtc));
       controllers_.push_back(controller);
     }
 
@@ -161,7 +163,8 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
                       dpms->prop_id,
                       DRM_MODE_DPMS_ON);
 
-  AddDisplayController(displays[0]->crtc()->crtc_id,
+  AddDisplayController(dri_,
+                       displays[0]->crtc()->crtc_id,
                        displays[0]->connector()->connector_id);
   ConfigureDisplayController(displays[0]->crtc()->crtc_id,
                              displays[0]->connector()->connector_id,

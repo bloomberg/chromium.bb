@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/ozone/platform/dri/crtc_state.h"
+#include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -62,9 +62,8 @@ class HardwareDisplayControllerTest : public testing::Test {
 void HardwareDisplayControllerTest::SetUp() {
   drm_.reset(new ui::MockDriWrapper(3));
   controller_.reset(new ui::HardwareDisplayController(
-      drm_.get(),
-      scoped_ptr<ui::CrtcState>(
-          new ui::CrtcState(drm_.get(), kPrimaryCrtc, kPrimaryConnector))));
+      scoped_ptr<ui::CrtcController>(new ui::CrtcController(
+          drm_.get(), kPrimaryCrtc, kPrimaryConnector))));
 }
 
 void HardwareDisplayControllerTest::TearDown() {
@@ -170,9 +169,8 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
-  controller_->AddCrtc(
-      scoped_ptr<ui::CrtcState>(
-          new ui::CrtcState(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+  controller_->AddCrtc(scoped_ptr<ui::CrtcController>(
+      new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));

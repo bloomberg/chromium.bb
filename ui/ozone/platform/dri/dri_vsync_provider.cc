@@ -22,13 +22,13 @@ void DriVSyncProvider::GetVSyncParameters(const UpdateVSyncCallback& callback) {
     return;
 
   // The value is invalid, so we can't update the parameters.
-  if (controller->get_time_of_last_flip() == 0 ||
+  if (controller->GetTimeOfLastFlip() == 0 ||
       controller->get_mode().vrefresh == 0)
     return;
 
   // Stores the time of the last refresh.
   base::TimeTicks timebase =
-      base::TimeTicks::FromInternalValue(controller->get_time_of_last_flip());
+      base::TimeTicks::FromInternalValue(controller->GetTimeOfLastFlip());
   // Stores the refresh rate.
   base::TimeDelta interval =
       base::TimeDelta::FromSeconds(1) / controller->get_mode().vrefresh;

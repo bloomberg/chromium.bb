@@ -7,8 +7,9 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/ozone/platform/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/crtc_controller.h"
 
 namespace ui {
 
@@ -87,7 +88,7 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               void* data) {
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;
-  controllers_.push(static_cast<ui::HardwareDisplayController*>(data));
+  controllers_.push(static_cast<ui::CrtcController*>(data));
   return page_flip_expectation_;
 }
 

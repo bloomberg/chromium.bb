@@ -31,7 +31,7 @@ class ScreenManager {
 
   // Register a display controller. This must be called before trying to
   // configure it.
-  void AddDisplayController(uint32_t crtc, uint32_t connector);
+  void AddDisplayController(DriWrapper* dri, uint32_t crtc, uint32_t connector);
 
   // Remove a display controller from the list of active controllers. The
   // controller is removed since it was disconnected.

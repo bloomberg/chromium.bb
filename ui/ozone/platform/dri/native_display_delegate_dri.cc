@@ -328,8 +328,8 @@ void NativeDisplayDelegateDri::NotifyScreenManager(
                      DisplaySnapshotComparator(new_displays[i]));
 
     if (it == old_displays.end())
-      screen_manager_->AddDisplayController(new_displays[i]->crtc(),
-                                            new_displays[i]->connector());
+      screen_manager_->AddDisplayController(
+          dri_, new_displays[i]->crtc(), new_displays[i]->connector());
   }
 }
 
