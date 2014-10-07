@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRI_HARDWARE_CURSOR_DELEGATE_H_
 #define UI_OZONE_PLATFORM_DRI_HARDWARE_CURSOR_DELEGATE_H_
 
+#include <vector>
+
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;

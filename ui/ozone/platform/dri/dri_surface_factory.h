@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 
 #include <map>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
