@@ -146,6 +146,12 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
 
+  def _GetLocalBuildStatus(self):
+    """Return the status for this build as a dictionary."""
+    status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
+    status_obj = manifest_version.BuilderStatus(status, self.message)
+    return {self._bot_id: status_obj}
+
   def _FetchSlaveStatuses(self):
     """Fetch and return build status for slaves of this build.
 
@@ -157,31 +163,34 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       will have a BuilderStatus with status MISSING.
     """
     if not self._run.config.master:
-      # This is a slave build, so return the status for this
-      # build. The status is available locally.
-      status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
-      status_obj = manifest_version.BuilderStatus(status, self.message)
-      return {self._bot_id: status_obj}
+      # The slave build returns its own status.
+      logging.warning('The build is not a master.')
+      return self._GetLocalBuildStatus()
     else:
-      # This is a master build, so wait for all the slaves to finish
-      # and return their statuses.
-      if self._run.options.debug:
-        # For debug runs, wait for three minutes to ensure most code
-        # paths are executed.
-        timeout = 3 * 60
-      elif self._run.config.build_type == constants.PFQ_TYPE:
-        timeout = self.PFQ_SLAVE_STATUS_TIMEOUT_SECONDS
-      else:
-        timeout = self.SLAVE_STATUS_TIMEOUT_SECONDS
-
+      # The master build.
       builders = self._GetSlaveConfigs()
       builder_names = [b['name'] for b in builders]
+      if not builder_names:
+        # Master has no slaves.
+        return {}
+      elif len(builder_names) == 1 and self._run.config.name in builder_names:
+        # Master with only itself as the slave should not wait.
+        return self._GetLocalBuildStatus()
+      else:
+        # Wait for the slaves to finish.
+        if self._run.options.debug:
+          # For debug runs, wait for three minutes to ensure most code
+          # paths are executed.
+          timeout = 3 * 60
+        elif self._run.config.build_type == constants.PFQ_TYPE:
+          timeout = self.PFQ_SLAVE_STATUS_TIMEOUT_SECONDS
+        else:
+          timeout = self.SLAVE_STATUS_TIMEOUT_SECONDS
 
-      manager = self._run.attrs.manifest_manager
-      if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
-        manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
-
-      return manager.GetBuildersStatus(
+        manager = self._run.attrs.manifest_manager
+        if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
+          manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
+        return manager.GetBuildersStatus(
           self._run.attrs.metadata.GetValue('build_id'),
           builder_names,
           timeout=timeout)
