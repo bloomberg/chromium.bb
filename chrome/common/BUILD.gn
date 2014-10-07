@@ -235,15 +235,11 @@ static_library("common") {
   }
 }
 
-if (is_linux || is_android) {
-  # TODO(brettw) this duplicates "//chrome/common:version" which applies to
-  # Windows.
-  import("//chrome/version.gni")
-  process_version("version") {
-    visibility = [ ":common" ]
-    source = "chrome_version_info_values.h.version"
-    output = "$target_gen_dir/chrome_version_info_values.h"
-  }
+import("//chrome/version.gni")
+process_version("version") {
+  visibility = [ ":common" ]
+  source = "chrome_version_info_values.h.version"
+  output = "$target_gen_dir/chrome_version_info_values.h"
 }
 
 # GN version: chrome/common_constants.gyp:common_constants
