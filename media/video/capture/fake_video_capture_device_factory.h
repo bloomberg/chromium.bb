@@ -20,11 +20,11 @@ class MEDIA_EXPORT FakeVideoCaptureDeviceFactory :
   virtual ~FakeVideoCaptureDeviceFactory() {}
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      const VideoCaptureDevice::Name& device_name) OVERRIDE;
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
+      const VideoCaptureDevice::Name& device_name) override;
+  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
   virtual void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
-      VideoCaptureFormats* supported_formats) OVERRIDE;
+      VideoCaptureFormats* supported_formats) override;
 
   void set_number_of_devices(int number_of_devices) {
     DCHECK(thread_checker_.CalledOnValidThread());

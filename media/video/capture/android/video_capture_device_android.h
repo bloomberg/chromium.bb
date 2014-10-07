@@ -43,8 +43,8 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+                                scoped_ptr<Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
   void OnFrameAvailable(

@@ -32,24 +32,24 @@ class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
   virtual ~MidiManagerUsb();
 
   // MidiManager implementation.
-  virtual void StartInitialization() OVERRIDE;
+  virtual void StartInitialization() override;
   virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,
-                                    double timestamp) OVERRIDE;
+                                    double timestamp) override;
 
   // UsbMidiDeviceDelegate implementation.
   virtual void ReceiveUsbMidiData(UsbMidiDevice* device,
                                   int endpoint_number,
                                   const uint8* data,
                                   size_t size,
-                                  base::TimeTicks time) OVERRIDE;
+                                  base::TimeTicks time) override;
 
   // UsbMidiInputStream::Delegate implementation.
   virtual void OnReceivedData(size_t jack_index,
                               const uint8* data,
                               size_t size,
-                              base::TimeTicks time) OVERRIDE;
+                              base::TimeTicks time) override;
 
   const ScopedVector<UsbMidiOutputStream>& output_streams() const {
     return output_streams_;

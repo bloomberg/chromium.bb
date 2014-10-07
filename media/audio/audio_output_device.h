@@ -89,20 +89,20 @@ class MEDIA_EXPORT AudioOutputDevice
 
   // AudioRendererSink implementation.
   virtual void Initialize(const AudioParameters& params,
-                          RenderCallback* callback) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Play() OVERRIDE;
-  virtual void Pause() OVERRIDE;
-  virtual bool SetVolume(double volume) OVERRIDE;
+                          RenderCallback* callback) override;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void Play() override;
+  virtual void Pause() override;
+  virtual bool SetVolume(double volume) override;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
-  virtual void OnStateChanged(AudioOutputIPCDelegate::State state) OVERRIDE;
+  virtual void OnStateChanged(AudioOutputIPCDelegate::State state) override;
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               int length) OVERRIDE;
-  virtual void OnIPCClosed() OVERRIDE;
+                               int length) override;
+  virtual void OnIPCClosed() override;
 
  protected:
   // Magic required by ref_counted.h to avoid any code deleting the object
@@ -132,7 +132,7 @@ class MEDIA_EXPORT AudioOutputDevice
 
   // base::MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
   AudioParameters audio_parameters_;
 

@@ -23,12 +23,12 @@ class MEDIA_EXPORT WallClockTimeSource : public TimeSource {
   virtual ~WallClockTimeSource();
 
   // TimeSource implementation.
-  virtual void StartTicking() OVERRIDE;
-  virtual void StopTicking() OVERRIDE;
-  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
-  virtual void SetMediaTime(base::TimeDelta time) OVERRIDE;
-  virtual base::TimeDelta CurrentMediaTime() OVERRIDE;
-  virtual base::TimeDelta CurrentMediaTimeForSyncingVideo() OVERRIDE;
+  virtual void StartTicking() override;
+  virtual void StopTicking() override;
+  virtual void SetPlaybackRate(float playback_rate) override;
+  virtual void SetMediaTime(base::TimeDelta time) override;
+  virtual base::TimeDelta CurrentMediaTime() override;
+  virtual base::TimeDelta CurrentMediaTimeForSyncingVideo() override;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 

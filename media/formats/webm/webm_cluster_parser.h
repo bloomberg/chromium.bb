@@ -191,10 +191,10 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
  private:
   // WebMParserClient methods.
-  virtual WebMParserClient* OnListStart(int id) OVERRIDE;
-  virtual bool OnListEnd(int id) OVERRIDE;
-  virtual bool OnUInt(int id, int64 val) OVERRIDE;
-  virtual bool OnBinary(int id, const uint8* data, int size) OVERRIDE;
+  virtual WebMParserClient* OnListStart(int id) override;
+  virtual bool OnListEnd(int id) override;
+  virtual bool OnUInt(int id, int64 val) override;
+  virtual bool OnBinary(int id, const uint8* data, int size) override;
 
   bool ParseBlock(bool is_simple_block, const uint8* buf, int size,
                   const uint8* additional, int additional_size, int duration,

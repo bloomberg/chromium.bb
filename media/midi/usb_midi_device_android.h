@@ -26,9 +26,9 @@ class MEDIA_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
   virtual ~UsbMidiDeviceAndroid();
 
   // UsbMidiDevice implementation.
-  virtual std::vector<uint8> GetDescriptor() OVERRIDE;
+  virtual std::vector<uint8> GetDescriptor() override;
   virtual void Send(int endpoint_number,
-                    const std::vector<uint8>& data) OVERRIDE;
+                    const std::vector<uint8>& data) override;
 
   // Called by the Java world.
   void OnData(JNIEnv* env,

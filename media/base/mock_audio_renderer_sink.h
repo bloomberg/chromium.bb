@@ -22,7 +22,7 @@ class MockAudioRendererSink : public AudioRendererSink {
   MOCK_METHOD1(SetVolume, bool(double volume));
 
   virtual void Initialize(const AudioParameters& params,
-                          RenderCallback* renderer) OVERRIDE;
+                          RenderCallback* renderer) override;
   AudioRendererSink::RenderCallback* callback() { return callback_; }
 
  protected:

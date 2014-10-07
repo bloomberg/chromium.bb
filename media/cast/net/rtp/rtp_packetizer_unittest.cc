@@ -61,7 +61,7 @@ class TestRtpPacketTransport : public PacketSender {
     EXPECT_EQ(expected_frame_id_ - 1u, rtp_header.reference_frame_id);
   }
 
-  virtual bool SendPacket(PacketRef packet, const base::Closure& cb) OVERRIDE {
+  virtual bool SendPacket(PacketRef packet, const base::Closure& cb) override {
     ++packets_sent_;
     RtpHeaderParser parser(&packet->data[0], packet->data.size());
     RtpCastTestHeader rtp_header;
@@ -72,7 +72,7 @@ class TestRtpPacketTransport : public PacketSender {
     return true;
   }
 
-  virtual int64 GetBytesSent() OVERRIDE {
+  virtual int64 GetBytesSent() override {
     return 0;
   }
 

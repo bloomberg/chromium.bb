@@ -242,7 +242,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
   virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                          int source_offset,
                                          int buffer_fill_offset,
-                                         int num_samples) OVERRIDE {
+                                         int num_samples) override {
     // Opus requires channel-interleaved samples in a single array.
     for (int ch = 0; ch < audio_bus->channels(); ++ch) {
       const float* src = audio_bus->channel(ch) + source_offset;
@@ -253,7 +253,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
     }
   }
 
-  virtual bool EncodeFromFilledBuffer(std::string* out) OVERRIDE {
+  virtual bool EncodeFromFilledBuffer(std::string* out) override {
     out->resize(kOpusMaxPayloadSize);
     const opus_int32 result =
         opus_encode_float(opus_encoder_,
@@ -312,7 +312,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
   virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                          int source_offset,
                                          int buffer_fill_offset,
-                                         int num_samples) OVERRIDE {
+                                         int num_samples) override {
     audio_bus->ToInterleavedPartial(
         source_offset,
         num_samples,
@@ -320,7 +320,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
         buffer_.get() + buffer_fill_offset * num_channels_);
   }
 
-  virtual bool EncodeFromFilledBuffer(std::string* out) OVERRIDE {
+  virtual bool EncodeFromFilledBuffer(std::string* out) override {
     // Output 16-bit PCM integers in big-endian byte order.
     out->resize(num_channels_ * samples_per_frame_ * sizeof(int16));
     const int16* src = buffer_.get();

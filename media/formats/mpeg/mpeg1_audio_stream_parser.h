@@ -78,7 +78,7 @@ class MEDIA_EXPORT MPEG1AudioStreamParser : public MPEGAudioStreamParserBase {
                                int* sample_rate,
                                ChannelLayout* channel_layout,
                                int* sample_count,
-                               bool* metadata_frame) const OVERRIDE;
+                               bool* metadata_frame) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MPEG1AudioStreamParser);
 };

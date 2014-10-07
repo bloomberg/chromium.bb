@@ -49,37 +49,37 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual ~MockMediaPlayerManager() {}
 
   // MediaPlayerManager implementation.
-  virtual MediaResourceGetter* GetMediaResourceGetter() OVERRIDE {
+  virtual MediaResourceGetter* GetMediaResourceGetter() override {
     return NULL;
   }
-  virtual MediaUrlInterceptor* GetMediaUrlInterceptor() OVERRIDE {
+  virtual MediaUrlInterceptor* GetMediaUrlInterceptor() override {
     return NULL;
   }
   virtual void OnTimeUpdate(int player_id,
                             base::TimeDelta current_time,
-                            base::TimeTicks current_time_ticks) OVERRIDE {
+                            base::TimeTicks current_time_ticks) override {
     timestamp_updated_ = true;
   }
   virtual void OnMediaMetadataChanged(
       int player_id, base::TimeDelta duration, int width, int height,
-      bool success) OVERRIDE {}
-  virtual void OnPlaybackComplete(int player_id) OVERRIDE {
+      bool success) override {}
+  virtual void OnPlaybackComplete(int player_id) override {
     playback_completed_ = true;
     if (message_loop_->is_running())
       message_loop_->Quit();
   }
-  virtual void OnMediaInterrupted(int player_id) OVERRIDE {}
-  virtual void OnBufferingUpdate(int player_id, int percentage) OVERRIDE {}
+  virtual void OnMediaInterrupted(int player_id) override {}
+  virtual void OnBufferingUpdate(int player_id, int percentage) override {}
   virtual void OnSeekComplete(int player_id,
-                              const base::TimeDelta& current_time) OVERRIDE {}
-  virtual void OnError(int player_id, int error) OVERRIDE {}
+                              const base::TimeDelta& current_time) override {}
+  virtual void OnError(int player_id, int error) override {}
   virtual void OnVideoSizeChanged(int player_id, int width,
-                                  int height) OVERRIDE {}
-  virtual MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE { return NULL; }
-  virtual MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE { return NULL; }
-  virtual void RequestFullScreen(int player_id) OVERRIDE {}
+                                  int height) override {}
+  virtual MediaPlayerAndroid* GetFullscreenPlayer() override { return NULL; }
+  virtual MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
+  virtual void RequestFullScreen(int player_id) override {}
 #if defined(VIDEO_HOLE)
-  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() OVERRIDE {
+  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() override {
     return false;
   }
 #endif  // defined(VIDEO_HOLE)
@@ -124,14 +124,14 @@ class MockDemuxerAndroid : public DemuxerAndroid {
         num_browser_seek_requests_(0) {}
   virtual ~MockDemuxerAndroid() {}
 
-  virtual void Initialize(DemuxerAndroidClient* client) OVERRIDE {}
-  virtual void RequestDemuxerData(DemuxerStream::Type type) OVERRIDE {
+  virtual void Initialize(DemuxerAndroidClient* client) override {}
+  virtual void RequestDemuxerData(DemuxerStream::Type type) override {
     num_data_requests_++;
     if (message_loop_->is_running())
       message_loop_->Quit();
   }
   virtual void RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
-                                  bool is_browser_seek) OVERRIDE {
+                                  bool is_browser_seek) override {
     num_seek_requests_++;
     if (is_browser_seek)
       num_browser_seek_requests_++;

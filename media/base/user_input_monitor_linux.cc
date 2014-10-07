@@ -52,7 +52,7 @@ class UserInputMonitorLinuxCore
   virtual ~UserInputMonitorLinuxCore();
 
   // DestructionObserver overrides.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
   size_t GetKeyPressCount() const;
   void StartMonitor(EventType type);
@@ -60,8 +60,8 @@ class UserInputMonitorLinuxCore
 
  private:
   // base::MessagePumpLibevent::Watcher interface.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // Processes key and mouse events.
   void ProcessXEvent(xEvent* event);
@@ -91,14 +91,14 @@ class UserInputMonitorLinux : public UserInputMonitor {
   virtual ~UserInputMonitorLinux();
 
   // Public UserInputMonitor overrides.
-  virtual size_t GetKeyPressCount() const OVERRIDE;
+  virtual size_t GetKeyPressCount() const override;
 
  private:
   // Private UserInputMonitor overrides.
-  virtual void StartKeyboardMonitoring() OVERRIDE;
-  virtual void StopKeyboardMonitoring() OVERRIDE;
-  virtual void StartMouseMonitoring() OVERRIDE;
-  virtual void StopMouseMonitoring() OVERRIDE;
+  virtual void StartKeyboardMonitoring() override;
+  virtual void StopKeyboardMonitoring() override;
+  virtual void StartMouseMonitoring() override;
+  virtual void StopMouseMonitoring() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   UserInputMonitorLinuxCore* core_;

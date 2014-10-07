@@ -23,11 +23,11 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryLinux
   virtual ~VideoCaptureDeviceFactoryLinux();
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      const VideoCaptureDevice::Name& device_name) OVERRIDE;
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
+      const VideoCaptureDevice::Name& device_name) override;
+  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
   virtual void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
-      VideoCaptureFormats* supported_formats) OVERRIDE;
+      VideoCaptureFormats* supported_formats) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

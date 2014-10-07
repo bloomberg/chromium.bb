@@ -45,7 +45,7 @@ class AudioDeviceThread::Thread
   virtual ~Thread();
 
   // Overrides from PlatformThread::Delegate.
-  virtual void ThreadMain() OVERRIDE;
+  virtual void ThreadMain() override;
 
   // Runs the loop that reads from the socket.
   void Run();

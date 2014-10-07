@@ -57,9 +57,9 @@ class VideoSender : public FrameSender,
                            const base::TimeTicks& capture_time);
 
  protected:
-  virtual int GetNumberOfFramesInEncoder() const OVERRIDE;
-  virtual base::TimeDelta GetInFlightMediaDuration() const OVERRIDE;
-  virtual void OnAck(uint32 frame_id) OVERRIDE;
+  virtual int GetNumberOfFramesInEncoder() const override;
+  virtual base::TimeDelta GetInFlightMediaDuration() const override;
+  virtual void OnAck(uint32 frame_id) override;
 
  private:
   // Called when the encoder is initialized or has failed to initialize.

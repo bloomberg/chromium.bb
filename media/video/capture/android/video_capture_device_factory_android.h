@@ -34,11 +34,11 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryAndroid :
   virtual ~VideoCaptureDeviceFactoryAndroid() {}
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      const VideoCaptureDevice::Name& device_name) OVERRIDE;
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
+      const VideoCaptureDevice::Name& device_name) override;
+  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
   virtual void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
-      VideoCaptureFormats* supported_formats) OVERRIDE;
+      VideoCaptureFormats* supported_formats) override;
 
  private:
 

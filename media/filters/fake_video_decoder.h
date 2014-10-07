@@ -36,15 +36,15 @@ class FakeVideoDecoder : public VideoDecoder {
   virtual ~FakeVideoDecoder();
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const OVERRIDE;
+  virtual std::string GetDisplayName() const override;
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) OVERRIDE;
+                          const OutputCB& output_cb) override;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) OVERRIDE;
-  virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual int GetMaxDecodeRequests() const OVERRIDE;
+                      const DecodeCB& decode_cb) override;
+  virtual void Reset(const base::Closure& closure) override;
+  virtual int GetMaxDecodeRequests() const override;
 
   // Holds the next init/decode/reset callback from firing.
   void HoldNextInit();

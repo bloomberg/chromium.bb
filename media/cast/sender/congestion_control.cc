@@ -29,21 +29,21 @@ class AdaptiveCongestionControl : public CongestionControl {
                             uint32 min_bitrate_configured,
                             size_t max_unacked_frames);
 
-  virtual ~AdaptiveCongestionControl() OVERRIDE;
+  virtual ~AdaptiveCongestionControl() override;
 
-  virtual void UpdateRtt(base::TimeDelta rtt) OVERRIDE;
+  virtual void UpdateRtt(base::TimeDelta rtt) override;
 
   // Called when an encoded frame is sent to the transport.
   virtual void SendFrameToTransport(uint32 frame_id,
                                     size_t frame_size,
-                                    base::TimeTicks when) OVERRIDE;
+                                    base::TimeTicks when) override;
 
   // Called when we receive an ACK for a frame.
-  virtual void AckFrame(uint32 frame_id, base::TimeTicks when) OVERRIDE;
+  virtual void AckFrame(uint32 frame_id, base::TimeTicks when) override;
 
   // Returns the bitrate we should use for the next frame.
   virtual uint32 GetBitrate(base::TimeTicks playout_time,
-                            base::TimeDelta playout_delay) OVERRIDE;
+                            base::TimeDelta playout_delay) override;
 
  private:
   struct FrameStats {
@@ -91,24 +91,24 @@ class AdaptiveCongestionControl : public CongestionControl {
 class FixedCongestionControl : public CongestionControl {
  public:
   FixedCongestionControl(uint32 bitrate) : bitrate_(bitrate) {}
-  virtual ~FixedCongestionControl() OVERRIDE {}
+  virtual ~FixedCongestionControl() override {}
 
-  virtual void UpdateRtt(base::TimeDelta rtt) OVERRIDE {
+  virtual void UpdateRtt(base::TimeDelta rtt) override {
   }
 
   // Called when an encoded frame is sent to the transport.
   virtual void SendFrameToTransport(uint32 frame_id,
                                     size_t frame_size,
-                                    base::TimeTicks when) OVERRIDE {
+                                    base::TimeTicks when) override {
   }
 
   // Called when we receive an ACK for a frame.
-  virtual void AckFrame(uint32 frame_id, base::TimeTicks when) OVERRIDE {
+  virtual void AckFrame(uint32 frame_id, base::TimeTicks when) override {
   }
 
   // Returns the bitrate we should use for the next frame.
   virtual uint32 GetBitrate(base::TimeTicks playout_time,
-                            base::TimeDelta playout_delay) OVERRIDE {
+                            base::TimeDelta playout_delay) override {
     return bitrate_;
   }
 

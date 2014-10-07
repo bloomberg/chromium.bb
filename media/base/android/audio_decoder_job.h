@@ -28,7 +28,7 @@ class AudioDecoderJob : public MediaDecoderJob {
   virtual ~AudioDecoderJob();
 
   // MediaDecoderJob implementation.
-  virtual bool HasStream() const OVERRIDE;
+  virtual bool HasStream() const override;
 
   // Sets the volume of the audio output.
   void SetVolume(double volume);
@@ -43,12 +43,12 @@ class AudioDecoderJob : public MediaDecoderJob {
       size_t size,
       bool render_output,
       base::TimeDelta current_presentation_timestamp,
-      const ReleaseOutputCompletionCallback& callback) OVERRIDE;
-  virtual bool ComputeTimeToRender() const OVERRIDE;
+      const ReleaseOutputCompletionCallback& callback) override;
+  virtual bool ComputeTimeToRender() const override;
   virtual bool AreDemuxerConfigsChanged(
-      const DemuxerConfigs& configs) const OVERRIDE;
-  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) OVERRIDE;
-  virtual bool CreateMediaCodecBridgeInternal() OVERRIDE;
+      const DemuxerConfigs& configs) const override;
+  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) override;
+  virtual bool CreateMediaCodecBridgeInternal() override;
 
   // Helper method to set the audio output volume.
   void SetVolumeInternal();

@@ -23,14 +23,14 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
   virtual ~FFmpegCdmVideoDecoder();
 
   // CdmVideoDecoder implementation.
-  virtual bool Initialize(const cdm::VideoDecoderConfig& config) OVERRIDE;
-  virtual void Deinitialize() OVERRIDE;
-  virtual void Reset() OVERRIDE;
+  virtual bool Initialize(const cdm::VideoDecoderConfig& config) override;
+  virtual void Deinitialize() override;
+  virtual void Reset() override;
   virtual cdm::Status DecodeFrame(const uint8_t* compressed_frame,
                                   int32_t compressed_frame_size,
                                   int64_t timestamp,
-                                  cdm::VideoFrame* decoded_frame) OVERRIDE;
-  virtual bool is_initialized() const OVERRIDE { return is_initialized_; }
+                                  cdm::VideoFrame* decoded_frame) override;
+  virtual bool is_initialized() const override { return is_initialized_; }
 
   // Returns true when |format| and |data_size| specify a supported video
   // output configuration.

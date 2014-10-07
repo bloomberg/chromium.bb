@@ -119,7 +119,7 @@ class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
       CHECK_EQ(VPX_CODEC_OK, vpx_codec_destroy(&context_));
   }
 
-  virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) OVERRIDE {
+  virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) override {
     if (len <= 0 || vpx_codec_decode(&context_,
                                      data,
                                      static_cast<unsigned int>(len),
@@ -183,7 +183,7 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
  private:
   virtual ~FakeImpl() {}
 
-  virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) OVERRIDE {
+  virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) override {
     // Make sure this is a JSON string.
     if (!len || data[0] != '{')
       return NULL;

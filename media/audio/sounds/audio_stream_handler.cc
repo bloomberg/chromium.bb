@@ -105,7 +105,7 @@ class AudioStreamHandler::AudioStreamContainer
   // AudioOutputStream::AudioSourceCallback overrides:
   // Following methods could be called from *ANY* thread.
   virtual int OnMoreData(AudioBus* dest,
-                         uint32 /* total_bytes_delay */) OVERRIDE {
+                         uint32 /* total_bytes_delay */) override {
     base::AutoLock al(state_lock_);
     size_t bytes_written = 0;
 
@@ -124,7 +124,7 @@ class AudioStreamHandler::AudioStreamContainer
     return dest->frames();
   }
 
-  virtual void OnError(AudioOutputStream* /* stream */) OVERRIDE {
+  virtual void OnError(AudioOutputStream* /* stream */) override {
     LOG(ERROR) << "Error during system sound reproduction.";
   }
 

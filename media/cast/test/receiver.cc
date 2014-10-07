@@ -204,7 +204,7 @@ class NaivePlayer : public InProcessReceiver,
 
   virtual ~NaivePlayer() {}
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     AudioManager::Get()->GetTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&NaivePlayer::StartAudioOutputOnAudioManagerThread,
@@ -214,7 +214,7 @@ class NaivePlayer : public InProcessReceiver,
     InProcessReceiver::Start();
   }
 
-  virtual void Stop() OVERRIDE {
+  virtual void Stop() override {
     // First, stop audio output to the Chromium audio stack.
     base::WaitableEvent done(false, false);
     DCHECK(!AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
@@ -267,7 +267,7 @@ class NaivePlayer : public InProcessReceiver,
 
   virtual void OnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
                             const base::TimeTicks& playout_time,
-                            bool is_continuous) OVERRIDE {
+                            bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(CastEnvironment::MAIN));
     LOG_IF(WARNING, !is_continuous)
         << "Video: Discontinuity in received frames.";
@@ -284,7 +284,7 @@ class NaivePlayer : public InProcessReceiver,
 
   virtual void OnAudioFrame(scoped_ptr<AudioBus> audio_frame,
                             const base::TimeTicks& playout_time,
-                            bool is_continuous) OVERRIDE {
+                            bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(CastEnvironment::MAIN));
     LOG_IF(WARNING, !is_continuous)
         << "Audio: Discontinuity in received frames.";
@@ -317,7 +317,7 @@ class NaivePlayer : public InProcessReceiver,
   // AudioSourceCallback implementation.
 
   virtual int OnMoreData(AudioBus* dest, uint32 total_bytes_delay)
-      OVERRIDE {
+      override {
     // Note: This method is being invoked by a separate thread unknown to us
     // (i.e., outside of CastEnvironment).
 
@@ -377,7 +377,7 @@ class NaivePlayer : public InProcessReceiver,
     return dest->frames();
   }
 
-  virtual void OnError(AudioOutputStream* stream) OVERRIDE {
+  virtual void OnError(AudioOutputStream* stream) override {
     LOG(ERROR) << "AudioOutputStream reports an error.  "
                << "Playback is unlikely to continue.";
   }

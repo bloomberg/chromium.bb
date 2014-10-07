@@ -39,7 +39,7 @@ class DummyTickClock : public base::TickClock {
  public:
   DummyTickClock() : now_() {}
   virtual ~DummyTickClock() {}
-  virtual base::TimeTicks NowTicks() OVERRIDE;
+  virtual base::TimeTicks NowTicks() override;
  private:
   base::TimeTicks now_;
 };

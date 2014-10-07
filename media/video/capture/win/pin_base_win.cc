@@ -9,7 +9,7 @@
 namespace media {
 
 // Implement IEnumPins.
-class TypeEnumerator FINAL
+class TypeEnumerator final
     : public IEnumMediaTypes,
       public base::RefCounted<TypeEnumerator> {
  public:

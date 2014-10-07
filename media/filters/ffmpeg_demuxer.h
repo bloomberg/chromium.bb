@@ -86,13 +86,13 @@ class FFmpegDemuxerStream : public DemuxerStream {
   }
 
   // DemuxerStream implementation.
-  virtual Type type() OVERRIDE;
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual void EnableBitstreamConverter() OVERRIDE;
-  virtual bool SupportsConfigChanges() OVERRIDE;
-  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
-  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
-  virtual VideoRotation video_rotation() OVERRIDE;
+  virtual Type type() override;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual void EnableBitstreamConverter() override;
+  virtual bool SupportsConfigChanges() override;
+  virtual AudioDecoderConfig audio_decoder_config() override;
+  virtual VideoDecoderConfig video_decoder_config() override;
+  virtual VideoRotation video_rotation() override;
 
   // Returns the range of buffered data in this stream.
   Ranges<base::TimeDelta> GetBufferedRanges() const;
@@ -163,13 +163,13 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Demuxer implementation.
   virtual void Initialize(DemuxerHost* host,
                           const PipelineStatusCB& status_cb,
-                          bool enable_text_tracks) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
-  virtual base::Time GetTimelineOffset() const OVERRIDE;
-  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
-  virtual base::TimeDelta GetStartTime() const OVERRIDE;
-  virtual Liveness GetLiveness() const OVERRIDE;
+                          bool enable_text_tracks) override;
+  virtual void Stop() override;
+  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
+  virtual base::Time GetTimelineOffset() const override;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  virtual base::TimeDelta GetStartTime() const override;
+  virtual Liveness GetLiveness() const override;
 
   // Calls |need_key_cb_| with the initialization data encountered in the file.
   void FireNeedKey(const std::string& init_data_type,

@@ -71,8 +71,8 @@ class VideoCaptureDeviceWin
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(
       const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+      scoped_ptr<VideoCaptureDevice::Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
  private:
   enum InternalState {

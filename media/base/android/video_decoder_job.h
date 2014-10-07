@@ -32,9 +32,9 @@ class VideoDecoderJob : public MediaDecoderJob {
   bool SetVideoSurface(gfx::ScopedJavaSurface surface);
 
   // MediaDecoderJob implementation.
-  virtual bool HasStream() const OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void ReleaseDecoderResources() OVERRIDE;
+  virtual bool HasStream() const override;
+  virtual void Flush() override;
+  virtual void ReleaseDecoderResources() override;
 
   bool next_video_data_is_iframe() {
     return next_video_data_is_iframe_;
@@ -50,15 +50,15 @@ class VideoDecoderJob : public MediaDecoderJob {
       size_t size,
       bool render_output,
       base::TimeDelta current_presentation_timestamp,
-      const ReleaseOutputCompletionCallback& callback) OVERRIDE;
-  virtual bool ComputeTimeToRender() const OVERRIDE;
-  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) OVERRIDE;
+      const ReleaseOutputCompletionCallback& callback) override;
+  virtual bool ComputeTimeToRender() const override;
+  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) override;
   virtual bool IsCodecReconfigureNeeded(
-      const DemuxerConfigs& configs) const OVERRIDE;
+      const DemuxerConfigs& configs) const override;
   virtual bool AreDemuxerConfigsChanged(
-      const DemuxerConfigs& configs) const OVERRIDE;
-  virtual bool CreateMediaCodecBridgeInternal() OVERRIDE;
-  virtual void CurrentDataConsumed(bool is_config_change) OVERRIDE;
+      const DemuxerConfigs& configs) const override;
+  virtual bool CreateMediaCodecBridgeInternal() override;
+  virtual void CurrentDataConsumed(bool is_config_change) override;
 
   // Returns true if a protected surface is required for video playback.
   bool IsProtectedSurfaceRequired();

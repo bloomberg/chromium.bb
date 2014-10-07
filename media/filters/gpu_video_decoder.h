@@ -41,28 +41,28 @@ class MEDIA_EXPORT GpuVideoDecoder
       const scoped_refptr<GpuVideoAcceleratorFactories>& factories);
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const OVERRIDE;
+  virtual std::string GetDisplayName() const override;
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) OVERRIDE;
+                          const OutputCB& output_cb) override;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) OVERRIDE;
-  virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual bool NeedsBitstreamConversion() const OVERRIDE;
-  virtual bool CanReadWithoutStalling() const OVERRIDE;
-  virtual int GetMaxDecodeRequests() const OVERRIDE;
+                      const DecodeCB& decode_cb) override;
+  virtual void Reset(const base::Closure& closure) override;
+  virtual bool NeedsBitstreamConversion() const override;
+  virtual bool CanReadWithoutStalling() const override;
+  virtual int GetMaxDecodeRequests() const override;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(uint32 count,
                                      const gfx::Size& size,
-                                     uint32 texture_target) OVERRIDE;
-  virtual void DismissPictureBuffer(int32 id) OVERRIDE;
-  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyEndOfBitstreamBuffer(int32 id) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
+                                     uint32 texture_target) override;
+  virtual void DismissPictureBuffer(int32 id) override;
+  virtual void PictureReady(const media::Picture& picture) override;
+  virtual void NotifyEndOfBitstreamBuffer(int32 id) override;
+  virtual void NotifyFlushDone() override;
+  virtual void NotifyResetDone() override;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
  protected:
   virtual ~GpuVideoDecoder();

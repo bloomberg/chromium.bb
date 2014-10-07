@@ -60,15 +60,15 @@ class DeckLinkCaptureDelegate :
   virtual HRESULT VideoInputFormatChanged(
       BMDVideoInputFormatChangedEvents notification_events,
       IDeckLinkDisplayMode *new_display_mode,
-      BMDDetectedVideoInputFormatFlags detected_signal_flags) OVERRIDE;
+      BMDDetectedVideoInputFormatFlags detected_signal_flags) override;
   virtual HRESULT VideoInputFrameArrived(
       IDeckLinkVideoInputFrame* video_frame,
-      IDeckLinkAudioInputPacket* audio_packet) OVERRIDE;
+      IDeckLinkAudioInputPacket* audio_packet) override;
 
   // IUnknown interface implementation.
-  virtual HRESULT QueryInterface(REFIID iid, void** ppv) OVERRIDE;
-  virtual ULONG AddRef() OVERRIDE;
-  virtual ULONG Release() OVERRIDE;
+  virtual HRESULT QueryInterface(REFIID iid, void** ppv) override;
+  virtual ULONG AddRef() override;
+  virtual ULONG Release() override;
 
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendErrorString().
   void SendErrorString(const std::string& reason);

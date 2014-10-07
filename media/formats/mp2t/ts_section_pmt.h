@@ -24,8 +24,8 @@ class TsSectionPmt : public TsSectionPsi {
   virtual ~TsSectionPmt();
 
   // Mpeg2TsPsiParser implementation.
-  virtual bool ParsePsiSection(BitReader* bit_reader) OVERRIDE;
-  virtual void ResetPsiSection() OVERRIDE;
+  virtual bool ParsePsiSection(BitReader* bit_reader) override;
+  virtual void ResetPsiSection() override;
 
  private:
   RegisterPesCb register_pes_cb_;

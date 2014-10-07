@@ -52,8 +52,8 @@ class UdpTransport : public PacketSender {
 
   // PacketSender implementations.
   virtual bool SendPacket(PacketRef packet,
-                          const base::Closure& cb) OVERRIDE;
-  virtual int64 GetBytesSent() OVERRIDE;
+                          const base::Closure& cb) override;
+  virtual int64 GetBytesSent() override;
 
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called

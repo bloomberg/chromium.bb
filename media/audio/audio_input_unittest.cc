@@ -26,10 +26,10 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* source,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
+                      double volume) override {
     ++callback_count_;
   }
-  virtual void OnError(AudioInputStream* stream) OVERRIDE {
+  virtual void OnError(AudioInputStream* stream) override {
     ++had_error_;
   }
   // Returns how many times OnData() has been called.

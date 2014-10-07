@@ -231,8 +231,8 @@ class MEDIA_EXPORT AudioInputController
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* source,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE;
-  virtual void OnError(AudioInputStream* stream) OVERRIDE;
+                      double volume) override;
+  virtual void OnError(AudioInputStream* stream) override;
 
   bool SharedMemoryAndSyncSocketMode() const { return sync_writer_ != NULL; }
 

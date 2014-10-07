@@ -131,12 +131,12 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   virtual ~WASAPIAudioOutputStream();
 
   // Implementation of AudioOutputStream.
-  virtual bool Open() OVERRIDE;
-  virtual void Start(AudioSourceCallback* callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void SetVolume(double volume) OVERRIDE;
-  virtual void GetVolume(double* volume) OVERRIDE;
+  virtual bool Open() override;
+  virtual void Start(AudioSourceCallback* callback) override;
+  virtual void Stop() override;
+  virtual void Close() override;
+  virtual void SetVolume(double volume) override;
+  virtual void GetVolume(double* volume) override;
 
   // Retrieves the sample rate the audio engine uses for its internal
   // processing/mixing of shared-mode streams.  To fetch the settings for the
@@ -151,7 +151,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
  private:
   // DelegateSimpleThread::Delegate implementation.
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   // Core part of the thread loop which controls the actual rendering.
   // Checks available amount of space in the endpoint buffer and reads

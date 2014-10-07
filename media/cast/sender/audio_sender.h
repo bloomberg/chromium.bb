@@ -51,9 +51,9 @@ class AudioSender : public FrameSender,
                    const base::TimeTicks& recorded_time);
 
  protected:
-  virtual int GetNumberOfFramesInEncoder() const OVERRIDE;
-  virtual base::TimeDelta GetInFlightMediaDuration() const OVERRIDE;
-  virtual void OnAck(uint32 frame_id) OVERRIDE;
+  virtual int GetNumberOfFramesInEncoder() const override;
+  virtual base::TimeDelta GetInFlightMediaDuration() const override;
+  virtual void OnAck(uint32 frame_id) override;
 
  private:
   // Called by the |audio_encoder_| with the next EncodedFrame to send.

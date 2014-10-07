@@ -14,13 +14,13 @@ class UserInputMonitorMac : public UserInputMonitor {
   UserInputMonitorMac();
   virtual ~UserInputMonitorMac();
 
-  virtual size_t GetKeyPressCount() const OVERRIDE;
+  virtual size_t GetKeyPressCount() const override;
 
  private:
-  virtual void StartKeyboardMonitoring() OVERRIDE;
-  virtual void StopKeyboardMonitoring() OVERRIDE;
-  virtual void StartMouseMonitoring() OVERRIDE;
-  virtual void StopMouseMonitoring() OVERRIDE;
+  virtual void StartKeyboardMonitoring() override;
+  virtual void StopKeyboardMonitoring() override;
+  virtual void StartMouseMonitoring() override;
+  virtual void StopMouseMonitoring() override;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorMac);
 };

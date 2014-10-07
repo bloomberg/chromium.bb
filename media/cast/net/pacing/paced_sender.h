@@ -111,11 +111,11 @@ class PacedSender : public PacedPacketSender,
   int64 GetLastByteSentForSsrc(uint32 ssrc);
 
   // PacedPacketSender implementation.
-  virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE;
+  virtual bool SendPackets(const SendPacketVector& packets) override;
   virtual bool ResendPackets(const SendPacketVector& packets,
-                             const DedupInfo& dedup_info) OVERRIDE;
-  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) OVERRIDE;
-  virtual void CancelSendingPacket(const PacketKey& packet_key) OVERRIDE;
+                             const DedupInfo& dedup_info) override;
+  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) override;
+  virtual void CancelSendingPacket(const PacketKey& packet_key) override;
 
  private:
   // Actually sends the packets to the transport.

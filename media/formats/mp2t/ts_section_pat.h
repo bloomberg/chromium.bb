@@ -21,8 +21,8 @@ class TsSectionPat : public TsSectionPsi {
   virtual ~TsSectionPat();
 
   // TsSectionPsi implementation.
-  virtual bool ParsePsiSection(BitReader* bit_reader) OVERRIDE;
-  virtual void ResetPsiSection() OVERRIDE;
+  virtual bool ParsePsiSection(BitReader* bit_reader) override;
+  virtual void ResetPsiSection() override;
 
  private:
   RegisterPmtCb register_pmt_cb_;

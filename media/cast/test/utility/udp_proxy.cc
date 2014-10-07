@@ -56,7 +56,7 @@ class Buffer : public PacketPipe {
     CHECK_GT(max_megabits_per_second, 0);
   }
 
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     if (packet->size() + buffer_size_ <= max_buffer_size_) {
       buffer_size_ += packet->size();
       buffer_.push_back(linked_ptr<Packet>(packet.release()));
@@ -116,7 +116,7 @@ class RandomDrop : public PacketPipe {
   RandomDrop(double drop_fraction)
       : drop_fraction_(static_cast<int>(drop_fraction * RAND_MAX)) {}
 
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     if (rand() > drop_fraction_) {
       pipe_->Send(packet.Pass());
     }
@@ -135,7 +135,7 @@ class SimpleDelayBase : public PacketPipe {
   SimpleDelayBase() : weak_factory_(this) {}
   virtual ~SimpleDelayBase() {}
 
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     double seconds = GetDelay();
     task_runner_->PostDelayedTask(
         FROM_HERE,
@@ -158,7 +158,7 @@ class SimpleDelayBase : public PacketPipe {
 class ConstantDelay : public SimpleDelayBase {
  public:
   ConstantDelay(double delay_seconds) : delay_seconds_(delay_seconds) {}
-  virtual double GetDelay() OVERRIDE {
+  virtual double GetDelay() override {
     return delay_seconds_;
   }
 
@@ -174,7 +174,7 @@ class RandomUnsortedDelay : public SimpleDelayBase {
  public:
   RandomUnsortedDelay(double random_delay) : random_delay_(random_delay) {}
 
-  virtual double GetDelay() OVERRIDE {
+  virtual double GetDelay() override {
     return random_delay_ * base::RandDouble();
   }
 
@@ -193,11 +193,11 @@ class DuplicateAndDelay : public RandomUnsortedDelay {
       RandomUnsortedDelay(random_delay),
       delay_min_(delay_min) {
   }
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     pipe_->Send(scoped_ptr<Packet>(new Packet(*packet.get())));
     RandomUnsortedDelay::Send(packet.Pass());
   }
-  virtual double GetDelay() OVERRIDE {
+  virtual double GetDelay() override {
     return RandomUnsortedDelay::GetDelay() + delay_min_;
   }
  private:
@@ -220,7 +220,7 @@ class RandomSortedDelay : public PacketPipe {
         seconds_between_extra_delay_(seconds_between_extra_delay),
         weak_factory_(this) {}
 
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     buffer_.push_back(linked_ptr<Packet>(packet.release()));
     if (buffer_.size() == 1) {
       next_send_ = std::max(
@@ -232,7 +232,7 @@ class RandomSortedDelay : public PacketPipe {
   }
   virtual void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) OVERRIDE {
+      base::TickClock* clock) override {
     PacketPipe::InitOnIOThread(task_runner, clock);
     // As we start the stream, assume that we are in a random
     // place between two extra delays, thus multiplier = 1.0;
@@ -311,12 +311,12 @@ class NetworkGlitchPipe : public PacketPipe {
 
   virtual void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) OVERRIDE {
+      base::TickClock* clock) override {
     PacketPipe::InitOnIOThread(task_runner, clock);
     Flip();
   }
 
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     if (works_) {
       pipe_->Send(packet.Pass());
     }
@@ -360,7 +360,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
         weak_factory_(this) {
   }
 
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     // Drop if buffer is full.
     if (stored_size_ >= stored_limit_)
       return;
@@ -372,7 +372,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
 
   virtual void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) OVERRIDE {
+      base::TickClock* clock) override {
     clock_ = clock;
     if (ipp_)
       ipp_->InitOnIOThread(task_runner, clock);
@@ -552,8 +552,8 @@ class PacketSender : public PacketPipe {
  public:
   PacketSender(UDPProxyImpl* udp_proxy, const net::IPEndPoint* destination)
       : udp_proxy_(udp_proxy), destination_(destination) {}
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE;
-  virtual void AppendToPipe(scoped_ptr<PacketPipe> pipe) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override;
+  virtual void AppendToPipe(scoped_ptr<PacketPipe> pipe) override {
     NOTREACHED();
   }
 

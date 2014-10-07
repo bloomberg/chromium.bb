@@ -37,7 +37,7 @@ class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
   virtual ~EsParserMpeg1Audio();
 
   // EsParser implementation.
-  virtual void Flush() OVERRIDE;
+  virtual void Flush() override;
 
  private:
   // Used to link a PTS with a byte position in the ES stream.
@@ -47,8 +47,8 @@ class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
   struct Mpeg1AudioFrame;
 
   // EsParser implementation.
-  virtual bool ParseFromEsQueue() OVERRIDE;
-  virtual void ResetInternal() OVERRIDE;
+  virtual bool ParseFromEsQueue() override;
+  virtual void ResetInternal() override;
 
   // Synchronize the stream on a Mpeg1 audio syncword (consuming bytes from
   // |es_queue_| if needed).

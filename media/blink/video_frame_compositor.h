@@ -44,10 +44,10 @@ class MEDIA_EXPORT VideoFrameCompositor
 
   // cc::VideoFrameProvider implementation.
   virtual void SetVideoFrameProviderClient(
-      cc::VideoFrameProvider::Client* client) OVERRIDE;
-  virtual scoped_refptr<VideoFrame> GetCurrentFrame() OVERRIDE;
+      cc::VideoFrameProvider::Client* client) override;
+  virtual scoped_refptr<VideoFrame> GetCurrentFrame() override;
   virtual void PutCurrentFrame(
-      const scoped_refptr<VideoFrame>& frame) OVERRIDE;
+      const scoped_refptr<VideoFrame>& frame) override;
 
   // Updates the current frame and notifies the compositor.
   void UpdateCurrentFrame(const scoped_refptr<VideoFrame>& frame);

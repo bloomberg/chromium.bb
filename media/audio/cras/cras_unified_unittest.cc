@@ -49,7 +49,7 @@ class MockAudioManagerCras : public AudioManagerCras {
   // of active output streams. It is because the number of active streams
   // is managed inside MakeAudioOutputStream, and we don't use
   // MakeAudioOutputStream to create the stream in the tests.
-  virtual void ReleaseOutputStream(AudioOutputStream* stream) OVERRIDE {
+  virtual void ReleaseOutputStream(AudioOutputStream* stream) override {
     DCHECK(stream);
     delete stream;
   }

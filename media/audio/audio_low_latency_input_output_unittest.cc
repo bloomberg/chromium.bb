@@ -95,7 +95,7 @@ class MockAudioManager : public AudioManagerAnyPlatform {
   MockAudioManager() : AudioManagerAnyPlatform(&fake_audio_log_factory_) {}
   virtual ~MockAudioManager() {}
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE {
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
     return base::MessageLoop::current()->message_loop_proxy();
   }
 
@@ -194,7 +194,7 @@ class FullDuplexAudioSinkSource
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* src,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
+                      double volume) override {
     base::AutoLock lock(lock_);
 
     // Update three components in the AudioDelayState for this recorded
@@ -222,11 +222,11 @@ class FullDuplexAudioSinkSource
     // }
   }
 
-  virtual void OnError(AudioInputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream) override {}
 
   // AudioOutputStream::AudioSourceCallback.
   virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) OVERRIDE {
+                         uint32 total_bytes_delay) override {
     base::AutoLock lock(lock_);
 
     // Update one component in the AudioDelayState for the packet
@@ -254,7 +254,7 @@ class FullDuplexAudioSinkSource
     return 0;
   }
 
-  virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioOutputStream* stream) override {}
 
  protected:
   // Converts from bytes to milliseconds taking the sample rate and size

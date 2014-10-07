@@ -24,12 +24,12 @@ class FakeAudioRendererSink : public AudioRendererSink {
   FakeAudioRendererSink();
 
   virtual void Initialize(const AudioParameters& params,
-                          RenderCallback* callback) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Pause() OVERRIDE;
-  virtual void Play() OVERRIDE;
-  virtual bool SetVolume(double volume) OVERRIDE;
+                          RenderCallback* callback) override;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void Pause() override;
+  virtual void Play() override;
+  virtual bool SetVolume(double volume) override;
 
   // Attempts to call Render() on the callback provided to
   // Initialize() with |dest| and |audio_delay_milliseconds|.

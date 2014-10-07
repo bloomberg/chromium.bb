@@ -45,12 +45,12 @@ class VideoEncoderImpl : public VideoEncoder {
   virtual bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time,
-      const FrameEncodedCallback& frame_encoded_callback) OVERRIDE;
+      const FrameEncodedCallback& frame_encoded_callback) override;
 
   // The following functions are called from the main cast thread.
-  virtual void SetBitRate(int new_bit_rate) OVERRIDE;
-  virtual void GenerateKeyFrame() OVERRIDE;
-  virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
+  virtual void SetBitRate(int new_bit_rate) override;
+  virtual void GenerateKeyFrame() override;
+  virtual void LatestFrameIdToReference(uint32 frame_id) override;
 
  private:
   scoped_refptr<CastEnvironment> cast_environment_;

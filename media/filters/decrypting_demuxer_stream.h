@@ -45,13 +45,13 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   void Reset(const base::Closure& closure);
 
   // DemuxerStream implementation.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
-  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
-  virtual Type type() OVERRIDE;
-  virtual void EnableBitstreamConverter() OVERRIDE;
-  virtual bool SupportsConfigChanges() OVERRIDE;
-  virtual VideoRotation video_rotation() OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual AudioDecoderConfig audio_decoder_config() override;
+  virtual VideoDecoderConfig video_decoder_config() override;
+  virtual Type type() override;
+  virtual void EnableBitstreamConverter() override;
+  virtual bool SupportsConfigChanges() override;
+  virtual VideoRotation video_rotation() override;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok

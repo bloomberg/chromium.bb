@@ -79,24 +79,24 @@ class CastTransportSenderImpl : public CastTransportSender {
 
   virtual void InitializeAudio(const CastTransportRtpConfig& config,
                                const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb) OVERRIDE;
+                               const RtcpRttCallback& rtt_cb) override;
   virtual void InitializeVideo(const CastTransportRtpConfig& config,
                                const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb) OVERRIDE;
-  virtual void InsertFrame(uint32 ssrc, const EncodedFrame& frame) OVERRIDE;
+                               const RtcpRttCallback& rtt_cb) override;
+  virtual void InsertFrame(uint32 ssrc, const EncodedFrame& frame) override;
 
   virtual void SendSenderReport(
       uint32 ssrc,
       base::TimeTicks current_time,
-      uint32 current_time_as_rtp_timestamp) OVERRIDE;
+      uint32 current_time_as_rtp_timestamp) override;
 
   virtual void CancelSendingFrames(
       uint32 ssrc,
-      const std::vector<uint32>& frame_ids) OVERRIDE;
+      const std::vector<uint32>& frame_ids) override;
 
-  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) OVERRIDE;
+  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override;
 
-  virtual PacketReceiverCallback PacketReceiverForTesting() OVERRIDE;
+  virtual PacketReceiverCallback PacketReceiverForTesting() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);

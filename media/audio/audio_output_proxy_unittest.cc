@@ -417,7 +417,7 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
     AudioOutputProxyTest::TearDown();
   }
 
-  virtual void InitDispatcher(base::TimeDelta close_delay) OVERRIDE {
+  virtual void InitDispatcher(base::TimeDelta close_delay) override {
     // Use a low sample rate and large buffer size when testing otherwise the
     // FakeAudioOutputStream will keep the message loop busy indefinitely; i.e.,
     // RunUntilIdle() will never terminate.
@@ -428,7 +428,7 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
         &manager(), params_, resampler_params_, std::string(), close_delay);
   }
 
-  virtual void OnStart() OVERRIDE {
+  virtual void OnStart() override {
     // Let Start() run for a bit.
     base::RunLoop run_loop;
     message_loop_.PostDelayedTask(

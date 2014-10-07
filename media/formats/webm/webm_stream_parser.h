@@ -29,9 +29,9 @@ class WebMStreamParser : public StreamParser {
                     const NeedKeyCB& need_key_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,
-                    const LogCB& log_cb) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual bool Parse(const uint8* buf, int size) OVERRIDE;
+                    const LogCB& log_cb) override;
+  virtual void Flush() override;
+  virtual bool Parse(const uint8* buf, int size) override;
 
  private:
   enum State {

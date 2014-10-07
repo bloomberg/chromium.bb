@@ -18,7 +18,7 @@ class MEDIA_EXPORT FakeAudioLogFactory
   FakeAudioLogFactory();
   virtual ~FakeAudioLogFactory();
   virtual scoped_ptr<AudioLog> CreateAudioLog(
-      AudioComponent component) OVERRIDE;
+      AudioComponent component) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAudioLogFactory);

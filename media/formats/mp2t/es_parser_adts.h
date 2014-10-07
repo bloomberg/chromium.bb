@@ -36,14 +36,14 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   virtual ~EsParserAdts();
 
   // EsParser implementation.
-  virtual void Flush() OVERRIDE;
+  virtual void Flush() override;
 
  private:
   struct AdtsFrame;
 
   // EsParser implementation.
-  virtual bool ParseFromEsQueue() OVERRIDE;
-  virtual void ResetInternal() OVERRIDE;
+  virtual bool ParseFromEsQueue() override;
+  virtual void ResetInternal() override;
 
   // Synchronize the stream on an ADTS syncword (consuming bytes from
   // |es_queue_| if needed).

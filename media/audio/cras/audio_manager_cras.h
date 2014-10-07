@@ -20,27 +20,27 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   AudioManagerCras(AudioLogFactory* audio_log_factory);
 
   // AudioManager implementation.
-  virtual bool HasAudioOutputDevices() OVERRIDE;
-  virtual bool HasAudioInputDevices() OVERRIDE;
-  virtual void ShowAudioInputSettings() OVERRIDE;
+  virtual bool HasAudioOutputDevices() override;
+  virtual bool HasAudioInputDevices() override;
+  virtual void ShowAudioInputSettings() override;
   virtual void GetAudioInputDeviceNames(
-      AudioDeviceNames* device_names) OVERRIDE;
+      AudioDeviceNames* device_names) override;
   virtual void GetAudioOutputDeviceNames(
-      AudioDeviceNames* device_names) OVERRIDE;
+      AudioDeviceNames* device_names) override;
   virtual AudioParameters GetInputStreamParameters(
-      const std::string& device_id) OVERRIDE;
-  virtual void SetHasKeyboardMic() OVERRIDE;
+      const std::string& device_id) override;
+  virtual void SetHasKeyboardMic() override;
 
   // AudioManagerBase implementation.
   virtual AudioOutputStream* MakeLinearOutputStream(
-      const AudioParameters& params) OVERRIDE;
+      const AudioParameters& params) override;
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) OVERRIDE;
+      const std::string& device_id) override;
   virtual AudioInputStream* MakeLinearInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE;
+      const AudioParameters& params, const std::string& device_id) override;
   virtual AudioInputStream* MakeLowLatencyInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE;
+      const AudioParameters& params, const std::string& device_id) override;
 
   static snd_pcm_format_t BitsToFormat(int bits_per_sample);
 
@@ -49,7 +49,7 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
 
   virtual AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
-      const AudioParameters& input_params) OVERRIDE;
+      const AudioParameters& input_params) override;
 
  private:
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.

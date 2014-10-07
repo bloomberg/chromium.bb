@@ -22,14 +22,14 @@ class FakeMidiManager : public MidiManager {
   virtual ~FakeMidiManager() {}
 
   // MidiManager implementation.
-  virtual void StartInitialization() OVERRIDE {
+  virtual void StartInitialization() override {
     start_initialization_is_called_ = true;
   }
 
   virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,
-                                    double timestamp) OVERRIDE {}
+                                    double timestamp) override {}
 
   // Utility functions for testing.
   void CallCompleteInitialization(MidiResult result) {
@@ -59,7 +59,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   virtual ~FakeMidiManagerClient() {}
 
   // MidiManagerClient implementation.
-  virtual void CompleteStartSession(int client_id, MidiResult result) OVERRIDE {
+  virtual void CompleteStartSession(int client_id, MidiResult result) override {
     EXPECT_TRUE(wait_for_result_);
     CHECK_EQ(client_id_, client_id);
     result_ = result;
@@ -67,8 +67,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
   }
 
   virtual void ReceiveMidiData(uint32 port_index, const uint8* data,
-                               size_t size, double timestamp) OVERRIDE {}
-  virtual void AccumulateMidiBytesSent(size_t size) OVERRIDE {}
+                               size_t size, double timestamp) override {}
+  virtual void AccumulateMidiBytesSent(size_t size) override {}
 
   int client_id() const { return client_id_; }
   MidiResult result() const { return result_; }

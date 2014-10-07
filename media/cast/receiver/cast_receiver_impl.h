@@ -32,15 +32,15 @@ class CastReceiverImpl : public CastReceiver {
   virtual ~CastReceiverImpl();
 
   // CastReceiver implementation.
-  virtual PacketReceiverCallback packet_receiver() OVERRIDE;
+  virtual PacketReceiverCallback packet_receiver() override;
   virtual void RequestDecodedAudioFrame(
-      const AudioFrameDecodedCallback& callback) OVERRIDE;
+      const AudioFrameDecodedCallback& callback) override;
   virtual void RequestEncodedAudioFrame(
-      const ReceiveEncodedFrameCallback& callback) OVERRIDE;
+      const ReceiveEncodedFrameCallback& callback) override;
   virtual void RequestDecodedVideoFrame(
-      const VideoFrameDecodedCallback& callback) OVERRIDE;
+      const VideoFrameDecodedCallback& callback) override;
   virtual void RequestEncodedVideoFrame(
-      const ReceiveEncodedFrameCallback& callback) OVERRIDE;
+      const ReceiveEncodedFrameCallback& callback) override;
 
  private:
   // Forwards |packet| to a specific RTP frame receiver, or drops it if SSRC

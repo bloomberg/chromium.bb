@@ -45,13 +45,13 @@ class FakeUsbMidiDevice : public UsbMidiDevice {
   explicit FakeUsbMidiDevice(Logger* logger) : logger_(logger) {}
   virtual ~FakeUsbMidiDevice() {}
 
-  virtual std::vector<uint8> GetDescriptor() OVERRIDE {
+  virtual std::vector<uint8> GetDescriptor() override {
     logger_->AddLog("UsbMidiDevice::GetDescriptor\n");
     return descriptor_;
   }
 
   virtual void Send(int endpoint_number,
-                    const std::vector<uint8>& data) OVERRIDE {
+                    const std::vector<uint8>& data) override {
     logger_->AddLog("UsbMidiDevice::Send ");
     logger_->AddLog(base::StringPrintf("endpoint = %d data =",
                                        endpoint_number));
@@ -79,7 +79,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
         logger_(logger) {}
   virtual ~FakeMidiManagerClient() {}
 
-  virtual void CompleteStartSession(int client_id, MidiResult result) OVERRIDE {
+  virtual void CompleteStartSession(int client_id, MidiResult result) override {
     complete_start_session_ = true;
     result_ = result;
   }
@@ -87,7 +87,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   virtual void ReceiveMidiData(uint32 port_index,
                                const uint8* data,
                                size_t size,
-                               double timestamp) OVERRIDE {
+                               double timestamp) override {
     logger_->AddLog("MidiManagerClient::ReceiveMidiData ");
     logger_->AddLog(base::StringPrintf("port_index = %d data =", port_index));
     for (size_t i = 0; i < size; ++i)
@@ -95,7 +95,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
     logger_->AddLog("\n");
   }
 
-  virtual void AccumulateMidiBytesSent(size_t size) OVERRIDE {
+  virtual void AccumulateMidiBytesSent(size_t size) override {
     logger_->AddLog("MidiManagerClient::AccumulateMidiBytesSent ");
     // Windows has no "%zu".
     logger_->AddLog(base::StringPrintf("size = %u\n",
@@ -116,7 +116,7 @@ class TestUsbMidiDeviceFactory : public UsbMidiDevice::Factory {
   TestUsbMidiDeviceFactory() {}
   virtual ~TestUsbMidiDeviceFactory() {}
   virtual void EnumerateDevices(UsbMidiDeviceDelegate* device,
-                                Callback callback) OVERRIDE {
+                                Callback callback) override {
     callback_ = callback;
   }
 

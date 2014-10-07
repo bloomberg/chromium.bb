@@ -25,9 +25,9 @@ class TsSectionPes : public TsSection {
 
   // TsSection implementation.
   virtual bool Parse(bool payload_unit_start_indicator,
-                     const uint8* buf, int size) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
+                     const uint8* buf, int size) override;
+  virtual void Flush() override;
+  virtual void Reset() override;
 
  private:
   // Emit a reassembled PES packet.

@@ -41,7 +41,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     audio_decoder_.reset(new AudioDecoder(cast_environment_,
                                           GetParam().num_channels,
                                           GetParam().sampling_rate,

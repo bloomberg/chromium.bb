@@ -29,22 +29,22 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   virtual ~FakeVideoEncodeAccelerator();
 
   virtual std::vector<VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles() OVERRIDE;
+      GetSupportedProfiles() override;
   virtual bool Initialize(media::VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           VideoCodecProfile output_profile,
                           uint32 initial_bitrate,
-                          Client* client) OVERRIDE;
+                          Client* client) override;
 
   virtual void Encode(const scoped_refptr<VideoFrame>& frame,
-                      bool force_keyframe) OVERRIDE;
+                      bool force_keyframe) override;
 
-  virtual void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) OVERRIDE;
+  virtual void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
 
   virtual void RequestEncodingParametersChange(uint32 bitrate,
-                                               uint32 framerate) OVERRIDE;
+                                               uint32 framerate) override;
 
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy() override;
 
   void SendDummyFrameForTesting(bool key_frame);
   void SetWillInitializationSucceed(bool will_initialization_succeed) {

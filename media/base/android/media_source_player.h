@@ -46,30 +46,30 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual ~MediaSourcePlayer();
 
   // MediaPlayerAndroid implementation.
-  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Pause(bool is_media_related_action ALLOW_UNUSED) OVERRIDE;
-  virtual void SeekTo(base::TimeDelta timestamp) OVERRIDE;
-  virtual void Release() OVERRIDE;
-  virtual void SetVolume(double volume) OVERRIDE;
-  virtual int GetVideoWidth() OVERRIDE;
-  virtual int GetVideoHeight() OVERRIDE;
-  virtual base::TimeDelta GetCurrentTime() OVERRIDE;
-  virtual base::TimeDelta GetDuration() OVERRIDE;
-  virtual bool IsPlaying() OVERRIDE;
-  virtual bool CanPause() OVERRIDE;
-  virtual bool CanSeekForward() OVERRIDE;
-  virtual bool CanSeekBackward() OVERRIDE;
-  virtual bool IsPlayerReady() OVERRIDE;
-  virtual void SetCdm(BrowserCdm* cdm) OVERRIDE;
-  virtual bool IsSurfaceInUse() const OVERRIDE;
+  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  virtual void Start() override;
+  virtual void Pause(bool is_media_related_action ALLOW_UNUSED) override;
+  virtual void SeekTo(base::TimeDelta timestamp) override;
+  virtual void Release() override;
+  virtual void SetVolume(double volume) override;
+  virtual int GetVideoWidth() override;
+  virtual int GetVideoHeight() override;
+  virtual base::TimeDelta GetCurrentTime() override;
+  virtual base::TimeDelta GetDuration() override;
+  virtual bool IsPlaying() override;
+  virtual bool CanPause() override;
+  virtual bool CanSeekForward() override;
+  virtual bool CanSeekBackward() override;
+  virtual bool IsPlayerReady() override;
+  virtual void SetCdm(BrowserCdm* cdm) override;
+  virtual bool IsSurfaceInUse() const override;
 
   // DemuxerAndroidClient implementation.
-  virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) OVERRIDE;
-  virtual void OnDemuxerDataAvailable(const DemuxerData& params) OVERRIDE;
+  virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) override;
+  virtual void OnDemuxerDataAvailable(const DemuxerData& params) override;
   virtual void OnDemuxerSeekDone(
-      base::TimeDelta actual_browser_seek_time) OVERRIDE;
-  virtual void OnDemuxerDurationChanged(base::TimeDelta duration) OVERRIDE;
+      base::TimeDelta actual_browser_seek_time) override;
+  virtual void OnDemuxerDurationChanged(base::TimeDelta duration) override;
 
  private:
   friend class MediaSourcePlayerTest;

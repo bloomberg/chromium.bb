@@ -54,10 +54,10 @@ class CdmFileIOImpl : public cdm::FileIO {
                 const pp::CompletionCallback& first_file_read_cb);
 
   // cdm::FileIO implementation.
-  virtual void Open(const char* file_name, uint32_t file_name_size) OVERRIDE;
-  virtual void Read() OVERRIDE;
-  virtual void Write(const uint8_t* data, uint32_t data_size) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Open(const char* file_name, uint32_t file_name_size) override;
+  virtual void Read() override;
+  virtual void Write(const uint8_t* data, uint32_t data_size) override;
+  virtual void Close() override;
 
  private:
   // TODO(xhwang): Introduce more detailed states for UMA logging if needed.

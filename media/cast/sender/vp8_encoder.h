@@ -33,19 +33,19 @@ class Vp8Encoder : public SoftwareVideoEncoder {
 
   // Initialize the encoder before Encode() can be called. This method
   // must be called on the thread that Encode() is called.
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize() override;
 
   // Encode a raw image (as a part of a video stream).
   virtual bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                      EncodedFrame* encoded_image) OVERRIDE;
+                      EncodedFrame* encoded_image) override;
 
   // Update the encoder with a new target bit rate.
-  virtual void UpdateRates(uint32 new_bitrate) OVERRIDE;
+  virtual void UpdateRates(uint32 new_bitrate) override;
 
   // Set the next frame to be a key frame.
-  virtual void GenerateKeyFrame() OVERRIDE;
+  virtual void GenerateKeyFrame() override;
 
-  virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
+  virtual void LatestFrameIdToReference(uint32 frame_id) override;
 
  private:
   enum Vp8Buffers {

@@ -86,7 +86,7 @@ class VideoEncoderImplTest : public ::testing::Test {
 
   virtual ~VideoEncoderImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
@@ -97,7 +97,7 @@ class VideoEncoderImplTest : public ::testing::Test {
                             task_runner_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     video_encoder_.reset();
     task_runner_->RunTasks();
   }

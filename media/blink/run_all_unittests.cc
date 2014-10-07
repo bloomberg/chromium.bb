@@ -20,9 +20,9 @@ class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
   virtual ~TestBlinkPlatformSupport();
 
   virtual void cryptographicallyRandomValues(unsigned char* buffer,
-                                             size_t length) OVERRIDE;
+                                             size_t length) override;
   virtual const unsigned char* getTraceCategoryEnabledFlag(
-      const char* categoryName) OVERRIDE;
+      const char* categoryName) override;
 };
 
 TestBlinkPlatformSupport::~TestBlinkPlatformSupport() {}
@@ -44,7 +44,7 @@ class BlinkMediaTestSuite : public base::TestSuite {
   virtual ~BlinkMediaTestSuite();
 
  protected:
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize() override;
 
  private:
   scoped_ptr<TestBlinkPlatformSupport> blink_platform_support_;

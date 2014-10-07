@@ -22,9 +22,9 @@ class TsSectionPsi : public TsSection {
 
   // TsSection implementation.
   virtual bool Parse(bool payload_unit_start_indicator,
-                     const uint8* buf, int size) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
+                     const uint8* buf, int size) override;
+  virtual void Flush() override;
+  virtual void Reset() override;
 
   // Parse the content of the PSI section.
   virtual bool ParsePsiSection(BitReader* bit_reader) = 0;

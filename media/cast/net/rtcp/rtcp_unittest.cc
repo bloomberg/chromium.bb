@@ -32,22 +32,22 @@ class FakeRtcpTransport : public PacedPacketSender {
   base::TimeDelta packet_delay() const { return packet_delay_; }
   void set_packet_delay(base::TimeDelta delay) { packet_delay_ = delay; }
 
-  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) OVERRIDE {
+  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) override {
     clock_->Advance(packet_delay_);
     rtcp_->IncomingRtcpPacket(&packet->data[0], packet->data.size());
     return true;
   }
 
-  virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE {
+  virtual bool SendPackets(const SendPacketVector& packets) override {
     return false;
   }
 
   virtual bool ResendPackets(
-      const SendPacketVector& packets, const DedupInfo& dedup_info) OVERRIDE {
+      const SendPacketVector& packets, const DedupInfo& dedup_info) override {
     return false;
   }
 
-  virtual void CancelSendingPacket(const PacketKey& packet_key) OVERRIDE {
+  virtual void CancelSendingPacket(const PacketKey& packet_key) override {
   }
 
  private:
@@ -66,7 +66,7 @@ class FakeReceiverStats : public RtpReceiverStatistics {
   virtual void GetStatistics(uint8* fraction_lost,
                              uint32* cumulative_lost,
                              uint32* extended_high_sequence_number,
-                             uint32* jitter) OVERRIDE {
+                             uint32* jitter) override {
     *fraction_lost = 0;
     *cumulative_lost = 0;
     *extended_high_sequence_number = 0;

@@ -18,13 +18,13 @@ class FakeTextTrackStream : public DemuxerStream {
   virtual ~FakeTextTrackStream();
 
   // DemuxerStream implementation.
-  virtual void Read(const ReadCB&) OVERRIDE;
+  virtual void Read(const ReadCB&) override;
   MOCK_METHOD0(audio_decoder_config, AudioDecoderConfig());
   MOCK_METHOD0(video_decoder_config, VideoDecoderConfig());
-  virtual Type type() OVERRIDE;
+  virtual Type type() override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
   virtual bool SupportsConfigChanges();
-  virtual VideoRotation video_rotation() OVERRIDE;
+  virtual VideoRotation video_rotation() override;
 
   void SatisfyPendingRead(const base::TimeDelta& start,
                           const base::TimeDelta& duration,

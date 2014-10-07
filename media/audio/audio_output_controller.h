@@ -155,19 +155,19 @@ class MEDIA_EXPORT AudioOutputController
 
   // AudioSourceCallback implementation.
   virtual int OnMoreData(AudioBus* dest,
-                         uint32 total_bytes_delay) OVERRIDE;
-  virtual void OnError(AudioOutputStream* stream) OVERRIDE;
+                         uint32 total_bytes_delay) override;
+  virtual void OnError(AudioOutputStream* stream) override;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will
   // shutdown the existing |stream_|, transition to the kRecreating state,
   // create a new stream, and then transition back to an equivalent state prior
   // to being called.
-  virtual void OnDeviceChange() OVERRIDE;
+  virtual void OnDeviceChange() override;
 
   // AudioSourceDiverter implementation.
-  virtual const AudioParameters& GetAudioParameters() OVERRIDE;
-  virtual void StartDiverting(AudioOutputStream* to_stream) OVERRIDE;
-  virtual void StopDiverting() OVERRIDE;
+  virtual const AudioParameters& GetAudioParameters() override;
+  virtual void StartDiverting(AudioOutputStream* to_stream) override;
+  virtual void StopDiverting() override;
 
   // Accessor for AudioPowerMonitor::ReadCurrentPowerAndClip().  See comments in
   // audio_power_monitor.h for usage.  This may be called on any thread.

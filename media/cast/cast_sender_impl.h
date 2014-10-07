@@ -29,21 +29,21 @@ class CastSenderImpl : public CastSender {
 
   virtual void InitializeAudio(
       const AudioSenderConfig& audio_config,
-      const CastInitializationCallback& cast_initialization_cb) OVERRIDE;
+      const CastInitializationCallback& cast_initialization_cb) override;
   virtual void InitializeVideo(
       const VideoSenderConfig& video_config,
       const CastInitializationCallback& cast_initialization_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb)
-      OVERRIDE;
+      override;
 
   virtual void SetTargetPlayoutDelay(
-      base::TimeDelta new_target_playout_delay) OVERRIDE;
+      base::TimeDelta new_target_playout_delay) override;
 
   virtual ~CastSenderImpl();
 
-  virtual scoped_refptr<AudioFrameInput> audio_frame_input() OVERRIDE;
-  virtual scoped_refptr<VideoFrameInput> video_frame_input() OVERRIDE;
+  virtual scoped_refptr<AudioFrameInput> audio_frame_input() override;
+  virtual scoped_refptr<VideoFrameInput> video_frame_input() override;
 
  private:
   void ReceivedPacket(scoped_ptr<Packet> packet);

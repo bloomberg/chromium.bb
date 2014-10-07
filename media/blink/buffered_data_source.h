@@ -108,13 +108,13 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
 
   // DataSource implementation.
   // Called from demuxer thread.
-  virtual void Stop() OVERRIDE;
+  virtual void Stop() override;
 
   virtual void Read(int64 position, int size, uint8* data,
-                    const DataSource::ReadCB& read_cb) OVERRIDE;
-  virtual bool GetSize(int64* size_out) OVERRIDE;
-  virtual bool IsStreaming() OVERRIDE;
-  virtual void SetBitrate(int bitrate) OVERRIDE;
+                    const DataSource::ReadCB& read_cb) override;
+  virtual bool GetSize(int64* size_out) override;
+  virtual bool IsStreaming() override;
+  virtual void SetBitrate(int bitrate) override;
 
  protected:
   // A factory method to create a BufferedResourceLoader based on the read

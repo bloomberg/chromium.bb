@@ -169,7 +169,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
     return preroll_buffer_;
   }
 
-  virtual void set_timestamp(base::TimeDelta timestamp) OVERRIDE;
+  virtual void set_timestamp(base::TimeDelta timestamp) override;
 
  private:
   StreamParserBuffer(const uint8* data, int data_size,

@@ -23,12 +23,12 @@ class SoundsManagerTest : public testing::Test {
   SoundsManagerTest() {}
   virtual ~SoundsManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     audio_manager_.reset(AudioManager::CreateForTesting());
     SoundsManager::Create();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     SoundsManager::Shutdown();
     audio_manager_.reset();
   }

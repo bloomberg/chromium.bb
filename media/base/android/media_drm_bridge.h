@@ -91,16 +91,16 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   virtual bool CreateSession(uint32 session_id,
                              const std::string& content_type,
                              const uint8* init_data,
-                             int init_data_length) OVERRIDE;
+                             int init_data_length) override;
   virtual void LoadSession(uint32 session_id,
-                           const std::string& web_session_id) OVERRIDE;
+                           const std::string& web_session_id) override;
   virtual void UpdateSession(uint32 session_id,
                              const uint8* response,
-                             int response_length) OVERRIDE;
-  virtual void ReleaseSession(uint32 session_id) OVERRIDE;
+                             int response_length) override;
+  virtual void ReleaseSession(uint32 session_id) override;
   virtual int RegisterPlayer(const base::Closure& new_key_cb,
-                             const base::Closure& cdm_unset_cb) OVERRIDE;
-  virtual void UnregisterPlayer(int registration_id) OVERRIDE;
+                             const base::Closure& cdm_unset_cb) override;
+  virtual void UnregisterPlayer(int registration_id) override;
 
   // Returns a MediaCrypto object if it's already created. Returns a null object
   // otherwise.

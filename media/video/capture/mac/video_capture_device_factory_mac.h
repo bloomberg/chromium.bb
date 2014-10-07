@@ -22,13 +22,13 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryMac :
   virtual ~VideoCaptureDeviceFactoryMac();
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      const VideoCaptureDevice::Name& device_name) OVERRIDE;
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
+      const VideoCaptureDevice::Name& device_name) override;
+  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
   virtual void EnumerateDeviceNames(const base::Callback<
-      void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) OVERRIDE;
+      void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) override;
   virtual void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
-      VideoCaptureFormats* supported_formats) OVERRIDE;
+      VideoCaptureFormats* supported_formats) override;
 
  private:
   // Cache of |ui_task_runner| for enumerating devices there for QTKit.

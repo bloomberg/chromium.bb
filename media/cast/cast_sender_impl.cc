@@ -23,7 +23,7 @@ class LocalVideoFrameInput : public VideoFrameInput {
 
   virtual void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time) OVERRIDE {
+      const base::TimeTicks& capture_time) override {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&VideoSender::InsertRawVideoFrame,
@@ -53,7 +53,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
       : cast_environment_(cast_environment), audio_sender_(audio_sender) {}
 
   virtual void InsertAudio(scoped_ptr<AudioBus> audio_bus,
-                           const base::TimeTicks& recorded_time) OVERRIDE {
+                           const base::TimeTicks& recorded_time) override {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&AudioSender::InsertAudio,

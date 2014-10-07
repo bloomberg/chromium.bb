@@ -61,8 +61,8 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(
       const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+      scoped_ptr<VideoCaptureDevice::Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
   // Protects concurrent setting and using of |client_|.
   base::Lock lock_;

@@ -36,8 +36,8 @@ class MEDIA_EXPORT VideoFrameSchedulerImpl : public VideoFrameScheduler {
   // VideoFrameScheduler implementation.
   virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
                                   base::TimeTicks wall_ticks,
-                                  const DoneCB& done_cb) OVERRIDE;
-  virtual void Reset() OVERRIDE;
+                                  const DoneCB& done_cb) override;
+  virtual void Reset() override;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 

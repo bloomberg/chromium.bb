@@ -178,7 +178,7 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
   // Use samples read from a data file and fill up the audio buffer
   // provided to us in the callback.
   virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) OVERRIDE {
+                         uint32 total_bytes_delay) override {
     bool stop_playing = false;
     int max_size =
         audio_bus->frames() * audio_bus->channels() * kBytesPerSample;
@@ -206,7 +206,7 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioOutputStream* stream) override {}
 
   int file_size() { return file_->data_size(); }
 
@@ -265,7 +265,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* src,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
+                      double volume) override {
     const int num_samples = src->frames() * src->channels();
     scoped_ptr<int16> interleaved(new int16[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
@@ -279,7 +279,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
       event_->Signal();
   }
 
-  virtual void OnError(AudioInputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream) override {}
 
  private:
   base::WaitableEvent* event_;
@@ -313,7 +313,7 @@ class FullDuplexAudioSinkSource
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* src,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
+                      double volume) override {
     const base::TimeTicks now_time = base::TimeTicks::Now();
     const int diff = (now_time - previous_time_).InMilliseconds();
 
@@ -350,11 +350,11 @@ class FullDuplexAudioSinkSource
     }
   }
 
-  virtual void OnError(AudioInputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream) override {}
 
   // AudioOutputStream::AudioSourceCallback implementation
   virtual int OnMoreData(AudioBus* dest,
-                         uint32 total_bytes_delay) OVERRIDE {
+                         uint32 total_bytes_delay) override {
     const int size_in_bytes =
         (params_.bits_per_sample() / 8) * dest->frames() * dest->channels();
     EXPECT_EQ(size_in_bytes, params_.GetBytesPerBuffer());
@@ -382,7 +382,7 @@ class FullDuplexAudioSinkSource
     return dest->frames();
   }
 
-  virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioOutputStream* stream) override {}
 
  private:
   // Converts from bytes to milliseconds given number of bytes and existing

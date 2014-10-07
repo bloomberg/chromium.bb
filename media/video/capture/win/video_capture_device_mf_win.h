@@ -44,8 +44,8 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(const VideoCaptureParams& params,
                                 scoped_ptr<VideoCaptureDevice::Client> client)
-      OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+      override;
+  virtual void StopAndDeAllocate() override;
 
   // Captured new video data.
   void OnIncomingCapturedData(const uint8* data,

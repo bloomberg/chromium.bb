@@ -65,7 +65,7 @@ class TestPacketSender : public PacketSender {
 
   // A singular packet implies a RTCP packet.
   virtual bool SendPacket(PacketRef packet,
-                          const base::Closure& cb) OVERRIDE {
+                          const base::Closure& cb) override {
     if (paused_) {
       stored_packet_ = packet;
       callback_ = cb;
@@ -85,7 +85,7 @@ class TestPacketSender : public PacketSender {
     return true;
   }
 
-  virtual int64 GetBytesSent() OVERRIDE {
+  virtual int64 GetBytesSent() override {
     return 0;
   }
 
@@ -160,7 +160,7 @@ class VideoSenderTest : public ::testing::Test {
 
   virtual ~VideoSenderTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     video_sender_.reset();
     task_runner_->RunTasks();
   }

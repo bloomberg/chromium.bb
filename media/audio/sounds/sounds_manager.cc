@@ -28,9 +28,9 @@ class SoundsManagerImpl : public SoundsManager {
 
   // SoundsManager implementation:
   virtual bool Initialize(SoundKey key,
-                          const base::StringPiece& data) OVERRIDE;
-  virtual bool Play(SoundKey key) OVERRIDE;
-  virtual base::TimeDelta GetDuration(SoundKey key) OVERRIDE;
+                          const base::StringPiece& data) override;
+  virtual bool Play(SoundKey key) override;
+  virtual base::TimeDelta GetDuration(SoundKey key) override;
 
  private:
   base::hash_map<SoundKey, linked_ptr<AudioStreamHandler> > handlers_;

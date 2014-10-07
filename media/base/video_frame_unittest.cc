@@ -272,8 +272,8 @@ class SyncPointClientImpl : public VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(uint32 sync_point) : sync_point_(sync_point) {}
   virtual ~SyncPointClientImpl() {}
-  virtual uint32 InsertSyncPoint() OVERRIDE { return sync_point_; }
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {}
+  virtual uint32 InsertSyncPoint() override { return sync_point_; }
+  virtual void WaitSyncPoint(uint32 sync_point) override {}
 
  private:
   uint32 sync_point_;

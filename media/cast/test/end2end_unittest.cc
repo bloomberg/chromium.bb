@@ -174,7 +174,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
   virtual ~LoopBackPacketPipe() {}
 
   // PacketPipe implementations.
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     packet_receiver_.Run(packet.Pass());
   }
 
@@ -207,7 +207,7 @@ class LoopBackTransport : public PacketSender {
   }
 
   virtual bool SendPacket(PacketRef packet,
-                          const base::Closure& cb) OVERRIDE {
+                          const base::Closure& cb) override {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_)
       return true;
@@ -224,7 +224,7 @@ class LoopBackTransport : public PacketSender {
     return true;
   }
 
-  virtual int64 GetBytesSent() OVERRIDE {
+  virtual int64 GetBytesSent() override {
     return bytes_sent_;
   }
 
@@ -638,7 +638,7 @@ class End2EndTest : public ::testing::Test {
         &event_subscriber_sender_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     cast_sender_.reset();
     cast_receiver_.reset();
     task_runner_->RunTasks();

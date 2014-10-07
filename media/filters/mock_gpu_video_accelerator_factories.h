@@ -49,10 +49,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
                std::vector<VideoEncodeAccelerator::SupportedProfile>());
 
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
-      OVERRIDE;
+      override;
 
   virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
-      OVERRIDE;
+      override;
 
  private:
   virtual ~MockGpuVideoAcceleratorFactories();

@@ -96,11 +96,11 @@ class FileIOTest : public cdm::FileIOClient {
   static bool MatchesResult(const TestStep& a, const TestStep& b);
 
   // cdm::FileIOClient implementation.
-  virtual void OnOpenComplete(Status status) OVERRIDE;
+  virtual void OnOpenComplete(Status status) override;
   virtual void OnReadComplete(Status status,
                               const uint8_t* data,
-                              uint32_t data_size) OVERRIDE;
-  virtual void OnWriteComplete(Status status) OVERRIDE;
+                              uint32_t data_size) override;
+  virtual void OnWriteComplete(Status status) override;
 
   // Runs the next step in this test case.
   void RunNextStep();

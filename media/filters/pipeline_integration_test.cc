@@ -233,25 +233,25 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   virtual void OnSessionMessage(const std::string& web_session_id,
                                 const std::vector<uint8>& message,
-                                const GURL& destination_url) OVERRIDE {
+                                const GURL& destination_url) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_FALSE(message.empty());
     EXPECT_EQ(current_session_id_, web_session_id);
   }
 
-  virtual void OnSessionClosed(const std::string& web_session_id) OVERRIDE {
+  virtual void OnSessionClosed(const std::string& web_session_id) override {
     EXPECT_EQ(current_session_id_, web_session_id);
   }
 
   virtual void OnSessionKeysChange(const std::string& web_session_id,
-                                   bool has_additional_usable_key) OVERRIDE {
+                                   bool has_additional_usable_key) override {
     EXPECT_EQ(current_session_id_, web_session_id);
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
   virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
-                       AesDecryptor* decryptor) OVERRIDE {
+                       AesDecryptor* decryptor) override {
     if (current_session_id_.empty()) {
       decryptor->CreateSession(type,
                                kInitData,
@@ -293,7 +293,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
 
   virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
-                       AesDecryptor* decryptor) OVERRIDE {
+                       AesDecryptor* decryptor) override {
     // Skip the request if the |init_data| has been seen.
     if (init_data == prev_init_data_)
       return;
@@ -360,26 +360,26 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
   virtual void OnSessionMessage(const std::string& web_session_id,
                                 const std::vector<uint8>& message,
-                                const GURL& default_url) OVERRIDE {
+                                const GURL& default_url) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected Message";
   }
 
-  virtual void OnSessionClosed(const std::string& web_session_id) OVERRIDE {
+  virtual void OnSessionClosed(const std::string& web_session_id) override {
     EXPECT_FALSE(web_session_id.empty());
     FAIL() << "Unexpected Closed";
   }
 
   virtual void OnSessionKeysChange(const std::string& web_session_id,
-                                   bool has_additional_usable_key) OVERRIDE {
+                                   bool has_additional_usable_key) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
   virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
-                       AesDecryptor* decryptor) OVERRIDE {
+                       AesDecryptor* decryptor) override {
   }
 };
 

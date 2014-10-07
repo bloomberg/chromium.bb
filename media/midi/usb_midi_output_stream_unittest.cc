@@ -26,12 +26,12 @@ class MockUsbMidiDevice : public UsbMidiDevice {
   MockUsbMidiDevice() {}
   virtual ~MockUsbMidiDevice() {}
 
-  virtual std::vector<uint8> GetDescriptor() OVERRIDE {
+  virtual std::vector<uint8> GetDescriptor() override {
     return std::vector<uint8>();
   }
 
   virtual void Send(int endpoint_number, const std::vector<uint8>& data)
-      OVERRIDE {
+      override {
     for (size_t i = 0; i < data.size(); ++i) {
       log_ += base::StringPrintf("0x%02x ", data[i]);
     }

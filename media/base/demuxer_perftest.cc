@@ -26,12 +26,12 @@ class DemuxerHostImpl : public media::DemuxerHost {
 
   // DemuxerHost implementation.
   virtual void AddBufferedTimeRange(base::TimeDelta start,
-                                    base::TimeDelta end) OVERRIDE {}
-  virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}
-  virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
+                                    base::TimeDelta end) override {}
+  virtual void SetDuration(base::TimeDelta duration) override {}
+  virtual void OnDemuxerError(media::PipelineStatus error) override {}
   virtual void AddTextStream(media::DemuxerStream* text_stream,
-                             const media::TextTrackConfig& config) OVERRIDE {}
-  virtual void RemoveTextStream(media::DemuxerStream* text_stream) OVERRIDE {}
+                             const media::TextTrackConfig& config) override {}
+  virtual void RemoveTextStream(media::DemuxerStream* text_stream) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DemuxerHostImpl);

@@ -35,7 +35,7 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
 
  private:
    // Call Render() repeatedly, keeping track of the rendering time.
-   virtual void Run() OVERRIDE {
+   virtual void Run() override {
      base::TimeTicks start;
      while (!stop_event_->IsSignaled()) {
        int frames_received = callback_->Render(audio_bus_.get(), 0);

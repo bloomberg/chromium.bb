@@ -29,7 +29,7 @@ class MockClient : public media::VideoCaptureDevice::Client {
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : main_thread_(base::MessageLoopProxy::current()), frame_cb_(frame_cb) {}
 
-  virtual void OnError(const std::string& error_message) OVERRIDE {
+  virtual void OnError(const std::string& error_message) override {
     OnErr();
   }
 
@@ -37,7 +37,7 @@ class MockClient : public media::VideoCaptureDevice::Client {
                                       int length,
                                       const VideoCaptureFormat& format,
                                       int rotation,
-                                      base::TimeTicks timestamp) OVERRIDE {
+                                      base::TimeTicks timestamp) override {
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
   }
 
@@ -45,7 +45,7 @@ class MockClient : public media::VideoCaptureDevice::Client {
       const scoped_refptr<Buffer>& buffer,
       const media::VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks timestamp) OVERRIDE {
+      base::TimeTicks timestamp) override {
     NOTREACHED();
   }
 

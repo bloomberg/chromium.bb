@@ -93,10 +93,10 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
       blink::WebGraphicsContext3D* web_graphics_context)
       : web_graphics_context_(web_graphics_context) {}
   virtual ~SyncPointClientImpl() {}
-  virtual uint32 InsertSyncPoint() OVERRIDE {
+  virtual uint32 InsertSyncPoint() override {
     return web_graphics_context_->insertSyncPoint();
   }
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+  virtual void WaitSyncPoint(uint32 sync_point) override {
     web_graphics_context_->waitSyncPoint(sync_point);
   }
 

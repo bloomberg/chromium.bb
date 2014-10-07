@@ -43,13 +43,13 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   virtual ~DecryptingAudioDecoder();
 
   // AudioDecoder implementation.
-  virtual std::string GetDisplayName() const OVERRIDE;
+  virtual std::string GetDisplayName() const override;
   virtual void Initialize(const AudioDecoderConfig& config,
                           const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) OVERRIDE;
+                          const OutputCB& output_cb) override;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) OVERRIDE;
-  virtual void Reset(const base::Closure& closure) OVERRIDE;
+                      const DecodeCB& decode_cb) override;
+  virtual void Reset(const base::Closure& closure) override;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok

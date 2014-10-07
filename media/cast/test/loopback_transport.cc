@@ -23,7 +23,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
   virtual ~LoopBackPacketPipe() {}
 
   // PacketPipe implementations.
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     packet_receiver_.Run(packet.Pass());
   }
 

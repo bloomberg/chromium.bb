@@ -23,11 +23,11 @@ class MidiManagerAlsa : public MidiManager {
   virtual ~MidiManagerAlsa();
 
   // MidiManager implementation.
-  virtual void StartInitialization() OVERRIDE;
+  virtual void StartInitialization() override;
   virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,
-                                    double timestamp) OVERRIDE;
+                                    double timestamp) override;
 
  private:
   // An internal callback that runs on MidiSendThread.

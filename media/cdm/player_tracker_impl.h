@@ -25,8 +25,8 @@ class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
 
   // PlayerTracker implementation.
   virtual int RegisterPlayer(const base::Closure& new_key_cb,
-                             const base::Closure& cdm_unset_cb) OVERRIDE;
-  virtual void UnregisterPlayer(int registration_id) OVERRIDE;
+                             const base::Closure& cdm_unset_cb) override;
+  virtual void UnregisterPlayer(int registration_id) override;
 
   // Helpers methods to fire registered callbacks.
   void NotifyNewKey();

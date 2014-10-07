@@ -64,13 +64,13 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* src,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
+                      double volume) override {
     EXPECT_NE(hardware_delay_bytes, 0u);
     num_received_audio_frames_ += src->frames();
     data_event_.Signal();
   }
 
-  virtual void OnError(AudioInputStream* stream) OVERRIDE {
+  virtual void OnError(AudioInputStream* stream) override {
     error_ = true;
   }
 

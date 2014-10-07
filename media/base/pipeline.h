@@ -204,12 +204,12 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   // DemuxerHost implementaion.
   virtual void AddBufferedTimeRange(base::TimeDelta start,
-                                    base::TimeDelta end) OVERRIDE;
-  virtual void SetDuration(base::TimeDelta duration) OVERRIDE;
-  virtual void OnDemuxerError(PipelineStatus error) OVERRIDE;
+                                    base::TimeDelta end) override;
+  virtual void SetDuration(base::TimeDelta duration) override;
+  virtual void OnDemuxerError(PipelineStatus error) override;
   virtual void AddTextStream(DemuxerStream* text_stream,
-                             const TextTrackConfig& config) OVERRIDE;
-  virtual void RemoveTextStream(DemuxerStream* text_stream) OVERRIDE;
+                             const TextTrackConfig& config) override;
+  virtual void RemoveTextStream(DemuxerStream* text_stream) override;
 
   // Callback executed when a rendering error happened, initiating the teardown
   // sequence.

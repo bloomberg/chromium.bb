@@ -61,8 +61,8 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(
       const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+      scoped_ptr<VideoCaptureDevice::Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
   bool Init(VideoCaptureDevice::Name::CaptureApiType capture_api_type);
 

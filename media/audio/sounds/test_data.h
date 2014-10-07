@@ -28,8 +28,8 @@ class TestObserver : public AudioStreamHandler::TestObserver {
   virtual ~TestObserver();
 
   // AudioStreamHandler::TestObserver implementation:
-  virtual void OnPlay() OVERRIDE;
-  virtual void OnStop(size_t cursor) OVERRIDE;
+  virtual void OnPlay() override;
+  virtual void OnStop(size_t cursor) override;
 
   int num_play_requests() const { return num_play_requests_; }
   int num_stop_requests() const { return num_stop_requests_; }

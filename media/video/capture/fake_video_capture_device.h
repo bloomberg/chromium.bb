@@ -28,8 +28,8 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(
       const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+      scoped_ptr<VideoCaptureDevice::Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
   // Sets the formats to use sequentially when the device is configured as
   // variable capture resolution. Works only before AllocateAndStart() or

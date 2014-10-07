@@ -40,11 +40,11 @@ class VideoFrameCompositorTest : public testing::Test,
 
  private:
   // cc::VideoFrameProvider::Client implementation.
-  virtual void StopUsingProvider() OVERRIDE {}
-  virtual void DidReceiveFrame() OVERRIDE {
+  virtual void StopUsingProvider() override {}
+  virtual void DidReceiveFrame() override {
     ++did_receive_frame_count_;
   }
-  virtual void DidUpdateMatrix(const float* matrix) OVERRIDE {}
+  virtual void DidUpdateMatrix(const float* matrix) override {}
 
   void NaturalSizeChanged(gfx::Size natural_size) {
     ++natural_size_changed_count_;

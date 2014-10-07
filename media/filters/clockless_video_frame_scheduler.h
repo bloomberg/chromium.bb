@@ -20,8 +20,8 @@ class ClocklessVideoFrameScheduler : public VideoFrameScheduler {
   // VideoFrameScheduler implementation.
   virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
                                   base::TimeTicks wall_ticks,
-                                  const DoneCB& done_cb) OVERRIDE;
-  virtual void Reset() OVERRIDE;
+                                  const DoneCB& done_cb) override;
+  virtual void Reset() override;
 
  private:
   DisplayCB display_cb_;

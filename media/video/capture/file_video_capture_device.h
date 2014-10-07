@@ -38,8 +38,8 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   virtual ~FileVideoCaptureDevice();
   virtual void AllocateAndStart(
       const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
-  virtual void StopAndDeAllocate() OVERRIDE;
+      scoped_ptr<VideoCaptureDevice::Client> client) override;
+  virtual void StopAndDeAllocate() override;
 
  private:
   // Returns size in bytes of an I420 frame, not including possible paddings,

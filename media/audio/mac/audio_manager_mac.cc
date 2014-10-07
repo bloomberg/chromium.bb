@@ -251,12 +251,12 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
   }
 
  private:
-  virtual void OnSuspend() OVERRIDE {
+  virtual void OnSuspend() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     is_suspending_ = true;
   }
 
-  virtual void OnResume() OVERRIDE {
+  virtual void OnResume() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     is_suspending_ = false;
     earliest_start_time_ = base::TimeTicks::Now() +

@@ -45,12 +45,12 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   virtual ~EsParserH264();
 
   // EsParser implementation.
-  virtual void Flush() OVERRIDE;
+  virtual void Flush() override;
 
  private:
   // EsParser implementation.
-  virtual bool ParseFromEsQueue() OVERRIDE;
-  virtual void ResetInternal() OVERRIDE;
+  virtual bool ParseFromEsQueue() override;
+  virtual void ResetInternal() override;
 
   // Find the AUD located at or after |*stream_pos|.
   // Return true if an AUD is found.

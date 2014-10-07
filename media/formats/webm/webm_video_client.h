@@ -37,9 +37,9 @@ class WebMVideoClient : public WebMParserClient {
 
  private:
   // WebMParserClient implementation.
-  virtual bool OnUInt(int id, int64 val) OVERRIDE;
-  virtual bool OnBinary(int id, const uint8* data, int size) OVERRIDE;
-  virtual bool OnFloat(int id, double val) OVERRIDE;
+  virtual bool OnUInt(int id, int64 val) override;
+  virtual bool OnBinary(int id, const uint8* data, int size) override;
+  virtual bool OnFloat(int id, double val) override;
 
   LogCB log_cb_;
   int64 pixel_width_;

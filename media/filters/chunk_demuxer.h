@@ -80,12 +80,12 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   void UnmarkEndOfStream();
 
   // DemuxerStream methods.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual Type type() OVERRIDE;
-  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
-  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
-  virtual bool SupportsConfigChanges() OVERRIDE;
-  virtual VideoRotation video_rotation() OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) override;
+  virtual Type type() override;
+  virtual AudioDecoderConfig audio_decoder_config() override;
+  virtual VideoDecoderConfig video_decoder_config() override;
+  virtual bool SupportsConfigChanges() override;
+  virtual VideoRotation video_rotation() override;
 
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.
@@ -159,13 +159,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Demuxer implementation.
   virtual void Initialize(DemuxerHost* host,
                           const PipelineStatusCB& cb,
-                          bool enable_text_tracks) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) OVERRIDE;
-  virtual base::Time GetTimelineOffset() const OVERRIDE;
-  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
-  virtual base::TimeDelta GetStartTime() const OVERRIDE;
-  virtual Liveness GetLiveness() const OVERRIDE;
+                          bool enable_text_tracks) override;
+  virtual void Stop() override;
+  virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) override;
+  virtual base::Time GetTimelineOffset() const override;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  virtual base::TimeDelta GetStartTime() const override;
+  virtual Liveness GetLiveness() const override;
 
   // Methods used by an external object to control this demuxer.
   //

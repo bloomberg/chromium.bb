@@ -28,7 +28,7 @@ class MojoRendererApplication
  public:
   // mojo::ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) OVERRIDE {
+      mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
@@ -36,7 +36,7 @@ class MojoRendererApplication
   // mojo::InterfaceFactory<mojo::MediaRenderer> implementation.
   virtual void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::MediaRenderer> request) OVERRIDE {
+      mojo::InterfaceRequest<mojo::MediaRenderer> request) override {
     mojo::BindToRequest(new MojoRendererService(connection), &request);
   }
 };

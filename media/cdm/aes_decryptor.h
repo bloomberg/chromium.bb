@@ -36,45 +36,45 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   virtual void SetServerCertificate(
       const uint8* certificate_data,
       int certificate_data_length,
-      scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+      scoped_ptr<SimpleCdmPromise> promise) override;
   virtual void CreateSession(const std::string& init_data_type,
                              const uint8* init_data,
                              int init_data_length,
                              SessionType session_type,
-                             scoped_ptr<NewSessionCdmPromise> promise) OVERRIDE;
+                             scoped_ptr<NewSessionCdmPromise> promise) override;
   virtual void LoadSession(const std::string& web_session_id,
-                           scoped_ptr<NewSessionCdmPromise> promise) OVERRIDE;
+                           scoped_ptr<NewSessionCdmPromise> promise) override;
   virtual void UpdateSession(const std::string& web_session_id,
                              const uint8* response,
                              int response_length,
-                             scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+                             scoped_ptr<SimpleCdmPromise> promise) override;
   virtual void CloseSession(const std::string& web_session_id,
-                            scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+                            scoped_ptr<SimpleCdmPromise> promise) override;
   virtual void RemoveSession(const std::string& web_session_id,
-                             scoped_ptr<SimpleCdmPromise> promise) OVERRIDE;
+                             scoped_ptr<SimpleCdmPromise> promise) override;
   virtual void GetUsableKeyIds(const std::string& web_session_id,
-                               scoped_ptr<KeyIdsPromise> promise) OVERRIDE;
-  virtual Decryptor* GetDecryptor() OVERRIDE;
+                               scoped_ptr<KeyIdsPromise> promise) override;
+  virtual Decryptor* GetDecryptor() override;
 
   // Decryptor implementation.
   virtual void RegisterNewKeyCB(StreamType stream_type,
-                                const NewKeyCB& key_added_cb) OVERRIDE;
+                                const NewKeyCB& key_added_cb) override;
   virtual void Decrypt(StreamType stream_type,
                        const scoped_refptr<DecoderBuffer>& encrypted,
-                       const DecryptCB& decrypt_cb) OVERRIDE;
-  virtual void CancelDecrypt(StreamType stream_type) OVERRIDE;
+                       const DecryptCB& decrypt_cb) override;
+  virtual void CancelDecrypt(StreamType stream_type) override;
   virtual void InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) OVERRIDE;
+                                      const DecoderInitCB& init_cb) override;
   virtual void InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) OVERRIDE;
+                                      const DecoderInitCB& init_cb) override;
   virtual void DecryptAndDecodeAudio(
       const scoped_refptr<DecoderBuffer>& encrypted,
-      const AudioDecodeCB& audio_decode_cb) OVERRIDE;
+      const AudioDecodeCB& audio_decode_cb) override;
   virtual void DecryptAndDecodeVideo(
       const scoped_refptr<DecoderBuffer>& encrypted,
-      const VideoDecodeCB& video_decode_cb) OVERRIDE;
-  virtual void ResetDecoder(StreamType stream_type) OVERRIDE;
-  virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
+      const VideoDecodeCB& video_decode_cb) override;
+  virtual void ResetDecoder(StreamType stream_type) override;
+  virtual void DeinitializeDecoder(StreamType stream_type) override;
 
  private:
   // TODO(fgalligan): Remove this and change KeyMap to use crypto::SymmetricKey

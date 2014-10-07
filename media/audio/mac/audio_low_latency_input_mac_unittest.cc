@@ -78,7 +78,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   virtual void OnData(AudioInputStream* stream,
                       const AudioBus* src,
                       uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
+                      double volume) override {
     const int num_samples = src->frames() * src->channels();
     scoped_ptr<int16> interleaved(new int16[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
@@ -93,7 +93,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     }
   }
 
-  virtual void OnError(AudioInputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream) override {}
 
  private:
   media::SeekableBuffer buffer_;

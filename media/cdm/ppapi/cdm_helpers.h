@@ -33,11 +33,11 @@ class PpbBuffer : public cdm::Buffer {
                            PpbBufferAllocator* allocator);
 
   // cdm::Buffer implementation.
-  virtual void Destroy() OVERRIDE;
-  virtual uint32_t Capacity() const OVERRIDE;
-  virtual uint8_t* Data() OVERRIDE;
-  virtual void SetSize(uint32_t size) OVERRIDE;
-  virtual uint32_t Size() const OVERRIDE { return size_; }
+  virtual void Destroy() override;
+  virtual uint32_t Capacity() const override;
+  virtual uint8_t* Data() override;
+  virtual void SetSize(uint32_t size) override;
+  virtual uint32_t Size() const override { return size_; }
 
   // Takes the |buffer_| from this class and returns it.
   // Note: The caller must ensure |allocator->Release()| is called later so that
@@ -97,15 +97,15 @@ class DecryptedBlockImpl : public cdm::DecryptedBlock {
   DecryptedBlockImpl() : buffer_(NULL), timestamp_(0) {}
   virtual ~DecryptedBlockImpl() { if (buffer_) buffer_->Destroy(); }
 
-  virtual void SetDecryptedBuffer(cdm::Buffer* buffer) OVERRIDE {
+  virtual void SetDecryptedBuffer(cdm::Buffer* buffer) override {
     buffer_ = static_cast<PpbBuffer*>(buffer);
   }
-  virtual cdm::Buffer* DecryptedBuffer() OVERRIDE { return buffer_; }
+  virtual cdm::Buffer* DecryptedBuffer() override { return buffer_; }
 
-  virtual void SetTimestamp(int64_t timestamp) OVERRIDE {
+  virtual void SetTimestamp(int64_t timestamp) override {
     timestamp_ = timestamp;
   }
-  virtual int64_t Timestamp() const OVERRIDE { return timestamp_; }
+  virtual int64_t Timestamp() const override { return timestamp_; }
 
  private:
   PpbBuffer* buffer_;
@@ -119,42 +119,42 @@ class VideoFrameImpl : public cdm::VideoFrame {
   VideoFrameImpl();
   virtual ~VideoFrameImpl();
 
-  virtual void SetFormat(cdm::VideoFormat format) OVERRIDE {
+  virtual void SetFormat(cdm::VideoFormat format) override {
     format_ = format;
   }
-  virtual cdm::VideoFormat Format() const OVERRIDE { return format_; }
+  virtual cdm::VideoFormat Format() const override { return format_; }
 
-  virtual void SetSize(cdm::Size size) OVERRIDE { size_ = size; }
-  virtual cdm::Size Size() const OVERRIDE { return size_; }
+  virtual void SetSize(cdm::Size size) override { size_ = size; }
+  virtual cdm::Size Size() const override { return size_; }
 
-  virtual void SetFrameBuffer(cdm::Buffer* frame_buffer) OVERRIDE {
+  virtual void SetFrameBuffer(cdm::Buffer* frame_buffer) override {
     frame_buffer_ = static_cast<PpbBuffer*>(frame_buffer);
   }
-  virtual cdm::Buffer* FrameBuffer() OVERRIDE { return frame_buffer_; }
+  virtual cdm::Buffer* FrameBuffer() override { return frame_buffer_; }
 
   virtual void SetPlaneOffset(cdm::VideoFrame::VideoPlane plane,
-                              uint32_t offset) OVERRIDE {
+                              uint32_t offset) override {
     PP_DCHECK(plane < kMaxPlanes);
     plane_offsets_[plane] = offset;
   }
-  virtual uint32_t PlaneOffset(VideoPlane plane) OVERRIDE {
+  virtual uint32_t PlaneOffset(VideoPlane plane) override {
     PP_DCHECK(plane < kMaxPlanes);
     return plane_offsets_[plane];
   }
 
-  virtual void SetStride(VideoPlane plane, uint32_t stride) OVERRIDE {
+  virtual void SetStride(VideoPlane plane, uint32_t stride) override {
     PP_DCHECK(plane < kMaxPlanes);
     strides_[plane] = stride;
   }
-  virtual uint32_t Stride(VideoPlane plane) OVERRIDE {
+  virtual uint32_t Stride(VideoPlane plane) override {
     PP_DCHECK(plane < kMaxPlanes);
     return strides_[plane];
   }
 
-  virtual void SetTimestamp(int64_t timestamp) OVERRIDE {
+  virtual void SetTimestamp(int64_t timestamp) override {
     timestamp_ = timestamp;
   }
-  virtual int64_t Timestamp() const OVERRIDE { return timestamp_; }
+  virtual int64_t Timestamp() const override { return timestamp_; }
 
  private:
   // The video buffer format.
@@ -189,16 +189,16 @@ class AudioFramesImpl : public cdm::AudioFrames_2 {
   }
 
   // AudioFrames implementation.
-  virtual void SetFrameBuffer(cdm::Buffer* buffer) OVERRIDE {
+  virtual void SetFrameBuffer(cdm::Buffer* buffer) override {
     buffer_ = static_cast<PpbBuffer*>(buffer);
   }
-  virtual cdm::Buffer* FrameBuffer() OVERRIDE {
+  virtual cdm::Buffer* FrameBuffer() override {
     return buffer_;
   }
-  virtual void SetFormat(cdm::AudioFormat format) OVERRIDE {
+  virtual void SetFormat(cdm::AudioFormat format) override {
     format_ = format;
   }
-  virtual cdm::AudioFormat Format() const OVERRIDE {
+  virtual cdm::AudioFormat Format() const override {
     return format_;
   }
 

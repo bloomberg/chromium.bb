@@ -19,7 +19,7 @@ class NullInputProvider : public AudioConverter::InputCallback {
   virtual ~NullInputProvider() {}
 
   virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) OVERRIDE {
+                              base::TimeDelta buffer_delay) override {
     audio_bus->Zero();
     return 1;
   }

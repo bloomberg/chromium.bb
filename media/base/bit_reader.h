@@ -43,7 +43,7 @@ class MEDIA_EXPORT BitReader
 
  private:
   // BitReaderCore::ByteStreamProvider implementation.
-  virtual int GetBytes(int max_n, const uint8** out) OVERRIDE;
+  virtual int GetBytes(int max_n, const uint8** out) override;
 
   // Total number of bytes that was initially passed to BitReader.
   const int initial_size_;

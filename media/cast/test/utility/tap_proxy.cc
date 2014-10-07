@@ -41,7 +41,7 @@ class SendToFDPipe : public PacketPipe {
  public:
   explicit SendToFDPipe(int fd) : fd_(fd) {
   }
-  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) override {
     while (1) {
       int written = write(
           fd_,
@@ -89,7 +89,7 @@ class QueueManager : public base::MessageLoopForIO::Watcher {
   }
 
   // MessageLoopForIO::Watcher methods
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanReadWithoutBlocking(int fd) override {
     scoped_ptr<Packet> packet(new Packet(kMaxPacketSize));
     int nread = read(input_fd_,
                      reinterpret_cast<char*>(&packet->front()),
@@ -103,7 +103,7 @@ class QueueManager : public base::MessageLoopForIO::Watcher {
     packet->resize(nread);
     packet_pipe_->Send(packet.Pass());
   }
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {
     NOTREACHED();
   }
 
@@ -173,7 +173,7 @@ class ByteCounterPipe : public media::cast::test::PacketPipe {
  public:
   ByteCounterPipe(ByteCounter* counter) : counter_(counter) {}
   virtual void Send(scoped_ptr<media::cast::Packet> packet)
-      OVERRIDE {
+      override {
     counter_->Increment(packet->size());
     pipe_->Send(packet.Pass());
   }

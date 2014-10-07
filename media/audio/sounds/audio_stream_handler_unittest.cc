@@ -24,14 +24,14 @@ class AudioStreamHandlerTest : public testing::Test {
   AudioStreamHandlerTest() {}
   virtual ~AudioStreamHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     audio_manager_.reset(AudioManager::CreateForTesting());
 
     base::StringPiece data(kTestAudioData, arraysize(kTestAudioData));
     audio_stream_handler_.reset(new AudioStreamHandler(data));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     audio_stream_handler_.reset();
     audio_manager_.reset();
   }

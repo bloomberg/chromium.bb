@@ -53,17 +53,17 @@ class MockDemuxerStream : public DemuxerStream {
   virtual ~MockDemuxerStream();
 
   // DemuxerStream implementation.
-  virtual Type type() OVERRIDE;
+  virtual Type type() override;
   MOCK_METHOD1(Read, void(const ReadCB& read_cb));
-  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
-  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
+  virtual AudioDecoderConfig audio_decoder_config() override;
+  virtual VideoDecoderConfig video_decoder_config() override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
   MOCK_METHOD0(SupportsConfigChanges, bool());
 
   void set_audio_decoder_config(const AudioDecoderConfig& config);
   void set_video_decoder_config(const VideoDecoderConfig& config);
 
-  virtual VideoRotation video_rotation() OVERRIDE;
+  virtual VideoRotation video_rotation() override;
 
  private:
   DemuxerStream::Type type_;

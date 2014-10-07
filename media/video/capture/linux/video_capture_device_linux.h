@@ -31,9 +31,9 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
 
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<Client> client) OVERRIDE;
+                                scoped_ptr<Client> client) override;
 
-  virtual void StopAndDeAllocate() OVERRIDE;
+  virtual void StopAndDeAllocate() override;
 
  protected:
   void SetRotation(int rotation);

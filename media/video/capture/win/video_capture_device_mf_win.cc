@@ -89,7 +89,7 @@ HRESULT FillCapabilities(IMFSourceReader* source,
 }
 
 
-class MFReaderCallback FINAL
+class MFReaderCallback final
     : public base::RefCountedThreadSafe<MFReaderCallback>,
       public IMFSourceReaderCallback {
  public:

@@ -37,7 +37,7 @@ class TextTrackImpl : public TextTrack {
                             const base::TimeDelta& end,
                             const std::string& id,
                             const std::string& content,
-                            const std::string& settings) OVERRIDE;
+                            const std::string& settings) override;
 
  private:
   static void OnAddCue(WebInbandTextTrackImpl* text_track,

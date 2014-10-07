@@ -76,7 +76,7 @@ class FrameReceiver : public RtpPayloadFeedback,
                            size_t payload_size);
 
   // RtpPayloadFeedback implementation.
-  virtual void CastFeedback(const RtcpCastMessage& cast_message) OVERRIDE;
+  virtual void CastFeedback(const RtcpCastMessage& cast_message) override;
 
  private:
   // Processes ready-to-consume packets from |framer_|, decrypting each packet's

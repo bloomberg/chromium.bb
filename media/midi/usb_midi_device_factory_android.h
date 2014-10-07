@@ -26,7 +26,7 @@ class MEDIA_EXPORT UsbMidiDeviceFactoryAndroid : public UsbMidiDevice::Factory {
 
   // UsbMidiDevice::Factory implementation.
   virtual void EnumerateDevices(UsbMidiDeviceDelegate* delegate,
-                                Callback callback) OVERRIDE;
+                                Callback callback) override;
 
   void OnUsbMidiDeviceRequestDone(JNIEnv* env,
                                   jobject caller,

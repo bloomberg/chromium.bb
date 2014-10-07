@@ -67,7 +67,7 @@ class TestAudioSource : public SineWaveAudioSource {
   virtual ~TestAudioSource() {}
 
   virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) OVERRIDE {
+                         uint32 total_bytes_delay) override {
     const int ret = SineWaveAudioSource::OnMoreData(audio_bus,
                                                     total_bytes_delay);
     data_pulled_.Signal();
