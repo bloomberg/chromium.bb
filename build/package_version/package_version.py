@@ -14,9 +14,9 @@ Glossary:
   Package Archive: An archive (usually a tar file) that is part of a package.
   Package Target: Package targets consists of packages. Each package target
     has it's own version of a package. An example of a package target would
-    be something such as "win_x86" or "mac_x86". In that case, "win_x86" and
-    "mac_x86" would each have their own version of "nacl_x86_glibc" and
-    "nacl_x86_newlib" for windows and mac respectively.
+    be something such as "win_x86_nacl_x86" or "mac_x86_nacl_x86". In that case,
+    "win_x86_nacl_x86" and "mac_x86_nacl_x86" would each have their own version
+    of "nacl_x86_glibc" and "nacl_x86_newlib" for windows and mac respectively.
   Revision Number: The SVN revision number of a sanctioned version. This number
     is used to synchronize packages to sanctioned versions.
 

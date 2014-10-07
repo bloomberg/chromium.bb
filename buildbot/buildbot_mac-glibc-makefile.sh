@@ -13,18 +13,30 @@ set -x
 set -e
 set -u
 
-export TOOLCHAINLOC=toolchain/mac_x86
-export TOOLCHAINNAME=nacl_x86_glibc
+# Transitionally, even though our new toolchain location is under
+# toolchain/mac_x86_nacl_x86/nacl_x86_glibc we have to keep the old format
+# inside of the tar (toolchain/mac_x86) so that the untar toolchain script
+# is backwards compatible and can untar old tars. Eventually this will be
+# unnecessary with the new package_version scheme since how to untar the
+# tar file will be embedded inside of the package file so they can differ
+# between revisions.
+export TOOLCHAINLOC=toolchain
+export TOOLCHAINNAME=mac_x86
 export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 
+# This is where we want the toolchain when moving to native_client/toolchain.
+OUT_TOOLCHAINLOC=toolchain/mac_x86
+OUT_TOOLCHAINNAME=nacl_x86_glibc
+
 TOOL_TOOLCHAIN="$TOOLCHAINLOC/$TOOLCHAINNAME"
+OUT_TOOLCHAIN="${OUT_TOOLCHAINLOC}/${OUT_TOOLCHAINNAME}"
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf scons-out tools/BUILD/* tools/out/* tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* "${TOOL_TOOLCHAIN}" .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" .tmp ||
   echo already_clean
 mkdir -p "tools/${TOOL_TOOLCHAIN}"
 

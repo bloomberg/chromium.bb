@@ -58,7 +58,7 @@ void* GetReturnAddress(void* frame_end) {
 // g++ tests/toolchain/stack_frame.cc -m64
 // arm-none-linux-gnueabihf-g++
 //   tests/toolchain/stack_frame.cc
-//   -Wl,-T -Wl,toolchain/linux_x86/arm_trusted/ld_script_arm_trusted
+//   -Wl,-T -Wl,toolchain/linux_x86_linux_arm/arm_trusted/ld_script_arm_trusted
 #if defined(__arm__)
   return ((void**)frame_end)[-1];
 #elif defined(__i386__)
