@@ -266,25 +266,6 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
     FormAssociatedElement::removedFrom(insertionPoint);
 }
 
-void HTMLFormControlElement::willChangeForm()
-{
-    formOwnerSetNeedsValidityCheck();
-    FormAssociatedElement::willChangeForm();
-}
-
-void HTMLFormControlElement::didChangeForm()
-{
-    formOwnerSetNeedsValidityCheck();
-    FormAssociatedElement::didChangeForm();
-}
-
-void HTMLFormControlElement::formOwnerSetNeedsValidityCheck()
-{
-    HTMLFormElement* form = formOwner();
-    if (form)
-        form->setNeedsValidityCheck();
-}
-
 void HTMLFormControlElement::setChangedSinceLastFormControlChangeEvent(bool changed)
 {
     m_wasChangedSinceLastFormControlChangeEvent = changed;
@@ -488,7 +469,7 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
 
 bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls)
 {
-    if (!willValidate() || isValidElement())
+    if (!willValidate() || isValidFormControlElement())
         return true;
     // An event handler can deref this object.
     RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
@@ -499,7 +480,7 @@ bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<F
     return false;
 }
 
-bool HTMLFormControlElement::isValidElement()
+bool HTMLFormControlElement::isValidFormControlElement()
 {
     // If the following assertion fails, setNeedsValidityCheck() is not called
     // correctly when something which changes validity is updated.
@@ -511,7 +492,6 @@ void HTMLFormControlElement::setNeedsValidityCheck()
 {
     bool newIsValid = valid();
     if (willValidate() && newIsValid != m_isValid) {
-        formOwnerSetNeedsValidityCheck();
         // Update style for pseudo classes such as :valid :invalid.
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
     }
