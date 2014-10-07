@@ -75,6 +75,10 @@ void ScrollView::setHasHorizontalScrollbar(bool hasBar)
         m_horizontalScrollbar->styleChanged();
     } else if (!hasBar && m_horizontalScrollbar) {
         willRemoveScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
+        // If the scrollbar has been marked as overlapping the window resizer,
+        // then its removal should reduce the count.
+        if (m_horizontalScrollbar->overlapsResizer())
+            adjustScrollbarsAvoidingResizerCount(-1);
         removeChild(m_horizontalScrollbar.get());
         m_horizontalScrollbar = nullptr;
     }
@@ -89,6 +93,10 @@ void ScrollView::setHasVerticalScrollbar(bool hasBar)
         m_verticalScrollbar->styleChanged();
     } else if (!hasBar && m_verticalScrollbar) {
         willRemoveScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
+        // If the scrollbar has been marked as overlapping the window resizer,
+        // then its removal should reduce the count.
+        if (m_verticalScrollbar->overlapsResizer())
+            adjustScrollbarsAvoidingResizerCount(-1);
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = nullptr;
     }
@@ -403,7 +411,7 @@ void ScrollView::updateScrollbarGeometry()
                         height() - m_horizontalScrollbar->height(),
                         width() - (m_verticalScrollbar ? m_verticalScrollbar->width() : 0),
                         m_horizontalScrollbar->height());
-        m_horizontalScrollbar->setFrameRect(hBarRect);
+        m_horizontalScrollbar->setFrameRect(adjustScrollbarRectForResizer(hBarRect, m_horizontalScrollbar.get()));
         if (!m_scrollbarsSuppressed && oldRect != m_horizontalScrollbar->frameRect())
             m_horizontalScrollbar->invalidate();
 
@@ -423,7 +431,7 @@ void ScrollView::updateScrollbarGeometry()
                          0,
                          m_verticalScrollbar->width(),
                          height() - (m_horizontalScrollbar ? m_horizontalScrollbar->height() : 0));
-        m_verticalScrollbar->setFrameRect(vBarRect);
+        m_verticalScrollbar->setFrameRect(adjustScrollbarRectForResizer(vBarRect, m_verticalScrollbar.get()));
         if (!m_scrollbarsSuppressed && oldRect != m_verticalScrollbar->frameRect())
             m_verticalScrollbar->invalidate();
 
@@ -435,6 +443,37 @@ void ScrollView::updateScrollbarGeometry()
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(false);
     }
+}
+
+IntRect ScrollView::adjustScrollbarRectForResizer(const IntRect& rect, Scrollbar* scrollbar)
+{
+    // Get our window resizer rect and see if we overlap. Adjust to avoid the overlap
+    // if necessary.
+    IntRect adjustedRect(rect);
+    bool overlapsResizer = false;
+    if (!rect.isEmpty() && !windowResizerRect().isEmpty()) {
+        IntRect resizerRect = convertFromContainingWindow(windowResizerRect());
+        if (rect.intersects(resizerRect)) {
+            if (scrollbar->orientation() == HorizontalScrollbar) {
+                int overlap = rect.maxX() - resizerRect.x();
+                if (overlap > 0 && resizerRect.maxX() >= rect.maxX()) {
+                    adjustedRect.setWidth(rect.width() - overlap);
+                    overlapsResizer = true;
+                }
+            } else {
+                int overlap = rect.maxY() - resizerRect.y();
+                if (overlap > 0 && resizerRect.maxY() >= rect.maxY()) {
+                    adjustedRect.setHeight(rect.height() - overlap);
+                    overlapsResizer = true;
+                }
+            }
+        }
+    }
+    if (overlapsResizer != scrollbar->overlapsResizer()) {
+        scrollbar->setOverlapsResizer(overlapsResizer);
+        adjustScrollbarsAvoidingResizerCount(overlapsResizer ? 1 : -1);
+    }
+    return adjustedRect;
 }
 
 bool ScrollView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option)

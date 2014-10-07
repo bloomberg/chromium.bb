@@ -158,6 +158,7 @@ public:
 
     virtual Scrollbar* horizontalScrollbar() const { return 0; }
     virtual Scrollbar* verticalScrollbar() const { return 0; }
+    virtual bool isScrollViewScrollbar(const Widget* child) const { return false; }
 
     // scrollPosition is relative to the scrollOrigin. i.e. If the page is RTL
     // then scrollPosition will be negative. By default, scrollPositionDouble()

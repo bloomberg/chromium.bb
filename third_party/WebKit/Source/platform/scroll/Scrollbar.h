@@ -41,7 +41,6 @@ class PlatformGestureEvent;
 class PlatformMouseEvent;
 class ScrollableArea;
 class ScrollbarTheme;
-class ScrollView;
 
 class PLATFORM_EXPORT Scrollbar : public Widget,
                   public ScrollbarThemeClient {
@@ -62,10 +61,7 @@ public:
     virtual Widget* parent() const OVERRIDE { return Widget::parent(); }
     virtual Widget* root() const OVERRIDE { return Widget::root(); }
 
-    void removeFromParent();
-    ScrollView* parentScrollView() const;
-
-    virtual void setFrameRect(const IntRect&) OVERRIDE;
+    virtual void setFrameRect(const IntRect& frameRect) OVERRIDE { Widget::setFrameRect(frameRect); }
     virtual IntRect frameRect() const OVERRIDE { return Widget::frameRect(); }
 
     virtual void invalidate() OVERRIDE { Widget::invalidate(); }
@@ -133,8 +129,6 @@ public:
 
     ScrollbarTheme* theme() const { return m_theme; }
 
-    virtual void setParent(Widget*) OVERRIDE;
-
     bool suppressInvalidation() const { return m_suppressInvalidation; }
     void setSuppressInvalidation(bool s) { m_suppressInvalidation = s; }
 
@@ -148,6 +142,9 @@ public:
 
     virtual bool isAlphaLocked() const OVERRIDE { return m_isAlphaLocked; }
     virtual void setIsAlphaLocked(bool flag) OVERRIDE { m_isAlphaLocked = flag; }
+
+    bool overlapsResizer() const { return m_overlapsResizer; }
+    void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
 
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);

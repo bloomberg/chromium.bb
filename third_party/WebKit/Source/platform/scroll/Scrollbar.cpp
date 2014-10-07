@@ -31,7 +31,6 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/scroll/ScrollAnimator.h"
-#include "platform/scroll/ScrollView.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
@@ -90,17 +89,6 @@ Scrollbar::~Scrollbar()
     m_theme->unregisterScrollbar(this);
 }
 
-void Scrollbar::removeFromParent()
-{
-    if (parent())
-        toScrollView(parent())->removeChild(this);
-}
-
-ScrollView* Scrollbar::parentScrollView() const
-{
-    return parent() && parent()->isScrollView() ? toScrollView(parent()) : 0;
-}
-
 ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const
 {
     return m_scrollableArea ? m_scrollableArea->scrollbarOverlayStyle() : ScrollbarOverlayStyleDefault;
@@ -119,7 +107,7 @@ bool Scrollbar::isScrollableAreaActive() const
 
 bool Scrollbar::isScrollViewScrollbar() const
 {
-    return parent() && parent()->isFrameView() && toScrollView(parent())->isScrollViewScrollbar(this);
+    return m_scrollableArea && m_scrollableArea->isScrollViewScrollbar(this);
 }
 
 bool Scrollbar::isLeftSideVerticalScrollbar() const
@@ -469,47 +457,6 @@ void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
     m_pressedPos = pressedPos;
 
     autoscrollPressedPart(theme()->initialAutoscrollTimerDelay());
-}
-
-void Scrollbar::setFrameRect(const IntRect& rect)
-{
-    // Get our window resizer rect and see if we overlap. Adjust to avoid the overlap
-    // if necessary.
-    IntRect adjustedRect(rect);
-    bool overlapsResizer = false;
-    ScrollView* view = parentScrollView();
-    if (view && !rect.isEmpty() && !view->windowResizerRect().isEmpty() && isScrollViewScrollbar()) {
-        IntRect resizerRect = view->convertFromContainingWindow(view->windowResizerRect());
-        if (rect.intersects(resizerRect)) {
-            if (orientation() == HorizontalScrollbar) {
-                int overlap = rect.maxX() - resizerRect.x();
-                if (overlap > 0 && resizerRect.maxX() >= rect.maxX()) {
-                    adjustedRect.setWidth(rect.width() - overlap);
-                    overlapsResizer = true;
-                }
-            } else {
-                int overlap = rect.maxY() - resizerRect.y();
-                if (overlap > 0 && resizerRect.maxY() >= rect.maxY()) {
-                    adjustedRect.setHeight(rect.height() - overlap);
-                    overlapsResizer = true;
-                }
-            }
-        }
-    }
-    if (overlapsResizer != m_overlapsResizer) {
-        m_overlapsResizer = overlapsResizer;
-        if (view)
-            view->adjustScrollbarsAvoidingResizerCount(m_overlapsResizer ? 1 : -1);
-    }
-
-    Widget::setFrameRect(adjustedRect);
-}
-
-void Scrollbar::setParent(Widget* parentView)
-{
-    if (!parentView && m_overlapsResizer && parentScrollView())
-        parentScrollView()->adjustScrollbarsAvoidingResizerCount(-1);
-    Widget::setParent(parentView);
 }
 
 void Scrollbar::setEnabled(bool e)

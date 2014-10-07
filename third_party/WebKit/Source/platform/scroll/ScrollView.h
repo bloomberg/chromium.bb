@@ -72,7 +72,7 @@ public:
     // can be used to obtain those scrollbars.
     virtual Scrollbar* horizontalScrollbar() const OVERRIDE { return m_horizontalScrollbar.get(); }
     virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_verticalScrollbar.get(); }
-    bool isScrollViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
+    virtual bool isScrollViewScrollbar(const Widget* child) const OVERRIDE { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 
     void positionScrollbarLayers();
 
@@ -287,6 +287,7 @@ protected:
     };
     void computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, const IntSize& docSize, ComputeScrollbarExistenceOption = FirstPass) const;
     void updateScrollbarGeometry();
+    IntRect adjustScrollbarRectForResizer(const IntRect&, Scrollbar*);
 
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const IntSize& desiredOffset);
