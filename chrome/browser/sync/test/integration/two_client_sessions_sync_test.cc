@@ -48,16 +48,6 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 #define MAYBE_DeleteIdleSession DeleteIdleSession
 #endif
 
-// In addition to failure on Windows above, this test is flaky on Linux.
-// See http://crbug.com/420979.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_SingleClientEnabledEncryptionAndChanged \
-        DISABLED_SingleClientEnabledEncryptionAndChanged
-#else
-#define MAYBE_SingleClientEnabledEncryptionAndChanged \
-        SingleClientEnabledEncryptionAndChanged
-#endif
-
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
                        MAYBE_SingleClientChanged) {
@@ -94,8 +84,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(IsEncryptionComplete(1));
 }
 
+// This test is flaky on several platforms:
+//    http://crbug.com/420979
+//    http://crbug.com/421167
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       MAYBE_SingleClientEnabledEncryptionAndChanged) {
+                       DISABLED_SingleClientEnabledEncryptionAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
