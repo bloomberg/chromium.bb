@@ -88,6 +88,10 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate,
 
   extensions::WebViewGuest* const web_view_guest_;
 
+  // This is used to ensure pending tasks will not fire after this object is
+  // destroyed.
+  base::WeakPtrFactory<ChromeWebViewGuestDelegate> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewGuestDelegate);
 };
 

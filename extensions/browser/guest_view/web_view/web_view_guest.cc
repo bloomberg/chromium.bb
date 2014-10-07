@@ -516,7 +516,7 @@ void WebViewGuest::CreateNewGuestWebViewWindow(
                              embedder_web_contents(),
                              create_params,
                              base::Bind(&WebViewGuest::NewGuestWebViewCallback,
-                                        base::Unretained(this),
+                                        weak_ptr_factory_.GetWeakPtr(),
                                         params));
 }
 
@@ -663,7 +663,8 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
       find_helper_(this),
       is_overriding_user_agent_(false),
       guest_opaque_(true),
-      javascript_dialog_helper_(this) {
+      javascript_dialog_helper_(this),
+      weak_ptr_factory_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
 }
@@ -1179,7 +1180,7 @@ void WebViewGuest::RequestNewWindowPermission(
       RequestPermission(WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW,
                         request_info,
                         base::Bind(&WebViewGuest::OnWebViewNewWindowResponse,
-                                   base::Unretained(this),
+                                   weak_ptr_factory_.GetWeakPtr(),
                                    guest->guest_instance_id()),
                                    false /* allowed_by_default */);
 }

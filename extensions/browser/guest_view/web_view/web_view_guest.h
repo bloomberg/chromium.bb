@@ -369,6 +369,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   typedef std::map<WebViewGuest*, NewWindowInfo> PendingWindowMap;
   PendingWindowMap pending_new_windows_;
 
+  // This is used to ensure pending tasks will not fire after this object is
+  // destroyed.
+  base::WeakPtrFactory<WebViewGuest> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };
 

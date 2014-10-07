@@ -157,7 +157,7 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
                     embedder_site_url,
                     create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
-                               AsWeakPtr(),
+                               weak_ptr_factory_.GetWeakPtr(),
                                embedder_extension_id,
                                embedder_process_id,
                                callback));
@@ -270,10 +270,6 @@ bool GuestViewBase::IsGuest(WebContents* web_contents) {
   return !!GuestViewBase::FromWebContents(web_contents);
 }
 
-base::WeakPtr<GuestViewBase> GuestViewBase::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 bool GuestViewBase::IsAutoSizeSupported() const {
   return false;
 }
@@ -327,6 +323,7 @@ void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
 
 void GuestViewBase::Destroy() {
   DCHECK(web_contents());
+
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(embedder_render_process_id());
   if (host)
@@ -334,6 +331,11 @@ void GuestViewBase::Destroy() {
 
   // Give the derived class an opportunity to perform some cleanup.
   WillDestroy();
+
+  // Invalidate weak pointers now so that bound callbacks cannot be called late
+  // into destruction. We must call this after WillDestroy because derived types
+  // may wish to access their openers.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Give the content module an opportunity to perform some cleanup.
   if (!destruction_callback_.is_null())
@@ -355,7 +357,7 @@ void GuestViewBase::SetAttachParams(const base::DictionaryValue& params) {
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
   if (guest && guest->IsViewType(GetViewType())) {
-    opener_ = guest->AsWeakPtr();
+    opener_ = guest->weak_ptr_factory_.GetWeakPtr();
     return;
   }
   opener_ = base::WeakPtr<GuestViewBase>();

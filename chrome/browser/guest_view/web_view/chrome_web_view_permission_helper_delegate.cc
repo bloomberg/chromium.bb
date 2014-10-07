@@ -136,7 +136,7 @@ void ChromeWebViewPermissionHelperDelegate::CanDownload(
       request_info,
       base::Bind(
           &ChromeWebViewPermissionHelperDelegate::OnDownloadPermissionResponse,
-          base::Unretained(this),
+          weak_factory_.GetWeakPtr(),
           callback),
       false /* allowed_by_default */);
 }
@@ -164,7 +164,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestPointerLockPermission(
       request_info,
       base::Bind(&ChromeWebViewPermissionHelperDelegate::
                      OnPointerLockPermissionResponse,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  callback),
       false /* allowed_by_default */);
 }
@@ -192,7 +192,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
       permission_callback =
       base::Bind(&ChromeWebViewPermissionHelperDelegate::
                      OnGeolocationPermissionResponse,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  bridge_id,
                  user_gesture,
                  callback);
@@ -274,7 +274,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestFileSystemPermission(
       request_info,
       base::Bind(&ChromeWebViewPermissionHelperDelegate::
                      OnFileSystemPermissionResponse,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  callback),
       allowed_by_default);
 }
@@ -297,7 +297,7 @@ void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsync(
       !blocked_by_policy,
       base::Bind(&ChromeWebViewPermissionHelperDelegate::
                      FileSystemAccessedAsyncResponse,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  render_process_id,
                  render_frame_id,
                  request_id,
@@ -327,7 +327,7 @@ void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedSync(
       !blocked_by_policy,
       base::Bind(&ChromeWebViewPermissionHelperDelegate::
                      FileSystemAccessedSyncResponse,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  render_process_id,
                  render_frame_id,
                  url,

@@ -31,7 +31,8 @@ ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     : pending_context_menu_request_id_(0),
       chromevox_injected_(false),
       current_zoom_factor_(1.0),
-      web_view_guest_(web_view_guest) {
+      web_view_guest_(web_view_guest),
+      weak_ptr_factory_(this) {
 }
 
 ChromeWebViewGuestDelegate::~ChromeWebViewGuestDelegate() {
@@ -123,7 +124,7 @@ void ChromeWebViewGuestDelegate::OnDidInitialize() {
   CHECK(accessibility_manager);
   accessibility_subscription_ = accessibility_manager->RegisterCallback(
       base::Bind(&ChromeWebViewGuestDelegate::OnAccessibilityStatusChanged,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 #endif
 }
 

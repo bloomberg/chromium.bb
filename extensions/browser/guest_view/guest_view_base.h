@@ -185,8 +185,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                    const gfx::Size& min_size,
                    const gfx::Size& max_size);
 
-  base::WeakPtr<GuestViewBase> AsWeakPtr();
-
   bool initialized() const { return initialized_; }
 
   content::WebContents* embedder_web_contents() const {
