@@ -28,15 +28,15 @@ class SANDBOX_EXPORT XPCMessageServer : public MessageServer {
   virtual ~XPCMessageServer();
 
   // MessageServer:
-  virtual bool Initialize() OVERRIDE;
-  virtual pid_t GetMessageSenderPID(IPCMessage request) OVERRIDE;
-  virtual IPCMessage CreateReply(IPCMessage request) OVERRIDE;
-  virtual bool SendReply(IPCMessage reply) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual pid_t GetMessageSenderPID(IPCMessage request) override;
+  virtual IPCMessage CreateReply(IPCMessage request) override;
+  virtual bool SendReply(IPCMessage reply) override;
   virtual void ForwardMessage(IPCMessage request,
-                              mach_port_t destination) OVERRIDE;
+                              mach_port_t destination) override;
   // Creates an error reply message with a field "error" set to |error_code|.
-  virtual void RejectMessage(IPCMessage request, int error_code) OVERRIDE;
-  virtual mach_port_t GetServerPort() const OVERRIDE;
+  virtual void RejectMessage(IPCMessage request, int error_code) override;
+  virtual mach_port_t GetServerPort() const override;
 
  private:
   // Reads a message from the XPC pipe.

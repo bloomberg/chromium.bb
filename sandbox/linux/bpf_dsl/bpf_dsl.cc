@@ -21,7 +21,7 @@ class AllowResultExprImpl : public internal::ResultExprImpl {
  public:
   AllowResultExprImpl() {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 
@@ -37,7 +37,7 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
     CHECK(err_ >= ErrorCode::ERR_MIN_ERRNO && err_ <= ErrorCode::ERR_MAX_ERRNO);
   }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return ErrorCode(err_);
   }
 
@@ -53,7 +53,7 @@ class KillResultExprImpl : public internal::ResultExprImpl {
  public:
   explicit KillResultExprImpl(const char* msg) : msg_(msg) { DCHECK(msg_); }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return sb->Kill(msg_);
   }
 
@@ -69,7 +69,7 @@ class TraceResultExprImpl : public internal::ResultExprImpl {
  public:
   TraceResultExprImpl(uint16_t aux) : aux_(aux) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return ErrorCode(ErrorCode::ERR_TRACE + aux_);
   }
 
@@ -88,7 +88,7 @@ class TrapResultExprImpl : public internal::ResultExprImpl {
     DCHECK(func_);
   }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return sb->Trap(func_, arg_);
   }
 
@@ -108,7 +108,7 @@ class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
     DCHECK(func_);
   }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return sb->UnsafeTrap(func_, arg_);
   }
 
@@ -128,7 +128,7 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
                        const ResultExpr& else_result)
       : cond_(cond), then_result_(then_result), else_result_(else_result) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
+  virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return cond_->Compile(
         sb, then_result_->Compile(sb), else_result_->Compile(sb));
   }
@@ -149,7 +149,7 @@ class ConstBoolExprImpl : public internal::BoolExprImpl {
 
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
-                            ErrorCode false_ec) const OVERRIDE {
+                            ErrorCode false_ec) const override {
     return value_ ? true_ec : false_ec;
   }
 
@@ -171,7 +171,7 @@ class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
 
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
-                            ErrorCode false_ec) const OVERRIDE {
+                            ErrorCode false_ec) const override {
     return sb->CondMaskedEqual(
         argno_, is_32bit_, mask_, value_, true_ec, false_ec);
   }
@@ -193,7 +193,7 @@ class NegateBoolExprImpl : public internal::BoolExprImpl {
 
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
-                            ErrorCode false_ec) const OVERRIDE {
+                            ErrorCode false_ec) const override {
     return cond_->Compile(sb, false_ec, true_ec);
   }
 
@@ -212,7 +212,7 @@ class AndBoolExprImpl : public internal::BoolExprImpl {
 
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
-                            ErrorCode false_ec) const OVERRIDE {
+                            ErrorCode false_ec) const override {
     return lhs_->Compile(sb, rhs_->Compile(sb, true_ec, false_ec), false_ec);
   }
 
@@ -232,7 +232,7 @@ class OrBoolExprImpl : public internal::BoolExprImpl {
 
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
-                            ErrorCode false_ec) const OVERRIDE {
+                            ErrorCode false_ec) const override {
     return lhs_->Compile(sb, true_ec, rhs_->Compile(sb, true_ec, false_ec));
   }
 

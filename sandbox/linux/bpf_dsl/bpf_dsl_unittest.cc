@@ -64,7 +64,7 @@ class BasicPolicy : public SandboxBPFDSLPolicy {
  public:
   BasicPolicy() {}
   virtual ~BasicPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_getpgid) {
       const Arg<pid_t> pid(0);
       return If(pid == 0, Error(EPERM)).Else(Error(EINVAL));
@@ -94,7 +94,7 @@ class BooleanLogicPolicy : public SandboxBPFDSLPolicy {
  public:
   BooleanLogicPolicy() {}
   virtual ~BooleanLogicPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_socketpair) {
       const Arg<int> domain(0), type(1), protocol(2);
       return If(domain == AF_UNIX &&
@@ -132,7 +132,7 @@ class MoreBooleanLogicPolicy : public SandboxBPFDSLPolicy {
  public:
   MoreBooleanLogicPolicy() {}
   virtual ~MoreBooleanLogicPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setresuid) {
       const Arg<uid_t> ruid(0), euid(1), suid(2);
       return If(ruid == 0 || euid == 0 || suid == 0, Error(EPERM))
@@ -169,7 +169,7 @@ class ArgSizePolicy : public SandboxBPFDSLPolicy {
  public:
   ArgSizePolicy() {}
   virtual ~ArgSizePolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_uname) {
       const Arg<uintptr_t> addr(0);
       return If(addr == kDeadBeefAddr, Error(EPERM)).Else(Allow());
@@ -192,7 +192,7 @@ class TrappingPolicy : public SandboxBPFDSLPolicy {
  public:
   TrappingPolicy() {}
   virtual ~TrappingPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_uname) {
       return Trap(UnameTrap, &count_);
     }
@@ -222,7 +222,7 @@ class MaskingPolicy : public SandboxBPFDSLPolicy {
  public:
   MaskingPolicy() {}
   virtual ~MaskingPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setuid) {
       const Arg<uid_t> uid(0);
       return If((uid & 0xf) == 0, Error(EINVAL)).Else(Error(EACCES));
@@ -263,7 +263,7 @@ class ElseIfPolicy : public SandboxBPFDSLPolicy {
  public:
   ElseIfPolicy() {}
   virtual ~ElseIfPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setuid) {
       const Arg<uid_t> uid(0);
       return If((uid & 0xfff) == 0, Error(0))
@@ -295,7 +295,7 @@ class SwitchPolicy : public SandboxBPFDSLPolicy {
  public:
   SwitchPolicy() {}
   virtual ~SwitchPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_fcntl) {
       const Arg<int> cmd(1);
       const Arg<unsigned long> long_arg(2);

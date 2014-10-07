@@ -110,7 +110,7 @@ class CopyAllArgsOnUnamePolicy : public SandboxBPFDSLPolicy {
   explicit CopyAllArgsOnUnamePolicy(std::vector<uint64_t>* aux) : aux_(aux) {}
   virtual ~CopyAllArgsOnUnamePolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_uname) {
       return Trap(CopySyscallArgsToAux, aux_);

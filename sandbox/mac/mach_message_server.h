@@ -33,16 +33,16 @@ class MachMessageServer : public MessageServer {
   virtual ~MachMessageServer();
 
   // MessageServer:
-  virtual bool Initialize() OVERRIDE;
-  virtual pid_t GetMessageSenderPID(IPCMessage request) OVERRIDE;
-  virtual IPCMessage CreateReply(IPCMessage request) OVERRIDE;
-  virtual bool SendReply(IPCMessage reply) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual pid_t GetMessageSenderPID(IPCMessage request) override;
+  virtual IPCMessage CreateReply(IPCMessage request) override;
+  virtual bool SendReply(IPCMessage reply) override;
   virtual void ForwardMessage(IPCMessage request,
-                              mach_port_t destination) OVERRIDE;
+                              mach_port_t destination) override;
   // Replies to the message with the specified |error_code| as a MIG
   // error_reply RetCode.
-  virtual void RejectMessage(IPCMessage request, int error_code) OVERRIDE;
-  virtual mach_port_t GetServerPort() const OVERRIDE;
+  virtual void RejectMessage(IPCMessage request, int error_code) override;
+  virtual mach_port_t GetServerPort() const override;
 
  private:
   // Event handler for the |server_source_| that reads a message from the queue

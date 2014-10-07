@@ -44,7 +44,7 @@ class RestrictClockIdPolicy : public SandboxBPFDSLPolicy {
   RestrictClockIdPolicy() {}
   virtual ~RestrictClockIdPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     switch (sysno) {
       case __NR_clock_gettime:
       case __NR_clock_getres:
@@ -91,11 +91,11 @@ class ClockSystemTesterDelegate : public sandbox::BPFTesterDelegate {
       : is_running_on_chromeos_(base::SysInfo::IsRunningOnChromeOS()) {}
   virtual ~ClockSystemTesterDelegate() {}
 
-  virtual scoped_ptr<sandbox::SandboxBPFPolicy> GetSandboxBPFPolicy() OVERRIDE {
+  virtual scoped_ptr<sandbox::SandboxBPFPolicy> GetSandboxBPFPolicy() override {
     return scoped_ptr<sandbox::SandboxBPFPolicy>(
         new RestrictClockIdPolicy());
   }
-  virtual void RunTestFunction() OVERRIDE {
+  virtual void RunTestFunction() override {
     if (is_running_on_chromeos_) {
       CheckClock(base::TimeTicks::kClockSystemTrace);
     } else {
@@ -148,7 +148,7 @@ class RestrictSchedPolicy : public SandboxBPFDSLPolicy {
   RestrictSchedPolicy() {}
   virtual ~RestrictSchedPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     switch (sysno) {
       case __NR_sched_getparam:
         return RestrictSchedTarget(getpid(), sysno);

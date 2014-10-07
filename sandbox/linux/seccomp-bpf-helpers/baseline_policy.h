@@ -30,8 +30,8 @@ class SANDBOX_EXPORT BaselinePolicy : public bpf_dsl::SandboxBPFDSLPolicy {
   virtual ~BaselinePolicy();
 
   virtual bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const OVERRIDE;
-  virtual bpf_dsl::ResultExpr InvalidSyscall() const OVERRIDE;
+      int system_call_number) const override;
+  virtual bpf_dsl::ResultExpr InvalidSyscall() const override;
   pid_t policy_pid() const { return policy_pid_; }
 
  private:

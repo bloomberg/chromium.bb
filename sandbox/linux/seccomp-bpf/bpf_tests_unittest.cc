@@ -47,7 +47,7 @@ class EmptyClassTakingPolicy : public SandboxBPFDSLPolicy {
   }
   virtual ~EmptyClassTakingPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     return Allow();
   }
@@ -91,7 +91,7 @@ class EnosysPtracePolicy : public SandboxBPFDSLPolicy {
     BPF_ASSERT_EQ(my_pid_, syscall(__NR_getpid));
   }
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const override {
     CHECK(SandboxBPF::IsValidSyscallNumber(system_call_number));
     if (system_call_number == __NR_ptrace) {
       // The EvaluateSyscall function should run in the process that created
@@ -113,10 +113,10 @@ class BasicBPFTesterDelegate : public BPFTesterDelegate {
   BasicBPFTesterDelegate() {}
   virtual ~BasicBPFTesterDelegate() {}
 
-  virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() OVERRIDE {
+  virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() override {
     return scoped_ptr<SandboxBPFPolicy>(new EnosysPtracePolicy());
   }
-  virtual void RunTestFunction() OVERRIDE {
+  virtual void RunTestFunction() override {
     errno = 0;
     int ret = ptrace(PTRACE_TRACEME, -1, NULL, NULL);
     BPF_ASSERT(-1 == ret);

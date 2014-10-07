@@ -39,7 +39,7 @@ class SandboxBPF;
 //       public:
 //        SillyPolicy() {}
 //        virtual ~SillyPolicy() {}
-//        virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+//        virtual ResultExpr EvaluateSyscall(int sysno) const override {
 //          if (sysno == __NR_fcntl) {
 //            Arg<int> fd(0), cmd(1);
 //            Arg<unsigned long> flags(2);
@@ -106,12 +106,12 @@ class SANDBOX_EXPORT SandboxBPFDSLPolicy : public SandboxBPFPolicy {
   // system calls.  The default is to return ENOSYS.
   virtual ResultExpr InvalidSyscall() const;
 
-  // Override implementations from SandboxBPFPolicy.  Marked as FINAL
+  // Override implementations from SandboxBPFPolicy.  Marked as final
   // to prevent mixups with child classes accidentally overloading
   // these instead of the above methods.
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sb,
-                                    int sysno) const OVERRIDE FINAL;
-  virtual ErrorCode InvalidSyscall(SandboxBPF* sb) const OVERRIDE FINAL;
+                                    int sysno) const override final;
+  virtual ErrorCode InvalidSyscall(SandboxBPF* sb) const override final;
 
   // Helper method so policies can just write Trap(func, aux).
   static ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);

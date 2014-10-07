@@ -45,9 +45,9 @@ class SandboxBPFTestRunner : public SandboxTestRunner {
   explicit SandboxBPFTestRunner(BPFTesterDelegate* bpf_tester_delegate);
   virtual ~SandboxBPFTestRunner();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
-  virtual bool ShouldCheckForLeaks() const OVERRIDE;
+  virtual bool ShouldCheckForLeaks() const override;
 
  private:
   scoped_ptr<BPFTesterDelegate> bpf_tester_delegate_;

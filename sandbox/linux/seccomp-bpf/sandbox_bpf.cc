@@ -102,7 +102,7 @@ class ProbePolicy : public SandboxBPFDSLPolicy {
   ProbePolicy() {}
   virtual ~ProbePolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int sysnum) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysnum) const override {
     switch (sysnum) {
       case __NR_getpid:
         // Return EPERM so that we can check that the filter actually ran.
@@ -131,7 +131,7 @@ class AllowAllPolicy : public SandboxBPFDSLPolicy {
   AllowAllPolicy() {}
   virtual ~AllowAllPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int sysnum) const OVERRIDE {
+  virtual ResultExpr EvaluateSyscall(int sysnum) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysnum));
     return Allow();
   }
@@ -237,7 +237,7 @@ class RedirectToUserSpacePolicyWrapper : public SandboxBPFPolicy {
   }
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE {
+                                    int system_call_number) const override {
     ErrorCode err =
         wrapped_policy_->EvaluateSyscall(sandbox_compiler, system_call_number);
     ChangeErrnoToTraps(&err, sandbox_compiler);
@@ -245,7 +245,7 @@ class RedirectToUserSpacePolicyWrapper : public SandboxBPFPolicy {
   }
 
   virtual ErrorCode InvalidSyscall(
-      SandboxBPF* sandbox_compiler) const OVERRIDE {
+      SandboxBPF* sandbox_compiler) const override {
     return ReturnErrnoViaTrap(sandbox_compiler, ENOSYS);
   }
 
