@@ -1820,8 +1820,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
+// Flaky on Linux: http://crbug.com/420979.
+#if defined(OS_LINUX)
+#define MAYBE_SingleClientEnabledEncryptionAndChanged \
+        DISABLED_SingleClientEnabledEncryptionAndChanged
+#else
+#define MAYBE_SingleClientEnabledEncryptionAndChanged \
+        SingleClientEnabledEncryptionAndChanged
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       SingleClientEnabledEncryptionAndChanged) {
+                       MAYBE_SingleClientEnabledEncryptionAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
