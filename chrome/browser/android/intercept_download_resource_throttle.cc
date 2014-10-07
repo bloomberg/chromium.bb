@@ -56,9 +56,9 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   // authenticate with the origin.
   if (request_->response_info().did_use_http_auth) {
     if (headers.HasHeader(net::HttpRequestHeaders::kAuthorization) ||
-        !(request_->response_info().headers &&
-            data_reduction_proxy::HasDataReductionProxyViaHeader(
-                request_->response_info().headers, NULL))) {
+        !(request_->response_info().headers.get() &&
+          data_reduction_proxy::HasDataReductionProxyViaHeader(
+              request_->response_info().headers.get(), NULL))) {
       return;
     }
   }
