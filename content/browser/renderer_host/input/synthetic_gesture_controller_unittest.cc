@@ -50,7 +50,7 @@ class MockSyntheticGesture : public SyntheticGesture {
   virtual ~MockSyntheticGesture() {}
 
   virtual Result ForwardInputEvents(const base::TimeTicks& timestamp,
-                                    SyntheticGestureTarget* target) OVERRIDE {
+                                    SyntheticGestureTarget* target) override {
     step_count_++;
     if (step_count_ == num_steps_) {
       *finished_ = true;
@@ -79,18 +79,18 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
 
   // SyntheticGestureTarget:
   virtual void DispatchInputEventToPlatform(
-      const WebInputEvent& event) OVERRIDE {}
+      const WebInputEvent& event) override {}
 
-  virtual void SetNeedsFlush() OVERRIDE {
+  virtual void SetNeedsFlush() override {
     flush_requested_ = true;
   }
 
   virtual SyntheticGestureParams::GestureSourceType
-  GetDefaultSyntheticGestureSourceType() const OVERRIDE {
+  GetDefaultSyntheticGestureSourceType() const override {
     return SyntheticGestureParams::TOUCH_INPUT;
   }
 
-  virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE {
+  virtual base::TimeDelta PointerAssumedStoppedTime() const override {
     return base::TimeDelta::FromMilliseconds(pointer_assumed_stopped_time_ms_);
   }
 
@@ -98,11 +98,11 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
     pointer_assumed_stopped_time_ms_ = time_ms;
   }
 
-  virtual float GetTouchSlopInDips() const OVERRIDE {
+  virtual float GetTouchSlopInDips() const override {
     return kTouchSlopInDips;
   }
 
-  virtual float GetMinScalingSpanInDips() const OVERRIDE {
+  virtual float GetMinScalingSpanInDips() const override {
     return kMinScalingSpanInDips;
   }
 
@@ -138,7 +138,7 @@ class MockScrollMouseTarget : public MockScrollGestureTarget {
   virtual ~MockScrollMouseTarget() {}
 
   virtual void DispatchInputEventToPlatform(
-      const WebInputEvent& event) OVERRIDE {
+      const WebInputEvent& event) override {
     ASSERT_EQ(event.type, WebInputEvent::MouseWheel);
     const WebMouseWheelEvent& mouse_wheel_event =
         static_cast<const WebMouseWheelEvent&>(event);
@@ -154,7 +154,7 @@ class MockScrollTouchTarget : public MockScrollGestureTarget {
   virtual ~MockScrollTouchTarget() {}
 
   virtual void DispatchInputEventToPlatform(
-      const WebInputEvent& event) OVERRIDE {
+      const WebInputEvent& event) override {
     ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     ASSERT_EQ(touch_event.touchesLength, 1U);
@@ -203,7 +203,7 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
   virtual ~MockSyntheticPinchTouchTarget() {}
 
   virtual void DispatchInputEventToPlatform(
-      const WebInputEvent& event) OVERRIDE {
+      const WebInputEvent& event) override {
     ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     ASSERT_EQ(touch_event.touchesLength, 2U);
@@ -303,7 +303,7 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
   virtual ~MockSyntheticTapTouchTarget() {}
 
   virtual void DispatchInputEventToPlatform(
-        const WebInputEvent& event) OVERRIDE {
+        const WebInputEvent& event) override {
     ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     ASSERT_EQ(touch_event.touchesLength, 1U);
@@ -336,7 +336,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
   virtual ~MockSyntheticTapMouseTarget() {}
 
   virtual void DispatchInputEventToPlatform(
-        const WebInputEvent& event) OVERRIDE {
+        const WebInputEvent& event) override {
     ASSERT_TRUE(WebInputEvent::isMouseEventType(event.type));
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
 
@@ -379,14 +379,14 @@ class SyntheticGestureControllerTest : public testing::Test {
         scoped_ptr<SyntheticGestureTarget>(target_)));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     start_time_ = base::TimeTicks::Now();
     time_ = start_time_;
     num_success_ = 0;
     num_failure_ = 0;
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     target_ = NULL;
     time_ = base::TimeTicks();

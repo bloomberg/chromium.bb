@@ -67,12 +67,12 @@ class AudioRendererHost::AudioEntry
 
  private:
   // media::AudioOutputController::EventHandler implementation.
-  virtual void OnCreated() OVERRIDE;
-  virtual void OnPlaying() OVERRIDE;
-  virtual void OnPaused() OVERRIDE;
-  virtual void OnError() OVERRIDE;
+  virtual void OnCreated() override;
+  virtual void OnPlaying() override;
+  virtual void OnPaused() override;
+  virtual void OnError() override;
   virtual void OnDeviceChange(int new_buffer_size, int new_sample_rate)
-      OVERRIDE;
+      override;
 
   AudioRendererHost* const host_;
   const int stream_id_;

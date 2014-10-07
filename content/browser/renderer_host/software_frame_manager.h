@@ -64,7 +64,7 @@ class CONTENT_EXPORT SoftwareFrameManager : public RendererFrameManagerClient {
  private:
   // Called by SoftwareFrameMemoryManager to demand that the current frame
   // be evicted.
-  virtual void EvictCurrentFrame() OVERRIDE;
+  virtual void EvictCurrentFrame() override;
 
   base::WeakPtr<SoftwareFrameManagerClient> client_;
 

@@ -100,13 +100,13 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                       DOMStorageContextWrapper* dom_storage_context);
 
   // IPC::MessageFilter methods:
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnChannelClosing() override;
 
   // BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnDestruct() const override;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
 
   bool OffTheRecord() const;
 

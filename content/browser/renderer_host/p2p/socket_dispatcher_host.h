@@ -39,12 +39,12 @@ class P2PSocketDispatcherHost
                           net::URLRequestContextGetter* url_context);
 
   // content::BrowserMessageFilter overrides.
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelClosing() override;
+  virtual void OnDestruct() const override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // net::NetworkChangeNotifier::IPAddressObserver interface.
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
   // Starts the RTP packet header dumping. Must be called on the IO thread.
   void StartRtpDump(

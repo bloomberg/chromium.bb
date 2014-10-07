@@ -26,26 +26,26 @@ class GestureTextSelectorTest : public testing::Test,
   virtual ~GestureTextSelectorTest() {}
 
   // Test implementation.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     selector_.reset(new GestureTextSelector(this));
     event_log_.clear();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     selector_.reset();
     event_log_.clear();
   }
 
   // GestureTextSelectorClient implementation.
-  virtual void ShowSelectionHandlesAutomatically() OVERRIDE {
+  virtual void ShowSelectionHandlesAutomatically() override {
     event_log_.push_back("Show");
   }
 
-  virtual void SelectRange(float x1, float y1, float x2, float y2) OVERRIDE {
+  virtual void SelectRange(float x1, float y1, float x2, float y2) override {
     event_log_.push_back("SelectRange");
   }
 
-  virtual void LongPress(base::TimeTicks time, float x, float y) OVERRIDE {
+  virtual void LongPress(base::TimeTicks time, float x, float y) override {
     event_log_.push_back("LongPress");
   }
 

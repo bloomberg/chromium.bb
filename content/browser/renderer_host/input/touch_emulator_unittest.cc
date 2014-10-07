@@ -46,7 +46,7 @@ class TouchEmulatorTest : public testing::Test,
   virtual ~TouchEmulatorTest() {}
 
   // testing::Test
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
 #if defined(USE_AURA)
     aura::Env::CreateInstance(true);
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
@@ -57,7 +57,7 @@ class TouchEmulatorTest : public testing::Test,
     emulator_->Enable();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     emulator_->Disable();
     EXPECT_EQ("", ExpectedEvents());
 
@@ -68,12 +68,12 @@ class TouchEmulatorTest : public testing::Test,
   }
 
   virtual void ForwardGestureEvent(
-      const blink::WebGestureEvent& event) OVERRIDE {
+      const blink::WebGestureEvent& event) override {
     forwarded_events_.push_back(event.type);
   }
 
   virtual void ForwardEmulatedTouchEvent(
-      const blink::WebTouchEvent& event) OVERRIDE {
+      const blink::WebTouchEvent& event) override {
     forwarded_events_.push_back(event.type);
     EXPECT_EQ(1U, event.touchesLength);
     EXPECT_EQ(last_mouse_x_, event.touches[0].position.x);
@@ -86,9 +86,9 @@ class TouchEmulatorTest : public testing::Test,
     }
   }
 
-  virtual void SetCursor(const WebCursor& cursor) OVERRIDE {}
+  virtual void SetCursor(const WebCursor& cursor) override {}
 
-  virtual void ShowContextMenuAtPoint(const gfx::Point& point) OVERRIDE {}
+  virtual void ShowContextMenuAtPoint(const gfx::Point& point) override {}
 
  protected:
   TouchEmulator* emulator() const {

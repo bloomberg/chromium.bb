@@ -29,7 +29,7 @@ class CONTENT_EXPORT PepperNetworkMonitorHost
   virtual ~PepperNetworkMonitorHost();
 
   // net::NetworkChangeNotifier::IPAddressObserver interface.
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
  private:
   void OnPermissionCheckResult(bool can_use_network_monitor);

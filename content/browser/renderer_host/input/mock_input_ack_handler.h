@@ -19,14 +19,14 @@ class MockInputAckHandler : public InputAckHandler {
 
   // InputAckHandler
   virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
-                                  InputEventAckState ack_result) OVERRIDE;
+                                  InputEventAckState ack_result) override;
   virtual void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                               InputEventAckState ack_result) OVERRIDE;
+                               InputEventAckState ack_result) override;
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                               InputEventAckState ack_result) OVERRIDE;
+                               InputEventAckState ack_result) override;
   virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                                 InputEventAckState ack_result) OVERRIDE;
-  virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) OVERRIDE;
+                                 InputEventAckState ack_result) override;
+  virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
 
   size_t GetAndResetAckCount();
 

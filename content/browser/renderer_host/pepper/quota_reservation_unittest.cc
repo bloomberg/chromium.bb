@@ -39,7 +39,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
       const GURL& origin,
       storage::FileSystemType type,
       int64 delta,
-      const QuotaReservationManager::ReserveQuotaCallback& callback) OVERRIDE {
+      const QuotaReservationManager::ReserveQuotaCallback& callback) override {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
@@ -47,16 +47,16 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   virtual void ReleaseReservedQuota(const GURL& origin,
                                     storage::FileSystemType type,
-                                    int64 size) OVERRIDE {}
+                                    int64 size) override {}
 
   virtual void CommitQuotaUsage(const GURL& origin,
                                 storage::FileSystemType type,
-                                int64 delta) OVERRIDE {}
+                                int64 delta) override {}
 
   virtual void IncrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) OVERRIDE {}
+                                   storage::FileSystemType type) override {}
   virtual void DecrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) OVERRIDE {}
+                                   storage::FileSystemType type) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeBackend);
@@ -69,14 +69,14 @@ class QuotaReservationTest : public testing::Test {
   QuotaReservationTest() {}
   virtual ~QuotaReservationTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
 
     reservation_manager_.reset(new QuotaReservationManager(
         scoped_ptr<QuotaReservationManager::QuotaBackend>(new FakeBackend)));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     reservation_manager_.reset();
     base::RunLoop().RunUntilIdle();
   }

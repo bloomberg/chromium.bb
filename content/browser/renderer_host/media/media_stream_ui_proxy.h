@@ -99,14 +99,14 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   // MediaStreamUIProxy overrides.
   virtual void RequestAccess(
       const MediaStreamRequest& request,
-      const ResponseCallback& response_callback) OVERRIDE;
+      const ResponseCallback& response_callback) override;
   virtual void CheckAccess(const GURL& security_origin,
                            MediaStreamType type,
                            int render_process_id,
                            int render_frame_id,
-                           const base::Callback<void(bool)>& callback) OVERRIDE;
+                           const base::Callback<void(bool)>& callback) override;
   virtual void OnStarted(const base::Closure& stop_callback,
-                         const WindowIdCallback& window_id_callback) OVERRIDE;
+                         const WindowIdCallback& window_id_callback) override;
 
  private:
   // This is used for RequestAccess().

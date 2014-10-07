@@ -38,7 +38,7 @@ class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
 
   virtual void DidNavigateMainFrame(
       const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) OVERRIDE {
+      const FrameNavigateParams& params) override {
     observed_socket_address_ = params.socket_address;
     base_url_ = params.base_url;
     ++navigation_count_;

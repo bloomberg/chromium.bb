@@ -28,11 +28,11 @@ class CompositorResizeLock : public ResizeLock {
                        const base::TimeDelta& timeout);
   virtual ~CompositorResizeLock();
 
-  virtual bool GrabDeferredLock() OVERRIDE;
-  virtual void UnlockCompositor() OVERRIDE;
+  virtual bool GrabDeferredLock() override;
+  virtual void UnlockCompositor() override;
 
  protected:
-  virtual void LockCompositor() OVERRIDE;
+  virtual void LockCompositor() override;
   void CancelLock();
 
  private:

@@ -43,7 +43,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // ppapi::host::ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   struct UIThreadStuff {
     UIThreadStuff();

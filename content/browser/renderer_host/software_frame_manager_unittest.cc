@@ -26,10 +26,10 @@ class FakeSoftwareFrameManagerClient : public SoftwareFrameManagerClient {
         base::GetCurrentProcessHandle());
   }
   virtual void SoftwareFrameWasFreed(uint32 output_surface_id,
-                                     unsigned frame_id) OVERRIDE {
+                                     unsigned frame_id) override {
     freed_frames_.push_back(std::make_pair(output_surface_id, frame_id));
   }
-  virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE {
+  virtual void ReleaseReferencesToSoftwareFrame() override {
     ++evicted_count_;
   }
 

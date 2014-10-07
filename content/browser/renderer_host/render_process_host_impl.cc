@@ -322,14 +322,14 @@ class RendererSandboxedProcessLauncherDelegate
   }
 
 #elif defined(OS_POSIX)
-  virtual bool ShouldUseZygote() OVERRIDE {
+  virtual bool ShouldUseZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringType renderer_prefix =
         browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
     return renderer_prefix.empty();
   }
-  virtual int GetIpcFd() OVERRIDE {
+  virtual int GetIpcFd() override {
     return ipc_fd_;
   }
 #endif  // OS_WIN

@@ -20,7 +20,7 @@ class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
 
   virtual SyntheticGesture::Result ForwardInputEvents(
       const base::TimeTicks& timestamp,
-      SyntheticGestureTarget* target) OVERRIDE;
+      SyntheticGestureTarget* target) override;
 
  private:
   enum GestureState {

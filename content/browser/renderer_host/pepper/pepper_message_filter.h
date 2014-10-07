@@ -24,7 +24,7 @@ class PepperMessageFilter : public BrowserMessageFilter {
   PepperMessageFilter();
 
   // BrowserMessageFilter methods.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~PepperMessageFilter();

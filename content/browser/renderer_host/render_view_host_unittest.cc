@@ -31,7 +31,7 @@ class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
   RenderViewHostTestBrowserClient() {}
   virtual ~RenderViewHostTestBrowserClient() {}
 
-  virtual bool IsHandledURL(const GURL& url) OVERRIDE {
+  virtual bool IsHandledURL(const GURL& url) override {
     return url.scheme() == url::kFileScheme;
   }
 
@@ -44,12 +44,12 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
   RenderViewHostTest() : old_browser_client_(NULL) {}
   virtual ~RenderViewHostTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     SetBrowserClientForTesting(old_browser_client_);
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -124,13 +124,13 @@ class MockDraggingRenderViewHostDelegateView
                              blink::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
-                             const DragEventSourceInfo& event_info) OVERRIDE {
+                             const DragEventSourceInfo& event_info) override {
     drag_url_ = drop_data.url;
     html_base_url_ = drop_data.html_base_url;
   }
-  virtual void UpdateDragCursor(blink::WebDragOperation operation) OVERRIDE {}
-  virtual void GotFocus() OVERRIDE {}
-  virtual void TakeFocus(bool reverse) OVERRIDE {}
+  virtual void UpdateDragCursor(blink::WebDragOperation operation) override {}
+  virtual void GotFocus() override {}
+  virtual void TakeFocus(bool reverse) override {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   GURL drag_url() {
@@ -287,7 +287,7 @@ class TestSaveImageFromDataURL : public RenderMessageFilter {
                            const GURL& url,
                            const Referrer& referrer,
                            const base::string16& suggested_name,
-                           const bool use_prompt) const OVERRIDE {
+                           const bool use_prompt) const override {
     url_string_ = url.spec();
     is_downloaded_ = true;
   }

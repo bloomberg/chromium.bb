@@ -62,10 +62,10 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
   virtual ~SyncPointClientImpl() {}
-  virtual uint32 InsertSyncPoint() OVERRIDE {
+  virtual uint32 InsertSyncPoint() override {
     return gl_helper_->InsertSyncPoint();
   }
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+  virtual void WaitSyncPoint(uint32 sync_point) override {
     gl_helper_->WaitSyncPoint(sync_point);
   }
 
@@ -161,19 +161,19 @@ class VideoCaptureController::VideoCaptureDeviceClient
   // VideoCaptureDevice::Client implementation.
   virtual scoped_refptr<Buffer> ReserveOutputBuffer(
       media::VideoFrame::Format format,
-      const gfx::Size& size) OVERRIDE;
+      const gfx::Size& size) override;
   virtual void OnIncomingCapturedData(const uint8* data,
                                       int length,
                                       const VideoCaptureFormat& frame_format,
                                       int rotation,
-                                      base::TimeTicks timestamp) OVERRIDE;
+                                      base::TimeTicks timestamp) override;
   virtual void OnIncomingCapturedVideoFrame(
       const scoped_refptr<Buffer>& buffer,
       const VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks timestamp) OVERRIDE;
-  virtual void OnError(const std::string& reason) OVERRIDE;
-  virtual void OnLog(const std::string& message) OVERRIDE;
+      base::TimeTicks timestamp) override;
+  virtual void OnError(const std::string& reason) override;
+  virtual void OnLog(const std::string& message) override;
 
  private:
   scoped_refptr<Buffer> DoReserveOutputBuffer(media::VideoFrame::Format format,

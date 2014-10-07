@@ -133,7 +133,7 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
   }
 
   // RenderWidgetHostIterator:
-  virtual RenderWidgetHost* GetNextHost() OVERRIDE {
+  virtual RenderWidgetHost* GetNextHost() override {
     RenderWidgetHost* host = NULL;
     while (current_index_ < hosts_.size() && !host) {
       RenderWidgetHostID id = hosts_[current_index_];

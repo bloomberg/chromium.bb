@@ -37,7 +37,7 @@ class GpuMessageFilter : public BrowserMessageFilter {
                    RenderWidgetHelper* render_widget_helper);
 
   // BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // This set of API is used to subscribe to frame presentation events.
   // See RenderWidgetHostViewFrameSubscriber for more details.

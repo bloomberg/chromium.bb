@@ -15,7 +15,7 @@ class MemoryBenchmarkMessageFilter : public BrowserMessageFilter {
  public:
   MemoryBenchmarkMessageFilter();
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
  private:
   virtual ~MemoryBenchmarkMessageFilter();
 

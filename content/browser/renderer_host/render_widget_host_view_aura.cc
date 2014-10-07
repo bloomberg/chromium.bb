@@ -357,11 +357,11 @@ class RenderWidgetHostViewAura::EventFilterForPopupExit
   }
 
   // Overridden from ui::EventHandler
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     rwhva_->ApplyEventFilterForPopupExit(event);
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     rwhva_->ApplyEventFilterForPopupExit(event);
   }
 
@@ -408,13 +408,13 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
   }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) override {
     if (window == view_->window_)
       view_->AddedToRootWindow();
   }
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) OVERRIDE {
+                                              aura::Window* new_root) override {
     if (window == view_->window_)
       view_->RemovingFromRootWindow();
   }

@@ -182,7 +182,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     CHECK(message);
 
     // In this method we dispatch the messages to the according handlers as if
@@ -287,7 +287,7 @@ class VideoCaptureHostTest : public testing::Test {
         message_loop_(base::MessageLoopProxy::current()),
         opened_session_id_(kInvalidMediaCaptureSessionId) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     SetBrowserClientForTesting(&browser_client_);
 
 #if defined(OS_CHROMEOS)
@@ -310,7 +310,7 @@ class VideoCaptureHostTest : public testing::Test {
     OpenSession();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Verifies and removes the expectations on host_ and
     // returns true iff successful.
     Mock::VerifyAndClearExpectations(host_.get());

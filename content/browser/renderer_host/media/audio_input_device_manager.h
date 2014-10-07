@@ -47,11 +47,11 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // MediaStreamProvider implementation, called on IO thread.
   virtual void Register(MediaStreamProviderListener* listener,
                         const scoped_refptr<base::SingleThreadTaskRunner>&
-                            device_task_runner) OVERRIDE;
-  virtual void Unregister() OVERRIDE;
-  virtual void EnumerateDevices(MediaStreamType stream_type) OVERRIDE;
-  virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
-  virtual void Close(int session_id) OVERRIDE;
+                            device_task_runner) override;
+  virtual void Unregister() override;
+  virtual void EnumerateDevices(MediaStreamType stream_type) override;
+  virtual int Open(const StreamDeviceInfo& device) override;
+  virtual void Close(int session_id) override;
 
   void UseFakeDevice();
   bool ShouldUseFakeDevice() const;

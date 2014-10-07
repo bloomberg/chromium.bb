@@ -58,7 +58,7 @@ class MockAudioManager : public AudioManagerPlatform {
   virtual ~MockAudioManager() {}
 
   virtual void GetAudioInputDeviceNames(
-      media::AudioDeviceNames* device_names) OVERRIDE {
+      media::AudioDeviceNames* device_names) override {
     DCHECK(device_names->empty());
     if (HasAudioInputDevices()) {
       AudioManagerBase::GetAudioInputDeviceNames(device_names);

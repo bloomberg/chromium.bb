@@ -34,27 +34,27 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
   virtual void StreamGenerated(
       int render_frame_id, int page_request_id, const std::string& label,
       const StreamDeviceInfoArray& audio_devices,
-      const StreamDeviceInfoArray& video_devices) OVERRIDE {}
+      const StreamDeviceInfoArray& video_devices) override {}
   virtual void StreamGenerationFailed(
       int render_frame_id,
       int page_request_id,
-      content::MediaStreamRequestResult result) OVERRIDE {}
+      content::MediaStreamRequestResult result) override {}
   virtual void DeviceStopped(int render_frame_id,
                              const std::string& label,
-                             const StreamDeviceInfo& device) OVERRIDE {}
+                             const StreamDeviceInfo& device) override {}
   virtual void DeviceOpened(int render_frame_id,
                             int page_request_id,
                             const std::string& label,
-                            const StreamDeviceInfo& video_device) OVERRIDE {}
+                            const StreamDeviceInfo& video_device) override {}
   // DevicesEnumerated() is the only callback we're interested in.
   virtual void DevicesEnumerated(int render_frame_id,
                                  int page_request_id,
                                  const std::string& label,
-                                 const StreamDeviceInfoArray& devices) OVERRIDE;
+                                 const StreamDeviceInfoArray& devices) override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelClosing() override;
 
  protected:
   virtual ~DeviceRequestMessageFilter();

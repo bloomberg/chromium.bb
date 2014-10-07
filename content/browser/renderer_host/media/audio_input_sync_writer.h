@@ -35,11 +35,11 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
   virtual ~AudioInputSyncWriter();
 
   // media::AudioInputController::SyncWriter implementation.
-  virtual void UpdateRecordedBytes(uint32 bytes) OVERRIDE;
+  virtual void UpdateRecordedBytes(uint32 bytes) override;
   virtual void Write(const media::AudioBus* data,
                      double volume,
-                     bool key_pressed) OVERRIDE;
-  virtual void Close() OVERRIDE;
+                     bool key_pressed) override;
+  virtual void Close() override;
 
   bool Init();
   bool PrepareForeignSocket(base::ProcessHandle process_handle,

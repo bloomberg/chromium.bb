@@ -30,7 +30,7 @@ class MediaStreamDeviceUIControllerTest
       const std::string&, const StreamDeviceInfoArray&));
   MOCK_METHOD1(SettingsError, void(const std::string&));
   MOCK_METHOD1(StopStreamFromUI, void(const std::string&));
-  void GetAvailableDevices(MediaStreamDevices* devices) OVERRIDE {
+  void GetAvailableDevices(MediaStreamDevices* devices) override {
     devices->push_back(MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE,
                                          "mic",
                                          "mic_id",

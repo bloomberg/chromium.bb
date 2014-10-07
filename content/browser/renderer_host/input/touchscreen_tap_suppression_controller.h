@@ -37,8 +37,8 @@ class TouchscreenTapSuppressionController
 
  private:
   // TapSuppressionControllerClient implementation.
-  virtual void DropStashedTapDown() OVERRIDE;
-  virtual void ForwardStashedTapDown() OVERRIDE;
+  virtual void DropStashedTapDown() override;
+  virtual void ForwardStashedTapDown() override;
 
   GestureEventQueue* gesture_event_queue_;
 

@@ -61,7 +61,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
         callback_invoke_count_(0),
         frames_captured_(0) {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
   }
 
@@ -207,7 +207,7 @@ class CompositingRenderWidgetHostViewBrowserTest
   explicit CompositingRenderWidgetHostViewBrowserTest()
       : compositing_mode_(GetParam()) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     if (compositing_mode_ == SOFTWARE_COMPOSITING)
       UseSoftwareCompositing();
     RenderWidgetHostViewBrowserTest::SetUp();
@@ -218,7 +218,7 @@ class CompositingRenderWidgetHostViewBrowserTest
         test_dir().AppendASCII("rwhv_compositing_animation.html"));
   }
 
-  virtual bool SetUpSourceSurface(const char* wait_message) OVERRIDE {
+  virtual bool SetUpSourceSurface(const char* wait_message) override {
     content::DOMMessageQueue message_queue;
     NavigateToURL(shell(), TestUrl());
     if (wait_message != NULL) {
@@ -250,7 +250,7 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   virtual bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
                                   base::TimeTicks present_time,
                                   scoped_refptr<media::VideoFrame>* storage,
-                                  DeliverFrameCallback* callback) OVERRIDE {
+                                  DeliverFrameCallback* callback) override {
     // Only allow one frame capture to be made.  Otherwise, the compositor could
     // start multiple captures, unbounded, and eventually its own limiter logic
     // will begin invoking |callback| with a |false| result.  This flakes out
@@ -408,7 +408,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         allowable_error_(0),
         test_url_("data:text/html,<!doctype html>") {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EnablePixelOutput();
     CompositingRenderWidgetHostViewBrowserTest::SetUp();
   }
@@ -505,7 +505,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   void SetAllowableError(int amount) { allowable_error_ = amount; }
   void SetExcludeRect(gfx::Rect exclude) { exclude_rect_ = exclude; }
 
-  virtual GURL TestUrl() OVERRIDE {
+  virtual GURL TestUrl() override {
     return GURL(test_url_);
   }
 
@@ -754,13 +754,13 @@ class CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI
   CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI() {}
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* cmd) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* cmd) override {
     CompositingRenderWidgetHostViewBrowserTestTabCapture::SetUpCommandLine(cmd);
     cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                            base::StringPrintf("%f", scale()));
   }
 
-  virtual bool ShouldContinueAfterTestURLLoad() OVERRIDE {
+  virtual bool ShouldContinueAfterTestURLLoad() override {
     // Short-circuit a pass for platforms where setting up high-DPI fails.
     const float actual_scale_factor =
         GetScaleFactorForView(GetRenderWidgetHostView());

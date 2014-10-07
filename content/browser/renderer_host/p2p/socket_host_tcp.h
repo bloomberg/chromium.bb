@@ -39,14 +39,14 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   // P2PSocketHost overrides.
   virtual bool Init(const net::IPEndPoint& local_address,
-                    const P2PHostAndIPEndPoint& remote_address) OVERRIDE;
+                    const P2PHostAndIPEndPoint& remote_address) override;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
                     const rtc::PacketOptions& options,
-                    uint64 packet_id) OVERRIDE;
+                    uint64 packet_id) override;
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
-      const net::IPEndPoint& remote_address, int id) OVERRIDE;
-  virtual bool SetOption(P2PSocketOption option, int value) OVERRIDE;
+      const net::IPEndPoint& remote_address, int id) override;
+  virtual bool SetOption(P2PSocketOption option, int value) override;
 
  protected:
   // Derived classes will provide the implementation.
@@ -107,10 +107,10 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
   virtual ~P2PSocketHostTcp();
 
  protected:
-  virtual int ProcessInput(char* input, int input_len) OVERRIDE;
+  virtual int ProcessInput(char* input, int input_len) override;
   virtual void DoSend(const net::IPEndPoint& to,
                       const std::vector<char>& data,
-                      const rtc::PacketOptions& options) OVERRIDE;
+                      const rtc::PacketOptions& options) override;
  private:
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcp);
 };
@@ -129,10 +129,10 @@ class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
   virtual ~P2PSocketHostStunTcp();
 
  protected:
-  virtual int ProcessInput(char* input, int input_len) OVERRIDE;
+  virtual int ProcessInput(char* input, int input_len) override;
   virtual void DoSend(const net::IPEndPoint& to,
                       const std::vector<char>& data,
-                      const rtc::PacketOptions& options) OVERRIDE;
+                      const rtc::PacketOptions& options) override;
  private:
   int GetExpectedPacketSize(const char* data, int len, int* pad_bytes);
 

@@ -53,23 +53,23 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD1(DoEnded, void(const VideoCaptureControllerID&));
   MOCK_METHOD1(DoError, void(const VideoCaptureControllerID&));
 
-  virtual void OnError(const VideoCaptureControllerID& id) OVERRIDE {
+  virtual void OnError(const VideoCaptureControllerID& id) override {
     DoError(id);
   }
   virtual void OnBufferCreated(const VideoCaptureControllerID& id,
                                base::SharedMemoryHandle handle,
-                               int length, int buffer_id) OVERRIDE {
+                               int length, int buffer_id) override {
     DoBufferCreated(id);
   }
   virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
-                                 int buffer_id) OVERRIDE {
+                                 int buffer_id) override {
     DoBufferDestroyed(id);
   }
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
                              const media::VideoCaptureFormat& format,
                              const gfx::Rect& visible_rect,
-                             base::TimeTicks timestamp) OVERRIDE {
+                             base::TimeTicks timestamp) override {
     DoBufferReady(id);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -84,7 +84,7 @@ class MockVideoCaptureControllerEventHandler
                                     int buffer_id,
                                     const gpu::MailboxHolder& mailbox_holder,
                                     const media::VideoCaptureFormat& format,
-                                    base::TimeTicks timestamp) OVERRIDE {
+                                    base::TimeTicks timestamp) override {
     DoMailboxBufferReady(id);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -95,7 +95,7 @@ class MockVideoCaptureControllerEventHandler
                    buffer_id,
                    mailbox_holder.sync_point));
   }
-  virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {
+  virtual void OnEnded(const VideoCaptureControllerID& id) override {
     DoEnded(id);
     // OnEnded() must respond by (eventually) unregistering the client.
     base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -115,7 +115,7 @@ class VideoCaptureControllerTest : public testing::Test {
  protected:
   static const int kPoolSize = 3;
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     controller_.reset(new VideoCaptureController(kPoolSize));
     device_ = controller_->NewDeviceClient().Pass();
     client_a_.reset(new MockVideoCaptureControllerEventHandler(
@@ -124,7 +124,7 @@ class VideoCaptureControllerTest : public testing::Test {
         controller_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     base::RunLoop().RunUntilIdle();
   }
 

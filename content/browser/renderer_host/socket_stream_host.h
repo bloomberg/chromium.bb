@@ -59,8 +59,8 @@ class SocketStreamHost : public SSLErrorHandler::Delegate {
 
   // SSLErrorHandler::Delegate methods:
   virtual void CancelSSLRequest(int error,
-                                const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest() OVERRIDE;
+                                const net::SSLInfo* ssl_info) override;
+  virtual void ContinueSSLRequest() override;
 
  private:
   net::SocketStream::Delegate* delegate_;

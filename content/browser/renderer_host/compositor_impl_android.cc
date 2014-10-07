@@ -65,7 +65,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     main_thread_ = base::MessageLoopProxy::current();
   }
 
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
+  virtual void SwapBuffers(cc::CompositorFrame* frame) override {
     for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
       frame->metadata.latency_info[i].AddLatencyNumber(
           ui::INPUT_EVENT_BROWSER_SWAP_BUFFER_COMPONENT, 0, 0);
@@ -82,7 +82,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     OutputSurface::SwapBuffers(frame);
   }
 
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE {
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
 
@@ -108,7 +108,7 @@ class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
   // Overridden from gfx::SurfaceTextureTracker:
   virtual scoped_refptr<gfx::SurfaceTexture> AcquireSurfaceTexture(
       int primary_id,
-      int secondary_id) OVERRIDE {
+      int secondary_id) override {
     base::AutoLock lock(surface_textures_lock_);
     SurfaceTextureMapKey key(primary_id, secondary_id);
     SurfaceTextureMap::iterator it = surface_textures_.find(key);

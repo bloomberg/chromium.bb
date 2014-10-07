@@ -36,7 +36,7 @@ class CONTENT_EXPORT PepperPrintSettingsManagerImpl
 
   // PepperPrintSettingsManager implementation.
   virtual void GetDefaultPrintSettings(
-      PepperPrintSettingsManager::Callback callback) OVERRIDE;
+      PepperPrintSettingsManager::Callback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperPrintSettingsManagerImpl);

@@ -32,7 +32,7 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
       ppapi::host::PpapiHost* host,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,
-      const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
 
   // Creates ResourceHost for already accepted TCP |socket|. In the case of
   // failure returns wrapped NULL.

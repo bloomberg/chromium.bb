@@ -31,7 +31,7 @@ class CONTENT_EXPORT DelegatedFrameEvictor : public RendererFrameManagerClient {
 
  private:
   // RendererFrameManagerClient implementation.
-  virtual void EvictCurrentFrame() OVERRIDE;
+  virtual void EvictCurrentFrame() override;
 
   DelegatedFrameEvictorClient* client_;
   bool has_frame_;

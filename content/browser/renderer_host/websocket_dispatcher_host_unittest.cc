@@ -37,12 +37,12 @@ class MockWebSocketHost : public WebSocketHost {
 
   virtual ~MockWebSocketHost() {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     received_messages_.push_back(message);
     return true;
   }
 
-  virtual void GoAway() OVERRIDE;
+  virtual void GoAway() override;
 
   std::vector<IPC::Message> received_messages_;
   base::WeakPtr<WebSocketDispatcherHostTest> owner_;

@@ -45,20 +45,20 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   virtual ~BrowserPpapiHostImpl();
 
   // BrowserPpapiHost.
-  virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
-  virtual base::ProcessHandle GetPluginProcessHandle() const OVERRIDE;
-  virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
+  virtual ppapi::host::PpapiHost* GetPpapiHost() override;
+  virtual base::ProcessHandle GetPluginProcessHandle() const override;
+  virtual bool IsValidInstance(PP_Instance instance) const override;
   virtual bool GetRenderFrameIDsForInstance(PP_Instance instance,
                                             int* render_process_id,
                                             int* render_frame_id) const
-      OVERRIDE;
-  virtual const std::string& GetPluginName() OVERRIDE;
-  virtual const base::FilePath& GetPluginPath() OVERRIDE;
-  virtual const base::FilePath& GetProfileDataDirectory() OVERRIDE;
-  virtual GURL GetDocumentURLForInstance(PP_Instance instance) OVERRIDE;
-  virtual GURL GetPluginURLForInstance(PP_Instance instance) OVERRIDE;
+      override;
+  virtual const std::string& GetPluginName() override;
+  virtual const base::FilePath& GetPluginPath() override;
+  virtual const base::FilePath& GetProfileDataDirectory() override;
+  virtual GURL GetDocumentURLForInstance(PP_Instance instance) override;
+  virtual GURL GetPluginURLForInstance(PP_Instance instance) override;
   virtual void SetOnKeepaliveCallback(
-      const BrowserPpapiHost::OnKeepaliveCallback& callback) OVERRIDE;
+      const BrowserPpapiHost::OnKeepaliveCallback& callback) override;
 
   void set_plugin_process_handle(base::ProcessHandle handle) {
     plugin_process_handle_ = handle;
@@ -93,7 +93,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
                       BrowserPpapiHostImpl* browser_ppapi_host_impl);
 
     // IPC::MessageFilter.
-    virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+    virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
     void OnHostDestroyed();
 

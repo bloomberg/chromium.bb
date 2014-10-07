@@ -33,7 +33,7 @@ class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
   virtual ~WebRTCIdentityServiceHost();
 
   // content::BrowserMessageFilter override.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // |sequence_number| is the same as in the OnRequestIdentity call.

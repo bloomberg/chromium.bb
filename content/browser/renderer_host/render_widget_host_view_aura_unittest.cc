@@ -77,23 +77,23 @@ class TestScreenPositionClient
 
   // aura::client::ScreenPositionClient overrides:
   virtual void ConvertPointToScreen(const aura::Window* window,
-      gfx::Point* point) OVERRIDE {
+      gfx::Point* point) override {
     point->Offset(-1, -1);
   }
 
   virtual void ConvertPointFromScreen(const aura::Window* window,
-      gfx::Point* point) OVERRIDE {
+      gfx::Point* point) override {
     point->Offset(1, 1);
   }
 
   virtual void ConvertHostPointToScreen(aura::Window* window,
-      gfx::Point* point) OVERRIDE {
+      gfx::Point* point) override {
     ConvertPointToScreen(window, point);
   }
 
   virtual void SetBounds(aura::Window* window,
       const gfx::Rect& bounds,
-      const gfx::Display& display) OVERRIDE {
+      const gfx::Display& display) override {
   }
 };
 
@@ -121,24 +121,24 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
  private:
   // Overridden from OverscrollControllerDelegate:
-  virtual gfx::Rect GetVisibleBounds() const OVERRIDE {
+  virtual gfx::Rect GetVisibleBounds() const override {
     return view_->IsShowing() ? view_->GetViewBounds() : gfx::Rect();
   }
 
-  virtual bool OnOverscrollUpdate(float delta_x, float delta_y) OVERRIDE {
+  virtual bool OnOverscrollUpdate(float delta_x, float delta_y) override {
     delta_x_ = delta_x;
     delta_y_ = delta_y;
     return true;
   }
 
-  virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) OVERRIDE {
+  virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) override {
     EXPECT_EQ(current_mode_, overscroll_mode);
     completed_mode_ = overscroll_mode;
     current_mode_ = OVERSCROLL_NONE;
   }
 
   virtual void OnOverscrollModeChange(OverscrollMode old_mode,
-                                      OverscrollMode new_mode) OVERRIDE {
+                                      OverscrollMode new_mode) override {
     EXPECT_EQ(current_mode_, old_mode);
     current_mode_ = new_mode;
     delta_x_ = delta_y_ = 0.f;
@@ -174,7 +174,7 @@ class TestWindowObserver : public aura::WindowObserver {
   bool destroyed() const { return destroyed_; }
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(aura::Window* window) override {
     CHECK_EQ(window, window_);
     destroyed_ = true;
     window_ = NULL;
@@ -198,7 +198,7 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   virtual bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
                                   base::TimeTicks present_time,
                                   scoped_refptr<media::VideoFrame>* storage,
-                                  DeliverFrameCallback* callback) OVERRIDE {
+                                  DeliverFrameCallback* callback) override {
     *storage = media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                               size_,
                                               gfx::Rect(size_),
@@ -227,7 +227,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   virtual ~FakeRenderWidgetHostViewAura() {}
 
   virtual scoped_ptr<ResizeLock> CreateResizeLock(
-      bool defer_compositor_lock) OVERRIDE {
+      bool defer_compositor_lock) override {
     gfx::Size desired_size = window()->bounds().size();
     return scoped_ptr<ResizeLock>(
         new FakeResizeLock(desired_size, defer_compositor_lock));
@@ -238,12 +238,12 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         window()->GetHost()->compositor());
   }
 
-  virtual bool ShouldCreateResizeLock() OVERRIDE {
+  virtual bool ShouldCreateResizeLock() override {
     return GetDelegatedFrameHost()->ShouldCreateResizeLockForTesting();
   }
 
   virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request)
-      OVERRIDE {
+      override {
     last_copy_request_ = request.Pass();
     if (last_copy_request_->has_texture_mailbox()) {
       // Give the resulting texture a size.
@@ -292,21 +292,21 @@ class FullscreenLayoutManager : public aura::LayoutManager {
   virtual ~FullscreenLayoutManager() {}
 
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() OVERRIDE {
+  virtual void OnWindowResized() override {
     aura::Window::Windows::const_iterator i;
     for (i = owner_->children().begin(); i != owner_->children().end(); ++i) {
       (*i)->SetBounds(gfx::Rect());
     }
   }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+  virtual void OnWindowAddedToLayout(aura::Window* child) override {
     child->SetBounds(gfx::Rect());
   }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {}
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {}
+                                              bool visible) override {}
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
+                              const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, gfx::Rect(owner_->bounds().size()));
   }
 
@@ -627,7 +627,7 @@ class RenderWidgetHostViewAuraShutdownTest
  public:
   RenderWidgetHostViewAuraShutdownTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // No TearDownEnvironment here, we do this explicitly during the test.
   }
 

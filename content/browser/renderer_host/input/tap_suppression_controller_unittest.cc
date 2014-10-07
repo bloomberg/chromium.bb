@@ -89,26 +89,26 @@ class MockTapSuppressionController : public TapSuppressionController,
   int last_actions() { return last_actions_; }
 
  protected:
-  virtual base::TimeTicks Now() OVERRIDE {
+  virtual base::TimeTicks Now() override {
     return time_;
   }
 
-  virtual void StartTapDownTimer(const base::TimeDelta& delay) OVERRIDE {
+  virtual void StartTapDownTimer(const base::TimeDelta& delay) override {
     timer_expiry_time_ = time_ + delay;
     timer_started_ = true;
   }
 
-  virtual void StopTapDownTimer() OVERRIDE {
+  virtual void StopTapDownTimer() override {
     timer_started_ = false;
   }
 
  private:
   // TapSuppressionControllerClient implementation
-  virtual void DropStashedTapDown() OVERRIDE {
+  virtual void DropStashedTapDown() override {
     last_actions_ |= TAP_DOWN_DROPPED;
   }
 
-  virtual void ForwardStashedTapDown() OVERRIDE {
+  virtual void ForwardStashedTapDown() override {
     last_actions_ |= STASHED_TAP_DOWN_FORWARDED;
   }
 

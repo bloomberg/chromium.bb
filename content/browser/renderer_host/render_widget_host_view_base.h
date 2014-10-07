@@ -70,21 +70,21 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual ~RenderWidgetHostViewBase();
 
   // RenderWidgetHostView implementation.
-  virtual void SetBackgroundOpaque(bool opaque) OVERRIDE;
-  virtual bool GetBackgroundOpaque() OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
-  virtual bool IsShowingContextMenu() const OVERRIDE;
-  virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
-  virtual base::string16 GetSelectedText() const OVERRIDE;
-  virtual bool IsMouseLocked() OVERRIDE;
-  virtual gfx::Size GetVisibleViewportSize() const OVERRIDE;
-  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
+  virtual void SetBackgroundOpaque(bool opaque) override;
+  virtual bool GetBackgroundOpaque() override;
+  virtual ui::TextInputClient* GetTextInputClient() override;
+  virtual bool IsShowingContextMenu() const override;
+  virtual void SetShowingContextMenu(bool showing_menu) override;
+  virtual base::string16 GetSelectedText() const override;
+  virtual bool IsMouseLocked() override;
+  virtual gfx::Size GetVisibleViewportSize() const override;
+  virtual void SetInsets(const gfx::Insets& insets) override;
   virtual void BeginFrameSubscription(
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;
-  virtual void EndFrameSubscription() OVERRIDE;
+      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
+  virtual void EndFrameSubscription() override;
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Called by the host when the input flush has completed.
   void OnDidFlushInput();

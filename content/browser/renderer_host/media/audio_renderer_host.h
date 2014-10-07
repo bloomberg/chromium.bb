@@ -81,9 +81,9 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
       const RenderViewHost::GetAudioOutputControllersCallback& callback) const;
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelClosing() override;
+  virtual void OnDestruct() const override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Returns true if any streams managed by this host are actively playing.  Can
   // be called from any thread.

@@ -46,15 +46,15 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Implements MediaStreamProvider.
   virtual void Register(MediaStreamProviderListener* listener,
                         const scoped_refptr<base::SingleThreadTaskRunner>&
-                            device_task_runner) OVERRIDE;
+                            device_task_runner) override;
 
-  virtual void Unregister() OVERRIDE;
+  virtual void Unregister() override;
 
-  virtual void EnumerateDevices(MediaStreamType stream_type) OVERRIDE;
+  virtual void EnumerateDevices(MediaStreamType stream_type) override;
 
-  virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
+  virtual int Open(const StreamDeviceInfo& device) override;
 
-  virtual void Close(int capture_session_id) OVERRIDE;
+  virtual void Close(int capture_session_id) override;
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
   // adding the Host as a client of the device's controller if successful. The

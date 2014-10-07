@@ -107,7 +107,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   }
 
  protected:
-  virtual void OnFinalMessage(HWND hwnd) OVERRIDE;
+  virtual void OnFinalMessage(HWND hwnd) override;
 
  private:
   LegacyRenderWidgetHostHWND(HWND parent);

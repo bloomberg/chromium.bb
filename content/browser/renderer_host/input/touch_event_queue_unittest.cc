@@ -40,15 +40,15 @@ class TouchEventQueueTest : public testing::Test,
   virtual ~TouchEventQueueTest() {}
 
   // testing::Test
-  virtual void SetUp() OVERRIDE { ResetQueueWithConfig(CreateConfig()); }
+  virtual void SetUp() override { ResetQueueWithConfig(CreateConfig()); }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     queue_.reset();
   }
 
   // TouchEventQueueClient
   virtual void SendTouchEventImmediately(
-      const TouchEventWithLatencyInfo& event) OVERRIDE {
+      const TouchEventWithLatencyInfo& event) override {
     ++sent_event_count_;
     last_sent_event_ = event.event;
     if (sync_ack_result_) {
@@ -59,7 +59,7 @@ class TouchEventQueueTest : public testing::Test,
 
   virtual void OnTouchEventAck(
       const TouchEventWithLatencyInfo& event,
-      InputEventAckState ack_result) OVERRIDE {
+      InputEventAckState ack_result) override {
     ++acked_event_count_;
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;

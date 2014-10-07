@@ -47,19 +47,19 @@ class FakeServerSocket : public net::ServerSocket {
     }
   }
 
-  virtual int Listen(const net::IPEndPoint& address, int backlog) OVERRIDE {
+  virtual int Listen(const net::IPEndPoint& address, int backlog) override {
     local_address_ = address;
     listening_ = true;
     return net::OK;
   }
 
-  virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE {
+  virtual int GetLocalAddress(net::IPEndPoint* address) const override {
     *address = local_address_;
     return net::OK;
   }
 
   virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
-                     const net::CompletionCallback& callback) OVERRIDE {
+                     const net::CompletionCallback& callback) override {
     DCHECK(socket);
     if (!incoming_sockets_.empty()) {
       socket->reset(incoming_sockets_.front());
@@ -89,7 +89,7 @@ namespace content {
 
 class P2PSocketHostTcpServerTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     socket_ = new FakeServerSocket();
     socket_host_.reset(
         new P2PSocketHostTcpServer(&sender_, 0, P2P_SOCKET_TCP_CLIENT));

@@ -108,7 +108,7 @@ class InputEventMessageFilter : public BrowserMessageFilter {
   }
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
       InputHostMsg_HandleInputEvent_ACK::Param params;
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
@@ -159,7 +159,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
     host->GetProcess()->AddFilter(filter_.get());
   }
 
-  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
   }

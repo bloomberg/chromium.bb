@@ -25,7 +25,7 @@ class MockPepperPrintSettingsManager : public PepperPrintSettingsManager {
 
   // PepperPrintSettingsManager implementation.
   virtual void GetDefaultPrintSettings(
-      PepperPrintSettingsManager::Callback callback) OVERRIDE;
+      PepperPrintSettingsManager::Callback callback) override;
 
  private:
   PP_PrintSettings_Dev settings_;

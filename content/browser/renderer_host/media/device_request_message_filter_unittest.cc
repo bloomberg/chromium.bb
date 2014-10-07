@@ -62,7 +62,7 @@ class MockDeviceRequestMessageFilter : public DeviceRequestMessageFilter {
 
   // Override the Send() method to intercept the message that we're sending to
   // the renderer.
-  virtual bool Send(IPC::Message* reply_msg) OVERRIDE {
+  virtual bool Send(IPC::Message* reply_msg) override {
     CHECK(reply_msg);
 
     bool handled = true;
@@ -121,7 +121,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
  protected:
   virtual ~DeviceRequestMessageFilterTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     message_loop_.reset(new base::MessageLoopForIO);
     io_thread_.reset(
         new TestBrowserThread(BrowserThread::IO, message_loop_.get()));

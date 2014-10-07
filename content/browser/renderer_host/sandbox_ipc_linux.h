@@ -26,7 +26,7 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   SandboxIPCHandler(int lifeline_fd, int browser_socket);
   virtual ~SandboxIPCHandler();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   void EnsureWebKitInitialized();

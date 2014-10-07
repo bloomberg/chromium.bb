@@ -27,7 +27,7 @@ class CONTENT_EXPORT PepperPrintingHost : public ppapi::host::ResourceHost {
   // ppapi::host::ResourceHost implementation.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   int32_t OnGetDefaultPrintSettings(ppapi::host::HostMessageContext* context);

@@ -15,8 +15,8 @@ class MediaCaptureDevicesImpl : public MediaCaptureDevices {
   static MediaCaptureDevicesImpl* GetInstance();
 
   // Overriden from MediaCaptureDevices
-  virtual const MediaStreamDevices& GetAudioCaptureDevices() OVERRIDE;
-  virtual const MediaStreamDevices& GetVideoCaptureDevices() OVERRIDE;
+  virtual const MediaStreamDevices& GetAudioCaptureDevices() override;
+  virtual const MediaStreamDevices& GetVideoCaptureDevices() override;
 
   // Called by MediaStreamManager to notify the change of media capture
   // devices, these 2 methods are called in IO thread.

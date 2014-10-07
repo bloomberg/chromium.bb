@@ -34,9 +34,9 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   virtual ~AudioSyncReader();
 
   // media::AudioOutputController::SyncReader implementations.
-  virtual void UpdatePendingBytes(uint32 bytes) OVERRIDE;
-  virtual void Read(media::AudioBus* dest) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void UpdatePendingBytes(uint32 bytes) override;
+  virtual void Read(media::AudioBus* dest) override;
+  virtual void Close() override;
 
   bool Init();
   bool PrepareForeignSocket(base::ProcessHandle process_handle,

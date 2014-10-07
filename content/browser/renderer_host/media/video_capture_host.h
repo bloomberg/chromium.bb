@@ -71,29 +71,29 @@ class CONTENT_EXPORT VideoCaptureHost
   explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelClosing() override;
+  virtual void OnDestruct() const override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // VideoCaptureControllerEventHandler implementation.
-  virtual void OnError(const VideoCaptureControllerID& id) OVERRIDE;
+  virtual void OnError(const VideoCaptureControllerID& id) override;
   virtual void OnBufferCreated(const VideoCaptureControllerID& id,
                                base::SharedMemoryHandle handle,
                                int length,
-                               int buffer_id) OVERRIDE;
+                               int buffer_id) override;
   virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
-                                 int buffer_id) OVERRIDE;
+                                 int buffer_id) override;
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
                              const media::VideoCaptureFormat& format,
                              const gfx::Rect& visible_rect,
-                             base::TimeTicks timestamp) OVERRIDE;
+                             base::TimeTicks timestamp) override;
   virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
                                     int buffer_id,
                                     const gpu::MailboxHolder& mailbox_holder,
                                     const media::VideoCaptureFormat& format,
-                                    base::TimeTicks timestamp) OVERRIDE;
-  virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE;
+                                    base::TimeTicks timestamp) override;
+  virtual void OnEnded(const VideoCaptureControllerID& id) override;
 
  private:
   friend class BrowserThread;

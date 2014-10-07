@@ -33,7 +33,7 @@ class MockWebRTCIdentityStore : public WebRTCIdentityStore {
       const GURL& origin,
       const std::string& identity_name,
       const std::string& common_name,
-      const CompletionCallback& callback) OVERRIDE {
+      const CompletionCallback& callback) override {
     EXPECT_TRUE(callback_.is_null());
 
     callback_ = callback;
@@ -67,13 +67,13 @@ class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
     policy->Add(FAKE_RENDERER_ID);
   }
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     messages_.push_back(*message);
     delete message;
     return true;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     return WebRTCIdentityServiceHost::OnMessageReceived(message);
   }
 

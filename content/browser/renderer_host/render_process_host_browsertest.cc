@@ -45,10 +45,10 @@ class RenderProcessHostTest : public ContentBrowserTest,
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
-                                   int exit_code) OVERRIDE {
+                                   int exit_code) override {
     ++process_exits_;
   }
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE {
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     ++host_destructions_;
   }
 
@@ -124,12 +124,12 @@ class ShellCloser : public RenderProcessHostObserver {
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
-                                   int exit_code) OVERRIDE {
+                                   int exit_code) override {
     logging_string_->append("ShellCloser::RenderProcessExited ");
     shell_->Close();
   }
 
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE {
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     logging_string_->append("ShellCloser::RenderProcessHostDestroyed ");
   }
 
@@ -149,11 +149,11 @@ class ObserverLogger : public RenderProcessHostObserver {
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
-                                   int exit_code) OVERRIDE {
+                                   int exit_code) override {
     logging_string_->append("ObserverLogger::RenderProcessExited ");
   }
 
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE {
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     logging_string_->append("ObserverLogger::RenderProcessHostDestroyed ");
     host_destroyed_ = true;
   }
@@ -208,7 +208,7 @@ class Win32KLockdownRendererProcessHostTest : public RenderProcessHostTest {
   virtual ~Win32KLockdownRendererProcessHostTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableWin32kRendererLockDown);
     RenderProcessHostTest::SetUp();

@@ -41,18 +41,18 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   // SyntheticGestureTarget:
   virtual void DispatchInputEventToPlatform(
-    const blink::WebInputEvent& event) OVERRIDE;
+    const blink::WebInputEvent& event) override;
 
-  virtual void SetNeedsFlush() OVERRIDE;
+  virtual void SetNeedsFlush() override;
 
   virtual SyntheticGestureParams::GestureSourceType
-      GetDefaultSyntheticGestureSourceType() const OVERRIDE;
+      GetDefaultSyntheticGestureSourceType() const override;
 
-  virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE;
+  virtual base::TimeDelta PointerAssumedStoppedTime() const override;
 
-  virtual float GetTouchSlopInDips() const OVERRIDE;
+  virtual float GetTouchSlopInDips() const override;
 
-  virtual float GetMinScalingSpanInDips() const OVERRIDE;
+  virtual float GetMinScalingSpanInDips() const override;
 
  protected:
   RenderWidgetHostImpl* render_widget_host() const { return host_; }
