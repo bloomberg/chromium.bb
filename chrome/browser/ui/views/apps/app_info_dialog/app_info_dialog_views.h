@@ -20,8 +20,10 @@ namespace views {
 class ScrollView;
 }
 
-// View the information about a particular chrome application.
-
+// View the information about a particular chrome application or extension.
+// TODO(sashab): Rename App to Extension in the class name and |app| to
+// |extension| in the member variables in this class and all AppInfoPanel
+// classes.
 class AppInfoDialog : public views::View,
                       public extensions::ExtensionRegistryObserver {
  public:

@@ -1306,6 +1306,15 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableExperimentalInputViewFeatures)
   },
+#if defined(ENABLE_EXTENSIONS)
+  {
+    "enable-extension-info-dialog",
+    IDS_FLAGS_ENABLE_EXTENSION_INFO_DIALOG_NAME,
+    IDS_FLAGS_ENABLE_EXTENSION_INFO_DIALOG_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionInfoDialog)
+  },
+#endif
 #endif
   {
     "enable-simple-cache-backend",

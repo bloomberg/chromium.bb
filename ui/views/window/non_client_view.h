@@ -86,15 +86,16 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   virtual const char* GetClassName() const OVERRIDE;
 
  protected:
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-
   NonClientFrameView();
 
- private:
   // ViewTargeterDelegate:
   virtual bool DoesIntersectRect(const View* target,
                                  const gfx::Rect& rect) const OVERRIDE;
 
+  // View:
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+
+ private:
   // Prevents the non-client frame view from being rendered as inactive when
   // true.
   bool inactive_rendering_disabled_;

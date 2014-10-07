@@ -5,50 +5,26 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_APP_LIST_DIALOG_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_APP_LIST_DIALOG_CONTAINER_H_
 
-#include "ui/views/controls/button/button.h"
-#include "ui/views/window/dialog_delegate.h"
+#include "base/callback_forward.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace views {
-class LabelButton;
-class Widget;
+class DialogDelegateView;
+class View;
 }
 
-// The contents view for an App List Dialog, which covers the entire app list
-// and adds a close button.
-class AppListDialogContainer : public views::DialogDelegateView,
-                               public views::ButtonListener {
- public:
-  // Creates a new AppListDialogContainer. Takes ownership of |dialog_body|.
-  AppListDialogContainer(views::View* dialog_body,
-                         const base::Closure& close_callback);
-  virtual ~AppListDialogContainer();
+// Creates a new dialog containing |view| that can be displayed inside the app
+// list, covering the entire app list and adding a close button. Takes ownership
+// of |view|.
+views::DialogDelegateView* CreateAppListContainerForView(
+    views::View* view,
+    const base::Closure& close_callback);
 
-  // Overridden from views::View:
-  virtual void Layout() override;
-
-  // Overridden from views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual views::View* GetContentsView() override;
-  virtual views::ClientView* CreateClientView(views::Widget* widget) override;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) override;
-
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
-
- protected:
-  // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const override;
-  virtual void WindowClosing() override;
-
- private:
-  views::View* dialog_body_;  // Owned by this class via the views hierarchy.
-  const base::Closure close_callback_;
-
-  views::LabelButton* close_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListDialogContainer);
-};
+// Creates a new native dialog of the given |size| containing |view| with a
+// close button and draggable titlebar. Takes ownership of |view|.
+views::DialogDelegateView* CreateDialogContainerForView(
+    views::View* view,
+    const gfx::Size& size,
+    const base::Closure& close_callback);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APP_LIST_APP_LIST_DIALOG_CONTAINER_H_

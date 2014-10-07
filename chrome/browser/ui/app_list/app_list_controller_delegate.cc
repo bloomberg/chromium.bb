@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -104,14 +105,19 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 
   OnShowChildDialog();
 
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
+                            AppInfoLaunchSource::FROM_APP_LIST,
+                            AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
+
   // Since the AppListControllerDelegate is a leaky singleton, passing its raw
   // pointer around is OK.
-  ShowAppInfoDialog(GetAppListWindow(),
-                    GetAppListBounds(),
-                    profile,
-                    extension,
-                    base::Bind(&AppListControllerDelegate::OnCloseChildDialog,
-                               base::Unretained(this)));
+  ShowAppInfoInAppList(
+      GetAppListWindow(),
+      GetAppListBounds(),
+      profile,
+      extension,
+      base::Bind(&AppListControllerDelegate::OnCloseChildDialog,
+                 base::Unretained(this)));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

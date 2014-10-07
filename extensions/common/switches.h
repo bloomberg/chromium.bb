@@ -22,6 +22,7 @@ extern const char kEnableAppWindowControls[];
 extern const char kEnableEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActionRedesign[];
+extern const char kEnableExtensionInfoDialog[];
 extern const char kEnableMimeHandlerView[];
 extern const char kEnableOverrideBookmarksUI[];
 extern const char kErrorConsole[];

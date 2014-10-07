@@ -4890,6 +4890,9 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_EXTENSIONS_PERMISSIONS_LINK" desc="The link text for the Permissions link.">
           Permissions
         </message>
+        <message name="IDS_EXTENSIONS_INFO_LINK" desc="The text for the link that opens the App Info dialog for the extension, displaying permissions and other useful information about the app.">
+          Details
+        </message>
         <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
           Show button
         </message>
@@ -6607,6 +6610,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION" desc="Description for the flag to enable the extension toolbar redesign">
         Enables the (in development) new extension toolbar toolbar design.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXTENSION_INFO_DIALOG_NAME" desc="Name of the flag to enable the Extensions Info dialog on the chrome://extensions page.">
+        Enable the Extensions Info dialog.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXTENSION_INFO_DIALOG_DESCRIPTION" desc="Description for the flag to enable the Extensions Info dialog on the chrome://extensions page.">
+        Enables the Extensions Info dialog for each extension on the chrome://extensions page.
       </message>
       <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME" desc="Name of the flag that enables the website settings manager in chrome://settings.">
         Enables the website settings manager.

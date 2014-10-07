@@ -137,8 +137,9 @@ void AppInfoFooterPanel::CreateShortcuts() {
 }
 
 bool AppInfoFooterPanel::CanCreateShortcuts() const {
-  // Ash platforms can't create shortcuts.
-  return (chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
+  // Ash platforms can't create shortcuts, and extensions can't have shortcuts.
+  return !app_->is_extension() &&
+         (chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
           chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
@@ -163,8 +164,8 @@ bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
     return false;
   }
 
-  // The Chrome app can't be unpinned.
-  return app_->id() != extension_misc::kChromeAppId &&
+  // The Chrome app can't be unpinned, and extensions can't be pinned.
+  return app_->id() != extension_misc::kChromeAppId && !app_->is_extension() &&
          ash::Shell::GetInstance()->GetShelfDelegate()->CanPin();
 }
 

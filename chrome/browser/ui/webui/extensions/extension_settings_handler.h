@@ -151,6 +151,9 @@ class ExtensionSettingsHandler
   virtual void InstallUIProceed() override;
   virtual void InstallUIAbort(bool user_initiated) override;
 
+  // Called after the App Info Dialog has closed.
+  virtual void AppInfoDialogClosed();
+
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
 

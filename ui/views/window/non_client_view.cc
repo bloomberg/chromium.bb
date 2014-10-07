@@ -309,9 +309,6 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   return can_resize ? component : HTBORDER;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameView, protected:
-
 void NonClientFrameView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_CLIENT;
 }
@@ -320,10 +317,8 @@ const char* NonClientFrameView::GetClassName() const {
   return kViewClassName;
 }
 
-void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Overridden to do nothing. The NonClientView manually calls Layout on the
-  // FrameView when it is itself laid out, see comment in NonClientView::Layout.
-}
+////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, protected:
 
 NonClientFrameView::NonClientFrameView() : inactive_rendering_disabled_(false) {
   SetEventTargeter(
@@ -338,6 +333,11 @@ bool NonClientFrameView::DoesIntersectRect(const View* target,
   // For the default case, we assume the non-client frame view never overlaps
   // the client view.
   return !GetWidget()->client_view()->bounds().Intersects(rect);
+}
+
+void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Overridden to do nothing. The NonClientView manually calls Layout on the
+  // FrameView when it is itself laid out, see comment in NonClientView::Layout.
 }
 
 }  // namespace views

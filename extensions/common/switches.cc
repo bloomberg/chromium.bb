@@ -52,6 +52,9 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActionRedesign[] =
     "enable-extension-action-redesign";
 
+// Enables the App Info dialog to be launched from the chrome://extensions page.
+const char kEnableExtensionInfoDialog[] = "enable-extension-info-dialog";
+
 // Hack so that feature switch can work with about_flags. See
 // kEnableScriptsRequireAction.
 const char kEnableMimeHandlerView[] = "enable-mime-handler-view";

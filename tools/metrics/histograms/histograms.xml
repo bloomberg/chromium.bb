@@ -418,6 +418,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppInfoDialog.Launches" enum="AppInfoDialogLaunchOrigin">
+  <owner>sashab@chromium.org</owner>
+  <summary>
+    The number of times the app info dialog is launched. This is gathered each
+    time the app info dialog is opened, from each of the places the dialog can
+    be opened from.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppInfoDialog.OpenedForLocation" enum="AppLocation">
   <owner>sashab@chromium.org</owner>
   <summary>
@@ -38627,6 +38636,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="Cancelled"/>
 </enum>
 
+<enum name="AppInfoDialogLaunchOrigin" type="int">
+  <int value="0" label="App List context menu"/>
+  <int value="1" label="Extensions page"/>
+</enum>
+
 <enum name="AppLaunch" type="int">
   <int value="0" label="NTP_APPS_MAXIMIZED"/>
   <int value="1" label="NTP_APPS_COLLAPSED"/>
@@ -45595,6 +45609,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1972383451" label="disable-pinch"/>
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
+  <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>

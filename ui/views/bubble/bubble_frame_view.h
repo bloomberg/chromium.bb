@@ -29,12 +29,15 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Internal class name.
   static const char kViewClassName[];
 
+  explicit BubbleFrameView(const gfx::Insets& content_margins);
+  virtual ~BubbleFrameView();
+
   // Insets to make bubble contents align horizontal with the bubble title.
   // NOTE: this does not take into account whether a title actually exists.
   static gfx::Insets GetTitleInsets();
 
-  explicit BubbleFrameView(const gfx::Insets& content_margins);
-  virtual ~BubbleFrameView();
+  // Creates a close button used in the corner of the dialog.
+  static LabelButton* CreateCloseButton(ButtonListener* listener);
 
   // NonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -83,6 +86,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
   virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect);
+
+  bool IsCloseButtonVisible() const;
+  gfx::Rect GetCloseButtonBounds() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);

@@ -45,6 +45,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -96,7 +97,9 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "grit/browser_resources.h"
 #include "grit/components_strings.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::DictionaryValue;
@@ -524,8 +527,15 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   source->AddString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
-  source->AddString("extensionSettingsPermissions",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_PERMISSIONS_LINK));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionInfoDialog)) {
+    source->AddString("extensionSettingsPermissions",
+                      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INFO_LINK));
+  } else {
+    source->AddString(
+        "extensionSettingsPermissions",
+        l10n_util::GetStringUTF16(IDS_EXTENSIONS_PERMISSIONS_LINK));
+  }
   source->AddString("extensionSettingsVisitWebsite",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSITE));
   source->AddString("extensionSettingsVisitWebStore",
@@ -813,6 +823,10 @@ void ExtensionSettingsHandler::InstallUIProceed() {
 }
 
 void ExtensionSettingsHandler::InstallUIAbort(bool user_initiated) {
+  extension_id_prompting_.clear();
+}
+
+void ExtensionSettingsHandler::AppInfoDialogClosed() {
   extension_id_prompting_.clear();
 }
 
@@ -1169,29 +1183,51 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
     return;  // Only one prompt at a time.
 
   extension_id_prompting_ = extension->id();
-  prompt_.reset(new ExtensionInstallPrompt(web_contents()));
-  std::vector<base::FilePath> retained_file_paths;
-  if (extension->permissions_data()->HasAPIPermission(
-          APIPermission::kFileSystem)) {
-    std::vector<apps::SavedFileEntry> retained_file_entries =
-        apps::SavedFilesService::Get(Profile::FromWebUI(
-            web_ui()))->GetAllFileEntries(extension_id_prompting_);
-    for (size_t i = 0; i < retained_file_entries.size(); ++i) {
-      retained_file_paths.push_back(retained_file_entries[i].path);
-    }
-  }
-  std::vector<base::string16> retained_device_messages;
-  if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
-    retained_device_messages =
-        extensions::DevicePermissionsManager::Get(Profile::FromWebUI(web_ui()))
-            ->GetPermissionMessageStrings(extension_id_prompting_);
-  }
 
-  // The BrokerDelegate manages its own lifetime.
-  prompt_->ReviewPermissions(new BrokerDelegate(AsWeakPtr()),
-                             extension,
-                             retained_file_paths,
-                             retained_device_messages);
+  // Show the new-style extensions dialog when the flag is set. The flag cannot
+  // be set on Mac platforms.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionInfoDialog)) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
+                              AppInfoLaunchSource::FROM_EXTENSIONS_PAGE,
+                              AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
+
+    // Display the dialog at a size similar to the app list.
+    const int kAppInfoDialogWidth = 380;
+    const int kAppInfoDialogHeight = 490;
+    ShowAppInfoInNativeDialog(
+        web_contents()->GetTopLevelNativeWindow(),
+        gfx::Size(kAppInfoDialogWidth, kAppInfoDialogHeight),
+        Profile::FromWebUI(web_ui()),
+        extension,
+        base::Bind(&ExtensionSettingsHandler::AppInfoDialogClosed,
+                   base::Unretained(this)));
+  } else {
+    prompt_.reset(new ExtensionInstallPrompt(web_contents()));
+    std::vector<base::FilePath> retained_file_paths;
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kFileSystem)) {
+      std::vector<apps::SavedFileEntry> retained_file_entries =
+          apps::SavedFilesService::Get(Profile::FromWebUI(web_ui()))
+              ->GetAllFileEntries(extension_id_prompting_);
+      for (size_t i = 0; i < retained_file_entries.size(); ++i) {
+        retained_file_paths.push_back(retained_file_entries[i].path);
+      }
+    }
+    std::vector<base::string16> retained_device_messages;
+    if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
+      retained_device_messages =
+          extensions::DevicePermissionsManager::Get(
+              Profile::FromWebUI(web_ui()))
+              ->GetPermissionMessageStrings(extension_id_prompting_);
+    }
+
+    // The BrokerDelegate manages its own lifetime.
+    prompt_->ReviewPermissions(new BrokerDelegate(AsWeakPtr()),
+                               extension,
+                               retained_file_paths,
+                               retained_device_messages);
+  }
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(

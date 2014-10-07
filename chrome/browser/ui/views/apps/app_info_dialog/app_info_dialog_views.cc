@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -28,11 +29,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-void ShowAppInfoDialog(gfx::NativeWindow parent,
-                       const gfx::Rect& bounds,
-                       Profile* profile,
-                       const extensions::Extension* app,
-                       const base::Closure& close_callback) {
+void ShowAppInfoInAppList(gfx::NativeWindow parent,
+                          const gfx::Rect& app_list_bounds,
+                          Profile* profile,
+                          const extensions::Extension* app,
+                          const base::Closure& close_callback) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForType",
                             app->GetType(),
                             extensions::Manifest::NUM_LOAD_TYPES);
@@ -41,9 +42,22 @@ void ShowAppInfoDialog(gfx::NativeWindow parent,
                             extensions::Manifest::NUM_LOCATIONS);
 
   views::View* app_info_view = new AppInfoDialog(parent, profile, app);
-  views::Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new AppListDialogContainer(app_info_view, close_callback), NULL, parent);
-  dialog_widget->SetBounds(bounds);
+  views::DialogDelegate* dialog =
+      CreateAppListContainerForView(app_info_view, close_callback);
+  views::Widget* dialog_widget = CreateBrowserModalDialogViews(dialog, parent);
+  dialog_widget->SetBounds(app_list_bounds);
+  dialog_widget->Show();
+}
+
+void ShowAppInfoInNativeDialog(gfx::NativeWindow parent,
+                               const gfx::Size& size,
+                               Profile* profile,
+                               const extensions::Extension* app,
+                               const base::Closure& close_callback) {
+  views::View* app_info_view = new AppInfoDialog(parent, profile, app);
+  views::DialogDelegate* dialog =
+      CreateDialogContainerForView(app_info_view, size, close_callback);
+  views::Widget* dialog_widget = CreateBrowserModalDialogViews(dialog, parent);
   dialog_widget->Show();
 }
 
@@ -56,6 +70,13 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
       profile_(profile),
       app_id_(app->id()),
       extension_registry_(NULL) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForType",
+                            app->GetType(),
+                            extensions::Manifest::NUM_LOAD_TYPES);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForLocation",
+                            app->location(),
+                            extensions::Manifest::NUM_LOCATIONS);
+
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   SetLayoutManager(layout);

@@ -57,12 +57,6 @@ namespace views {
 // static
 const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
-// static
-gfx::Insets BubbleFrameView::GetTitleInsets() {
-  return gfx::Insets(kTitleTopInset, kTitleLeftInset,
-                     kTitleBottomInset, kTitleRightInset);
-}
-
 BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
     : bubble_border_(NULL),
       content_margins_(content_margins),
@@ -75,20 +69,33 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(title_);
 
-  close_ = new LabelButton(this, base::string16());
-  close_->SetImage(CustomButton::STATE_NORMAL,
-                   *rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
-  close_->SetImage(CustomButton::STATE_HOVERED,
-                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
-  close_->SetImage(CustomButton::STATE_PRESSED,
-                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
-  close_->SetBorder(scoped_ptr<Border>());
-  close_->SetSize(close_->GetPreferredSize());
+  close_ = CreateCloseButton(this);
   close_->SetVisible(false);
   AddChildView(close_);
 }
 
 BubbleFrameView::~BubbleFrameView() {}
+
+// static
+gfx::Insets BubbleFrameView::GetTitleInsets() {
+  return gfx::Insets(
+      kTitleTopInset, kTitleLeftInset, kTitleBottomInset, kTitleRightInset);
+}
+
+// static
+LabelButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  LabelButton* close = new LabelButton(listener, base::string16());
+  close->SetImage(CustomButton::STATE_NORMAL,
+                  *rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
+  close->SetImage(CustomButton::STATE_HOVERED,
+                  *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
+  close->SetImage(CustomButton::STATE_PRESSED,
+                  *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
+  close->SetBorder(scoped_ptr<Border>());
+  close->SetSize(close->GetPreferredSize());
+  return close;
+}
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = GetLocalBounds();
@@ -286,6 +293,14 @@ gfx::Rect BubbleFrameView::GetAvailableScreenBounds(const gfx::Rect& rect) {
   // TODO(scottmg): Native is wrong. http://crbug.com/133312
   return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
       rect.CenterPoint()).work_area();
+}
+
+bool BubbleFrameView::IsCloseButtonVisible() const {
+  return close_->visible();
+}
+
+gfx::Rect BubbleFrameView::GetCloseButtonBounds() const {
+  return close_->bounds();
 }
 
 void BubbleFrameView::MirrorArrowIfOffScreen(

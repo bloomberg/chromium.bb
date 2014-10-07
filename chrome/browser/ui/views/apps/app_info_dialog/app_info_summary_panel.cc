@@ -224,11 +224,15 @@ void AppInfoSummaryPanel::CreateDetailsControl() {
     installed_time_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
 
-  // The last run time is currently incorrect for component and hosted apps,
+  // The last run time is currently incorrect for:
+  // - extensions
+  // - component apps
+  // - hosted apps (but not bookmark apps)
   // since it is not updated when they are accessed outside of their shortcuts.
   // TODO(sashab): Update the run time for these correctly: crbug.com/398716
-  if (app_->location() != extensions::Manifest::COMPONENT &&
-      !app_->is_hosted_app()) {
+  if (!(app_->is_extension() ||
+        app_->location() == extensions::Manifest::COMPONENT ||
+        (app_->is_hosted_app() && !app_->from_bookmark()))) {
     last_run_time_title_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LAST_RUN_LABEL));
     last_run_time_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -355,6 +359,8 @@ void AppInfoSummaryPanel::SetLaunchType(
 }
 
 bool AppInfoSummaryPanel::CanSetLaunchType() const {
-  // V2 apps don't have a launch type, and neither does the Chrome app.
-  return app_->id() != extension_misc::kChromeAppId && !app_->is_platform_app();
+  // V2 apps and extensions don't have a launch type, and neither does the
+  // Chrome app.
+  return !app_->is_platform_app() && !app_->is_extension() &&
+         app_->id() != extension_misc::kChromeAppId;
 }
