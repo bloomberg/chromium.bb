@@ -47,34 +47,31 @@
 
 namespace blink {
 
-void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime, LocalFrame* root)
+void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime, LocalFrame& root)
 {
-    RefPtr<FrameView> view = root->view();
+    RefPtr<FrameView> view = root.view();
     if (!view)
         return;
-    page->autoscrollController().animate(monotonicFrameBeginTime);
-    page->animator().serviceScriptedAnimations(monotonicFrameBeginTime);
+    page.autoscrollController().animate(monotonicFrameBeginTime);
+    page.animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 
-void PageWidgetDelegate::layout(Page* page, LocalFrame* root)
+void PageWidgetDelegate::layout(Page& page, LocalFrame& root)
 {
-    if (!page)
-        return;
-
-    page->animator().updateLayoutAndStyleForPainting(root);
+    page.animator().updateLayoutAndStyleForPainting(&root);
 }
 
-void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background, LocalFrame* root)
+void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background, LocalFrame& root)
 {
     if (rect.isEmpty())
         return;
     GraphicsContext gc(canvas);
     gc.setCertainlyOpaque(background == Opaque);
-    gc.applyDeviceScaleFactor(page->deviceScaleFactor());
-    gc.setDeviceScaleFactor(page->deviceScaleFactor());
+    gc.applyDeviceScaleFactor(page.deviceScaleFactor());
+    gc.setDeviceScaleFactor(page.deviceScaleFactor());
     IntRect dirtyRect(rect);
     gc.save(); // Needed to save the canvas, not the GraphicsContext.
-    FrameView* view = root->view();
+    FrameView* view = root.view();
     if (view) {
         gc.clip(dirtyRect);
         view->paint(&gc, dirtyRect);
@@ -86,7 +83,7 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     gc.restore();
 }
 
-bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
+bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
 {
     switch (event.type) {
 
