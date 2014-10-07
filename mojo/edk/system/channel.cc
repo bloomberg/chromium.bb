@@ -73,13 +73,13 @@ void Channel::Shutdown() {
   for (IdToEndpointMap::iterator it = to_destroy.begin();
        it != to_destroy.end();
        ++it) {
-    if (it->second->state_ == ChannelEndpoint::STATE_NORMAL) {
-      it->second->OnDisconnect();
+    if (it->second.get()) {
       num_live++;
+      it->second->OnDisconnect();
+      it->second->DetachFromChannel();
     } else {
       num_zombies++;
     }
-    it->second->DetachFromChannel();
   }
   DVLOG_IF(2, num_live || num_zombies) << "Shut down Channel with " << num_live
                                        << " live endpoints and " << num_zombies
@@ -129,12 +129,6 @@ void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
 
     DLOG_IF(WARNING, is_shutting_down_)
         << "RunMessagePipeEndpoint() while shutting down";
-
-    // Absurdity: |endpoint->state_| is protected by our lock.
-    if (endpoint->state_ != ChannelEndpoint::STATE_NORMAL) {
-      DVLOG(2) << "Ignoring run message pipe endpoint for zombie endpoint";
-      return;
-    }
   }
 
   // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
@@ -207,8 +201,8 @@ void Channel::DetachEndpoint(ChannelEndpoint* endpoint,
     if (it == local_id_to_endpoint_map_.end() || it->second.get() != endpoint)
       return;
 
-    DCHECK_EQ(it->second->state_, ChannelEndpoint::STATE_NORMAL);
-    it->second->state_ = ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK;
+    DCHECK(it->second.get());
+    it->second = nullptr;
 
     // Send a remove message outside the lock.
   }
@@ -300,7 +294,6 @@ void Channel::OnReadMessageForDownstream(
   }
 
   scoped_refptr<ChannelEndpoint> endpoint;
-  ChannelEndpoint::State state = ChannelEndpoint::STATE_NORMAL;
   {
     base::AutoLock locker(lock_);
 
@@ -312,8 +305,15 @@ void Channel::OnReadMessageForDownstream(
     IdToEndpointMap::const_iterator it =
         local_id_to_endpoint_map_.find(local_id);
     if (it != local_id_to_endpoint_map_.end()) {
+      // Ignore messages for zombie endpoints (not an error).
+      if (!it->second.get()) {
+        DVLOG(2) << "Ignoring downstream message for zombie endpoint (local ID "
+                    "= " << local_id
+                 << ", remote ID = " << message_view.source_id() << ")";
+        return;
+      }
+
       endpoint = it->second;
-      state = it->second->state_;
     }
   }
   if (!endpoint.get()) {
@@ -325,13 +325,6 @@ void Channel::OnReadMessageForDownstream(
     // die even for Debug builds, since handling this properly needs to be
     // tested (TODO(vtl)).
     DLOG(ERROR) << "This should not happen under normal operation.";
-    return;
-  }
-
-  // Ignore messages for zombie endpoints (not an error).
-  if (state != ChannelEndpoint::STATE_NORMAL) {
-    DVLOG(2) << "Ignoring downstream message for zombie endpoint (local ID = "
-             << local_id << ", remote ID = " << message_view.source_id() << ")";
     return;
   }
 
@@ -426,14 +419,9 @@ bool Channel::OnRemoveMessagePipeEndpoint(
       return false;
     }
 
-    switch (it->second->state_) {
-      case ChannelEndpoint::STATE_NORMAL:
-        // This is the normal case; we'll proceed on to "wait local detach".
-        break;
-
-      case ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK:
-        // Remove messages "crossed"; we have to wait for the ack.
-        return true;
+    if (!it->second.get()) {
+      // Remove messages "crossed"; we have to wait for the ack.
+      return true;
     }
 
     endpoint = it->second;
@@ -462,27 +450,20 @@ bool Channel::OnRemoveMessagePipeEndpointAck(
     MessageInTransit::EndpointId local_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
-  scoped_refptr<ChannelEndpoint> endpoint;
-  {
-    base::AutoLock locker(lock_);
+  base::AutoLock locker(lock_);
 
-    IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
-    if (it == local_id_to_endpoint_map_.end()) {
-      DVLOG(2) << "Remove message pipe endpoint ack error: not found";
-      return false;
-    }
-
-    if (it->second->state_ != ChannelEndpoint::STATE_WAIT_REMOTE_REMOVE_ACK) {
-      DVLOG(2) << "Remove message pipe endpoint ack error: wrong state";
-      return false;
-    }
-
-    endpoint = it->second;
-    local_id_to_endpoint_map_.erase(it);
-    // Detach the endpoint outside the lock.
+  IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
+  if (it == local_id_to_endpoint_map_.end()) {
+    DVLOG(2) << "Remove message pipe endpoint ack error: not found";
+    return false;
   }
 
-  endpoint->DetachFromChannel();
+  if (it->second.get()) {
+    DVLOG(2) << "Remove message pipe endpoint ack error: wrong state";
+    return false;
+  }
+
+  local_id_to_endpoint_map_.erase(it);
   return true;
 }
 

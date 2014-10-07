@@ -13,8 +13,7 @@ namespace mojo {
 namespace system {
 
 ChannelEndpoint::ChannelEndpoint(MessagePipe* message_pipe, unsigned port)
-    : state_(STATE_NORMAL),
-      message_pipe_(message_pipe),
+    : message_pipe_(message_pipe),
       port_(port),
       channel_(),
       local_id_(MessageInTransit::kInvalidEndpointId),
@@ -64,6 +63,9 @@ void ChannelEndpoint::DetachFromMessagePipe() {
     // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
     // here as well.
     channel_->DetachEndpoint(this, local_id_, remote_id_);
+    channel_ = nullptr;
+    local_id_ = MessageInTransit::kInvalidEndpointId;
+    remote_id_ = MessageInTransit::kInvalidEndpointId;
   }
 }
 
@@ -83,7 +85,9 @@ void ChannelEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);
-  DCHECK(channel_);
+  if (!channel_)
+    return;
+
   DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);
   remote_id_ = remote_id;
 
@@ -144,7 +148,12 @@ void ChannelEndpoint::OnDisconnect() {
 
 void ChannelEndpoint::DetachFromChannel() {
   base::AutoLock locker(lock_);
-  DCHECK(channel_);
+  // This may already be null if we already detached from the channel in
+  // |DetachFromMessagePipe()| by calling |Channel::DetachEndpoint()| (and there
+  // are racing detaches).
+  if (!channel_)
+    return;
+
   DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
   // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
   // here as well.

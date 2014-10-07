@@ -150,27 +150,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   void DetachFromChannel();
 
  private:
-  enum State {
-    // Attached, possibly running or not.
-    STATE_NORMAL,
-    // "Zombie" states:
-    // Waiting for a |kSubtypeChannelRemoveMessagePipeEndpointAck| before
-    // removing.
-    STATE_WAIT_REMOTE_REMOVE_ACK,
-  };
-
-  // TODO(vtl): This is totally temporary, until this becomes a proper
-  // self-contained class. See the plan above.
-  friend class Channel;
-
   friend class base::RefCountedThreadSafe<ChannelEndpoint>;
   ~ChannelEndpoint();
 
   // Must be called with |lock_| held.
   bool WriteMessageNoLock(scoped_ptr<MessageInTransit> message);
-
-  // TODO(vtl): Move these under lock.
-  State state_;
 
   // TODO(vtl): Move the things above under lock.
   // Protects the members below.

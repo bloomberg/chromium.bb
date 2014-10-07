@@ -110,7 +110,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // This removes the given endpoint from this channel (|local_id| and
   // |remote_id| are specified as an optimization; the latter should be
-  // |kInvalidEndpointId| if the endpoint is not yet running).
+  // |kInvalidEndpointId| if the endpoint is not yet running). Note: If this is
+  // called, the |Channel| will *not* call
+  // |ChannelEndpoint::DetachFromChannel()|.
   void DetachEndpoint(ChannelEndpoint* endpoint,
                       MessageInTransit::EndpointId local_id,
                       MessageInTransit::EndpointId remote_id);
@@ -179,6 +181,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   typedef base::hash_map<MessageInTransit::EndpointId,
                          scoped_refptr<ChannelEndpoint>> IdToEndpointMap;
+  // Map from local IDs to endpoints. If the endpoint is null, this means that
+  // we're just waiting for the remove ack before removing the entry.
   IdToEndpointMap local_id_to_endpoint_map_;
   // The next local ID to try (when allocating new local IDs). Note: It should
   // be checked for existence before use.
