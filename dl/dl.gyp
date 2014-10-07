@@ -34,6 +34,13 @@
           }],
         ],
       }],
+      ['target_arch=="arm64"', {
+        # Enable build-time NEON selection.
+        'defines': ['DL_ARM_NEON',],
+        'direct_dependent_settings': {
+          'defines': ['DL_ARM_NEON',],
+        },
+      }],
     ],
   },
   'targets': [
