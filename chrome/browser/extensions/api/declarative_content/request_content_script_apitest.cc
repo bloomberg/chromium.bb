@@ -194,8 +194,9 @@ testing::AssertionResult RequestContentScriptAPITest::CreateAndLoadExtension(
 // Try different permutations of "match all", "match particular domain (that is
 // visited by test)", and "match nonsense domain (not visited by test)" for
 // both manifest permissions and injection matcher conditions.
+// http://crbug.com/421118
 IN_PROC_BROWSER_TEST_F(RequestContentScriptAPITest,
-                       PermissionMatcherAgreementInjection) {
+                       DISABLED_PermissionMatcherAgreementInjection) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Positive tests: permissions and matcher contain conditions that match URL
