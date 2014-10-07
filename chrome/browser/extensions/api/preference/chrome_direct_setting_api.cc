@@ -25,6 +25,7 @@ class PreferenceWhitelist {
  public:
   PreferenceWhitelist() {
     whitelist_.insert("googlegeolocationaccess.enabled");
+    whitelist_.insert("spdy_proxy.enabled");
   }
 
   ~PreferenceWhitelist() {}
@@ -137,13 +138,11 @@ void ChromeDirectSettingAPI::OnPrefChanged(
     const ExtensionSet* extensions = extension_service->extensions();
     for (ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
-      if ((*it)->location() == Manifest::COMPONENT) {
-        std::string extension_id = (*it)->id();
-        if (router->ExtensionHasEventListener(extension_id, event_name)) {
-          scoped_ptr<base::ListValue> args_copy(args.DeepCopy());
-          scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
-          router->DispatchEventToExtension(extension_id, event.Pass());
-        }
+      const std::string& extension_id = (*it)->id();
+      if (router->ExtensionHasEventListener(extension_id, event_name)) {
+        scoped_ptr<base::ListValue> args_copy(args.DeepCopy());
+        scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
+        router->DispatchEventToExtension(extension_id, event.Pass());
       }
     }
   }

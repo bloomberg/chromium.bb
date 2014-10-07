@@ -23,15 +23,9 @@ PrefService* DirectSettingFunctionBase::GetPrefService() {
   return GetProfile()->GetPrefs();
 }
 
-bool DirectSettingFunctionBase::IsCalledFromComponentExtension() {
-  return extension()->location() == Manifest::COMPONENT;
-}
-
 GetDirectSettingFunction::GetDirectSettingFunction() {}
 
 bool GetDirectSettingFunction::RunSync() {
-  EXTENSION_FUNCTION_VALIDATE(IsCalledFromComponentExtension());
-
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
   EXTENSION_FUNCTION_VALIDATE(ChromeDirectSettingAPI::Get(GetProfile())
@@ -54,8 +48,6 @@ GetDirectSettingFunction::~GetDirectSettingFunction() {}
 SetDirectSettingFunction::SetDirectSettingFunction() {}
 
 bool SetDirectSettingFunction::RunSync() {
-  EXTENSION_FUNCTION_VALIDATE(IsCalledFromComponentExtension());
-
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
   EXTENSION_FUNCTION_VALIDATE(ChromeDirectSettingAPI::Get(GetProfile())
@@ -85,8 +77,6 @@ SetDirectSettingFunction::~SetDirectSettingFunction() {}
 ClearDirectSettingFunction::ClearDirectSettingFunction() {}
 
 bool ClearDirectSettingFunction::RunSync() {
-  EXTENSION_FUNCTION_VALIDATE(IsCalledFromComponentExtension());
-
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
   EXTENSION_FUNCTION_VALIDATE(ChromeDirectSettingAPI::Get(GetProfile())

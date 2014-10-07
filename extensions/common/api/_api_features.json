@@ -261,9 +261,11 @@
     "contexts": ["blessed_extension"]
   },
   "types.private": {
-    "channel": "dev",
-    "extension_types": ["extension"],
-    "location": "component"
+    // preferencesPrivate is the only API that uses types.private.
+    // If any other APIs need it then they'll need to be added in
+    // separate rules.
+    "dependencies": ["permission:preferencesPrivate"],
+    "contexts": ["blessed_extension"]
   },
   "usb": {
     "dependencies": ["permission:usb"],
