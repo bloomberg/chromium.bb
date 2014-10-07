@@ -57,7 +57,7 @@ private:
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE;
     virtual IntRect linesBoundingBox() const OVERRIDE;
-    virtual InlineTextBox* createTextBox() OVERRIDE;
+    virtual InlineTextBox* createTextBox(int start, unsigned short length) OVERRIDE;
 
     float m_scalingFactor;
     Font m_scaledFont;

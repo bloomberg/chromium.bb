@@ -51,8 +51,8 @@ struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
 
 COMPILE_ASSERT(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize), SVGInlineTextBox_is_not_of_expected_size);
 
-SVGInlineTextBox::SVGInlineTextBox(RenderObject& object)
-    : InlineTextBox(object)
+SVGInlineTextBox::SVGInlineTextBox(RenderObject& object, int start, unsigned short length)
+    : InlineTextBox(object, start, length)
     , m_logicalHeight(0)
     , m_startsNewTextChunk(false)
 {

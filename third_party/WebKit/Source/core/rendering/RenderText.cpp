@@ -1436,14 +1436,14 @@ void RenderText::dirtyLineBoxes(bool fullLayout)
     m_linesDirty = false;
 }
 
-InlineTextBox* RenderText::createTextBox()
+InlineTextBox* RenderText::createTextBox(int start, unsigned short length)
 {
-    return new InlineTextBox(*this);
+    return new InlineTextBox(*this, start, length);
 }
 
-InlineTextBox* RenderText::createInlineTextBox()
+InlineTextBox* RenderText::createInlineTextBox(int start, unsigned short length)
 {
-    InlineTextBox* textBox = createTextBox();
+    InlineTextBox* textBox = createTextBox(start, length);
     if (!m_firstTextBox)
         m_firstTextBox = m_lastTextBox = textBox;
     else {
@@ -1451,7 +1451,6 @@ InlineTextBox* RenderText::createInlineTextBox()
         textBox->setPreviousTextBox(m_lastTextBox);
         m_lastTextBox = textBox;
     }
-    textBox->setIsText(true);
     return textBox;
 }
 

@@ -98,9 +98,9 @@ void RenderSVGInlineText::styleDidChange(StyleDifference diff, const RenderStyle
         textRenderer->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-InlineTextBox* RenderSVGInlineText::createTextBox()
+InlineTextBox* RenderSVGInlineText::createTextBox(int start, unsigned short length)
 {
-    InlineTextBox* box = new SVGInlineTextBox(*this);
+    InlineTextBox* box = new SVGInlineTextBox(*this, start, length);
     box->setHasVirtualLogicalHeight();
     return box;
 }

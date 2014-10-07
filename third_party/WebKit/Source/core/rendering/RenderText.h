@@ -60,7 +60,7 @@ public:
     virtual unsigned textStartOffset() const { return 0; }
     String plainText() const;
 
-    InlineTextBox* createInlineTextBox();
+    InlineTextBox* createInlineTextBox(int start, unsigned short length);
     void dirtyLineBoxes(bool fullLayout);
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE FINAL;
@@ -150,7 +150,7 @@ protected:
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE;
 
-    virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
+    virtual InlineTextBox* createTextBox(int start, unsigned short length); // Subclassed by SVG.
 
 private:
     void computePreferredLogicalWidths(float leadWidth);

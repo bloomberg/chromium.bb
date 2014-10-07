@@ -81,6 +81,13 @@ void InlineTextBox::destroy()
     InlineBox::destroy();
 }
 
+void InlineTextBox::offsetRun(int delta)
+{
+    ASSERT(!isDirty());
+    InlineTextBoxPainter::removeFromTextBlobCache(*this);
+    m_start += delta;
+}
+
 void InlineTextBox::markDirty()
 {
     // FIXME: Is it actually possible to try and paint a dirty InlineTextBox?

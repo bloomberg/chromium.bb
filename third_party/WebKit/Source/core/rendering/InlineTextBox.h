@@ -40,14 +40,15 @@ const unsigned short cFullTruncation = USHRT_MAX - 1;
 
 class InlineTextBox : public InlineBox {
 public:
-    InlineTextBox(RenderObject& obj)
+    InlineTextBox(RenderObject& obj, int start, unsigned short length)
         : InlineBox(obj)
         , m_prevTextBox(0)
         , m_nextTextBox(0)
-        , m_start(0)
-        , m_len(0)
+        , m_start(start)
+        , m_len(length)
         , m_truncation(cNoTruncation)
     {
+        setIsText(true);
     }
 
     RenderText& renderer() const { return toRenderText(InlineBox::renderer()); }
@@ -64,10 +65,7 @@ public:
     unsigned end() const { return m_len ? m_start + m_len - 1 : m_start; }
     unsigned len() const { return m_len; }
 
-    void setStart(unsigned start) { m_start = start; }
-    void setLen(unsigned len) { m_len = len; }
-
-    void offsetRun(int d) { ASSERT(!isDirty()); m_start += d; }
+    void offsetRun(int delta);
 
     unsigned short truncation() { return m_truncation; }
 
