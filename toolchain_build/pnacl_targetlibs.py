@@ -25,7 +25,7 @@ CLANG_VER = '3.4'
 # Return the path to a tool to build target libraries
 # msys should be false if the path will be called directly rather than passed to
 # an msys or cygwin tool such as sh or make.
-def PnaclTool(toolname, msys=True, arch='le32'):
+def PnaclTool(toolname, arch='le32', msys=True):
   if not msys and pynacl.platform.IsWindows():
     ext = '.bat'
   else:
@@ -44,7 +44,7 @@ TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
                    'STRIP': 'illegal' }
 
 def TargetTools(arch):
-  return [ tool + '_FOR_TARGET=' + PnaclTool(name, msys=True, arch=arch)
+  return [ tool + '_FOR_TARGET=' + PnaclTool(name, arch=arch, msys=True)
            for tool, name in TOOL_ENV_NAMES.iteritems() ]
 
 
@@ -83,8 +83,18 @@ def TargetArch(bias_arch):
     return bias_arch[:bias_arch.index('_bc')]
   return bias_arch
 
-def BiasedBitcodeTargetFlag(arch):
-  arch = TargetArch(arch)
+
+def MultilibArch(bias_arch):
+  return 'x86_64' if bias_arch == 'i686' else bias_arch
+
+
+def MultilibLibDir(bias_arch):
+  suffix = '32' if bias_arch == 'i686' else ''
+  return os.path.join(TripleFromArch(MultilibArch(bias_arch)), 'lib' + suffix)
+
+
+def BiasedBitcodeTargetFlag(bias_arch):
+  arch = TargetArch(bias_arch)
   flagmap = {
       # Arch     Target                           Extra flags.
       'x86_64': ('x86_64-unknown-nacl',           []),
@@ -104,11 +114,13 @@ def TargetLibCflags(bias_arch):
     flags += ' ' + ' '.join(BiasedBitcodeTargetFlag(bias_arch))
   return flags
 
+
 def NewlibIsystemCflags(bias_arch):
+  include_arch = MultilibArch(bias_arch)
   return ' '.join([
     '-isystem',
-    command.path.join('%(' + GSDJoin('abs_newlib', bias_arch) +')s',
-                      TripleFromArch(bias_arch), 'include')])
+    command.path.join('%(' + GSDJoin('abs_newlib', include_arch) +')s',
+                      TripleFromArch(include_arch), 'include')])
 
 def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
@@ -125,11 +137,11 @@ def LibStdcxxCflags(bias_arch):
 # Build a single object file for the target.
 def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s'):
   flags = ['-Wall', '-Werror', '-O2', '-c']
-  if bias_arch != 'le32':
+  if IsBiasedBCArch(bias_arch):
     flags.extend(BiasedBitcodeTargetFlag(bias_arch))
   flags.extend(NewlibIsystemCflags(bias_arch).split())
   return command.Command(
-      [PnaclTool('clang', msys=False)] + flags + [
+      [PnaclTool('clang', arch=bias_arch, msys=False)] + flags + [
           command.path.join('%(src)s', source),
      '-o', command.path.join(output_dir, output)])
 
@@ -267,21 +279,35 @@ def NewlibDirectoryCmds(bias_arch):
     ])
   else:
     # Use multilib-style directories for i686
+    multilib_triple = TripleFromArch(MultilibArch(bias_arch))
     commands.extend([
         command.Rename(os.path.join('%(output)s', 'le32-nacl'),
-                       os.path.join('%(output)s', 'x86_64-nacl')),
+                       os.path.join('%(output)s', multilib_triple)),
         command.RemoveDirectory(
-            os.path.join('%(output)s', 'x86_64-nacl', 'include')),
+            os.path.join('%(output)s', multilib_triple, 'include')),
         command.Rename(
-            os.path.join('%(output)s', 'x86_64-nacl', 'lib'),
-            os.path.join('%(output)s', 'x86_64-nacl', 'lib32')),
+            os.path.join('%(output)s', multilib_triple, 'lib'),
+            os.path.join('%(output)s', multilib_triple, 'lib32')),
     ])
   # Remove the 'share' directory from the biased builds; the data is
   # duplicated exactly and takes up 2MB per package.
   if bias_arch != 'le32':
     commands.append(command.RemoveDirectory(os.path.join('%(output)s','share')))
-
   return commands
+
+
+def LibcxxDirectoryCmds(bias_arch):
+  if bias_arch != 'i686':
+    return []
+  lib_dir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
+  return [
+      # Use the multlib-style lib dir and shared headers for i686
+      command.Mkdir(os.path.dirname(lib_dir)),
+      command.Rename(os.path.join('%(output)s', 'i686-nacl', 'lib'),
+                     lib_dir),
+      # The only thing left in i686-nacl is the headers
+      command.RemoveDirectory(os.path.join('%(output)s', 'i686-nacl')),
+  ]
 
 
 def TargetLibs(bias_arch, is_canonical):
@@ -290,7 +316,7 @@ def TargetLibs(bias_arch, is_canonical):
   target_triple = TripleFromArch(bias_arch)
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
-  libc_libdir = os.path.join('%(output)s', target_triple, 'lib')
+  libc_libdir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
   libs = {
       T('newlib'): {
           'type': 'build' if is_canonical else 'work',
@@ -324,6 +350,7 @@ def TargetLibs(bias_arch, is_canonical):
           'type': 'build' if is_canonical else 'work',
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
                            'target_lib_compiler', T('newlib'),
+                           GSDJoin('newlib', MultilibArch(bias_arch)),
                            T('libs_support')],
           'commands' :
               [command.SkipForIncrementalCommand(
@@ -332,15 +359,15 @@ def TargetLibs(bias_arch, is_canonical):
                    '-DCMAKE_CXX_COMPILER_WORKS=1',
                    '-DCMAKE_INSTALL_PREFIX=',
                    '-DCMAKE_BUILD_TYPE=Release',
-                   '-DCMAKE_C_COMPILER=' + PnaclTool('clang'),
-                   '-DCMAKE_CXX_COMPILER=' + PnaclTool('clang++'),
+                   '-DCMAKE_C_COMPILER=' + PnaclTool('clang', bias_arch),
+                   '-DCMAKE_CXX_COMPILER=' + PnaclTool('clang++', bias_arch),
                    '-DCMAKE_SYSTEM_NAME=nacl',
-                   '-DCMAKE_AR=' + PnaclTool('ar'),
-                   '-DCMAKE_NM=' + PnaclTool('nm'),
-                   '-DCMAKE_RANLIB=' + PnaclTool('ranlib'),
-                   '-DCMAKE_LD=' + PnaclTool('illegal'),
-                   '-DCMAKE_AS=' + PnaclTool('illegal'),
-                   '-DCMAKE_OBJDUMP=' + PnaclTool('illegal'),
+                   '-DCMAKE_AR=' + PnaclTool('ar', bias_arch),
+                   '-DCMAKE_NM=' + PnaclTool('nm', bias_arch),
+                   '-DCMAKE_RANLIB=' + PnaclTool('ranlib', bias_arch),
+                   '-DCMAKE_LD=' + PnaclTool('illegal', bias_arch),
+                   '-DCMAKE_AS=' + PnaclTool('as', bias_arch),
+                   '-DCMAKE_OBJDUMP=' + PnaclTool('illegal', bias_arch),
                    '-DCMAKE_C_FLAGS=-std=gnu11 ' + LibCxxCflags(bias_arch),
                    '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' + LibCxxCflags(bias_arch),
                    '-DLIT_EXECUTABLE=' + command.path.join(
@@ -369,7 +396,7 @@ def TargetLibs(bias_arch, is_canonical):
                   'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
                   'VERBOSE=1',
                   'install']),
-          ],
+          ] + LibcxxDirectoryCmds(bias_arch)
       },
       T('libstdcxx'): {
           'type': 'build' if is_canonical else 'work',
@@ -423,6 +450,9 @@ def TargetLibs(bias_arch, is_canonical):
                                'libstdc++.a')),
           ],
       },
+  }
+  if IsBCArch(bias_arch):
+    libs.update({
       T('libs_support'): {
           'type': 'build' if is_canonical else 'work',
           'dependencies': [ T('newlib'), 'target_lib_compiler'],
@@ -457,15 +487,50 @@ def TargetLibs(bias_arch, is_canonical):
                   PnaclTool('ar'), 'rc',
                   command.path.join(clang_libdir, 'libpnaclmm.a'),
                   'pnaclmm.bc']),
+          ]
+      }
+    })
+  else:
+    # For now most of the D2N support libs currently come from our native
+    # translator libs (libgcc_eh, compiler_rt, crtbegin/end). crti/crtn and crt1
+    # come from libnacl, built by scons/gyp.  TODO(dschuff): Do proper support
+    # libs for D2N which also don't use .init/.fini
+
+    # Translate from bias_arch's triple-style (i686) names to the translator's
+    # style (x86-32). We don't change the translator's naming scheme to avoid
+    # churning the in-browser translator.
+    def TL(lib):
+      return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
+    def TranslatorFile(lib, filename):
+      return os.path.join('%(' + TL(lib) + ')s', filename)
+    libs.update({
+      T('libs_support'): {
+          'type': 'build' if is_canonical else 'work',
+          'dependencies': [ GSDJoin('newlib', MultilibArch(bias_arch)),
+                            TL('compiler_rt'), TL('libgcc_eh'),
+                            TL('libs_support_translator'),
+                            'target_lib_compiler'],
+          'commands': [
+              command.Mkdir(clang_libdir, parents=True),
+              command.Copy(
+                  TranslatorFile('compiler_rt', 'libgcc.a'),
+                  os.path.join('%(output)s', clang_libdir, 'libgcc.a')),
+              command.Copy(
+                  TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
+                  os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
+              command.Copy(
+                  TranslatorFile('libs_support_translator', 'crtbegin.o'),
+                  os.path.join('%(output)s', clang_libdir, 'crtbegin.o')),
+              command.Copy(
+                  TranslatorFile('libs_support_translator', 'crtend.o'),
+                  os.path.join('%(output)s', clang_libdir, 'crtend.o')),
           ],
-      },
-  }
-  # For now, only the newlib build is enabled for direct-to-nacl.
-  # TODO(dschuff): enable others.
-  if not IsBCArch(bias_arch):
-    del libs[T('libs_support')]
+      }
+    })
+    # We do not plan to support libstdcxx for direct-to-nacl since we are close
+    # to being able to remove it from PNaCl.
     del libs[T('libstdcxx')]
-    del libs[T('libcxx')]
+
   return libs
 
 
