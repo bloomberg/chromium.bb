@@ -38,7 +38,7 @@ class TestSupportsUserData : public SupportsUserData {
 
 class SupportsUserDataTest : public PlatformTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     PlatformTest::SetUp();
 
     test_data1_was_destroyed_ = false;
@@ -48,7 +48,7 @@ class SupportsUserDataTest : public PlatformTest {
     supports_user_data_.reset(new TestSupportsUserData());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (!test_data1_was_destroyed_ &&
         supports_user_data_ &&
         supports_user_data_->GetUserData(kTestData1Key) != test_data1_)

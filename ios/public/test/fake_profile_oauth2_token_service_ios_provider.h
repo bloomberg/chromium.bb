@@ -22,18 +22,18 @@ class FakeProfileOAuth2TokenServiceIOSProvider
   virtual ~FakeProfileOAuth2TokenServiceIOSProvider();
 
   // ProfileOAuth2TokenServiceIOSProvider
-  virtual void InitializeSharedAuthentication() OVERRIDE;
+  virtual void InitializeSharedAuthentication() override;
 
   virtual void GetAccessToken(const std::string& account_id,
                               const std::string& client_id,
                               const std::string& client_secret,
                               const std::set<std::string>& scopes,
-                              const AccessTokenCallback& callback) OVERRIDE;
+                              const AccessTokenCallback& callback) override;
 
-  virtual std::vector<std::string> GetAllAccountIds() OVERRIDE;
+  virtual std::vector<std::string> GetAllAccountIds() override;
 
   virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
-      NSError* error) const OVERRIDE;
+      NSError* error) const override;
 
   // Methods to configure this fake provider.
   void AddAccount(const std::string& account_id);
