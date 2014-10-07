@@ -154,7 +154,6 @@ void WebCompositorAnimationImpl::setPlaybackRate(double playback_rate) {
   animation_->set_playback_rate(playback_rate);
 }
 
-#if WEB_ANIMATION_SUPPORTS_FILL_MODE
 blink::WebCompositorAnimation::FillMode WebCompositorAnimationImpl::fillMode()
     const {
   switch (animation_->fill_mode()) {
@@ -188,7 +187,7 @@ void WebCompositorAnimationImpl::setFillMode(FillMode fill_mode) {
       break;
   }
 }
-#endif
+
 scoped_ptr<cc::Animation> WebCompositorAnimationImpl::PassAnimation() {
   animation_->set_needs_synchronized_start_time(true);
   return animation_.Pass();
