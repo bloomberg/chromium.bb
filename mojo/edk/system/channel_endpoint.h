@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/system/message_in_transit.h"
+#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/system_impl_export.h"
 
@@ -18,6 +18,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class MessageInTransit;
 class MessagePipe;
 
 // TODO(vtl): The plan:
@@ -131,10 +132,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // Methods called by |Channel|:
 
   // Called by |Channel| when it takes a reference to this object.
-  void AttachToChannel(Channel* channel, MessageInTransit::EndpointId local_id);
+  void AttachToChannel(Channel* channel, ChannelEndpointId local_id);
 
   // TODO(vtl): Combine this with |AttachToChannel()|.
-  void Run(MessageInTransit::EndpointId remote_id);
+  void Run(ChannelEndpointId remote_id);
 
   // Called by |Channel| when it receives a message for the message pipe.
   bool OnReadMessage(const MessageInTransit::View& message_view,
@@ -176,8 +177,8 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // |channel_| must be valid whenever it is non-null. Before |*channel_| gives
   // up its reference to this object, it must call |DetachFromChannel()|.
   Channel* channel_;
-  MessageInTransit::EndpointId local_id_;
-  MessageInTransit::EndpointId remote_id_;
+  ChannelEndpointId local_id_;
+  ChannelEndpointId remote_id_;
 
   // This queue is used before we're running on a channel and ready to send
   // messages.

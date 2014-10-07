@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -64,10 +65,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Subtypes for type |kTypeRawChannel|:
   static const Subtype kSubtypeRawChannelPosixExtraPlatformHandles = 0;
 
-  typedef uint32_t EndpointId;
-  // Never a valid endpoint ID.
-  static const EndpointId kInvalidEndpointId = 0;
-
   // Messages (the header and data) must always be aligned to a multiple of this
   // quantity (which must be a power of 2).
   static const size_t kMessageAlignment = 8;
@@ -118,8 +115,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     }
     Type type() const { return header()->type; }
     Subtype subtype() const { return header()->subtype; }
-    EndpointId source_id() const { return header()->source_id; }
-    EndpointId destination_id() const { return header()->destination_id; }
+    ChannelEndpointId source_id() const { return header()->source_id; }
+    ChannelEndpointId destination_id() const {
+      return header()->destination_id;
+    }
 
    private:
     const Header* header() const { return static_cast<const Header*>(buffer_); }
@@ -194,11 +193,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   Type type() const { return header()->type; }
   Subtype subtype() const { return header()->subtype; }
-  EndpointId source_id() const { return header()->source_id; }
-  EndpointId destination_id() const { return header()->destination_id; }
+  ChannelEndpointId source_id() const { return header()->source_id; }
+  ChannelEndpointId destination_id() const { return header()->destination_id; }
 
-  void set_source_id(EndpointId source_id) { header()->source_id = source_id; }
-  void set_destination_id(EndpointId destination_id) {
+  void set_source_id(ChannelEndpointId source_id) {
+    header()->source_id = source_id;
+  }
+  void set_destination_id(ChannelEndpointId destination_id) {
     header()->destination_id = destination_id;
   }
 
@@ -230,10 +231,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // correct value if dispatchers are attached but
     // |SerializeAndCloseDispatchers()| has not been called.
     uint32_t total_size;
-    Type type;                  // 2 bytes.
-    Subtype subtype;            // 2 bytes.
-    EndpointId source_id;       // 4 bytes.
-    EndpointId destination_id;  // 4 bytes.
+    Type type;                         // 2 bytes.
+    Subtype subtype;                   // 2 bytes.
+    ChannelEndpointId source_id;       // 4 bytes.
+    ChannelEndpointId destination_id;  // 4 bytes.
     // Size of actual message data.
     uint32_t num_bytes;
     uint32_t unused;

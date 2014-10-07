@@ -32,8 +32,6 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpointAck;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
-    MessageInTransit::kInvalidEndpointId;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
 struct MessageInTransit::PrivateStructForCompileAsserts {
@@ -202,8 +200,8 @@ void MessageInTransit::ConstructorHelper(Type type,
   // |total_size| is updated below, from the other values.
   header()->type = type;
   header()->subtype = subtype;
-  header()->source_id = kInvalidEndpointId;
-  header()->destination_id = kInvalidEndpointId;
+  header()->source_id = kInvalidChannelEndpointId;
+  header()->destination_id = kInvalidChannelEndpointId;
   header()->num_bytes = num_bytes;
   header()->unused = 0;
   // Note: If dispatchers are subsequently attached, then |total_size| will have

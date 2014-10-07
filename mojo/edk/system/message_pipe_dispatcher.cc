@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
+#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/local_message_pipe_endpoint.h"
 #include "mojo/edk/system/memory.h"
-#include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/edk/system/proxy_message_pipe_endpoint.h"
@@ -23,7 +23,7 @@ namespace {
 const unsigned kInvalidPort = static_cast<unsigned>(-1);
 
 struct SerializedMessagePipeDispatcher {
-  MessageInTransit::EndpointId endpoint_id;
+  ChannelEndpointId endpoint_id;
 };
 
 }  // namespace
@@ -108,9 +108,9 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
   scoped_refptr<MessagePipeDispatcher> dispatcher =
       CreateRemoteMessagePipe(&channel_endpoint);
 
-  MessageInTransit::EndpointId remote_id =
+  ChannelEndpointId remote_id =
       static_cast<const SerializedMessagePipeDispatcher*>(source)->endpoint_id;
-  if (remote_id == MessageInTransit::kInvalidEndpointId) {
+  if (remote_id == kInvalidChannelEndpointId) {
     // This means that the other end was closed, and there were no messages
     // enqueued for us.
     // TODO(vtl): This is wrong. We should produce a "dead" message pipe
@@ -118,9 +118,8 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     NOTIMPLEMENTED();
     return scoped_refptr<MessagePipeDispatcher>();
   }
-  MessageInTransit::EndpointId local_id =
-      channel->AttachEndpoint(channel_endpoint);
-  if (local_id == MessageInTransit::kInvalidEndpointId) {
+  ChannelEndpointId local_id = channel->AttachEndpoint(channel_endpoint);
+  if (local_id == kInvalidChannelEndpointId) {
     LOG(ERROR) << "Failed to deserialize message pipe dispatcher (failed to "
                   "attach; remote ID = " << remote_id << ")";
     return scoped_refptr<MessagePipeDispatcher>();
@@ -246,9 +245,9 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
 
   // Convert the local endpoint to a proxy endpoint (moving the message queue)
   // and attach it to the channel.
-  MessageInTransit::EndpointId endpoint_id =
+  ChannelEndpointId endpoint_id =
       channel->AttachEndpoint(message_pipe_->ConvertLocalToProxy(port_));
-  // Note: It's okay to get an endpoint ID of |kInvalidEndpointId|. (It's
+  // Note: It's okay to get an endpoint ID of |kInvalidChannelEndpointId|. (It's
   // possible that the other endpoint -- the one that we're not sending -- was
   // closed in the intervening time.) In that case, we need to deserialize a
   // "dead" message pipe dispatcher on the other end. (Note that this is

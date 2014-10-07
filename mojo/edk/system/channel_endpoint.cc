@@ -16,8 +16,8 @@ ChannelEndpoint::ChannelEndpoint(MessagePipe* message_pipe, unsigned port)
     : message_pipe_(message_pipe),
       port_(port),
       channel_(),
-      local_id_(MessageInTransit::kInvalidEndpointId),
-      remote_id_(MessageInTransit::kInvalidEndpointId) {
+      local_id_(kInvalidChannelEndpointId),
+      remote_id_(kInvalidChannelEndpointId) {
   DCHECK(message_pipe_.get());
   DCHECK(port_ == 0 || port_ == 1);
 }
@@ -32,7 +32,7 @@ bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
 
   base::AutoLock locker(lock_);
 
-  if (!channel_ || remote_id_ == MessageInTransit::kInvalidEndpointId) {
+  if (!channel_ || remote_id_ == kInvalidChannelEndpointId) {
     // We may reach here if we haven't been attached or run yet.
     // TODO(vtl): We may also reach here if the channel is shut down early for
     // some reason (with live message pipes on it). We can't check |state_| yet,
@@ -43,7 +43,7 @@ bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
   }
 
   // TODO(vtl): Currently, this only works in the "running" case.
-  DCHECK_NE(remote_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_NE(remote_id_, kInvalidChannelEndpointId);
 
   return WriteMessageNoLock(message.Pass());
 }
@@ -59,36 +59,36 @@ void ChannelEndpoint::DetachFromMessagePipe() {
 
     if (!channel_)
       return;
-    DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
+    DCHECK_NE(local_id_, kInvalidChannelEndpointId);
     // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
     // here as well.
     channel_->DetachEndpoint(this, local_id_, remote_id_);
     channel_ = nullptr;
-    local_id_ = MessageInTransit::kInvalidEndpointId;
-    remote_id_ = MessageInTransit::kInvalidEndpointId;
+    local_id_ = kInvalidChannelEndpointId;
+    remote_id_ = kInvalidChannelEndpointId;
   }
 }
 
 void ChannelEndpoint::AttachToChannel(Channel* channel,
-                                      MessageInTransit::EndpointId local_id) {
+                                      ChannelEndpointId local_id) {
   DCHECK(channel);
-  DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
+  DCHECK_NE(local_id, kInvalidChannelEndpointId);
 
   base::AutoLock locker(lock_);
   DCHECK(!channel_);
-  DCHECK_EQ(local_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_EQ(local_id_, kInvalidChannelEndpointId);
   channel_ = channel;
   local_id_ = local_id;
 }
 
-void ChannelEndpoint::Run(MessageInTransit::EndpointId remote_id) {
-  DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
+void ChannelEndpoint::Run(ChannelEndpointId remote_id) {
+  DCHECK_NE(remote_id, kInvalidChannelEndpointId);
 
   base::AutoLock locker(lock_);
   if (!channel_)
     return;
 
-  DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_EQ(remote_id_, kInvalidChannelEndpointId);
   remote_id_ = remote_id;
 
   while (!paused_message_queue_.IsEmpty()) {
@@ -154,19 +154,19 @@ void ChannelEndpoint::DetachFromChannel() {
   if (!channel_)
     return;
 
-  DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_NE(local_id_, kInvalidChannelEndpointId);
   // TODO(vtl): Once we combine "run" into "attach", |remote_id_| should valid
   // here as well.
   channel_ = nullptr;
-  local_id_ = MessageInTransit::kInvalidEndpointId;
-  remote_id_ = MessageInTransit::kInvalidEndpointId;
+  local_id_ = kInvalidChannelEndpointId;
+  remote_id_ = kInvalidChannelEndpointId;
 }
 
 ChannelEndpoint::~ChannelEndpoint() {
   DCHECK(!message_pipe_.get());
   DCHECK(!channel_);
-  DCHECK_EQ(local_id_, MessageInTransit::kInvalidEndpointId);
-  DCHECK_EQ(remote_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_EQ(local_id_, kInvalidChannelEndpointId);
+  DCHECK_EQ(remote_id_, kInvalidChannelEndpointId);
 }
 
 bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
@@ -175,8 +175,8 @@ bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
   lock_.AssertAcquired();
 
   DCHECK(channel_);
-  DCHECK_NE(local_id_, MessageInTransit::kInvalidEndpointId);
-  DCHECK_NE(remote_id_, MessageInTransit::kInvalidEndpointId);
+  DCHECK_NE(local_id_, kInvalidChannelEndpointId);
+  DCHECK_NE(remote_id_, kInvalidChannelEndpointId);
 
   message->SerializeAndCloseDispatchers(channel_);
   message->set_source_id(local_id_);

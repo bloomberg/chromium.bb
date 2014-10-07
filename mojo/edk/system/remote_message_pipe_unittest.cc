@@ -26,6 +26,7 @@
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
+#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
@@ -73,7 +74,7 @@ class RemoteMessagePipeTest : public testing::Test {
 
   // This bootstraps |ep| on |channels_[channel_index]|. It assumes/requires
   // that this is the bootstrap case, i.e., that the endpoint IDs are both/will
-  // both be |Channel::kBootstrapEndpointId|. This returns *without* waiting for
+  // both be |kBootstrapChannelEndpointId|. This returns *without* waiting for
   // it to finish connecting.
   void BootstrapChannelEndpointNoWait(unsigned channel_index,
                                       scoped_refptr<ChannelEndpoint> ep) {
@@ -136,8 +137,8 @@ class RemoteMessagePipeTest : public testing::Test {
     if (!channels_[1].get())
       CreateAndInitChannel(1);
 
-    MessageInTransit::EndpointId local_id0 = channels_[0]->AttachEndpoint(ep0);
-    MessageInTransit::EndpointId local_id1 = channels_[1]->AttachEndpoint(ep1);
+    ChannelEndpointId local_id0 = channels_[0]->AttachEndpoint(ep0);
+    ChannelEndpointId local_id1 = channels_[1]->AttachEndpoint(ep1);
 
     channels_[0]->RunEndpoint(ep0, local_id1);
     channels_[1]->RunEndpoint(ep1, local_id0);
@@ -149,13 +150,13 @@ class RemoteMessagePipeTest : public testing::Test {
     CHECK(channel_index == 0 || channel_index == 1);
 
     CreateAndInitChannel(channel_index);
-    MessageInTransit::EndpointId endpoint_id =
+    ChannelEndpointId endpoint_id =
         channels_[channel_index]->AttachEndpoint(ep);
-    if (endpoint_id == MessageInTransit::kInvalidEndpointId)
+    if (endpoint_id == kInvalidChannelEndpointId)
       return;
 
-    CHECK_EQ(endpoint_id, Channel::kBootstrapEndpointId);
-    channels_[channel_index]->RunEndpoint(ep, Channel::kBootstrapEndpointId);
+    CHECK_EQ(endpoint_id, kBootstrapChannelEndpointId);
+    channels_[channel_index]->RunEndpoint(ep, kBootstrapChannelEndpointId);
   }
 
   void RestoreInitialStateOnIOThread() {

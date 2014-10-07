@@ -243,6 +243,7 @@
         'edk/system/channel.h',
         'edk/system/channel_endpoint.cc',
         'edk/system/channel_endpoint.h',
+        'edk/system/channel_endpoint_id.h',
         'edk/system/constants.h',
         'edk/system/core.cc',
         'edk/system/core.h',

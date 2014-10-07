@@ -18,18 +18,15 @@
 namespace mojo {
 namespace system {
 
-static_assert(Channel::kBootstrapEndpointId !=
-                  MessageInTransit::kInvalidEndpointId,
-              "kBootstrapEndpointId is invalid");
-
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
-    Channel::kBootstrapEndpointId;
+// TODO(vtl): Move this to channel_endpoint_id.cc, once that file exists.
+static_assert(kBootstrapChannelEndpointId != kInvalidChannelEndpointId,
+              "kBootstrapChannelEndpointId is invalid");
 
 Channel::Channel(embedder::PlatformSupport* platform_support)
     : platform_support_(platform_support),
       is_running_(false),
       is_shutting_down_(false),
-      next_local_id_(kBootstrapEndpointId) {
+      next_local_id_(kBootstrapChannelEndpointId) {
 }
 
 bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
@@ -95,18 +92,18 @@ void Channel::WillShutdownSoon() {
 // keeps the endpoint alive even after the lock is released. Otherwise, there's
 // the temptation to simply pass the result of |new ChannelEndpoint(...)|
 // directly to this function, which wouldn't be sufficient for safety.
-MessageInTransit::EndpointId Channel::AttachEndpoint(
+ChannelEndpointId Channel::AttachEndpoint(
     scoped_refptr<ChannelEndpoint> endpoint) {
   DCHECK(endpoint.get());
 
-  MessageInTransit::EndpointId local_id;
+  ChannelEndpointId local_id;
   {
     base::AutoLock locker(lock_);
 
     DLOG_IF(WARNING, is_shutting_down_)
         << "AttachEndpoint() while shutting down";
 
-    while (next_local_id_ == MessageInTransit::kInvalidEndpointId ||
+    while (next_local_id_ == kInvalidChannelEndpointId ||
            local_id_to_endpoint_map_.find(next_local_id_) !=
                local_id_to_endpoint_map_.end())
       next_local_id_++;
@@ -123,7 +120,7 @@ MessageInTransit::EndpointId Channel::AttachEndpoint(
 // TODO(vtl): This function is currently slightly absurd, but we'll eventually
 // get rid of it and merge it with |AttachEndpoint()|.
 void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                          MessageInTransit::EndpointId remote_id) {
+                          ChannelEndpointId remote_id) {
   {
     base::AutoLock locker(lock_);
 
@@ -136,9 +133,8 @@ void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
   endpoint->Run(remote_id);
 }
 
-void Channel::RunRemoteMessagePipeEndpoint(
-    MessageInTransit::EndpointId local_id,
-    MessageInTransit::EndpointId remote_id) {
+void Channel::RunRemoteMessagePipeEndpoint(ChannelEndpointId local_id,
+                                           ChannelEndpointId remote_id) {
 #if DCHECK_IS_ON
   {
     base::AutoLock locker(lock_);
@@ -180,12 +176,12 @@ bool Channel::IsWriteBufferEmpty() {
 }
 
 void Channel::DetachEndpoint(ChannelEndpoint* endpoint,
-                             MessageInTransit::EndpointId local_id,
-                             MessageInTransit::EndpointId remote_id) {
+                             ChannelEndpointId local_id,
+                             ChannelEndpointId remote_id) {
   DCHECK(endpoint);
-  DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
+  DCHECK_NE(local_id, kInvalidChannelEndpointId);
 
-  if (remote_id == MessageInTransit::kInvalidEndpointId)
+  if (remote_id == kInvalidChannelEndpointId)
     return;  // Nothing to do.
 
   {
@@ -287,8 +283,8 @@ void Channel::OnReadMessageForDownstream(
   DCHECK(message_view.type() == MessageInTransit::kTypeMessagePipeEndpoint ||
          message_view.type() == MessageInTransit::kTypeMessagePipe);
 
-  MessageInTransit::EndpointId local_id = message_view.destination_id();
-  if (local_id == MessageInTransit::kInvalidEndpointId) {
+  ChannelEndpointId local_id = message_view.destination_id();
+  if (local_id == kInvalidChannelEndpointId) {
     HandleRemoteError("Received message with no destination ID");
     return;
   }
@@ -387,8 +383,8 @@ void Channel::OnReadMessageForChannel(
   }
 }
 
-bool Channel::OnRunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                       MessageInTransit::EndpointId remote_id) {
+bool Channel::OnRunMessagePipeEndpoint(ChannelEndpointId local_id,
+                                       ChannelEndpointId remote_id) {
   scoped_refptr<ChannelEndpoint> endpoint;
   {
     base::AutoLock locker(lock_);
@@ -404,9 +400,8 @@ bool Channel::OnRunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
   return true;
 }
 
-bool Channel::OnRemoveMessagePipeEndpoint(
-    MessageInTransit::EndpointId local_id,
-    MessageInTransit::EndpointId remote_id) {
+bool Channel::OnRemoveMessagePipeEndpoint(ChannelEndpointId local_id,
+                                          ChannelEndpointId remote_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
   scoped_refptr<ChannelEndpoint> endpoint;
@@ -446,8 +441,7 @@ bool Channel::OnRemoveMessagePipeEndpoint(
   return true;
 }
 
-bool Channel::OnRemoveMessagePipeEndpointAck(
-    MessageInTransit::EndpointId local_id) {
+bool Channel::OnRemoveMessagePipeEndpointAck(ChannelEndpointId local_id) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
   base::AutoLock locker(lock_);
@@ -468,8 +462,8 @@ bool Channel::OnRemoveMessagePipeEndpointAck(
 }
 
 bool Channel::SendControlMessage(MessageInTransit::Subtype subtype,
-                                 MessageInTransit::EndpointId local_id,
-                                 MessageInTransit::EndpointId remote_id) {
+                                 ChannelEndpointId local_id,
+                                 ChannelEndpointId remote_id) {
   DVLOG(2) << "Sending channel control message: subtype " << subtype
            << ", local ID " << local_id << ", remote ID " << remote_id;
   scoped_ptr<MessageInTransit> message(new MessageInTransit(

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -17,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel_endpoint.h"
+#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/raw_channel.h"
@@ -51,9 +51,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     : public base::RefCountedThreadSafe<Channel>,
       public RawChannel::Delegate {
  public:
-  // The first message pipe endpoint attached will have this as its local ID.
-  static const MessageInTransit::EndpointId kBootstrapEndpointId = 1;
-
   // |platform_support| (typically owned by |Core|) must remain alive until
   // after |Shutdown()| is called.
   explicit Channel(embedder::PlatformSupport* platform_support);
@@ -76,20 +73,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // Attaches the given endpoint to this channel. This assigns it a local ID,
   // which it returns. The first endpoint attached will always have
-  // |kBootstrapEndpointId| as its local ID. (For bootstrapping, this occurs on
-  // both sides, so one should use |kBootstrapEndpointId| for the remote ID for
-  // the first message pipe across a channel.) Returns |kInvalidEndpointId| on
-  // failure.
+  // |kBootstrapChannelEndpointId| as its local ID. (For bootstrapping, this
+  // occurs on both sides, so one should use |kBootstrapChannelEndpointId| for
+  // the remote ID for the first message pipe across a channel.) Returns
+  // |kInvalidChannelEndpointId| on failure.
   // TODO(vtl): This should be combined with "run", and it should take a
   // |ChannelEndpoint| instead.
   // TODO(vtl): Maybe limit the number of attached message pipes.
-  MessageInTransit::EndpointId AttachEndpoint(
-      scoped_refptr<ChannelEndpoint> endpoint);
+  ChannelEndpointId AttachEndpoint(scoped_refptr<ChannelEndpoint> endpoint);
 
   // Runs the given endpoint (which must have been attached to this |Channel|,
   // and not detached), assigning it the specified |remote_id|.
   void RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                   MessageInTransit::EndpointId remote_id);
+                   ChannelEndpointId remote_id);
 
   // Tells the other side of the channel to run a message pipe endpoint (which
   // must already be attached); |local_id| and |remote_id| are relative to this
@@ -97,8 +93,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // its local ID).
   // TODO(vtl): Maybe we should just have a flag argument to
   // |RunMessagePipeEndpoint()| that tells it to do this.
-  void RunRemoteMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                    MessageInTransit::EndpointId remote_id);
+  void RunRemoteMessagePipeEndpoint(ChannelEndpointId local_id,
+                                    ChannelEndpointId remote_id);
 
   // This forwards |message| verbatim to |raw_channel_|.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
@@ -110,12 +106,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // This removes the given endpoint from this channel (|local_id| and
   // |remote_id| are specified as an optimization; the latter should be
-  // |kInvalidEndpointId| if the endpoint is not yet running). Note: If this is
-  // called, the |Channel| will *not* call
+  // |kInvalidChannelEndpointId| if the endpoint is not yet running). Note: If
+  // this is called, the |Channel| will *not* call
   // |ChannelEndpoint::DetachFromChannel()|.
   void DetachEndpoint(ChannelEndpoint* endpoint,
-                      MessageInTransit::EndpointId local_id,
-                      MessageInTransit::EndpointId remote_id);
+                      ChannelEndpointId local_id,
+                      ChannelEndpointId remote_id);
 
   // See |RawChannel::GetSerializedPlatformHandleSize()|.
   size_t GetSerializedPlatformHandleSize() const;
@@ -143,13 +139,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       embedder::ScopedPlatformHandleVectorPtr platform_handles);
 
   // Handles "run message pipe endpoint" messages.
-  bool OnRunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                MessageInTransit::EndpointId remote_id);
+  bool OnRunMessagePipeEndpoint(ChannelEndpointId local_id,
+                                ChannelEndpointId remote_id);
   // Handles "remove message pipe endpoint" messages.
-  bool OnRemoveMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
-                                   MessageInTransit::EndpointId remote_id);
+  bool OnRemoveMessagePipeEndpoint(ChannelEndpointId local_id,
+                                   ChannelEndpointId remote_id);
   // Handles "remove message pipe endpoint ack" messages.
-  bool OnRemoveMessagePipeEndpointAck(MessageInTransit::EndpointId local_id);
+  bool OnRemoveMessagePipeEndpointAck(ChannelEndpointId local_id);
 
   // Handles errors (e.g., invalid messages) from the remote side. Callable from
   // any thread.
@@ -161,8 +157,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Helper to send channel control messages. Returns true on success. Should be
   // called *without* |lock_| held. Callable from any thread.
   bool SendControlMessage(MessageInTransit::Subtype subtype,
-                          MessageInTransit::EndpointId source_id,
-                          MessageInTransit::EndpointId destination_id);
+                          ChannelEndpointId source_id,
+                          ChannelEndpointId destination_id);
 
   base::ThreadChecker creation_thread_checker_;
 
@@ -179,14 +175,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Set when |WillShutdownSoon()| is called.
   bool is_shutting_down_;
 
-  typedef base::hash_map<MessageInTransit::EndpointId,
-                         scoped_refptr<ChannelEndpoint>> IdToEndpointMap;
+  typedef base::hash_map<ChannelEndpointId, scoped_refptr<ChannelEndpoint>>
+      IdToEndpointMap;
   // Map from local IDs to endpoints. If the endpoint is null, this means that
   // we're just waiting for the remove ack before removing the entry.
   IdToEndpointMap local_id_to_endpoint_map_;
   // The next local ID to try (when allocating new local IDs). Note: It should
   // be checked for existence before use.
-  MessageInTransit::EndpointId next_local_id_;
+  ChannelEndpointId next_local_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };

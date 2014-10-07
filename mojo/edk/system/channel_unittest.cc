@@ -11,7 +11,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel_endpoint.h"
-#include "mojo/edk/system/message_in_transit.h"
+#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/test_utils.h"
@@ -198,9 +198,8 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  MessageInTransit::EndpointId local_id =
-      channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
+  ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
+  EXPECT_EQ(kBootstrapChannelEndpointId, local_id);
 
   mp->Close(0);
 
@@ -210,7 +209,7 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
   // called or not. (Then, in the case that it may not be called, this will
   // return false.)
-  channel()->RunEndpoint(channel_endpoint, Channel::kBootstrapEndpointId);
+  channel()->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,
@@ -237,16 +236,15 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  MessageInTransit::EndpointId local_id =
-      channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
+  ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
+  EXPECT_EQ(kBootstrapChannelEndpointId, local_id);
 
   // TODO(vtl): Currently, we always "expect" a |RunMessagePipeEndpoint()| after
   // an |AttachEndpoint()| (which is actually incorrect). We need to refactor
   // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
   // called or not. (Then, in the case that it may not be called, we should test
   // a |Shutdown()| without the |Run...()|.)
-  channel()->RunEndpoint(channel_endpoint, Channel::kBootstrapEndpointId);
+  channel()->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
 
   Waiter waiter;
   waiter.Init();
@@ -289,11 +287,10 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  MessageInTransit::EndpointId local_id =
-      channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
+  ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
+  EXPECT_EQ(kBootstrapChannelEndpointId, local_id);
 
-  channel()->RunEndpoint(channel_endpoint, Channel::kBootstrapEndpointId);
+  channel()->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,
