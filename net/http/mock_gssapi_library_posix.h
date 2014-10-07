@@ -15,6 +15,8 @@
     MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9
 // Including gssapi.h directly is deprecated in the 10.9 SDK.
 #include <GSS/gssapi.h>
+#elif defined(OS_FREEBSD)
+#include <gssapi/gssapi.h>
 #else
 #include <gssapi.h>
 #endif

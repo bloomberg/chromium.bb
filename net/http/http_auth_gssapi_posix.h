@@ -16,6 +16,8 @@
     MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9
 // Including gssapi.h directly is deprecated in the 10.9 SDK.
 #include <GSS/gssapi.h>
+#elif defined(OS_FREEBSD)
+#include <gssapi/gssapi.h>
 #else
 #include <gssapi.h>
 #endif
@@ -99,7 +101,6 @@ class NET_EXPORT_PRIVATE GSSAPILibrary {
       OM_uint32* ctx_flags,
       int* locally_initiated,
       int* open) = 0;
-
 };
 
 // GSSAPISharedLibrary class is defined here so that unit tests can access it.
