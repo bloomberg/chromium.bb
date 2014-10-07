@@ -90,8 +90,8 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   cloud_print::CloudPrintProxy* GetCloudPrintProxy();
 
   // CloudPrintProxy::Client implementation.
-  virtual void OnCloudPrintProxyEnabled(bool persist_state) OVERRIDE;
-  virtual void OnCloudPrintProxyDisabled(bool persist_state) OVERRIDE;
+  virtual void OnCloudPrintProxyEnabled(bool persist_state) override;
+  virtual void OnCloudPrintProxyDisabled(bool persist_state) override;
 
   ServiceURLRequestContextGetter* GetServiceURLRequestContextGetter();
 

@@ -76,26 +76,26 @@ class PrintSystemCUPS : public PrintSystem {
   explicit PrintSystemCUPS(const base::DictionaryValue* print_system_settings);
 
   // PrintSystem implementation.
-  virtual PrintSystemResult Init() OVERRIDE;
+  virtual PrintSystemResult Init() override;
   virtual PrintSystem::PrintSystemResult EnumeratePrinters(
-      printing::PrinterList* printer_list) OVERRIDE;
+      printing::PrinterList* printer_list) override;
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      const PrinterCapsAndDefaultsCallback& callback) OVERRIDE;
-  virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
+      const PrinterCapsAndDefaultsCallback& callback) override;
+  virtual bool IsValidPrinter(const std::string& printer_name) override;
   virtual bool ValidatePrintTicket(
       const std::string& printer_name,
       const std::string& print_ticket_data,
-      const std::string& print_ticket_mime_type) OVERRIDE;
+      const std::string& print_ticket_mime_type) override;
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
-                             PrintJobDetails *job_details) OVERRIDE;
-  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher() OVERRIDE;
+                             PrintJobDetails *job_details) override;
+  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher() override;
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
-      const std::string& printer_name) OVERRIDE;
-  virtual PrintSystem::JobSpooler* CreateJobSpooler() OVERRIDE;
-  virtual bool UseCddAndCjt() OVERRIDE;
-  virtual std::string GetSupportedMimeTypes() OVERRIDE;
+      const std::string& printer_name) override;
+  virtual PrintSystem::JobSpooler* CreateJobSpooler() override;
+  virtual bool UseCddAndCjt() override;
+  virtual std::string GetSupportedMimeTypes() override;
 
   // Helper functions.
   PlatformJobId SpoolPrintJob(const std::string& print_ticket,
@@ -181,7 +181,7 @@ class PrintServerWatcherCUPS
 
   // PrintSystem::PrintServerWatcher implementation.
   virtual bool StartWatching(
-      PrintSystem::PrintServerWatcher::Delegate* delegate) OVERRIDE {
+      PrintSystem::PrintServerWatcher::Delegate* delegate) override {
     delegate_ = delegate;
     printers_hash_ = GetPrintersHash();
     base::MessageLoop::current()->PostDelayedTask(
@@ -191,7 +191,7 @@ class PrintServerWatcherCUPS
     return true;
   }
 
-  virtual bool StopWatching() OVERRIDE {
+  virtual bool StopWatching() override {
     delegate_ = NULL;
     return true;
   }
@@ -254,7 +254,7 @@ class PrinterWatcherCUPS
 
   // PrintSystem::PrinterWatcher implementation.
   virtual bool StartWatching(
-      PrintSystem::PrinterWatcher::Delegate* delegate) OVERRIDE{
+      PrintSystem::PrinterWatcher::Delegate* delegate) override{
     scoped_refptr<printing::PrintBackend> print_backend(
         printing::PrintBackend::CreateInstance(NULL));
     crash_keys::ScopedPrinterInfo crash_key(
@@ -277,13 +277,13 @@ class PrinterWatcherCUPS
     return true;
   }
 
-  virtual bool StopWatching() OVERRIDE{
+  virtual bool StopWatching() override{
     delegate_ = NULL;
     return true;
   }
 
   virtual bool GetCurrentPrinterInfo(
-      printing::PrinterBasicInfo* printer_info) OVERRIDE {
+      printing::PrinterBasicInfo* printer_info) override {
     DCHECK(printer_info);
     return print_system_->GetPrinterInfo(printer_name_, printer_info);
   }
@@ -380,7 +380,7 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
                      const std::string& printer_name,
                      const std::string& job_title,
                      const std::vector<std::string>& tags,
-                     JobSpooler::Delegate* delegate) OVERRIDE{
+                     JobSpooler::Delegate* delegate) override{
     DCHECK(delegate);
     bool dry_run = false;
     int job_id = print_system_->SpoolPrintJob(

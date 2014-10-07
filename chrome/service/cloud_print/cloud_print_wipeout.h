@@ -35,10 +35,10 @@ class CloudPrintWipeout : public CloudPrintURLFetcherDelegate {
       const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
-      bool succeeded) OVERRIDE;
-  virtual void OnRequestGiveUp() OVERRIDE;
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
-  virtual std::string GetAuthHeader() OVERRIDE;
+      bool succeeded) override;
+  virtual void OnRequestGiveUp() override;
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
+  virtual std::string GetAuthHeader() override;
 
  private:
   void UnregisterNextPrinter();

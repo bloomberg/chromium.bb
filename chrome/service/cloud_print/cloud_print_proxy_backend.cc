@@ -69,20 +69,20 @@ class CloudPrintProxyBackend::Core
       const std::string& access_token,
       const std::string& robot_oauth_refresh_token,
       const std::string& robot_email,
-      const std::string& user_email) OVERRIDE;
-  virtual void OnInvalidCredentials() OVERRIDE;
+      const std::string& user_email) override;
+  virtual void OnInvalidCredentials() override;
 
   // CloudPrintConnector::Client implementation.
-  virtual void OnAuthFailed() OVERRIDE;
-  virtual void OnXmppPingUpdated(int ping_timeout) OVERRIDE;
+  virtual void OnAuthFailed() override;
+  virtual void OnXmppPingUpdated(int ping_timeout) override;
 
   // notifier::PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsEnabled() override;
   virtual void OnNotificationsDisabled(
-      notifier::NotificationsDisabledReason reason) OVERRIDE;
+      notifier::NotificationsDisabledReason reason) override;
   virtual void OnIncomingNotification(
-      const notifier::Notification& notification) OVERRIDE;
-  virtual void OnPingResponse() OVERRIDE;
+      const notifier::Notification& notification) override;
+  virtual void OnPingResponse() override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;

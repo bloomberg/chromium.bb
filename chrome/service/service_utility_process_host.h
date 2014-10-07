@@ -113,9 +113,9 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   virtual base::FilePath GetUtilityProcessCmd();
 
   // ChildProcessHostDelegate implementation:
-  virtual void OnChildDisconnected() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual base::ProcessHandle GetHandle() const OVERRIDE;
+  virtual void OnChildDisconnected() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual base::ProcessHandle GetHandle() const override;
 
  private:
   // Starts a process.  Returns true iff it succeeded.

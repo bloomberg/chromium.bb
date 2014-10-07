@@ -140,24 +140,24 @@ class PrintServerWatcherWin
 
   // PrintSystem::PrintServerWatcher implementation.
   virtual bool StartWatching(
-      PrintSystem::PrintServerWatcher::Delegate* delegate) OVERRIDE{
+      PrintSystem::PrintServerWatcher::Delegate* delegate) override{
     delegate_ = delegate;
     return watcher_.Start(std::string(), this);
   }
 
-  virtual bool StopWatching() OVERRIDE{
+  virtual bool StopWatching() override{
     bool ret = watcher_.Stop();
     delegate_ = NULL;
     return ret;
   }
 
   // PrintSystemWatcherWin::Delegate implementation.
-  virtual void OnPrinterAdded() OVERRIDE {
+  virtual void OnPrinterAdded() override {
     delegate_->OnPrinterAdded();
   }
-  virtual void OnPrinterDeleted() OVERRIDE {}
-  virtual void OnPrinterChanged() OVERRIDE {}
-  virtual void OnJobChanged() OVERRIDE {}
+  virtual void OnPrinterDeleted() override {}
+  virtual void OnPrinterChanged() override {}
+  virtual void OnJobChanged() override {}
 
  protected:
   virtual ~PrintServerWatcherWin() {}
@@ -180,33 +180,33 @@ class PrinterWatcherWin
 
   // PrintSystem::PrinterWatcher implementation.
   virtual bool StartWatching(
-      PrintSystem::PrinterWatcher::Delegate* delegate) OVERRIDE {
+      PrintSystem::PrinterWatcher::Delegate* delegate) override {
     delegate_ = delegate;
     return watcher_.Start(printer_name_, this);
   }
 
-  virtual bool StopWatching() OVERRIDE {
+  virtual bool StopWatching() override {
     bool ret = watcher_.Stop();
     delegate_ = NULL;
     return ret;
   }
 
   virtual bool GetCurrentPrinterInfo(
-      printing::PrinterBasicInfo* printer_info) OVERRIDE {
+      printing::PrinterBasicInfo* printer_info) override {
     return watcher_.GetCurrentPrinterInfo(printer_info);
   }
 
   // PrintSystemWatcherWin::Delegate implementation.
-  virtual void OnPrinterAdded() OVERRIDE {
+  virtual void OnPrinterAdded() override {
     NOTREACHED();
   }
-  virtual void OnPrinterDeleted() OVERRIDE {
+  virtual void OnPrinterDeleted() override {
     delegate_->OnPrinterDeleted();
   }
-  virtual void OnPrinterChanged() OVERRIDE {
+  virtual void OnPrinterChanged() override {
     delegate_->OnPrinterChanged();
   }
-  virtual void OnJobChanged() OVERRIDE {
+  virtual void OnJobChanged() override {
     delegate_->OnJobChanged();
   }
 
@@ -233,7 +233,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
                      const std::string& printer_name,
                      const std::string& job_title,
                      const std::vector<std::string>& tags,
-                     JobSpooler::Delegate* delegate) OVERRIDE {
+                     JobSpooler::Delegate* delegate) override {
     // TODO(gene): add tags handling.
     scoped_refptr<printing::PrintBackend> print_backend(
         printing::PrintBackend::CreateInstance(NULL));
@@ -339,7 +339,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     // ServiceUtilityProcessHost::Client implementation.
     virtual void OnRenderPDFPagesToMetafilePageDone(
         double scale_factor,
-        const printing::MetafilePlayer& emf) OVERRIDE {
+        const printing::MetafilePlayer& emf) override {
       PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
       ::StartPage(printer_dc_.Get());
       emf.SafePlayback(printer_dc_.Get());
@@ -347,14 +347,14 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     }
 
     // ServiceUtilityProcessHost::Client implementation.
-    virtual void OnRenderPDFPagesToMetafileDone(bool success) OVERRIDE {
+    virtual void OnRenderPDFPagesToMetafileDone(bool success) override {
       PrintJobDone(success);
     }
 
-    virtual void OnChildDied() OVERRIDE { PrintJobDone(false); }
+    virtual void OnChildDied() override { PrintJobDone(false); }
 
     // base::win::ObjectWatcher::Delegate implementation.
-    virtual void OnObjectSignaled(HANDLE object) OVERRIDE {
+    virtual void OnObjectSignaled(HANDLE object) override {
   // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
       tracked_objects::ScopedProfile tracking_profile(
           FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -534,7 +534,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   }
 
   // ServiceUtilityProcessHost::Client implementation.
-  virtual void OnChildDied() OVERRIDE {
+  virtual void OnChildDied() override {
     OnGetPrinterCapsAndDefaults(false, printer_name_,
                                 printing::PrinterCapsAndDefaults());
   }
@@ -542,7 +542,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   virtual void OnGetPrinterCapsAndDefaults(
       bool succeeded,
       const std::string& printer_name,
-      const printing::PrinterCapsAndDefaults& caps_and_defaults) OVERRIDE {
+      const printing::PrinterCapsAndDefaults& caps_and_defaults) override {
     callback_.Run(succeeded, printer_name, caps_and_defaults);
     callback_.Reset();
     Release();
@@ -551,7 +551,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   virtual void OnGetPrinterSemanticCapsAndDefaults(
       bool succeeded,
       const std::string& printer_name,
-      const printing::PrinterSemanticCapsAndDefaults& semantic_info) OVERRIDE {
+      const printing::PrinterSemanticCapsAndDefaults& semantic_info) override {
     printing::PrinterCapsAndDefaults printer_info;
     if (succeeded) {
       printer_info.caps_mime_type = kContentTypeJSON;
@@ -626,26 +626,26 @@ class PrintSystemWin : public PrintSystem {
   PrintSystemWin();
 
   // PrintSystem implementation.
-  virtual PrintSystemResult Init() OVERRIDE;
+  virtual PrintSystemResult Init() override;
   virtual PrintSystem::PrintSystemResult EnumeratePrinters(
-      printing::PrinterList* printer_list) OVERRIDE;
+      printing::PrinterList* printer_list) override;
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      const PrinterCapsAndDefaultsCallback& callback) OVERRIDE;
-  virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
+      const PrinterCapsAndDefaultsCallback& callback) override;
+  virtual bool IsValidPrinter(const std::string& printer_name) override;
   virtual bool ValidatePrintTicket(
       const std::string& printer_name,
       const std::string& print_ticket_data,
-      const std::string& print_ticket_data_mime_type) OVERRIDE;
+      const std::string& print_ticket_data_mime_type) override;
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
-                             PrintJobDetails *job_details) OVERRIDE;
-  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher() OVERRIDE;
+                             PrintJobDetails *job_details) override;
+  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher() override;
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
-      const std::string& printer_name) OVERRIDE;
-  virtual PrintSystem::JobSpooler* CreateJobSpooler() OVERRIDE;
-  virtual bool UseCddAndCjt() OVERRIDE;
-  virtual std::string GetSupportedMimeTypes() OVERRIDE;
+      const std::string& printer_name) override;
+  virtual PrintSystem::JobSpooler* CreateJobSpooler() override;
+  virtual bool UseCddAndCjt() override;
+  virtual std::string GetSupportedMimeTypes() override;
 
  private:
   std::string PrintSystemWin::GetPrinterDriverInfo(

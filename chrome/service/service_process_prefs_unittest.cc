@@ -13,7 +13,7 @@
 
 class ServiceProcessPrefsTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     prefs_.reset(new ServiceProcessPrefs(
@@ -21,7 +21,7 @@ class ServiceProcessPrefsTest : public testing::Test {
         message_loop_.message_loop_proxy().get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     prefs_.reset();
   }
 

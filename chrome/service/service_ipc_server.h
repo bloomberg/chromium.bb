@@ -31,7 +31,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   bool Init();
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -48,9 +48,9 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   friend class MockServiceIPCServer;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   // IPC message handlers.
   void OnEnableCloudPrintProxyWithRobot(

@@ -30,9 +30,9 @@ class ProxyConfigService;
 
 class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
   void set_user_agent(const std::string& ua) {
     user_agent_ = ua;

@@ -64,16 +64,16 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // CloudPrintProxyFrontend implementation. Called on UI thread.
   virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,
                                const std::string& robot_email,
-                               const std::string& user_email) OVERRIDE;
-  virtual void OnAuthenticationFailed() OVERRIDE;
-  virtual void OnPrintSystemUnavailable() OVERRIDE;
+                               const std::string& user_email) override;
+  virtual void OnAuthenticationFailed() override;
+  virtual void OnPrintSystemUnavailable() override;
   virtual void OnUnregisterPrinters(
       const std::string& auth_token,
-      const std::list<std::string>& printer_ids) OVERRIDE;
-  virtual void OnXmppPingUpdated(int ping_timeout) OVERRIDE;
+      const std::list<std::string>& printer_ids) override;
+  virtual void OnXmppPingUpdated(int ping_timeout) override;
 
   // CloudPrintWipeout::Client implementation.
-  virtual void OnUnregisterPrintersComplete() OVERRIDE;
+  virtual void OnUnregisterPrintersComplete() override;
 
  protected:
   void ShutdownBackend();
