@@ -42,7 +42,7 @@ class WebGraphicsContext3DErrorMessageCallback
       : graphics_context_(context) {
   }
 
-  virtual void OnErrorMessage(const char* msg, int id) OVERRIDE;
+  virtual void OnErrorMessage(const char* msg, int id) override;
 
  private:
   WebGraphicsContext3DImpl* graphics_context_;
