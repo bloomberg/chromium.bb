@@ -59,6 +59,7 @@ class Page;
 class RenderObject;
 class SharedBuffer;
 class StyleResolver;
+class TextResourceDecoder;
 
 typedef String ErrorString;
 
@@ -94,6 +95,7 @@ public:
     static TypeBuilder::Page::ResourceType::Enum resourceTypeJson(ResourceType);
     static ResourceType cachedResourceType(const Resource&);
     static TypeBuilder::Page::ResourceType::Enum cachedResourceTypeJson(const Resource&);
+    static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName);
 
     // Page API for InspectorFrontend
     virtual void enable(ErrorString*) OVERRIDE;

@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.recordNetwork();
+    InspectorTest.makeSimpleXHR("GET", "resources/binary.data", true, step2);
+
+    function step2()
+    {
+        var request = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult("request.type: " + request.type);
+        InspectorTest.addResult("request.mimeType: " + request.mimeType);
+        request.requestContent(step3);
+    }
+
+    function step3()
+    {
+        var request = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult("request.contentEncoded: " + request.contentEncoded);
+        InspectorTest.addResult("request.content: " + request.content);
+        var raw = window.atob(request.content);
+        var bytes = [];
+        for (var i = 0; i < raw.length; ++i)
+            bytes.push(raw.charCodeAt(i));
+        InspectorTest.addResult("request.content decoded: " + bytes.join(", "));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that binary XHR response is not corrupted.</p>
+</body>
+</html>

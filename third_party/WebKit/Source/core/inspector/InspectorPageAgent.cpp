@@ -74,6 +74,7 @@
 #include "core/page/Page.h"
 #include "platform/Cookie.h"
 #include "platform/JSONValues.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -226,7 +227,7 @@ static bool hasTextContent(Resource* cachedResource)
     return type == InspectorPageAgent::DocumentResource || type == InspectorPageAgent::StylesheetResource || type == InspectorPageAgent::ScriptResource || type == InspectorPageAgent::XHRResource;
 }
 
-static PassOwnPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeType, const String& textEncodingName)
+PassOwnPtr<TextResourceDecoder> InspectorPageAgent::createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
 {
     if (!textEncodingName.isEmpty())
         return TextResourceDecoder::create("text/plain", textEncodingName);
@@ -237,7 +238,11 @@ static PassOwnPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeTy
     }
     if (equalIgnoringCase(mimeType, "text/html"))
         return TextResourceDecoder::create("text/html", "UTF-8");
-    return TextResourceDecoder::create("text/plain", "UTF-8");
+    if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) || DOMImplementation::isJSONMIMEType(mimeType))
+        return TextResourceDecoder::create("text/plain", "UTF-8");
+    if (DOMImplementation::isTextMIMEType(mimeType))
+        return TextResourceDecoder::create("text/plain", "ISO-8859-1");
+    return PassOwnPtr<TextResourceDecoder>();
 }
 
 static void resourceContent(ErrorString* errorString, LocalFrame* frame, const KURL& url, String* result, bool* base64Encoded)
@@ -250,6 +255,18 @@ static void resourceContent(ErrorString* errorString, LocalFrame* frame, const K
         *errorString = "No resource with given URL found";
 }
 
+static bool encodeCachedResourceContent(Resource* cachedResource, bool hasZeroSize, String* result, bool* base64Encoded)
+{
+    *base64Encoded = true;
+    RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
+
+    if (!buffer)
+        return false;
+
+    *result = base64Encode(buffer->data(), buffer->size());
+    return true;
+}
+
 bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String* result, bool* base64Encoded)
 {
     bool hasZeroSize;
@@ -257,16 +274,9 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
     if (!prepared)
         return false;
 
-    *base64Encoded = !hasTextContent(cachedResource);
-    if (*base64Encoded) {
-        RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
-
-        if (!buffer)
-            return false;
-
-        *result = base64Encode(buffer->data(), buffer->size());
-        return true;
-    }
+    if (!hasTextContent(cachedResource))
+        return encodeCachedResourceContent(cachedResource, hasZeroSize, result, base64Encoded);
+    *base64Encoded = false;
 
     if (hasZeroSize) {
         *result = "";
@@ -285,7 +295,9 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
             SharedBuffer* buffer = cachedResource->resourceBuffer();
             if (!buffer)
                 return false;
-            OwnPtr<TextResourceDecoder> decoder = createXHRTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
+            OwnPtr<TextResourceDecoder> decoder = InspectorPageAgent::createResourceTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
+            if (!decoder)
+                return encodeCachedResourceContent(cachedResource, hasZeroSize, result, base64Encoded);
             String content = decoder->decode(buffer->data(), buffer->size());
             *result = content + decoder->flush();
             return true;
