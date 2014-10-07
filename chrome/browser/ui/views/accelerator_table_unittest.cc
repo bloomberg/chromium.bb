@@ -56,12 +56,13 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
     const ash::AcceleratorData& ash_entry = ash::kAcceleratorData[i];
     if (!ash_entry.trigger_on_press)
       continue;  // kAcceleratorMap does not have any release accelerators.
-    // The shortcuts to toggle minimized state and to show the task
-    // manager are defined on browser side as well as ash side by
+    // The shortcuts to toggle minimized state, to show the task manager, and
+    // to toggle touch HUD are defined on browser side as well as ash side by
     // design so that web contents can consume these short cuts. (see
-    // crbug.com/309915, 370019 and CL)
+    // crbug.com/309915, 370019, 412435 and CL)
     if (ash_entry.action == ash::WINDOW_MINIMIZE ||
-        ash_entry.action == ash::SHOW_TASK_MANAGER)
+        ash_entry.action == ash::SHOW_TASK_MANAGER ||
+        ash_entry.action == ash::TOUCH_HUD_PROJECTION_TOGGLE)
       continue;
     AcceleratorMapping entry;
     entry.keycode = ash_entry.keycode;

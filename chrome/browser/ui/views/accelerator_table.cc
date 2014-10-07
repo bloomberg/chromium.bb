@@ -156,6 +156,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_HELP_PAGE_VIA_KEYBOARD },
   { ui::VKEY_BROWSER_FAVORITES, ui::EF_NONE, IDC_SHOW_BOOKMARK_MANAGER },
   { ui::VKEY_BROWSER_STOP, ui::EF_NONE, IDC_STOP },
+  { ui::VKEY_P, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    IDC_TOUCH_HUD_PROJECTION_TOGGLE },
 #else  // OS_CHROMEOS
   { ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_CLEAR_BROWSING_DATA },
@@ -203,6 +205,7 @@ const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
   { IDC_NEW_WINDOW,           ash::NEW_WINDOW },
   { IDC_RESTORE_TAB,          ash::RESTORE_TAB },
   { IDC_TASK_MANAGER,         ash::SHOW_TASK_MANAGER },
+  { IDC_TOUCH_HUD_PROJECTION_TOGGLE, ash::TOUCH_HUD_PROJECTION_TOGGLE },
 };
 const size_t kChromeCmdId2AshActionIdLength =
     arraysize(kChromeCmdId2AshActionId);

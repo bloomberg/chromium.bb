@@ -50,5 +50,11 @@ void ToggleFullscreen() {
   }
 }
 
+void ToggleTouchHudProjection() {
+  base::RecordAction(base::UserMetricsAction("Accel_Touch_Hud_Clear"));
+  bool enabled = Shell::GetInstance()->is_touch_hud_projection_enabled();
+  Shell::GetInstance()->SetTouchHudProjectionEnabled(!enabled);
+}
+
 }  // namespace accelerators
 }  // namespace ash

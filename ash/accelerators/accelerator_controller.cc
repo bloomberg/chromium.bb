@@ -626,13 +626,6 @@ bool HandleTouchHudModeChange() {
   return false;
 }
 
-bool HandleTouchHudProjectToggle() {
-  base::RecordAction(UserMetricsAction("Accel_Touch_Hud_Clear"));
-  bool enabled = Shell::GetInstance()->is_touch_hud_projection_enabled();
-  Shell::GetInstance()->SetTouchHudProjectionEnabled(!enabled);
-  return true;
-}
-
 bool HandleDisableCapsLock(ui::KeyboardCode key_code,
                            ui::EventType previous_event_type,
                            ui::KeyboardCode previous_key_code) {
@@ -942,7 +935,8 @@ bool AcceleratorController::PerformAction(int action,
     case TOUCH_HUD_MODE_CHANGE:
       return HandleTouchHudModeChange();
     case TOUCH_HUD_PROJECTION_TOGGLE:
-      return HandleTouchHudProjectToggle();
+      accelerators::ToggleTouchHudProjection();
+      return true;
     case DISABLE_GPU_WATCHDOG:
       Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
       return true;

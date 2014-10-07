@@ -770,6 +770,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_DISTILL_PAGE:
       DistillCurrentPage(browser_);
       break;
+#if defined(OS_CHROMEOS)
+    case IDC_TOUCH_HUD_PROJECTION_TOGGLE:
+      ash::accelerators::ToggleTouchHudProjection();
+      break;
+#endif
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -965,6 +970,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
+  command_updater_.UpdateCommandEnabled(IDC_TOUCH_HUD_PROJECTION_TOGGLE, true);
 #else
   // Chrome OS uses the system tray menu to handle multi-profiles.
   if (normal_window && (guest_session || !profile()->IsOffTheRecord()))

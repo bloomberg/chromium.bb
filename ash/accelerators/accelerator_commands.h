@@ -25,6 +25,9 @@ ASH_EXPORT void ToggleMaximized();
 // by WindowStateDelegate::ToggleFullscreen().
 ASH_EXPORT void ToggleFullscreen();
 
+// Toggles touch HUD.
+ASH_EXPORT void ToggleTouchHudProjection();
+
 }  // namespace accelerators
 }  // namespace ash
 
