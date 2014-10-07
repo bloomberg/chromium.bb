@@ -997,6 +997,8 @@ paladin = _config(
   images=['test'],
   chrome_sdk=True,
   chrome_sdk_build_chrome=False,
+
+  chrome_binhost_only=True,
 )
 
 # Used for paladin builders that build from source.
