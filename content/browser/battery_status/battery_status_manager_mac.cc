@@ -259,13 +259,13 @@ class BatteryStatusManagerMac : public BatteryStatusManager {
   }
 
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() OVERRIDE {
+  virtual bool StartListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notifier_->Start();
     return true;
   }
 
-  virtual void StopListeningBatteryChange() OVERRIDE {
+  virtual void StopListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notifier_->Stop();
   }

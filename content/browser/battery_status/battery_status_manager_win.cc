@@ -184,13 +184,13 @@ class BatteryStatusManagerWin : public BatteryStatusManager {
 
  public:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() OVERRIDE {
+  virtual bool StartListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     battery_observer_->Start();
     return true;
   }
 
-  virtual void StopListeningBatteryChange() OVERRIDE {
+  virtual void StopListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     battery_observer_->Stop();
   }

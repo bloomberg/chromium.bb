@@ -277,7 +277,7 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() OVERRIDE {
+  virtual bool StartListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     if (!StartNotifierThreadIfNecessary())
@@ -290,7 +290,7 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
     return true;
   }
 
-  virtual void StopListeningBatteryChange() OVERRIDE {
+  virtual void StopListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     if (!notifier_thread_)

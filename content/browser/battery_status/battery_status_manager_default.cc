@@ -18,12 +18,12 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() OVERRIDE {
+  virtual bool StartListeningBatteryChange() override {
     NOTIMPLEMENTED();
     return false;
   }
 
-  virtual void StopListeningBatteryChange() OVERRIDE { NOTIMPLEMENTED(); }
+  virtual void StopListeningBatteryChange() override { NOTIMPLEMENTED(); }
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerDefault);
 };

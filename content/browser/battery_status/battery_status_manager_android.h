@@ -30,8 +30,8 @@ class BatteryStatusManagerAndroid : public BatteryStatusManager {
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() OVERRIDE;
-  virtual void StopListeningBatteryChange() OVERRIDE;
+  virtual bool StartListeningBatteryChange() override;
+  virtual void StopListeningBatteryChange() override;
 
   BatteryStatusService::BatteryUpdateCallback callback_;
   // Java provider of battery status info.

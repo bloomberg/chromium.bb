@@ -103,7 +103,7 @@ class PowerManagerObserver
 
   // chromeos::PowerManagerClient::Observer:
   virtual void PowerChanged(
-      const power_manager::PowerSupplyProperties& proto) OVERRIDE {
+      const power_manager::PowerSupplyProperties& proto) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     blink::WebBatteryStatus status;
     // Use the default values if there is no battery in the system.
@@ -156,13 +156,13 @@ class BatteryStatusManagerChromeOS
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() OVERRIDE {
+  virtual bool StartListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     observer_->Start();
     return true;
   }
 
-  virtual void StopListeningBatteryChange() OVERRIDE {
+  virtual void StopListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     observer_->Stop();
   }
