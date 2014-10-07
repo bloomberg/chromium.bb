@@ -143,6 +143,7 @@ MEDIA_EXPORT
 - (void)setSampleBufferDelegate:(id)sampleBufferDelegate
                           queue:(dispatch_queue_t)sampleBufferCallbackQueue;
 
+- (void)setAlwaysDiscardsLateVideoFrames:(BOOL)flag;
 - (void)setVideoSettings:(NSDictionary*)videoSettings;
 - (NSDictionary*)videoSettings;
 - (CrAVCaptureConnection*)connectionWithMediaType:(NSString*)mediaType;

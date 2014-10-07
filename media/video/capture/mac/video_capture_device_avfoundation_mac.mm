@@ -160,6 +160,7 @@
         stringWithUTF8String:"Could not create video data output."]];
     return NO;
   }
+  [captureVideoDataOutput_ setAlwaysDiscardsLateVideoFrames:true];
   [captureVideoDataOutput_
       setSampleBufferDelegate:self
                         queue:dispatch_get_global_queue(

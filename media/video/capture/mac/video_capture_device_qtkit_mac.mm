@@ -117,6 +117,7 @@
     QTCaptureDecompressedVideoOutput *captureDecompressedOutput =
         [[[QTCaptureDecompressedVideoOutput alloc] init] autorelease];
     [captureDecompressedOutput setDelegate:self];
+    [captureDecompressedOutput setAutomaticallyDropsLateVideoFrames:YES];
     if (![captureSession_ addOutput:captureDecompressedOutput error:&error]) {
       [self sendErrorString:[NSString
           stringWithFormat:@"Could not connect video capture output (%@): %@",
