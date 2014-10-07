@@ -246,12 +246,12 @@ define([
 
   function testConformanceMessageValidation() {
     testMessageValidation("conformance_", [
-        testInterface.ConformanceTestInterfaceStub.prototype.validator]);
+        testInterface.ConformanceTestInterface.validateRequest]);
   }
 
   function testNotImplementedMessageValidation() {
     testMessageValidation("not_implemented_", [
-        testInterface.ConformanceTestInterfaceStub.prototype.validator]);
+        testInterface.ConformanceTestInterface.validateRequest]);
   }
 
   function testIntegratedMessageValidation() {
@@ -279,8 +279,8 @@ define([
 
       var testConnection = new connection.TestConnection(
           testMessagePipe.handle1,
-          testInterface.IntegrationTestInterface1Stub,
-          testInterface.IntegrationTestInterface2Proxy);
+          testInterface.IntegrationTestInterface1.stubClass,
+          testInterface.IntegrationTestInterface2.proxyClass);
 
       var validationError = noError;
       testConnection.router_.validationErrorHandler = function(err) {

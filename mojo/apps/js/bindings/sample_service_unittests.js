@@ -133,11 +133,11 @@ define([
   function ServiceImpl() {
   }
 
-  ServiceImpl.prototype = Object.create(sample.ServiceStub.prototype);
+  ServiceImpl.prototype = Object.create(sample.Service.stubClass.prototype);
 
   ServiceImpl.prototype.frobinate = function(foo, baz, port) {
     checkFoo(foo);
-    expect(baz).toBe(sample.ServiceStub.BazOptions.EXTRA);
+    expect(baz).toBe(sample.Service.BazOptions.EXTRA);
     expect(port).toBe(10);
     global.result = "PASS";
   };
@@ -156,7 +156,7 @@ define([
   };
 
   var receiver = new SimpleMessageReceiver();
-  var serviceProxy = new sample.ServiceProxy(receiver);
+  var serviceProxy = new sample.Service.proxyClass(receiver);
 
   checkDefaultValues();
 
@@ -164,5 +164,5 @@ define([
   checkFoo(foo);
 
   var port = 10;
-  serviceProxy.frobinate(foo, sample.ServiceProxy.BazOptions.EXTRA, port);
+  serviceProxy.frobinate(foo, sample.Service.BazOptions.EXTRA, port);
 });

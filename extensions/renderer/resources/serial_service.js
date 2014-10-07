@@ -26,8 +26,9 @@ define('serial_service', [
    * Mojo types.
    */
 
-  var service = new serialMojom.SerialServiceProxy(new routerModule.Router(
-      serviceProvider.connectToService(serialMojom.SerialServiceProxy.NAME_)));
+  var service = new serialMojom.SerialService.proxyClass(
+      new routerModule.Router(
+          serviceProvider.connectToService(serialMojom.SerialService.name)));
 
   function getDevices() {
     return service.getDevices().then(function(response) {
@@ -193,7 +194,7 @@ define('serial_service', [
                     sendPipe.handle0,
                     receivePipe.handle0);
     var router = new routerModule.Router(pipe.handle1);
-    var connection = new serialMojom.ConnectionProxy(router);
+    var connection = new serialMojom.Connection.proxyClass(router);
     return connection.getInfo().then(convertServiceInfo).then(function(info) {
       return Promise.all([info, allocateConnectionId()]);
     }).catch(function(e) {

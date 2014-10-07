@@ -16,6 +16,7 @@ define("mojo/public/js/bindings/connection", [
     this.local = new localFactory(this.remote);
     this.router_.setIncomingReceiver(this.local);
 
+    // Validate incoming messages: remote responses and local requests.
     var validateRequest = localFactory.prototype.validator;
     var validateResponse = remoteFactory.prototype.validator;
     var payloadValidators = [];

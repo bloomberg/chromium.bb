@@ -24,7 +24,8 @@ define('mojo/apps/js/test/js_to_cpp_unittest', [
     cppSide.startTest();
   }
 
-  JsSideConnection.prototype = Object.create(jsToCpp.JsSideStub.prototype);
+  JsSideConnection.prototype =
+      Object.create(jsToCpp.JsSide.stubClass.prototype);
 
   JsSideConnection.prototype.ping = function (arg) {
     this.cppSide_.pingResponse();
@@ -215,6 +216,6 @@ define('mojo/apps/js/test/js_to_cpp_unittest', [
       sampleMessage[i] = 255 - i;
     }
     retainedConnection = new connection.Connection(handle, JsSideConnection,
-                                                   jsToCpp.CppSideProxy);
+                                                   jsToCpp.CppSide.proxyClass);
   };
 });

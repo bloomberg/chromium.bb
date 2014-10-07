@@ -426,7 +426,7 @@ define('main', [
   }
 
   OmniboxPageImpl.prototype =
-      Object.create(browser.OmniboxPageStub.prototype);
+      Object.create(browser.OmniboxPage.stubClass.prototype);
 
   OmniboxPageImpl.prototype.handleNewAutocompleteResult = function(result) {
     progressiveAutocompleteResults.push(result);
@@ -435,10 +435,9 @@ define('main', [
 
   return function() {
     connection = new connector.Connection(
-        // TODO(sammc): Avoid using NAME_ directly.
         serviceProvider.connectToService(
-            browser.OmniboxUIHandlerMojoProxy.NAME_),
+            browser.OmniboxUIHandlerMojo.name),
         OmniboxPageImpl,
-        browser.OmniboxUIHandlerMojoProxy);
+        browser.OmniboxUIHandlerMojo.proxyClass);
   };
 });

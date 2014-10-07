@@ -82,4 +82,30 @@ struct DefaultFieldValues {
   Rect? f16 = default;
 };
 
+
+// Used to verify that the code generated for enum and const values defined
+// within a struct is correct. Assuming that a constant's value can be a literal
+// or another constant and that enum values can either be an integer constant or
+// another value from the same enum type.
+
+struct ScopedConstants {
+  const int32 TEN = 10;
+  const int32 ALSO_TEN = TEN;
+  enum EType {
+    E0,
+    E1,
+    E2 = 10,
+    E3 = E2,
+    E4,
+  };
+  const int32 TEN_TOO = EType.E2;
+  EType f0 = E0; // 0
+  EType f1 = E1; // 1
+  EType f2 = E2; // 10
+  EType f3 = E3; // 10
+  EType f4 = E4; // 11
+  int32 f5 = TEN;
+  int32 f6 = ALSO_TEN;
+};
+
 }

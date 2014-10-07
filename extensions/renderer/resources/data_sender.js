@@ -182,7 +182,7 @@ define('data_sender', [
   }
 
   DataSender.prototype =
-      $Object.create(dataStreamMojom.DataSinkClientStub.prototype);
+      $Object.create(dataStreamMojom.DataSinkClient.stubClass.prototype);
 
   /**
    * Closes this DataSender.
@@ -242,7 +242,7 @@ define('data_sender', [
      * The connection to the DataSink.
      * @private
      */
-    this.sink_ = new dataStreamMojom.DataSinkProxy(this.router_);
+    this.sink_ = new dataStreamMojom.DataSink.proxyClass(this.router_);
     this.router_.setIncomingReceiver(this);
     /**
      * The async waiter used to wait for

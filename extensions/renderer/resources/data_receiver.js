@@ -107,7 +107,7 @@ define('data_receiver', [
   }
 
   DataReceiver.prototype =
-      $Object.create(dataStream.DataSourceClientStub.prototype);
+      $Object.create(dataStream.DataSourceClient.stubClass.prototype);
 
   /**
    * Closes this DataReceiver.
@@ -154,7 +154,7 @@ define('data_receiver', [
      * The connection to the DataSource.
      * @private
      */
-    this.source_ = new dataStream.DataSourceProxy(this.router_);
+    this.source_ = new dataStream.DataSource.proxyClass(this.router_);
     this.router_.setIncomingReceiver(this);
     /**
      * The handle to the data pipe to use for receiving data.

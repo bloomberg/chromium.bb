@@ -32,7 +32,7 @@ function createSender() {
     var dataSender = modules[1];
     var dataStream = modules[2];
     return new dataSender.DataSender(
-        serviceProvider.connectToService(dataStream.DataSinkProxy.NAME_),
+        serviceProvider.connectToService(dataStream.DataSink.name),
         BUFFER_SIZE,
         FATAL_ERROR);
   });

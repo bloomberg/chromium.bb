@@ -1,4 +1,3 @@
-{%- set namespace_as_string = namespace|replace(".","::") %}
 {%- for method in interface.methods %}
   var k{{interface.name}}_{{method.name}}_Name = {{method.ordinal}};
 {%- endfor %}
@@ -6,8 +5,6 @@
   function {{interface.name}}Proxy(receiver) {
     this.receiver_ = receiver;
   }
-
-  {{interface.name}}Proxy.NAME_ = '{{namespace_as_string}}::{{interface.name}}';
 
 {%- for method in interface.methods %}
   {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
@@ -53,8 +50,6 @@
 
   function {{interface.name}}Stub() {
   }
-
-  {{interface.name}}Stub.NAME_ = '{{namespace_as_string}}::{{interface.name}}';
 
   {{interface.name}}Stub.prototype.accept = function(message) {
     var reader = new codec.MessageReader(message);
@@ -157,22 +152,29 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%- endif %}
   }
 
+  var {{interface.name}} = {
+    name: '{{namespace|replace(".","::")}}::{{interface.name}}',
+    proxyClass: {{interface.name}}Proxy,
+    stubClass: {{interface.name}}Stub,
+    validateRequest: validate{{interface.name}}Request,
+{%- if interface|has_callbacks %}
+    validateResponse: validate{{interface.name}}Response,
+{%- else %}
+    validateResponse: null,
+{%- endif %}
+  };
+{#--- Interface Constants #}
+{%- for constant in interface.constants %}
+  {{interface.name}}.{{constant.name}} = {{constant.value|expression_to_text}},
+{%-   endfor %}
+{#--- Interface Enums #}
+{%- from "enum_definition.tmpl" import enum_def -%}
+{%- for enum in interface.enums %}
+  {{ enum_def("%s.%s"|format(interface.name, enum.name), enum) }}
+{%-  endfor %}
   {{interface.name}}Stub.prototype.validator = validate{{interface.name}}Request;
 {%- if interface|has_callbacks %}
   {{interface.name}}Proxy.prototype.validator = validate{{interface.name}}Response;
 {%- else %}
   {{interface.name}}Proxy.prototype.validator = null;
-{%- endif -%}
-
-{#--- Enums #}
-{%  from "enum_definition.tmpl" import enum_def -%}
-{%  for enum in interface.enums %}
-  {{enum_def("%sProxy.%s"|format(interface.name, enum.name), enum, module)}}
-  {{interface.name}}Stub.{{enum.name}} = {{interface.name}}Proxy.{{enum.name}};
-{%-  endfor %}
-
-{#--- Constants. #}
-{%  for constant in interface.constants %}
-  {{interface.name}}Proxy.{{constant.name}} = {{constant.value|expression_to_text}};
-  {{interface.name}}Stub.{{constant.name}} = {{interface.name}}Proxy.{{constant.name}};
-{%-  endfor %}
+{%- endif %}

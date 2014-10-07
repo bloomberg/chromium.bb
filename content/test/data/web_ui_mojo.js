@@ -18,7 +18,7 @@ define('main', [
   // the client side of the interface. Since JS is loosely typed, we do not need
   // a separate base class to inherit from to receive callbacks.
   RendererTargetTest.prototype =
-      Object.create(bindings.RendererTargetStub.prototype);
+      Object.create(bindings.RendererTarget.stubClass.prototype);
 
   RendererTargetTest.prototype.ping = function () {
     this.bindings_.pingResponse();
@@ -26,9 +26,8 @@ define('main', [
 
   return function() {
     retainedConnection = new connection.Connection(
-        // TODO(sammc): Avoid using NAME_ directly.
-        serviceProvider.connectToService(bindings.BrowserTargetProxy.NAME_),
+        serviceProvider.connectToService(bindings.BrowserTarget.name),
         RendererTargetTest,
-        bindings.BrowserTargetProxy);
+        bindings.BrowserTarget.proxyClass);
   };
 });

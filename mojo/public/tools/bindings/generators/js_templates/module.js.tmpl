@@ -22,7 +22,7 @@ define("{{module.path}}", [
 {#--- Enums #}
 {%- from "enum_definition.tmpl" import enum_def %}
 {%- for enum in enums %}
-  var {{ enum_def(enum.name, enum, module) }}
+  var {{ enum_def(enum.name, enum) }}
 {%-  endfor %}
 
 {#--- Struct definitions #}
@@ -46,8 +46,12 @@ define("{{module.path}}", [
   exports.{{struct.name}} = {{struct.name}};
 {%- endfor %}
 {%- for interface in interfaces %}
-  exports.{{interface.name}}Proxy = {{interface.name}}Proxy;
-  exports.{{interface.name}}Stub = {{interface.name}}Stub;
+  exports.{{interface.name}} = {{interface.name}};
+{#--- Interface Client #}
+{%-   if interface.client in interfaces|map(attribute='name') %}
+  exports.{{interface.name}}.client = {{interface.client}};
+{%-   endif %}
 {%- endfor %}
+
   return exports;
 });

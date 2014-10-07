@@ -22,19 +22,24 @@ define("test", [
 ], function(core, connection, support, net, loader, mojo, console) {
 
   var netServiceHandle = mojo.connectToService(
-      "mojo:mojo_network_service", "mojo::NetworkService");
+      "mojo:mojo_network_service", net.NetworkService.name);
   var netConnection = new connection.Connection(
-      netServiceHandle, net.NetworkServiceStub, net.NetworkServiceProxy);
+      netServiceHandle,
+      net.NetworkService.stubClass,
+      net.NetworkService.proxyClass);
 
-  var urlLoaderPipe = new core.createMessagePipe();
+  var urlLoaderPipe = core.createMessagePipe();
   netConnection.remote.createURLLoader(urlLoaderPipe.handle1);
   var urlLoaderConnection = new connection.Connection(
-      urlLoaderPipe.handle0, loader.URLLoaderStub, loader.URLLoaderProxy);
+      urlLoaderPipe.handle0,
+      loader.URLLoader.stubClass,
+      loader.URLLoader.proxyClass);
 
-  var urlRequest = new loader.URLRequest();
-  urlRequest.url = "http://www.cnn.com";
-  urlRequest.method = "GET";
-  urlRequest.auto_follow_redirects = true;
+  var urlRequest = new loader.URLRequest({
+    url: "http://www.cnn.com",
+    method: "GET",
+    auto_follow_redirects: true
+  });
 
   var urlRequestPromise = urlLoaderConnection.remote.start(urlRequest);
   urlRequestPromise.then(function(result) {

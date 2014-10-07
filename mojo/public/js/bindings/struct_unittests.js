@@ -72,8 +72,30 @@ define([
     expect(s.f16).toEqual(r);
   }
 
+  function testScopedConstants() {
+    expect(testStructs.ScopedConstants.TEN).toEqual(10);
+    expect(testStructs.ScopedConstants.ALSO_TEN).toEqual(10);
+    expect(testStructs.ScopedConstants.TEN_TOO).toEqual(10);
+
+    expect(testStructs.ScopedConstants.EType.E0).toEqual(0);
+    expect(testStructs.ScopedConstants.EType.E1).toEqual(1);
+    expect(testStructs.ScopedConstants.EType.E2).toEqual(10);
+    expect(testStructs.ScopedConstants.EType.E3).toEqual(10);
+    expect(testStructs.ScopedConstants.EType.E4).toEqual(11);
+
+    var s = new testStructs.ScopedConstants();
+    expect(s.f0).toEqual(0);
+    expect(s.f1).toEqual(1);
+    expect(s.f2).toEqual(10);
+    expect(s.f3).toEqual(10);
+    expect(s.f4).toEqual(11);
+    expect(s.f5).toEqual(10);
+    expect(s.f6).toEqual(10);
+  }
+
   testConstructors();
   testNoDefaultFieldValues();
   testDefaultFieldValues();
+  testScopedConstants();
   this.result = "PASS";
 });

@@ -85,13 +85,14 @@ define([
     var receivedFrobinate = false;
     var receivedDidFrobinate = false;
 
-    // ServiceImpl -------------------------------------------------------------
+    // ServiceImpl ------------------------------------------------------------
 
     function ServiceImpl(peer) {
       this.peer = peer;
     }
 
-    ServiceImpl.prototype = Object.create(sample_service.ServiceStub.prototype);
+    ServiceImpl.prototype = Object.create(
+        sample_service.Service.stubClass.prototype);
 
     ServiceImpl.prototype.frobinate = function(foo, baz, port) {
       receivedFrobinate = true;
@@ -103,14 +104,14 @@ define([
       this.peer.didFrobinate(42);
     };
 
-    // ServiceImpl -------------------------------------------------------------
+    // ServiceClientImpl ------------------------------------------------------
 
     function ServiceClientImpl(peer) {
       this.peer = peer;
     }
 
     ServiceClientImpl.prototype =
-        Object.create(sample_service.ServiceClientStub.prototype);
+        Object.create(sample_service.ServiceClient.stubClass.prototype);
 
     ServiceClientImpl.prototype.didFrobinate = function(result) {
       receivedDidFrobinate = true;
@@ -123,10 +124,10 @@ define([
     var sourcePipe = core.createMessagePipe();
 
     var connection0 = new connection.Connection(
-        pipe.handle0, ServiceImpl, sample_service.ServiceClientProxy);
+        pipe.handle0, ServiceImpl, sample_service.ServiceClient.proxyClass);
 
     var connection1 = new connection.Connection(
-        pipe.handle1, ServiceClientImpl, sample_service.ServiceProxy);
+        pipe.handle1, ServiceClientImpl, sample_service.Service.proxyClass);
 
     var foo = new sample_service.Foo();
     foo.bar = new sample_service.Bar();
@@ -163,7 +164,7 @@ define([
     var pipe = core.createMessagePipe();
 
     var connection1 = new connection.Connection(
-        pipe.handle1, function() {}, sample_service.ServiceProxy);
+        pipe.handle1, function() {}, sample_service.Service.proxyClass);
 
     // Close the other end of the pipe.
     core.close(pipe.handle0);
@@ -196,7 +197,7 @@ define([
     }
 
     ProviderImpl.prototype =
-        Object.create(sample_interfaces.ProviderStub.prototype);
+        Object.create(sample_interfaces.Provider.stubClass.prototype);
 
     ProviderImpl.prototype.echoString = function(a) {
       mockSupport.queuePump(core.RESULT_OK);
@@ -215,15 +216,19 @@ define([
     }
 
     ProviderClientImpl.prototype =
-        Object.create(sample_interfaces.ProviderClientStub.prototype);
+        Object.create(sample_interfaces.ProviderClient.stubClass.prototype);
 
     var pipe = core.createMessagePipe();
 
     var connection0 = new connection.Connection(
-        pipe.handle0, ProviderImpl, sample_interfaces.ProviderClientProxy);
+        pipe.handle0,
+        ProviderImpl,
+        sample_interfaces.ProviderClient.proxyClass);
 
     var connection1 = new connection.Connection(
-        pipe.handle1, ProviderClientImpl, sample_interfaces.ProviderProxy);
+        pipe.handle1,
+        ProviderClientImpl,
+        sample_interfaces.Provider.proxyClass);
 
     var origReadMessage = core.readMessage;
     // echoString

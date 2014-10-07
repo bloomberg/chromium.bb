@@ -21,7 +21,7 @@ function createReceiver() {
     var dataReceiver = modules[1];
     var dataStream = modules[2];
     return new dataReceiver.DataReceiver(
-        serviceProvider.connectToService(dataStream.DataSourceProxy.NAME_),
+        serviceProvider.connectToService(dataStream.DataSource.name),
         BUFFER_SIZE,
         FATAL_ERROR);
   });
