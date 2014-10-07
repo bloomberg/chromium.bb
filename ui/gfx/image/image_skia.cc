@@ -175,7 +175,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
 
       ImageSkiaRep image;
       float resource_scale = scale;
-      if (ImageSkia::IsDSFScalingInImageSkiaEnabled() && g_supported_scales) {
+      if (g_supported_scales) {
         if (g_supported_scales->back() <= scale) {
           resource_scale = g_supported_scales->back();
         } else {
@@ -188,8 +188,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
           }
         }
       }
-      if (ImageSkia::IsDSFScalingInImageSkiaEnabled() &&
-          scale != resource_scale) {
+      if (scale != resource_scale) {
         std::vector<ImageSkiaRep>::iterator iter = FindRepresentation(
             resource_scale, fetch_new_image);
 
@@ -315,12 +314,6 @@ float ImageSkia::GetMaxSupportedScale() {
 // static
 ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
   return ImageSkia(ImageSkiaRep(bitmap, 0.0f));
-}
-
-bool ImageSkia::IsDSFScalingInImageSkiaEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(
-      switches::kDisableArbitraryScaleFactorInImageSkia);
 }
 
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {

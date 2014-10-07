@@ -6,12 +6,6 @@
 
 namespace switches {
 
-// The ImageSkia looks up the resource pack with the closest available scale
-// factor instead of the actual device scale factor and then rescale on
-// ImageSkia side. This switch disables this feature.
-const char kDisableArbitraryScaleFactorInImageSkia[] =
-    "disable-arbitrary-scale-factor-in-image-skia";
-
 // Disables the HarfBuzz port of RenderText on all platforms.
 const char kDisableHarfBuzzRenderText[] = "disable-harfbuzz-rendertext";
 

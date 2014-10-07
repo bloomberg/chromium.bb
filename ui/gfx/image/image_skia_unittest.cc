@@ -438,10 +438,6 @@ std::vector<float> GetSortedScaleFactors(const gfx::ImageSkia& image) {
 }  // namespace
 
 TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
-  // Do not test if the ImageSkia doesn't support arbitrary scale factors.
-  if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
-    return;
-
   // source is owned by |image|
   DynamicSource* source = new DynamicSource(Size(100, 200));
   ImageSkia image(source, gfx::Size(100, 200));
@@ -516,10 +512,6 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
 }
 
 TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
-  // Do not test if the ImageSkia doesn't support arbitrary scale factors.
-  if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
-    return;
-
   ImageSkia image(new FixedSource(
       ImageSkiaRep(Size(100, 200), 1.0f)), Size(100, 200));
 
@@ -533,10 +525,6 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
 }
 
 TEST_F(ImageSkiaTest, UnscaledImageForArbitraryScaleFactor) {
-  // Do not test if the ImageSkia doesn't support arbitrary scale factors.
-  if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
-    return;
-
   // 0.0f means unscaled.
   ImageSkia image(new FixedSource(
       ImageSkiaRep(Size(100, 200), 0.0f)), Size(100, 200));
