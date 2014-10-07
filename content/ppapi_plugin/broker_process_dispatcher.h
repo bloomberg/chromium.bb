@@ -26,7 +26,7 @@ class BrokerProcessDispatcher
   virtual ~BrokerProcessDispatcher();
 
   // IPC::Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   void OnGetPermissionSettingsCompleted(
       uint32 request_id,

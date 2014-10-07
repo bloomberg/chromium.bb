@@ -46,7 +46,7 @@ class PpapiThread : public ChildThread,
  public:
   PpapiThread(const base::CommandLine& command_line, bool is_broker);
   virtual ~PpapiThread();
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   // Make sure the enum list in tools/histogram/histograms.xml is updated with
@@ -62,34 +62,34 @@ class PpapiThread : public ChildThread,
   };
 
   // ChildThread overrides.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
 
   // PluginDispatcher::PluginDelegate implementation.
-  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() OVERRIDE;
-  virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
-  virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
+  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
+  virtual base::MessageLoopProxy* GetIPCMessageLoop() override;
+  virtual base::WaitableEvent* GetShutdownEvent() override;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       base::ProcessId peer_pid,
-      bool should_close_source) OVERRIDE;
+      bool should_close_source) override;
   virtual uint32 Register(
-      ppapi::proxy::PluginDispatcher* plugin_dispatcher) OVERRIDE;
-  virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
+      ppapi::proxy::PluginDispatcher* plugin_dispatcher) override;
+  virtual void Unregister(uint32 plugin_dispatcher_id) override;
 
   // PluginProxyDelegate.
   // SendToBrowser() is intended to be safe to use on another thread so
   // long as the main PpapiThread outlives it.
-  virtual IPC::Sender* GetBrowserSender() OVERRIDE;
-  virtual std::string GetUILanguage() OVERRIDE;
-  virtual void PreCacheFont(const void* logfontw) OVERRIDE;
-  virtual void SetActiveURL(const std::string& url) OVERRIDE;
+  virtual IPC::Sender* GetBrowserSender() override;
+  virtual std::string GetUILanguage() override;
+  virtual void PreCacheFont(const void* logfontw) override;
+  virtual void SetActiveURL(const std::string& url) override;
   virtual PP_Resource CreateBrowserFont(
       ppapi::proxy::Connection connection,
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description& desc,
-      const ppapi::Preferences& prefs) OVERRIDE;
+      const ppapi::Preferences& prefs) override;
 
   // Message handlers.
   void OnLoadPlugin(const base::FilePath& path,
