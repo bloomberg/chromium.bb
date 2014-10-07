@@ -118,10 +118,6 @@ public:
 
     static PassRefPtr<RenderStyle> styleForDocument(Document&);
 
-    // FIXME: This only has 5 callers and should be removed. Callers should be explicit about
-    // their dependency on Document* instead of grabbing one through StyleResolver.
-    Document& document() { return *m_document; }
-
     // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
@@ -216,6 +212,7 @@ private:
     void adjustRenderStyle(StyleResolverState&, Element*);
 
     void appendCSSStyleSheet(CSSStyleSheet*);
+    void addRulesFromSheet(CSSStyleSheet*, TreeScope*, unsigned);
 
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
@@ -264,6 +261,8 @@ private:
     String pageName(int pageIndex) const;
 
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, RenderStyle* parentStyle, StyleResolverState&);
+
+    Document& document() { return *m_document; }
 
     // FIXME: This likely belongs on RuleSet.
     typedef WillBeHeapHashMap<StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;

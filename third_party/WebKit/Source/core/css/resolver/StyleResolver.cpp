@@ -193,7 +193,19 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
 
     ScopedStyleResolver& resolver = treeScope->ensureScopedStyleResolver();
     document().styleEngine()->addScopedStyleResolver(&resolver);
-    resolver.addRulesFromSheet(cssSheet, *m_medium, this);
+    unsigned index = resolver.appendCSSStyleSheet(cssSheet);
+
+    addRulesFromSheet(cssSheet, treeScope, index);
+}
+
+void StyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, TreeScope* treeScope, unsigned index)
+{
+    StyleSheetContents* sheet = cssSheet->contents();
+    AddRuleFlags addRuleFlags = document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
+    const RuleSet& ruleSet = sheet->ensureRuleSet(*m_medium, addRuleFlags);
+
+    addMediaQueryResults(ruleSet.viewportDependentMediaQueryResults());
+    processScopedRules(ruleSet, cssSheet, index, treeScope->rootNode());
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets()
