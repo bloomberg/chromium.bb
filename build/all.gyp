@@ -42,15 +42,15 @@
             # NOTE: This list of targets is present because
             # mojo_base.gyp:mojo_base cannot be built on iOS, as
             # javascript-related targets cause v8 to be built.
+            '../mojo/edk/mojo_edk.gyp:mojo_public_bindings_unittests',
+            '../mojo/edk/mojo_edk.gyp:mojo_public_environment_unittests',
+            '../mojo/edk/mojo_edk.gyp:mojo_public_system_perftests',
+            '../mojo/edk/mojo_edk.gyp:mojo_public_system_unittests',
+            '../mojo/edk/mojo_edk.gyp:mojo_public_utility_unittests',
+            '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
+            '../mojo/edk/mojo_edk.gyp:mojo_system_unittests',
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_common_unittests',
-            '../mojo/mojo_base.gyp:mojo_public_bindings_unittests',
-            '../mojo/mojo_base.gyp:mojo_public_environment_unittests',
-            '../mojo/mojo_base.gyp:mojo_public_system_perftests',
-            '../mojo/mojo_base.gyp:mojo_public_system_unittests',
-            '../mojo/mojo_base.gyp:mojo_public_utility_unittests',
-            '../mojo/mojo_base.gyp:mojo_system_impl',
-            '../mojo/mojo_base.gyp:mojo_system_unittests',
             '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
             '../mojo/public/mojo_public.gyp:mojo_public_test_utils',
             '../mojo/public/mojo_public.gyp:mojo_system',

@@ -1095,8 +1095,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        '../mojo/edk/mojo_edk.gyp:mojo_run_all_unittests',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/mojo_base.gyp:mojo_run_all_unittests',
       ],
       'sources': [
         'mojo/services/media_type_converters_unittest.cc',

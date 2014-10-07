@@ -30,7 +30,7 @@ executable("perftests") {
 
   deps = [
     "//base",
-    "//mojo/common/test:run_all_perftests",
+    "//mojo/edk/test:run_all_perftests",
     "//mojo/public/c/environment",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",

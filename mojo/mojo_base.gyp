@@ -22,15 +22,6 @@
         'mojo_common_lib',
         'mojo_common_unittests',
         'mojo_message_generator',
-        'mojo_message_pipe_perftests',
-        'mojo_public_application_unittests',
-        'mojo_public_bindings_unittests',
-        'mojo_public_environment_unittests',
-        'mojo_public_system_perftests',
-        'mojo_public_system_unittests',
-        'mojo_public_utility_unittests',
-        'mojo_system_impl',
-        'mojo_system_unittests',
       ],
       'conditions': [
         ['OS == "android"', {
@@ -47,349 +38,6 @@
     {
       'target_name': 'mojo_none',
       'type': 'none',
-    },
-    {
-      # GN version: //mojo/common/test:run_all_unittests
-      'target_name': 'mojo_run_all_unittests',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../testing/gtest.gyp:gtest',
-        'mojo_system_impl',
-        'mojo_test_support_impl',
-        'public/mojo_public.gyp:mojo_test_support',
-      ],
-      'sources': [
-        'common/test/run_all_unittests.cc',
-      ],
-    },
-    {
-      # GN version: //mojo/common/test:run_all_perftests
-      'target_name': 'mojo_run_all_perftests',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:test_support_base',
-        'mojo_system_impl',
-        'mojo_test_support_impl',
-        'public/mojo_public.gyp:mojo_test_support',
-      ],
-      'sources': [
-        'common/test/run_all_perftests.cc',
-      ],
-    },
-    # TODO(vtl): Reorganize the mojo_public_*_unittests.
-    {
-      # GN version: //mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests
-      'target_name': 'mojo_public_bindings_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        'mojo_run_all_unittests',
-        'public/mojo_public.gyp:mojo_cpp_bindings',
-        'public/mojo_public.gyp:mojo_environment_standalone',
-        'public/mojo_public.gyp:mojo_public_bindings_test_utils',
-        'public/mojo_public.gyp:mojo_public_test_interfaces',
-        'public/mojo_public.gyp:mojo_public_test_utils',
-        'public/mojo_public.gyp:mojo_utility',
-      ],
-      'sources': [
-        'public/cpp/bindings/tests/array_unittest.cc',
-        'public/cpp/bindings/tests/bounds_checker_unittest.cc',
-        'public/cpp/bindings/tests/buffer_unittest.cc',
-        'public/cpp/bindings/tests/connector_unittest.cc',
-        'public/cpp/bindings/tests/handle_passing_unittest.cc',
-        'public/cpp/bindings/tests/interface_ptr_unittest.cc',
-        'public/cpp/bindings/tests/request_response_unittest.cc',
-        'public/cpp/bindings/tests/router_unittest.cc',
-        'public/cpp/bindings/tests/sample_service_unittest.cc',
-        'public/cpp/bindings/tests/serialization_warning_unittest.cc',
-        'public/cpp/bindings/tests/string_unittest.cc',
-        'public/cpp/bindings/tests/struct_unittest.cc',
-        'public/cpp/bindings/tests/type_conversion_unittest.cc',
-        'public/cpp/bindings/tests/validation_unittest.cc',
-      ],
-    },
-    {
-      # GN version: //mojo/public/cpp/environment/tests:mojo_public_environment_unittests
-      'target_name': 'mojo_public_environment_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        'mojo_run_all_unittests',
-        'public/mojo_public.gyp:mojo_environment_standalone',
-        'public/mojo_public.gyp:mojo_public_test_utils',
-        'public/mojo_public.gyp:mojo_utility',
-      ],
-      'include_dirs': [ '..' ],
-      'sources': [
-        'public/cpp/environment/tests/async_waiter_unittest.cc',
-        'public/cpp/environment/tests/logger_unittest.cc',
-        'public/cpp/environment/tests/logging_unittest.cc',
-      ],
-    },
-    {
-      # GN version: //mojo/public/cpp/application/tests:mojo_public_application_unittests
-      'target_name': 'mojo_public_application_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../testing/gtest.gyp:gtest',
-        'mojo_run_all_unittests',
-        'public/mojo_public.gyp:mojo_application_standalone',
-        'public/mojo_public.gyp:mojo_utility',
-        'public/mojo_public.gyp:mojo_environment_standalone',
-      ],
-      'sources': [
-        'public/cpp/application/tests/service_registry_unittest.cc',
-      ],
-    },
-    {
-      # GN version: //mojo/public/cpp/application/tests:mojo_public_system_unittests
-      'target_name': 'mojo_public_system_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        'mojo_base.gyp:mojo_run_all_unittests',
-        'public/mojo_public.gyp:mojo_public_test_utils',
-      ],
-      'include_dirs': [ '..' ],
-      'sources': [
-        '<@(mojo_public_system_unittest_sources)',
-      ],
-    },
-    {
-      # GN version: //mojo/public/cpp/application/tests:mojo_public_utility_unittests
-      'target_name': 'mojo_public_utility_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        'mojo_base.gyp:mojo_run_all_unittests',
-        'public/mojo_public.gyp:mojo_public_test_utils',
-        'public/mojo_public.gyp:mojo_utility',
-      ],
-      'include_dirs' : [ '..' ],
-      'sources': [
-        'public/cpp/utility/tests/mutex_unittest.cc',
-        'public/cpp/utility/tests/run_loop_unittest.cc',
-        'public/cpp/utility/tests/thread_unittest.cc',
-      ],
-      'conditions': [
-        # See crbug.com/342893:
-        ['OS=="win"', {
-          'sources!': [
-            'public/cpp/utility/tests/mutex_unittest.cc',
-            'public/cpp/utility/tests/thread_unittest.cc',
-          ],
-        }],
-      ],
-    },
-    {
-      # GN version: //mojo/public/c/system/tests:perftests
-      'target_name': 'mojo_public_system_perftests',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../testing/gtest.gyp:gtest',
-        'mojo_run_all_perftests',
-        'public/mojo_public.gyp:mojo_public_test_utils',
-        'public/mojo_public.gyp:mojo_utility',
-      ],
-      'sources': [
-        'public/c/system/tests/core_perftest.cc',
-      ],
-    },
-
-    {
-      # GN version: //mojo/edk/system
-      'target_name': 'mojo_system_impl',
-      'type': '<(component)',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      ],
-      'defines': [
-        'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
-        'MOJO_SYSTEM_IMPLEMENTATION',
-        'MOJO_USE_SYSTEM_IMPL',
-      ],
-      'sources': [
-        'edk/embedder/channel_init.cc',
-        'edk/embedder/channel_init.h',
-        'edk/embedder/embedder.cc',
-        'edk/embedder/embedder.h',
-        'edk/embedder/platform_channel_pair.cc',
-        'edk/embedder/platform_channel_pair.h',
-        'edk/embedder/platform_channel_pair_posix.cc',
-        'edk/embedder/platform_channel_pair_win.cc',
-        'edk/embedder/platform_channel_utils_posix.cc',
-        'edk/embedder/platform_channel_utils_posix.h',
-        'edk/embedder/platform_handle.cc',
-        'edk/embedder/platform_handle.h',
-        'edk/embedder/platform_handle_utils.h',
-        'edk/embedder/platform_handle_utils_posix.cc',
-        'edk/embedder/platform_handle_utils_win.cc',
-        'edk/embedder/platform_handle_vector.h',
-        'edk/embedder/platform_shared_buffer.h',
-        'edk/embedder/platform_support.h',
-        'edk/embedder/scoped_platform_handle.h',
-        'edk/embedder/simple_platform_shared_buffer.cc',
-        'edk/embedder/simple_platform_shared_buffer.h',
-        'edk/embedder/simple_platform_shared_buffer_posix.cc',
-        'edk/embedder/simple_platform_shared_buffer_win.cc',
-        'edk/embedder/simple_platform_support.cc',
-        'edk/embedder/simple_platform_support.h',
-        'edk/system/channel.cc',
-        'edk/system/channel.h',
-        'edk/system/channel_endpoint.cc',
-        'edk/system/channel_endpoint.h',
-        'edk/system/channel_endpoint_id.h',
-        'edk/system/constants.h',
-        'edk/system/core.cc',
-        'edk/system/core.h',
-        'edk/system/data_pipe.cc',
-        'edk/system/data_pipe.h',
-        'edk/system/data_pipe_consumer_dispatcher.cc',
-        'edk/system/data_pipe_consumer_dispatcher.h',
-        'edk/system/data_pipe_producer_dispatcher.cc',
-        'edk/system/data_pipe_producer_dispatcher.h',
-        'edk/system/dispatcher.cc',
-        'edk/system/dispatcher.h',
-        'edk/system/entrypoints.cc',
-        'edk/system/handle_signals_state.h',
-        'edk/system/handle_table.cc',
-        'edk/system/handle_table.h',
-        'edk/system/local_data_pipe.cc',
-        'edk/system/local_data_pipe.h',
-        'edk/system/local_message_pipe_endpoint.cc',
-        'edk/system/local_message_pipe_endpoint.h',
-        'edk/system/mapping_table.cc',
-        'edk/system/mapping_table.h',
-        'edk/system/memory.cc',
-        'edk/system/memory.h',
-        'edk/system/message_in_transit.cc',
-        'edk/system/message_in_transit.h',
-        'edk/system/message_in_transit_queue.cc',
-        'edk/system/message_in_transit_queue.h',
-        'edk/system/message_pipe.cc',
-        'edk/system/message_pipe.h',
-        'edk/system/message_pipe_dispatcher.cc',
-        'edk/system/message_pipe_dispatcher.h',
-        'edk/system/message_pipe_endpoint.cc',
-        'edk/system/message_pipe_endpoint.h',
-        'edk/system/options_validation.h',
-        'edk/system/platform_handle_dispatcher.cc',
-        'edk/system/platform_handle_dispatcher.h',
-        'edk/system/proxy_message_pipe_endpoint.cc',
-        'edk/system/proxy_message_pipe_endpoint.h',
-        'edk/system/raw_channel.cc',
-        'edk/system/raw_channel.h',
-        'edk/system/raw_channel_posix.cc',
-        'edk/system/raw_channel_win.cc',
-        'edk/system/shared_buffer_dispatcher.cc',
-        'edk/system/shared_buffer_dispatcher.h',
-        'edk/system/simple_dispatcher.cc',
-        'edk/system/simple_dispatcher.h',
-        'edk/system/transport_data.cc',
-        'edk/system/transport_data.h',
-        'edk/system/waiter.cc',
-        'edk/system/waiter.h',
-        'edk/system/waiter_list.cc',
-        'edk/system/waiter_list.h',
-        # Test-only code:
-        # TODO(vtl): It's a little unfortunate that these end up in the same
-        # component as non-test-only code. In the static build, this code should
-        # hopefully be dead-stripped.
-        'edk/embedder/test_embedder.cc',
-        'edk/embedder/test_embedder.h',
-      ],
-      'all_dependent_settings': {
-        # Ensures that dependent projects import the core functions on Windows.
-        'defines': ['MOJO_USE_SYSTEM_IMPL'],
-      }
-    },
-    {
-      # GN version: //mojo/edk/system:mojo_system_unittests
-      'target_name': 'mojo_system_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../testing/gtest.gyp:gtest',
-        'mojo_common_test_support',
-        'mojo_system_impl',
-      ],
-      'sources': [
-        'edk/embedder/embedder_unittest.cc',
-        'edk/embedder/platform_channel_pair_posix_unittest.cc',
-        'edk/embedder/simple_platform_shared_buffer_unittest.cc',
-        'edk/system/channel_unittest.cc',
-        'edk/system/core_unittest.cc',
-        'edk/system/core_test_base.cc',
-        'edk/system/core_test_base.h',
-        'edk/system/data_pipe_unittest.cc',
-        'edk/system/dispatcher_unittest.cc',
-        'edk/system/local_data_pipe_unittest.cc',
-        'edk/system/memory_unittest.cc',
-        'edk/system/message_pipe_dispatcher_unittest.cc',
-        'edk/system/message_pipe_test_utils.h',
-        'edk/system/message_pipe_test_utils.cc',
-        'edk/system/message_pipe_unittest.cc',
-        'edk/system/multiprocess_message_pipe_unittest.cc',
-        'edk/system/options_validation_unittest.cc',
-        'edk/system/platform_handle_dispatcher_unittest.cc',
-        'edk/system/raw_channel_unittest.cc',
-        'edk/system/remote_message_pipe_unittest.cc',
-        'edk/system/run_all_unittests.cc',
-        'edk/system/shared_buffer_dispatcher_unittest.cc',
-        'edk/system/simple_dispatcher_unittest.cc',
-        'edk/system/test_utils.cc',
-        'edk/system/test_utils.h',
-        'edk/system/waiter_list_unittest.cc',
-        'edk/system/waiter_test_utils.cc',
-        'edk/system/waiter_test_utils.h',
-        'edk/system/waiter_unittest.cc',
-      ],
-      'conditions': [
-        ['OS=="ios"', {
-          'sources!': [
-            'edk/embedder/embedder_unittest.cc',
-            'edk/system/multiprocess_message_pipe_unittest.cc',
-          ],
-        }],
-      ],
-    },
-    {
-      # GN version: //mojo/edk/system:mojo_message_pipe_perftests
-      'target_name': 'mojo_message_pipe_perftests',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../base/base.gyp:test_support_perf',
-        '../testing/gtest.gyp:gtest',
-        'mojo_common_test_support',
-        'mojo_environment_chromium',
-        'mojo_system_impl',
-      ],
-      'sources': [
-        'edk/system/message_pipe_perftest.cc',
-        'edk/system/message_pipe_test_utils.h',
-        'edk/system/message_pipe_test_utils.cc',
-        'edk/system/test_utils.cc',
-        'edk/system/test_utils.h',
-      ],
-    },
-    {
-      # GN version: //mojo/common/test:test_support_impl
-      'target_name': 'mojo_test_support_impl',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'common/test/test_support_impl.cc',
-        'common/test/test_support_impl.h',
-      ],
     },
     {
       # GN version: //mojo/common
@@ -422,31 +70,6 @@
       ],
     },
     {
-      # GN version: //mojo/edk/test:test_support
-      'target_name': 'mojo_common_test_support',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../testing/gtest.gyp:gtest',
-        'mojo_system_impl',
-      ],
-      'sources': [
-        'edk/test/multiprocess_test_helper.cc',
-        'edk/test/multiprocess_test_helper.h',
-        'edk/test/test_utils.h',
-        'edk/test/test_utils_posix.cc',
-        'edk/test/test_utils_win.cc',
-      ],
-      'conditions': [
-        ['OS=="ios"', {
-          'sources!': [
-            'edk/test/multiprocess_test_helper.cc',
-          ],
-        }],
-      ],
-    },
-    {
       # GN version: //mojo/common:mojo_common_unittests
       'target_name': 'mojo_common_unittests',
       'type': 'executable',
@@ -455,10 +78,10 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
+        'edk/mojo_edk.gyp:mojo_common_test_support',
+        'edk/mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_common_lib',
-        'mojo_common_test_support',
         'mojo_environment_chromium',
-        'mojo_run_all_unittests',
         'public/mojo_public.gyp:mojo_cpp_bindings',
         'public/mojo_public.gyp:mojo_public_test_utils',
       ],
@@ -573,9 +196,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        'edk/mojo_edk.gyp:mojo_system_impl',
         'mojo_common_lib',
         'mojo_environment_chromium',
-        'mojo_system_impl',
         'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
@@ -631,10 +254,10 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            'edk/mojo_edk.gyp:mojo_system_impl',
             'mojo_common_lib',
             'mojo_environment_chromium',
             'mojo_jni_headers',
-	          'mojo_system_impl',
           ],
           'sources': [
             'android/system/core_impl.cc',

@@ -32,8 +32,8 @@
       # which Mojo system library they are using.
       #
       ['component=="shared_library"', {
-        'mojo_system_for_component': "<(DEPTH)/mojo/mojo_base.gyp:mojo_system_impl",
-        'mojo_system_for_loadable_module': "<(DEPTH)/mojo/mojo_base.gyp:mojo_system_impl",
+        'mojo_system_for_component': "<(DEPTH)/mojo/edk/mojo_edk.gyp:mojo_system_impl",
+        'mojo_system_for_loadable_module': "<(DEPTH)/mojo/edk/mojo_edk.gyp:mojo_system_impl",
         'mojo_gles2_for_component': "<(DEPTH)/mojo/mojo_base.gyp:mojo_gles2_impl",
       }, {
         'mojo_system_for_component': "<(DEPTH)/mojo/mojo_base.gyp:mojo_none",

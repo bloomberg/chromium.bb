@@ -11,7 +11,7 @@ test("mojo_public_environment_unittests") {
   ]
 
   deps = [
-    "//mojo/common/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/public/c/environment",
     "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/system",

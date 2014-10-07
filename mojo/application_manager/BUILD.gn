@@ -51,7 +51,7 @@ test("mojo_application_manager_unittests") {
     "//base",
     "//mojo/application",
     "//mojo/common",
-    "//mojo/common/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//testing/gtest",

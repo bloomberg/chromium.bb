@@ -7,7 +7,7 @@ test("mojo_js_unittests") {
   deps = [
     "//gin:gin_test",
     "//mojo/bindings/js",
-    "//mojo/common/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",

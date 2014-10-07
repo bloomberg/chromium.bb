@@ -36,7 +36,7 @@ test("mojo_common_unittests") {
     ":common",
     "//base",
     "//base:message_loop_tests",
-    "//mojo/common/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",

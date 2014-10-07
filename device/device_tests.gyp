@@ -12,8 +12,8 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:test_support_base',
+        '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/mojo_base.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',

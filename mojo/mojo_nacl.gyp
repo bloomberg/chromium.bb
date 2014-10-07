@@ -61,7 +61,7 @@
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
-            'mojo_base.gyp:mojo_system_impl',
+            'edk/mojo_edk.gyp:mojo_system_impl',
             'monacl_sel',
           ],
           'sources': [

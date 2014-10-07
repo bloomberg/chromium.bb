@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_TEST_TEST_SUPPORT_IMPL_H_
-#define MOJO_COMMON_TEST_TEST_SUPPORT_IMPL_H_
+#ifndef MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
+#define MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
 
 #include "base/macros.h"
 #include "mojo/public/tests/test_support_private.h"
@@ -30,4 +30,4 @@ class TestSupportImpl : public TestSupport {
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_TEST_TEST_SUPPORT_IMPL_H_
+#endif  // MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_

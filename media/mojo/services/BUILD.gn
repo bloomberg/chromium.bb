@@ -76,8 +76,8 @@ test("media_mojo_lib_unittests") {
     "//base/test:test_support",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/common/test:run_all_unittests",
     "//mojo/edk/system",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//testing/gtest",
     ":lib"

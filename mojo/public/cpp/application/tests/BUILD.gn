@@ -6,7 +6,7 @@
 test("mojo_public_application_unittests") {
   deps = [
     "//base",
-    "//mojo/common/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",

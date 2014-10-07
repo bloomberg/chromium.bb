@@ -66,10 +66,10 @@
       'type': 'executable',
       'dependencies': [
         '../gin/gin.gyp:gin_test',
+        'edk/mojo_edk.gyp:mojo_common_test_support',
+        'edk/mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_apps_js_bindings',
         'mojo_base.gyp:mojo_common_lib',
-        'mojo_base.gyp:mojo_common_test_support',
-        'mojo_base.gyp:mojo_run_all_unittests',
         'mojo_js_lib',
         'public/mojo_public.gyp:mojo_public_test_interfaces',
       ],
