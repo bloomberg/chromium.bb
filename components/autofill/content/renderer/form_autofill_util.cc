@@ -74,6 +74,10 @@ bool HasTagName(const WebNode& node, const blink::WebString& tag) {
 }
 
 bool IsAutofillableElement(const WebFormControlElement& element) {
+  // Exclude disabled and readonly elements.
+  if (!element.isEnabled() || element.isReadOnly())
+    return false;
+
   const WebInputElement* input_element = toWebInputElement(&element);
   return IsAutofillableInputElement(input_element) ||
          IsSelectElement(element) ||

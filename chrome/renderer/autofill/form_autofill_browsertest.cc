@@ -1455,10 +1455,8 @@ TEST_F(FormAutofillTest, FillForm) {
       // Non empty fields should not be autofilled.
       {"text", "notempty", "Hi", "", false, "filled notempty", "Hi"},
       // "noautocomplete" should not be extracted to form_data.
-      // Disabled fields should not be autofilled.
-      {"text", "notenabled", "", "", false, "filled notenabled", ""},
-      // Readonly fields should not be autofilled.
-      {"text", "readonly", "", "", false, "filled readonly", ""},
+      // Disabled fields should not be extracted to form_data.
+      // Readonly fields should not be extracted to form_data.
       // Fields with "visibility: hidden" should not be autofilled.
       {"text", "invisible", "", "", false, "filled invisible", ""},
       // Fields with "display:none" should not be autofilled.
@@ -1505,10 +1503,8 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
       {"text", "notempty", "Hi", "", true, "filled notempty",
        "filled notempty"},
       // "noautocomplete" should not be extracted to form_data.
-      // Disabled fields should not be autofilled.
-      {"text", "notenabled", "", "", false, "filled notenabled", ""},
-      // Readonly fields should not be autofilled.
-      {"text", "readonly", "", "", false, "filled readonly", ""},
+      // Disabled fields should not be extracted to form_data.
+      // Readonly fields should not be extracted to form_data.
       // Fields with "visibility: hidden" should also be autofilled.
       {"text", "invisible", "", "", true, "filled invisible",
        "filled invisible"},
@@ -1550,10 +1546,8 @@ TEST_F(FormAutofillTest, PreviewForm) {
       // Non empty fields should not be previewed.
       {"text", "notempty", "Hi", "", false, "suggested notempty", ""},
       // "noautocomplete" should not be extracted to form_data.
-      // Disabled fields should not be previewed.
-      {"text", "notenabled", "", "", false, "suggested notenabled", ""},
-      // Readonly fields should not be previewed.
-      {"text", "readonly", "", "", false, "suggested readonly", ""},
+      // Disabled fields should not be extracted to form_data.
+      // Readonly fields should not be extracted to form_data.
       // Fields with "visibility: hidden" should not be previewed.
       {"text", "invisible", "", "", false, "suggested invisible",
        ""},
@@ -3111,7 +3105,7 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormFieldData>& fields2 = form2.fields;
-  ASSERT_EQ(9U, fields2.size());
+  ASSERT_EQ(6U, fields2.size());
 
   FormFieldData expected;
   expected.form_control_type = "text";
@@ -3131,33 +3125,21 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
   expected.autocomplete_attribute = std::string();  // reset
 
-  expected.name = ASCIIToUTF16("notenabled");
-  expected.value = ASCIIToUTF16("no clear");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[3]);
-
   expected.form_control_type = "month";
   expected.max_length = 0;
   expected.name = ASCIIToUTF16("month");
   expected.value = base::string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[4]);
-
-  expected.name = ASCIIToUTF16("month-disabled");
-  expected.value = ASCIIToUTF16("2012-11");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[5]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[3]);
 
   expected.form_control_type = "textarea";
   expected.name = ASCIIToUTF16("textarea");
   expected.value = base::string16();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[6]);
-
-  expected.name = ASCIIToUTF16("textarea-disabled");
-  expected.value = ASCIIToUTF16("    Banana!  ");
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[7]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[4]);
 
   expected.name = ASCIIToUTF16("textarea-noAC");
   expected.value = ASCIIToUTF16("Carrot?");
   expected.autocomplete_attribute = "off";
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[8]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[5]);
   expected.autocomplete_attribute = std::string();  // reset
 
   // Verify that the cursor position has been updated.
