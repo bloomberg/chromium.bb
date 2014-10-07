@@ -423,7 +423,6 @@
         'browser/api/hid/hid_connection_resource.h',
         'browser/api/hid/hid_device_manager.cc',
         'browser/api/hid/hid_device_manager.h',
-        'browser/api/messaging/native_message_host.cc',
         'browser/api/power/power_api.cc',
         'browser/api/power/power_api.h',
         'browser/api/power/power_api_manager.cc',

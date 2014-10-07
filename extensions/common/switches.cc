@@ -62,10 +62,6 @@ const char kEnableMimeHandlerView[] = "enable-mime-handler-view";
 // Enables extensions to hide bookmarks UI elements.
 const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 
-// Allows remote assistance connection to this computer using the Chrome Remote
-// Desktop app on Chrome OS.
-const char kEnableRemoteAssistance[] = "enable-remote-assistance";
-
 // Allows the ErrorConsole to collect runtime and manifest errors, and display
 // them in the chrome:extensions page.
 const char kErrorConsole[] = "error-console";

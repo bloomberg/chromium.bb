@@ -45815,7 +45815,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="880510010" label="enable-permissions-bubbles"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="909439558" label="disable-device-discovery"/>
-  <int value="952558794" label="enable-remote-assistance"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1050321458" label="new-profile-management"/>

@@ -138,7 +138,6 @@ source_set("browser") {
       "api/hid/hid_connection_resource.h",
       "api/hid/hid_device_manager.cc",
       "api/hid/hid_device_manager.h",
-      "api/messaging/native_message_host.cc",
       "api/power/power_api.cc",
       "api/power/power_api.h",
       "api/power/power_api_manager.cc",

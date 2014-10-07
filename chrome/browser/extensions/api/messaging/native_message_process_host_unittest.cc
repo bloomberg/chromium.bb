@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -92,7 +93,7 @@ class FakeLauncher : public NativeProcessLauncher {
 };
 
 class NativeMessagingTest : public ::testing::Test,
-                            public NativeMessageHost::Client,
+                            public NativeMessageProcessHost::Client,
                             public base::SupportsWeakPtr<NativeMessagingTest> {
  protected:
   NativeMessagingTest()
@@ -105,14 +106,16 @@ class NativeMessagingTest : public ::testing::Test,
   }
 
   virtual void TearDown() override {
-    if (native_message_host_.get()) {
-      BrowserThread::DeleteSoon(
-          BrowserThread::IO, FROM_HERE, native_message_host_.release());
+    if (native_message_process_host_.get()) {
+      BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                                native_message_process_host_.release());
     }
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void PostMessageFromNativeHost(const std::string& message) override {
+  virtual void PostMessageFromNativeProcess(
+      int port_id,
+      const std::string& message) override  {
     last_message_ = message;
 
     // Parse the message.
@@ -130,7 +133,8 @@ class NativeMessagingTest : public ::testing::Test,
       run_loop_->Quit();
   }
 
-  virtual void CloseChannel(const std::string& error_message) override {
+  virtual void CloseChannel(int port_id,
+                            const std::string& error_message) override {
     channel_closed_ = true;
     if (run_loop_)
       run_loop_->Quit();
@@ -160,7 +164,7 @@ class NativeMessagingTest : public ::testing::Test,
   base::ScopedTempDir temp_dir_;
   // Force the channel to be dev.
   ScopedCurrentChannel current_channel_;
-  scoped_ptr<NativeMessageHost> native_message_host_;
+  scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
   scoped_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::string last_message_;
@@ -176,19 +180,15 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
 
   scoped_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::Create(temp_input_file, temp_output_file).Pass();
-  native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      ScopedTestNativeMessagingHost::kExtensionId,
-      "empty_app.py",
-      launcher.Pass());
-  native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
+      AsWeakPtr(), ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
+      0, launcher.Pass());
+  ASSERT_TRUE(native_message_process_host_.get());
   run_loop_.reset(new base::RunLoop());
   run_loop_->RunUntilIdle();
 
   if (last_message_.empty()) {
     run_loop_.reset(new base::RunLoop());
-    scoped_ptr<NativeMessageProcessHost> native_message_process_host_(
-        static_cast<NativeMessageProcessHost*>(native_message_host_.release()));
     native_message_process_host_->ReadNowForTesting();
     run_loop_->Run();
   }
@@ -226,15 +226,13 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   scoped_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::CreateWithPipeInput(read_file.Pass(),
                                         temp_output_file).Pass();
-  native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      ScopedTestNativeMessagingHost::kExtensionId,
-      "empty_app.py",
-      launcher.Pass());
-  native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
+      AsWeakPtr(), ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
+      0, launcher.Pass());
+  ASSERT_TRUE(native_message_process_host_.get());
   base::RunLoop().RunUntilIdle();
 
-  native_message_host_->OnMessage(kTestMessage);
+  native_message_process_host_->Send(kTestMessage);
   base::RunLoop().RunUntilIdle();
 
   std::string output;
@@ -254,17 +252,13 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 TEST_F(NativeMessagingTest, EchoConnect) {
   ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
-  std::string error_message;
-  native_message_host_ = NativeMessageProcessHost::Create(
-      NULL,
-      ScopedTestNativeMessagingHost::kExtensionId,
-      ScopedTestNativeMessagingHost::kHostName,
-      false,
-      &error_message);
-  native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
 
-  native_message_host_->OnMessage("{\"text\": \"Hello.\"}");
+  native_message_process_host_ = NativeMessageProcessHost::Create(
+      NULL, AsWeakPtr(), ScopedTestNativeMessagingHost::kExtensionId,
+      ScopedTestNativeMessagingHost::kHostName, 0, false);
+  ASSERT_TRUE(native_message_process_host_.get());
+
+  native_message_process_host_->Send("{\"text\": \"Hello.\"}");
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
   ASSERT_FALSE(last_message_.empty());
@@ -282,7 +276,7 @@ TEST_F(NativeMessagingTest, EchoConnect) {
   EXPECT_TRUE(last_message_parsed_->GetString("caller_url", &url));
   EXPECT_EQ(expected_url, url);
 
-  native_message_host_->OnMessage("{\"foo\": \"bar\"}");
+  native_message_process_host_->Send("{\"foo\": \"bar\"}");
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
   EXPECT_TRUE(last_message_parsed_->GetInteger("id", &id));
@@ -297,17 +291,12 @@ TEST_F(NativeMessagingTest, UserLevel) {
   ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(true));
 
-  std::string error_message;
-  native_message_host_ = NativeMessageProcessHost::Create(
-      NULL,
-      ScopedTestNativeMessagingHost::kExtensionId,
-      ScopedTestNativeMessagingHost::kHostName,
-      true,
-      &error_message);
-  native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  native_message_process_host_ = NativeMessageProcessHost::Create(
+      NULL, AsWeakPtr(), ScopedTestNativeMessagingHost::kExtensionId,
+      ScopedTestNativeMessagingHost::kHostName, 0, true);
+  ASSERT_TRUE(native_message_process_host_.get());
 
-  native_message_host_->OnMessage("{\"text\": \"Hello.\"}");
+  native_message_process_host_->Send("{\"text\": \"Hello.\"}");
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
   ASSERT_FALSE(last_message_.empty());
@@ -318,15 +307,10 @@ TEST_F(NativeMessagingTest, DisallowUserLevel) {
   ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(true));
 
-  std::string error_message;
-  native_message_host_ = NativeMessageProcessHost::Create(
-      NULL,
-      ScopedTestNativeMessagingHost::kExtensionId,
-      ScopedTestNativeMessagingHost::kHostName,
-      false,
-      &error_message);
-  native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  native_message_process_host_ = NativeMessageProcessHost::Create(
+      NULL, AsWeakPtr(), ScopedTestNativeMessagingHost::kExtensionId,
+      ScopedTestNativeMessagingHost::kHostName, 0, false);
+  ASSERT_TRUE(native_message_process_host_.get());
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
 
