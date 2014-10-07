@@ -398,11 +398,11 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
         return false;
 
     switch (match) {
-    case CSSSelector::Exact:
+    case CSSSelector::AttributeExact:
         if (caseSensitive ? selectorValue != value : !equalIgnoringCase(selectorValue, value))
             return false;
         break;
-    case CSSSelector::List:
+    case CSSSelector::AttributeList:
         {
             // Ignore empty selectors or selectors containing HTML spaces
             if (selectorValue.isEmpty() || containsHTMLSpace(selectorValue))
@@ -424,19 +424,19 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
             }
             break;
         }
-    case CSSSelector::Contain:
+    case CSSSelector::AttributeContain:
         if (!value.contains(selectorValue, caseSensitive) || selectorValue.isEmpty())
             return false;
         break;
-    case CSSSelector::Begin:
+    case CSSSelector::AttributeBegin:
         if (!value.startsWith(selectorValue, caseSensitive) || selectorValue.isEmpty())
             return false;
         break;
-    case CSSSelector::End:
+    case CSSSelector::AttributeEnd:
         if (!value.endsWith(selectorValue, caseSensitive) || selectorValue.isEmpty())
             return false;
         break;
-    case CSSSelector::Hyphen:
+    case CSSSelector::AttributeHyphen:
         if (value.length() < selectorValue.length())
             return false;
         if (!value.startsWith(selectorValue, caseSensitive))
@@ -512,463 +512,451 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         && selector.match() != CSSSelector::PseudoElement))
             return false;
 
-    if (selector.match() == CSSSelector::Tag)
+    switch (selector.match()) {
+    case CSSSelector::Tag:
         return SelectorChecker::tagMatches(element, selector.tagQName());
-
-    if (selector.match() == CSSSelector::Class)
+    case CSSSelector::Class:
         return element.hasClass() && element.classNames().contains(selector.value());
-
-    if (selector.match() == CSSSelector::Id)
+    case CSSSelector::Id:
         return element.hasID() && element.idForStyleResolution() == selector.value();
 
-    if (selector.isAttributeSelector())
+    // Attribute selectors
+    case CSSSelector::AttributeExact:
+    case CSSSelector::AttributeSet:
+    case CSSSelector::AttributeHyphen:
+    case CSSSelector::AttributeList:
+    case CSSSelector::AttributeContain:
+    case CSSSelector::AttributeBegin:
+    case CSSSelector::AttributeEnd:
         return anyAttributeMatches(element, selector.match(), selector);
 
-    if (selector.match() == CSSSelector::PseudoClass) {
-        // Handle :not up front.
-        if (selector.pseudoType() == CSSSelector::PseudoNot) {
-            SelectorCheckingContext subContext(context);
-            subContext.isSubSelector = true;
-            ASSERT(selector.selectorList());
-            for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = subContext.selector->tagHistory()) {
-                // :not cannot nest. I don't really know why this is a
-                // restriction in CSS3, but it is, so let's honor it.
-                // the parser enforces that this never occurs
-                ASSERT(subContext.selector->pseudoType() != CSSSelector::PseudoNot);
-                // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
-                if (subContext.selector->pseudoType() == CSSSelector::PseudoVisited || (subContext.selector->pseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
-                    return true;
-                // context.scope is not available if m_mode == SharingRules.
-                // We cannot determine whether :host or :scope matches a given element or not.
-                if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
-                    return true;
-                if (!checkOne(subContext, DOMSiblingTraversalStrategy()))
-                    return true;
-            }
-        } else if (context.hasScrollbarPseudo) {
-            // CSS scrollbars match a specific subset of pseudo classes, and they have specialized rules for each
-            // (since there are no elements involved).
-            return checkScrollbarPseudoClass(context, &element.document(), selector);
-        } else if (context.hasSelectionPseudo) {
-            if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
-                return !element.document().page()->focusController().isActive();
-        }
+    case CSSSelector::PseudoClass:
+        return checkPseudoClass(context, siblingTraversalStrategy, specificity);
+    case CSSSelector::PseudoElement:
+        return checkPseudoElement(context, siblingTraversalStrategy);
 
-        // Normal element pseudo class checking.
-        switch (selector.pseudoType()) {
-            // Pseudo classes:
-        case CSSSelector::PseudoNot:
-            break; // Already handled up above.
-        case CSSSelector::PseudoEmpty:
-            {
-                bool result = true;
-                for (Node* n = element.firstChild(); n; n = n->nextSibling()) {
-                    if (n->isElementNode()) {
+    case CSSSelector::PagePseudoClass:
+        // FIXME: what?
+        return true;
+    case CSSSelector::Unknown:
+        // FIXME: what?
+        return true;
+    }
+    ASSERT_NOT_REACHED();
+    return true;
+}
+
+template<typename SiblingTraversalStrategy>
+bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, unsigned* specificity) const
+{
+    Element& element = *context.element;
+    const CSSSelector& selector = *context.selector;
+
+    // Handle :not up front.
+    if (selector.pseudoType() == CSSSelector::PseudoNot) {
+        SelectorCheckingContext subContext(context);
+        subContext.isSubSelector = true;
+        ASSERT(selector.selectorList());
+        for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = subContext.selector->tagHistory()) {
+            // :not cannot nest. I don't really know why this is a
+            // restriction in CSS3, but it is, so let's honor it.
+            // the parser enforces that this never occurs
+            ASSERT(subContext.selector->pseudoType() != CSSSelector::PseudoNot);
+            // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
+            if (subContext.selector->pseudoType() == CSSSelector::PseudoVisited || (subContext.selector->pseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
+                return true;
+            // context.scope is not available if m_mode == SharingRules.
+            // We cannot determine whether :host or :scope matches a given element or not.
+            if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
+                return true;
+            if (!checkOne(subContext, DOMSiblingTraversalStrategy()))
+                return true;
+        }
+        return false;
+    }
+
+    if (context.hasScrollbarPseudo) {
+        // CSS scrollbars match a specific subset of pseudo classes, and they have specialized rules for each
+        // (since there are no elements involved).
+        return checkScrollbarPseudoClass(context, &element.document(), selector);
+    }
+
+    if (context.hasSelectionPseudo) {
+        if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
+            return !element.document().page()->focusController().isActive();
+    }
+
+    // Normal element pseudo class checking.
+    switch (selector.pseudoType()) {
+        // Pseudo classes:
+    case CSSSelector::PseudoNot:
+        break; // Already handled up above.
+    case CSSSelector::PseudoEmpty:
+        {
+            bool result = true;
+            for (Node* n = element.firstChild(); n; n = n->nextSibling()) {
+                if (n->isElementNode()) {
+                    result = false;
+                    break;
+                }
+                if (n->isTextNode()) {
+                    Text* textNode = toText(n);
+                    if (!textNode->data().isEmpty()) {
                         result = false;
                         break;
                     }
-                    if (n->isTextNode()) {
-                        Text* textNode = toText(n);
-                        if (!textNode->data().isEmpty()) {
-                            result = false;
-                            break;
-                        }
-                    }
-                }
-                if (m_mode == ResolvingStyle) {
-                    element.setStyleAffectedByEmpty();
-                    if (context.elementStyle)
-                        context.elementStyle->setEmptyState(result);
-                    else if (element.renderStyle() && (element.document().styleEngine()->usesSiblingRules() || element.renderStyle()->unique()))
-                        element.renderStyle()->setEmptyState(result);
-                }
-                return result;
-            }
-        case CSSSelector::PseudoFirstChild:
-            // first-child matches the first child that is an element
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                bool result = siblingTraversalStrategy.isFirstChild(element);
-                if (m_mode == ResolvingStyle) {
-                    RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
-                    parent->setChildrenAffectedByFirstChildRules();
-                    if (result && childStyle)
-                        childStyle->setFirstChildState();
-                }
-                return result;
-            }
-            break;
-        case CSSSelector::PseudoFirstOfType:
-            // first-of-type matches the first element of its type
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                bool result = siblingTraversalStrategy.isFirstOfType(element, element.tagQName());
-                if (m_mode == ResolvingStyle)
-                    parent->setChildrenAffectedByForwardPositionalRules();
-                return result;
-            }
-            break;
-        case CSSSelector::PseudoLastChild:
-            // last-child matches the last child that is an element
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                bool result = parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
-                if (m_mode == ResolvingStyle) {
-                    RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
-                    parent->setChildrenAffectedByLastChildRules();
-                    if (result && childStyle)
-                        childStyle->setLastChildState();
-                }
-                return result;
-            }
-            break;
-        case CSSSelector::PseudoLastOfType:
-            // last-of-type matches the last element of its type
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                if (m_mode == ResolvingStyle)
-                    parent->setChildrenAffectedByBackwardPositionalRules();
-                if (!parent->isFinishedParsingChildren())
-                    return false;
-                return siblingTraversalStrategy.isLastOfType(element, element.tagQName());
-            }
-            break;
-        case CSSSelector::PseudoOnlyChild:
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                bool firstChild = siblingTraversalStrategy.isFirstChild(element);
-                bool onlyChild = firstChild && parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
-                if (m_mode == ResolvingStyle) {
-                    RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
-                    parent->setChildrenAffectedByFirstChildRules();
-                    parent->setChildrenAffectedByLastChildRules();
-                    if (firstChild && childStyle)
-                        childStyle->setFirstChildState();
-                    if (onlyChild && childStyle)
-                        childStyle->setLastChildState();
-                }
-                return onlyChild;
-            }
-            break;
-        case CSSSelector::PseudoOnlyOfType:
-            // FIXME: This selector is very slow.
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                if (m_mode == ResolvingStyle) {
-                    parent->setChildrenAffectedByForwardPositionalRules();
-                    parent->setChildrenAffectedByBackwardPositionalRules();
-                }
-                if (!parent->isFinishedParsingChildren())
-                    return false;
-                return siblingTraversalStrategy.isFirstOfType(element, element.tagQName()) && siblingTraversalStrategy.isLastOfType(element, element.tagQName());
-            }
-            break;
-        case CSSSelector::PseudoNthChild:
-            if (!selector.parseNth())
-                break;
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
-                if (m_mode == ResolvingStyle) {
-                    RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
-                    if (childStyle)
-                        childStyle->setUnique();
-                    parent->setChildrenAffectedByForwardPositionalRules();
-                }
-
-                if (selector.matchNth(count))
-                    return true;
-            }
-            break;
-        case CSSSelector::PseudoNthOfType:
-            if (!selector.parseNth())
-                break;
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                int count = 1 + siblingTraversalStrategy.countElementsOfTypeBefore(element, element.tagQName());
-                if (m_mode == ResolvingStyle)
-                    parent->setChildrenAffectedByForwardPositionalRules();
-
-                if (selector.matchNth(count))
-                    return true;
-            }
-            break;
-        case CSSSelector::PseudoNthLastChild:
-            if (!selector.parseNth())
-                break;
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                if (m_mode == ResolvingStyle)
-                    parent->setChildrenAffectedByBackwardPositionalRules();
-                if (!parent->isFinishedParsingChildren())
-                    return false;
-                int count = 1 + siblingTraversalStrategy.countElementsAfter(element);
-                if (selector.matchNth(count))
-                    return true;
-            }
-            break;
-        case CSSSelector::PseudoNthLastOfType:
-            if (!selector.parseNth())
-                break;
-            if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-                if (m_mode == ResolvingStyle)
-                    parent->setChildrenAffectedByBackwardPositionalRules();
-                if (!parent->isFinishedParsingChildren())
-                    return false;
-
-                int count = 1 + siblingTraversalStrategy.countElementsOfTypeAfter(element, element.tagQName());
-                if (selector.matchNth(count))
-                    return true;
-            }
-            break;
-        case CSSSelector::PseudoTarget:
-            if (element == element.document().cssTarget())
-                return true;
-            break;
-        case CSSSelector::PseudoAny:
-            {
-                SelectorCheckingContext subContext(context);
-                subContext.isSubSelector = true;
-                ASSERT(selector.selectorList());
-                for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-                    if (match(subContext, siblingTraversalStrategy) == SelectorMatches)
-                        return true;
                 }
             }
-            break;
-        case CSSSelector::PseudoAutofill:
-            if (!element.isFormControlElement())
-                break;
-            return toHTMLFormControlElement(element).isAutofilled();
-        case CSSSelector::PseudoAnyLink:
-        case CSSSelector::PseudoLink:
-            // :visited and :link matches are separated later when applying the style. Here both classes match all links...
-            return element.isLink();
-        case CSSSelector::PseudoVisited:
-            // ...except if :visited matching is disabled for ancestor/sibling matching.
-            return element.isLink() && context.visitedMatchType == VisitedMatchEnabled;
-        case CSSSelector::PseudoDrag:
             if (m_mode == ResolvingStyle) {
+                element.setStyleAffectedByEmpty();
                 if (context.elementStyle)
-                    context.elementStyle->setAffectedByDrag();
-                else
-                    element.setChildrenOrSiblingsAffectedByDrag();
+                    context.elementStyle->setEmptyState(result);
+                else if (element.renderStyle() && (element.document().styleEngine()->usesSiblingRules() || element.renderStyle()->unique()))
+                    element.renderStyle()->setEmptyState(result);
             }
-            if (element.renderer() && element.renderer()->isDragging())
-                return true;
-            break;
-        case CSSSelector::PseudoFocus:
+            return result;
+        }
+    case CSSSelector::PseudoFirstChild:
+        // first-child matches the first child that is an element
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            bool result = siblingTraversalStrategy.isFirstChild(element);
             if (m_mode == ResolvingStyle) {
-                if (context.elementStyle)
-                    context.elementStyle->setAffectedByFocus();
-                else
-                    element.setChildrenOrSiblingsAffectedByFocus();
+                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
+                parent->setChildrenAffectedByFirstChildRules();
+                if (result && childStyle)
+                    childStyle->setFirstChildState();
             }
-            return matchesFocusPseudoClass(element);
-        case CSSSelector::PseudoHover:
-            // If we're in quirks mode, then hover should never match anchors with no
-            // href and *:hover should not match anything. This is important for sites like wsj.com.
-            if (m_strictParsing || context.isSubSelector || element.isLink()) {
-                if (m_mode == ResolvingStyle) {
-                    if (context.elementStyle)
-                        context.elementStyle->setAffectedByHover();
-                    else
-                        element.setChildrenOrSiblingsAffectedByHover();
-                }
-                if (element.hovered() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoHover))
-                    return true;
+            return result;
+        }
+        break;
+    case CSSSelector::PseudoFirstOfType:
+        // first-of-type matches the first element of its type
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            bool result = siblingTraversalStrategy.isFirstOfType(element, element.tagQName());
+            if (m_mode == ResolvingStyle)
+                parent->setChildrenAffectedByForwardPositionalRules();
+            return result;
+        }
+        break;
+    case CSSSelector::PseudoLastChild:
+        // last-child matches the last child that is an element
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            bool result = parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
+            if (m_mode == ResolvingStyle) {
+                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
+                parent->setChildrenAffectedByLastChildRules();
+                if (result && childStyle)
+                    childStyle->setLastChildState();
             }
-            break;
-        case CSSSelector::PseudoActive:
-            // If we're in quirks mode, then :active should never match anchors with no
-            // href and *:active should not match anything.
-            if (m_strictParsing || context.isSubSelector || element.isLink()) {
-                if (m_mode == ResolvingStyle) {
-                    if (context.elementStyle)
-                        context.elementStyle->setAffectedByActive();
-                    else
-                        element.setChildrenOrSiblingsAffectedByActive();
-                }
-                if (element.active() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoActive))
-                    return true;
-            }
-            break;
-        case CSSSelector::PseudoEnabled:
-            if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
-                return !element.isDisabledFormControl();
-            break;
-        case CSSSelector::PseudoFullPageMedia:
-            return element.document().isMediaDocument();
-            break;
-        case CSSSelector::PseudoDefault:
-            return element.isDefaultButtonForForm();
-        case CSSSelector::PseudoDisabled:
-            if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
-                return element.isDisabledFormControl();
-            break;
-        case CSSSelector::PseudoReadOnly:
-            return element.matchesReadOnlyPseudoClass();
-        case CSSSelector::PseudoReadWrite:
-            return element.matchesReadWritePseudoClass();
-        case CSSSelector::PseudoOptional:
-            return element.isOptionalFormControl();
-        case CSSSelector::PseudoRequired:
-            return element.isRequiredFormControl();
-        case CSSSelector::PseudoValid:
-            element.document().setContainsValidityStyleRules();
-            return element.willValidate() && element.isValidFormControlElement();
-        case CSSSelector::PseudoInvalid:
-            element.document().setContainsValidityStyleRules();
-            return element.willValidate() && !element.isValidFormControlElement();
-        case CSSSelector::PseudoChecked:
-            {
-                if (isHTMLInputElement(element)) {
-                    HTMLInputElement& inputElement = toHTMLInputElement(element);
-                    // Even though WinIE allows checked and indeterminate to
-                    // co-exist, the CSS selector spec says that you can't be
-                    // both checked and indeterminate. We will behave like WinIE
-                    // behind the scenes and just obey the CSS spec here in the
-                    // test for matching the pseudo.
-                    if (inputElement.shouldAppearChecked() && !inputElement.shouldAppearIndeterminate())
-                        return true;
-                } else if (isHTMLOptionElement(element) && toHTMLOptionElement(element).selected())
-                    return true;
-                break;
-            }
-        case CSSSelector::PseudoIndeterminate:
-            return element.shouldAppearIndeterminate();
-        case CSSSelector::PseudoRoot:
-            if (element == element.document().documentElement())
-                return true;
-            break;
-        case CSSSelector::PseudoLang:
-            {
-                AtomicString value;
-                if (element.isVTTElement())
-                    value = toVTTElement(element).language();
-                else
-                    value = element.computeInheritedLanguage();
-                const AtomicString& argument = selector.argument();
-                if (value.isEmpty() || !value.startsWith(argument, false))
-                    break;
-                if (value.length() != argument.length() && value[argument.length()] != '-')
-                    break;
-                return true;
-            }
-        case CSSSelector::PseudoFullScreen:
-            // While a Document is in the fullscreen state, and the document's current fullscreen
-            // element is an element in the document, the 'full-screen' pseudoclass applies to
-            // that element. Also, an <iframe>, <object> or <embed> element whose child browsing
-            // context's Document is in the fullscreen state has the 'full-screen' pseudoclass applied.
-            if (isHTMLFrameElementBase(element) && element.containsFullScreenElement())
-                return true;
-            return Fullscreen::isActiveFullScreenElement(element);
-        case CSSSelector::PseudoFullScreenAncestor:
-            return element.containsFullScreenElement();
-        case CSSSelector::PseudoFullScreenDocument:
-            // While a Document is in the fullscreen state, the 'full-screen-document' pseudoclass applies
-            // to all elements of that Document.
-            if (!Fullscreen::isFullScreen(element.document()))
+            return result;
+        }
+        break;
+    case CSSSelector::PseudoLastOfType:
+        // last-of-type matches the last element of its type
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            if (m_mode == ResolvingStyle)
+                parent->setChildrenAffectedByBackwardPositionalRules();
+            if (!parent->isFinishedParsingChildren())
                 return false;
-            return true;
-        case CSSSelector::PseudoInRange:
-            element.document().setContainsValidityStyleRules();
-            return element.isInRange();
-        case CSSSelector::PseudoOutOfRange:
-            element.document().setContainsValidityStyleRules();
-            return element.isOutOfRange();
-        case CSSSelector::PseudoFutureCue:
-            return (element.isVTTElement() && !toVTTElement(element).isPastNode());
-        case CSSSelector::PseudoPastCue:
-            return (element.isVTTElement() && toVTTElement(element).isPastNode());
-
-        case CSSSelector::PseudoScope:
-            {
-                if (m_mode == SharingRules)
-                    return true;
-                const Node* contextualReferenceNode = !context.scope ? element.document().documentElement() : context.scope;
-                if (element == contextualReferenceNode)
-                    return true;
-                break;
+            return siblingTraversalStrategy.isLastOfType(element, element.tagQName());
+        }
+        break;
+    case CSSSelector::PseudoOnlyChild:
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            bool firstChild = siblingTraversalStrategy.isFirstChild(element);
+            bool onlyChild = firstChild && parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
+            if (m_mode == ResolvingStyle) {
+                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
+                parent->setChildrenAffectedByFirstChildRules();
+                parent->setChildrenAffectedByLastChildRules();
+                if (firstChild && childStyle)
+                    childStyle->setFirstChildState();
+                if (onlyChild && childStyle)
+                    childStyle->setLastChildState();
+            }
+            return onlyChild;
+        }
+        break;
+    case CSSSelector::PseudoOnlyOfType:
+        // FIXME: This selector is very slow.
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            if (m_mode == ResolvingStyle) {
+                parent->setChildrenAffectedByForwardPositionalRules();
+                parent->setChildrenAffectedByBackwardPositionalRules();
+            }
+            if (!parent->isFinishedParsingChildren())
+                return false;
+            return siblingTraversalStrategy.isFirstOfType(element, element.tagQName()) && siblingTraversalStrategy.isLastOfType(element, element.tagQName());
+        }
+        break;
+    case CSSSelector::PseudoNthChild:
+        if (!selector.parseNth())
+            break;
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
+            if (m_mode == ResolvingStyle) {
+                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
+                if (childStyle)
+                    childStyle->setUnique();
+                parent->setChildrenAffectedByForwardPositionalRules();
             }
 
-        case CSSSelector::PseudoUnresolved:
-            if (element.isUnresolvedCustomElement())
+            if (selector.matchNth(count))
                 return true;
+        }
+        break;
+    case CSSSelector::PseudoNthOfType:
+        if (!selector.parseNth())
             break;
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            int count = 1 + siblingTraversalStrategy.countElementsOfTypeBefore(element, element.tagQName());
+            if (m_mode == ResolvingStyle)
+                parent->setChildrenAffectedByForwardPositionalRules();
 
-        case CSSSelector::PseudoHost:
-        case CSSSelector::PseudoHostContext:
-            {
-                if (m_mode == SharingRules)
+            if (selector.matchNth(count))
+                return true;
+        }
+        break;
+    case CSSSelector::PseudoNthLastChild:
+        if (!selector.parseNth())
+            break;
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            if (m_mode == ResolvingStyle)
+                parent->setChildrenAffectedByBackwardPositionalRules();
+            if (!parent->isFinishedParsingChildren())
+                return false;
+            int count = 1 + siblingTraversalStrategy.countElementsAfter(element);
+            if (selector.matchNth(count))
+                return true;
+        }
+        break;
+    case CSSSelector::PseudoNthLastOfType:
+        if (!selector.parseNth())
+            break;
+        if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
+            if (m_mode == ResolvingStyle)
+                parent->setChildrenAffectedByBackwardPositionalRules();
+            if (!parent->isFinishedParsingChildren())
+                return false;
+
+            int count = 1 + siblingTraversalStrategy.countElementsOfTypeAfter(element, element.tagQName());
+            if (selector.matchNth(count))
+                return true;
+        }
+        break;
+    case CSSSelector::PseudoTarget:
+        if (element == element.document().cssTarget())
+            return true;
+        break;
+    case CSSSelector::PseudoAny:
+        {
+            SelectorCheckingContext subContext(context);
+            subContext.isSubSelector = true;
+            ASSERT(selector.selectorList());
+            for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
+                if (match(subContext, siblingTraversalStrategy) == SelectorMatches)
                     return true;
-                // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
-                if (!context.scope)
-                    return false;
-                const ContainerNode* shadowHost = context.scope->shadowHost();
-                if (!shadowHost || shadowHost != element)
-                    return false;
-                ASSERT(element.shadow());
-
-                // For empty parameter case, i.e. just :host or :host().
-                if (!selector.selectorList()) // Use *'s specificity. So just 0.
-                    return true;
-
-                SelectorCheckingContext subContext(context);
-                subContext.isSubSelector = true;
-
-                bool matched = false;
-                unsigned maxSpecificity = 0;
-
-                // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
-                for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-                    subContext.contextFlags = TreatShadowHostAsNormalScope;
-                    subContext.scope = context.scope;
-                    // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
-                    Element* nextElement = &element;
-                    SelectorCheckingContext hostContext(subContext);
-                    do {
-                        MatchResult subResult;
-                        hostContext.element = nextElement;
-                        if (match(hostContext, siblingTraversalStrategy, &subResult) == SelectorMatches) {
-                            matched = true;
-                            // Consider div:host(div:host(div:host(div:host...))).
-                            maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
-                            break;
-                        }
-                        hostContext.contextFlags = DefaultBehavior;
-                        hostContext.scope = nullptr;
-
-                        if (selector.pseudoType() == CSSSelector::PseudoHost)
-                            break;
-
-                        hostContext.elementStyle = 0;
-                        nextElement = NodeRenderingTraversal::parentElement(nextElement);
-                    } while (nextElement);
-                }
-                if (matched) {
-                    if (specificity)
-                        *specificity = maxSpecificity;
-                    return true;
-                }
             }
+        }
+        break;
+    case CSSSelector::PseudoAutofill:
+        if (!element.isFormControlElement())
             break;
-        case CSSSelector::PseudoSpatialNavigationFocus:
-            return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
-        case CSSSelector::PseudoListBox:
-            return context.isUARule && matchesListBoxPseudoClass(element);
-
-        case CSSSelector::PseudoHorizontal:
-        case CSSSelector::PseudoVertical:
-        case CSSSelector::PseudoDecrement:
-        case CSSSelector::PseudoIncrement:
-        case CSSSelector::PseudoStart:
-        case CSSSelector::PseudoEnd:
-        case CSSSelector::PseudoDoubleButton:
-        case CSSSelector::PseudoSingleButton:
-        case CSSSelector::PseudoNoButton:
-        case CSSSelector::PseudoCornerPresent:
-            return false;
-
-        case CSSSelector::PseudoUnknown:
-        case CSSSelector::PseudoNotParsed:
-        default:
-            ASSERT_NOT_REACHED();
+        return toHTMLFormControlElement(element).isAutofilled();
+    case CSSSelector::PseudoAnyLink:
+    case CSSSelector::PseudoLink:
+        // :visited and :link matches are separated later when applying the style. Here both classes match all links...
+        return element.isLink();
+    case CSSSelector::PseudoVisited:
+        // ...except if :visited matching is disabled for ancestor/sibling matching.
+        return element.isLink() && context.visitedMatchType == VisitedMatchEnabled;
+    case CSSSelector::PseudoDrag:
+        if (m_mode == ResolvingStyle) {
+            if (context.elementStyle)
+                context.elementStyle->setAffectedByDrag();
+            else
+                element.setChildrenOrSiblingsAffectedByDrag();
+        }
+        if (element.renderer() && element.renderer()->isDragging())
+            return true;
+        break;
+    case CSSSelector::PseudoFocus:
+        if (m_mode == ResolvingStyle) {
+            if (context.elementStyle)
+                context.elementStyle->setAffectedByFocus();
+            else
+                element.setChildrenOrSiblingsAffectedByFocus();
+        }
+        return matchesFocusPseudoClass(element);
+    case CSSSelector::PseudoHover:
+        // If we're in quirks mode, then hover should never match anchors with no
+        // href and *:hover should not match anything. This is important for sites like wsj.com.
+        if (m_strictParsing || context.isSubSelector || element.isLink()) {
+            if (m_mode == ResolvingStyle) {
+                if (context.elementStyle)
+                    context.elementStyle->setAffectedByHover();
+                else
+                    element.setChildrenOrSiblingsAffectedByHover();
+            }
+            if (element.hovered() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoHover))
+                return true;
+        }
+        break;
+    case CSSSelector::PseudoActive:
+        // If we're in quirks mode, then :active should never match anchors with no
+        // href and *:active should not match anything.
+        if (m_strictParsing || context.isSubSelector || element.isLink()) {
+            if (m_mode == ResolvingStyle) {
+                if (context.elementStyle)
+                    context.elementStyle->setAffectedByActive();
+                else
+                    element.setChildrenOrSiblingsAffectedByActive();
+            }
+            if (element.active() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoActive))
+                return true;
+        }
+        break;
+    case CSSSelector::PseudoEnabled:
+        if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
+            return !element.isDisabledFormControl();
+        if (isHTMLAnchorElement(element) || isHTMLAreaElement(element))
+            return element.isLink();
+        break;
+    case CSSSelector::PseudoFullPageMedia:
+        return element.document().isMediaDocument();
+        break;
+    case CSSSelector::PseudoDefault:
+        return element.isDefaultButtonForForm();
+    case CSSSelector::PseudoDisabled:
+        if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
+            return element.isDisabledFormControl();
+        break;
+    case CSSSelector::PseudoReadOnly:
+        return element.matchesReadOnlyPseudoClass();
+    case CSSSelector::PseudoReadWrite:
+        return element.matchesReadWritePseudoClass();
+    case CSSSelector::PseudoOptional:
+        return element.isOptionalFormControl();
+    case CSSSelector::PseudoRequired:
+        return element.isRequiredFormControl();
+    case CSSSelector::PseudoValid:
+        element.document().setContainsValidityStyleRules();
+        return element.willValidate() && element.isValidFormControlElement();
+    case CSSSelector::PseudoInvalid:
+        element.document().setContainsValidityStyleRules();
+        return element.willValidate() && !element.isValidFormControlElement();
+    case CSSSelector::PseudoChecked:
+        {
+            if (isHTMLInputElement(element)) {
+                HTMLInputElement& inputElement = toHTMLInputElement(element);
+                // Even though WinIE allows checked and indeterminate to
+                // co-exist, the CSS selector spec says that you can't be
+                // both checked and indeterminate. We will behave like WinIE
+                // behind the scenes and just obey the CSS spec here in the
+                // test for matching the pseudo.
+                if (inputElement.shouldAppearChecked() && !inputElement.shouldAppearIndeterminate())
+                    return true;
+            } else if (isHTMLOptionElement(element) && toHTMLOptionElement(element).selected())
+                return true;
             break;
         }
+    case CSSSelector::PseudoIndeterminate:
+        return element.shouldAppearIndeterminate();
+    case CSSSelector::PseudoRoot:
+        if (element == element.document().documentElement())
+            return true;
+        break;
+    case CSSSelector::PseudoLang:
+        {
+            AtomicString value;
+            if (element.isVTTElement())
+                value = toVTTElement(element).language();
+            else
+                value = element.computeInheritedLanguage();
+            const AtomicString& argument = selector.argument();
+            if (value.isEmpty() || !value.startsWith(argument, false))
+                break;
+            if (value.length() != argument.length() && value[argument.length()] != '-')
+                break;
+            return true;
+        }
+    case CSSSelector::PseudoFullScreen:
+        // While a Document is in the fullscreen state, and the document's current fullscreen
+        // element is an element in the document, the 'full-screen' pseudoclass applies to
+        // that element. Also, an <iframe>, <object> or <embed> element whose child browsing
+        // context's Document is in the fullscreen state has the 'full-screen' pseudoclass applied.
+        if (isHTMLFrameElementBase(element) && element.containsFullScreenElement())
+            return true;
+        return Fullscreen::isActiveFullScreenElement(element);
+    case CSSSelector::PseudoFullScreenAncestor:
+        return element.containsFullScreenElement();
+    case CSSSelector::PseudoFullScreenDocument:
+        // While a Document is in the fullscreen state, the 'full-screen-document' pseudoclass applies
+        // to all elements of that Document.
+        if (!Fullscreen::isFullScreen(element.document()))
+            return false;
+        return true;
+    case CSSSelector::PseudoInRange:
+        element.document().setContainsValidityStyleRules();
+        return element.isInRange();
+    case CSSSelector::PseudoOutOfRange:
+        element.document().setContainsValidityStyleRules();
+        return element.isOutOfRange();
+    case CSSSelector::PseudoFutureCue:
+        return (element.isVTTElement() && !toVTTElement(element).isPastNode());
+    case CSSSelector::PseudoPastCue:
+        return (element.isVTTElement() && toVTTElement(element).isPastNode());
+
+    case CSSSelector::PseudoScope:
+        {
+            if (m_mode == SharingRules)
+                return true;
+            const Node* contextualReferenceNode = !context.scope ? element.document().documentElement() : context.scope;
+            if (element == contextualReferenceNode)
+                return true;
+            break;
+        }
+
+    case CSSSelector::PseudoUnresolved:
+        if (element.isUnresolvedCustomElement())
+            return true;
+        break;
+
+    case CSSSelector::PseudoHost:
+    case CSSSelector::PseudoHostContext:
+        return checkPseudoHost(context, siblingTraversalStrategy, specificity);
+    case CSSSelector::PseudoSpatialNavigationFocus:
+        return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
+    case CSSSelector::PseudoListBox:
+        return context.isUARule && matchesListBoxPseudoClass(element);
+
+    case CSSSelector::PseudoHorizontal:
+    case CSSSelector::PseudoVertical:
+    case CSSSelector::PseudoDecrement:
+    case CSSSelector::PseudoIncrement:
+    case CSSSelector::PseudoStart:
+    case CSSSelector::PseudoEnd:
+    case CSSSelector::PseudoDoubleButton:
+    case CSSSelector::PseudoSingleButton:
+    case CSSSelector::PseudoNoButton:
+    case CSSSelector::PseudoCornerPresent:
         return false;
-    } else if (selector.match() == CSSSelector::PseudoElement && selector.pseudoType() == CSSSelector::PseudoCue) {
+
+    case CSSSelector::PseudoUnknown:
+    case CSSSelector::PseudoNotParsed:
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return false;
+}
+
+template<typename SiblingTraversalStrategy>
+bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy) const
+{
+    const CSSSelector& selector = *context.selector;
+
+    if (selector.pseudoType() == CSSSelector::PseudoCue) {
         SelectorCheckingContext subContext(context);
         subContext.isSubSelector = true;
         subContext.contextFlags = DefaultBehavior;
@@ -981,8 +969,71 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         }
         return false;
     }
-    // ### add the rest of the checks...
+
+    // FIXME: this used to be a fallthrough condition.
     return true;
+}
+
+template<typename SiblingTraversalStrategy>
+bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, unsigned* specificity) const
+{
+    const CSSSelector& selector = *context.selector;
+    Element& element = *context.element;
+
+    if (m_mode == SharingRules)
+        return true;
+    // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
+    if (!context.scope)
+        return false;
+    const ContainerNode* shadowHost = context.scope->shadowHost();
+    if (!shadowHost || shadowHost != element)
+        return false;
+    ASSERT(element.shadow());
+
+    // For empty parameter case, i.e. just :host or :host().
+    if (!selector.selectorList()) // Use *'s specificity. So just 0.
+        return true;
+
+    SelectorCheckingContext subContext(context);
+    subContext.isSubSelector = true;
+
+    bool matched = false;
+    unsigned maxSpecificity = 0;
+
+    // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
+    for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
+        subContext.contextFlags = TreatShadowHostAsNormalScope;
+        subContext.scope = context.scope;
+        // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
+        Element* nextElement = &element;
+        SelectorCheckingContext hostContext(subContext);
+        do {
+            MatchResult subResult;
+            hostContext.element = nextElement;
+            if (match(hostContext, siblingTraversalStrategy, &subResult) == SelectorMatches) {
+                matched = true;
+                // Consider div:host(div:host(div:host(div:host...))).
+                maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
+                break;
+            }
+            hostContext.contextFlags = DefaultBehavior;
+            hostContext.scope = nullptr;
+
+            if (selector.pseudoType() == CSSSelector::PseudoHost)
+                break;
+
+            hostContext.elementStyle = 0;
+            nextElement = NodeRenderingTraversal::parentElement(nextElement);
+        } while (nextElement);
+    }
+    if (matched) {
+        if (specificity)
+            *specificity = maxSpecificity;
+        return true;
+    }
+
+    // FIXME: this was a fallthrough condition.
+    return false;
 }
 
 bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context, Document* document, const CSSSelector& selector) const

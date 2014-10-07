@@ -102,15 +102,15 @@ inline unsigned CSSSelector::specificityForOneSelector() const
         if (pseudoType() == PseudoHost || pseudoType() == PseudoHostContext)
             return 0;
         // fall through.
-    case Exact:
+    case AttributeExact:
     case Class:
-    case Set:
-    case List:
-    case Hyphen:
+    case AttributeSet:
+    case AttributeList:
+    case AttributeHyphen:
     case PseudoElement:
-    case Contain:
-    case Begin:
-    case End:
+    case AttributeContain:
+    case AttributeBegin:
+    case AttributeEnd:
         // FIXME: PseudoAny should base the specificity on the sub-selectors.
         // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
         if (pseudoType() == PseudoNot) {
@@ -683,32 +683,32 @@ String CSSSelector::selectorText(const String& rightSide) const
             }
             str.append(cs->attribute().localName());
             switch (cs->m_match) {
-                case CSSSelector::Exact:
-                    str.append('=');
-                    break;
-                case CSSSelector::Set:
-                    // set has no operator or value, just the attrName
-                    str.append(']');
-                    break;
-                case CSSSelector::List:
-                    str.appendLiteral("~=");
-                    break;
-                case CSSSelector::Hyphen:
-                    str.appendLiteral("|=");
-                    break;
-                case CSSSelector::Begin:
-                    str.appendLiteral("^=");
-                    break;
-                case CSSSelector::End:
-                    str.appendLiteral("$=");
-                    break;
-                case CSSSelector::Contain:
-                    str.appendLiteral("*=");
-                    break;
-                default:
-                    break;
+            case CSSSelector::AttributeExact:
+                str.append('=');
+                break;
+            case CSSSelector::AttributeSet:
+                // set has no operator or value, just the attrName
+                str.append(']');
+                break;
+            case CSSSelector::AttributeList:
+                str.appendLiteral("~=");
+                break;
+            case CSSSelector::AttributeHyphen:
+                str.appendLiteral("|=");
+                break;
+            case CSSSelector::AttributeBegin:
+                str.appendLiteral("^=");
+                break;
+            case CSSSelector::AttributeEnd:
+                str.appendLiteral("$=");
+                break;
+            case CSSSelector::AttributeContain:
+                str.appendLiteral("*=");
+                break;
+            default:
+                break;
             }
-            if (cs->m_match != CSSSelector::Set) {
+            if (cs->m_match != CSSSelector::AttributeSet) {
                 serializeString(cs->value(), str);
                 if (cs->attributeMatchType() == CaseInsensitive)
                     str.appendLiteral(" i");
@@ -766,13 +766,13 @@ static bool validateSubSelector(const CSSSelector* selector)
     case CSSSelector::Tag:
     case CSSSelector::Id:
     case CSSSelector::Class:
-    case CSSSelector::Exact:
-    case CSSSelector::Set:
-    case CSSSelector::List:
-    case CSSSelector::Hyphen:
-    case CSSSelector::Contain:
-    case CSSSelector::Begin:
-    case CSSSelector::End:
+    case CSSSelector::AttributeExact:
+    case CSSSelector::AttributeSet:
+    case CSSSelector::AttributeList:
+    case CSSSelector::AttributeHyphen:
+    case CSSSelector::AttributeContain:
+    case CSSSelector::AttributeBegin:
+    case CSSSelector::AttributeEnd:
         return true;
     case CSSSelector::PseudoElement:
     case CSSSelector::Unknown:

@@ -1279,7 +1279,7 @@ attrib:
     '[' maybe_space attr_name closing_square_bracket {
         $$ = parser->createFloatingSelector();
         $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom), CSSSelector::CaseSensitive);
-        $$->setMatch(CSSSelector::Set);
+        $$->setMatch(CSSSelector::AttributeSet);
     }
     | '[' maybe_space attr_name match maybe_space ident_or_string maybe_space maybe_attr_match_type closing_square_bracket {
         $$ = parser->createFloatingSelector();
@@ -1290,7 +1290,7 @@ attrib:
     | '[' maybe_space namespace_selector attr_name closing_square_bracket {
         $$ = parser->createFloatingSelector();
         $$->setAttribute(parser->determineNameInNamespace($3, $4), CSSSelector::CaseSensitive);
-        $$->setMatch(CSSSelector::Set);
+        $$->setMatch(CSSSelector::AttributeSet);
     }
     | '[' maybe_space namespace_selector attr_name match maybe_space ident_or_string maybe_space maybe_attr_match_type closing_square_bracket {
         $$ = parser->createFloatingSelector();
@@ -1305,22 +1305,22 @@ attrib:
 
 match:
     '=' {
-        $$ = CSSSelector::Exact;
+        $$ = CSSSelector::AttributeExact;
     }
     | INCLUDES {
-        $$ = CSSSelector::List;
+        $$ = CSSSelector::AttributeList;
     }
     | DASHMATCH {
-        $$ = CSSSelector::Hyphen;
+        $$ = CSSSelector::AttributeHyphen;
     }
     | BEGINSWITH {
-        $$ = CSSSelector::Begin;
+        $$ = CSSSelector::AttributeBegin;
     }
     | ENDSWITH {
-        $$ = CSSSelector::End;
+        $$ = CSSSelector::AttributeEnd;
     }
     | CONTAINS {
-        $$ = CSSSelector::Contain;
+        $$ = CSSSelector::AttributeContain;
     }
     ;
 

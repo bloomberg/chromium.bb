@@ -132,8 +132,14 @@ private:
     Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
     template<typename SiblingTraversalStrategy>
     Match matchForPseudoShadow(const ContainerNode*, const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
+    template<typename SiblingTraversalStrategy>
+    bool checkPseudoClass(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned* specificity) const;
+    template<typename SiblingTraversalStrategy>
+    bool checkPseudoElement(const SelectorCheckingContext&, const SiblingTraversalStrategy&) const;
 
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector&) const;
+    template<typename SiblingTraversalStrategy>
+    bool checkPseudoHost(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned*) const;
 
     static bool isFrameFocused(const Element&);
 

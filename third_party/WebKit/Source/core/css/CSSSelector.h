@@ -113,14 +113,14 @@ namespace blink {
             PseudoClass, // Example:  :nth-child(2)
             PseudoElement, // Example: ::first-line
             PagePseudoClass, // ??
-            Exact, // Example: E[foo="bar"]
-            Set, // Example: E[foo]
-            Hyphen, // Example: E[foo|="bar"]
-            List, // Example: E[foo~="bar"]
-            Contain, // css3: E[foo*="bar"]
-            Begin, // css3: E[foo^="bar"]
-            End, // css3: E[foo$="bar"]
-            FirstAttributeSelectorMatch = Exact,
+            AttributeExact, // Example: E[foo="bar"]
+            AttributeSet, // Example: E[foo]
+            AttributeHyphen, // Example: E[foo|="bar"]
+            AttributeList, // Example: E[foo~="bar"]
+            AttributeContain, // css3: E[foo*="bar"]
+            AttributeBegin, // css3: E[foo^="bar"]
+            AttributeEnd, // css3: E[foo$="bar"]
+            FirstAttributeSelectorMatch = AttributeExact,
         };
 
         enum Relation {
