@@ -2107,6 +2107,9 @@ void RenderViewImpl::didHandleGestureEvent(
         RenderViewObserver, observers_, DidHandleGestureEvent(event));
   }
 
+  // TODO(ananta): Piggyback off existing IPCs to communicate this information,
+  // crbug/420130.
+#if defined(OS_WIN)
   if (event.type != blink::WebGestureEvent::GestureTap)
     return;
 
@@ -2117,6 +2120,7 @@ void RenderViewImpl::didHandleGestureEvent(
 
   Send(new ViewHostMsg_FocusedNodeTouched(
       routing_id(), text_input_type != blink::WebTextInputTypeNone));
+#endif
 }
 
 void RenderViewImpl::initializeLayerTreeView() {
