@@ -30,19 +30,19 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
       : override_bookmarks_ui_permission_(override_bookmarks_ui_permission) {}
 
   // extensions::ManifestPermission overrides.
-  virtual std::string name() const OVERRIDE {
+  virtual std::string name() const override {
     return manifest_keys::kUIOverride;
   }
 
-  virtual std::string id() const OVERRIDE {
+  virtual std::string id() const override {
     return name();
   }
 
-  virtual bool HasMessages() const OVERRIDE {
+  virtual bool HasMessages() const override {
     return override_bookmarks_ui_permission_;
   }
 
-  virtual PermissionMessages GetMessages() const OVERRIDE {
+  virtual PermissionMessages GetMessages() const override {
     PermissionMessages result;
     if (override_bookmarks_ui_permission_) {
       result.push_back(PermissionMessage(
@@ -53,17 +53,17 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
     return result;
   }
 
-  virtual bool FromValue(const base::Value* value) OVERRIDE {
+  virtual bool FromValue(const base::Value* value) override {
     return value && value->GetAsBoolean(&override_bookmarks_ui_permission_);
   }
 
-  virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
+  virtual scoped_ptr<base::Value> ToValue() const override {
     return scoped_ptr<base::Value>(
         new base::FundamentalValue(override_bookmarks_ui_permission_)).Pass();
   }
 
   virtual ManifestPermission* Diff(const ManifestPermission* rhs) const
-      OVERRIDE {
+      override {
     const ManifestPermissionImpl* other =
         static_cast<const ManifestPermissionImpl*>(rhs);
 
@@ -73,7 +73,7 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
   }
 
   virtual ManifestPermission* Union(const ManifestPermission* rhs) const
-      OVERRIDE {
+      override {
     const ManifestPermissionImpl* other =
         static_cast<const ManifestPermissionImpl*>(rhs);
 
@@ -83,7 +83,7 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
   }
 
   virtual ManifestPermission* Intersect(const ManifestPermission* rhs) const
-      OVERRIDE {
+      override {
     const ManifestPermissionImpl* other =
         static_cast<const ManifestPermissionImpl*>(rhs);
 

@@ -28,16 +28,16 @@ class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
   // ServiceDiscoveryClient implementation:
   virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
-      const ServiceWatcher::UpdatedCallback& callback) OVERRIDE;
+      const ServiceWatcher::UpdatedCallback& callback) override;
 
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
+      const ServiceResolver::ResolveCompleteCallback& callback) override;
 
   virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
+      const LocalDomainResolver::IPAddressCallback& callback) override;
 
  private:
   net::MDnsClient* mdns_client_;
@@ -56,21 +56,21 @@ class ServiceWatcherImpl : public ServiceWatcher,
   virtual ~ServiceWatcherImpl();
 
   // ServiceWatcher implementation:
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
-  virtual void DiscoverNewServices(bool force_update) OVERRIDE;
+  virtual void DiscoverNewServices(bool force_update) override;
 
   virtual void SetActivelyRefreshServices(
-      bool actively_refresh_services) OVERRIDE;
+      bool actively_refresh_services) override;
 
-  virtual std::string GetServiceType() const OVERRIDE;
+  virtual std::string GetServiceType() const override;
 
   virtual void OnRecordUpdate(net::MDnsListener::UpdateType update,
-                              const net::RecordParsed* record) OVERRIDE;
+                              const net::RecordParsed* record) override;
 
-  virtual void OnNsecRecord(const std::string& name, unsigned rrtype) OVERRIDE;
+  virtual void OnNsecRecord(const std::string& name, unsigned rrtype) override;
 
-  virtual void OnCachePurged() OVERRIDE;
+  virtual void OnCachePurged() override;
 
   virtual void OnTransactionResponse(
       scoped_ptr<net::MDnsTransaction>* transaction,
@@ -165,9 +165,9 @@ class ServiceResolverImpl
   virtual ~ServiceResolverImpl();
 
   // ServiceResolver implementation:
-  virtual void StartResolving() OVERRIDE;
+  virtual void StartResolving() override;
 
-  virtual std::string GetName() const OVERRIDE;
+  virtual std::string GetName() const override;
 
  private:
   // Respond to transaction finishing for SRV records.
@@ -233,7 +233,7 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
                           net::MDnsClient* mdns_client);
   virtual ~LocalDomainResolverImpl();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   const std::string& domain() { return domain_; }
 

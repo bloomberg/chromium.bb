@@ -60,7 +60,7 @@ const uint8 kSamplePacketAAAA[] = {
 
 class LocalDomainResolverTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     mdns_client_.StartListening(&socket_factory_);
   }
 

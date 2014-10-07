@@ -30,11 +30,11 @@ class AppIsolationHandler : public ManifestHandler {
   AppIsolationHandler();
   virtual ~AppIsolationHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
-  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
+  virtual bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AppIsolationHandler);
 };

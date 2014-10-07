@@ -24,7 +24,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
     }
   }
 
-  virtual bool TryLock() OVERRIDE {
+  virtual bool TryLock() override {
     struct sockaddr_un address;
 
     // +1 for terminator, +1 for 0 in position 0 that makes it an
@@ -85,7 +85,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
     }
   }
 
-  virtual void Unlock() OVERRIDE {
+  virtual void Unlock() override {
     if (fd_ == -1) {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;

@@ -54,7 +54,7 @@ class DictionaryValueINIParser : public INIParser {
   // INIParser implementation.
   virtual void HandleTriplet(const std::string& section,
                              const std::string& key,
-                             const std::string& value) OVERRIDE;
+                             const std::string& value) override;
 
   base::DictionaryValue root_;
 

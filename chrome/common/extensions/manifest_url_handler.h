@@ -71,10 +71,10 @@ class DevToolsPageHandler : public ManifestHandler {
   DevToolsPageHandler();
   virtual ~DevToolsPageHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsPageHandler);
 };
@@ -85,10 +85,10 @@ class HomepageURLHandler : public ManifestHandler {
   HomepageURLHandler();
   virtual ~HomepageURLHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(HomepageURLHandler);
 };
@@ -99,10 +99,10 @@ class UpdateURLHandler : public ManifestHandler {
   UpdateURLHandler();
   virtual ~UpdateURLHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateURLHandler);
 };
@@ -117,13 +117,13 @@ class AboutPageHandler : public ManifestHandler {
   AboutPageHandler();
   virtual ~AboutPageHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
-                        std::vector<InstallWarning>* warnings) const OVERRIDE;
+                        std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AboutPageHandler);
 };
@@ -134,10 +134,10 @@ class URLOverridesHandler : public ManifestHandler {
   URLOverridesHandler();
   virtual ~URLOverridesHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(URLOverridesHandler);
 };

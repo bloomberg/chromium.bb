@@ -17,14 +17,14 @@ class ExtensionActionHandler : public ManifestHandler {
   ExtensionActionHandler();
   virtual ~ExtensionActionHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
-                        std::vector<InstallWarning>* warnings) const OVERRIDE;
+                        std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) const override;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionHandler);
 };

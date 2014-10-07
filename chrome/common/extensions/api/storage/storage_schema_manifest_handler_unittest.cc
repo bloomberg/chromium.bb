@@ -27,7 +27,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
 
   virtual ~StorageSchemaManifestHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     manifest_.SetString("name", "test");

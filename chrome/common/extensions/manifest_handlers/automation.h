@@ -76,12 +76,12 @@ class AutomationHandler : public ManifestHandler {
 
  private:
   // ManifestHandler implementation.
-  virtual bool Parse(Extension* extensions, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extensions, base::string16* error) override;
 
-  virtual ManifestPermission* CreatePermission() OVERRIDE;
+  virtual ManifestPermission* CreatePermission() override;
   virtual ManifestPermission* CreateInitialRequiredPermission(
-      const Extension* extension) OVERRIDE;
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+      const Extension* extension) override;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationHandler);
 };

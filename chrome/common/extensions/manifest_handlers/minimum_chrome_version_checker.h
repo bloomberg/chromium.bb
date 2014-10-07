@@ -17,10 +17,10 @@ class MinimumChromeVersionChecker : public ManifestHandler {
 
   // Validate minimum Chrome version. We don't need to store this, since the
   // extension is not valid if it is incorrect.
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(MinimumChromeVersionChecker);
 };

@@ -30,7 +30,7 @@ class IconWithBadgeImageSource
   virtual ~IconWithBadgeImageSource();
 
  private:
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Draw(gfx::Canvas* canvas) override;
 
   // Browser action icon image.
   gfx::ImageSkia icon_;

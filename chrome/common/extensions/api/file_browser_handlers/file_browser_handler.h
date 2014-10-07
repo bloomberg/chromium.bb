@@ -92,10 +92,10 @@ class FileBrowserHandlerParser : public extensions::ManifestHandler {
   virtual ~FileBrowserHandlerParser();
 
   virtual bool Parse(extensions::Extension* extension,
-                     base::string16* error) OVERRIDE;
+                     base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_API_FILE_BROWSER_HANDLERS_FILE_BROWSER_HANDLER_H_

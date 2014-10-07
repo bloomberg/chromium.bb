@@ -20,7 +20,7 @@ class MultiProcessLockMac : public MultiProcessLock {
     }
   }
 
-  virtual bool TryLock() OVERRIDE {
+  virtual bool TryLock() override {
     if (port_ != NULL) {
       DLOG(ERROR) << "MultiProcessLock is already locked - " << name_;
       return true;
@@ -38,7 +38,7 @@ class MultiProcessLockMac : public MultiProcessLock {
     return port_ != NULL;
   }
 
-  virtual void Unlock() OVERRIDE {
+  virtual void Unlock() override {
     if (port_ == NULL) {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;

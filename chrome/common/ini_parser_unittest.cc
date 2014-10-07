@@ -39,7 +39,7 @@ class TestINIParser : public INIParser {
 
  private:
   virtual void HandleTriplet(const std::string& section, const std::string& key,
-                             const std::string& value) OVERRIDE {
+                             const std::string& value) override {
     EXPECT_EQ(expected_triplets_[pair_i_].section, section);
     EXPECT_EQ(expected_triplets_[pair_i_].key, key);
     EXPECT_EQ(expected_triplets_[pair_i_].value, value);

@@ -32,26 +32,26 @@ class MockLaunchd : public Launchd {
               bool create_socket, bool as_service);
   virtual ~MockLaunchd();
 
-  virtual CFDictionaryRef CopyExports() OVERRIDE;
-  virtual CFDictionaryRef CopyJobDictionary(CFStringRef label) OVERRIDE;
+  virtual CFDictionaryRef CopyExports() override;
+  virtual CFDictionaryRef CopyJobDictionary(CFStringRef label) override;
   virtual CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error)
-      OVERRIDE;
-  virtual bool RemoveJob(CFStringRef label, CFErrorRef* error) OVERRIDE;
+      override;
+  virtual bool RemoveJob(CFStringRef label, CFErrorRef* error) override;
   virtual bool RestartJob(Domain domain,
                           Type type,
                           CFStringRef name,
-                          CFStringRef session_type) OVERRIDE;
+                          CFStringRef session_type) override;
   virtual CFMutableDictionaryRef CreatePlistFromFile(
       Domain domain,
       Type type,
-      CFStringRef name) OVERRIDE;
+      CFStringRef name) override;
   virtual bool WritePlistToFile(Domain domain,
                                 Type type,
                                 CFStringRef name,
-                                CFDictionaryRef dict) OVERRIDE;
+                                CFDictionaryRef dict) override;
   virtual bool DeletePlist(Domain domain,
                            Type type,
-                           CFStringRef name) OVERRIDE;
+                           CFStringRef name) override;
 
   void SignalReady();
 

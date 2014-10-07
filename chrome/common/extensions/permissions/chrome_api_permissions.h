@@ -15,9 +15,9 @@ namespace extensions {
 // Registers the permissions used in Chrome with the PermissionsInfo global.
 class ChromeAPIPermissions : public PermissionsProvider {
  public:
-  virtual std::vector<APIPermissionInfo*> GetAllPermissions() const OVERRIDE;
+  virtual std::vector<APIPermissionInfo*> GetAllPermissions() const override;
   virtual std::vector<PermissionsProvider::AliasInfo> GetAllAliases() const
-      OVERRIDE;
+      override;
 };
 
 }  // namespace extensions

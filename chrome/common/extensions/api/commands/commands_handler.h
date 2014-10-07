@@ -38,8 +38,8 @@ class CommandsHandler : public ManifestHandler {
   CommandsHandler();
   virtual ~CommandsHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
-  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
+  virtual bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
   // If the extension defines a browser action, but no command for it, then
@@ -48,7 +48,7 @@ class CommandsHandler : public ManifestHandler {
   void MaybeSetBrowserActionDefault(const Extension* extension,
                                     CommandsInfo* info);
 
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(CommandsHandler);
 };

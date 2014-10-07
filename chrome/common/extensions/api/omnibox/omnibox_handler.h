@@ -28,10 +28,10 @@ class OmniboxHandler : public ManifestHandler {
   OmniboxHandler();
   virtual ~OmniboxHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 };
 
 }  // namespace extensions
