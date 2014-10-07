@@ -148,6 +148,12 @@ void GuestViewContainer::OnCreateMimeHandlerViewGuestACK(
 void GuestViewContainer::OnGuestAttached(int element_instance_id,
                                          int guest_proxy_routing_id) {
   attached_ = true;
+
+  if (!mime_type_.empty()) {
+    // MimeHandlerView's creation and attachment is not done via JS API.
+    return;
+  }
+
   // Handle the callback for the current request with a pending response.
   HandlePendingResponseCallback(guest_proxy_routing_id);
   // Perform the subsequent attach request if one exists.
