@@ -24,8 +24,8 @@ using mojo::internal::ArrayValidateParams;
 using mojo::internal::NoValidateParams;
 
 // Creates an array of arrays of handles (2 X 3) for testing.
-Array<Array<ScopedHandle> > CreateTestNestedHandleArray() {
-  Array<Array<ScopedHandle> > array(2);
+Array<Array<ScopedHandle>> CreateTestNestedHandleArray() {
+  Array<Array<ScopedHandle>> array(2);
   for (size_t i = 0; i < array.size(); ++i) {
     Array<ScopedHandle> nested_array(3);
     for (size_t j = 0; j < nested_array.size(); ++j) {
@@ -158,25 +158,31 @@ TEST_F(SerializationWarningTest, StringInStruct) {
 }
 
 TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
-  Array<Array<ScopedHandle> > test_array = CreateTestNestedHandleArray();
+  Array<Array<ScopedHandle>> test_array = CreateTestNestedHandleArray();
   test_array[0] = Array<ScopedHandle>();
   test_array[1][0] = ScopedHandle();
 
-  TestArrayWarning<ArrayValidateParams<0, true,
-                   ArrayValidateParams<0, true, NoValidateParams> > >(
+  TestArrayWarning<
+      ArrayValidateParams<0,
+                          true,
+                          ArrayValidateParams<0, true, NoValidateParams>>>(
       test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
 
   test_array = CreateTestNestedHandleArray();
   test_array[0] = Array<ScopedHandle>();
-  TestArrayWarning<ArrayValidateParams<0, false,
-                   ArrayValidateParams<0, true, NoValidateParams> > >(
+  TestArrayWarning<
+      ArrayValidateParams<0,
+                          false,
+                          ArrayValidateParams<0, true, NoValidateParams>>>(
       test_array.Pass(),
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_array = CreateTestNestedHandleArray();
   test_array[1][0] = ScopedHandle();
-  TestArrayWarning<ArrayValidateParams<0, true,
-                   ArrayValidateParams<0, false, NoValidateParams> > >(
+  TestArrayWarning<
+      ArrayValidateParams<0,
+                          true,
+                          ArrayValidateParams<0, false, NoValidateParams>>>(
       test_array.Pass(),
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
 }
@@ -186,19 +192,25 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = "hello";
 
-  TestArrayWarning<ArrayValidateParams<0, true,
-                   ArrayValidateParams<0, false, NoValidateParams> > >(
+  TestArrayWarning<
+      ArrayValidateParams<0,
+                          true,
+                          ArrayValidateParams<0, false, NoValidateParams>>>(
       test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
 
   test_array = Array<String>(3);
-  TestArrayWarning<ArrayValidateParams<0, false,
-                   ArrayValidateParams<0, false, NoValidateParams> > >(
+  TestArrayWarning<
+      ArrayValidateParams<0,
+                          false,
+                          ArrayValidateParams<0, false, NoValidateParams>>>(
       test_array.Pass(),
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_array = Array<String>(2);
-  TestArrayWarning<ArrayValidateParams<3, true,
-                   ArrayValidateParams<0, false, NoValidateParams> > >(
+  TestArrayWarning<
+      ArrayValidateParams<3,
+                          true,
+                          ArrayValidateParams<0, false, NoValidateParams>>>(
       test_array.Pass(),
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
 }

@@ -17,11 +17,9 @@ const char kText2[] = "world";
 
 class StringRecorder {
  public:
-  explicit StringRecorder(std::string* buf) : buf_(buf) {
-  }
-  void Run(const String& a) const {
-    *buf_ = a.To<std::string>();
-  }
+  explicit StringRecorder(std::string* buf) : buf_(buf) {}
+  void Run(const String& a) const { *buf_ = a.To<std::string>(); }
+
  private:
   std::string* buf_;
 };
@@ -88,14 +86,15 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     ASSERT_TRUE(pipe.is_valid());
     uint32_t data_size = 0;
     ASSERT_EQ(MOJO_RESULT_OK,
-              ReadDataRaw(pipe.get(), nullptr, &data_size,
-                          MOJO_READ_DATA_FLAG_QUERY));
+              ReadDataRaw(
+                  pipe.get(), nullptr, &data_size, MOJO_READ_DATA_FLAG_QUERY));
     ASSERT_NE(0, static_cast<int>(data_size));
     char data[64];
     ASSERT_LT(static_cast<int>(data_size), 64);
-    ASSERT_EQ(MOJO_RESULT_OK,
-              ReadDataRaw(pipe.get(), data, &data_size,
-                          MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+    ASSERT_EQ(
+        MOJO_RESULT_OK,
+        ReadDataRaw(
+            pipe.get(), data, &data_size, MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
     client()->DidStuff2(data);
   }
@@ -124,16 +123,13 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
 
 class SampleFactoryClientImpl : public sample::FactoryClient {
  public:
-  SampleFactoryClientImpl() : got_response_(false) {
-  }
+  SampleFactoryClientImpl() : got_response_(false) {}
 
   void set_expected_text_reply(const std::string& expected_text_reply) {
     expected_text_reply_ = expected_text_reply;
   }
 
-  bool got_response() const {
-    return got_response_;
-  }
+  bool got_response() const { return got_response_; }
 
   virtual void DidStuff(sample::ResponsePtr response,
                         const String& text_reply) override {
@@ -171,13 +167,9 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
 
 class HandlePassingTest : public testing::Test {
  public:
-  virtual void TearDown() {
-    PumpMessages();
-  }
+  virtual void TearDown() { PumpMessages(); }
 
-  void PumpMessages() {
-    loop_.RunUntilIdle();
-  }
+  void PumpMessages() { loop_.RunUntilIdle(); }
 
  private:
   Environment env_;
@@ -247,11 +239,10 @@ TEST_F(HandlePassingTest, DataPipe) {
   // factory.
   ScopedDataPipeProducerHandle producer_handle;
   ScopedDataPipeConsumerHandle consumer_handle;
-  MojoCreateDataPipeOptions options = {
-      sizeof(MojoCreateDataPipeOptions),
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-      1,
-      1024};
+  MojoCreateDataPipeOptions options = {sizeof(MojoCreateDataPipeOptions),
+                                       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+                                       1,
+                                       1024};
   ASSERT_EQ(MOJO_RESULT_OK,
             CreateDataPipe(&options, &producer_handle, &consumer_handle));
   std::string expected_text_reply = "got it";
@@ -259,8 +250,10 @@ TEST_F(HandlePassingTest, DataPipe) {
   // +1 for \0.
   uint32_t data_size = static_cast<uint32_t>(expected_text_reply.size() + 1);
   ASSERT_EQ(MOJO_RESULT_OK,
-            WriteDataRaw(producer_handle.get(), expected_text_reply.c_str(),
-                         &data_size, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+            WriteDataRaw(producer_handle.get(),
+                         expected_text_reply.c_str(),
+                         &data_size,
+                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 
   factory->DoStuff2(consumer_handle.Pass());
 

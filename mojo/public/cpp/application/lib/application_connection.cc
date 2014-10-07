@@ -6,7 +6,7 @@
 
 namespace mojo {
 
-ApplicationConnection::~ApplicationConnection() {}
+ApplicationConnection::~ApplicationConnection() {
+}
 
 }  // namespace mojo
-

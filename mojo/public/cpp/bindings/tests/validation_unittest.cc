@@ -44,11 +44,11 @@ bool TestInputParser(const std::string& input,
   size_t num_handles;
   std::string error_message;
 
-  bool result = ParseValidationTestInput(input, &data, &num_handles,
-                                         &error_message);
+  bool result =
+      ParseValidationTestInput(input, &data, &num_handles, &error_message);
   if (expected_result) {
-    if (result && error_message.empty() &&
-        expected_data == data && expected_num_handles == num_handles) {
+    if (result && error_message.empty() && expected_data == data &&
+        expected_num_handles == num_handles) {
       return true;
     }
 
@@ -132,8 +132,8 @@ bool ReadResultFile(const std::string& path, std::string* result) {
 }
 
 std::string GetPath(const std::string& root, const std::string& suffix) {
-  return "mojo/public/interfaces/bindings/tests/data/validation/" +
-      root + suffix;
+  return "mojo/public/interfaces/bindings/tests/data/validation/" + root +
+         suffix;
 }
 
 // |message| should be a newly created object.
@@ -187,8 +187,7 @@ class DummyMessageReceiver : public MessageReceiver {
 
 class ValidationTest : public testing::Test {
  public:
-  virtual ~ValidationTest() {
-  }
+  virtual ~ValidationTest() {}
 
  private:
   Environment env_;
@@ -196,11 +195,9 @@ class ValidationTest : public testing::Test {
 
 class ValidationIntegrationTest : public ValidationTest {
  public:
-  ValidationIntegrationTest() : test_message_receiver_(nullptr) {
-  }
+  ValidationIntegrationTest() : test_message_receiver_(nullptr) {}
 
-  virtual ~ValidationIntegrationTest() {
-  }
+  virtual ~ValidationIntegrationTest() {}
 
   virtual void SetUp() override {
     ScopedMessagePipeHandle tester_endpoint;
@@ -219,24 +216,17 @@ class ValidationIntegrationTest : public ValidationTest {
     PumpMessages();
   }
 
-  MessageReceiver* test_message_receiver() {
-    return test_message_receiver_;
-  }
+  MessageReceiver* test_message_receiver() { return test_message_receiver_; }
 
-  ScopedMessagePipeHandle testee_endpoint() {
-    return testee_endpoint_.Pass();
-  }
+  ScopedMessagePipeHandle testee_endpoint() { return testee_endpoint_.Pass(); }
 
  private:
   class TestMessageReceiver : public MessageReceiver {
    public:
     TestMessageReceiver(ValidationIntegrationTest* owner,
                         ScopedMessagePipeHandle handle)
-        : owner_(owner),
-          connector_(handle.Pass()) {
-    }
-    virtual ~TestMessageReceiver() {
-    }
+        : owner_(owner), connector_(handle.Pass()) {}
+    virtual ~TestMessageReceiver() {}
 
     virtual bool Accept(Message* message) override {
       bool rv = connector_.Accept(message);
@@ -249,9 +239,7 @@ class ValidationIntegrationTest : public ValidationTest {
     mojo::internal::Connector connector_;
   };
 
-  void PumpMessages() {
-    loop_.RunUntilIdle();
-  }
+  void PumpMessages() { loop_.RunUntilIdle(); }
 
   RunLoop loop_;
   TestMessageReceiver* test_message_receiver_;
@@ -260,8 +248,7 @@ class ValidationIntegrationTest : public ValidationTest {
 
 class IntegrationTestInterface1Client : public IntegrationTestInterface1 {
  public:
-  virtual ~IntegrationTestInterface1Client() {
-  }
+  virtual ~IntegrationTestInterface1Client() {}
 
   virtual void Method0(BasicStructPtr param0) override {}
 };
@@ -269,8 +256,7 @@ class IntegrationTestInterface1Client : public IntegrationTestInterface1 {
 class IntegrationTestInterface1Impl
     : public InterfaceImpl<IntegrationTestInterface1> {
  public:
-  virtual ~IntegrationTestInterface1Impl() {
-  }
+  virtual ~IntegrationTestInterface1Impl() {}
 
   virtual void Method0(BasicStructPtr param0) override {}
 };
@@ -297,8 +283,9 @@ TEST_F(ValidationTest, InputParser) {
     EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
-    std::string input = "[u1]0x10// hello world !! \n\r  \t [u2]65535 \n"
-                        "[u4]65536 [u8]0xFFFFFFFFFFFFFFFF 0 0Xff";
+    std::string input =
+        "[u1]0x10// hello world !! \n\r  \t [u2]65535 \n"
+        "[u4]65536 [u8]0xFFFFFFFFFFFFFFFF 0 0Xff";
     std::vector<uint8_t> expected;
     Append(&expected, static_cast<uint8_t>(0x10));
     Append(&expected, static_cast<uint16_t>(65535));
@@ -356,21 +343,19 @@ TEST_F(ValidationTest, InputParser) {
 
   // Test some failure cases.
   {
-    const char* error_inputs[] = {
-      "/ hello world",
-      "[u1]x",
-      "[u2]-1000",
-      "[u1]0x100",
-      "[s2]-0x8001",
-      "[b]1",
-      "[b]1111111k",
-      "[dist4]unmatched",
-      "[anchr]hello [dist8]hello",
-      "[dist4]a [dist4]a [anchr]a",
-      "[dist4]a [anchr]a [dist4]a [anchr]a",
-      "0 [handles]50",
-      nullptr
-    };
+    const char* error_inputs[] = {"/ hello world",
+                                  "[u1]x",
+                                  "[u2]-1000",
+                                  "[u1]0x100",
+                                  "[s2]-0x8001",
+                                  "[b]1",
+                                  "[b]1111111k",
+                                  "[dist4]unmatched",
+                                  "[anchr]hello [dist8]hello",
+                                  "[dist4]a [dist4]a [anchr]a",
+                                  "[dist4]a [anchr]a [dist4]a [anchr]a",
+                                  "0 [handles]50",
+                                  nullptr};
 
     for (size_t i = 0; error_inputs[i]; ++i) {
       std::vector<uint8_t> expected;

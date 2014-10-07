@@ -21,7 +21,8 @@ class ServiceConnectorBase {
                                 ScopedMessagePipeHandle client_handle) = 0;
   std::string name() const { return name_; }
   void set_application_connection(ApplicationConnection* connection) {
-      application_connection_ = connection; }
+    application_connection_ = connection;
+  }
 
  protected:
   std::string name_;

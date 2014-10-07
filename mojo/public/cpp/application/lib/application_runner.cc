@@ -17,8 +17,11 @@ void ApplicationImpl::Terminate() {
 }
 
 ApplicationRunner::ApplicationRunner(ApplicationDelegate* delegate)
-    : delegate_(delegate) {}
-ApplicationRunner::~ApplicationRunner() { assert(!delegate_); }
+    : delegate_(delegate) {
+}
+ApplicationRunner::~ApplicationRunner() {
+  assert(!delegate_);
+}
 
 MojoResult ApplicationRunner::Run(MojoHandle shell_handle) {
   Environment env;

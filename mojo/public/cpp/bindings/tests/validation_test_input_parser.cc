@@ -35,7 +35,8 @@ class ValidationTestInputParser {
   typedef std::pair<const char*, const char*> Range;
 
   typedef bool (ValidationTestInputParser::*ParseDataFunc)(
-      const DataType& type, const std::string& value_string);
+      const DataType& type,
+      const std::string& value_string);
 
   struct DataType {
     const char* name;
@@ -117,36 +118,34 @@ class ValidationTestInputParser {
 };
 
 #define DATA_TYPE(name, data_size, parse_data_func) \
-    {name, sizeof(name) - 1, data_size, parse_data_func}
+  { name, sizeof(name) - 1, data_size, parse_data_func }
 
 const ValidationTestInputParser::DataType
     ValidationTestInputParser::kDataTypes[] = {
-  DATA_TYPE("[u1]", 1, &ValidationTestInputParser::ParseUnsignedInteger),
-  DATA_TYPE("[u2]", 2, &ValidationTestInputParser::ParseUnsignedInteger),
-  DATA_TYPE("[u4]", 4, &ValidationTestInputParser::ParseUnsignedInteger),
-  DATA_TYPE("[u8]", 8, &ValidationTestInputParser::ParseUnsignedInteger),
-  DATA_TYPE("[s1]", 1, &ValidationTestInputParser::ParseSignedInteger),
-  DATA_TYPE("[s2]", 2, &ValidationTestInputParser::ParseSignedInteger),
-  DATA_TYPE("[s4]", 4, &ValidationTestInputParser::ParseSignedInteger),
-  DATA_TYPE("[s8]", 8, &ValidationTestInputParser::ParseSignedInteger),
-  DATA_TYPE("[b]", 1, &ValidationTestInputParser::ParseBinarySequence),
-  DATA_TYPE("[f]", 4, &ValidationTestInputParser::ParseFloat),
-  DATA_TYPE("[d]", 8, &ValidationTestInputParser::ParseDouble),
-  DATA_TYPE("[dist4]", 4, &ValidationTestInputParser::ParseDistance),
-  DATA_TYPE("[dist8]", 8, &ValidationTestInputParser::ParseDistance),
-  DATA_TYPE("[anchr]", 0, &ValidationTestInputParser::ParseAnchor),
-  DATA_TYPE("[handles]", 0, &ValidationTestInputParser::ParseHandles)
-};
+        DATA_TYPE("[u1]", 1, &ValidationTestInputParser::ParseUnsignedInteger),
+        DATA_TYPE("[u2]", 2, &ValidationTestInputParser::ParseUnsignedInteger),
+        DATA_TYPE("[u4]", 4, &ValidationTestInputParser::ParseUnsignedInteger),
+        DATA_TYPE("[u8]", 8, &ValidationTestInputParser::ParseUnsignedInteger),
+        DATA_TYPE("[s1]", 1, &ValidationTestInputParser::ParseSignedInteger),
+        DATA_TYPE("[s2]", 2, &ValidationTestInputParser::ParseSignedInteger),
+        DATA_TYPE("[s4]", 4, &ValidationTestInputParser::ParseSignedInteger),
+        DATA_TYPE("[s8]", 8, &ValidationTestInputParser::ParseSignedInteger),
+        DATA_TYPE("[b]", 1, &ValidationTestInputParser::ParseBinarySequence),
+        DATA_TYPE("[f]", 4, &ValidationTestInputParser::ParseFloat),
+        DATA_TYPE("[d]", 8, &ValidationTestInputParser::ParseDouble),
+        DATA_TYPE("[dist4]", 4, &ValidationTestInputParser::ParseDistance),
+        DATA_TYPE("[dist8]", 8, &ValidationTestInputParser::ParseDistance),
+        DATA_TYPE("[anchr]", 0, &ValidationTestInputParser::ParseAnchor),
+        DATA_TYPE("[handles]", 0, &ValidationTestInputParser::ParseHandles)};
 
 const size_t ValidationTestInputParser::kDataTypeCount =
     sizeof(ValidationTestInputParser::kDataTypes) /
     sizeof(ValidationTestInputParser::kDataTypes[0]);
 
-ValidationTestInputParser::ValidationTestInputParser(
-    const std::string& input,
-    std::vector<uint8_t>* data,
-    size_t* num_handles,
-    std::string* error_message)
+ValidationTestInputParser::ValidationTestInputParser(const std::string& input,
+                                                     std::vector<uint8_t>* data,
+                                                     size_t* num_handles,
+                                                     std::string* error_message)
     : input_(input),
       input_cursor_(0),
       data_(data),
@@ -170,8 +169,8 @@ bool ValidationTestInputParser::Run() {
     result = ParseItem(range);
 
   if (!result) {
-    *error_message_ = "Error occurred when parsing " +
-        std::string(range.first, range.second);
+    *error_message_ =
+        "Error occurred when parsing " + std::string(range.first, range.second);
   } else if (!pending_distance_items_.empty()) {
     // We have parsed all the contents in |input_| successfully, but there are
     // unmatched dist4/8 items.
@@ -201,16 +200,18 @@ bool ValidationTestInputParser::GetNextItem(Range* range) {
     if (input_cursor_ >= input_.size())
       return false;
 
-    if (StartsWith(Range(&input_[0] + input_cursor_,
-                         &input_[0] + input_.size()),
-                   "//", 2)) {
+    if (StartsWith(
+            Range(&input_[0] + input_cursor_, &input_[0] + input_.size()),
+            "//",
+            2)) {
       // Skip contents until the end of the line.
       input_cursor_ = input_.find_first_of(kEndOfLineChars, input_cursor_);
     } else {
       range->first = &input_[0] + input_cursor_;
       input_cursor_ = input_.find_first_of(kItemDelimiters, input_cursor_);
-      range->second = input_cursor_ >= input_.size() ?
-          &input_[0] + input_.size() : &input_[0] + input_cursor_;
+      range->second = input_cursor_ >= input_.size()
+                          ? &input_[0] + input_.size()
+                          : &input_[0] + input_cursor_;
       return true;
     }
   }
@@ -232,7 +233,8 @@ bool ValidationTestInputParser::ParseItem(const Range& range) {
 }
 
 bool ValidationTestInputParser::ParseUnsignedInteger(
-    const DataType& type, const std::string& value_string) {
+    const DataType& type,
+    const std::string& value_string) {
   unsigned long long int value;
   if (!ConvertToUnsignedInteger(value_string, &value))
     return false;
@@ -253,7 +255,8 @@ bool ValidationTestInputParser::ParseUnsignedInteger(
 }
 
 bool ValidationTestInputParser::ParseSignedInteger(
-    const DataType& type, const std::string& value_string) {
+    const DataType& type,
+    const std::string& value_string) {
   long long int value;
   if (sscanf(value_string.c_str(), "%lli", &value) != 1)
     return false;
@@ -273,8 +276,8 @@ bool ValidationTestInputParser::ParseSignedInteger(
   }
 }
 
-bool ValidationTestInputParser::ParseFloat(
-    const DataType& type, const std::string& value_string) {
+bool ValidationTestInputParser::ParseFloat(const DataType& type,
+                                           const std::string& value_string) {
   static_assert(sizeof(float) == 4, "sizeof(float) is not 4");
 
   float value;
@@ -298,7 +301,8 @@ bool ValidationTestInputParser::ParseDouble(const DataType& type,
 }
 
 bool ValidationTestInputParser::ParseBinarySequence(
-    const DataType& type, const std::string& value_string) {
+    const DataType& type,
+    const std::string& value_string) {
   if (value_string.size() != 8)
     return false;
 

@@ -103,7 +103,7 @@ TEST_F(StructTest, Serialization_StructPointers) {
   pair->second = MakeRect();
 
   size_t size = GetSerializedSize_(pair);
-  EXPECT_EQ(8U + 16U + 2*(8U + 16U), size);
+  EXPECT_EQ(8U + 16U + 2 * (8U + 16U), size);
 
   mojo::internal::FixedBuffer buf(size);
   internal::RectPair_Data* data;
@@ -125,15 +125,15 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
     region->rects[i] = MakeRect(static_cast<int32_t>(i) + 1);
 
   size_t size = GetSerializedSize_(region);
-  EXPECT_EQ(8U +  // header
-            8U +  // name pointer
-            8U +  // rects pointer
-            8U +  // name header
-            8U +  // name payload (rounded up)
-            8U +    // rects header
-            4*8U +  // rects payload (four pointers)
-            4*(8U +   // rect header
-               16U),  // rect payload (four ints)
+  EXPECT_EQ(8U +            // header
+                8U +        // name pointer
+                8U +        // rects pointer
+                8U +        // name header
+                8U +        // name payload (rounded up)
+                8U +        // rects header
+                4 * 8U +    // rects payload (four pointers)
+                4 * (8U +   // rect header
+                     16U),  // rect payload (four ints)
             size);
 
   mojo::internal::FixedBuffer buf(size);
@@ -157,9 +157,9 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
   EXPECT_TRUE(region->rects.is_null());
 
   size_t size = GetSerializedSize_(region);
-  EXPECT_EQ(8U +  // header
-            8U +  // name pointer
-            8U,   // rects pointer
+  EXPECT_EQ(8U +      // header
+                8U +  // name pointer
+                8U,   // rects pointer
             size);
 
   mojo::internal::FixedBuffer buf(size);

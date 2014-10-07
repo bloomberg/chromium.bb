@@ -27,8 +27,7 @@ bool AreEqualRectArrays(const Array<test::RectPtr>& rects1,
     return false;
 
   for (size_t i = 0; i < rects1.size(); ++i) {
-    if (rects1[i]->x != rects2[i]->x ||
-        rects1[i]->y != rects2[i]->y ||
+    if (rects1[i]->x != rects2[i]->x || rects1[i]->y != rects2[i]->y ||
         rects1[i]->width != rects2[i]->width ||
         rects1[i]->height != rects2[i]->height) {
       return false;
@@ -79,7 +78,7 @@ struct TypeConverter<RedmondNamedRegion, test::NamedRegionPtr> {
   static RedmondNamedRegion Convert(const test::NamedRegionPtr& input) {
     RedmondNamedRegion region;
     region.name = input->name;
-    region.rects = input->rects.To<std::vector<RedmondRect> >();
+    region.rects = input->rects.To<std::vector<RedmondRect>>();
     return region;
   }
 };
@@ -151,14 +150,13 @@ TEST(TypeConversionTest, CustomTypeConverter) {
 TEST(TypeConversionTest, CustomTypeConverter_Array_Null) {
   Array<RectPtr> rects;
 
-  std::vector<RedmondRect> redmond_rects =
-      rects.To<std::vector<RedmondRect> >();
+  std::vector<RedmondRect> redmond_rects = rects.To<std::vector<RedmondRect>>();
 
   EXPECT_TRUE(redmond_rects.empty());
 }
 
 TEST(TypeConversionTest, CustomTypeConverter_Array) {
-  const RedmondRect kBase = { 10, 20, 30, 40 };
+  const RedmondRect kBase = {10, 20, 30, 40};
 
   Array<RectPtr> rects(10);
   for (size_t i = 0; i < rects.size(); ++i) {
@@ -168,8 +166,7 @@ TEST(TypeConversionTest, CustomTypeConverter_Array) {
     rects[i] = Rect::From(rr);
   }
 
-  std::vector<RedmondRect> redmond_rects =
-      rects.To<std::vector<RedmondRect> >();
+  std::vector<RedmondRect> redmond_rects = rects.To<std::vector<RedmondRect>>();
 
   Array<RectPtr> rects2 = Array<RectPtr>::From(redmond_rects);
   EXPECT_TRUE(AreEqualRectArrays(rects, rects2));
@@ -179,7 +176,7 @@ TEST(TypeConversionTest, CustomTypeConverter_Nested) {
   RedmondNamedRegion redmond_region;
   redmond_region.name = "foopy";
 
-  const RedmondRect kBase = { 10, 20, 30, 40 };
+  const RedmondRect kBase = {10, 20, 30, 40};
 
   for (size_t i = 0; i < 10; ++i) {
     RedmondRect rect = kBase;

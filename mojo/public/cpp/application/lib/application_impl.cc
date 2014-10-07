@@ -13,8 +13,7 @@ namespace mojo {
 
 class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
  public:
-  ShellPtrWatcher(ApplicationImpl* impl)
-    : impl_(impl) {}
+  ShellPtrWatcher(ApplicationImpl* impl) : impl_(impl) {}
 
   virtual ~ShellPtrWatcher() {}
 
@@ -39,10 +38,12 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
 
 void ApplicationImpl::ClearConnections() {
   for (ServiceRegistryList::iterator i(incoming_service_registries_.begin());
-      i != incoming_service_registries_.end(); ++i)
+       i != incoming_service_registries_.end();
+       ++i)
     delete *i;
   for (ServiceRegistryList::iterator i(outgoing_service_registries_.begin());
-      i != outgoing_service_registries_.end(); ++i)
+       i != outgoing_service_registries_.end();
+       ++i)
     delete *i;
   incoming_service_registries_.clear();
   outgoing_service_registries_.clear();
@@ -67,9 +68,7 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   shell_->ConnectToApplication(application_url,
                                GetProxy(&out_service_provider));
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this,
-      application_url,
-      out_service_provider.Pass());
+      this, application_url, out_service_provider.Pass());
   if (!delegate_->ConfigureOutgoingConnection(registry)) {
     delete registry;
     return nullptr;

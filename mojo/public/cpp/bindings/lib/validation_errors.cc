@@ -83,7 +83,7 @@ SerializationWarningObserverForTesting::SerializationWarningObserverForTesting()
 }
 
 SerializationWarningObserverForTesting::
-~SerializationWarningObserverForTesting() {
+    ~SerializationWarningObserverForTesting() {
   MOJO_DCHECK(g_serialization_warning_observer == this);
   g_serialization_warning_observer = nullptr;
 }

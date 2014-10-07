@@ -11,7 +11,8 @@
 namespace mojo {
 namespace internal {
 
-BoundsChecker::BoundsChecker(const void* data, uint32_t data_num_bytes,
+BoundsChecker::BoundsChecker(const void* data,
+                             uint32_t data_num_bytes,
                              size_t num_handles)
     : data_begin_(reinterpret_cast<uintptr_t>(data)),
       data_end_(data_begin_ + data_num_bytes),

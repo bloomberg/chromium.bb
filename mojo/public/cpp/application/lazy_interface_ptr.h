@@ -10,14 +10,13 @@
 
 namespace mojo {
 
-template<typename Interface>
+template <typename Interface>
 class LazyInterfacePtr : public InterfacePtr<Interface> {
  public:
   LazyInterfacePtr() : service_provider_(nullptr) {}
 
   LazyInterfacePtr(ServiceProvider* service_provider)
-      : service_provider_(service_provider) {
-  }
+      : service_provider_(service_provider) {}
 
   void set_service_provider(ServiceProvider* service_provider) {
     if (service_provider != service_provider_) {
@@ -29,8 +28,7 @@ class LazyInterfacePtr : public InterfacePtr<Interface> {
   Interface* get() const {
     if (!InterfacePtr<Interface>::get()) {
       mojo::ConnectToService<Interface>(
-          service_provider_,
-          const_cast<LazyInterfacePtr<Interface>*>(this));
+          service_provider_, const_cast<LazyInterfacePtr<Interface>*>(this));
     }
     return InterfacePtr<Interface>::get();
   }

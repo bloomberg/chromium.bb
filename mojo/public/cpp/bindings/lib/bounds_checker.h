@@ -21,8 +21,7 @@ class BoundsChecker {
  public:
   // [data, data + data_num_bytes) specifies the initial valid memory range.
   // [0, num_handles) specifies the initial valid range of handle indices.
-  BoundsChecker(const void* data, uint32_t data_num_bytes,
-                size_t num_handles);
+  BoundsChecker(const void* data, uint32_t data_num_bytes, size_t num_handles);
 
   ~BoundsChecker();
 

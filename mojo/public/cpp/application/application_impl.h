@@ -54,8 +54,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
  public:
   ApplicationImpl(ApplicationDelegate* delegate,
                   ScopedMessagePipeHandle shell_handle);
-  ApplicationImpl(ApplicationDelegate* delegate,
-                  MojoHandle shell_handle);
+  ApplicationImpl(ApplicationDelegate* delegate, MojoHandle shell_handle);
   virtual ~ApplicationImpl();
 
   Shell* shell() const { return shell_.get(); }

@@ -19,21 +19,16 @@ namespace {
 
 class MessageAccumulator : public MessageReceiver {
  public:
-  MessageAccumulator() {
-  }
+  MessageAccumulator() {}
 
   virtual bool Accept(Message* message) override {
     queue_.Push(message);
     return true;
   }
 
-  bool IsEmpty() const {
-    return queue_.IsEmpty();
-  }
+  bool IsEmpty() const { return queue_.IsEmpty(); }
 
-  void Pop(Message* message) {
-    queue_.Pop(message);
-  }
+  void Pop(Message* message) { queue_.Pop(message); }
 
  private:
   internal::MessageQueue queue_;
@@ -78,8 +73,7 @@ class ReentrantMessageAccumulator : public MessageAccumulator {
 
 class ConnectorTest : public testing::Test {
  public:
-  ConnectorTest() {
-  }
+  ConnectorTest() {}
 
   virtual void SetUp() override {
     CreateMessagePipe(nullptr, &handle0_, &handle1_);
@@ -94,9 +88,7 @@ class ConnectorTest : public testing::Test {
     builder.Finish(message);
   }
 
-  void PumpMessages() {
-    loop_.RunUntilIdle();
-  }
+  void PumpMessages() { loop_.RunUntilIdle(); }
 
  protected:
   ScopedMessagePipeHandle handle0_;
@@ -189,7 +181,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
-  const char* kText[] = { "hello", "world" };
+  const char* kText[] = {"hello", "world"};
 
   for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
     Message message;
@@ -219,7 +211,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
-  const char* kText[] = { "hello", "world" };
+  const char* kText[] = {"hello", "world"};
 
   for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
     Message message;
@@ -369,7 +361,7 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
-  const char* kText[] = { "hello", "world" };
+  const char* kText[] = {"hello", "world"};
 
   for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
     Message message;

@@ -31,8 +31,7 @@ void MessageBuilder::Finish(Message* message) {
   message->AdoptData(num_bytes, static_cast<MessageData*>(buf_.Leak()));
 }
 
-MessageBuilder::MessageBuilder(size_t size)
-    : buf_(size) {
+MessageBuilder::MessageBuilder(size_t size) : buf_(size) {
 }
 
 MessageWithRequestIDBuilder::MessageWithRequestIDBuilder(uint32_t name,

@@ -37,9 +37,8 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   // Validate flags (allow unknown bits):
 
   // These flags require a RequestID.
-  if (header->num_fields < 3 &&
-        ((header->flags & kMessageExpectsResponse) ||
-         (header->flags & kMessageIsResponse))) {
+  if (header->num_fields < 3 && ((header->flags & kMessageExpectsResponse) ||
+                                 (header->flags & kMessageIsResponse))) {
     ReportValidationError(VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID);
     return false;
   }
@@ -66,8 +65,8 @@ bool MessageHeaderValidator::Accept(Message* message) {
   // if |message| contains handles.
   BoundsChecker bounds_checker(message->data(), message->data_num_bytes(), 0);
 
-  if (!ValidateStructHeader(message->data(), sizeof(MessageHeader), 2,
-                            &bounds_checker)) {
+  if (!ValidateStructHeader(
+          message->data(), sizeof(MessageHeader), 2, &bounds_checker)) {
     return false;
   }
 

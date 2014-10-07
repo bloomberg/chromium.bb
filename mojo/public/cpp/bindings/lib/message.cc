@@ -12,16 +12,15 @@
 
 namespace mojo {
 
-Message::Message()
-    : data_num_bytes_(0),
-      data_(nullptr) {
+Message::Message() : data_num_bytes_(0), data_(nullptr) {
 }
 
 Message::~Message() {
   free(data_);
 
   for (std::vector<Handle>::iterator it = handles_.begin();
-       it != handles_.end(); ++it) {
+       it != handles_.end();
+       ++it) {
     if (it->is_valid())
       CloseRaw(*it);
   }
@@ -64,15 +63,15 @@ MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
   message.AllocUninitializedData(num_bytes);
   message.mutable_handles()->resize(num_handles);
 
-  rv = ReadMessageRaw(handle,
-                      message.mutable_data(),
-                      &num_bytes,
-                      message.mutable_handles()->empty()
-                          ? nullptr
-                          : reinterpret_cast<MojoHandle*>(
-                                &message.mutable_handles()->front()),
-                      &num_handles,
-                      MOJO_READ_MESSAGE_FLAG_NONE);
+  rv = ReadMessageRaw(
+      handle,
+      message.mutable_data(),
+      &num_bytes,
+      message.mutable_handles()->empty()
+          ? nullptr
+          : reinterpret_cast<MojoHandle*>(&message.mutable_handles()->front()),
+      &num_handles,
+      MOJO_READ_MESSAGE_FLAG_NONE);
   if (receiver && rv == MOJO_RESULT_OK)
     *receiver_result = receiver->Accept(&message);
 

@@ -14,10 +14,8 @@ namespace internal {
 class ResponderThunk : public MessageReceiver {
  public:
   explicit ResponderThunk(const SharedData<Router*>& router)
-      : router_(router) {
-  }
-  virtual ~ResponderThunk() {
-  }
+      : router_(router) {}
+  virtual ~ResponderThunk() {}
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) override {
@@ -69,7 +67,8 @@ Router::~Router() {
   weak_self_.set_value(nullptr);
 
   for (ResponderMap::const_iterator i = responders_.begin();
-       i != responders_.end(); ++i) {
+       i != responders_.end();
+       ++i) {
     delete i->second;
   }
 }
@@ -79,8 +78,7 @@ bool Router::Accept(Message* message) {
   return connector_.Accept(message);
 }
 
-bool Router::AcceptWithResponder(Message* message,
-                                 MessageReceiver* responder) {
+bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
   MOJO_DCHECK(message->has_flag(kMessageExpectsResponse));
 
   // Reserve 0 in case we want it to convey special meaning in the future.

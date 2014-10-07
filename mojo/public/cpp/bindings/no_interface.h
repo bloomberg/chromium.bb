@@ -43,7 +43,6 @@ class NoInterfaceStub : public MessageReceiverWithResponder {
                                    MessageReceiver* responder) override;
 };
 
-
 // AnyInterface is for use in cases where any interface would do (e.g., see the
 // Shell::Connect method).
 

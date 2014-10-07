@@ -15,9 +15,7 @@ namespace mojo {
 namespace internal {
 
 FixedBuffer::FixedBuffer(size_t size)
-    : ptr_(nullptr),
-      cursor_(0),
-      size_(internal::Align(size)) {
+    : ptr_(nullptr), cursor_(0), size_(internal::Align(size)) {
   // calloc() required to zero memory and thus avoid info leaks.
   ptr_ = static_cast<char*>(calloc(size_, 1));
 }

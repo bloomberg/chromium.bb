@@ -18,7 +18,8 @@
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
-template <typename T> class Array;
+template <typename T>
+class Array;
 class String;
 
 namespace internal {
@@ -113,6 +114,7 @@ struct ArrayDataTraits<bool> {
     BitRef& operator=(bool value);
     BitRef& operator=(const BitRef& value);
     operator bool() const;
+
    private:
     friend struct ArrayDataTraits<bool>;
     BitRef(uint8_t* storage, uint8_t mask);
@@ -157,14 +159,14 @@ class ArrayValidateParams {
 };
 
 // NoValidateParams is used to indicate the end of an ArrayValidateParams chain.
-class NoValidateParams {
-};
+class NoValidateParams {};
 
 // What follows is code to support the serialization of Array_Data<T>. There
 // are two interesting cases: arrays of primitives and arrays of objects.
 // Arrays of objects are represented as arrays of pointers to objects.
 
-template <typename T, bool is_handle> struct ArraySerializationHelper;
+template <typename T, bool is_handle>
+struct ArraySerializationHelper;
 
 template <typename T>
 struct ArraySerializationHelper<T, false> {
@@ -172,13 +174,11 @@ struct ArraySerializationHelper<T, false> {
 
   static void EncodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
-                                       std::vector<Handle>* handles) {
-  }
+                                       std::vector<Handle>* handles) {}
 
   static void DecodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
-                                       std::vector<Handle>* handles) {
-  }
+                                       std::vector<Handle>* handles) {}
 
   template <bool element_is_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
@@ -218,7 +218,8 @@ struct ArraySerializationHelper<Handle, true> {
             VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
             MakeMessageWithArrayIndex(
                 "invalid handle in array expecting valid handles",
-                header->num_elements, i).c_str());
+                header->num_elements,
+                i).c_str());
         return false;
       }
       if (!bounds_checker->ClaimHandle(elements[i])) {
@@ -252,9 +253,9 @@ struct ArraySerializationHelper<H, true> {
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
-    return ArraySerializationHelper<Handle, true>::
-        ValidateElements<element_is_nullable, ElementValidateParams>(
-            header, elements, bounds_checker);
+    return ArraySerializationHelper<Handle, true>::ValidateElements<
+        element_is_nullable,
+        ElementValidateParams>(header, elements, bounds_checker);
   }
 };
 
@@ -284,9 +285,9 @@ struct ArraySerializationHelper<P*, false> {
       if (!element_is_nullable && !elements[i].offset) {
         ReportValidationError(
             VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-            MakeMessageWithArrayIndex(
-                "null in array expecting valid pointers",
-                header->num_elements, i).c_str());
+            MakeMessageWithArrayIndex("null in array expecting valid pointers",
+                                      header->num_elements,
+                                      i).c_str());
         return false;
       }
       if (!ValidateEncodedPointer(&elements[i].offset)) {
@@ -337,8 +338,8 @@ class Array_Data {
 
     uint32_t num_bytes =
         Traits::GetStorageSize(static_cast<uint32_t>(num_elements));
-    return new (buf->Allocate(num_bytes)) Array_Data<T>(
-        num_bytes, static_cast<uint32_t>(num_elements));
+    return new (buf->Allocate(num_bytes))
+        Array_Data<T>(num_bytes, static_cast<uint32_t>(num_elements));
   }
 
   template <typename Params>
@@ -361,11 +362,11 @@ class Array_Data {
     }
     if (Params::expected_num_elements != 0 &&
         header->num_elements != Params::expected_num_elements) {
-      ReportValidationError(
-          VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
-          MakeMessageWithExpectedArraySize(
-              "fixed-size array has wrong number of elements",
-              header->num_elements, Params::expected_num_elements).c_str());
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
+                            MakeMessageWithExpectedArraySize(
+                                "fixed-size array has wrong number of elements",
+                                header->num_elements,
+                                Params::expected_num_elements).c_str());
       return false;
     }
     if (!bounds_checker->ClaimMemory(data, header->num_bytes)) {
@@ -375,8 +376,9 @@ class Array_Data {
 
     const Array_Data<T>* object = static_cast<const Array_Data<T>*>(data);
     return Helper::template ValidateElements<
-        Params::element_is_nullable, typename Params::ElementValidateParams>(
-            &object->header_, object->storage(), bounds_checker);
+        Params::element_is_nullable,
+        typename Params::ElementValidateParams>(
+        &object->header_, object->storage(), bounds_checker);
   }
 
   size_t size() const { return header_.num_elements; }
@@ -392,8 +394,8 @@ class Array_Data {
   }
 
   StorageType* storage() {
-    return reinterpret_cast<StorageType*>(
-        reinterpret_cast<char*>(this) + sizeof(*this));
+    return reinterpret_cast<StorageType*>(reinterpret_cast<char*>(this) +
+                                          sizeof(*this));
   }
 
   const StorageType* storage() const {
@@ -425,17 +427,17 @@ static_assert(sizeof(Array_Data<char>) == 8, "Bad sizeof(Array_Data)");
 // UTF-8 encoded
 typedef Array_Data<char> String_Data;
 
-template <typename T, bool kIsMoveOnlyType> struct ArrayTraits {};
+template <typename T, bool kIsMoveOnlyType>
+struct ArrayTraits {};
 
-template <typename T> struct ArrayTraits<T, false> {
+template <typename T>
+struct ArrayTraits<T, false> {
   typedef T StorageType;
   typedef typename std::vector<T>::reference RefType;
   typedef typename std::vector<T>::const_reference ConstRefType;
   typedef ConstRefType ForwardType;
-  static inline void Initialize(std::vector<T>* vec) {
-  }
-  static inline void Finalize(std::vector<T>* vec) {
-  }
+  static inline void Initialize(std::vector<T>* vec) {}
+  static inline void Finalize(std::vector<T>* vec) {}
   static inline ConstRefType at(const std::vector<T>* vec, size_t offset) {
     return vec->at(offset);
   }
@@ -454,7 +456,8 @@ template <typename T> struct ArrayTraits<T, false> {
   }
 };
 
-template <typename T> struct ArrayTraits<T, true> {
+template <typename T>
+struct ArrayTraits<T, true> {
   struct StorageType {
     char buf[sizeof(T) + (8 - (sizeof(T) % 8)) % 8];  // Make 8-byte aligned.
   };
@@ -508,7 +511,8 @@ template <typename T> struct ArrayTraits<T, true> {
   }
 };
 
-template <> struct WrapperTraits<String, false> {
+template <>
+struct WrapperTraits<String, false> {
   typedef String_Data* DataType;
 };
 

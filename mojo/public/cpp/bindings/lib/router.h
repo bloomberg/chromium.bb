@@ -38,9 +38,7 @@ class Router : public MessageReceiverWithResponder {
   // waiting to read from the pipe.
   bool encountered_error() const { return connector_.encountered_error(); }
 
-  void CloseMessagePipe() {
-    connector_.CloseMessagePipe();
-  }
+  void CloseMessagePipe() { connector_.CloseMessagePipe(); }
 
   ScopedMessagePipeHandle PassMessagePipe() {
     return connector_.PassMessagePipe();
@@ -53,9 +51,7 @@ class Router : public MessageReceiverWithResponder {
 
   // Blocks the current thread for the first incoming method call, i.e., either
   // a call to a client method or a callback method.
-  bool WaitForIncomingMessage() {
-    return connector_.WaitForIncomingMessage();
-  }
+  bool WaitForIncomingMessage() { return connector_.WaitForIncomingMessage(); }
 
   // Sets this object to testing mode.
   // In testing mode:

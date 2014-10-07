@@ -44,49 +44,41 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
 
 class StringRecorder {
  public:
-  explicit StringRecorder(std::string* buf) : buf_(buf) {
-  }
-  void Run(const String& a) const {
-    *buf_ = a;
-  }
+  explicit StringRecorder(std::string* buf) : buf_(buf) {}
+  void Run(const String& a) const { *buf_ = a; }
   void Run(const String& a, const String& b) const {
     *buf_ = a.get() + b.get();
   }
+
  private:
   std::string* buf_;
 };
 
 class EnumRecorder {
  public:
-  explicit EnumRecorder(sample::Enum* value) : value_(value) {
-  }
-  void Run(sample::Enum a) const {
-    *value_ = a;
-  }
+  explicit EnumRecorder(sample::Enum* value) : value_(value) {}
+  void Run(sample::Enum a) const { *value_ = a; }
+
  private:
   sample::Enum* value_;
 };
 
 class MessagePipeWriter {
  public:
-  explicit MessagePipeWriter(const char* text) : text_(text) {
-  }
+  explicit MessagePipeWriter(const char* text) : text_(text) {}
   void Run(ScopedMessagePipeHandle handle) const {
     WriteTextMessage(handle.get(), text_);
   }
+
  private:
   std::string text_;
 };
 
 class RequestResponseTest : public testing::Test {
  public:
-  virtual ~RequestResponseTest() {
-    loop_.RunUntilIdle();
-  }
+  virtual ~RequestResponseTest() { loop_.RunUntilIdle(); }
 
-  void PumpMessages() {
-    loop_.RunUntilIdle();
-  }
+  void PumpMessages() { loop_.RunUntilIdle(); }
 
  private:
   Environment env_;

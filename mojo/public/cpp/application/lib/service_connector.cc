@@ -8,11 +8,11 @@ namespace mojo {
 namespace internal {
 
 ServiceConnectorBase::ServiceConnectorBase(const std::string& name)
-    : name_(name),
-      application_connection_(nullptr) {
+    : name_(name), application_connection_(nullptr) {
 }
 
-ServiceConnectorBase::~ServiceConnectorBase() {}
+ServiceConnectorBase::~ServiceConnectorBase() {
+}
 
 }  // namespace internal
 }  // namespace mojo

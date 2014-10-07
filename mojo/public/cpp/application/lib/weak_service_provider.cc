@@ -12,8 +12,8 @@ namespace internal {
 
 WeakServiceProvider::WeakServiceProvider(ServiceProviderImpl* creator,
                                          ServiceProvider* service_provider)
-      : creator_(creator),
-        service_provider_(service_provider) {}
+    : creator_(creator), service_provider_(service_provider) {
+}
 
 WeakServiceProvider::~WeakServiceProvider() {
   if (creator_)

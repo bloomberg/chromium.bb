@@ -16,9 +16,7 @@ class InterfaceRequest {
  public:
   InterfaceRequest() {}
 
-  InterfaceRequest(RValue other) {
-    handle_ = other.object->handle_.Pass();
-  }
+  InterfaceRequest(RValue other) { handle_ = other.object->handle_.Pass(); }
   InterfaceRequest& operator=(RValue other) {
     handle_ = other.object->handle_.Pass();
     return *this;
@@ -27,13 +25,9 @@ class InterfaceRequest {
   // Returns true if the request has yet to be completed.
   bool is_pending() const { return handle_.is_valid(); }
 
-  void Bind(ScopedMessagePipeHandle handle) {
-    handle_ = handle.Pass();
-  }
+  void Bind(ScopedMessagePipeHandle handle) { handle_ = handle.Pass(); }
 
-  ScopedMessagePipeHandle PassMessagePipe() {
-    return handle_.Pass();
-  }
+  ScopedMessagePipeHandle PassMessagePipe() { return handle_.Pass(); }
 
  private:
   ScopedMessagePipeHandle handle_;

@@ -36,25 +36,30 @@ class MessageBuilder {
 
 class MessageWithRequestIDBuilder : public MessageBuilder {
  public:
-  MessageWithRequestIDBuilder(uint32_t name, size_t payload_size,
-                              uint32_t flags, uint64_t request_id);
+  MessageWithRequestIDBuilder(uint32_t name,
+                              size_t payload_size,
+                              uint32_t flags,
+                              uint64_t request_id);
 };
 
 class RequestMessageBuilder : public MessageWithRequestIDBuilder {
  public:
   RequestMessageBuilder(uint32_t name, size_t payload_size)
-      : MessageWithRequestIDBuilder(name, payload_size, kMessageExpectsResponse,
-                                    0) {
-  }
+      : MessageWithRequestIDBuilder(name,
+                                    payload_size,
+                                    kMessageExpectsResponse,
+                                    0) {}
 };
 
 class ResponseMessageBuilder : public MessageWithRequestIDBuilder {
  public:
-  ResponseMessageBuilder(uint32_t name, size_t payload_size,
+  ResponseMessageBuilder(uint32_t name,
+                         size_t payload_size,
                          uint64_t request_id)
-      : MessageWithRequestIDBuilder(name, payload_size, kMessageIsResponse,
-                                    request_id) {
-  }
+      : MessageWithRequestIDBuilder(name,
+                                    payload_size,
+                                    kMessageIsResponse,
+                                    request_id) {}
 };
 
 }  // namespace internal

@@ -48,8 +48,7 @@ class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
   // Overridden from InterfaceImpl:
   virtual void OnConnectionError() override;
 
-  void AddServiceConnector(
-      internal::ServiceConnectorBase* service_connector);
+  void AddServiceConnector(internal::ServiceConnectorBase* service_connector);
   void RemoveServiceConnector(
       internal::ServiceConnectorBase* service_connector);
 

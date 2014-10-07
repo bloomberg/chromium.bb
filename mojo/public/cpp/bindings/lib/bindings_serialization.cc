@@ -16,7 +16,7 @@ namespace {
 
 const size_t kAlignment = 8;
 
-template<typename T>
+template <typename T>
 T AlignImpl(T t) {
   return t + (kAlignment - (t % kAlignment)) % kAlignment;
 }
@@ -57,7 +57,7 @@ const void* DecodePointerRaw(const uint64_t* offset) {
 bool ValidateEncodedPointer(const uint64_t* offset) {
   // Cast to uintptr_t so overflow behavior is well defined.
   return reinterpret_cast<uintptr_t>(offset) + *offset >=
-      reinterpret_cast<uintptr_t>(offset);
+         reinterpret_cast<uintptr_t>(offset);
 }
 
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles) {

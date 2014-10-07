@@ -86,7 +86,7 @@ class ArrayTest : public testing::Test {
 TEST_F(ArrayTest, Basic) {
   Array<char> array(8);
   for (size_t i = 0; i < array.size(); ++i) {
-    char val = static_cast<char>(i*2);
+    char val = static_cast<char>(i * 2);
     array[i] = val;
     EXPECT_EQ(val, array.at(i));
   }
@@ -209,7 +209,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
     array[i] = static_cast<int32_t>(i);
 
   size_t size = GetSerializedSize_(array);
-  EXPECT_EQ(8U + 4*4U, size);
+  EXPECT_EQ(8U + 4 * 4U, size);
 
   FixedBuffer buf(size);
   Array_Data<int32_t>* data;
@@ -234,13 +234,14 @@ TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
   }
 
   size_t size = GetSerializedSize_(array);
-  EXPECT_EQ(8U + 2*8U + 2*(8U + 4*4U), size);
+  EXPECT_EQ(8U + 2 * 8U + 2 * (8U + 4 * 4U), size);
 
   FixedBuffer buf(size);
   Array_Data<Array_Data<int32_t>*>* data;
-  SerializeArray_<ArrayValidateParams<0, false,
-                  ArrayValidateParams<0, false,
-                  NoValidateParams>>>(
+  SerializeArray_<
+      ArrayValidateParams<0,
+                          false,
+                          ArrayValidateParams<0, false, NoValidateParams>>>(
       array.Pass(), &buf, &data);
 
   Array<Array<int32_t>> array2;
@@ -284,17 +285,18 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
   }
 
   size_t size = GetSerializedSize_(array);
-  EXPECT_EQ(8U +     // array header
-            10*8U +  // array payload (10 pointers)
-            10*(8U +  // string header
-                8U),  // string length of 1 padded to 8
+  EXPECT_EQ(8U +            // array header
+                10 * 8U +   // array payload (10 pointers)
+                10 * (8U +  // string header
+                      8U),  // string length of 1 padded to 8
             size);
 
   FixedBuffer buf(size);
   Array_Data<String_Data*>* data;
-  SerializeArray_<ArrayValidateParams<0, false,
-                  ArrayValidateParams<0, false,
-                  NoValidateParams>>>(
+  SerializeArray_<
+      ArrayValidateParams<0,
+                          false,
+                          ArrayValidateParams<0, false, NoValidateParams>>>(
       array.Pass(), &buf, &data);
 
   Array<String> array2;

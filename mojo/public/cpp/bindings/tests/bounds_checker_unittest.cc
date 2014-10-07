@@ -21,8 +21,8 @@ const void* ToPtr(uintptr_t ptr) {
 TEST(BoundsCheckerTest, ConstructorRangeOverflow) {
   {
     // Test memory range overflow.
-    internal::BoundsChecker
-        checker(ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 5000, 0);
+    internal::BoundsChecker checker(
+        ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 5000, 0);
 
     EXPECT_FALSE(checker.IsValidRange(
         ToPtr(std::numeric_limits<uintptr_t>::max() - 3000), 1));
@@ -92,8 +92,8 @@ TEST(BoundsCheckerTest, IsValidRange) {
   }
 
   {
-    internal::BoundsChecker
-        checker(ToPtr(std::numeric_limits<uintptr_t>::max() - 2000), 1000, 0);
+    internal::BoundsChecker checker(
+        ToPtr(std::numeric_limits<uintptr_t>::max() - 2000), 1000, 0);
 
     // Test overflow.
     EXPECT_FALSE(checker.IsValidRange(
@@ -146,8 +146,8 @@ TEST(BoundsCheckerTest, ClaimHandle) {
     // |internal::kEncodedInvalidHandleValue|.
     EXPECT_EQ(internal::kEncodedInvalidHandleValue,
               std::numeric_limits<uint32_t>::max());
-    internal::BoundsChecker checker(ToPtr(0), 0,
-                                    std::numeric_limits<uint32_t>::max());
+    internal::BoundsChecker checker(
+        ToPtr(0), 0, std::numeric_limits<uint32_t>::max());
 
     EXPECT_TRUE(
         checker.ClaimHandle(Handle(std::numeric_limits<uint32_t>::max() - 1)));
@@ -188,15 +188,15 @@ TEST(BoundsCheckerTest, ClaimMemory) {
   }
 
   {
-    internal::BoundsChecker
-        checker(ToPtr(std::numeric_limits<uintptr_t>::max() - 1000), 500, 0);
+    internal::BoundsChecker checker(
+        ToPtr(std::numeric_limits<uintptr_t>::max() - 1000), 500, 0);
 
     // Test overflow.
     EXPECT_FALSE(checker.ClaimMemory(
         ToPtr(std::numeric_limits<uintptr_t>::max() - 750), 4000));
-    EXPECT_FALSE(checker.ClaimMemory(
-        ToPtr(std::numeric_limits<uintptr_t>::max() - 750),
-        std::numeric_limits<uint32_t>::max()));
+    EXPECT_FALSE(
+        checker.ClaimMemory(ToPtr(std::numeric_limits<uintptr_t>::max() - 750),
+                            std::numeric_limits<uint32_t>::max()));
 
     // This should be fine.
     EXPECT_TRUE(checker.ClaimMemory(

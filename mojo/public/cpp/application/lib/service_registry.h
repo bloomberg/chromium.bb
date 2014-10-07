@@ -47,8 +47,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   const std::string url_;
 
  private:
-  bool RemoveServiceConnectorInternal(
-      ServiceConnectorBase* service_connector);
+  bool RemoveServiceConnectorInternal(ServiceConnectorBase* service_connector);
 
   Application* application_;
   typedef std::map<std::string, ServiceConnectorBase*>

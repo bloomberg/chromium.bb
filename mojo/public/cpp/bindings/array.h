@@ -22,8 +22,7 @@ template <typename T>
 class Array {
   MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(Array, RValue)
  public:
-  typedef internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value>
-      Traits;
+  typedef internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value> Traits;
   typedef typename Traits::ConstRefType ConstRefType;
   typedef typename Traits::RefType RefType;
   typedef typename Traits::StorageType StorageType;
@@ -44,9 +43,7 @@ class Array {
     return *this;
   }
 
-  static Array New(size_t size) {
-    return Array(size).Pass();
-  }
+  static Array New(size_t size) { return Array(size).Pass(); }
 
   template <typename U>
   static Array From(const U& other) {
@@ -89,12 +86,8 @@ class Array {
     Traits::Resize(&vec_, size);
   }
 
-  const std::vector<StorageType>& storage() const {
-    return vec_;
-  }
-  operator const std::vector<StorageType>&() const {
-    return vec_;
-  }
+  const std::vector<StorageType>& storage() const { return vec_; }
+  operator const std::vector<StorageType>&() const { return vec_; }
 
   void Swap(Array* other) {
     std::swap(is_null_, other->is_null_);
@@ -132,7 +125,7 @@ class Array {
 };
 
 template <typename T, typename E>
-struct TypeConverter<Array<T>, std::vector<E> > {
+struct TypeConverter<Array<T>, std::vector<E>> {
   static Array<T> Convert(const std::vector<E>& input) {
     Array<T> result(input.size());
     for (size_t i = 0; i < input.size(); ++i)
@@ -142,7 +135,7 @@ struct TypeConverter<Array<T>, std::vector<E> > {
 };
 
 template <typename E, typename T>
-struct TypeConverter<std::vector<E>, Array<T> > {
+struct TypeConverter<std::vector<E>, Array<T>> {
   static std::vector<E> Convert(const Array<T>& input) {
     std::vector<E> result;
     if (!input.is_null()) {

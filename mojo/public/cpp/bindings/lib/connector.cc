@@ -69,15 +69,16 @@ bool Connector::Accept(Message* message) {
   if (drop_writes_)
     return true;
 
-  MojoResult rv = WriteMessageRaw(
-      message_pipe_.get(),
-      message->data(),
-      message->data_num_bytes(),
-      message->mutable_handles()->empty() ? nullptr :
-          reinterpret_cast<const MojoHandle*>(
-              &message->mutable_handles()->front()),
-      static_cast<uint32_t>(message->mutable_handles()->size()),
-      MOJO_WRITE_MESSAGE_FLAG_NONE);
+  MojoResult rv =
+      WriteMessageRaw(message_pipe_.get(),
+                      message->data(),
+                      message->data_num_bytes(),
+                      message->mutable_handles()->empty()
+                          ? nullptr
+                          : reinterpret_cast<const MojoHandle*>(
+                                &message->mutable_handles()->front()),
+                      static_cast<uint32_t>(message->mutable_handles()->size()),
+                      MOJO_WRITE_MESSAGE_FLAG_NONE);
 
   switch (rv) {
     case MOJO_RESULT_OK:

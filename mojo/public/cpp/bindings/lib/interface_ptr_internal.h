@@ -69,9 +69,7 @@ class InterfacePtrState {
     return handle_.Pass();
   }
 
-  bool is_bound() const {
-    return handle_.is_valid() || router_;
-  }
+  bool is_bound() const { return handle_.is_valid() || router_; }
 
   void set_client(typename Interface::Client* client) {
     ConfigureProxyIfNecessary();
@@ -100,9 +98,9 @@ class InterfacePtrState {
   class ProxyWithStub : public Interface::Proxy_ {
    public:
     explicit ProxyWithStub(MessageReceiverWithResponder* receiver)
-        : Interface::Proxy_(receiver) {
-    }
+        : Interface::Proxy_(receiver) {}
     typename Interface::Client::Stub_ stub;
+
    private:
     MOJO_DISALLOW_COPY_AND_ASSIGN(ProxyWithStub);
   };

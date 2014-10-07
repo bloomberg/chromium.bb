@@ -33,9 +33,7 @@ class InterfacePtr {
 
   ~InterfacePtr() {}
 
-  Interface* get() const {
-    return internal_state_.instance();
-  }
+  Interface* get() const { return internal_state_.instance(); }
   Interface* operator->() const { return get(); }
   Interface& operator*() const { return *get(); }
 
@@ -76,9 +74,7 @@ class InterfacePtr {
   // This method may be called to query if the underlying pipe has encountered
   // an error. If true, this means method calls made on this interface will be
   // dropped (and may have already been dropped) on the floor.
-  bool encountered_error() const {
-    return internal_state_.encountered_error();
-  }
+  bool encountered_error() const { return internal_state_.encountered_error(); }
 
   // This method may be called to register an ErrorHandler to observe a
   // connection error on the underlying pipe. It must only be called on a bound

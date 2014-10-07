@@ -8,24 +8,29 @@
 namespace mojo {
 namespace internal {
 
-template<class T, T v>
+template <class T, T v>
 struct IntegralConstant {
   static const T value = v;
 };
 
-template <class T, T v> const T IntegralConstant<T, v>::value;
+template <class T, T v>
+const T IntegralConstant<T, v>::value;
 
 typedef IntegralConstant<bool, true> TrueType;
 typedef IntegralConstant<bool, false> FalseType;
 
-template <class T> struct IsConst : FalseType {};
-template <class T> struct IsConst<const T> : TrueType {};
+template <class T>
+struct IsConst : FalseType {};
+template <class T>
+struct IsConst<const T> : TrueType {};
 
-template<bool B, typename T = void>
+template <bool B, typename T = void>
 struct EnableIf {};
 
-template<typename T>
-struct EnableIf<true, T> { typedef T type; };
+template <typename T>
+struct EnableIf<true, T> {
+  typedef T type;
+};
 
 // Types YesType and NoType are guaranteed such that sizeof(YesType) <
 // sizeof(NoType).
@@ -38,15 +43,16 @@ struct NoType {
 // A helper template to determine if given type is non-const move-only-type,
 // i.e. if a value of the given type should be passed via .Pass() in a
 // destructive way.
-template <typename T> struct IsMoveOnlyType {
+template <typename T>
+struct IsMoveOnlyType {
   template <typename U>
   static YesType Test(const typename U::MoveOnlyTypeForCPP03*);
 
   template <typename U>
   static NoType Test(...);
 
-  static const bool value = sizeof(Test<T>(0)) == sizeof(YesType) &&
-                            !IsConst<T>::value;
+  static const bool value =
+      sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
 };
 
 template <typename T>
@@ -61,13 +67,16 @@ typename EnableIf<IsMoveOnlyType<T>::value, T>::type Forward(T& t) {
 
 // This goop is a trick used to implement a template that can be used to
 // determine if a given class is the base class of another given class.
-template<typename, typename> struct IsSame {
+template <typename, typename>
+struct IsSame {
   static bool const value = false;
 };
-template<typename A> struct IsSame<A, A> {
+template <typename A>
+struct IsSame<A, A> {
   static bool const value = true;
 };
-template<typename Base, typename Derived> struct IsBaseOf {
+template <typename Base, typename Derived>
+struct IsBaseOf {
  private:
   // This class doesn't work correctly with forward declarations.
   // Because sizeof cannot be applied to incomplete types, this line prevents us
@@ -75,8 +84,8 @@ template<typename Base, typename Derived> struct IsBaseOf {
   typedef char (*EnsureTypesAreComplete)[sizeof(Base) + sizeof(Derived)];
 
   static Derived* CreateDerived();
-  static char (&Check(Base*))[1];
-  static char (&Check(...))[2];
+  static char(&Check(Base*))[1];
+  static char(&Check(...))[2];
 
  public:
   static bool const value = sizeof Check(CreateDerived()) == 1 &&

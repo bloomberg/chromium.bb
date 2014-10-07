@@ -11,7 +11,8 @@
 namespace mojo {
 
 class ApplicationConnection;
-template <typename Interface> class InterfaceRequest;
+template <typename Interface>
+class InterfaceRequest;
 
 // Implement this class to provide implementations of a given interface and
 // bind them to incoming requests. The implementation of this class is

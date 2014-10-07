@@ -11,7 +11,8 @@
 namespace mojo {
 
 size_t GetSerializedSize_(const String& input);
-void Serialize_(const String& input, internal::Buffer* buffer,
+void Serialize_(const String& input,
+                internal::Buffer* buffer,
                 internal::String_Data** output);
 void Deserialize_(internal::String_Data* input, String* output);
 

@@ -15,8 +15,7 @@ namespace {
 
 class ErrorObserver : public ErrorHandler {
  public:
-  ErrorObserver() : encountered_error_(false) {
-  }
+  ErrorObserver() : encountered_error_(false) {}
 
   bool encountered_error() const { return encountered_error_; }
 
@@ -30,10 +29,7 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
  public:
   virtual ~MathCalculatorImpl() {}
 
-  MathCalculatorImpl()
-      : total_(0.0),
-        got_connection_(false) {
-  }
+  MathCalculatorImpl() : total_(0.0), got_connection_(false) {}
 
   virtual void OnConnectionEstablished() override { got_connection_ = true; }
 
@@ -49,9 +45,7 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
     client()->Output(total_);
   }
 
-  bool got_connection() const {
-    return got_connection_;
-  }
+  bool got_connection() const { return got_connection_; }
 
  private:
   double total_;
@@ -61,8 +55,7 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
 class MathCalculatorUIImpl : public math::CalculatorUI {
  public:
   explicit MathCalculatorUIImpl(math::CalculatorPtr calculator)
-      : calculator_(calculator.Pass()),
-        output_(0.0) {
+      : calculator_(calculator.Pass()), output_(0.0) {
     calculator_.set_client(this);
   }
 
@@ -70,29 +63,17 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
     return calculator_.WaitForIncomingMethodCall();
   }
 
-  bool encountered_error() const {
-    return calculator_.encountered_error();
-  }
+  bool encountered_error() const { return calculator_.encountered_error(); }
 
-  void Add(double value) {
-    calculator_->Add(value);
-  }
+  void Add(double value) { calculator_->Add(value); }
 
-  void Subtract(double value) {
-    calculator_->Add(-value);
-  }
+  void Subtract(double value) { calculator_->Add(-value); }
 
-  void Multiply(double value) {
-    calculator_->Multiply(value);
-  }
+  void Multiply(double value) { calculator_->Multiply(value); }
 
-  void Divide(double value) {
-    calculator_->Multiply(1.0 / value);
-  }
+  void Divide(double value) { calculator_->Multiply(1.0 / value); }
 
-  double GetOutput() const {
-    return output_;
-  }
+  double GetOutput() const { return output_; }
 
  private:
   // math::CalculatorUI implementation:
@@ -105,8 +86,7 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
 class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
  public:
   explicit SelfDestructingMathCalculatorUIImpl(math::CalculatorPtr calculator)
-      : calculator_(calculator.Pass()),
-        nesting_level_(0) {
+      : calculator_(calculator.Pass()), nesting_level_(0) {
     ++num_instances_;
     calculator_.set_client(this);
   }
@@ -119,9 +99,7 @@ class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
   static int num_instances() { return num_instances_; }
 
  private:
-  virtual ~SelfDestructingMathCalculatorUIImpl() {
-    --num_instances_;
-  }
+  virtual ~SelfDestructingMathCalculatorUIImpl() { --num_instances_; }
 
   virtual void Output(double value) override {
     if (--nesting_level_ > 0) {
@@ -150,9 +128,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
 
   virtual void OnConnectionEstablished() override { got_connection_ = true; }
 
-  bool got_connection() const {
-    return got_connection_;
-  }
+  bool got_connection() const { return got_connection_; }
 
   int max_call_depth() { return max_call_depth_; }
 
@@ -176,13 +152,9 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
 
 class InterfacePtrTest : public testing::Test {
  public:
-  virtual ~InterfacePtrTest() {
-    loop_.RunUntilIdle();
-  }
+  virtual ~InterfacePtrTest() { loop_.RunUntilIdle(); }
 
-  void PumpMessages() {
-    loop_.RunUntilIdle();
-  }
+  void PumpMessages() { loop_.RunUntilIdle(); }
 
  private:
   Environment env_;

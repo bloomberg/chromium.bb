@@ -17,7 +17,9 @@ template <typename Struct>
 class StructHelper {
  public:
   template <typename Ptr>
-  static void Initialize(Ptr* ptr) { ptr->Initialize(); }
+  static void Initialize(Ptr* ptr) {
+    ptr->Initialize();
+  }
 };
 
 }  // namespace internal
@@ -25,13 +27,12 @@ class StructHelper {
 template <typename Struct>
 class StructPtr {
   MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(StructPtr, RValue);
+
  public:
   typedef typename Struct::Data_ Data_;
 
   StructPtr() : ptr_(nullptr) {}
-  ~StructPtr() {
-    delete ptr_;
-  }
+  ~StructPtr() { delete ptr_; }
 
   StructPtr(RValue other) : ptr_(nullptr) { Take(other.object); }
   StructPtr& operator=(RValue other) {
@@ -63,16 +64,12 @@ class StructPtr {
   }
   Struct* get() const { return ptr_; }
 
-  void Swap(StructPtr* other) {
-    std::swap(ptr_, other->ptr_);
-  }
+  void Swap(StructPtr* other) { std::swap(ptr_, other->ptr_); }
 
   // Please note that calling this method will fail compilation if the value
   // type |Struct| doesn't have a Clone() method defined (which usually means
   // that it contains Mojo handles).
-  StructPtr Clone() const {
-    return is_null() ? StructPtr() : ptr_->Clone();
-  }
+  StructPtr Clone() const { return is_null() ? StructPtr() : ptr_->Clone(); }
 
  private:
   typedef Struct* StructPtr::*Testable;
@@ -99,6 +96,7 @@ class StructPtr {
 template <typename Struct>
 class InlinedStructPtr {
   MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(InlinedStructPtr, RValue);
+
  public:
   typedef typename Struct::Data_ Data_;
 
@@ -118,7 +116,7 @@ class InlinedStructPtr {
 
   void reset() {
     is_null_ = true;
-    value_.~Struct();
+    value_. ~Struct();
     new (&value_) Struct();
   }
 

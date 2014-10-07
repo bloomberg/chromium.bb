@@ -30,12 +30,11 @@ ArrayDataTraits<bool>::BitRef::~BitRef() {
 }
 
 ArrayDataTraits<bool>::BitRef::BitRef(uint8_t* storage, uint8_t mask)
-    : storage_(storage),
-      mask_(mask) {
+    : storage_(storage), mask_(mask) {
 }
 
-ArrayDataTraits<bool>::BitRef&
-ArrayDataTraits<bool>::BitRef::operator=(bool value) {
+ArrayDataTraits<bool>::BitRef& ArrayDataTraits<bool>::BitRef::operator=(
+    bool value) {
   if (value) {
     *storage_ |= mask_;
   } else {
@@ -44,8 +43,8 @@ ArrayDataTraits<bool>::BitRef::operator=(bool value) {
   return *this;
 }
 
-ArrayDataTraits<bool>::BitRef&
-ArrayDataTraits<bool>::BitRef::operator=(const BitRef& value) {
+ArrayDataTraits<bool>::BitRef& ArrayDataTraits<bool>::BitRef::operator=(
+    const BitRef& value) {
   return (*this) = static_cast<bool>(value);
 }
 

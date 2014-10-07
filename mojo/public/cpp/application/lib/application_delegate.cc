@@ -6,10 +6,13 @@
 
 namespace mojo {
 
-ApplicationDelegate::ApplicationDelegate() {}
-ApplicationDelegate::~ApplicationDelegate() {}
+ApplicationDelegate::ApplicationDelegate() {
+}
+ApplicationDelegate::~ApplicationDelegate() {
+}
 
-void ApplicationDelegate::Initialize(ApplicationImpl* app) {}
+void ApplicationDelegate::Initialize(ApplicationImpl* app) {
+}
 
 bool ApplicationDelegate::ConfigureIncomingConnection(
     ApplicationConnection* connection) {

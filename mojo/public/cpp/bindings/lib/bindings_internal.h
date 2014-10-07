@@ -12,7 +12,8 @@ namespace mojo {
 class String;
 
 namespace internal {
-template <typename T> class Array_Data;
+template <typename T>
+class Array_Data;
 
 #pragma pack(push, 1)
 
@@ -63,20 +64,24 @@ T FetchAndReset(T* ptr) {
   return temp;
 }
 
-template <typename H> struct IsHandle {
+template <typename H>
+struct IsHandle {
   enum { value = IsBaseOf<Handle, H>::value };
 };
 
 template <typename T, bool move_only = IsMoveOnlyType<T>::value>
 struct WrapperTraits;
 
-template <typename T> struct WrapperTraits<T, false> {
+template <typename T>
+struct WrapperTraits<T, false> {
   typedef T DataType;
 };
-template <typename H> struct WrapperTraits<ScopedHandleBase<H>, true> {
+template <typename H>
+struct WrapperTraits<ScopedHandleBase<H>, true> {
   typedef H DataType;
 };
-template <typename S> struct WrapperTraits<S, true> {
+template <typename S>
+struct WrapperTraits<S, true> {
   typedef typename S::Data_* DataType;
 };
 

@@ -101,11 +101,11 @@ class SerializationWarningObserverForTesting {
 // of the serialzation result.
 //
 // In non-debug build, does nothing (not even compiling |condition|).
-#define MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING( \
-    condition, error, description) \
+#define MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(                        \
+    condition, error, description)                                       \
   MOJO_DLOG_IF(FATAL, (condition) && !ReportSerializationWarning(error)) \
-      << "The outgoing message will trigger " \
-      << ValidationErrorToString(error) << " at the receiving side (" \
+      << "The outgoing message will trigger "                            \
+      << ValidationErrorToString(error) << " at the receiving side ("    \
       << description << ").";
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
