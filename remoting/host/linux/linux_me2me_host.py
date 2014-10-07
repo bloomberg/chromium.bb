@@ -558,17 +558,16 @@ def choose_x_session():
   for startup_file in XSESSION_FILES:
     startup_file = os.path.expanduser(startup_file)
     if os.path.exists(startup_file):
-      # Use the same logic that a Debian system typically uses with ~/.xsession
-      # (see /etc/X11/Xsession.d/50x11-common_determine-startup), to determine
-      # exactly how to run this file.
       if os.access(startup_file, os.X_OK):
         # "/bin/sh -c" is smart about how to execute the session script and
         # works in cases where plain exec() fails (for example, if the file is
         # marked executable, but is a plain script with no shebang line).
         return ["/bin/sh", "-c", pipes.quote(startup_file)]
       else:
-        shell = os.environ.get("SHELL", "sh")
-        return [shell, startup_file]
+        # If this is a system-wide session script, it should be run using the
+        # system shell, ignoring any login shell that might be set for the
+        # current user.
+        return ["/bin/sh", startup_file]
 
   # Choose a session wrapper script to run the session. On some systems,
   # /etc/X11/Xsession fails to load the user's .profile, so look for an
