@@ -32,10 +32,6 @@ bool GetPropBits(int fd, void* buf, unsigned int size) {
   return true;
 }
 
-bool BitIsSet(const unsigned long* bits, unsigned int bit) {
-  return (bits[bit / EVDEV_LONG_BITS] & (1UL << (bit % EVDEV_LONG_BITS)));
-}
-
 bool GetAbsInfo(int fd, int code, struct input_absinfo* absinfo) {
   if (ioctl(fd, EVIOCGABS(code), absinfo)) {
     DLOG(ERROR) << "failed EVIOCGABS(" << code << ") on fd " << fd;
@@ -96,49 +92,49 @@ bool EventDeviceInfo::Initialize(int fd) {
 bool EventDeviceInfo::HasEventType(unsigned int type) const {
   if (type > EV_MAX)
     return false;
-  return BitIsSet(ev_bits_, type);
+  return EvdevBitIsSet(ev_bits_, type);
 }
 
 bool EventDeviceInfo::HasKeyEvent(unsigned int code) const {
   if (code > KEY_MAX)
     return false;
-  return BitIsSet(key_bits_, code);
+  return EvdevBitIsSet(key_bits_, code);
 }
 
 bool EventDeviceInfo::HasRelEvent(unsigned int code) const {
   if (code > REL_MAX)
     return false;
-  return BitIsSet(rel_bits_, code);
+  return EvdevBitIsSet(rel_bits_, code);
 }
 
 bool EventDeviceInfo::HasAbsEvent(unsigned int code) const {
   if (code > ABS_MAX)
     return false;
-  return BitIsSet(abs_bits_, code);
+  return EvdevBitIsSet(abs_bits_, code);
 }
 
 bool EventDeviceInfo::HasMscEvent(unsigned int code) const {
   if (code > MSC_MAX)
     return false;
-  return BitIsSet(msc_bits_, code);
+  return EvdevBitIsSet(msc_bits_, code);
 }
 
 bool EventDeviceInfo::HasSwEvent(unsigned int code) const {
   if (code > SW_MAX)
     return false;
-  return BitIsSet(sw_bits_, code);
+  return EvdevBitIsSet(sw_bits_, code);
 }
 
 bool EventDeviceInfo::HasLedEvent(unsigned int code) const {
   if (code > LED_MAX)
     return false;
-  return BitIsSet(led_bits_, code);
+  return EvdevBitIsSet(led_bits_, code);
 }
 
 bool EventDeviceInfo::HasProp(unsigned int code) const {
   if (code > INPUT_PROP_MAX)
     return false;
-  return BitIsSet(prop_bits_, code);
+  return EvdevBitIsSet(prop_bits_, code);
 }
 
 int32 EventDeviceInfo::GetAbsMinimum(unsigned int code) const {

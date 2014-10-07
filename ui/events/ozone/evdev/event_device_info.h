@@ -9,10 +9,8 @@
 #include <linux/input.h>
 
 #include "base/basictypes.h"
+#include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
-
-#define EVDEV_LONG_BITS (CHAR_BIT * sizeof(long))
-#define EVDEV_BITS_TO_LONGS(x) (((x) + EVDEV_LONG_BITS - 1) / EVDEV_LONG_BITS)
 
 namespace ui {
 
