@@ -66,7 +66,8 @@ struct LayoutParameters {
   // The height of the info bar, not including the top arrow.
   CGFloat infoBarHeight;
   // The distance from the bottom of the location icon to the bottom of the
-  // toolbar.
+  // toolbar. Only needs to be set if infoBarHeight is not 0 and hasToolbar is
+  // YES.
   CGFloat pageInfoBubblePointY;
 
   BOOL hasDownloadShelf;

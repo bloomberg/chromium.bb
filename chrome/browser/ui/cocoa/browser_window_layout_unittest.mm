@@ -137,7 +137,7 @@ TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.bookmarkFrame));
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.fullscreenBackingBarFrame));
   EXPECT_EQ(567, output.findBarMaxY);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 495, 600, 86), output.infoBarFrame));
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 495, 600, 72), output.infoBarFrame));
   EXPECT_TRUE(NSEqualRects(NSZeroRect, output.downloadShelfFrame));
   EXPECT_TRUE(
       NSEqualRects(NSMakeRect(0, 0, 600, 495), output.contentAreaFrame));
@@ -170,4 +170,16 @@ TEST_F(BrowserWindowLayoutTest, TestNewStyleAvatarButton) {
   EXPECT_LE(NSMaxX(tabStripLayout.avatarFrame), NSMinX(fullscreenButtonFrame));
   EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
             tabStripLayout.rightIndent);
+}
+
+TEST_F(BrowserWindowLayoutTest, TestInfobarLayoutWithoutToolbarOrLocationBar) {
+  [layout setHasTabStrip:NO];
+  [layout setHasToolbar:NO];
+  [layout setHasLocationBar:NO];
+  [layout setBookmarkBarHidden:YES];
+  [layout setHasDownloadShelf:NO];
+
+  chrome::LayoutOutput output = [layout computeLayout];
+
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 528, 600, 72), output.infoBarFrame));
 }

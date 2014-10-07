@@ -297,13 +297,19 @@ const CGFloat kLocationBarRightOffset = 35;
     maxY = parameters_.windowSize.height;
   }
 
-  // Lay out the info bar. It is never hidden. The frame needs to be high
-  // enough to accomodate the top arrow, which might stretch all the way to the
-  // page info bubble icon.
+  // Lay out the info bar. It is never hidden.
   if (parameters_.infoBarHeight != 0) {
-    CGFloat infoBarMaxY =
-        NSMinY(output_.toolbarFrame) + parameters.pageInfoBubblePointY;
+    CGFloat infoBarMaxY = maxY;
     CGFloat infoBarMinY = maxY - parameters_.infoBarHeight;
+
+    // If there's a toolbar, then the frame needs to be high enough to
+    // accomodate the top arrow, which might stretch all the way to the page
+    // info bubble icon.
+    if (parameters_.hasToolbar) {
+      infoBarMaxY =
+          NSMinY(output_.toolbarFrame) + parameters.pageInfoBubblePointY;
+    }
+
     output_.infoBarFrame =
         NSMakeRect(0, infoBarMinY, width, infoBarMaxY - infoBarMinY);
     output_.infoBarMaxTopArrowHeight =
