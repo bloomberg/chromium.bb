@@ -157,11 +157,11 @@ namespace blink {
         void finishedLoading(double finishTime);
         void mainReceivedError(const ResourceError&);
         void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
-        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE FINAL;
-        virtual void updateRequest(Resource*, const ResourceRequest&) OVERRIDE FINAL;
-        virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE FINAL;
-        virtual void dataReceived(Resource*, const char* data, unsigned length) OVERRIDE FINAL;
-        virtual void notifyFinished(Resource*) OVERRIDE FINAL;
+        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override final;
+        virtual void updateRequest(Resource*, const ResourceRequest&) override final;
+        virtual void responseReceived(Resource*, const ResourceResponse&) override final;
+        virtual void dataReceived(Resource*, const char* data, unsigned length) override final;
+        virtual void notifyFinished(Resource*) override final;
 
         bool maybeLoadEmpty();
 

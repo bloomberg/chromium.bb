@@ -39,7 +39,7 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class ApplicationCache FINAL : public RefCountedWillBeGarbageCollectedFinalized<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
+class ApplicationCache final : public RefCountedWillBeGarbageCollectedFinalized<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(ApplicationCache);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
@@ -55,7 +55,7 @@ public:
 #endif
     }
 
-    virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
+    virtual void willDestroyGlobalObjectInFrame() override;
 
     unsigned short status() const;
     void update(ExceptionState&);
@@ -73,12 +73,12 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(cached);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit ApplicationCache(LocalFrame*);

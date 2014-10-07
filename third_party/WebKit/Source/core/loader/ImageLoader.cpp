@@ -87,7 +87,7 @@ public:
     {
     }
 
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         if (m_loader) {
             m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);

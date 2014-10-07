@@ -108,7 +108,7 @@ protected:
             m_shouldCheckMainWorldContentSecurityPolicy = DoNotCheckContentSecurityPolicy;
     }
 
-    virtual void fire(LocalFrame* frame) OVERRIDE
+    virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(m_originDocument.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self", m_shouldCheckMainWorldContentSecurityPolicy);
@@ -128,7 +128,7 @@ private:
     ContentSecurityPolicyCheck m_shouldCheckMainWorldContentSecurityPolicy;
 };
 
-class ScheduledRedirect FINAL : public ScheduledURLNavigation {
+class ScheduledRedirect final : public ScheduledURLNavigation {
 public:
     ScheduledRedirect(double delay, Document* originDocument, const String& url, bool lockBackForwardList)
         : ScheduledURLNavigation(delay, originDocument, url, Referrer(), lockBackForwardList, false)
@@ -136,9 +136,9 @@ public:
         clearUserGesture();
     }
 
-    virtual bool shouldStartTimer(LocalFrame* frame) OVERRIDE { return frame->loader().allAncestorsAreComplete(); }
+    virtual bool shouldStartTimer(LocalFrame* frame) override { return frame->loader().allAncestorsAreComplete(); }
 
-    virtual void fire(LocalFrame* frame) OVERRIDE
+    virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), ResourceRequest(KURL(ParsedURLString, url()), referrer()), "_self");
@@ -150,34 +150,34 @@ public:
     }
 };
 
-class ScheduledLocationChange FINAL : public ScheduledURLNavigation {
+class ScheduledLocationChange final : public ScheduledURLNavigation {
 public:
     ScheduledLocationChange(Document* originDocument, const String& url, const Referrer& referrer, bool lockBackForwardList)
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, lockBackForwardList, true) { }
 };
 
-class ScheduledReload FINAL : public ScheduledNavigation {
+class ScheduledReload final : public ScheduledNavigation {
 public:
     ScheduledReload()
         : ScheduledNavigation(0.0, true, true)
     {
     }
 
-    virtual void fire(LocalFrame* frame) OVERRIDE
+    virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         frame->loader().reload(NormalReload, KURL(), ClientRedirect);
     }
 };
 
-class ScheduledPageBlock FINAL : public ScheduledURLNavigation {
+class ScheduledPageBlock final : public ScheduledURLNavigation {
 public:
     ScheduledPageBlock(Document* originDocument, const String& url, const Referrer& referrer)
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, true, true)
     {
     }
 
-    virtual void fire(LocalFrame* frame) OVERRIDE
+    virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         SubstituteData substituteData(SharedBuffer::create(), "text/plain", "UTF-8", KURL(), ForceSynchronousLoad);
@@ -188,7 +188,7 @@ public:
     }
 };
 
-class ScheduledHistoryNavigation FINAL : public ScheduledNavigation {
+class ScheduledHistoryNavigation final : public ScheduledNavigation {
 public:
     explicit ScheduledHistoryNavigation(int historySteps)
         : ScheduledNavigation(0, false, true)
@@ -196,7 +196,7 @@ public:
     {
     }
 
-    virtual void fire(LocalFrame* frame) OVERRIDE
+    virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         // go(i!=0) from a frame navigates into the history of the frame only,
@@ -208,7 +208,7 @@ private:
     int m_historySteps;
 };
 
-class ScheduledFormSubmission FINAL : public ScheduledNavigation {
+class ScheduledFormSubmission final : public ScheduledNavigation {
 public:
     ScheduledFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
         : ScheduledNavigation(0, lockBackForwardList, true)
@@ -217,7 +217,7 @@ public:
         ASSERT(m_submission->state());
     }
 
-    virtual void fire(LocalFrame* frame) OVERRIDE
+    virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest frameRequest(m_submission->state()->sourceDocument());

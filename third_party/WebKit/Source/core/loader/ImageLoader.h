@@ -114,7 +114,7 @@ public:
     void removeClient(ImageLoaderClient*);
 
 protected:
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void notifyFinished(Resource*) override;
 
 private:
     class Task;

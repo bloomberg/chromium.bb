@@ -70,10 +70,10 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
 
 class EmptyPopupMenu : public PopupMenu {
 public:
-    virtual void show(const FloatQuad&, const IntSize&, int) OVERRIDE { }
-    virtual void hide() OVERRIDE { }
-    virtual void updateFromElement() OVERRIDE { }
-    virtual void disconnectClient() OVERRIDE { }
+    virtual void show(const FloatQuad&, const IntSize&, int) override { }
+    virtual void hide() override { }
+    virtual void updateFromElement() override { }
+    virtual void disconnectClient() override { }
 };
 
 PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*) const

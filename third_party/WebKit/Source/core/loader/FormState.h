@@ -43,7 +43,7 @@ namespace blink {
         NotSubmittedByJavaScript
     };
 
-    class FormState FINAL : public RefCountedWillBeGarbageCollected<FormState> {
+    class FormState final : public RefCountedWillBeGarbageCollected<FormState> {
     public:
         static PassRefPtrWillBeRawPtr<FormState> create(HTMLFormElement&, FormSubmissionTrigger);
         void trace(Visitor*);

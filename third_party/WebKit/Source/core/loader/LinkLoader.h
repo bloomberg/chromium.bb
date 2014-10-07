@@ -46,20 +46,20 @@ class LinkRelAttribute;
 class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
-class LinkLoader FINAL : public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
+class LinkLoader final : public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
 
 public:
     explicit LinkLoader(LinkLoaderClient*);
     virtual ~LinkLoader();
 
     // from ResourceClient
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void notifyFinished(Resource*) override;
 
     // from PrerenderClient
-    virtual void didStartPrerender() OVERRIDE;
-    virtual void didStopPrerender() OVERRIDE;
-    virtual void didSendLoadForPrerender() OVERRIDE;
-    virtual void didSendDOMContentLoadedForPrerender() OVERRIDE;
+    virtual void didStartPrerender() override;
+    virtual void didStopPrerender() override;
+    virtual void didSendLoadForPrerender() override;
+    virtual void didSendDOMContentLoadedForPrerender() override;
 
     void released();
     bool loadLink(const LinkRelAttribute&, const AtomicString& crossOriginMode, const String& type, const KURL&, Document&);

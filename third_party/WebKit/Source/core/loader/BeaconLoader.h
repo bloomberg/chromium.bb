@@ -22,7 +22,7 @@ class LocalFrame;
 
 // Issue asynchronous beacon transmission loads independent of LocalFrame
 // staying alive. PingLoader providing the service.
-class BeaconLoader FINAL : public PingLoader {
+class BeaconLoader final : public PingLoader {
     WTF_MAKE_NONCOPYABLE(BeaconLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:

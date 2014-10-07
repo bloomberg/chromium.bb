@@ -68,7 +68,7 @@ private:
     static unsigned s_navigationDisableCount;
 };
 
-class NavigationScheduler FINAL {
+class NavigationScheduler final {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
     DISALLOW_ALLOCATION();
 public:

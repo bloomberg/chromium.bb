@@ -43,7 +43,7 @@ class LocalFrame;
 class KURL;
 class SecurityOrigin;
 
-class MixedContentChecker FINAL {
+class MixedContentChecker final {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);
     DISALLOW_ALLOCATION();
 public:

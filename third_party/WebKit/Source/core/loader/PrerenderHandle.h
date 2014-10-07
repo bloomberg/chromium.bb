@@ -43,7 +43,7 @@ class Document;
 class Prerender;
 class PrerenderClient;
 
-class PrerenderHandle FINAL : public DocumentLifecycleObserver {
+class PrerenderHandle final : public DocumentLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
     static PassOwnPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
@@ -54,7 +54,7 @@ public:
     const KURL& url() const;
 
     // From DocumentLifecycleObserver:
-    virtual void documentWasDetached() OVERRIDE;
+    virtual void documentWasDetached() override;
 private:
     PrerenderHandle(Document&, PassRefPtr<Prerender>);
 
