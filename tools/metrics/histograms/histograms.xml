@@ -6160,6 +6160,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.EnrollmentTime.Cancel" units="milliseconds">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Elapsed time from *after* GAIA login until enrollment was cancelled.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.EnrollmentTime.Failure" units="milliseconds">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Elapsed time from *after* GAIA login until enrollment failed.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.EnrollmentTime.Success" units="milliseconds">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Elapsed time from *after* GAIA login until enrollment succeeded.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.IOSPolicies">
   <owner>joaodasilva@chromium.org</owner>
   <summary>

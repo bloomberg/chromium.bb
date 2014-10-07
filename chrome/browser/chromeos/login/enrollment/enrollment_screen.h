@@ -10,12 +10,17 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "components/pairing/host_pairing_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
+
+namespace base {
+class ElapsedTimer;
+}
 
 namespace pairing_chromeos {
 class ControllerPairingController;
@@ -129,6 +134,7 @@ class EnrollmentScreen
   bool remora_token_sent_;
   std::string user_;
   std::string auth_token_;
+  scoped_ptr<base::ElapsedTimer> elapsed_timer_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);

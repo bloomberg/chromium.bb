@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -30,6 +31,17 @@
 #include "policy/proto/device_management_backend.pb.h"
 
 using namespace pairing_chromeos;
+
+// Do not change the UMA histogram parameters without renaming the histograms!
+#define UMA_ENROLLMENT_TIME(histogram_name, elapsed_timer) \
+  do {                                                     \
+    UMA_HISTOGRAM_CUSTOM_TIMES(                            \
+      (histogram_name),                                    \
+      (elapsed_timer)->Elapsed(),                          \
+      base::TimeDelta::FromMilliseconds(100) /* min */,    \
+      base::TimeDelta::FromMinutes(15) /* max */,          \
+      100 /* bucket_count */);                             \
+  } while (0)
 
 namespace chromeos {
 
@@ -138,6 +150,7 @@ void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
 }
 
 void EnrollmentScreen::OnLoginDone(const std::string& user) {
+  elapsed_timer_.reset(new base::ElapsedTimer());
   user_ = gaia::CanonicalizeEmail(user);
 
   if (is_auto_enrollment())
@@ -206,6 +219,8 @@ void EnrollmentScreen::OnRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
+  if (elapsed_timer_)
+    UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Cancel", elapsed_timer_);
   if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED ||
       enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
     actor_->ResetAuth(
@@ -288,8 +303,10 @@ void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
     const policy::EnrollmentStatus& status) {
-  actor_->ShowEnrollmentStatus(status);
   StartupUtils::MarkOobeCompleted();
+  if (elapsed_timer_)
+    UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Success", elapsed_timer_);
+  actor_->ShowEnrollmentStatus(status);
 }
 
 void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
@@ -380,6 +397,8 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
   if (remora_controller_)
     remora_controller_->SetEnrollmentComplete(false);
   enrollment_failed_once_ = true;
+  if (elapsed_timer_)
+    UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Failure", elapsed_timer_);
   actor_->ShowEnrollmentStatus(status);
 }
 
