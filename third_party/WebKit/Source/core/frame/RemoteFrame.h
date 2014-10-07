@@ -19,7 +19,7 @@ public:
 
     virtual ~RemoteFrame();
 
-    virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) override;
+    virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
 
     void setView(PassRefPtr<RemoteFrameView>);

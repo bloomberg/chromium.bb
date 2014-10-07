@@ -343,12 +343,6 @@ void HTMLAnchorElement::handleClick(Event* event)
     ResourceRequest request(completedURL);
     if (hasAttribute(downloadAttr)) {
         request.setRequestContext(blink::WebURLRequest::RequestContextDownload);
-        if (!hasRel(RelationNoReferrer)) {
-            String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, document().outgoingReferrer());
-            if (!referrer.isEmpty())
-                request.setHTTPReferrer(Referrer(referrer, document().referrerPolicy()));
-        }
-
         bool isSameOrigin = completedURL.protocolIsData() || document().securityOrigin()->canRequest(completedURL);
         const AtomicString& suggestedName = (isSameOrigin ? fastGetAttribute(downloadAttr) : nullAtom);
 

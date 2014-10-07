@@ -2,6 +2,4 @@ CONSOLE ERROR: The 'allow' directive has been replaced with 'default-src'. Pleas
 CONSOLE ERROR: The 'allow' directive has been replaced with 'default-src'. Please use that directive instead, as 'allow' has no effect.
 CONSOLE ERROR: The 'allow' directive has been replaced with 'default-src'. Please use that directive instead, as 'allow' has no effect.
 ALERT: PASS
-CONSOLE ERROR: The 'allow' directive has been replaced with 'default-src'. Please use that directive instead, as 'allow' has no effect.
-CONSOLE ERROR: The 'allow' directive has been replaced with 'default-src'. Please use that directive instead, as 'allow' has no effect.
 

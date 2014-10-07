@@ -618,18 +618,19 @@ void FrameLoader::completed()
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
 {
-    if (shouldSendReferrer == NeverSendReferrer) {
-        request.clearHTTPReferrer();
+    if (!originDocument)
         return;
-    }
+    // FIXME: This should be an assertion, but there's some plugin code in the chromium repo
+    // that both determines its own referrer and expects to be associated with an originDocument.
+    if (!request.httpReferrer().isEmpty())
+        return;
+    if (shouldSendReferrer == NeverSendReferrer)
+        return;
 
     // Always use the initiating document to generate the referrer.
-    // We need to generateReferrerHeader(), because we might not have enforced ReferrerPolicy or https->http
+    // We need to generateReferrerHeader(), because we haven't enforced ReferrerPolicy or https->http
     // referrer suppression yet.
-    String argsReferrer(request.httpReferrer());
-    if (argsReferrer.isEmpty())
-        argsReferrer = originDocument->outgoingReferrer();
-    String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), argsReferrer);
+    String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), originDocument->outgoingReferrer());
 
     request.setHTTPReferrer(Referrer(referrer, originDocument->referrerPolicy()));
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
@@ -686,8 +687,6 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 
     if (!request.formState() && request.frameName().isEmpty())
         request.setFrameName(m_frame->document()->baseTarget());
-
-    setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer(), request.originDocument());
     return true;
 }
 
@@ -743,6 +742,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
     }
 
+    setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer(), request.originDocument());
+
     FrameLoadType newLoadType = determineFrameLoadType(request);
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
     if (action.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
@@ -795,7 +796,8 @@ void FrameLoader::reportLocalLoadFailed(LocalFrame* frame, const String& url)
 ResourceRequest FrameLoader::requestFromHistoryItem(HistoryItem* item, ResourceRequestCachePolicy cachePolicy)
 {
     RefPtr<FormData> formData = item->formData();
-    ResourceRequest request(item->url(), item->referrer());
+    ResourceRequest request(item->url());
+    request.setHTTPReferrer(item->referrer());
     request.setCachePolicy(cachePolicy);
     if (formData) {
         request.setHTTPMethod("POST");

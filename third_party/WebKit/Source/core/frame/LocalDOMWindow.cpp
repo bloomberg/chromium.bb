@@ -1659,10 +1659,7 @@ void LocalDOMWindow::setLocation(const String& urlString, LocalDOMWindow* callin
     }
 
     // We want a new history item if we are processing a user gesture.
-    m_frame->navigationScheduler().scheduleLocationChange(activeDocument,
-        // FIXME: What if activeDocument()->frame() is 0?
-        completedURL, Referrer(activeDocument->outgoingReferrer(), activeDocument->referrerPolicy()),
-        locking != LockHistoryBasedOnGestureState);
+    m_frame->navigationScheduler().scheduleLocationChange(activeDocument, completedURL, locking != LockHistoryBasedOnGestureState);
 }
 
 void LocalDOMWindow::printErrorMessage(const String& message)
@@ -1815,13 +1812,7 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
         if (urlString.isEmpty())
             return targetFrame->domWindow();
 
-        // For whatever reason, Firefox uses the first window rather than the active window to
-        // determine the outgoing referrer. We replicate that behavior here.
-        toLocalFrame(targetFrame)->navigationScheduler().scheduleLocationChange(
-            activeDocument,
-            completedURL,
-            Referrer(firstFrame->document()->outgoingReferrer(), firstFrame->document()->referrerPolicy()),
-            false);
+        toLocalFrame(targetFrame)->navigationScheduler().scheduleLocationChange(activeDocument, completedURL, false);
         return targetFrame->domWindow();
     }
 

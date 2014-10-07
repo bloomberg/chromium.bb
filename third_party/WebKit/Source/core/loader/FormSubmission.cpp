@@ -267,9 +267,6 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     if (!m_target.isEmpty())
         frameRequest.setFrameName(m_target);
 
-    if (!m_referrer.referrer.isEmpty())
-        frameRequest.resourceRequest().setHTTPReferrer(m_referrer);
-
     if (m_method == FormSubmission::PostMethod) {
         frameRequest.resourceRequest().setHTTPMethod("POST");
         frameRequest.resourceRequest().setHTTPBody(m_formData);
@@ -282,7 +279,6 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     }
 
     frameRequest.resourceRequest().setURL(requestURL());
-    frameRequest.resourceRequest().addHTTPOriginIfNeeded(AtomicString(m_origin));
 }
 
 }

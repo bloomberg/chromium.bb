@@ -8,6 +8,7 @@
 #include "core/frame/RemoteFrameClient.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -26,9 +27,14 @@ RemoteFrame::~RemoteFrame()
     setView(nullptr);
 }
 
-void RemoteFrame::navigate(Document&, const KURL& url, const Referrer& referrer, bool lockBackForwardList)
+void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
-    remoteFrameClient()->navigate(ResourceRequest(url, referrer), lockBackForwardList);
+    // The process where this frame actually lives won't have sufficient information to determine
+    // correct referrer, since it won't have access to the originDocument. Set it now.
+    ResourceRequest request(url);
+    Referrer referrer(SecurityPolicy::generateReferrerHeader(originDocument.referrerPolicy(), url, originDocument.outgoingReferrer()), originDocument.referrerPolicy());
+    request.setHTTPReferrer(referrer);
+    remoteFrameClient()->navigate(request, lockBackForwardList);
 }
 
 void RemoteFrame::detach()

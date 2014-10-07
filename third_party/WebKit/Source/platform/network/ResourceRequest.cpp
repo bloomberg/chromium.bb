@@ -390,10 +390,10 @@ void ResourceRequest::setDefaultTimeoutInterval(double timeoutInterval)
     s_defaultTimeoutInterval = timeoutInterval;
 }
 
-void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cachePolicy)
+void ResourceRequest::initialize(const KURL& url)
 {
     m_url = url;
-    m_cachePolicy = cachePolicy;
+    m_cachePolicy = UseProtocolCachePolicy;
     m_timeoutInterval = s_defaultTimeoutInterval;
     m_httpMethod = "GET";
     m_allowStoredCredentials = true;

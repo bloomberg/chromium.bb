@@ -158,9 +158,9 @@ void LocalFrame::trace(Visitor* visitor)
     Frame::trace(visitor);
 }
 
-void LocalFrame::navigate(Document& originDocument, const KURL& url, const Referrer& referrer, bool lockBackForwardList)
+void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
-    m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), referrer, lockBackForwardList);
+    m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);
 }
 
 void LocalFrame::detach()

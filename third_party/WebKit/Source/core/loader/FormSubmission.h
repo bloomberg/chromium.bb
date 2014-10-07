@@ -103,9 +103,6 @@ public:
     FormData* data() const { return m_formData.get(); }
     Event* event() const { return m_event.get(); }
 
-    void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
-    void setOrigin(const String& origin) { m_origin = origin; }
-
     const String& result() const { return m_result; }
 
 private:
@@ -122,8 +119,6 @@ private:
     RefPtr<FormData> m_formData;
     String m_boundary;
     RefPtrWillBeMember<Event> m_event;
-    Referrer m_referrer;
-    String m_origin;
     String m_result;
 };
 

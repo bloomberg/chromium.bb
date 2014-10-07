@@ -58,7 +58,7 @@ public:
     virtual ~Frame();
     virtual void trace(Visitor*);
 
-    virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) = 0;
+    virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) = 0;
     virtual void detach() = 0;
     void detachChildren();
 

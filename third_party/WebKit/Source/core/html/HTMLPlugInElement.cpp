@@ -437,6 +437,9 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
     if (url.isEmpty() && mimeType.isEmpty())
         return false;
 
+    if (protocolIsJavaScript(url))
+        return false;
+
     // FIXME: None of this code should use renderers!
     RenderEmbeddedObject* renderer = renderEmbeddedObject();
     ASSERT(renderer);

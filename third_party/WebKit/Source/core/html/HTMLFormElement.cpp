@@ -450,9 +450,6 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
         UseCounter::count(document(), UseCounter::MixedContentFormsSubmitted);
     }
 
-    submission->setReferrer(Referrer(document().outgoingReferrer(), document().referrerPolicy()));
-    submission->setOrigin(document().outgoingOrigin());
-
     targetFrame->navigationScheduler().scheduleFormSubmission(submission);
 }
 

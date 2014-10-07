@@ -34,7 +34,6 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -240,7 +239,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 {
     RefPtrWillBeRawPtr<LocalFrame> parentFrame = document().frame();
     if (contentFrame()) {
-        contentFrame()->navigate(document(), url, Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
+        contentFrame()->navigate(document(), url, lockBackForwardList);
         return true;
     }
 
@@ -252,8 +251,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     if (!SubframeLoadingDisabler::canLoadFrame(*this))
         return false;
 
-    String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, document().outgoingReferrer());
-    return parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
+    return parentFrame->loader().client()->createFrame(url, frameName, this);
 }
 
 void HTMLFrameOwnerElement::trace(Visitor* visitor)

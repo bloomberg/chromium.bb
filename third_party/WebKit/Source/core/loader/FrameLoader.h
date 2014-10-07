@@ -191,7 +191,7 @@ private:
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
 
     bool prepareRequestForThisFrame(FrameLoadRequest&);
-    void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer, Document*);
+    static void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer, Document*);
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
     bool isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest&) const;
 
