@@ -19,7 +19,7 @@ source_set("tests") {
   ]
 }
 
-# GYP version: mojo/mojo_public_tests.gypi:mojo_public_system_perftests
+# GYP version: mojo/mojo_base.gyp:mojo_public_system_perftests
 executable("perftests") {
   testonly = true
   output_name = "mojo_public_system_perftests"

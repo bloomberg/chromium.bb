@@ -25,7 +25,7 @@ source_set("system_thunks") {
   # source_set here, this flag change is not needed.
 }
 
-# GYP version: mojo/mojo_public.gypi:mojo_gles2
+# GYP version: mojo/mojo_public_gles2_for_loadable_module.gypi
 source_set("gles2_thunks") {
   visibility = [ "//mojo/public/gles2:for_shared_library" ]
 

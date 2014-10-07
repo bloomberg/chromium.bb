@@ -1089,14 +1089,14 @@
           'target_name': 'web_ui_test_mojo_bindings',
           'type': 'static_library',
           'dependencies': [
-            '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+            '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
           ],
           'sources': [
             'test/data/web_ui_test_mojo_bindings.mojom',
           ],
           'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
-            '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+            '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
           ],
         },
         {
@@ -1120,10 +1120,10 @@
             '../media/media.gyp:media_test_support',
             '../media/media.gyp:shared_memory_support',
             '../mojo/mojo_base.gyp:mojo_common_test_support',
-            '../mojo/mojo_base.gyp:mojo_cpp_bindings',
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
-            '../mojo/mojo_base.gyp:mojo_js_bindings',
             '../mojo/mojo_base.gyp:mojo_system_impl',
+            '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+            '../mojo/public/mojo_public.gyp:mojo_js_bindings',
             '../net/net.gyp:net_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',

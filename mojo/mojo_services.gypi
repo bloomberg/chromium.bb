@@ -10,11 +10,11 @@
       'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
-        'mojo_base.gyp:mojo_common_lib',
-        'mojo_base.gyp:mojo_cpp_bindings',
-        'mojo_base.gyp:mojo_utility',
         'mojo_base.gyp:mojo_application_chromium',
+        'mojo_base.gyp:mojo_common_lib',
         'mojo_clipboard_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_utility',
         '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
@@ -32,10 +32,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -69,13 +69,13 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-        'mojo_gpu_bindings',
         '../gpu/gpu.gyp:command_buffer_common',
+        'mojo_gpu_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_gpu_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -95,16 +95,16 @@
         '../url/url.gyp:url_lib',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_base.gyp:mojo_common_lib',
-        'mojo_base.gyp:mojo_cpp_bindings',
-        'mojo_base.gyp:mojo_utility',
-        'mojo_clipboard_bindings',
         'mojo_cc_support',
+        'mojo_clipboard_bindings',
         'mojo_content_handler_bindings',
         'mojo_gpu_bindings',
         'mojo_navigation_bindings',
         'mojo_network_bindings',
         'mojo_surfaces_bindings',
         'mojo_view_manager_lib',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_utility',
         '<(mojo_system_for_loadable_module)',
       ],
       'include_dirs': [
@@ -184,12 +184,12 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -201,10 +201,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -319,12 +319,12 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -336,18 +336,18 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_gles2_bindings',
         'mojo_input_events_bindings',
         'mojo_surface_id_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_gles2_bindings',
         'mojo_input_events_bindings',
         'mojo_surface_id_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -448,11 +448,11 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_network_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -464,12 +464,12 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_application_bindings',
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_network_bindings',
+        'public/mojo_public.gyp:mojo_application_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -490,10 +490,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -592,18 +592,18 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_application_bindings',
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
         'mojo_surface_id_bindings',
+        'public/mojo_public.gyp:mojo_application_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_application_bindings',
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
         'mojo_surface_id_bindings',
+        'public/mojo_public.gyp:mojo_application_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -620,15 +620,15 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../third_party/khronos/khronos.gyp:khronos_headers',
         'mojo_base.gyp:mojo_application_chromium',
-        'mojo_base.gyp:mojo_application_bindings',
         'mojo_core_window_manager_bindings',
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
+        'mojo_gpu_bindings',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
         'mojo_view_manager_bindings',
         'mojo_view_manager_common',
-        'mojo_gpu_bindings',
+        'public/mojo_public.gyp:mojo_application_bindings',
       ],
       'includes': [
         'mojo_public_gles2_for_loadable_module.gypi',
@@ -702,15 +702,15 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_gles2_bindings',
         'mojo_surface_id_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_surface_id_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -722,10 +722,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -739,10 +739,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -751,9 +751,9 @@
       'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
-        'mojo_base.gyp:mojo_utility',
-        'mojo_base.gyp:mojo_application_standalone',
         'mojo_test_service_bindings',
+        'public/mojo_public.gyp:mojo_application_standalone',
+        'public/mojo_public.gyp:mojo_utility',
         '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
@@ -773,9 +773,9 @@
       'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
-        'mojo_base.gyp:mojo_utility',
-        'mojo_base.gyp:mojo_application_standalone',
         'mojo_test_service_bindings',
+        'public/mojo_public.gyp:mojo_application_standalone',
+        'public/mojo_public.gyp:mojo_utility',
         '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
@@ -798,10 +798,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
   ],

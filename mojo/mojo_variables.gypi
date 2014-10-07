@@ -37,16 +37,16 @@
         'mojo_gles2_for_component': "<(DEPTH)/mojo/mojo_base.gyp:mojo_gles2_impl",
       }, {
         'mojo_system_for_component': "<(DEPTH)/mojo/mojo_base.gyp:mojo_none",
-        'mojo_system_for_loadable_module': "<(DEPTH)/mojo/mojo_base.gyp:mojo_system",
+        'mojo_system_for_loadable_module': "<(DEPTH)/mojo/public/mojo_public.gyp:mojo_system",
         'mojo_gles2_for_component': "<(DEPTH)/mojo/mojo_base.gyp:mojo_none",
       }],
     ],
     'mojo_public_system_unittest_sources': [
-      'public/c/system/tests/core_unittest.cc',
-      'public/c/system/tests/core_unittest_pure_c.c',
-      'public/c/system/tests/macros_unittest.cc',
-      'public/cpp/system/tests/core_unittest.cc',
-      'public/cpp/system/tests/macros_unittest.cc',
+      '<(DEPTH)/mojo/public/c/system/tests/core_unittest.cc',
+      '<(DEPTH)/mojo/public/c/system/tests/core_unittest_pure_c.c',
+      '<(DEPTH)/mojo/public/c/system/tests/macros_unittest.cc',
+      '<(DEPTH)/mojo/public/cpp/system/tests/core_unittest.cc',
+      '<(DEPTH)/mojo/public/cpp/system/tests/macros_unittest.cc',
     ],
   },
 }

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_public_tests.gypi:mojo_test_support
+# GYP version: mojo/public/mojo_public.gyp:mojo_test_support
 shared_library("test_support") {
   output_name = "mojo_test_support"
 

@@ -1030,10 +1030,10 @@
         '../mojo/public/tools/bindings/mojom_bindings_generator.gypi'
        ],
       'export_dependent_settings': [
-        '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -1046,9 +1046,9 @@
         'media',
         'media_mojo_bindings',
         '../base/base.gyp:base',
-        '../mojo/mojo_base.gyp:mojo_application_base',
-        '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../mojo/public/mojo_public.gyp:mojo_application_base',
+        '../mojo/public/mojo_public.gyp:mojo_application_bindings',
         '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [

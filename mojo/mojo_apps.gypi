@@ -54,10 +54,10 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },
     {
@@ -66,12 +66,12 @@
       'type': 'executable',
       'dependencies': [
         '../gin/gin.gyp:gin_test',
+        'mojo_apps_js_bindings',
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_common_test_support',
-        'mojo_base.gyp:mojo_public_test_interfaces',
         'mojo_base.gyp:mojo_run_all_unittests',
-        'mojo_apps_js_bindings',
         'mojo_js_lib',
+        'public/mojo_public.gyp:mojo_public_test_interfaces',
       ],
       'sources': [
         'apps/js/test/handle_unittest.cc',
@@ -84,14 +84,14 @@
       'target_name': 'mojo_js_apps_lib',
       'type': 'static_library',
       'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_base.gyp:mojo_application_chromium',
         'mojo_apps_js_bindings',
-        'mojo_base.gyp:mojo_cpp_bindings',
-        'mojo_base.gyp:mojo_utility',
+        'mojo_base.gyp:mojo_application_chromium',
         'mojo_js_lib',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_utility',
       ],
       'sources': [
         'apps/js/application_delegate_impl.cc',

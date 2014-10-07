@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_public_tests.gypi:mojo_public_test_utils
+# GYP version: mojo/public/mojo_public.gyp:mojo_public_test_utils
 source_set("test_utils") {
   testonly = true
   deps = [

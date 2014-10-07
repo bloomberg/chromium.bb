@@ -7,8 +7,6 @@
 # Mojo land like mojo_shell should be in mojo.gyp.
 {
   'includes': [
-    'mojo_public.gypi',
-    'mojo_public_tests.gypi',
     'mojo_variables.gypi',
   ],
   'targets': [
@@ -23,30 +21,25 @@
         # to be built.
         'mojo_common_lib',
         'mojo_common_unittests',
-        'mojo_cpp_bindings',
-        'mojo_js_bindings',
         'mojo_message_generator',
         'mojo_message_pipe_perftests',
         'mojo_public_application_unittests',
-        'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
         'mojo_public_environment_unittests',
         'mojo_public_system_perftests',
         'mojo_public_system_unittests',
         'mojo_public_utility_unittests',
-        'mojo_system',
         'mojo_system_impl',
         'mojo_system_unittests',
-        'mojo_utility',
       ],
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
-            'mojo_bindings_java',
-            'mojo_public_java',
-            'mojo_system_java',
             'libmojo_system_java',
+            'mojo_system_java',
             'mojo_test_apk',
+            'public/mojo_public.gyp:mojo_bindings_java',
+            'public/mojo_public.gyp:mojo_public_java',
           ],
         }],
       ]
@@ -64,8 +57,8 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         'mojo_system_impl',
-        'mojo_test_support',
         'mojo_test_support_impl',
+        'public/mojo_public.gyp:mojo_test_support',
       ],
       'sources': [
         'common/test/run_all_unittests.cc',
@@ -78,13 +71,135 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         'mojo_system_impl',
-        'mojo_test_support',
         'mojo_test_support_impl',
+        'public/mojo_public.gyp:mojo_test_support',
       ],
       'sources': [
         'common/test/run_all_perftests.cc',
       ],
     },
+    # TODO(vtl): Reorganize the mojo_public_*_unittests.
+    {
+      # GN version: //mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests
+      'target_name': 'mojo_public_bindings_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_run_all_unittests',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_environment_standalone',
+        'public/mojo_public.gyp:mojo_public_bindings_test_utils',
+        'public/mojo_public.gyp:mojo_public_test_interfaces',
+        'public/mojo_public.gyp:mojo_public_test_utils',
+        'public/mojo_public.gyp:mojo_utility',
+      ],
+      'sources': [
+        'public/cpp/bindings/tests/array_unittest.cc',
+        'public/cpp/bindings/tests/bounds_checker_unittest.cc',
+        'public/cpp/bindings/tests/buffer_unittest.cc',
+        'public/cpp/bindings/tests/connector_unittest.cc',
+        'public/cpp/bindings/tests/handle_passing_unittest.cc',
+        'public/cpp/bindings/tests/interface_ptr_unittest.cc',
+        'public/cpp/bindings/tests/request_response_unittest.cc',
+        'public/cpp/bindings/tests/router_unittest.cc',
+        'public/cpp/bindings/tests/sample_service_unittest.cc',
+        'public/cpp/bindings/tests/serialization_warning_unittest.cc',
+        'public/cpp/bindings/tests/string_unittest.cc',
+        'public/cpp/bindings/tests/struct_unittest.cc',
+        'public/cpp/bindings/tests/type_conversion_unittest.cc',
+        'public/cpp/bindings/tests/validation_unittest.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/public/cpp/environment/tests:mojo_public_environment_unittests
+      'target_name': 'mojo_public_environment_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_run_all_unittests',
+        'public/mojo_public.gyp:mojo_environment_standalone',
+        'public/mojo_public.gyp:mojo_public_test_utils',
+        'public/mojo_public.gyp:mojo_utility',
+      ],
+      'include_dirs': [ '..' ],
+      'sources': [
+        'public/cpp/environment/tests/async_waiter_unittest.cc',
+        'public/cpp/environment/tests/logger_unittest.cc',
+        'public/cpp/environment/tests/logging_unittest.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/public/cpp/application/tests:mojo_public_application_unittests
+      'target_name': 'mojo_public_application_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_run_all_unittests',
+        'public/mojo_public.gyp:mojo_application_standalone',
+        'public/mojo_public.gyp:mojo_utility',
+        'public/mojo_public.gyp:mojo_environment_standalone',
+      ],
+      'sources': [
+        'public/cpp/application/tests/service_registry_unittest.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/public/cpp/application/tests:mojo_public_system_unittests
+      'target_name': 'mojo_public_system_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_base.gyp:mojo_run_all_unittests',
+        'public/mojo_public.gyp:mojo_public_test_utils',
+      ],
+      'include_dirs': [ '..' ],
+      'sources': [
+        '<@(mojo_public_system_unittest_sources)',
+      ],
+    },
+    {
+      # GN version: //mojo/public/cpp/application/tests:mojo_public_utility_unittests
+      'target_name': 'mojo_public_utility_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_base.gyp:mojo_run_all_unittests',
+        'public/mojo_public.gyp:mojo_public_test_utils',
+        'public/mojo_public.gyp:mojo_utility',
+      ],
+      'include_dirs' : [ '..' ],
+      'sources': [
+        'public/cpp/utility/tests/mutex_unittest.cc',
+        'public/cpp/utility/tests/run_loop_unittest.cc',
+        'public/cpp/utility/tests/thread_unittest.cc',
+      ],
+      'conditions': [
+        # See crbug.com/342893:
+        ['OS=="win"', {
+          'sources!': [
+            'public/cpp/utility/tests/mutex_unittest.cc',
+            'public/cpp/utility/tests/thread_unittest.cc',
+          ],
+        }],
+      ],
+    },
+    {
+      # GN version: //mojo/public/c/system/tests:perftests
+      'target_name': 'mojo_public_system_perftests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_run_all_perftests',
+        'public/mojo_public.gyp:mojo_public_test_utils',
+        'public/mojo_public.gyp:mojo_utility',
+      ],
+      'sources': [
+        'public/c/system/tests/core_perftest.cc',
+      ],
+    },
+
     {
       # GN version: //mojo/edk/system
       'target_name': 'mojo_system_impl',
@@ -339,12 +454,12 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
-        'mojo_cpp_bindings',
-        'mojo_environment_chromium',
         'mojo_common_lib',
         'mojo_common_test_support',
-        'mojo_public_test_utils',
+        'mojo_environment_chromium',
         'mojo_run_all_unittests',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_public_test_utils',
       ],
       'sources': [
         'common/common_type_converters_unittest.cc',
@@ -412,12 +527,12 @@
        'application/application_runner_chromium.h',
       ],
       'dependencies': [
-        'mojo_application_base',
         'mojo_common_lib',
         'mojo_environment_chromium',
+        'public/mojo_public.gyp:mojo_application_base',
        ],
       'export_dependent_settings': [
-        'mojo_application_base',
+        'public/mojo_public.gyp:mojo_application_base',
        ],
     },
     {
@@ -458,9 +573,9 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'mojo_common_lib',
-        'mojo_cpp_bindings',
         'mojo_environment_chromium',
         'mojo_system_impl',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         'tools/message_generator.cc',
@@ -502,7 +617,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java',
-            'mojo_public_java',
+            'public/mojo_public.gyp:mojo_public_java',
           ],
           'variables': {
             'java_in_dir': '<(DEPTH)/mojo/android/system',
@@ -518,7 +633,7 @@
             'mojo_common_lib',
             'mojo_environment_chromium',
             'mojo_jni_headers',
-	    'mojo_system_impl',
+	          'mojo_system_impl',
           ],
           'sources': [
             'android/system/core_impl.cc',
@@ -533,7 +648,7 @@
             '../base/base.gyp:test_support_base',
             'libmojo_system_java',
             'mojo_jni_headers',
-            'mojo_public_bindings_test_utils',
+            'public/mojo_public.gyp:mojo_public_bindings_test_utils',
           ],
           'defines': [
             'UNIT_TEST'  # As exported from testing/gtest.gyp:gtest.
@@ -550,10 +665,10 @@
           'target_name': 'mojo_test_apk',
           'type': 'none',
           'dependencies': [
-            'mojo_bindings_java',
-            'mojo_public_test_interfaces',
-            'mojo_system_java',
             '../base/base.gyp:base_java_test_support',
+            'public/mojo_public.gyp:mojo_bindings_java',
+            'mojo_system_java',
+            'public/mojo_public.gyp:mojo_public_test_interfaces',
           ],
           'variables': {
             'apk_name': 'MojoTest',
