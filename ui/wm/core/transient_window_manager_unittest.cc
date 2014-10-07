@@ -116,6 +116,47 @@ TEST_F(TransientWindowManagerTest, TransientChildren) {
   EXPECT_TRUE(w2->IsVisible());
   w1->Hide();
   EXPECT_FALSE(w2->IsVisible());
+
+  // And they should stay hidden even after the parent became visible.
+  w1->Show();
+  EXPECT_FALSE(w2->IsVisible());
+
+  // Hidden transient child should stay hidden regardless of
+  // parent's visibility.
+  w2->Hide();
+  EXPECT_FALSE(w2->IsVisible());
+  w1->Hide();
+  EXPECT_FALSE(w2->IsVisible());
+  w1->Show();
+  EXPECT_FALSE(w2->IsVisible());
+
+  // Transient child can be shown even if the transient parent is hidden.
+  w1->Hide();
+  EXPECT_FALSE(w2->IsVisible());
+  w2->Show();
+  EXPECT_TRUE(w2->IsVisible());
+  w1->Show();
+  EXPECT_TRUE(w2->IsVisible());
+
+  // When the parent_controls_visibility is true, TransientWindowManager
+  // controls the children's visibility. It stays invisible even if
+  // Window::Show() is called, and gets shown when the parent becomes visible.
+  wm::TransientWindowManager::Get(w2)->set_parent_controls_visibility(true);
+  w1->Hide();
+  EXPECT_FALSE(w2->IsVisible());
+  w2->Show();
+  EXPECT_FALSE(w2->IsVisible());
+  w1->Show();
+  EXPECT_TRUE(w2->IsVisible());
+
+  // Hiding a transient child that is hidden by the transient parent
+  // is not currently handled and will be shown anyway.
+  w1->Hide();
+  EXPECT_FALSE(w2->IsVisible());
+  w2->Hide();
+  EXPECT_FALSE(w2->IsVisible());
+  w1->Show();
+  EXPECT_TRUE(w2->IsVisible());
 }
 
 // Tests that transient children are stacked as a unit when using stack above.
