@@ -340,7 +340,8 @@ class WindowManager
       public ui::EventHandler {
  public:
   WindowManager()
-      : window_manager_factory_(this),
+      : shell_(nullptr),
+        window_manager_factory_(this),
         launcher_ui_(NULL),
         view_manager_(NULL),
         window_manager_app_(new WindowManagerApp(this, this)),
@@ -408,6 +409,7 @@ class WindowManager
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) override {
+    shell_ = app->shell();
     app_ = app;
     views_init_.reset(new ViewsInit);
     window_manager_app_->Initialize(app);
@@ -558,7 +560,7 @@ class WindowManager
                          kTextfieldHeight);
     view->SetBounds(bounds);
 
-    debug_panel_ = new DebugPanel(this, view);
+    debug_panel_ = new DebugPanel(this, shell_, view);
     return view->id();
   }
 
@@ -572,6 +574,8 @@ class WindowManager
     }
     return windows_.end();
   }
+
+  Shell* shell_;
 
   InterfaceFactoryImplWithContext<WindowManagerConnection, WindowManager>
       window_manager_factory_;

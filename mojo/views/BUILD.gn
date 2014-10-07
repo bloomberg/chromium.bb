@@ -28,6 +28,7 @@ source_set("views") {
     "//ui/views",
     "//ui/wm",
     "//mojo/aura",
+    "//mojo/services/public/cpp/view_manager",
   ]
 }
 

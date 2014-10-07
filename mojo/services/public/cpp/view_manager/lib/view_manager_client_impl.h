@@ -19,10 +19,10 @@
 class SkBitmap;
 
 namespace mojo {
+class Shell;
 class ViewManager;
 class ViewManagerDelegate;
 class ViewManagerTransaction;
-class Shell;
 
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,

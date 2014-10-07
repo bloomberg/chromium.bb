@@ -8,10 +8,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "mojo/application/application_runner_chromium.h"
-#include "mojo/aura/context_factory_mojo.h"
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
-#include "mojo/aura/window_tree_host_mojo_delegate.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -107,10 +105,10 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
 };
 
 class AuraDemo : public mojo::ApplicationDelegate,
-                 public mojo::WindowTreeHostMojoDelegate,
                  public mojo::ViewManagerDelegate {
  public:
-  AuraDemo() : window1_(NULL), window2_(NULL), window21_(NULL) {}
+  AuraDemo()
+      : shell_(nullptr), window1_(NULL), window2_(NULL), window21_(NULL) {}
   virtual ~AuraDemo() {}
 
  private:
@@ -123,7 +121,7 @@ class AuraDemo : public mojo::ApplicationDelegate,
     // TODO(beng): this function could be called multiple times!
     root_ = root;
 
-    window_tree_host_.reset(new mojo::WindowTreeHostMojo(root, this));
+    window_tree_host_.reset(new mojo::WindowTreeHostMojo(shell_, root));
     window_tree_host_->InitHost();
 
     window_tree_client_.reset(
@@ -157,17 +155,11 @@ class AuraDemo : public mojo::ApplicationDelegate,
     base::MessageLoop::current()->Quit();
   }
 
-  // WindowTreeHostMojoDelegate:
-  virtual void CompositorContentsChanged(const SkBitmap& bitmap) override {
-    root_->SetContents(bitmap);
-  }
-
   virtual void Initialize(mojo::ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
-        new mojo::ViewManagerClientFactory(app->shell(), this));
+        new mojo::ViewManagerClientFactory(shell_, this));
     aura::Env::CreateInstance(true);
-    context_factory_.reset(new mojo::ContextFactoryMojo);
-    aura::Env::GetInstance()->set_context_factory(context_factory_.get());
     screen_.reset(mojo::ScreenMojo::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   }
@@ -178,9 +170,9 @@ class AuraDemo : public mojo::ApplicationDelegate,
     return true;
   }
 
-  scoped_ptr<DemoWindowTreeClient> window_tree_client_;
+  mojo::Shell* shell_;
 
-  scoped_ptr<ui::ContextFactory> context_factory_;
+  scoped_ptr<DemoWindowTreeClient> window_tree_client_;
 
   scoped_ptr<mojo::ScreenMojo> screen_;
 

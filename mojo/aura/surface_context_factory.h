@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
-#define MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
+#ifndef MOJO_AURA_SURFACE_CONTEXT_FACTORY_H_
+#define MOJO_AURA_SURFACE_CONTEXT_FACTORY_H_
 
-#include "base/macros.h"
+#include "mojo/aura/surface_binding.h"
 #include "ui/compositor/compositor.h"
 
 namespace mojo {
+class Shell;
+class View;
 
-class ContextFactoryMojo : public ui::ContextFactory {
+class SurfaceContextFactory : public ui::ContextFactory {
  public:
-  ContextFactoryMojo();
-  virtual ~ContextFactoryMojo();
+  SurfaceContextFactory(Shell* shell, View* view);
+  virtual ~SurfaceContextFactory();
 
  private:
   // ContextFactory:
@@ -31,11 +33,11 @@ class ContextFactoryMojo : public ui::ContextFactory {
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
 
-  scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
+  SurfaceBinding surface_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextFactoryMojo);
+  DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
+#endif  // MOJO_AURA_SURFACE_CONTEXT_FACTORY_H_

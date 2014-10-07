@@ -7,10 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace ui {
-class ContextFactory;
-}
-
 namespace mojo {
 
 class ScreenMojo;
@@ -22,7 +18,6 @@ class AuraInit {
   ~AuraInit();
 
  private:
-  scoped_ptr<ui::ContextFactory> context_factory_;
   scoped_ptr<ScreenMojo> screen_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraInit);

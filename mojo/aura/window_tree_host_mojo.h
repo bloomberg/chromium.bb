@@ -19,23 +19,17 @@ class Compositor;
 
 namespace mojo {
 
-class WindowTreeHostMojoDelegate;
+class Shell;
+class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public ViewObserver {
  public:
-  WindowTreeHostMojo(View* view, WindowTreeHostMojoDelegate* delegate);
+  WindowTreeHostMojo(Shell* shell, View* view);
   virtual ~WindowTreeHostMojo();
 
-  // Returns the WindowTreeHostMojo for the specified compositor.
-  static WindowTreeHostMojo* ForCompositor(ui::Compositor* compositor);
-
   const gfx::Rect& bounds() const { return bounds_; }
-
-  // Sets the contents to show in this WindowTreeHost. This forwards to the
-  // delegate.
-  void SetContents(const SkBitmap& contents);
 
   ui::EventDispatchDetails SendEventToProcessor(ui::Event* event) {
     return ui::EventSource::SendEventToProcessor(event);
@@ -69,7 +63,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
   gfx::Rect bounds_;
 
-  WindowTreeHostMojoDelegate* delegate_;
+  scoped_ptr<SurfaceContextFactory> context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
 };

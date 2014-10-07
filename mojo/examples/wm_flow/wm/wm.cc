@@ -91,7 +91,8 @@ class SimpleWM : public mojo::ApplicationDelegate,
                  public mojo::ViewObserver {
  public:
   SimpleWM()
-      : window_manager_app_(new mojo::WindowManagerApp(this, this)),
+      : shell_(nullptr),
+        window_manager_app_(new mojo::WindowManagerApp(this, this)),
         view_manager_(NULL),
         root_(NULL),
         window_container_(NULL),
@@ -101,6 +102,7 @@ class SimpleWM : public mojo::ApplicationDelegate,
  private:
   // Overridden from mojo::ApplicationDelegate:
   virtual void Initialize(mojo::ApplicationImpl* impl) override {
+    shell_ = impl->shell();
     window_manager_app_->Initialize(impl);
   }
   virtual bool ConfigureIncomingConnection(
@@ -175,10 +177,12 @@ class SimpleWM : public mojo::ApplicationDelegate,
 
     aura::client::ActivationClient* client = aura::client::GetActivationClient(
         window_manager_app_->host()->window());
-    new FrameController(frame_view, app_view, client,
-                        window_manager_app_.get());
+    new FrameController(
+        shell_, frame_view, app_view, client, window_manager_app_.get());
     return frame_view;
   }
+
+  mojo::Shell* shell_;
 
   scoped_ptr<mojo::WindowManagerApp> window_manager_app_;
 

@@ -20,12 +20,10 @@ class RadioButton;
 
 namespace mojo {
 
+class Shell;
 class View;
 
 namespace examples {
-
-namespace {
-}
 
 // A panel of controls intended to demonstrate the functionality of the window
 // manager.
@@ -42,7 +40,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
     virtual ~Delegate(){}
   };
 
-  DebugPanel(Delegate* delegate, View* view);
+  DebugPanel(Delegate* delegate, Shell* shell, View* view);
   virtual ~DebugPanel();
 
   Target navigation_target() const;
@@ -57,6 +55,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   void Navigate(const std::string& url);
 
   Delegate* delegate_;
+  Shell* shell_;
   View* view_;
 
   views::Label* navigation_target_label_;

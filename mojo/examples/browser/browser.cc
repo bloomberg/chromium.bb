@@ -155,9 +155,7 @@ class Browser : public ApplicationDelegate,
                 public ViewObserver {
  public:
   Browser()
-      : view_manager_(NULL),
-        root_(NULL),
-        widget_(NULL) {}
+      : shell_(nullptr), view_manager_(NULL), root_(NULL), widget_(NULL) {}
 
   virtual ~Browser() {
     if (root_)
@@ -167,8 +165,9 @@ class Browser : public ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
-        new ViewManagerClientFactory(app->shell(), this));
+        new ViewManagerClientFactory(shell_, this));
     views_init_.reset(new ViewsInit);
     app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
  }
@@ -193,7 +192,7 @@ class Browser : public ApplicationDelegate,
     widget_ = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.native_widget = new NativeWidgetViewManager(widget_, view);
+    params.native_widget = new NativeWidgetViewManager(widget_, shell_, view);
     params.delegate = widget_delegate;
     params.bounds = gfx::Rect(view->bounds().width(), view->bounds().height());
     widget_->Init(params);
@@ -251,6 +250,8 @@ class Browser : public ApplicationDelegate,
     view->RemoveObserver(this);
     root_ = NULL;
   }
+
+  Shell* shell_;
 
   scoped_ptr<ViewsInit> views_init_;
 

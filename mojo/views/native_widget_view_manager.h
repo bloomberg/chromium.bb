@@ -5,7 +5,6 @@
 #ifndef MOJO_VIEWS_NATIVE_WIDGET_VIEW_MANAGER_H_
 #define MOJO_VIEWS_NATIVE_WIDGET_VIEW_MANAGER_H_
 
-#include "mojo/aura/window_tree_host_mojo_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -27,13 +26,14 @@ class FocusController;
 
 namespace mojo {
 
+class Shell;
 class WindowTreeHostMojo;
 
 class NativeWidgetViewManager : public views::NativeWidgetAura,
-                                public WindowTreeHostMojoDelegate,
                                 public ViewObserver {
  public:
   NativeWidgetViewManager(views::internal::NativeWidgetDelegate* delegate,
+                          Shell* shell,
                           View* view);
   virtual ~NativeWidgetViewManager();
 
@@ -41,9 +41,6 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
   // Overridden from internal::NativeWidgetAura:
   virtual void InitNativeWidget(
       const views::Widget::InitParams& in_params) override;
-
-  // WindowTreeHostMojoDelegate:
-  virtual void CompositorContentsChanged(const SkBitmap& bitmap) override;
 
   // ViewObserver:
   virtual void OnViewDestroyed(View* view) override;

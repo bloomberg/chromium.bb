@@ -7,13 +7,14 @@ source_set("aura") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
-    "context_factory_mojo.cc",
-    "context_factory_mojo.h",
     "screen_mojo.cc",
     "screen_mojo.h",
+    "surface_binding.cc",
+    "surface_binding.h",
+    "surface_context_factory.cc",
+    "surface_context_factory.h",
     "window_tree_host_mojo.cc",
     "window_tree_host_mojo.h",
-    "window_tree_host_mojo_delegate.h",
   ]
 
   public_deps = [
@@ -28,7 +29,14 @@ source_set("aura") {
     "//ui/events:events_base",
     "//ui/gl",
     "//mojo/cc",
+    "//mojo/public/cpp/application",
     "//mojo/public/gles2:for_shared_library",
+    "//mojo/public/interfaces/application:application",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/gpu",
     "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/services/public/interfaces/surfaces",
   ]
 }

@@ -51,7 +51,8 @@ class Keyboard : public ApplicationDelegate,
                  public KeyboardDelegate {
  public:
   Keyboard()
-      : keyboard_service_factory_(this),
+      : shell_(nullptr),
+        keyboard_service_factory_(this),
         view_manager_(NULL),
         keyboard_service_(NULL),
         target_(0) {}
@@ -68,8 +69,9 @@ class Keyboard : public ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
-        new ViewManagerClientFactory(app->shell(), this));
+        new ViewManagerClientFactory(shell_, this));
   }
 
   virtual bool ConfigureIncomingConnection(
@@ -88,7 +90,7 @@ class Keyboard : public ApplicationDelegate,
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.native_widget = new NativeWidgetViewManager(widget, view);
+    params.native_widget = new NativeWidgetViewManager(widget, shell_, view);
     params.delegate = widget_delegate;
     params.bounds = gfx::Rect(view->bounds().width(), view->bounds().height());
     widget->Init(params);
@@ -118,6 +120,8 @@ class Keyboard : public ApplicationDelegate,
     keyboard_service_->client()->OnKeyboardEvent(target_, key_code,
                                                  event_flags);
   }
+
+  Shell* shell_;
 
   InterfaceFactoryImplWithContext<KeyboardServiceImpl, Keyboard>
       keyboard_service_factory_;

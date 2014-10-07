@@ -9,6 +9,7 @@
 #include "mojo/aura/aura_init.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -79,7 +80,8 @@ Id GetIdForWindow(aura::Window* window) {
 WindowManagerApp::WindowManagerApp(
     ViewManagerDelegate* view_manager_delegate,
     WindowManagerDelegate* window_manager_delegate)
-    : window_manager_service_factory_(this),
+    : shell_(nullptr),
+      window_manager_service_factory_(this),
       wrapped_view_manager_delegate_(view_manager_delegate),
       wrapped_window_manager_delegate_(window_manager_delegate),
       view_manager_(NULL),
@@ -147,9 +149,10 @@ void WindowManagerApp::InitFocus(wm::FocusRules* rules) {
 // WindowManagerApp, ApplicationDelegate implementation:
 
 void WindowManagerApp::Initialize(ApplicationImpl* impl) {
+  shell_ = impl->shell();
   aura_init_.reset(new AuraInit);
   view_manager_client_factory_.reset(
-      new ViewManagerClientFactory(impl->shell(), this));
+      new ViewManagerClientFactory(shell_, this));
 }
 
 bool WindowManagerApp::ConfigureIncomingConnection(
@@ -171,7 +174,7 @@ void WindowManagerApp::OnEmbed(ViewManager* view_manager,
   view_manager_->SetWindowManagerDelegate(this);
   root_ = root;
 
-  window_tree_host_.reset(new WindowTreeHostMojo(root_, this));
+  window_tree_host_.reset(new WindowTreeHostMojo(shell_, root_));
   window_tree_host_->window()->SetBounds(root->bounds());
   window_tree_host_->window()->Show();
 
@@ -259,14 +262,6 @@ void WindowManagerApp::OnViewBoundsChanged(View* view,
                                            const gfx::Rect& new_bounds) {
   aura::Window* window = GetWindowForViewId(view->id());
   window->SetBounds(new_bounds);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowManagerApp, WindowTreeHostMojoDelegate implementation:
-
-void WindowManagerApp::CompositorContentsChanged(const SkBitmap& bitmap) {
-  // We draw nothing.
-  NOTREACHED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

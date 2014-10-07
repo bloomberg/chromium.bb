@@ -17,6 +17,7 @@ class ActivationClient;
 
 namespace mojo {
 class NativeWidgetViewManager;
+class Shell;
 class View;
 class WindowManagerApp;
 }
@@ -31,7 +32,8 @@ class Widget;
 // to any events targeted at it.
 class FrameController : mojo::ViewObserver {
  public:
-  FrameController(mojo::View* view,
+  FrameController(mojo::Shell* shell,
+                  mojo::View* view,
                   mojo::View** app_view,
                   aura::client::ActivationClient* activation_client,
                   mojo::WindowManagerApp* window_manager_app);

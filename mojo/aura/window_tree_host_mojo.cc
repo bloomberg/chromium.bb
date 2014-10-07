@@ -4,9 +4,9 @@
 
 #include "mojo/aura/window_tree_host_mojo.h"
 
-#include <vector>
-
-#include "mojo/aura/window_tree_host_mojo_delegate.h"
+#include "mojo/aura/surface_context_factory.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
+#include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -14,84 +14,30 @@
 #include "ui/events/event_constants.h"
 
 namespace mojo {
-namespace {
-
-const char kTreeHostsKey[] = "tree_hosts";
-
-typedef std::vector<WindowTreeHostMojo*> Managers;
-
-class TreeHosts : public base::SupportsUserData::Data {
- public:
-  TreeHosts() {}
-  virtual ~TreeHosts() {}
-
-  static TreeHosts* Get() {
-    TreeHosts* hosts = static_cast<TreeHosts*>(
-        aura::Env::GetInstance()->GetUserData(kTreeHostsKey));
-    if (!hosts) {
-      hosts = new TreeHosts;
-      aura::Env::GetInstance()->SetUserData(kTreeHostsKey, hosts);
-    }
-    return hosts;
-  }
-
-  void Add(WindowTreeHostMojo* manager) {
-    managers_.push_back(manager);
-  }
-
-  void Remove(WindowTreeHostMojo* manager) {
-    Managers::iterator i = std::find(managers_.begin(), managers_.end(),
-                                     manager);
-    DCHECK(i != managers_.end());
-    managers_.erase(i);
-  }
-
-  const std::vector<WindowTreeHostMojo*> managers() const {
-    return managers_;
-  }
-
- private:
-  Managers managers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TreeHosts);
-};
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(View* view,
-                                       WindowTreeHostMojoDelegate* delegate)
-    : view_(view),
-      bounds_(view->bounds()),
-      delegate_(delegate) {
+WindowTreeHostMojo::WindowTreeHostMojo(Shell* shell, View* view)
+    : view_(view), bounds_(view->bounds()) {
   view_->AddObserver(this);
-  CreateCompositor(GetAcceleratedWidget());
 
-  TreeHosts::Get()->Add(this);
+  context_factory_.reset(new SurfaceContextFactory(shell, view_));
+  // WindowTreeHost creates the compositor using the ContextFactory from
+  // aura::Env. Install |context_factory_| there so that |context_factory_| is
+  // picked up.
+  ui::ContextFactory* default_context_factory =
+      aura::Env::GetInstance()->context_factory();
+  aura::Env::GetInstance()->set_context_factory(context_factory_.get());
+  CreateCompositor(GetAcceleratedWidget());
+  aura::Env::GetInstance()->set_context_factory(default_context_factory);
+  DCHECK_EQ(context_factory_.get(), compositor()->context_factory());
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {
   view_->RemoveObserver(this);
-  TreeHosts::Get()->Remove(this);
   DestroyCompositor();
   DestroyDispatcher();
-}
-
-// static
-WindowTreeHostMojo* WindowTreeHostMojo::ForCompositor(
-    ui::Compositor* compositor) {
-  const Managers& managers = TreeHosts::Get()->managers();
-  for (size_t i = 0; i < managers.size(); ++i) {
-    if (managers[i]->compositor() == compositor)
-      return managers[i];
-  }
-  return NULL;
-}
-
-void WindowTreeHostMojo::SetContents(const SkBitmap& contents) {
-  delegate_->CompositorContentsChanged(contents);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

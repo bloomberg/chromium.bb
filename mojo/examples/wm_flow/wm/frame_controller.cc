@@ -95,6 +95,7 @@ class FrameController::FrameEventHandler : public ui::EventHandler {
 // FrameController, public:
 
 FrameController::FrameController(
+    mojo::Shell* shell,
     mojo::View* view,
     mojo::View** app_view,
     aura::client::ActivationClient* activation_client,
@@ -117,7 +118,8 @@ FrameController::FrameController(
   frame_view_->AddPreTargetHandler(frame_event_handler_.get());
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.native_widget = new mojo::NativeWidgetViewManager(widget_, view_);
+  params.native_widget =
+      new mojo::NativeWidgetViewManager(widget_, shell, view_);
   params.bounds = gfx::Rect(view_->bounds().size());
   widget_->Init(params);
   widget_->SetContentsView(frame_view_);

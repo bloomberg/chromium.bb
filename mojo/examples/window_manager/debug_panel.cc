@@ -24,23 +24,27 @@ const int kNavigationTargetGroupId = 1;
 
 }  // namespace
 
-DebugPanel::DebugPanel(Delegate* delegate, View* view)
+DebugPanel::DebugPanel(Delegate* delegate, Shell* shell, View* view)
     : delegate_(delegate),
       view_(view),
-      navigation_target_label_(new views::Label(
-          base::ASCIIToUTF16("Navigation target:"))),
-      navigation_target_new_(new views::RadioButton(
-          base::ASCIIToUTF16("New window"), kNavigationTargetGroupId)),
-      navigation_target_source_(new views::RadioButton(
-          base::ASCIIToUTF16("Source window"), kNavigationTargetGroupId)),
-      navigation_target_default_(new views::RadioButton(
-          base::ASCIIToUTF16("Default"), kNavigationTargetGroupId)),
-      colored_square_(new views::BlueButton(
-          this, base::ASCIIToUTF16("Local nav test"))),
-      close_last_(new views::BlueButton(
-          this, base::ASCIIToUTF16("Close last window"))),
-      cross_app_(new views::BlueButton(
-          this, base::ASCIIToUTF16("Cross-app nav test"))) {
+      navigation_target_label_(
+          new views::Label(base::ASCIIToUTF16("Navigation target:"))),
+      navigation_target_new_(
+          new views::RadioButton(base::ASCIIToUTF16("New window"),
+                                 kNavigationTargetGroupId)),
+      navigation_target_source_(
+          new views::RadioButton(base::ASCIIToUTF16("Source window"),
+                                 kNavigationTargetGroupId)),
+      navigation_target_default_(
+          new views::RadioButton(base::ASCIIToUTF16("Default"),
+                                 kNavigationTargetGroupId)),
+      colored_square_(
+          new views::BlueButton(this, base::ASCIIToUTF16("Local nav test"))),
+      close_last_(
+          new views::BlueButton(this, base::ASCIIToUTF16("Close last window"))),
+      cross_app_(
+          new views::BlueButton(this,
+                                base::ASCIIToUTF16("Cross-app nav test"))) {
   navigation_target_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   navigation_target_default_->SetChecked(true);
 
@@ -59,7 +63,7 @@ DebugPanel::DebugPanel(Delegate* delegate, View* view)
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.native_widget = new NativeWidgetViewManager(widget, view);
+  params.native_widget = new NativeWidgetViewManager(widget, shell, view);
   params.delegate = widget_delegate;
   params.bounds = gfx::Rect(view->bounds().size());
   widget->Init(params);
