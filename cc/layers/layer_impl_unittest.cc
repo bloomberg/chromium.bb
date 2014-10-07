@@ -682,7 +682,7 @@ TEST_F(LayerImplScrollTest, SetNewScrollbarParameters) {
   vertical_scrollbar->SetScrollLayerAndClipLayerByIds(
       layer()->id(), tree()->root_layer()->id());
 
-  int expected_vertical_maximum =
+  float expected_vertical_maximum =
       layer()->bounds().height() - tree()->root_layer()->bounds().height();
   EXPECT_EQ(expected_vertical_maximum, vertical_scrollbar->maximum());
   EXPECT_EQ(scroll_offset.y(), vertical_scrollbar->current_pos());
@@ -692,7 +692,7 @@ TEST_F(LayerImplScrollTest, SetNewScrollbarParameters) {
   horizontal_scrollbar->SetScrollLayerAndClipLayerByIds(
       layer()->id(), tree()->root_layer()->id());
 
-  int expected_horizontal_maximum =
+  float expected_horizontal_maximum =
       layer()->bounds().width() - tree()->root_layer()->bounds().width();
   EXPECT_EQ(expected_horizontal_maximum, horizontal_scrollbar->maximum());
   EXPECT_EQ(scroll_offset.x(), horizontal_scrollbar->current_pos());

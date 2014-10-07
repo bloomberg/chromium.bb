@@ -360,7 +360,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
 
   int width = kGraphWidth + kHistogramWidth + 4 * kPadding;
   int height = kFontHeight + kGraphHeight + 4 * kPadding + 2;
-  int left = bounds().width() - width - right;
+  int left = ceil(bounds().width()) - width - right;
   SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   SkPaint paint = CreatePaint();
@@ -492,7 +492,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
   const int kFontHeight = 13;
 
   const int height = 3 * kFontHeight + 4 * kPadding;
-  const int left = bounds().width() - width - right;
+  const int left = ceil(bounds().width()) - width - right;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   const double megabyte = 1024.0 * 1024.0;
@@ -547,7 +547,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
   const int width = kGraphWidth + 2 * kPadding;
   const int height =
       kFontHeight + kGraphHeight + 4 * kPadding + 2 + kFontHeight + kPadding;
-  const int left = bounds().width() - width - right;
+  const int left = ceil(bounds().width()) - width - right;
 
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 

@@ -10,6 +10,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion_tracker.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/rect_f.h"
 
 namespace cc {
@@ -119,7 +120,7 @@ void UIResourceLayerImpl::AppendQuads(
   bool opaque = layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
                 contents_opaque();
 
-  gfx::Rect quad_rect(bounds());
+  gfx::Rect quad_rect(gfx::ToCeiledSize(bounds()));
   gfx::Rect opaque_rect(opaque ? quad_rect : gfx::Rect());
   gfx::Rect visible_quad_rect =
       occlusion_tracker.GetCurrentOcclusionForLayer(

@@ -200,7 +200,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
       case DONE:
         break;
       case BOUNDS:
-        EXPECT_EQ(gfx::Size(20, 20).ToString(), layer->bounds().ToString());
+        EXPECT_EQ(gfx::SizeF(20, 20).ToString(), layer->bounds().ToString());
         break;
       case HIDE_LAYER_AND_SUBTREE:
         EXPECT_TRUE(layer->hide_layer_and_subtree());
@@ -2423,10 +2423,10 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     num_commits_++;
     if (num_commits_ == 1) {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
-      EXPECT_SIZE_EQ(gfx::Size(1, 1), root_layer->bounds());
+      EXPECT_SIZE_EQ(gfx::SizeF(1, 1), root_layer->bounds());
     } else {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
-      EXPECT_SIZE_EQ(gfx::Size(2, 2), root_layer->bounds());
+      EXPECT_SIZE_EQ(gfx::SizeF(2, 2), root_layer->bounds());
       EndTest();
     }
   }
@@ -4070,7 +4070,7 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
 
     switch (impl->active_tree()->source_frame_number()) {
       case 1:
-        EXPECT_EQ(gfx::Size(5, 5).ToString(), child->bounds().ToString());
+        EXPECT_EQ(gfx::SizeF(5, 5).ToString(), child->bounds().ToString());
         break;
     }
   }

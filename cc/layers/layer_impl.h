@@ -364,7 +364,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // them from the other values.
 
   void SetBounds(const gfx::Size& bounds);
-  gfx::Size bounds() const;
+  gfx::SizeF bounds() const;
   void SetBoundsDelta(const gfx::Vector2dF& bounds_delta);
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
@@ -514,9 +514,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void RemoveScrollbar(ScrollbarLayerImplBase* layer);
   bool HasScrollbar(ScrollbarOrientation orientation) const;
   void ScrollbarParametersDidChange();
-  int clip_height() {
-    return scroll_clip_layer_ ? scroll_clip_layer_->bounds().height() : 0;
-  }
 
   gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
 

@@ -26,9 +26,9 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   success &= dict->GetString("LayerType", &layer_type);
   base::ListValue* list;
   success &= dict->GetList("Bounds", &list);
-  int width, height;
-  success &= list->GetInteger(0, &width);
-  success &= list->GetInteger(1, &height);
+  double width, height;
+  success &= list->GetDouble(0, &width);
+  success &= list->GetDouble(1, &height);
   success &= dict->GetList("Position", &list);
   double position_x, position_y;
   success &= list->GetDouble(0, &position_x);

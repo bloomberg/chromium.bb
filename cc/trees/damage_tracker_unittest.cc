@@ -18,6 +18,7 @@
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
 namespace {
@@ -32,7 +33,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
 
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), render_surface_layer_list);
+      root, gfx::ToCeiledSize(root->bounds()), render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
@@ -1137,8 +1138,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
     scoped_ptr<LayerImpl> mask_layer =
             LayerImpl::Create(host_impl_.active_tree(), 3);
     mask_layer->SetPosition(child->position());
-    mask_layer->SetBounds(child->bounds());
-    mask_layer->SetContentBounds(child->bounds());
+    mask_layer->SetBounds(gfx::ToCeiledSize(child->bounds()));
+    mask_layer->SetContentBounds(gfx::ToCeiledSize(child->bounds()));
     child->SetMaskLayer(mask_layer.Pass());
   }
   LayerImpl* mask_layer = child->mask_layer();
@@ -1241,8 +1242,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     scoped_ptr<LayerImpl> replica_mask_layer =
             LayerImpl::Create(host_impl_.active_tree(), 7);
     replica_mask_layer->SetPosition(gfx::PointF());
-    replica_mask_layer->SetBounds(grand_child1->bounds());
-    replica_mask_layer->SetContentBounds(grand_child1->bounds());
+    replica_mask_layer->SetBounds(gfx::ToCeiledSize(grand_child1->bounds()));
+    replica_mask_layer->SetContentBounds(
+        gfx::ToCeiledSize(grand_child1->bounds()));
     grand_child1_replica->SetMaskLayer(replica_mask_layer.Pass());
   }
   LayerImpl* replica_mask_layer = grand_child1_replica->mask_layer();
@@ -1319,8 +1321,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
             LayerImpl::Create(host_impl_.active_tree(), 7);
     replica_mask_layer->SetPosition(gfx::PointF());
     // Note: this is not the transform origin being tested.
-    replica_mask_layer->SetBounds(grand_child1->bounds());
-    replica_mask_layer->SetContentBounds(grand_child1->bounds());
+    replica_mask_layer->SetBounds(gfx::ToCeiledSize(grand_child1->bounds()));
+    replica_mask_layer->SetContentBounds(
+        gfx::ToCeiledSize(grand_child1->bounds()));
     grand_child1_replica->SetMaskLayer(replica_mask_layer.Pass());
   }
   LayerImpl* replica_mask_layer = grand_child1_replica->mask_layer();

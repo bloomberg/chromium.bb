@@ -149,7 +149,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
   gfx::RectF damage_in_layer = damage_in_frame;
   damage_in_layer.Scale(inverse_device_scale_factor_);
   SetUpdateRect(gfx::IntersectRects(
-      gfx::UnionRects(update_rect(), damage_in_layer), gfx::Rect(bounds())));
+      gfx::UnionRects(update_rect(), damage_in_layer), gfx::RectF(bounds())));
 
   SetRenderPasses(&render_pass_list);
   have_render_passes_to_push_ = true;

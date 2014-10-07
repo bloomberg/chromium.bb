@@ -361,7 +361,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
   EXPECT_EQ(first_child_opacity,
             layer_impl_tree_root->children()[0]->opacity());
 
-  gfx::Size second_layer_impl_child_bounds =
+  gfx::SizeF second_layer_impl_child_bounds =
       layer_impl_tree_root->children()[1]->bounds();
   EXPECT_EQ(second_child_bounds.width(),
             second_layer_impl_child_bounds.width());

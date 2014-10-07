@@ -743,7 +743,10 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   bool synced_high_res_tiling = false;
   if (CanHaveTilings()) {
     synced_high_res_tiling = tilings_->SyncTilings(
-        *other->tilings_, bounds(), invalidation_, MinimumContentsScale());
+        *other->tilings_,
+        gfx::ToCeiledSize(bounds()),
+        invalidation_,
+        MinimumContentsScale());
   } else {
     RemoveAllTilings();
   }
@@ -961,7 +964,8 @@ void PictureLayerImpl::DoPostCommitInitialization() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
   if (!tilings_)
-    tilings_.reset(new PictureLayerTilingSet(this, bounds()));
+    tilings_.reset(new PictureLayerTilingSet(this,
+                                             gfx::ToCeiledSize(bounds())));
 
   DCHECK(!twin_layer_);
   twin_layer_ = static_cast<PictureLayerImpl*>(
@@ -1302,7 +1306,7 @@ float PictureLayerImpl::MinimumContentsScale() const {
   // then it will end up having less than one pixel of content in that
   // dimension.  Bump the minimum contents scale up in this case to prevent
   // this from happening.
-  int min_dimension = std::min(bounds().width(), bounds().height());
+  float min_dimension = std::min(bounds().width(), bounds().height());
   if (!min_dimension)
     return setting_min;
 

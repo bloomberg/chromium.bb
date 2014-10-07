@@ -59,7 +59,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -183,7 +183,7 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
                                false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
   // Sanity check the scenario we just created.
@@ -249,7 +249,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -305,7 +305,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -374,7 +374,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
       false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -454,7 +454,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayerWithScaledContents) {
     root->AddChild(test_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -545,7 +545,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
     root->AddChild(clipping_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -670,7 +670,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
     root->AddChild(child.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -793,7 +793,7 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
     root->AddChild(intermediate_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -901,7 +901,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
   LayerImpl* child2 = root->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1049,7 +1049,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
   LayerImpl* child2 = root->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1167,7 +1167,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
     root->AddChild(child.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1242,7 +1242,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
     root->AddChild(child.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1335,7 +1335,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
   LayerImpl* child2 = root->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1425,7 +1425,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1514,7 +1514,7 @@ TEST_F(LayerTreeImplTest,
   root->SetDrawsContent(true);
   root->SetTouchEventHandlerRegion(touch_handler_region);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1592,7 +1592,7 @@ TEST_F(LayerTreeImplTest,
   root->SetDrawsContent(true);
   root->SetTouchEventHandlerRegion(touch_handler_region);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1688,7 +1688,7 @@ TEST_F(LayerTreeImplTest,
     root->AddChild(test_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -1927,7 +1927,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
     root->AddChild(clipping_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -2025,7 +2025,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
     root->AddChild(notouch_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -2087,7 +2087,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
                                false);
   root->SetDrawsContent(true);
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
@@ -2194,7 +2194,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
     root->AddChild(clipping_layer.Pass());
   }
 
-  host_impl().SetViewportSize(root->bounds());
+  host_impl().SetViewportSize(gfx::ToCeiledSize(root->bounds()));
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 

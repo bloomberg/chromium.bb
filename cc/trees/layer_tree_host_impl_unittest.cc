@@ -898,7 +898,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
 
   EXPECT_EQ(scroll_layer, host_impl_->InnerViewportScrollLayer());
   LayerImpl* container_layer = scroll_layer->scroll_clip_layer();
-  EXPECT_EQ(gfx::Size(50, 50), container_layer->bounds());
+  EXPECT_EQ(gfx::SizeF(50, 50), container_layer->bounds());
 
   float min_page_scale = 1.f, max_page_scale = 4.f;
   float page_scale_factor = 1.f;
@@ -929,7 +929,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
     EXPECT_FALSE(did_request_animate_);
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
-    EXPECT_EQ(gfx::Size(50, 50), container_layer->bounds());
+    EXPECT_EQ(gfx::SizeF(50, 50), container_layer->bounds());
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -3817,7 +3817,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_->active_tree(), 1);
     root->SetBounds(gfx::Size(10, 10));
-    root->SetContentBounds(root->bounds());
+    root->SetContentBounds(gfx::ToCeiledSize(root->bounds()));
     root->SetDrawsContent(false);
     host_impl_->active_tree()->SetRootLayer(root.Pass());
   }
@@ -4733,7 +4733,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   root->CreateRenderSurface();
   root->SetPosition(root_rect.origin());
   root->SetBounds(root_rect.size());
-  root->SetContentBounds(root->bounds());
+  root->SetContentBounds(gfx::ToCeiledSize(root->bounds()));
   root->draw_properties().visible_content_rect = root_rect;
   root->SetDrawsContent(false);
   root->render_surface()->SetContentRect(gfx::Rect(root_rect.size()));
@@ -4741,14 +4741,14 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   child->SetPosition(gfx::PointF(child_rect.x(), child_rect.y()));
   child->SetOpacity(0.5f);
   child->SetBounds(gfx::Size(child_rect.width(), child_rect.height()));
-  child->SetContentBounds(child->bounds());
+  child->SetContentBounds(gfx::ToCeiledSize(child->bounds()));
   child->draw_properties().visible_content_rect = child_rect;
   child->SetDrawsContent(false);
   child->SetForceRenderSurface(true);
 
   grand_child->SetPosition(grand_child_rect.origin());
   grand_child->SetBounds(grand_child_rect.size());
-  grand_child->SetContentBounds(grand_child->bounds());
+  grand_child->SetContentBounds(gfx::ToCeiledSize(grand_child->bounds()));
   grand_child->draw_properties().visible_content_rect = grand_child_rect;
   grand_child->SetDrawsContent(true);
 

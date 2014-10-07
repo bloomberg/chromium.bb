@@ -1055,7 +1055,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
                                       InputHandler::Gesture));
 
     // Set max_scroll_offset = (0, 0).
-    scroll_layer->SetBounds(root->bounds());
+    scroll_layer->SetBounds(gfx::ToCeiledSize(root->bounds()));
     EXPECT_EQ(InputHandler::ScrollIgnored,
               scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f),
                                       InputHandler::Gesture));

@@ -14,6 +14,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
 
@@ -209,7 +210,8 @@ gfx::Rect DamageTracker::TrackDamageFromSurfaceMask(
   // expected to be a common case.
   if (target_surface_mask_layer->LayerPropertyChanged() ||
       !target_surface_mask_layer->update_rect().IsEmpty()) {
-    damage_rect = gfx::Rect(target_surface_mask_layer->bounds());
+    damage_rect = gfx::Rect(
+        gfx::ToCeiledSize(target_surface_mask_layer->bounds()));
   }
 
   return damage_rect;
@@ -378,7 +380,8 @@ void DamageTracker::ExtendDamageForRenderSurface(
     const gfx::Transform& replica_draw_transform =
         render_surface->replica_draw_transform();
     gfx::Rect replica_mask_layer_rect = MathUtil::MapEnclosingClippedRect(
-        replica_draw_transform, gfx::Rect(replica_mask_layer->bounds()));
+        replica_draw_transform,
+        gfx::Rect(gfx::ToCeiledSize(replica_mask_layer->bounds())));
     data.Update(replica_mask_layer_rect, mailboxId_);
 
     // In the current implementation, a change in the replica mask damages the

@@ -622,7 +622,7 @@ gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   // (w/s',h/s') - (w/s,h/s) = (w,h)(1/s' - 1/s) = (w,h)(1 - ds)/(s ds)
   //
   gfx::Vector2dF delta_from_pinch =
-      gfx::Rect(scroll_clip_layer_->bounds()).bottom_right() - gfx::PointF();
+      gfx::RectF(scroll_clip_layer_->bounds()).bottom_right() - gfx::PointF();
   delta_from_pinch.Scale((1.f - scale_delta) / (scale * scale_delta));
 
   return delta_from_scroll + delta_from_pinch;
@@ -633,8 +633,8 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   result->SetString("LayerType", LayerTypeAsString());
 
   base::ListValue* list = new base::ListValue;
-  list->AppendInteger(bounds().width());
-  list->AppendInteger(bounds().height());
+  list->AppendDouble(bounds().width());
+  list->AppendDouble(bounds().height());
   result->Set("Bounds", list);
 
   list = new base::ListValue;
@@ -771,8 +771,7 @@ bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }
 
-// TODO(aelias): Convert so that bounds returns SizeF.
-gfx::Size LayerImpl::bounds() const {
+gfx::SizeF LayerImpl::bounds() const {
   return gfx::ToCeiledSize(gfx::SizeF(bounds_.width() + bounds_delta_.x(),
                                       bounds_.height() + bounds_delta_.y()));
 }

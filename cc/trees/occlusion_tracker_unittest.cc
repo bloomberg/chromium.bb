@@ -22,6 +22,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -309,7 +310,9 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
     Types::RecursiveUpdateNumChildren(root);
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list_impl_);
+        root,
+        gfx::ToCeiledSize(root->bounds()),
+        &render_surface_layer_list_impl_);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -323,7 +326,9 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
     render_surface_layer_list_.reset(new RenderSurfaceLayerList);
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root, root->bounds(), render_surface_layer_list_.get());
+        root,
+        gfx::ToCeiledSize(root->bounds()),
+        render_surface_layer_list_.get());
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -413,7 +418,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
                      const gfx::Size& bounds) {
     SetBaseProperties(layer, transform, position, bounds);
 
-    layer->SetContentBounds(layer->bounds());
+    layer->SetContentBounds(gfx::ToCeiledSize(layer->bounds()));
   }
 
   void SetReplica(Layer* owning_layer, scoped_refptr<Layer> layer) {

@@ -75,7 +75,6 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   bool flipped = false;
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
-  gfx::Rect bounds_rect(bounds());
   gfx::Rect content_bounds_rect(content_bounds());
 
   SharedQuadState* shared_quad_state =
