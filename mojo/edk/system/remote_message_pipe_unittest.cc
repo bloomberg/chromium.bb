@@ -74,8 +74,8 @@ class RemoteMessagePipeTest : public testing::Test {
 
   // This bootstraps |ep| on |channels_[channel_index]|. It assumes/requires
   // that this is the bootstrap case, i.e., that the endpoint IDs are both/will
-  // both be |kBootstrapChannelEndpointId|. This returns *without* waiting for
-  // it to finish connecting.
+  // both be |ChannelEndpointId::GetBootstrap()|. This returns *without* waiting
+  // for it to finish connecting.
   void BootstrapChannelEndpointNoWait(unsigned channel_index,
                                       scoped_refptr<ChannelEndpoint> ep) {
     io_thread_.PostTask(
@@ -152,11 +152,12 @@ class RemoteMessagePipeTest : public testing::Test {
     CreateAndInitChannel(channel_index);
     ChannelEndpointId endpoint_id =
         channels_[channel_index]->AttachEndpoint(ep);
-    if (endpoint_id == kInvalidChannelEndpointId)
+    if (!endpoint_id.is_valid())
       return;
 
-    CHECK_EQ(endpoint_id, kBootstrapChannelEndpointId);
-    channels_[channel_index]->RunEndpoint(ep, kBootstrapChannelEndpointId);
+    CHECK_EQ(endpoint_id, ChannelEndpointId::GetBootstrap());
+    channels_[channel_index]->RunEndpoint(ep,
+                                          ChannelEndpointId::GetBootstrap());
   }
 
   void RestoreInitialStateOnIOThread() {

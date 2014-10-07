@@ -73,10 +73,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // Attaches the given endpoint to this channel. This assigns it a local ID,
   // which it returns. The first endpoint attached will always have
-  // |kBootstrapChannelEndpointId| as its local ID. (For bootstrapping, this
-  // occurs on both sides, so one should use |kBootstrapChannelEndpointId| for
-  // the remote ID for the first message pipe across a channel.) Returns
-  // |kInvalidChannelEndpointId| on failure.
+  // |ChannelEndpointId::GetBootstrap()| as its local ID. (For bootstrapping,
+  // this occurs on both sides, so one should use that same bootstrap ID for the
+  // remote ID for the first message pipe across a channel.) Returns an invalid
+  // |ChannelEndpointId| on failure.
   // TODO(vtl): This should be combined with "run", and it should take a
   // |ChannelEndpoint| instead.
   // TODO(vtl): Maybe limit the number of attached message pipes.
@@ -105,8 +105,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   bool IsWriteBufferEmpty();
 
   // This removes the given endpoint from this channel (|local_id| and
-  // |remote_id| are specified as an optimization; the latter should be
-  // |kInvalidChannelEndpointId| if the endpoint is not yet running). Note: If
+  // |remote_id| are specified as an optimization; the latter should be an
+  // invalid |ChannelEndpointId| if the endpoint is not yet running). Note: If
   // this is called, the |Channel| will *not* call
   // |ChannelEndpoint::DetachFromChannel()|.
   void DetachEndpoint(ChannelEndpoint* endpoint,

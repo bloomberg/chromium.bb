@@ -200,8 +200,8 @@ void MessageInTransit::ConstructorHelper(Type type,
   // |total_size| is updated below, from the other values.
   header()->type = type;
   header()->subtype = subtype;
-  header()->source_id = kInvalidChannelEndpointId;
-  header()->destination_id = kInvalidChannelEndpointId;
+  header()->source_id = ChannelEndpointId();
+  header()->destination_id = ChannelEndpointId();
   header()->num_bytes = num_bytes;
   header()->unused = 0;
   // Note: If dispatchers are subsequently attached, then |total_size| will have

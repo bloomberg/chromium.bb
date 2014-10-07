@@ -199,7 +199,7 @@ TEST_F(ChannelTest, CloseBeforeRun) {
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
   ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(kBootstrapChannelEndpointId, local_id);
+  EXPECT_EQ(ChannelEndpointId::GetBootstrap(), local_id);
 
   mp->Close(0);
 
@@ -209,7 +209,7 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
   // called or not. (Then, in the case that it may not be called, this will
   // return false.)
-  channel()->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
+  channel()->RunEndpoint(channel_endpoint, ChannelEndpointId::GetBootstrap());
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,
@@ -237,14 +237,14 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
   ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(kBootstrapChannelEndpointId, local_id);
+  EXPECT_EQ(ChannelEndpointId::GetBootstrap(), local_id);
 
   // TODO(vtl): Currently, we always "expect" a |RunMessagePipeEndpoint()| after
   // an |AttachEndpoint()| (which is actually incorrect). We need to refactor
   // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
   // called or not. (Then, in the case that it may not be called, we should test
   // a |Shutdown()| without the |Run...()|.)
-  channel()->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
+  channel()->RunEndpoint(channel_endpoint, ChannelEndpointId::GetBootstrap());
 
   Waiter waiter;
   waiter.Init();
@@ -288,9 +288,9 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
   ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(kBootstrapChannelEndpointId, local_id);
+  EXPECT_EQ(ChannelEndpointId::GetBootstrap(), local_id);
 
-  channel()->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
+  channel()->RunEndpoint(channel_endpoint, ChannelEndpointId::GetBootstrap());
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,

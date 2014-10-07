@@ -60,15 +60,16 @@ scoped_refptr<system::Channel> MakeChannel(
   // Attach the endpoint.
   system::ChannelEndpointId endpoint_id =
       channel->AttachEndpoint(channel_endpoint);
-  if (endpoint_id == system::kInvalidChannelEndpointId) {
+  if (!endpoint_id.is_valid()) {
     // This means that, e.g., the other endpoint of the message pipe was closed
     // first. But it's not necessarily an error per se.
     DVLOG(2) << "Channel::AttachEndpoint() failed";
     return channel;
   }
-  CHECK_EQ(endpoint_id, system::kBootstrapChannelEndpointId);
+  CHECK_EQ(endpoint_id, system::ChannelEndpointId::GetBootstrap());
 
-  channel->RunEndpoint(channel_endpoint, system::kBootstrapChannelEndpointId);
+  channel->RunEndpoint(channel_endpoint,
+                       system::ChannelEndpointId::GetBootstrap());
 
   return channel;
 }

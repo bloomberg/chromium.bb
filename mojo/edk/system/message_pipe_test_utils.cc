@@ -86,8 +86,8 @@ void ChannelThread::InitChannelOnIOThread(
   // the IO thread message loop, and that message loop runs) before the
   // message pipe endpoint is attached.
   CHECK_EQ(channel_->AttachEndpoint(channel_endpoint),
-           kBootstrapChannelEndpointId);
-  channel_->RunEndpoint(channel_endpoint, kBootstrapChannelEndpointId);
+           ChannelEndpointId::GetBootstrap());
+  channel_->RunEndpoint(channel_endpoint, ChannelEndpointId::GetBootstrap());
 }
 
 void ChannelThread::ShutdownChannelOnIOThread() {
