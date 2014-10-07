@@ -1,18 +1,22 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 'use strict';
 
 /**
+ * TODO(hirono): Remove metadataCache and volumeManager dependencies from the UI
+ * class.
  * @extends {cr.EventTarget}
- * @param {HTMLDivElement} div Div container for breadcrumbs.
+ * @param {HTMLElement} breadcrumbs Container element for breadcrumbs.
+ * @param {HTMLElement} volumeIcon Volume icon.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  */
-function BreadcrumbsController(div, metadataCache, volumeManager) {
-  this.bc_ = div;
+function LocationLine(breadcrumbs, volumeIcon, metadataCache, volumeManager) {
+  this.breadcrumbs_ = breadcrumbs;
+  this.volumeIcon_ = volumeIcon;
   this.metadataCache_ = metadataCache;
   this.volumeManager_ = volumeManager;
   this.entry_ = null;
@@ -25,25 +29,38 @@ function BreadcrumbsController(div, metadataCache, volumeManager) {
   this.showSequence_ = 0;
 
   // Register events and seql the object.
-  div.addEventListener('click', this.onClick_.bind(this));
+  breadcrumbs.addEventListener('click', this.onClick_.bind(this));
 }
 
 /**
  * Extends cr.EventTarget.
  */
-BreadcrumbsController.prototype.__proto__ = cr.EventTarget.prototype;
+LocationLine.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Shows breadcrumbs.
  *
  * @param {Entry} entry Target entry.
  */
-BreadcrumbsController.prototype.show = function(entry) {
+LocationLine.prototype.show = function(entry) {
   if (entry === this.entry_)
     return;
 
   this.entry_ = entry;
   this.showSequence_++;
+
+  // Updates volume icon.
+  var location = this.volumeManager_.getLocationInfo(entry);
+  if (location && location.rootType && location.isRootEntry) {
+    this.volumeIcon_.setAttribute(
+        'volume-type-icon', location.rootType);
+    this.volumeIcon_.removeAttribute('volume-subtype');
+  } else {
+    this.volumeIcon_.setAttribute(
+        'volume-type-icon', location.volumeInfo.volumeType);
+    this.volumeIcon_.setAttribute(
+        'volume-subtype', location.volumeInfo.deviceType);
+  }
 
   var queue = new AsyncUtil.Queue();
   var entries = [];
@@ -116,8 +133,8 @@ BreadcrumbsController.prototype.show = function(entry) {
   queue.run(function(sequence, callback) {
     // Check the sequence number to skip requests that are out of date.
     if (this.showSequence_ === sequence) {
-      this.bc_.hidden = false;
-      this.bc_.textContent = '';
+      this.breadcrumbs_.hidden = false;
+      this.breadcrumbs_.textContent = '';
       if (!error)
         this.updateInternal_(entries);
     }
@@ -130,9 +147,9 @@ BreadcrumbsController.prototype.show = function(entry) {
  * @param {Array.<Entry>} entries Entries on the target path.
  * @private
  */
-BreadcrumbsController.prototype.updateInternal_ = function(entries) {
+LocationLine.prototype.updateInternal_ = function(entries) {
   // Make elements.
-  var doc = this.bc_.ownerDocument;
+  var doc = this.breadcrumbs_.ownerDocument;
   for (var i = 0; i < entries.length; i++) {
     // Add a component.
     var entry = entries[i];
@@ -140,7 +157,7 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
     div.className = 'breadcrumb-path entry-name';
     div.textContent = util.getEntryLabel(this.volumeManager_, entry);
     div.entry = entry;
-    this.bc_.appendChild(div);
+    this.breadcrumbs_.appendChild(div);
 
     // If this is the last component, break here.
     if (i === entries.length - 1) {
@@ -151,7 +168,7 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
     // Add a separator.
     var separator = doc.createElement('div');
     separator.className = 'separator';
-    this.bc_.appendChild(separator);
+    this.breadcrumbs_.appendChild(separator);
   }
 
   this.truncate();
@@ -160,23 +177,23 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
 /**
  * Updates breadcrumbs widths in order to truncate it properly.
  */
-BreadcrumbsController.prototype.truncate = function() {
-  if (!this.bc_.firstChild)
+LocationLine.prototype.truncate = function() {
+  if (!this.breadcrumbs_.firstChild)
     return;
 
   // Assume style.width == clientWidth (items have no margins or paddings).
 
-  for (var item = this.bc_.firstChild; item; item = item.nextSibling) {
+  for (var item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
     item.removeAttribute('style');
     item.removeAttribute('collapsed');
   }
 
-  var containerWidth = this.bc_.clientWidth;
+  var containerWidth = this.breadcrumbs_.clientWidth;
 
   var pathWidth = 0;
   var currentWidth = 0;
   var lastSeparator;
-  for (var item = this.bc_.firstChild; item; item = item.nextSibling) {
+  for (var item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
     if (item.className == 'separator') {
       pathWidth += currentWidth;
       currentWidth = item.clientWidth;
@@ -188,7 +205,7 @@ BreadcrumbsController.prototype.truncate = function() {
   if (pathWidth + currentWidth <= containerWidth)
     return;
   if (!lastSeparator) {
-    this.bc_.lastChild.style.width =
+    this.breadcrumbs_.lastChild.style.width =
         Math.min(currentWidth, containerWidth) + 'px';
     return;
   }
@@ -219,7 +236,7 @@ BreadcrumbsController.prototype.truncate = function() {
   }
 
   pathWidth = 0;
-  for (var item = this.bc_.firstChild; item != lastSeparator;
+  for (var item = this.breadcrumbs_.firstChild; item != lastSeparator;
        item = item.nextSibling) {
     // TODO(serya): Mixing access item.clientWidth and modifying style and
     // attributes could cause multiple layout reflows.
@@ -240,15 +257,15 @@ BreadcrumbsController.prototype.truncate = function() {
 
   currentWidth = Math.min(currentWidth,
                           containerWidth - pathWidth - collapsedWidth);
-  this.bc_.lastChild.style.width =
+  this.breadcrumbs_.lastChild.style.width =
       (currentWidth - lastCrumbSeparatorWidth) + 'px';
 };
 
 /**
  * Hide breadcrumbs div.
  */
-BreadcrumbsController.prototype.hide = function() {
-  this.bc_.hidden = true;
+LocationLine.prototype.hide = function() {
+  this.breadcrumbs_.hidden = true;
 };
 
 /**
@@ -256,7 +273,7 @@ BreadcrumbsController.prototype.hide = function() {
  * @param {Event} event The click event.
  * @private
  */
-BreadcrumbsController.prototype.onClick_ = function(event) {
+LocationLine.prototype.onClick_ = function(event) {
   if (!event.target.classList.contains('breadcrumb-path') ||
       event.target.classList.contains('breadcrumb-last'))
     return;

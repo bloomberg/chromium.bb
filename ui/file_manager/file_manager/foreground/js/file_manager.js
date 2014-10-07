@@ -1322,11 +1322,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.table_, this.metadataCache_, this.volumeManager_, fullPage);
     FileGrid.decorate(this.grid_, this.metadataCache_, this.volumeManager_);
 
-    this.ui_.locationBreadcrumbs = new BreadcrumbsController(
+    this.ui_.locationLine = new LocationLine(
         dom.querySelector('#location-breadcrumbs'),
+        dom.querySelector('#location-volume-icon'),
         this.metadataCache_,
         this.volumeManager_);
-    this.ui_.locationBreadcrumbs.addEventListener(
+    this.ui_.locationLine.addEventListener(
         'pathclick', this.onBreadcrumbClick_.bind(this));
 
     this.previewPanel_ = new PreviewPanel(
@@ -1887,7 +1888,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.directoryTree_)
       this.directoryTree_.relayout();
 
-    this.ui_.locationBreadcrumbs.truncate();
+    this.ui_.locationLine.truncate();
   };
 
   /**
@@ -2760,8 +2761,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
-    this.ui_.updateLocationLine(
-        this.volumeManager_, this.getCurrentDirectoryEntry());
+    this.ui_.locationLine.show(this.getCurrentDirectoryEntry());
 
     var currentEntry = this.getCurrentDirectoryEntry();
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
@@ -3855,14 +3855,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (locationInfo && locationInfo.isDriveBased) {
         var rootEntry = locationInfo.volumeInfo.displayRoot;
         if (rootEntry)
-          this.ui_.updateLocationLine(this.volumeManager_, rootEntry);
+          this.ui_.locationLine.show(rootEntry);
       }
     };
 
     var hideNoResultsDiv = function() {
       noResultsDiv.removeAttribute('show');
-      this.ui_.updateLocationLine(
-          this.volumeManager_, this.getCurrentDirectoryEntry());
+      this.ui_.locationLine.show(this.getCurrentDirectoryEntry());
     };
 
     this.doSearch(searchString,
