@@ -157,7 +157,7 @@ OmniboxProvider::~OmniboxProvider() {}
 
 void OmniboxProvider::Start(const base::string16& query) {
   controller_->Start(AutocompleteInput(
-      query, base::string16::npos, base::string16(), GURL(),
+      query, base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
       ChromeAutocompleteSchemeClassifier(profile_)));
 }

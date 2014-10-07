@@ -126,7 +126,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 
   std::string url("http://www.cnn.com");
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          base::string16(), GURL(url),
+                          std::string(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
                           true, true,
                           ChromeAutocompleteSchemeClassifier(&profile_));
@@ -156,7 +156,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
   std::string url("http://www.cnn.com");
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          base::string16(), GURL(url),
+                          std::string(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
                           true, true,
                           ChromeAutocompleteSchemeClassifier(&profile_));
@@ -203,7 +203,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
 
   std::string url("http://www.cnn.com");
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          base::string16(), GURL(url),
+                          std::string(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
                           true, true,
                           ChromeAutocompleteSchemeClassifier(&profile_));

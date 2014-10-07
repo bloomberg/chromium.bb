@@ -173,7 +173,7 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
     const TestData* current, size_t current_size,
     const TestData* expected, size_t expected_size) {
   AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
-                          base::string16(), GURL(),
+                          std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
@@ -211,7 +211,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   match.relevance = 1;
   match.allowed_to_be_default_match = true;
   AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
-                          base::string16(), GURL(),
+                          std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true, TestSchemeClassifier());
   matches.push_back(match);
@@ -294,7 +294,7 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   AutocompleteResult result;
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
-                          base::string16(), GURL(),
+                          std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
@@ -341,7 +341,7 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   AutocompleteResult result;
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
-                          base::string16(), GURL(),
+                          std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
@@ -394,7 +394,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   AutocompleteResult result;
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
-                          base::string16(), GURL(),
+                          std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
@@ -449,7 +449,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   AutocompleteResult result;
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
-                          base::string16(), GURL(),
+                          std::string(), GURL(),
                           OmniboxEventProto::HOME_PAGE, false, false, false,
                           true,
                           TestSchemeClassifier());
@@ -495,7 +495,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(
-        base::string16(), base::string16::npos, base::string16(), GURL(),
+        base::string16(), base::string16::npos, std::string(), GURL(),
         OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, false,
         false, false, true,
         TestSchemeClassifier());
@@ -534,7 +534,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -551,7 +551,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -583,7 +583,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -609,7 +609,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -631,7 +631,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -648,7 +648,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -669,7 +669,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -695,7 +695,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
@@ -717,7 +717,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());

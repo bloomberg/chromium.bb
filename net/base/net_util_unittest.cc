@@ -41,12 +41,6 @@ struct HeaderCase {
   const char* expected;
 };
 
-struct CompliantHostCase {
-  const char* host;
-  const char* desired_tld;
-  bool expected_output;
-};
-
 // Fills in sockaddr for the given 32-bit address (IPv4.)
 // |bytes| should be an array of length 4.
 void MakeIPv4Address(const uint8* bytes, int port, SockaddrStorage* storage) {
@@ -200,36 +194,39 @@ TEST(NetUtilTest, GetSpecificHeader) {
 }
 
 TEST(NetUtilTest, CompliantHost) {
+  struct CompliantHostCase {
+    const char* host;
+    bool expected_output;
+  };
+
   const CompliantHostCase compliant_host_cases[] = {
-    {"", "", false},
-    {"a", "", true},
-    {"-", "", false},
-    {".", "", false},
-    {"9", "", true},
-    {"9a", "", true},
-    {"a.", "", true},
-    {"a.a", "", true},
-    {"9.a", "", true},
-    {"a.9", "", true},
-    {"_9a", "", false},
-    {"-9a", "", false},
-    {"-9a", "a", true},
-    {"a.a9", "", true},
-    {"a.-a9", "", false},
-    {"a+9a", "", false},
-    {"-a.a9", "", true},
-    {"1-.a-b", "", true},
-    {"1_.a-b", "", false},
-    {"1-2.a_b", "", true},
-    {"a.b.c.d.e", "", true},
-    {"1.2.3.4.5", "", true},
-    {"1.2.3.4.5.", "", true},
+    {"", false},
+    {"a", true},
+    {"-", false},
+    {".", false},
+    {"9", true},
+    {"9a", true},
+    {"a.", true},
+    {"a.a", true},
+    {"9.a", true},
+    {"a.9", true},
+    {"_9a", false},
+    {"-9a", false},
+    {"a.a9", true},
+    {"a.-a9", false},
+    {"a+9a", false},
+    {"-a.a9", true},
+    {"1-.a-b", true},
+    {"1_.a-b", false},
+    {"1-2.a_b", true},
+    {"a.b.c.d.e", true},
+    {"1.2.3.4.5", true},
+    {"1.2.3.4.5.", true},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(compliant_host_cases); ++i) {
     EXPECT_EQ(compliant_host_cases[i].expected_output,
-        IsCanonicalizedHostCompliant(compliant_host_cases[i].host,
-                                     compliant_host_cases[i].desired_tld));
+              IsCanonicalizedHostCompliant(compliant_host_cases[i].host));
   }
 }
 

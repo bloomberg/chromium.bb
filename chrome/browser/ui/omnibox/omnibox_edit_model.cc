@@ -583,8 +583,7 @@ void OmniboxEditModel::StartAutocomplete(
       (delegate_->CurrentPageExists() && view_->IsIndicatingQueryRefinement()) ?
       delegate_->GetURL() : GURL();
   input_ = AutocompleteInput(
-      user_text_, cursor_position, base::string16(), current_url,
-      ClassifyPage(),
+      user_text_, cursor_position, std::string(), current_url, ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
           (has_selected_text && inline_autocomplete_text_.empty()) ||
           (paste_state_ != NONE),
@@ -649,7 +648,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     input_ = AutocompleteInput(
       has_temporary_text_ ?
           UserTextFromDisplayText(view_->GetText())  : input_.text(),
-      input_.cursor_position(), base::ASCIIToUTF16("com"), GURL(),
+      input_.cursor_position(), "com", GURL(),
       input_.current_page_classification(),
       input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
       input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
@@ -949,7 +948,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
     autocomplete_controller()->StartZeroSuggest(AutocompleteInput(
-        permanent_text_, base::string16::npos, base::string16(),
+        permanent_text_, base::string16::npos, std::string(),
         delegate_->GetURL(), ClassifyPage(), false, false, true, true,
         ChromeAutocompleteSchemeClassifier(profile_)));
   }

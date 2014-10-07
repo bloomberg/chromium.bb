@@ -187,8 +187,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
   ResetController();
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
-      input_string.To<base::string16>(), cursor_position, base::string16(),
-      GURL(),
+      input_string.To<base::string16>(), cursor_position, std::string(), GURL(),
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
       prevent_inline_autocomplete, prefer_keyword, true, true,

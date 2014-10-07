@@ -251,8 +251,7 @@ inline bool IsHostCharAlphanumeric(char c) {
   return ((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9'));
 }
 
-bool IsCanonicalizedHostCompliant(const std::string& host,
-                                  const std::string& desired_tld) {
+bool IsCanonicalizedHostCompliant(const std::string& host) {
   if (host.empty())
     return false;
 
@@ -282,8 +281,7 @@ bool IsCanonicalizedHostCompliant(const std::string& host,
     }
   }
 
-  return most_recent_component_started_alphanumeric ||
-      (!desired_tld.empty() && IsHostCharAlphanumeric(desired_tld[0]));
+  return most_recent_component_started_alphanumeric;
 }
 
 base::string16 StripWWW(const base::string16& text) {

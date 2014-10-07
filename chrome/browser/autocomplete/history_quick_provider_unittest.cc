@@ -287,8 +287,8 @@ void HistoryQuickProviderTest::RunTestWithCursor(
     base::string16 expected_autocompletion) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
   base::MessageLoop::current()->RunUntilIdle();
-  AutocompleteInput input(text, cursor_position, base::string16(),
-                          GURL(), metrics::OmniboxEventProto::INVALID_SPEC,
+  AutocompleteInput input(text, cursor_position, std::string(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true,
                           ChromeAutocompleteSchemeClassifier(profile_.get()));
   provider_->Start(input, false);

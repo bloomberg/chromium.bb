@@ -38,7 +38,7 @@ class BuiltinProviderTest : public testing::Test {
       SCOPED_TRACE(base::StringPrintf(
           "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
       const AutocompleteInput input(cases[i].input, base::string16::npos,
-                                    base::string16(), GURL(),
+                                    std::string(), GURL(),
                                     metrics::OmniboxEventProto::INVALID_SPEC,
                                     true, false, true, true,
                                     ChromeAutocompleteSchemeClassifier(NULL));

@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
   // it.
   {
     autocomplete_controller->Start(AutocompleteInput(
-        ASCIIToUTF16("keywor"), base::string16::npos, base::string16(), GURL(),
+        ASCIIToUTF16("keywor"), base::string16::npos, std::string(), GURL(),
         OmniboxEventProto::NTP, true, false, true, true,
         ChromeAutocompleteSchemeClassifier(profile)));
     WaitForAutocompleteDone(autocomplete_controller);
@@ -64,8 +64,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
   {
     autocomplete_controller->Start(AutocompleteInput(
         ASCIIToUTF16("keyword suggestio"), base::string16::npos,
-        base::string16(), GURL(), OmniboxEventProto::NTP, true, false, true,
-        true, ChromeAutocompleteSchemeClassifier(profile)));
+        std::string(), GURL(), OmniboxEventProto::NTP, true, false, true, true,
+        ChromeAutocompleteSchemeClassifier(profile)));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   omnibox_view->OnAfterPossibleChange();
 
   autocomplete_controller->Start(AutocompleteInput(
-      ASCIIToUTF16("keyword command"), base::string16::npos, base::string16(),
+      ASCIIToUTF16("keyword command"), base::string16::npos, std::string(),
       GURL(), OmniboxEventProto::NTP, true, false, true, true,
       ChromeAutocompleteSchemeClassifier(profile)));
   omnibox_view->model()->AcceptInput(CURRENT_TAB, false);
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   EXPECT_TRUE(autocomplete_controller->done());
 
   autocomplete_controller->Start(AutocompleteInput(
-      ASCIIToUTF16("keyword newtab"), base::string16::npos, base::string16(),
+      ASCIIToUTF16("keyword newtab"), base::string16::npos, std::string(),
       GURL(), OmniboxEventProto::NTP, true, false, true, true,
       ChromeAutocompleteSchemeClassifier(profile)));
   omnibox_view->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
@@ -227,8 +227,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   {
     autocomplete_controller->Start(AutocompleteInput(
         ASCIIToUTF16("keyword suggestio"), base::string16::npos,
-        base::string16(), GURL(), OmniboxEventProto::NTP, true, false, true,
-        true, ChromeAutocompleteSchemeClassifier(profile)));
+        std::string(), GURL(), OmniboxEventProto::NTP, true, false, true, true,
+        ChromeAutocompleteSchemeClassifier(profile)));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -249,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
     ResultCatcher catcher;
     autocomplete_controller->Start(AutocompleteInput(
         ASCIIToUTF16("keyword command incognito"), base::string16::npos,
-        base::string16(), GURL(), OmniboxEventProto::NTP, true, false, true,
-        true, ChromeAutocompleteSchemeClassifier(profile)));
+        std::string(), GURL(), OmniboxEventProto::NTP, true, false, true, true,
+        ChromeAutocompleteSchemeClassifier(profile)));
     location_bar->AcceptInput();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }

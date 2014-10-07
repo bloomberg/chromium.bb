@@ -46,9 +46,9 @@ void AutocompleteClassifier::Classify(
   DCHECK(!inside_classify_);
   base::AutoReset<bool> reset(&inside_classify_, true);
   controller_->Start(AutocompleteInput(
-      text, base::string16::npos, base::string16(), GURL(),
-      page_classification, true, prefer_keyword,
-      allow_exact_keyword_match, false, *scheme_classifier_));
+      text, base::string16::npos, std::string(), GURL(), page_classification,
+      true, prefer_keyword, allow_exact_keyword_match, false,
+      *scheme_classifier_));
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
   if (result.empty()) {

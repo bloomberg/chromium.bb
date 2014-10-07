@@ -94,7 +94,7 @@ void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
   for (int i = 0; i < num_cases; ++i) {
     SCOPED_TRACE(keyword_cases[i].input);
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
                             false, true, true, TestingSchemeClassifier());
     kw_provider_->Start(input, false);
@@ -336,7 +336,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     AutocompleteInput input(
-        ASCIIToUTF16(cases[i].text), cases[i].cursor_position, base::string16(),
+        ASCIIToUTF16(cases[i].text), cases[i].cursor_position, std::string(),
         GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,
         cases[i].allow_exact_keyword_match, true, TestingSchemeClassifier());
     const TemplateURL* url =

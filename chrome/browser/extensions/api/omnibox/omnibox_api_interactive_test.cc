@@ -45,8 +45,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // location_bar or location_bar->().
   autocomplete_controller->Start(AutocompleteInput(
       base::ASCIIToUTF16("keyword command"), base::string16::npos,
-      base::string16(), GURL(), metrics::OmniboxEventProto::NTP, true, false,
-      true, true, ChromeAutocompleteSchemeClassifier(profile)));
+      std::string(), GURL(), metrics::OmniboxEventProto::NTP, true, false, true,
+      true, ChromeAutocompleteSchemeClassifier(profile)));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());

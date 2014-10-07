@@ -65,7 +65,7 @@ class AutocompleteInput {
   // input this is; see comments there.
   AutocompleteInput(const base::string16& text,
                     size_t cursor_position,
-                    const base::string16& desired_tld,
+                    const std::string& desired_tld,
                     const GURL& current_url,
                     metrics::OmniboxEventProto::PageClassification
                         current_page_classification,
@@ -94,7 +94,7 @@ class AutocompleteInput {
   // not guaranteed to be valid, especially if the parsed type is, e.g., QUERY.
   static metrics::OmniboxInputType::Type Parse(
       const base::string16& text,
-      const base::string16& desired_tld,
+      const std::string& desired_tld,
       const AutocompleteSchemeClassifier& scheme_classifier,
       url::Parsed* parts,
       base::string16* scheme,

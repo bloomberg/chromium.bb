@@ -263,7 +263,7 @@ TEST_F(BookmarkProviderTest, Positions) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
-                            base::string16::npos, base::string16(), GURL(),
+                            base::string16::npos, std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true,
                             ChromeAutocompleteSchemeClassifier(profile_.get()));
@@ -344,7 +344,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
-                            base::string16::npos, base::string16(), GURL(),
+                            base::string16::npos, std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true,
                             ChromeAutocompleteSchemeClassifier(profile_.get()));
@@ -401,7 +401,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
     const std::string description = "for query=" + query_data[i].query +
         " and url=" + query_data[i].url;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
-                            base::string16::npos, base::string16(), GURL(),
+                            base::string16::npos, std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true,
                             ChromeAutocompleteSchemeClassifier(profile_.get()));
@@ -444,7 +444,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     std::string description = "for query=" + query_data[i].query;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
-                            base::string16::npos, base::string16(), GURL(),
+                            base::string16::npos, std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true,
                             ChromeAutocompleteSchemeClassifier(profile_.get()));

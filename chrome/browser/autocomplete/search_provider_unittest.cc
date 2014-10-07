@@ -338,7 +338,7 @@ void SearchProviderTest::RunTest(TestData* cases,
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     AutocompleteInput input(cases[i].input, base::string16::npos,
-                            base::string16(), GURL(),
+                            std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             prefer_keyword, true, true,
                             ChromeAutocompleteSchemeClassifier(&profile_));
@@ -383,7 +383,7 @@ void SearchProviderTest::QueryForInput(const base::string16& text,
                                        bool prevent_inline_autocomplete,
                                        bool prefer_keyword) {
   // Start a query.
-  AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
+  AutocompleteInput input(text, base::string16::npos, std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
                           true, ChromeAutocompleteSchemeClassifier(&profile_));
@@ -1001,7 +1001,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
       TemplateURLServiceFactory::GetForProfile(&profile_),
       NULL, AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
-      ASCIIToUTF16("k t"), base::string16::npos, base::string16(), GURL(),
+      ASCIIToUTF16("k t"), base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
       ChromeAutocompleteSchemeClassifier(&profile_)));
   const AutocompleteResult& result = controller.result();

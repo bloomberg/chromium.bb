@@ -390,7 +390,7 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
   AutocompleteResult result;
   result.AppendMatches(matches);
   controller_->input_ = AutocompleteInput(
-      input, base::string16::npos, base::string16(), GURL(),
+      input, base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       false, true, true, true, ChromeAutocompleteSchemeClassifier(&profile_));
   controller_->UpdateAssociatedKeywords(&result);
@@ -434,7 +434,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
 void AutocompleteProviderTest::RunQuery(const base::string16 query) {
   result_.Reset();
   controller_->Start(AutocompleteInput(
-      query, base::string16::npos, base::string16(), GURL(),
+      query, base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
       ChromeAutocompleteSchemeClassifier(&profile_)));
 
@@ -453,8 +453,8 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   // be from SearchProvider.  (It provides all verbatim search matches,
   // keyword or not.)
   controller_->Start(AutocompleteInput(
-      base::ASCIIToUTF16("k test"), base::string16::npos, base::string16(),
-      GURL(), metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+      base::ASCIIToUTF16("k test"), base::string16::npos, std::string(), GURL(),
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false,
       allow_exact_keyword_match, false,
       ChromeAutocompleteSchemeClassifier(&profile_)));
   EXPECT_TRUE(controller_->done());

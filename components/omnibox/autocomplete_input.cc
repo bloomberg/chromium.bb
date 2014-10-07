@@ -44,7 +44,7 @@ AutocompleteInput::AutocompleteInput()
 AutocompleteInput::AutocompleteInput(
     const base::string16& text,
     size_t cursor_position,
-    const base::string16& desired_tld,
+    const std::string& desired_tld,
     const GURL& current_url,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     bool prevent_inline_autocomplete,
@@ -131,7 +131,7 @@ std::string AutocompleteInput::TypeToString(
 // static
 metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     const base::string16& text,
-    const base::string16& desired_tld,
+    const std::string& desired_tld,
     const AutocompleteSchemeClassifier& scheme_classifier,
     url::Parsed* parts,
     base::string16* scheme,
@@ -164,8 +164,8 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   GURL placeholder_canonicalized_url;
   if (!canonicalized_url)
     canonicalized_url = &placeholder_canonicalized_url;
-  *canonicalized_url = url_fixer::FixupURL(base::UTF16ToUTF8(text),
-                                           base::UTF16ToUTF8(desired_tld));
+  *canonicalized_url =
+      url_fixer::FixupURL(base::UTF16ToUTF8(text), desired_tld);
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
 
@@ -249,82 +249,56 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   // only trigger for input that begins with a colon, which GURL will parse as a
   // valid, non-standard URL; for standard URLs, an empty host would have
   // resulted in an invalid |canonicalized_url| above.)
-  if (!parts->host.is_nonempty())
+  if (!canonicalized_url->has_host())
     return metrics::OmniboxInputType::QUERY;
 
-  // Sanity-check: GURL should have failed to canonicalize this URL if it had an
-  // invalid port.
-  DCHECK_NE(url::PORT_INVALID, url::ParsePort(text.c_str(), parts->port));
+  // Determine the host family.  We get this information by (re-)canonicalizing
+  // the already-canonicalized host rather than using the user's original input,
+  // in case fixup affected the result here (e.g. an input that looks like an
+  // IPv4 address but with a non-empty desired TLD would return IPV4 before
+  // fixup and NEUTRAL afterwards, and we want to treat it as NEUTRAL).
+  url::CanonHostInfo host_info;
+  net::CanonicalizeHost(canonicalized_url->host(), &host_info);
 
-  // Likewise, the RCDS can reject certain obviously-invalid hosts.  (We also
-  // use the registry length later below.)
-  const base::string16 host(text.substr(parts->host.begin, parts->host.len));
+  // Check if the canonicalized host has a known TLD, which we'll want to know
+  // below.
   const size_t registry_length =
       net::registry_controlled_domains::GetRegistryLength(
-          base::UTF16ToUTF8(host),
+          canonicalized_url->host(),
           net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  if (registry_length == std::string::npos) {
-    // Try to append the desired_tld.
-    if (!desired_tld.empty()) {
-      base::string16 host_with_tld(host);
-      if (host[host.length() - 1] != '.')
-        host_with_tld += '.';
-      host_with_tld += desired_tld;
-      const size_t tld_length =
-          net::registry_controlled_domains::GetRegistryLength(
-              base::UTF16ToUTF8(host_with_tld),
-              net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-      if (tld_length != std::string::npos) {
-        // Something like "99999999999" that looks like a bad IP
-        // address, but becomes valid on attaching a TLD.
-        return metrics::OmniboxInputType::URL;
-      }
-    }
-    // Could be a broken IP address, etc.
-    CHECK(false);
-    return metrics::OmniboxInputType::QUERY;
-  }
+  DCHECK_NE(std::string::npos, registry_length);
+  const bool has_known_tld = registry_length != 0;
 
   // See if the hostname is valid.  While IE and GURL allow hostnames to contain
   // many other characters (perhaps for weird intranet machines), it's extremely
   // unlikely that a user would be trying to type those in for anything other
   // than a search query.
-  url::CanonHostInfo host_info;
-  const std::string canonicalized_host(net::CanonicalizeHost(
-      base::UTF16ToUTF8(host), &host_info));
+  const base::string16 original_host(
+      text.substr(parts->host.begin, parts->host.len));
   if ((host_info.family == url::CanonHostInfo::NEUTRAL) &&
-      !net::IsCanonicalizedHostCompliant(canonicalized_host,
-                                         base::UTF16ToUTF8(desired_tld))) {
+      !net::IsCanonicalizedHostCompliant(canonicalized_url->host())) {
     // Invalid hostname.  There are several possible cases:
-    // * Our checker is too strict and the user pasted in a real-world URL
-    //   that's "invalid" but resolves.  To catch these, we return UNKNOWN when
-    //   the user explicitly typed a scheme, so we'll still search by default
-    //   but we'll show the accidental search infobar if necessary.
     // * The user is typing a multi-word query.  If we see a space anywhere in
-    //   the hostname we assume this is a search and return QUERY.
-    // * Our checker is too strict and the user is typing a real-world hostname
-    //   that's "invalid" but resolves.  We return UNKNOWN if the TLD is known.
-    //   Note that we explicitly excluded hosts with spaces above so that
-    //   "toys at amazon.com" will be treated as a search.
+    //   the input host we assume this is a search and return QUERY.  (We check
+    //   the input string instead of canonicalized_url->host() in case fixup
+    //   escaped the space.)
     // * The user is typing some garbage string.  Return QUERY.
+    // * Our checker is too strict and the user is typing a real-world URL
+    //   that's "invalid" but resolves.  To catch these, we return UNKNOWN when
+    //   the user explicitly typed a scheme or when the hostname has a known
+    //   TLD, so we'll still search by default but we'll show the accidental
+    //   search infobar if necessary.
     //
-    // Thus we fall down in the following cases:
-    // * Trying to navigate to a hostname with spaces
-    // * Trying to navigate to a hostname with invalid characters and an unknown
-    //   TLD
-    // These are rare, though probably possible in intranets.
+    // This means we would block the following kinds of navigation attempts:
+    // * Navigations to a hostname with spaces
+    // * Navigations to a hostname with invalid characters and an unknown TLD
+    // These might be possible in intranets, but we're not going to support them
+    // without concrete evidence that doing so is necessary.
     return (parts->scheme.is_nonempty() ||
-           ((registry_length != 0) &&
-            (host.find(' ') == base::string16::npos))) ?
+        (has_known_tld && (original_host.find(' ') == base::string16::npos))) ?
         metrics::OmniboxInputType::UNKNOWN : metrics::OmniboxInputType::QUERY;
   }
-
-  // If there's no known TLD on the input and the user wishes to add a
-  // desired_tld, the fixup code will oblige; thus this is a URL.
-  if ((registry_length == 0) && !desired_tld.empty())
-    return metrics::OmniboxInputType::URL;
 
   // For hostnames that look like IP addresses, distinguish between IPv6
   // addresses, which are basically guaranteed to be navigations, and IPv4
@@ -338,14 +312,28 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     // IPs" and are never navigable as destination addresses.
     if (host_info.address[0] == 0)
       return metrics::OmniboxInputType::QUERY;
-    // This is theoretically a navigable IP.  We have three cases:
+
+    // This is theoretically a navigable IP.  We have four cases.  The first
+    // three are:
     // * If the user typed four distinct components, this is an IP for sure.
     // * If the user typed two or three components, this is almost certainly a
     //   query, especially for two components (as in "13.5/7.25"), but we'll
     //   allow navigation for an explicit scheme or trailing slash below.
     // * If the user typed one component, this is likely a query, but could be
     //   a non-dotted-quad version of an IP address.
-    if (host_info.num_ipv4_components == 4)
+    // Unfortunately, since we called CanonicalizeHost() on the
+    // already-canonicalized host, all of these cases will have been changed to
+    // have four components (e.g. 13.2 -> 13.0.0.2), so we have to call
+    // CanonicalizeHost() again, this time on the original input, so that we can
+    // get the correct number of IP components.
+    //
+    // The fourth case is that the user typed something ambiguous like ".1.2"
+    // that fixup converted to an IP address ("1.0.0.2").  In this case the call
+    // to CanonicalizeHost() will return NEUTRAL here.  Since it's not clear
+    // what the user intended, we fall back to our other heuristics.
+    net::CanonicalizeHost(base::UTF16ToUTF8(original_host), &host_info);
+    if ((host_info.family == url::CanonHostInfo::IPV4) &&
+        (host_info.num_ipv4_components == 4))
       return metrics::OmniboxInputType::URL;
   }
 
@@ -376,16 +364,17 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     return metrics::OmniboxInputType::URL;
 
   // If we reach here with a username, our input looks something like
-  // "user@host".  Because there is no scheme explicitly specified, we think
-  // this is more likely an email address than an HTTP auth attempt.  Hence, we
-  // search by default and let users correct us on a case-by-case basis.
-  if (parts->username.is_nonempty())
+  // "user@host".  Unless there is a desired TLD, we think this is more likely
+  // an email address than an HTTP auth attempt, so we search by default.  (When
+  // there _is_ a desired TLD, the user hit ctrl-enter, and we assume that
+  // implies an attempted navigation.)
+  if (canonicalized_url->has_username() && desired_tld.empty())
     return metrics::OmniboxInputType::UNKNOWN;
 
   // If the host has a known TLD or a port, it's probably a URL.  Note that we
   // special-case "localhost" as a known hostname.
-  if ((registry_length != 0) || (host == base::ASCIIToUTF16("localhost")) ||
-      parts->port.is_nonempty())
+  if (has_known_tld || (canonicalized_url->host() == "localhost") ||
+      canonicalized_url->has_port())
     return metrics::OmniboxInputType::URL;
 
   // If the input looks like a word followed by a pound sign and possibly more
@@ -395,8 +384,8 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   // intranet host, and by placing this check late enough that other tests
   // (e.g., for a non-empty TLD or a non-empty scheme) will have already
   // returned URL.
-  if (!parts->path.is_valid() && !parts->query.is_valid() &&
-      parts->ref.is_valid())
+  if (!parts->path.is_valid() && !canonicalized_url->has_query() &&
+      canonicalized_url->has_ref())
     return metrics::OmniboxInputType::QUERY;
 
   // No scheme, username, port, and no known TLD on the host.
@@ -424,7 +413,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     url::Component* host) {
   url::Parsed parts;
   base::string16 scheme_str;
-  Parse(text, base::string16(), scheme_classifier, &parts, &scheme_str, NULL);
+  Parse(text, std::string(), scheme_classifier, &parts, &scheme_str, NULL);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -437,7 +426,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     // Obtain the URL prefixed by view-source and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
     url::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, base::string16(), scheme_classifier,
+    AutocompleteInput::Parse(real_url, std::string(), scheme_classifier,
                              &real_parts, NULL, NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
@@ -468,9 +457,9 @@ base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
   if (!net::CanStripTrailingSlash(url))
     return formatted_url;
   const base::string16 url_with_path(formatted_url + base::char16('/'));
-  return (AutocompleteInput::Parse(formatted_url, base::string16(),
+  return (AutocompleteInput::Parse(formatted_url, std::string(),
                                    scheme_classifier, NULL, NULL, NULL) ==
-          AutocompleteInput::Parse(url_with_path, base::string16(),
+          AutocompleteInput::Parse(url_with_path, std::string(),
                                    scheme_classifier, NULL, NULL, NULL)) ?
       formatted_url : url_with_path;
 }

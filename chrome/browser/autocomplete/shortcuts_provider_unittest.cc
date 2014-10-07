@@ -357,7 +357,7 @@ void ShortcutsProviderTest::RunTest(
     std::string expected_top_result,
     base::string16 top_result_inline_autocompletion) {
   base::MessageLoop::current()->RunUntilIdle();
-  AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
+  AutocompleteInput input(text, base::string16::npos, std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true,
                           ChromeAutocompleteSchemeClassifier(&profile_));

@@ -240,7 +240,7 @@ void UrlSearchProvider::Start(const base::string16& query) {
       CreateSchemeClassifier(browser_context_));
   input_ = AutocompleteInput(query,
                              base::string16::npos /* cursor_position */,
-                             base::string16() /* desired_tld */,
+                             std::string() /* desired_tld */,
                              GURL() /* current_url */,
                              metrics::OmniboxEventProto::INVALID_SPEC,
                              false /* prevent_inline_autocomplete */,

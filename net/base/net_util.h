@@ -215,15 +215,10 @@ NET_EXPORT std::string CanonicalizeHost(const std::string& host,
 //   * Each component ends with an alphanumeric character or '-'
 //   * The last component begins with an alphanumeric character
 //   * Optional trailing dot after last component (means "treat as FQDN")
-// If |desired_tld| is non-NULL, the host will only be considered invalid if
-// appending it as a trailing component still results in an invalid host.  This
-// helps us avoid marking as "invalid" user attempts to open, say, "www.-9.com"
-// by typing -, 9, <ctrl>+<enter>.
 //
 // NOTE: You should only pass in hosts that have been returned from
 // CanonicalizeHost(), or you may not get accurate results.
-NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host,
-                                             const std::string& desired_tld);
+NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host);
 
 // Call these functions to get the html snippet for a directory listing.
 // The return values of both functions are in UTF-8.

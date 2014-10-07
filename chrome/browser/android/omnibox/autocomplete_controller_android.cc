@@ -91,7 +91,7 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
   base::string16 fake_request_source(base::ASCIIToUTF16(
       "http://www.foobarbazblah.com"));
   controller_->StartZeroSuggest(AutocompleteInput(
-      fake_request_source, base::string16::npos, base::string16(),
+      fake_request_source, base::string16::npos, std::string(),
       GURL(fake_request_source), OmniboxEventProto::INVALID_SPEC, false, false,
       true, true, ChromeAutocompleteSchemeClassifier(profile)));
   // Delete ourselves after 10s. This is enough time to cache results or
@@ -136,12 +136,12 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   if (!autocomplete_controller_)
     return;
 
-  base::string16 desired_tld;
+  std::string desired_tld;
   GURL current_url;
   if (j_current_url != NULL)
     current_url = GURL(ConvertJavaStringToUTF16(env, j_current_url));
   if (j_desired_tld != NULL)
-    desired_tld = ConvertJavaStringToUTF16(env, j_desired_tld);
+    desired_tld = base::android::ConvertJavaStringToUTF8(env, j_desired_tld);
   base::string16 text = ConvertJavaStringToUTF16(env, j_text);
   OmniboxEventProto::PageClassification page_classification =
       OmniboxEventProto::OTHER;
@@ -179,7 +179,7 @@ void AutocompleteControllerAndroid::StartZeroSuggest(
     omnibox_text = url;
 
   input_ = AutocompleteInput(
-      omnibox_text, base::string16::npos, base::string16(), current_url,
+      omnibox_text, base::string16::npos, std::string(), current_url,
       ClassifyPage(current_url, is_query_in_omnibox, focused_from_fakebox),
       false, false, true, true, ChromeAutocompleteSchemeClassifier(profile_));
   autocomplete_controller_->StartZeroSuggest(input_);
