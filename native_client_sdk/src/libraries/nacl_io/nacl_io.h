@@ -29,7 +29,7 @@ typedef void (*nacl_io_mount_callback_t)(const char* source,
  * NOTE: If you initialize nacl_io with this constructor, you cannot
  * use any filesystems that require PPAPI; e.g. persistent storage, etc.
  */
-int nacl_io_init();
+int nacl_io_init(void);
 
 /**
  * Initialize nacl_io with PPAPI support.
@@ -57,7 +57,7 @@ int nacl_io_init_ppapi(PP_Instance instance, PPB_GetInterface get_interface);
  * This removes interception for POSIX C-library function and releases
  * any associated resources.
  */
-int nacl_io_uninit();
+int nacl_io_uninit(void);
 
 void nacl_io_set_exit_callback(nacl_io_exit_callback_t exit_callback,
                                void* user_data);
