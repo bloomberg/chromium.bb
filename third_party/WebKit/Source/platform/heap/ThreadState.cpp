@@ -1242,6 +1242,7 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
         if (entry.value(entry.key, visitor))
             deadObjects.append(entry.key);
     }
+    // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_preFinalizers.removeAll(deadObjects);
 }
 

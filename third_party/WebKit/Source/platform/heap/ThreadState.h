@@ -130,17 +130,18 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 
 // Declare that a class has a pre-finalizer function.  The function is called in
 // the object's owner thread, and can access Member<>s to other
-// garbarge-collected objects allocated in the thread.  However we must not
+// garbage-collected objects allocated in the thread.  However we must not
 // allocate new garbage-collected objects, nor update Member<> and Persistent<>
 // pointers.
 //
 // This feature is similar to the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
 // idiom.  The difference between this and the idiom is that pre-finalizer
 // function is called whenever an object is destructed with this feature.  The
-// HeapHashMap<WeakMember...> idiom requires an assumption that the HeapHashMap
-// outlives objects pointed by WeakMembers.
+// HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>> idiom requires an assumption
+// that the HeapHashMap outlives objects pointed by WeakMembers.
 // FIXME: Replace all of the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
-// idiom usages with the pre-finalizer.
+// idiom usages with the pre-finalizer if the replacement won't cause
+// performance regressions.
 //
 // See ThreadState::registerPreFinalizer.
 //
