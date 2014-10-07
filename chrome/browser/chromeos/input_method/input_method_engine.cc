@@ -33,6 +33,10 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
+#if defined(USE_ATHENA)
+#include "athena/screen/public/screen_manager.h"
+#endif
+
 namespace chromeos {
 const char* kErrorNotActive = "IME is not active";
 const char* kErrorWrongContext = "Context is not active";
@@ -280,8 +284,18 @@ bool InputMethodEngine::SendKeyEvents(
     return false;
   }
 
-  ui::EventProcessor* dispatcher =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  // TODO(shuchen): remove the ash/athena dependencies by leveraging
+  // aura::EnvObserver.
+  aura::Window* root_window = NULL;
+#if defined(USE_ATHENA)
+  root_window = athena::ScreenManager::Get()->GetContext()->GetRootWindow();
+#elif defined(USE_ASH)
+  root_window = ash::Shell::GetPrimaryRootWindow();
+#endif
+
+  if (!root_window)
+    return false;
+  ui::EventProcessor* dispatcher = root_window->GetHost()->event_processor();
 
   for (size_t i = 0; i < events.size(); ++i) {
     const KeyboardEvent& event = events[i];

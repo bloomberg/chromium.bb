@@ -802,9 +802,19 @@ void InputMethodManagerImpl::SetState(
            ? state_->current_input_method.id() !=
                  new_impl_state->current_input_method.id()
            : true);
+#if defined(USE_ATHENA)
+  const bool profile_changed = (state_.get()
+      ? state_->profile != new_impl_state->profile
+      : true);
+#endif
+
   state_ = new_impl_state;
 
   if (state_.get() && state_->active_input_method_ids.size()) {
+#if defined(USE_ATHENA)
+    if (profile_changed)
+      LoadNecessaryComponentExtensions(state_.get());
+#endif
     // Initialize candidate window controller and widgets such as
     // candidate window, infolist and mode indicator.  Note, mode
     // indicator is used by only keyboard layout input methods.
@@ -1095,7 +1105,21 @@ ComponentExtensionIMEManager*
 
 scoped_refptr<InputMethodManager::State> InputMethodManagerImpl::CreateNewState(
     Profile* profile) {
-  return scoped_refptr<InputMethodManager::State>(new StateImpl(this, profile));
+  StateImpl* new_state = new StateImpl(this, profile);
+#if defined(USE_ATHENA)
+  // Athena for now doesn't have user preferences for input methods,
+  // therefore no one sets the active input methods in IMF. So just set
+  // the default IME here.
+  // TODO(shuchen): we need to better initialize with user preferences.
+  const InputMethodDescriptor* descriptor =
+      GetInputMethodUtil()->GetInputMethodDescriptorFromId(
+          GetInputMethodUtil()->GetFallbackInputMethodDescriptor().id());
+  if (descriptor) {
+    new_state->active_input_method_ids.push_back(descriptor->id());
+    new_state->current_input_method = *descriptor;
+  }
+#endif
+  return scoped_refptr<InputMethodManager::State>(new_state);
 }
 
 void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(

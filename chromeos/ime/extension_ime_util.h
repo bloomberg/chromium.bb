@@ -15,7 +15,7 @@ namespace chromeos {
 // Extension IME related utilities.
 namespace extension_ime_util {
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_ATHENA)
 const char kXkbExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
 const char kM17nExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
 const char kHangulExtensionId[] = "bdgdidmhaijohebebipajioienkglgfo";

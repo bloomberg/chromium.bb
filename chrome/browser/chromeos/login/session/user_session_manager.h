@@ -305,8 +305,8 @@ class UserSessionManager
   std::string chrome_client_secret_;
 
   // Per-user-session Input Methods states.
-  std::map<Profile*, scoped_refptr<input_method::InputMethodManager::State> >
-      default_ime_states_;
+  std::map<Profile*, scoped_refptr<input_method::InputMethodManager::State>,
+      ProfileCompare> default_ime_states_;
 
   // Manages Easy unlock cryptohome keys.
   scoped_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;

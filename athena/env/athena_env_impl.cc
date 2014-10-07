@@ -190,9 +190,6 @@ class AthenaEnvImpl : public AthenaEnv,
     root_window_event_filter_.reset(new wm::CompoundEventFilter);
     host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
 
-    input_method_filter_.reset(
-        new wm::InputMethodEventFilter(host_->GetAcceleratedWidget()));
-    input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
     root_window_event_filter_->AddHandler(input_method_filter_.get());
 
     capture_client_.reset(
