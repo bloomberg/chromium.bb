@@ -119,7 +119,8 @@ ACTION_P6(ReturnWithFakeFileAddedStatus,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
+// http://crbug.com/421141
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DISABLED_GetFileStatus) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_status"))
       << message_;
 }
