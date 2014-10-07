@@ -266,6 +266,7 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
     , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
     , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
+    , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
 {
     if (range)
         initialize(range->startPosition(), range->endPosition());
@@ -297,6 +298,7 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
     , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
     , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
+    , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
 {
     initialize(start, end);
 }
@@ -1746,7 +1748,7 @@ void CharacterIterator::advance(int count)
     for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
         int runLength = m_textIterator.length();
         if (!runLength) {
-            m_atBreak = true;
+            m_atBreak = m_textIterator.breaksAtReplacedElement();
         } else {
             // see whether this is m_textIterator to use
             if (count < runLength) {
@@ -2376,7 +2378,7 @@ tryAgain:
     return matchLength;
 }
 
-static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots;
+static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots | TextIteratorDoesNotBreakAtReplacedElement;
 
 PassRefPtrWillBeRawPtr<Range> findPlainText(const Range* range, const String& target, FindOptions options)
 {

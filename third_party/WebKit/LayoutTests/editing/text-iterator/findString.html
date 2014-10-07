@@ -12,7 +12,7 @@
         log("Searching for \u2018" + target + "\u2019 " + (text.length <= 64 ? "in \u2018" + text + "\u2019 " : "in long string ") + "with options [" + options.join(", ") + "]:");
 
         var container = document.getElementById("container");
-        container.innerText = text;
+        container.innerHTML = text;
         document.body.offsetTop;
         var selection = getSelection();
         selection.empty();
@@ -108,6 +108,8 @@
     testFindString("Spaces, the final frontier", " ", ["AtWordStarts"], [[7, 8], [11, 12], [17, 18], []]);
     testFindString("Use an @import rule", "@", ["AtWordStarts"], [[7, 8], []]);
     testFindString("If ((x + 5) * 2) = 14, then x = 2", "(x", ["AtWordStarts"], [[4, 6], []]);
+
+    testFindString("hello<img src='../resources/abe.png'>world", "lowo", [], [[3, 2], []]);
 
     document.getElementById("console").style.removeProperty("visibility");
 </script>

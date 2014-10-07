@@ -46,7 +46,8 @@ enum TextIteratorBehavior {
     TextIteratorStopsOnFormControls = 1 << 4,
     TextIteratorEmitsImageAltText = 1 << 5,
     TextIteratorEntersAuthorShadowRoots = 1 << 6,
-    TextIteratorEmitsObjectReplacementCharacter = 1 << 7
+    TextIteratorEmitsObjectReplacementCharacter = 1 << 7,
+    TextIteratorDoesNotBreakAtReplacedElement = 1 << 8
 };
 typedef unsigned TextIteratorBehaviorFlags;
 
@@ -118,6 +119,8 @@ public:
     int endOffset() const;
     Position startPosition() const;
     Position endPosition() const;
+
+    bool breaksAtReplacedElement() { return m_breaksAtReplacedElement; }
 
     // Computes the length of the given range using a text iterator. The default
     // iteration behavior is to always emit object replacement characters for
@@ -228,6 +231,8 @@ private:
     bool m_entersAuthorShadowRoots;
 
     bool m_emitsObjectReplacementCharacter;
+
+    bool m_breaksAtReplacedElement;
 };
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
