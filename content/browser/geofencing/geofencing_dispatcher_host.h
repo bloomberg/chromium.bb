@@ -21,7 +21,7 @@ class GeofencingDispatcherHost : public BrowserMessageFilter {
   virtual ~GeofencingDispatcherHost();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnRegisterRegion(int thread_id,
                         int request_id,
