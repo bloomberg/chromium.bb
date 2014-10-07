@@ -83,6 +83,7 @@ class UserMediaClientImpl;
 struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
+struct ResourceResponseHead;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -554,7 +555,8 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // PlzNavigate
-  void OnCommitNavigation(const GURL& stream_url,
+  void OnCommitNavigation(const ResourceResponseHead& response,
+                          const GURL& stream_url,
                           const CommonNavigationParams& common_params,
                           const CommitNavigationParams& commit_params);
 

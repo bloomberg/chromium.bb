@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigation_before_commit_info.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/stream_handle.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -730,33 +730,24 @@ void NavigatorImpl::OnBeginNavigation(
 }
 
 // PlzNavigate
-void NavigatorImpl::CommitNavigation(
-    FrameTreeNode* frame_tree_node,
-    const NavigationBeforeCommitInfo& info) {
+void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
+                                     ResourceResponse* response,
+                                     scoped_ptr<StreamHandle> body) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   NavigationRequest* navigation_request =
       navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
   DCHECK(navigation_request);
 
-  // Ignores navigation commits if the request ID doesn't match the current
-  // active request.
-  if (navigation_request->navigation_request_id() !=
-          info.navigation_request_id) {
-    return;
-  }
-
-  // Update the navigation url.
-  navigation_request->common_params().url = info.navigation_url;
-
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host =
       frame_tree_node->render_manager()->GetFrameHostForNavigation(
-          info.navigation_url, navigation_request->common_params().transition);
+          navigation_request->common_params().url,
+          navigation_request->common_params().transition);
   CheckWebUIRendererDoesNotDisplayNormalURL(
       render_frame_host, navigation_request->common_params().url);
 
-  render_frame_host->CommitNavigation(info.stream_url,
+  render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
                                       navigation_request->commit_params());
 }
@@ -765,11 +756,6 @@ void NavigatorImpl::CommitNavigation(
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  NavigationRequest* navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
-  if (!navigation_request)
-    return;
-  navigation_request->CancelNavigation();
   navigation_request_map_.erase(frame_tree_node->frame_tree_node_id());
 }
 
@@ -812,7 +798,7 @@ bool NavigatorImpl::RequestNavigation(
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node_id,
+      frame_tree_node,
       CommonNavigationParams(entry.GetURL(),
                              entry.GetReferrer(),
                              entry.GetTransitionType(),
@@ -827,17 +813,12 @@ bool NavigatorImpl::RequestNavigation(
   // TODO(clamy): Check if navigations are blocked and if so store the
   // parameters.
 
-  // If there is an ongoing request it must be canceled.
-  NavigationRequest* current_request =
-      navigation_request_map_.get(frame_tree_node_id);
-  if (current_request) {
-    current_request->CancelNavigation();
-  }
-
+  // If there is an ongoing request, replace it.
   navigation_request_map_.set(frame_tree_node_id, navigation_request.Pass());
 
   if (frame_tree_node->current_frame_host()->IsRenderFrameLive()) {
     // TODO(clamy): send a RequestNavigation IPC.
+    NOTIMPLEMENTED();
     return true;
   }
 

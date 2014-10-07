@@ -76,9 +76,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       FrameTreeNode* frame_tree_node,
       const FrameHostMsg_BeginNavigation_Params& params,
       const CommonNavigationParams& common_params) override;
-  virtual void CommitNavigation(
-      FrameTreeNode* frame_tree_node,
-      const NavigationBeforeCommitInfo& info) override;
+  virtual void CommitNavigation(FrameTreeNode* frame_tree_node,
+                                ResourceResponse* response,
+                                scoped_ptr<StreamHandle> body) override;
   virtual void LogResourceRequestTime(
       base::TimeTicks timestamp, const GURL& url) override;
   virtual void CancelNavigation(FrameTreeNode* frame_tree_node) override;

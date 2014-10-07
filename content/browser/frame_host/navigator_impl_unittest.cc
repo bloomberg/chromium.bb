@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/navigation_before_commit_info.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -15,6 +14,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/navigation_params.h"
+#include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -24,6 +24,47 @@
 #include "ui/base/page_transition_types.h"
 
 namespace content {
+
+namespace {
+
+// Mocked out stream handle to commit the navigation with.
+class TestStreamHandle : public StreamHandle {
+ public:
+  TestStreamHandle() : url_("test:stream") {}
+
+  virtual const GURL& GetURL() override {
+    return url_;
+  }
+
+  virtual const GURL& GetOriginalURL() override {
+    NOTREACHED();
+    return original_url_;
+  }
+
+  virtual const std::string& GetMimeType() override {
+    NOTREACHED();
+    return mime_type_;
+  }
+
+  virtual scoped_refptr<net::HttpResponseHeaders>
+      GetResponseHeaders() override {
+    NOTREACHED();
+    return NULL;
+  }
+
+  virtual void AddCloseListener(const base::Closure& callback) override {
+    NOTREACHED();
+  }
+
+ private:
+  GURL url_;
+  GURL original_url_;
+  std::string mime_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestStreamHandle);
+};
+
+}
 
 class NavigatorTest
     : public RenderViewHostImplTestHarness {
@@ -76,7 +117,6 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
   const GURL kUrl3("http://www.gmail.com/");
-  const int64 kFirstNavRequestID = 1;
 
   contents()->NavigateAndCommit(kUrl1);
 
@@ -99,7 +139,6 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   EXPECT_EQ(kUrl1, subframe_request->info_for_test()->first_party_for_cookies);
   EXPECT_FALSE(subframe_request->info_for_test()->is_main_frame);
   EXPECT_TRUE(subframe_request->info_for_test()->parent_is_main_frame);
-  EXPECT_EQ(kFirstNavRequestID, subframe_request->navigation_request_id());
 
   FrameTreeNode* main_frame_node =
       contents()->GetMainFrame()->frame_tree_node();
@@ -113,13 +152,11 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   EXPECT_EQ(kUrl3, main_request->info_for_test()->first_party_for_cookies);
   EXPECT_TRUE(main_request->info_for_test()->is_main_frame);
   EXPECT_FALSE(main_request->info_for_test()->parent_is_main_frame);
-  EXPECT_EQ(kFirstNavRequestID + 1, main_request->navigation_request_id());
 }
 
 // PlzNavigate: Test that RequestNavigation creates a NavigationRequest and that
 // RenderFrameHost is not modified when the navigation commits.
-TEST_F(NavigatorTest,
-       BrowserSideNavigationRequestNavigationNoLiveRenderer) {
+TEST_F(NavigatorTest, BrowserSideNavigationRequestNavigationNoLiveRenderer) {
   const GURL kUrl("http://www.google.com/");
 
   EnableBrowserSideNavigation();
@@ -132,10 +169,9 @@ TEST_F(NavigatorTest,
   RenderFrameHostImpl* rfh = main_test_rfh();
 
   // Now commit the same url.
-  NavigationBeforeCommitInfo commit_info;
-  commit_info.navigation_url = kUrl;
-  commit_info.navigation_request_id = main_request->navigation_request_id();
-  node->navigator()->CommitNavigation(node, commit_info);
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  node->navigator()->CommitNavigation(
+      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
   main_request = GetNavigationRequestForFrameTreeNode(node);
 
   // The main RFH should not have been changed, and the renderer should have
@@ -147,8 +183,7 @@ TEST_F(NavigatorTest,
 
 // PlzNavigate: Test that a new RenderFrameHost is created when doing a cross
 // site navigation.
-TEST_F(NavigatorTest,
-       BrowserSideNavigationCrossSiteNavigation) {
+TEST_F(NavigatorTest, BrowserSideNavigationCrossSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -165,10 +200,9 @@ TEST_F(NavigatorTest,
   NavigationRequest* main_request = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(main_request);
 
-  NavigationBeforeCommitInfo commit_info;
-  commit_info.navigation_url = kUrl2;
-  commit_info.navigation_request_id = main_request->navigation_request_id();
-  node->navigator()->CommitNavigation(node, commit_info);
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  node->navigator()->CommitNavigation(
+      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
   RenderFrameHostImpl* pending_rfh =
       node->render_manager()->pending_frame_host();
   ASSERT_TRUE(pending_rfh);
@@ -177,14 +211,9 @@ TEST_F(NavigatorTest,
   EXPECT_TRUE(pending_rfh->render_view_host()->IsRenderViewLive());
 }
 
-// PlzNavigate: Test that a navigation commit is ignored if another request has
-// been issued in the meantime.
-// TODO(carlosk): add checks to assert that the cancel call was sent to
-// ResourceDispatcherHost in the IO thread by extending
-// ResourceDispatcherHostDelegate (like in cross_site_transfer_browsertest.cc
-// and plugin_browsertest.cc).
-TEST_F(NavigatorTest,
-       BrowserSideNavigationIgnoreStaleNavigationCommit) {
+// PlzNavigate: Test that a navigation is cancelled if another request has been
+// issued in the meantime.
+TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl0_site = SiteInstance::GetSiteForURL(browser_context(), kUrl0);
   const GURL kUrl1("http://www.chromium.org/");
@@ -197,33 +226,25 @@ TEST_F(NavigatorTest,
   EnableBrowserSideNavigation();
   EXPECT_EQ(kUrl0_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
 
-  // Request navigation to the 1st URL and gather data.
+  // Request navigation to the 1st URL.
   SendRequestNavigation(node, kUrl1);
   main_test_rfh()->SendBeginNavigationWithURL(kUrl1);
   NavigationRequest* request1 = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(request1);
-  int64 request_id1 = request1->navigation_request_id();
+  EXPECT_EQ(kUrl1, request1->common_params().url);
 
-  // Request navigation to the 2nd URL and gather more data.
+  // Request navigation to the 2nd URL; the NavigationRequest must have been
+  // replaced by a new one with a different URL.
   SendRequestNavigation(node, kUrl2);
   main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
   NavigationRequest* request2 = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(request2);
-  int64 request_id2 = request2->navigation_request_id();
-  EXPECT_NE(request_id1, request_id2);
+  EXPECT_EQ(kUrl2, request2->common_params().url);
 
-  // Confirms that a stale commit is ignored by the Navigator.
-  NavigationBeforeCommitInfo nbc_info;
-  nbc_info.navigation_url = kUrl1;
-  nbc_info.navigation_request_id = request_id1;
-  node->navigator()->CommitNavigation(node, nbc_info);
-  EXPECT_FALSE(node->render_manager()->pending_frame_host());
-  EXPECT_EQ(kUrl0_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
-
-  // Confirms that a valid, request-matching commit is correctly processed.
-  nbc_info.navigation_url = kUrl2;
-  nbc_info.navigation_request_id = request_id2;
-  node->navigator()->CommitNavigation(node, nbc_info);
+  // Confirm that the commit corresonds to the new request.
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  node->navigator()->CommitNavigation(
+      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
   RenderFrameHostImpl* pending_rfh =
       node->render_manager()->pending_frame_host();
   ASSERT_TRUE(pending_rfh);

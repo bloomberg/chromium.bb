@@ -50,6 +50,7 @@
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -1379,16 +1380,21 @@ void RenderFrameHostImpl::NotificationClosed(int notification_id) {
 
 // PlzNavigate
 void RenderFrameHostImpl::CommitNavigation(
-    const GURL& stream_url,
+    ResourceResponse* response,
+    scoped_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params) {
   // TODO(clamy): Check if we have to add security checks for the browser plugin
   // guests.
 
   Send(new FrameMsg_CommitNavigation(
-      routing_id_, stream_url, common_params, commit_params));
+      routing_id_, response->head, body->GetURL(),
+      common_params, commit_params));
   // TODO(clamy): Check if we should start the throbber for non javascript urls
   // here.
+
+  // TODO(davidben): Retain |body| on behalf of the renderer, until the renderer
+  // is done with it.
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(

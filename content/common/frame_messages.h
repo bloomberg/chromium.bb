@@ -18,6 +18,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
@@ -468,7 +469,8 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
 // Tells the renderer that a navigation is ready to commit.  The renderer should
 // request |stream_url| to get access to the stream containing the body of the
 // response.
-IPC_MESSAGE_ROUTED3(FrameMsg_CommitNavigation,
+IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
+                    content::ResourceResponseHead, /* response */
                     GURL, /* stream_url */
                     content::CommonNavigationParams, /* common_params */
                     content::CommitNavigationParams /* commit_params */)

@@ -12,6 +12,8 @@
 #include "content/common/navigation_params.h"
 
 namespace content {
+
+class FrameTreeNode;
 class ResourceRequestBody;
 struct NavigationRequestInfo;
 
@@ -23,7 +25,7 @@ struct NavigationRequestInfo;
 // the navigation following its refactoring.
 class CONTENT_EXPORT NavigationRequest {
  public:
-  NavigationRequest(int64 frame_tree_node_id,
+  NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     const CommitNavigationParams& commit_params);
 
@@ -35,13 +37,6 @@ class CONTENT_EXPORT NavigationRequest {
   void BeginNavigation(scoped_ptr<NavigationRequestInfo> info,
                        scoped_refptr<ResourceRequestBody> body);
 
-  // Called on the UI thread by the RenderFrameHostManager which owns the
-  // NavigationRequest whenever this navigation request should be canceled.
-  void CancelNavigation();
-
-  int64 frame_tree_node_id() const { return frame_tree_node_id_; }
-  int64 navigation_request_id() const { return navigation_request_id_; }
-
   CommonNavigationParams& common_params() { return common_params_; }
 
   const CommitNavigationParams& commit_params() const { return commit_params_; }
@@ -49,8 +44,7 @@ class CONTENT_EXPORT NavigationRequest {
   NavigationRequestInfo* info_for_test() const { return info_.get(); }
 
  private:
-  const int64 navigation_request_id_;
-  const int64 frame_tree_node_id_;
+  FrameTreeNode* frame_tree_node_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
   // the navigation is ready to commit.

@@ -54,6 +54,7 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
+class StreamHandle;
 class TimeoutMonitor;
 struct CommitNavigationParams;
 struct ContextMenuParams;
@@ -61,6 +62,7 @@ struct CommonNavigationParams;
 struct GlobalRequestID;
 struct Referrer;
 struct RequestNavigationParams;
+struct ResourceResponse;
 struct ShowDesktopNotificationHostMsgParams;
 struct TransitionLayerData;
 
@@ -347,7 +349,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // PlzNavigate: Indicates that a navigation is ready to commit and can be
   // handled by this RenderFrame.
-  void CommitNavigation(const GURL& stream_url,
+  void CommitNavigation(ResourceResponse* response,
+                        scoped_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
                         const CommitNavigationParams& commit_params);
 

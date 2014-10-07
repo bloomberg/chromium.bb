@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigator.h"
 
 #include "base/time/time.h"
+#include "content/public/browser/stream_handle.h"
 
 namespace content {
 
@@ -20,6 +21,11 @@ bool Navigator::NavigateToPendingEntry(
 
 base::TimeTicks Navigator::GetCurrentLoadStart() {
   return base::TimeTicks::Now();
+}
+
+void Navigator::CommitNavigation(FrameTreeNode* frame_tree_node,
+                                 ResourceResponse* response,
+                                 scoped_ptr<StreamHandle> body) {
 }
 
 }  // namespace content

@@ -42,6 +42,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
@@ -3463,6 +3464,7 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
 
 // PlzNavigate
 void RenderFrameImpl::OnCommitNavigation(
+    const ResourceResponseHead& response,
     const GURL& stream_url,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params) {
