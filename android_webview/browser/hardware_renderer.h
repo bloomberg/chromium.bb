@@ -79,8 +79,6 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
 
   // Infromation from UI on last commit.
   gfx::Vector2d scroll_offset_;
-  int width_;
-  int height_;
 
   // Information from draw.
   gfx::Size viewport_;
