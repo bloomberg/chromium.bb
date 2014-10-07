@@ -138,13 +138,11 @@ bool X11DesktopHandler::IsActiveWindow(::Window window) const {
 void X11DesktopHandler::ProcessXEvent(XEvent* event) {
   switch (event->type) {
     case FocusIn:
-      if (!wm_supports_active_window_ &&
-          current_window_ != event->xfocus.window)
+      if (current_window_ != event->xfocus.window)
         OnActiveWindowChanged(event->xfocus.window, ACTIVE);
       break;
     case FocusOut:
-      if (!wm_supports_active_window_ &&
-          current_window_ == event->xfocus.window)
+      if (current_window_ == event->xfocus.window)
         OnActiveWindowChanged(None, NOT_ACTIVE);
       break;
     default:
