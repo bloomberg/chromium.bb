@@ -63,10 +63,12 @@ class TestVideoEncoderCallback
 
   void SetExpectedResult(uint32 expected_frame_id,
                          uint32 expected_last_referenced_frame_id,
-                         const base::TimeTicks& expected_capture_time) {
+                         uint32 expected_rtp_timestamp,
+                         const base::TimeTicks& expected_reference_time) {
     expected_frame_id_ = expected_frame_id;
     expected_last_referenced_frame_id_ = expected_last_referenced_frame_id;
-    expected_capture_time_ = expected_capture_time;
+    expected_rtp_timestamp_ = expected_rtp_timestamp;
+    expected_reference_time_ = expected_reference_time;
   }
 
   void DeliverEncodedVideoFrame(
@@ -80,7 +82,8 @@ class TestVideoEncoderCallback
     EXPECT_EQ(expected_frame_id_, encoded_frame->frame_id);
     EXPECT_EQ(expected_last_referenced_frame_id_,
               encoded_frame->referenced_frame_id);
-    EXPECT_EQ(expected_capture_time_, encoded_frame->reference_time);
+    EXPECT_EQ(expected_rtp_timestamp_, encoded_frame->rtp_timestamp);
+    EXPECT_EQ(expected_reference_time_, encoded_frame->reference_time);
   }
 
  protected:
@@ -92,7 +95,8 @@ class TestVideoEncoderCallback
   bool expected_key_frame_;
   uint32 expected_frame_id_;
   uint32 expected_last_referenced_frame_id_;
-  base::TimeTicks expected_capture_time_;
+  uint32 expected_rtp_timestamp_;
+  base::TimeTicks expected_reference_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVideoEncoderCallback);
 };
@@ -122,6 +126,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     PopulateVideoFrame(video_frame_.get(), 123);
 
     testing_clock_ = new base::SimpleTestTickClock();
+    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
@@ -145,6 +150,12 @@ class ExternalVideoEncoderTest : public ::testing::Test {
 
   virtual ~ExternalVideoEncoderTest() {}
 
+  void AdvanceClockAndVideoFrameTimestamp() {
+    testing_clock_->Advance(base::TimeDelta::FromMilliseconds(33));
+    video_frame_->set_timestamp(
+        video_frame_->timestamp() + base::TimeDelta::FromMilliseconds(33));
+  }
+
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   test::FakeVideoEncodeAccelerator* fake_vea_;  // Owned by video_encoder_.
   std::vector<uint32> stored_bitrates_;
@@ -165,19 +176,23 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
       base::Bind(&TestVideoEncoderCallback::DeliverEncodedVideoFrame,
                  test_video_encoder_callback_.get());
 
-  base::TimeTicks capture_time;
-  capture_time += base::TimeDelta::FromMilliseconds(33);
-  test_video_encoder_callback_->SetExpectedResult(0, 0, capture_time);
+  test_video_encoder_callback_->SetExpectedResult(
+      0, 0, TimeDeltaToRtpDelta(video_frame_->timestamp(), kVideoFrequency),
+      testing_clock_->NowTicks());
   video_encoder_->SetBitRate(2000);
   EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
-      video_frame_, capture_time, frame_encoded_callback));
+      video_frame_, testing_clock_->NowTicks(), frame_encoded_callback));
   task_runner_->RunTasks();
 
   for (int i = 0; i < 6; ++i) {
-    capture_time += base::TimeDelta::FromMilliseconds(33);
-    test_video_encoder_callback_->SetExpectedResult(i + 1, i, capture_time);
+    AdvanceClockAndVideoFrameTimestamp();
+    test_video_encoder_callback_->SetExpectedResult(
+        i + 1,
+        i,
+        TimeDeltaToRtpDelta(video_frame_->timestamp(), kVideoFrequency),
+        testing_clock_->NowTicks());
     EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
-        video_frame_, capture_time, frame_encoded_callback));
+        video_frame_, testing_clock_->NowTicks(), frame_encoded_callback));
     task_runner_->RunTasks();
   }
   // We need to run the task to cleanup the GPU instance.
@@ -199,11 +214,11 @@ TEST_F(ExternalVideoEncoderTest, StreamHeader) {
   fake_vea_->SendDummyFrameForTesting(false);
 
   // Verify the first returned bitstream buffer is still a key frame.
-  base::TimeTicks capture_time;
-  capture_time += base::TimeDelta::FromMilliseconds(33);
-  test_video_encoder_callback_->SetExpectedResult(0, 0, capture_time);
+  test_video_encoder_callback_->SetExpectedResult(
+      0, 0, TimeDeltaToRtpDelta(video_frame_->timestamp(), kVideoFrequency),
+      testing_clock_->NowTicks());
   EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
-      video_frame_, capture_time, frame_encoded_callback));
+      video_frame_, testing_clock_->NowTicks(), frame_encoded_callback));
   task_runner_->RunTasks();
 
   // We need to run the task to cleanup the GPU instance.

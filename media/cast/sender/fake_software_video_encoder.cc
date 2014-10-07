@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "media/base/video_frame.h"
 #include "media/cast/net/cast_transport_config.h"
 
 #ifndef OFFICIAL_BUILD
@@ -26,29 +27,34 @@ FakeSoftwareVideoEncoder::~FakeSoftwareVideoEncoder() {}
 
 void FakeSoftwareVideoEncoder::Initialize() {}
 
-bool FakeSoftwareVideoEncoder::Encode(
+void FakeSoftwareVideoEncoder::Encode(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    EncodedFrame* encoded_image) {
-  encoded_image->frame_id = frame_id_++;
+    const base::TimeTicks& reference_time,
+    EncodedFrame* encoded_frame) {
+  DCHECK(encoded_frame);
+
+  encoded_frame->frame_id = frame_id_++;
   if (next_frame_is_key_) {
-    encoded_image->dependency = EncodedFrame::KEY;
-    encoded_image->referenced_frame_id = encoded_image->frame_id;
+    encoded_frame->dependency = EncodedFrame::KEY;
+    encoded_frame->referenced_frame_id = encoded_frame->frame_id;
     next_frame_is_key_ = false;
   } else {
-    encoded_image->dependency = EncodedFrame::DEPENDENT;
-    encoded_image->referenced_frame_id = encoded_image->frame_id - 1;
+    encoded_frame->dependency = EncodedFrame::DEPENDENT;
+    encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
   }
+  encoded_frame->rtp_timestamp =
+      TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
+  encoded_frame->reference_time = reference_time;
 
   base::DictionaryValue values;
   values.SetBoolean("key",
-                    encoded_image->dependency == EncodedFrame::KEY);
-  values.SetInteger("ref", encoded_image->referenced_frame_id);
-  values.SetInteger("id", encoded_image->frame_id);
+                    encoded_frame->dependency == EncodedFrame::KEY);
+  values.SetInteger("ref", encoded_frame->referenced_frame_id);
+  values.SetInteger("id", encoded_frame->frame_id);
   values.SetInteger("size", frame_size_);
-  base::JSONWriter::Write(&values, &encoded_image->data);
-  encoded_image->data.resize(
-      std::max<size_t>(encoded_image->data.size(), frame_size_), ' ');
-  return true;
+  base::JSONWriter::Write(&values, &encoded_frame->data);
+  encoded_frame->data.resize(
+      std::max<size_t>(encoded_frame->data.size(), frame_size_), ' ');
 }
 
 void FakeSoftwareVideoEncoder::UpdateRates(uint32 new_bitrate) {

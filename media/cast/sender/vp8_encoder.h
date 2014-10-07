@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
@@ -17,13 +16,8 @@ namespace media {
 class VideoFrame;
 }
 
-// VPX forward declaration.
-typedef struct vpx_codec_ctx vpx_enc_ctx_t;
-
 namespace media {
 namespace cast {
-
-const int kNumberOfVp8VideoBuffers = 3;
 
 class Vp8Encoder : public SoftwareVideoEncoder {
  public:
@@ -31,23 +25,18 @@ class Vp8Encoder : public SoftwareVideoEncoder {
 
   virtual ~Vp8Encoder();
 
-  // Initialize the encoder before Encode() can be called. This method
-  // must be called on the thread that Encode() is called.
+  // SoftwareVideoEncoder implementations.
   virtual void Initialize() override;
-
-  // Encode a raw image (as a part of a video stream).
-  virtual bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                      EncodedFrame* encoded_image) override;
-
-  // Update the encoder with a new target bit rate.
+  virtual void Encode(const scoped_refptr<media::VideoFrame>& video_frame,
+                      const base::TimeTicks& reference_time,
+                      EncodedFrame* encoded_frame) override;
   virtual void UpdateRates(uint32 new_bitrate) override;
-
-  // Set the next frame to be a key frame.
   virtual void GenerateKeyFrame() override;
-
   virtual void LatestFrameIdToReference(uint32 frame_id) override;
 
  private:
+  enum { kNumberOfVp8VideoBuffers = 3 };
+
   enum Vp8Buffers {
     kAltRefBuffer = 0,
     kGoldenBuffer = 1,
@@ -60,12 +49,17 @@ class Vp8Encoder : public SoftwareVideoEncoder {
     kBufferSent,
     kBufferAcked
   };
+
   struct BufferState {
     uint32 frame_id;
     Vp8BufferState state;
   };
 
-  void InitEncode(int number_of_cores);
+  bool is_initialized() const {
+    // Initialize() sets the timebase denominator value to non-zero if the
+    // encoder is successfully initialized, and it is zero otherwise.
+    return config_.g_timebase.den != 0;
+  }
 
   // Calculate the max target in % for a keyframe.
   uint32 MaxIntraTarget(uint32 optimal_buffer_size) const;
@@ -84,9 +78,12 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   const VideoSenderConfig cast_config_;
   const bool use_multiple_video_buffers_;
 
-  // VP8 internal objects.
-  scoped_ptr<vpx_codec_enc_cfg_t> config_;
-  scoped_ptr<vpx_enc_ctx_t> encoder_;
+  // VP8 internal objects.  These are valid for use only while is_initialized()
+  // returns true.
+  vpx_codec_enc_cfg_t config_;
+  vpx_codec_ctx_t encoder_;
+
+  // Wrapper for access to YUV data planes in a media::VideoFrame.
   vpx_image_t* raw_image_;
 
   bool key_frame_requested_;

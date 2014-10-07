@@ -4,8 +4,6 @@
 
 #include "media/cast/sender/vp8_encoder.h"
 
-#include <vector>
-
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
@@ -23,12 +21,15 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
       use_multiple_video_buffers_(
           cast_config_.max_number_of_video_buffers_used ==
           kNumberOfVp8VideoBuffers),
+      raw_image_(nullptr),
       key_frame_requested_(true),
       first_frame_received_(false),
       last_encoded_frame_id_(kStartFrameId),
       last_acked_frame_id_(kStartFrameId),
       frame_id_to_reference_(kStartFrameId - 1),
       undroppable_frames_(0) {
+  config_.g_timebase.den = 0;  // Not initialized.
+
   // VP8 have 3 buffers available for prediction, with
   // max_number_of_video_buffers_used set to 1 we maximize the coding efficiency
   // however in this mode we can not skip frames in the receiver to catch up
@@ -44,14 +45,15 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
 }
 
 Vp8Encoder::~Vp8Encoder() {
-  vpx_codec_destroy(encoder_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (is_initialized())
+    vpx_codec_destroy(&encoder_);
   vpx_img_free(raw_image_);
 }
 
 void Vp8Encoder::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  config_.reset(new vpx_codec_enc_cfg_t());
-  encoder_.reset(new vpx_codec_ctx_t());
+  DCHECK(!is_initialized());
 
   // Creating a wrapper to the image - setting image data to NULL. Actual
   // pointer will be set during encode. Setting align to 1, as it is
@@ -63,64 +65,65 @@ void Vp8Encoder::Initialize() {
     buffer_state_[i].frame_id = kStartFrameId;
     buffer_state_[i].state = kBufferStartState;
   }
-  InitEncode(cast_config_.number_of_encode_threads);
-}
 
-void Vp8Encoder::InitEncode(int number_of_encode_threads) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   // Populate encoder configuration with default values.
-  if (vpx_codec_enc_config_default(vpx_codec_vp8_cx(), config_.get(), 0)) {
-    DCHECK(false) << "Invalid return value";
+  if (vpx_codec_enc_config_default(vpx_codec_vp8_cx(), &config_, 0)) {
+    NOTREACHED() << "Invalid return value";
+    config_.g_timebase.den = 0;  // Do not call vpx_codec_destroy() in dtor.
+    return;
   }
-  config_->g_w = cast_config_.width;
-  config_->g_h = cast_config_.height;
-  config_->rc_target_bitrate = cast_config_.start_bitrate / 1000;  // In kbit/s.
 
-  // Setting the codec time base.
-  config_->g_timebase.num = 1;
-  config_->g_timebase.den = kVideoFrequency;
-  config_->g_lag_in_frames = 0;
-  config_->kf_mode = VPX_KF_DISABLED;
+  config_.g_threads = cast_config_.number_of_encode_threads;
+  config_.g_w = cast_config_.width;
+  config_.g_h = cast_config_.height;
+  config_.g_timebase.num = 1;
+  config_.g_timebase.den = kVideoFrequency;
   if (use_multiple_video_buffers_) {
     // We must enable error resilience when we use multiple buffers, due to
     // codec requirements.
-    config_->g_error_resilient = 1;
+    config_.g_error_resilient = 1;
   }
-  config_->g_threads = number_of_encode_threads;
+  config_.g_pass = VPX_RC_ONE_PASS;
+  config_.g_lag_in_frames = 0;  // Immediate data output for each frame.
 
   // Rate control settings.
-  // Never allow the encoder to drop frame internally.
-  config_->rc_dropframe_thresh = 0;
-  config_->rc_end_usage = VPX_CBR;
-  config_->g_pass = VPX_RC_ONE_PASS;
-  config_->rc_resize_allowed = 0;
-  config_->rc_min_quantizer = cast_config_.min_qp;
-  config_->rc_max_quantizer = cast_config_.max_qp;
-  config_->rc_undershoot_pct = 100;
-  config_->rc_overshoot_pct = 15;
-  config_->rc_buf_initial_sz = 500;
-  config_->rc_buf_optimal_sz = 600;
-  config_->rc_buf_sz = 1000;
+  config_.rc_dropframe_thresh = 0;  // The encoder may not drop any frames.
+  config_.rc_resize_allowed = 0;  // TODO(miu): Why not?  Investigate this.
+  config_.rc_end_usage = VPX_CBR;
+  config_.rc_target_bitrate = cast_config_.start_bitrate / 1000;  // In kbit/s.
+  config_.rc_min_quantizer = cast_config_.min_qp;
+  config_.rc_max_quantizer = cast_config_.max_qp;
+  config_.rc_undershoot_pct = 100;
+  config_.rc_overshoot_pct = 15;
+  config_.rc_buf_initial_sz = 500;
+  config_.rc_buf_optimal_sz = 600;
+  config_.rc_buf_sz = 1000;  // TODO(miu): Adjust relative to playout delay?
+
+  config_.kf_mode = VPX_KF_DISABLED;
 
   // set the maximum target size of any key-frame.
-  uint32 rc_max_intra_target = MaxIntraTarget(config_->rc_buf_optimal_sz);
+  uint32 rc_max_intra_target = MaxIntraTarget(config_.rc_buf_optimal_sz);
   vpx_codec_flags_t flags = 0;
-  if (vpx_codec_enc_init(
-          encoder_.get(), vpx_codec_vp8_cx(), config_.get(), flags)) {
-    DCHECK(false) << "vpx_codec_enc_init() failed.";
-    encoder_.reset();
+  if (vpx_codec_enc_init(&encoder_, vpx_codec_vp8_cx(), &config_, flags)) {
+    NOTREACHED() << "vpx_codec_enc_init() failed.";
+    config_.g_timebase.den = 0;  // Do not call vpx_codec_destroy() in dtor.
     return;
   }
-  vpx_codec_control(encoder_.get(), VP8E_SET_STATIC_THRESHOLD, 1);
-  vpx_codec_control(encoder_.get(), VP8E_SET_NOISE_SENSITIVITY, 0);
-  vpx_codec_control(encoder_.get(), VP8E_SET_CPUUSED, -6);
+  vpx_codec_control(&encoder_, VP8E_SET_STATIC_THRESHOLD, 1);
+  vpx_codec_control(&encoder_, VP8E_SET_NOISE_SENSITIVITY, 0);
+  vpx_codec_control(&encoder_, VP8E_SET_CPUUSED, -6);
   vpx_codec_control(
-      encoder_.get(), VP8E_SET_MAX_INTRA_BITRATE_PCT, rc_max_intra_target);
+      &encoder_, VP8E_SET_MAX_INTRA_BITRATE_PCT, rc_max_intra_target);
 }
 
-bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                        EncodedFrame* encoded_image) {
+void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
+                        const base::TimeTicks& reference_time,
+                        EncodedFrame* encoded_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(encoded_frame);
+
+  CHECK(is_initialized());  // No illegal reference to |config_| or |encoder_|.
+
   // Image in vpx_image_t format.
   // Input image is const. VP8's raw image is not defined as const.
   raw_image_->planes[VPX_PLANE_Y] =
@@ -169,61 +172,59 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       (video_frame->timestamp() - first_frame_timestamp_).InMicroseconds() *
       kVideoFrequency / base::Time::kMicrosecondsPerSecond;
 
-  if (vpx_codec_encode(encoder_.get(),
-                       raw_image_,
-                       timestamp,
-                       duration,
-                       flags,
-                       VPX_DL_REALTIME) != VPX_CODEC_OK) {
-    LOG(ERROR) << "Failed to encode for once.";
-    return false;
-  }
+  CHECK_EQ(vpx_codec_encode(&encoder_,
+                            raw_image_,
+                            timestamp,
+                            duration,
+                            flags,
+                            VPX_DL_REALTIME),
+           VPX_CODEC_OK)
+      << "BUG: Invalid arguments passed to vpx_codec_encode().";
 
-  // Get encoded frame.
+  // Pull data from the encoder, populating a new EncodedFrame.
+  encoded_frame->frame_id = ++last_encoded_frame_id_;
   const vpx_codec_cx_pkt_t* pkt = NULL;
   vpx_codec_iter_t iter = NULL;
-  bool is_key_frame = false;
-  while ((pkt = vpx_codec_get_cx_data(encoder_.get(), &iter)) != NULL) {
+  while ((pkt = vpx_codec_get_cx_data(&encoder_, &iter)) != NULL) {
     if (pkt->kind != VPX_CODEC_CX_FRAME_PKT)
       continue;
-    encoded_image->data.assign(
+    if (pkt->data.frame.flags & VPX_FRAME_IS_KEY) {
+      // TODO(hubbe): Replace "dependency" with a "bool is_key_frame".
+      encoded_frame->dependency = EncodedFrame::KEY;
+      encoded_frame->referenced_frame_id = encoded_frame->frame_id;
+    } else {
+      encoded_frame->dependency = EncodedFrame::DEPENDENT;
+      // Frame dependencies could theoretically be relaxed by looking for the
+      // VPX_FRAME_IS_DROPPABLE flag, but in recent testing (Oct 2014), this
+      // flag never seems to be set.
+      encoded_frame->referenced_frame_id = latest_frame_id_to_reference;
+    }
+    encoded_frame->rtp_timestamp = timestamp;
+    encoded_frame->reference_time = reference_time;
+    encoded_frame->data.assign(
         static_cast<const uint8*>(pkt->data.frame.buf),
         static_cast<const uint8*>(pkt->data.frame.buf) + pkt->data.frame.sz);
-    is_key_frame = !!(pkt->data.frame.flags & VPX_FRAME_IS_KEY);
     break;  // Done, since all data is provided in one CX_FRAME_PKT packet.
   }
-  // Don't update frame_id for zero size frames.
-  if (encoded_image->data.empty())
-    return true;
+  DCHECK(!encoded_frame->data.empty())
+      << "BUG: Encoder must provide data since lagged encoding is disabled.";
 
-  // Populate the encoded frame.
-  encoded_image->frame_id = ++last_encoded_frame_id_;
-  if (is_key_frame) {
-    // TODO(Hubbe): Replace "dependency" with a "bool is_key_frame".
-    encoded_image->dependency = EncodedFrame::KEY;
-    encoded_image->referenced_frame_id = encoded_image->frame_id;
-  } else {
-    encoded_image->dependency = EncodedFrame::DEPENDENT;
-    encoded_image->referenced_frame_id = latest_frame_id_to_reference;
-  }
+  DVLOG(1) << "VP8 encoded frame_id " << encoded_frame->frame_id
+           << ", sized:" << encoded_frame->data.size();
 
-  DVLOG(1) << "VP8 encoded frame_id " << encoded_image->frame_id
-           << ", sized:" << encoded_image->data.size();
-
-  if (is_key_frame) {
+  if (encoded_frame->dependency == EncodedFrame::KEY) {
     key_frame_requested_ = false;
 
     for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
       buffer_state_[i].state = kBufferSent;
-      buffer_state_[i].frame_id = encoded_image->frame_id;
+      buffer_state_[i].frame_id = encoded_frame->frame_id;
     }
   } else {
     if (buffer_to_update != kNoBuffer) {
       buffer_state_[buffer_to_update].state = kBufferSent;
-      buffer_state_[buffer_to_update].frame_id = encoded_image->frame_id;
+      buffer_state_[buffer_to_update].frame_id = encoded_frame->frame_id;
     }
   }
-  return true;
 }
 
 uint32 Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
@@ -370,15 +371,19 @@ void Vp8Encoder::GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
 
 void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  uint32 new_bitrate_kbit = new_bitrate / 1000;
-  if (config_->rc_target_bitrate == new_bitrate_kbit)
+
+  if (!is_initialized())
     return;
 
-  config_->rc_target_bitrate = new_bitrate_kbit;
+  uint32 new_bitrate_kbit = new_bitrate / 1000;
+  if (config_.rc_target_bitrate == new_bitrate_kbit)
+    return;
+
+  config_.rc_target_bitrate = new_bitrate_kbit;
 
   // Update encoder context.
-  if (vpx_codec_enc_config_set(encoder_.get(), config_.get())) {
-    DCHECK(false) << "Invalid return value";
+  if (vpx_codec_enc_config_set(&encoder_, &config_)) {
+    NOTREACHED() << "Invalid return value";
   }
 }
 

@@ -41,14 +41,17 @@ namespace media {
 namespace cast {
 
 // Container for the associated data of a video frame being processed.
-struct EncodedFrameReturnData {
-  EncodedFrameReturnData(base::TimeTicks c_time,
-                         VideoEncoder::FrameEncodedCallback callback) {
-    capture_time = c_time;
-    frame_encoded_callback = callback;
-  }
-  base::TimeTicks capture_time;
-  VideoEncoder::FrameEncodedCallback frame_encoded_callback;
+struct InProgressFrameEncode {
+  const RtpTimestamp rtp_timestamp;
+  const base::TimeTicks reference_time;
+  const VideoEncoder::FrameEncodedCallback frame_encoded_callback;
+
+  InProgressFrameEncode(RtpTimestamp rtp,
+                        base::TimeTicks r_time,
+                        VideoEncoder::FrameEncodedCallback callback)
+      : rtp_timestamp(rtp),
+        reference_time(r_time),
+        frame_encoded_callback(callback) {}
 };
 
 // The ExternalVideoEncoder class can be deleted directly by cast, while
@@ -154,14 +157,16 @@ class LocalVideoEncodeAcceleratorClient
 
   void EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time,
+      const base::TimeTicks& reference_time,
       bool key_frame_requested,
       const VideoEncoder::FrameEncodedCallback& frame_encoded_callback) {
     DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
 
-    encoded_frame_data_storage_.push_back(
-        EncodedFrameReturnData(capture_time, frame_encoded_callback));
+    in_progress_frame_encodes_.push_back(InProgressFrameEncode(
+        TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency),
+        reference_time,
+        frame_encoded_callback));
 
     // BitstreamBufferReady will be called once the encoder is done.
     video_encode_accelerator_->Encode(video_frame, key_frame_requested);
@@ -226,9 +231,10 @@ class LocalVideoEncodeAcceleratorClient
       // with the first key frame.
       stream_header_.append(static_cast<const char*>(output_buffer->memory()),
                             payload_size);
-    } else if (!encoded_frame_data_storage_.empty()) {
-      scoped_ptr<EncodedFrame> encoded_frame(
-          new EncodedFrame());
+    } else if (!in_progress_frame_encodes_.empty()) {
+      const InProgressFrameEncode& request = in_progress_frame_encodes_.front();
+
+      scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
       encoded_frame->dependency = key_frame ? EncodedFrame::KEY :
           EncodedFrame::DEPENDENT;
       encoded_frame->frame_id = ++last_encoded_frame_id_;
@@ -236,10 +242,8 @@ class LocalVideoEncodeAcceleratorClient
         encoded_frame->referenced_frame_id = encoded_frame->frame_id;
       else
         encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
-      encoded_frame->reference_time =
-          encoded_frame_data_storage_.front().capture_time;
-      encoded_frame->rtp_timestamp =
-          GetVideoRtpTimestamp(encoded_frame->reference_time);
+      encoded_frame->rtp_timestamp = request.rtp_timestamp;
+      encoded_frame->reference_time = request.reference_time;
       if (!stream_header_.empty()) {
         encoded_frame->data = stream_header_;
         stream_header_.clear();
@@ -259,10 +263,10 @@ class LocalVideoEncodeAcceleratorClient
       cast_environment_->PostTask(
           CastEnvironment::MAIN,
           FROM_HERE,
-          base::Bind(encoded_frame_data_storage_.front().frame_encoded_callback,
+          base::Bind(request.frame_encoded_callback,
                      base::Passed(&encoded_frame)));
 
-      encoded_frame_data_storage_.pop_front();
+      in_progress_frame_encodes_.pop_front();
     } else {
       VLOG(1) << "BitstreamBufferReady(): no encoded frame data available";
     }
@@ -376,7 +380,7 @@ class LocalVideoEncodeAcceleratorClient
   ScopedVector<base::SharedMemory> output_buffers_;
 
   // FIFO list.
-  std::list<EncodedFrameReturnData> encoded_frame_data_storage_;
+  std::list<InProgressFrameEncode> in_progress_frame_encodes_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalVideoEncodeAcceleratorClient);
 };
@@ -435,7 +439,7 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& capture_time,
+    const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
@@ -447,7 +451,7 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
       base::Bind(&LocalVideoEncodeAcceleratorClient::EncodeVideoFrame,
                  video_accelerator_client_,
                  video_frame,
-                 capture_time,
+                 reference_time,
                  key_frame_requested_,
                  frame_encoded_callback));
 

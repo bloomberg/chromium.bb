@@ -84,13 +84,6 @@ class FrameIdWrapHelper {
   DISALLOW_COPY_AND_ASSIGN(FrameIdWrapHelper);
 };
 
-inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {
-  base::TimeTicks zero_time;
-  base::TimeDelta recorded_delta = time_ticks - zero_time;
-  // Timestamp is in 90 KHz for video.
-  return static_cast<uint32>(recorded_delta.InMilliseconds() * 90);
-}
-
 }  // namespace cast
 }  // namespace media
 

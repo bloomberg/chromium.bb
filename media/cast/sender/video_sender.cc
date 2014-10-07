@@ -116,7 +116,7 @@ VideoSender::~VideoSender() {
 
 void VideoSender::InsertRawVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& capture_time) {
+    const base::TimeTicks& reference_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (cast_initialization_status_ != STATUS_VIDEO_INITIALIZED) {
     NOTREACHED();
@@ -124,30 +124,35 @@ void VideoSender::InsertRawVideoFrame(
   }
   DCHECK(video_encoder_.get()) << "Invalid state";
 
-  RtpTimestamp rtp_timestamp = GetVideoRtpTimestamp(capture_time);
+  const RtpTimestamp rtp_timestamp =
+      TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
+  const base::TimeTicks insertion_time = cast_environment_->Clock()->NowTicks();
+  // TODO(miu): Plumb in capture timestamps.  For now, make it look like capture
+  // took zero time by setting the BEGIN and END event to the same timestamp.
   cast_environment_->Logging()->InsertFrameEvent(
-      capture_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT,
-      rtp_timestamp, kFrameIdUnknown);
+      insertion_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT, rtp_timestamp,
+      kFrameIdUnknown);
   cast_environment_->Logging()->InsertFrameEvent(
-      cast_environment_->Clock()->NowTicks(),
-      FRAME_CAPTURE_END, VIDEO_EVENT,
-      rtp_timestamp,
+      insertion_time, FRAME_CAPTURE_END, VIDEO_EVENT, rtp_timestamp,
       kFrameIdUnknown);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT2(
       "cast_perf_test", "InsertRawVideoFrame",
       TRACE_EVENT_SCOPE_THREAD,
-      "timestamp", capture_time.ToInternalValue(),
+      "timestamp", reference_time.ToInternalValue(),
       "rtp_timestamp", rtp_timestamp);
 
-  // Drop the frame if its reference timestamp is not an increase over the last
-  // frame's.  This protects: 1) the duration calculations that assume
-  // timestamps are monotonically non-decreasing, and 2) assumptions made deeper
-  // in the implementation where each frame's RTP timestamp needs to be unique.
+  // Drop the frame if either its RTP or reference timestamp is not an increase
+  // over the last frame's.  This protects: 1) the duration calculations that
+  // assume timestamps are monotonically non-decreasing, and 2) assumptions made
+  // deeper in the implementation where each frame's RTP timestamp needs to be
+  // unique.
   if (!last_enqueued_frame_reference_time_.is_null() &&
-      capture_time <= last_enqueued_frame_reference_time_) {
-    VLOG(1) << "Dropping video frame: Reference time did not increase.";
+      (!IsNewerRtpTimestamp(rtp_timestamp,
+                            last_enqueued_frame_rtp_timestamp_) ||
+       reference_time <= last_enqueued_frame_reference_time_)) {
+    VLOG(1) << "Dropping video frame: RTP or reference time did not increase.";
     return;
   }
 
@@ -157,7 +162,7 @@ void VideoSender::InsertRawVideoFrame(
   // guess will be eliminated when |duration_in_encoder_| is updated in
   // OnEncodedVideoFrame().
   const base::TimeDelta duration_added_by_next_frame = frames_in_encoder_ > 0 ?
-      capture_time - last_enqueued_frame_reference_time_ :
+      reference_time - last_enqueued_frame_reference_time_ :
       base::TimeDelta::FromSecondsD(1.0 / max_frame_rate_);
 
   if (ShouldDropNextFrame(duration_added_by_next_frame)) {
@@ -173,7 +178,7 @@ void VideoSender::InsertRawVideoFrame(
   }
 
   uint32 bitrate = congestion_control_->GetBitrate(
-        capture_time + target_playout_delay_, target_playout_delay_);
+        reference_time + target_playout_delay_, target_playout_delay_);
   if (bitrate != last_bitrate_) {
     video_encoder_->SetBitRate(bitrate);
     last_bitrate_ = bitrate;
@@ -181,13 +186,14 @@ void VideoSender::InsertRawVideoFrame(
 
   if (video_encoder_->EncodeVideoFrame(
           video_frame,
-          capture_time,
+          reference_time,
           base::Bind(&VideoSender::OnEncodedVideoFrame,
                      weak_factory_.GetWeakPtr(),
                      bitrate))) {
     frames_in_encoder_++;
     duration_in_encoder_ += duration_added_by_next_frame;
-    last_enqueued_frame_reference_time_ = capture_time;
+    last_enqueued_frame_rtp_timestamp_ = rtp_timestamp;
+    last_enqueued_frame_reference_time_ = reference_time;
   } else {
     VLOG(1) << "Encoder rejected a frame.  Skipping...";
   }

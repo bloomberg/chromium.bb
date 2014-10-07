@@ -54,7 +54,7 @@ class VideoSender : public FrameSender,
   // Note: It is invalid to call this method if InitializationResult() returns
   // anything but STATUS_VIDEO_INITIALIZED.
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                           const base::TimeTicks& capture_time);
+                           const base::TimeTicks& reference_time);
 
  protected:
   virtual int GetNumberOfFramesInEncoder() const override;
@@ -83,6 +83,7 @@ class VideoSender : public FrameSender,
   base::TimeDelta duration_in_encoder_;
 
   // The timestamp of the frame that was last enqueued in |video_encoder_|.
+  RtpTimestamp last_enqueued_frame_rtp_timestamp_;
   base::TimeTicks last_enqueued_frame_reference_time_;
 
   // Remember what we set the bitrate to before, no need to set it again if

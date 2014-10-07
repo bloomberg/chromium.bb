@@ -83,7 +83,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
         new EncodedFrame());
     // Test only supports VP8, currently.
     CHECK_EQ(CODEC_VIDEO_VP8, GetParam());
-    vp8_encoder_.Encode(video_frame, encoded_frame.get());
+    vp8_encoder_.Encode(video_frame, base::TimeTicks(), encoded_frame.get());
     // Rewrite frame IDs for testing purposes.
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
     if (last_frame_id_ == 0)

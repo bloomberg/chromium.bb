@@ -20,19 +20,17 @@ namespace cast {
 // All these functions are called from the main cast thread.
 class VideoEncoder {
  public:
-  typedef base::Callback<void(scoped_ptr<EncodedFrame>)>
-      FrameEncodedCallback;
+  typedef base::Callback<void(scoped_ptr<EncodedFrame>)> FrameEncodedCallback;
 
   virtual ~VideoEncoder() {}
 
-  // The video_frame must be valid until the closure callback is called.
-  // The closure callback is called from the video encoder thread as soon as
-  // the encoder is done with the frame; it does not mean that the encoded frame
-  // has been sent out.
-  // Once the encoded frame is ready the frame_encoded_callback is called.
+  // If true is returned, the Encoder has accepted the request and will process
+  // it asynchronously, running |frame_encoded_callback| on the MAIN
+  // CastEnvironment thread with the result.  If false is returned, nothing
+  // happens and the callback will not be run.
   virtual bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time,
+      const base::TimeTicks& reference_time,
       const FrameEncodedCallback& frame_encoded_callback) = 0;
 
   // Inform the encoder about the new target bit rate.

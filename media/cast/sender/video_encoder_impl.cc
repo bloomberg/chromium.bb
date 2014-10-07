@@ -32,7 +32,7 @@ void EncodeVideoFrameOnEncoderThread(
     scoped_refptr<CastEnvironment> environment,
     SoftwareVideoEncoder* encoder,
     const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& capture_time,
+    const base::TimeTicks& reference_time,
     const VideoEncoderImpl::CodecDynamicConfig& dynamic_config,
     const VideoEncoderImpl::FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
@@ -43,24 +43,12 @@ void EncodeVideoFrameOnEncoderThread(
       dynamic_config.latest_frame_id_to_reference);
   encoder->UpdateRates(dynamic_config.bit_rate);
 
-  scoped_ptr<EncodedFrame> encoded_frame(
-      new EncodedFrame());
-  if (!encoder->Encode(video_frame, encoded_frame.get())) {
-    VLOG(1) << "Encoding failed";
-    return;
-  }
-  if (encoded_frame->data.empty()) {
-    VLOG(1) << "Encoding resulted in an empty frame";
-    return;
-  }
-  encoded_frame->rtp_timestamp = GetVideoRtpTimestamp(capture_time);
-  encoded_frame->reference_time = capture_time;
-
+  scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
+  encoder->Encode(video_frame, reference_time, encoded_frame.get());
   environment->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,
-      base::Bind(
-          frame_encoded_callback, base::Passed(&encoded_frame)));
+      base::Bind(frame_encoded_callback, base::Passed(&encoded_frame)));
 }
 }  // namespace
 
@@ -102,7 +90,7 @@ VideoEncoderImpl::~VideoEncoderImpl() {
 
 bool VideoEncoderImpl::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& capture_time,
+    const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   cast_environment_->PostTask(CastEnvironment::VIDEO,
@@ -111,7 +99,7 @@ bool VideoEncoderImpl::EncodeVideoFrame(
                                          cast_environment_,
                                          encoder_.get(),
                                          video_frame,
-                                         capture_time,
+                                         reference_time,
                                          dynamic_config_,
                                          frame_encoded_callback));
 
