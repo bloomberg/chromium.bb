@@ -795,7 +795,7 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 
   bounds_delta_ = bounds_delta;
 
-  ScrollbarParametersDidChange(false);
+  ScrollbarParametersDidChange(true);
   if (masks_to_bounds())
     NoteLayerPropertyChangedForSubtree();
   else
@@ -1383,8 +1383,11 @@ void LayerImpl::ScrollbarParametersDidChange(bool on_resize) {
 
   for (ScrollbarSet::iterator it = scrollbars_->begin();
        it != scrollbars_->end();
-       ++it)
-    (*it)->ScrollbarParametersDidChange(on_resize);
+       ++it) {
+    bool is_scroll_layer = (*it)->ScrollLayerId() == layer_id_;
+    bool scroll_layer_resized = is_scroll_layer && on_resize;
+    (*it)->ScrollbarParametersDidChange(scroll_layer_resized);
+  }
 }
 
 void LayerImpl::SetNeedsPushProperties() {
