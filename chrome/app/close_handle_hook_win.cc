@@ -141,9 +141,18 @@ void CloseHandleHooks::AddIATPatch(HMODULE module) {
     return;
 
   base::win::IATPatchFunction* patch = new base::win::IATPatchFunction;
-  if (patch->PatchFromModule(module, "kernel32.dll", "CloseHandle",
-                             CloseHandleHook)) {
-    delete patch;
+  __try {
+    // There is no guarantee that |module| is still loaded at this point.
+    if (patch->PatchFromModule(module, "kernel32.dll", "CloseHandle",
+                               CloseHandleHook)) {
+      delete patch;
+      return;
+    }
+  } __except((GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ||
+              GetExceptionCode() == EXCEPTION_GUARD_PAGE ||
+              GetExceptionCode() == EXCEPTION_IN_PAGE_ERROR) ?
+             EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    // Leak the patch.
     return;
   }
 
@@ -218,4 +227,6 @@ void InstallCloseHandleHooks() {
 }
 
 void RemoveCloseHandleHooks() {
+  // We are partching all loaded modules without forcing them to stay in memory,
+  // removing patches is not safe.
 }
