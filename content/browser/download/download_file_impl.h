@@ -47,21 +47,21 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   virtual ~DownloadFileImpl();
 
   // DownloadFile functions.
-  virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
+  virtual void Initialize(const InitializeCallback& callback) override;
   virtual void RenameAndUniquify(
       const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) OVERRIDE;
+      const RenameCompletionCallback& callback) override;
   virtual void RenameAndAnnotate(
       const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) OVERRIDE;
-  virtual void Detach() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual base::FilePath FullPath() const OVERRIDE;
-  virtual bool InProgress() const OVERRIDE;
-  virtual int64 CurrentSpeed() const OVERRIDE;
-  virtual bool GetHash(std::string* hash) OVERRIDE;
-  virtual std::string GetHashState() OVERRIDE;
-  virtual void SetClientGuid(const std::string& guid) OVERRIDE;
+      const RenameCompletionCallback& callback) override;
+  virtual void Detach() override;
+  virtual void Cancel() override;
+  virtual base::FilePath FullPath() const override;
+  virtual bool InProgress() const override;
+  virtual int64 CurrentSpeed() const override;
+  virtual bool GetHash(std::string* hash) override;
+  virtual std::string GetHashState() override;
+  virtual void SetClientGuid(const std::string& guid) override;
 
  protected:
   // For test class overrides.

@@ -23,22 +23,22 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   MockQuotaManagerProxy(MockQuotaManager* quota_manager,
                         base::SingleThreadTaskRunner* task_runner);
 
-  virtual void RegisterClient(QuotaClient* client) OVERRIDE;
+  virtual void RegisterClient(QuotaClient* client) override;
 
   void SimulateQuotaManagerDestroyed();
 
   // We don't mock them.
-  virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
-  virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
+  virtual void NotifyOriginInUse(const GURL& origin) override {}
+  virtual void NotifyOriginNoLongerInUse(const GURL& origin) override {}
   virtual void SetUsageCacheEnabled(QuotaClient::ID client_id,
                                     const GURL& origin,
                                     StorageType type,
-                                    bool enabled) OVERRIDE {}
+                                    bool enabled) override {}
   virtual void GetUsageAndQuota(
       base::SequencedTaskRunner* original_task_runner,
       const GURL& origin,
       StorageType type,
-      const QuotaManager::GetUsageAndQuotaCallback& callback) OVERRIDE {}
+      const QuotaManager::GetUsageAndQuotaCallback& callback) override {}
 
   // Validates the |client_id| and updates the internal access count
   // which can be accessed via notify_storage_accessed_count().
@@ -46,7 +46,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // last_notified_type_.
   virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
                                      const GURL& origin,
-                                     StorageType type) OVERRIDE;
+                                     StorageType type) override;
 
   // Records the |origin|, |type| and |delta| as last_notified_origin_,
   // last_notified_type_ and last_notified_delta_ respecitvely.
@@ -55,7 +55,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   virtual void NotifyStorageModified(QuotaClient::ID client_id,
                                      const GURL& origin,
                                      StorageType type,
-                                     int64 delta) OVERRIDE;
+                                     int64 delta) override;
 
   int notify_storage_accessed_count() const { return storage_accessed_count_; }
   int notify_storage_modified_count() const { return storage_modified_count_; }

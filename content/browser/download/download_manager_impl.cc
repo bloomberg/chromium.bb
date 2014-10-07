@@ -181,7 +181,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
-      const net::BoundNetLog& bound_net_log) OVERRIDE {
+      const net::BoundNetLog& bound_net_log) override {
     return new DownloadItemImpl(
         delegate,
         download_id,
@@ -208,7 +208,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const DownloadCreateInfo& info,
-      const net::BoundNetLog& bound_net_log) OVERRIDE {
+      const net::BoundNetLog& bound_net_log) override {
     return new DownloadItemImpl(delegate, download_id, info, bound_net_log);
   }
 
@@ -219,7 +219,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const GURL& url,
       const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::BoundNetLog& bound_net_log) OVERRIDE {
+      const net::BoundNetLog& bound_net_log) override {
     return new DownloadItemImpl(delegate, download_id, path, url,
                                 mime_type, request_handle.Pass(),
                                 bound_net_log);

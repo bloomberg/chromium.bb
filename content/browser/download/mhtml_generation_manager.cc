@@ -36,8 +36,8 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
-                                   int exit_code) OVERRIDE;
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
+                                   int exit_code) override;
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
 
  private:

@@ -111,7 +111,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   virtual void Start(
       scoped_ptr<DownloadFile> download_file,
-      scoped_ptr<DownloadRequestHandleInterface> req_handle) OVERRIDE {
+      scoped_ptr<DownloadRequestHandleInterface> req_handle) override {
     MockStart(download_file.get(), req_handle.get());
   }
 
@@ -173,7 +173,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_METHOD0(NotifyRemoved, void());
   // May be called when vlog is on.
-  virtual std::string DebugString(bool verbose) const OVERRIDE {
+  virtual std::string DebugString(bool verbose) const override {
     return std::string();
   }
 };
@@ -248,12 +248,12 @@ class MockDownloadItemFactory
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
-      const net::BoundNetLog& bound_net_log) OVERRIDE;
+      const net::BoundNetLog& bound_net_log) override;
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const DownloadCreateInfo& info,
-      const net::BoundNetLog& bound_net_log) OVERRIDE;
+      const net::BoundNetLog& bound_net_log) override;
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
@@ -261,7 +261,7 @@ class MockDownloadItemFactory
       const GURL& url,
         const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::BoundNetLog& bound_net_log) OVERRIDE;
+      const net::BoundNetLog& bound_net_log) override;
 
  private:
   std::map<uint32, MockDownloadItemImpl*> items_;

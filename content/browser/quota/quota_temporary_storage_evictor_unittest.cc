@@ -38,7 +38,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
-      const EvictOriginDataCallback& callback) OVERRIDE {
+      const EvictOriginDataCallback& callback) override {
     if (error_on_evict_origin_data_) {
       callback.Run(storage::kQuotaErrorInvalidModification);
       return;
@@ -50,7 +50,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   }
 
   virtual void GetUsageAndQuotaForEviction(
-      const UsageAndQuotaCallback& callback) OVERRIDE {
+      const UsageAndQuotaCallback& callback) override {
     if (error_on_get_usage_and_quota_) {
       callback.Run(storage::kQuotaErrorInvalidAccess, UsageAndQuota());
       return;
@@ -63,7 +63,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 
   virtual void GetLRUOrigin(
       StorageType type,
-      const GetLRUOriginCallback& callback) OVERRIDE {
+      const GetLRUOriginCallback& callback) override {
     if (origin_order_.empty())
       callback.Run(GURL());
     else

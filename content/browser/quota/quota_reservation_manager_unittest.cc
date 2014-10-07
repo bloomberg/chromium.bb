@@ -52,7 +52,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   virtual void ReserveQuota(const GURL& origin,
                             storage::FileSystemType type,
                             int64 delta,
-                            const ReserveQuotaCallback& callback) OVERRIDE {
+                            const ReserveQuotaCallback& callback) override {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_memory_usage_ += delta;
@@ -63,7 +63,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   virtual void ReleaseReservedQuota(const GURL& origin,
                                     storage::FileSystemType type,
-                                    int64 size) OVERRIDE {
+                                    int64 size) override {
     EXPECT_LE(0, size);
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
@@ -72,7 +72,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   virtual void CommitQuotaUsage(const GURL& origin,
                                 storage::FileSystemType type,
-                                int64 delta) OVERRIDE {
+                                int64 delta) override {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_disk_usage_ += delta;
@@ -80,9 +80,9 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   virtual void IncrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) OVERRIDE {}
+                                   storage::FileSystemType type) override {}
   virtual void DecrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) OVERRIDE {}
+                                   storage::FileSystemType type) override {}
 
   int64 on_memory_usage() { return on_memory_usage_; }
   int64 on_disk_usage() { return on_disk_usage_; }
@@ -182,7 +182,7 @@ class QuotaReservationManagerTest : public testing::Test {
   QuotaReservationManagerTest() {}
   virtual ~QuotaReservationManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
     file_path_ = work_dir_.path().Append(FILE_PATH_LITERAL("hoge"));
     SetFileSize(file_path_, kInitialFileSize);
@@ -191,7 +191,7 @@ class QuotaReservationManagerTest : public testing::Test {
     reservation_manager_.reset(new QuotaReservationManager(backend.Pass()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     reservation_manager_.reset();
   }
 

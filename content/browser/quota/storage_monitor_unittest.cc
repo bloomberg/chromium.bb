@@ -51,7 +51,7 @@ class MockObserver : public StorageObserver {
   }
 
   // StorageObserver implementation:
-  virtual void OnStorageEvent(const StorageObserver::Event& event) OVERRIDE {
+  virtual void OnStorageEvent(const StorageObserver::Event& event) override {
     events_.push_back(event);
   }
 
@@ -89,7 +89,7 @@ class UsageMockQuotaManager : public QuotaManager {
   virtual void GetUsageAndQuotaForWebApps(
       const GURL& origin,
       StorageType type,
-      const GetUsageAndQuotaCallback& callback) OVERRIDE {
+      const GetUsageAndQuotaCallback& callback) override {
     if (initialized_)
       callback.Run(callback_status_, callback_usage_, callback_quota_);
     else
@@ -164,12 +164,12 @@ class StorageMonitorTestBase : public testing::Test {
 
 class StorageTestWithManagerBase : public StorageMonitorTestBase {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new UsageMockQuotaManager(storage_policy_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // This ensures the quota manager is destroyed correctly.
     quota_manager_ = NULL;
     base::RunLoop().RunUntilIdle();
@@ -563,7 +563,7 @@ class StorageMonitorTest : public StorageTestWithManagerBase {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     StorageTestWithManagerBase::SetUp();
 
     storage_monitor_ = quota_manager_->storage_monitor_.get();
@@ -645,7 +645,7 @@ TEST_F(StorageMonitorTest, RemoveObserverForFilter) {
 
 class StorageMonitorIntegrationTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new QuotaManager(
@@ -663,7 +663,7 @@ class StorageMonitorIntegrationTest : public testing::Test {
     quota_manager_->proxy()->RegisterClient(client_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // This ensures the quota manager is destroyed correctly.
     quota_manager_ = NULL;
     base::RunLoop().RunUntilIdle();

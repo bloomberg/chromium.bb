@@ -146,10 +146,10 @@ class CONTENT_EXPORT SavePackage
   void DoSavingProcess();
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // DownloadItem::Observer implementation.
-  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(DownloadItem* download) override;
 
   // Update the download history of this item upon completion.
   void FinalizeDownloadEntry();

@@ -129,10 +129,10 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   // retrieval.
   virtual void RenameAndUniquify(
       const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) OVERRIDE;
+      const RenameCompletionCallback& callback) override;
   virtual void RenameAndAnnotate(
       const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) OVERRIDE;
+      const RenameCompletionCallback& callback) override;
 
  private:
   static void RenameCallbackWrapper(
@@ -166,7 +166,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
       bool calculate_hash,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer) OVERRIDE;
+      base::WeakPtr<DownloadDestinationObserver> observer) override;
 
   void AddRenameCallback(base::Closure callback);
   void GetAllRenameCallbacks(std::vector<base::Closure>* results);
@@ -297,7 +297,7 @@ class CountingDownloadFile : public DownloadFileImpl {
     active_files_--;
   }
 
-  virtual void Initialize(const InitializeCallback& callback) OVERRIDE {
+  virtual void Initialize(const InitializeCallback& callback) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     active_files_++;
     return DownloadFileImpl::Initialize(callback);
@@ -342,7 +342,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    base::WeakPtr<DownloadDestinationObserver> observer) OVERRIDE {
+    base::WeakPtr<DownloadDestinationObserver> observer) override {
     scoped_ptr<PowerSaveBlocker> psb(
         PowerSaveBlocker::Create(
             PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -362,7 +362,7 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
 
   virtual bool ShouldOpenDownload(
       DownloadItem* item,
-      const DownloadOpenDelayedCallback& callback) OVERRIDE {
+      const DownloadOpenDelayedCallback& callback) override {
     if (delay_download_open_) {
       delayed_callbacks_.push_back(callback);
       return false;
@@ -415,7 +415,7 @@ class RecordingDownloadObserver : DownloadItem::Observer {
   }
 
  private:
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE {
+  virtual void OnDownloadUpdated(DownloadItem* download) override {
     DCHECK_EQ(download_, download);
     DownloadItem::DownloadState state = download->GetState();
     int bytes = download->GetReceivedBytes();
@@ -426,7 +426,7 @@ class RecordingDownloadObserver : DownloadItem::Observer {
     }
   }
 
-  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE {
+  virtual void OnDownloadDestroyed(DownloadItem* download) override {
     DCHECK_EQ(download_, download);
     RemoveObserver();
   }
@@ -459,14 +459,14 @@ class DownloadCreateObserver : DownloadManager::Observer {
     manager_ = NULL;
   }
 
-  virtual void ManagerGoingDown(DownloadManager* manager) OVERRIDE {
+  virtual void ManagerGoingDown(DownloadManager* manager) override {
     DCHECK_EQ(manager_, manager);
     manager_->RemoveObserver(this);
     manager_ = NULL;
   }
 
   virtual void OnDownloadCreated(DownloadManager* manager,
-                                 DownloadItem* download) OVERRIDE {
+                                 DownloadItem* download) override {
     if (!item_)
       item_ = download;
 
@@ -574,7 +574,7 @@ class DownloadContentTest : public ContentBrowserTest {
        ByteStreamWriter::kFractionBufferBeforeSending) + 1;
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
     test_delegate_.reset(new TestShellDownloadManagerDelegate());

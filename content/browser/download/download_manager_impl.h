@@ -58,21 +58,21 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void OnSavePackageSuccessfullyFinished(DownloadItem* download_item);
 
   // DownloadManager functions.
-  virtual void SetDelegate(DownloadManagerDelegate* delegate) OVERRIDE;
-  virtual DownloadManagerDelegate* GetDelegate() const OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual void GetAllDownloads(DownloadVector* result) OVERRIDE;
+  virtual void SetDelegate(DownloadManagerDelegate* delegate) override;
+  virtual DownloadManagerDelegate* GetDelegate() const override;
+  virtual void Shutdown() override;
+  virtual void GetAllDownloads(DownloadVector* result) override;
   virtual void StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream,
-      const DownloadUrlParameters::OnStartedCallback& on_started) OVERRIDE;
+      const DownloadUrlParameters::OnStartedCallback& on_started) override;
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
-                                     base::Time remove_end) OVERRIDE;
-  virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
-  virtual int RemoveAllDownloads() OVERRIDE;
-  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+                                     base::Time remove_end) override;
+  virtual int RemoveDownloads(base::Time remove_begin) override;
+  virtual int RemoveAllDownloads() override;
+  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
   virtual content::DownloadItem* CreateDownloadItem(
       uint32 id,
       const base::FilePath& current_path,
@@ -90,12 +90,12 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       content::DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
-      bool opened) OVERRIDE;
-  virtual int InProgressCount() const OVERRIDE;
-  virtual int NonMaliciousInProgressCount() const OVERRIDE;
-  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual void CheckForHistoryFilesRemoval() OVERRIDE;
-  virtual DownloadItem* GetDownload(uint32 id) OVERRIDE;
+      bool opened) override;
+  virtual int InProgressCount() const override;
+  virtual int NonMaliciousInProgressCount() const override;
+  virtual BrowserContext* GetBrowserContext() const override;
+  virtual void CheckForHistoryFilesRemoval() override;
+  virtual DownloadItem* GetDownload(uint32 id) override;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -145,21 +145,21 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)
   virtual void DetermineDownloadTarget(
-      DownloadItemImpl* item, const DownloadTargetCallback& callback) OVERRIDE;
+      DownloadItemImpl* item, const DownloadTargetCallback& callback) override;
   virtual bool ShouldCompleteDownload(
-      DownloadItemImpl* item, const base::Closure& complete_callback) OVERRIDE;
+      DownloadItemImpl* item, const base::Closure& complete_callback) override;
   virtual bool ShouldOpenFileBasedOnExtension(
-      const base::FilePath& path) OVERRIDE;
+      const base::FilePath& path) override;
   virtual bool ShouldOpenDownload(
       DownloadItemImpl* item,
-      const ShouldOpenDownloadCallback& callback) OVERRIDE;
-  virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
+      const ShouldOpenDownloadCallback& callback) override;
+  virtual void CheckForFileRemoval(DownloadItemImpl* download_item) override;
   virtual void ResumeInterruptedDownload(
       scoped_ptr<content::DownloadUrlParameters> params,
-      uint32 id) OVERRIDE;
-  virtual void OpenDownload(DownloadItemImpl* download) OVERRIDE;
-  virtual void ShowDownloadInShell(DownloadItemImpl* download) OVERRIDE;
-  virtual void DownloadRemoved(DownloadItemImpl* download) OVERRIDE;
+      uint32 id) override;
+  virtual void OpenDownload(DownloadItemImpl* download) override;
+  virtual void ShowDownloadInShell(DownloadItemImpl* download) override;
+  virtual void DownloadRemoved(DownloadItemImpl* download) override;
 
   // Factory for creation of downloads items.
   scoped_ptr<DownloadItemFactory> item_factory_;

@@ -46,36 +46,36 @@ class CONTENT_EXPORT DownloadResourceHandler
       const DownloadUrlParameters::OnStartedCallback& started_cb,
       scoped_ptr<DownloadSaveInfo> save_info);
 
-  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
+  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
 
   virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
 
   // Send the download creation information to the download thread.
   virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) OVERRIDE;
+                                 bool* defer) override;
 
   // Pass-through implementation.
-  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
+  virtual bool OnWillStart(const GURL& url, bool* defer) override;
 
   // Pass-through implementation.
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE;
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
 
   // Create a new buffer, which will be handed to the download thread for file
   // writing and deletion.
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
-                          int min_size) OVERRIDE;
+                          int min_size) override;
 
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
 
   virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
-                                   bool* defer) OVERRIDE;
+                                   bool* defer) override;
 
   // N/A to this flavor of DownloadHandler.
-  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE;
+  virtual void OnDataDownloaded(int bytes_downloaded) override;
 
   void PauseRequest();
   void ResumeRequest();

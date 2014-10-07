@@ -47,15 +47,15 @@ class MockQuotaClient : public QuotaClient {
   MockQuotaClient() {}
   virtual ~MockQuotaClient() {}
 
-  virtual ID id() const OVERRIDE {
+  virtual ID id() const override {
     return kFileSystem;
   }
 
-  virtual void OnQuotaManagerDestroyed() OVERRIDE {}
+  virtual void OnQuotaManagerDestroyed() override {}
 
   virtual void GetOriginUsage(const GURL& origin,
                               StorageType type,
-                              const GetUsageCallback& callback) OVERRIDE {
+                              const GetUsageCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     int64 usage = GetUsage(origin);
     base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -63,7 +63,7 @@ class MockQuotaClient : public QuotaClient {
   }
 
   virtual void GetOriginsForType(StorageType type,
-                                 const GetOriginsCallback& callback) OVERRIDE {
+                                 const GetOriginsCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     std::set<GURL> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
@@ -76,7 +76,7 @@ class MockQuotaClient : public QuotaClient {
 
   virtual void GetOriginsForHost(StorageType type,
                                  const std::string& host,
-                                 const GetOriginsCallback& callback) OVERRIDE {
+                                 const GetOriginsCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     std::set<GURL> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
@@ -90,14 +90,14 @@ class MockQuotaClient : public QuotaClient {
 
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
-                                const DeletionCallback& callback) OVERRIDE {
+                                const DeletionCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     usage_map_.erase(origin);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, kQuotaStatusOk));
   }
 
-  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE {
+  virtual bool DoesSupport(storage::StorageType type) const override {
     return type == storage::kStorageTypeTemporary;
   }
 

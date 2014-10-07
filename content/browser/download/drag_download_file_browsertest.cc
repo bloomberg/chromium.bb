@@ -62,7 +62,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
   }
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
     ShellDownloadManagerDelegate* delegate =
         static_cast<ShellDownloadManagerDelegate*>(

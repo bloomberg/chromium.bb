@@ -54,7 +54,7 @@ class MockQuotaManager : public QuotaManager {
   virtual void GetUsageAndQuota(
       const GURL& origin,
       storage::StorageType type,
-      const GetUsageAndQuotaCallback& callback) OVERRIDE;
+      const GetUsageAndQuotaCallback& callback) override;
 
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
@@ -62,7 +62,7 @@ class MockQuotaManager : public QuotaManager {
   virtual void GetOriginsModifiedSince(
       StorageType type,
       base::Time modified_since,
-      const GetOriginsCallback& callback) OVERRIDE;
+      const GetOriginsCallback& callback) override;
 
   // Removes an origin from the canned list of origins, but doesn't touch
   // anything on disk. The caller must provide |quota_client_mask| which
@@ -73,7 +73,7 @@ class MockQuotaManager : public QuotaManager {
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
                                 int quota_client_mask,
-                                const StatusCallback& callback) OVERRIDE;
+                                const StatusCallback& callback) override;
 
   // Helper method for updating internal quota info.
   void SetQuota(const GURL& origin, StorageType type, int64 quota);

@@ -63,12 +63,12 @@ class CONTENT_EXPORT DownloadRequestHandle
                         int request_id);
 
   // Implement DownloadRequestHandleInterface interface.
-  virtual WebContents* GetWebContents() const OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() const OVERRIDE;
-  virtual void PauseRequest() const OVERRIDE;
-  virtual void ResumeRequest() const OVERRIDE;
-  virtual void CancelRequest() const OVERRIDE;
-  virtual std::string DebugString() const OVERRIDE;
+  virtual WebContents* GetWebContents() const override;
+  virtual DownloadManager* GetDownloadManager() const override;
+  virtual void PauseRequest() const override;
+  virtual void ResumeRequest() const override;
+  virtual void CancelRequest() const override;
+  virtual std::string DebugString() const override;
 
  private:
   base::WeakPtr<DownloadResourceHandler> handler_;

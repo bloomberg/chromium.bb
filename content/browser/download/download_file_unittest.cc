@@ -88,7 +88,7 @@ class TestDownloadFileImpl : public DownloadFileImpl {
 
  protected:
   virtual base::TimeDelta GetRetryDelayForFailedRename(
-      int attempt_count) OVERRIDE {
+      int attempt_count) override {
     return base::TimeDelta::FromMilliseconds(0);
   }
 
@@ -97,7 +97,7 @@ class TestDownloadFileImpl : public DownloadFileImpl {
   // possibly EAGAIN, which is difficult to replicate reliably. So we resort to
   // simulating a transient error using ACCESS_DENIED instead.
   virtual bool ShouldRetryFailedRename(
-      DownloadInterruptReason reason) OVERRIDE {
+      DownloadInterruptReason reason) override {
     return reason == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
   }
 #endif
