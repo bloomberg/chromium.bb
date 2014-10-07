@@ -558,6 +558,9 @@ SHERIFF_TYPE_TO_URL = {
 
 # Useful config targets.
 CQ_MASTER = 'master-paladin'
+CANARY_MASTER = 'master-release'
+PFQ_MASTER = 'master-chromium-pfq'
+
 
 # Useful google storage locations.
 PRE_CQ_GROUP_GS_LOCATION = 'trybot-pre-cq-group'

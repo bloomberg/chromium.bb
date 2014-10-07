@@ -28,7 +28,8 @@ from chromite.lib import table
 
 # Useful config targets.
 CQ_MASTER = constants.CQ_MASTER
-PFQ_MASTER = 'x86-generic-chromium-pfq'
+PFQ_MASTER = constants.PFQ_MASTER
+CANARY_MASTER = constants.CANARY_MASTER
 
 # Useful google storage locations.
 PRE_CQ_GROUP_GS_LOCATION = constants.PRE_CQ_GROUP_GS_LOCATION
@@ -37,6 +38,7 @@ PRE_CQ_GROUP_GS_LOCATION = constants.PRE_CQ_GROUP_GS_LOCATION
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
 PFQ = constants.PFQ_TYPE
+CANARY = constants.CANARY_TYPE
 
 # Number of parallel processes used when uploading/downloading GS files.
 MAX_PARALLEL = 40
@@ -53,7 +55,7 @@ NICE_DATETIME_FORMAT = metadata_lib.NICE_DATETIME_FORMAT
 # CQ master and slaves both use the same spreadsheet
 CQ_SS_KEY = '0AsXDKtaHikmcdElQWVFuT21aMlFXVTN5bVhfQ2ptVFE'
 PFQ_SS_KEY = '0AhFPeDq6pmwxdDdrYXk3cnJJV05jN3Zja0s5VjFfNlE'
-
+CANARY_SS_KEY = '0AhFPeDq6pmwxdDBWM0t3YnYyeVFoM3VaRXNianc1VVE'
 
 # These are the preferred base URLs we use to canonicalize bugs/CLs.
 BUGANIZER_BASE_URL = 'b/'
@@ -289,7 +291,7 @@ class SpreadsheetMasterTable(StatsTable):
 
 
 class PFQMasterTable(SpreadsheetMasterTable):
-  """Stats table for the CQ Master."""
+  """Stats table for the PFQ Master."""
   SS_KEY = PFQ_SS_KEY
 
   WATERFALL = 'chromeos'
@@ -310,6 +312,31 @@ class PFQMasterTable(SpreadsheetMasterTable):
     super(PFQMasterTable, self).__init__(PFQMasterTable.TARGET,
                                          PFQMasterTable.WATERFALL,
                                          list(PFQMasterTable.COLUMNS))
+
+
+class CanaryMasterTable(SpreadsheetMasterTable):
+  """Stats table for the Canary Master."""
+  SS_KEY = PFQ_SS_KEY
+
+  WATERFALL = 'chromeos'
+  # Must match up with name in waterfall.
+  TARGET = 'Canary master'
+
+  WORKSHEET_NAME = 'CanaryMasterData'
+
+  # Bump this number whenever this class adds new data columns, or changes
+  # the values of existing data columns.
+  SHEETS_VERSION = SpreadsheetMasterTable.SHEETS_VERSION
+
+  # These columns are in addition to those inherited from
+  # SpreadsheetMasterTable
+  COLUMNS = ()
+
+  def __init__(self):
+    super(CanaryMasterTable, self).__init__(CanaryMasterTable.TARGET,
+                                            CanaryMasterTable.WATERFALL,
+                                            list(CanaryMasterTable.COLUMNS))
+
 
 
 class CQMasterTable(SpreadsheetMasterTable):
@@ -846,6 +873,17 @@ class PFQMasterStats(StatsManager):
 
   def __init__(self, **kwargs):
     super(PFQMasterStats, self).__init__(PFQ_MASTER, **kwargs)
+
+
+class CanaryMasterStats(StatsManager):
+  """Manager stats gathering for the Canary Master."""
+  TABLE_CLASS = CanaryMasterTable
+  UPLOAD_ROW_PER_BUILD = True
+  BOT_TYPE = CANARY
+  GET_SHEETS_VERSION = True
+
+  def __init__(self, **kwargs):
+    super(CanaryMasterStats, self).__init__(CANARY_MASTER, **kwargs)
 
 
 # TODO(mtennant): Add Sheets support for PreCQ by creating a PreCQTable
@@ -1411,6 +1449,8 @@ def GetParser():
                     help='Gather stats for the CQ master.')
   mode.add_argument('--pfq-master', action='store_true', default=False,
                     help='Gather stats for the PFQ master.')
+  mode.add_argument('--canary-master', action='store_true', default=False,
+                    help='Gather stats for the Canary master.')
   mode.add_argument('--pre-cq', action='store_true', default=False,
                     help='Gather stats for the Pre-CQ.')
   mode.add_argument('--cq-slaves', action='store_true', default=False,
@@ -1500,6 +1540,12 @@ def main(argv):
     stats_managers.append(
         PFQMasterStats(
             ss_key=options.ss_key or PFQ_SS_KEY,
+            no_sheets_version_filter=options.no_sheets_version_filter))
+
+  if options.canary_master:
+    stats_managers.append(
+      CanaryMasterStats(
+            ss_key=options.ss_key or CANARY_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.pre_cq:
