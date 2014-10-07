@@ -70,7 +70,7 @@ var FileManagerUI = function(element, dialogType) {
 
   /**
    * Default task picker.
-   * @type {DefaultActionDialog}
+   * @type {cr.filebrowser.DefaultActionDialog}
    */
   this.defaultTaskPicker = null;
 

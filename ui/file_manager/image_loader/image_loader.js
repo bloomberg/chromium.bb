@@ -85,7 +85,7 @@ ImageLoader.ALLOWED_CLIENTS = [
  *
  * @param {string} senderId Sender's extension id.
  * @param {Object} request Request message as a hash array.
- * @param {function} callback Callback to be called to return response.
+ * @param {function(Object)} callback Callback to be called to return response.
  * @return {boolean} True if the message channel should stay alive until the
  *     callback is called.
  * @private

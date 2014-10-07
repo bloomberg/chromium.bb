@@ -47,7 +47,7 @@ Object.freeze(ShareDialog.Result);
 /**
  * Wraps a Web View element and adds authorization headers to it.
  * @param {string} urlPattern Pattern of urls to be authorized.
- * @param {WebView} webView Web View element to be wrapped.
+ * @param {Element} webView Web View element to be wrapped.
  * @constructor
  */
 ShareDialog.WebViewAuthorizer = function(urlPattern, webView) {

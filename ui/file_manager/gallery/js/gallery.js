@@ -67,7 +67,7 @@ GalleryDataModel.prototype = {
  *
  * @param {VolumeManager} volumeManager Volume manager instance.
  * @param {Gallery.Item} item Original gallery item.
- * @param {Canvas} canvas Canvas containing new image.
+ * @param {HTMLCanvasElement} canvas Canvas containing new image.
  * @param {boolean} overwrite Whether to overwrite the image to the item or not.
  * @return {Promise} Promise to be fulfilled with when the operation completes.
  */
@@ -590,7 +590,7 @@ Gallery.prototype.onMinimize_ = function() {
 
 /**
  * Executes a function when the editor is done with the modifications.
- * @param {function} callback Function to execute.
+ * @param {function()} callback Function to execute.
  */
 Gallery.prototype.executeWhenReady = function(callback) {
   this.currentMode_.executeWhenReady(callback);
@@ -637,7 +637,7 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
 
 /**
  * Mode toggle event handler.
- * @param {function=} opt_callback Callback.
+ * @param {function()=} opt_callback Callback.
  * @param {Event=} opt_event Event that caused this call.
  * @private
  */

@@ -20,6 +20,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function DirectoryModel(singleSelection, fileFilter, fileWatcher,
                         metadataCache, volumeManager) {
@@ -375,7 +376,7 @@ DirectoryModel.prototype.rescan = function(refresh) {
  *
  * This should be used when changing directory or initiating a new search.
  *
- * @param {DirectoryContentes} newDirContents New DirectoryContents instance to
+ * @param {DirectoryContents} newDirContents New DirectoryContents instance to
  *     replace currentDirContents_.
  * @param {function(boolean)} callback Callback with result. True if the scan
  *     is completed successfully, false if the scan is failed.

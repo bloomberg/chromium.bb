@@ -19,7 +19,7 @@ function DragSelector() {
 
   /**
    * Border element of drag handle.
-   * @type {HtmlElement}
+   * @type {HTMLElement}
    * @private
    */
   this.border_ = null;
@@ -75,7 +75,7 @@ DragSelector.SelectionFlag_ = {
  *
  * @param {HTMLElement} element Element that has the scroll bars.
  * @param {Event} event The mouse event.
- * @return {object} Scrolled position.
+ * @return {Object} Scrolled position.
  */
 DragSelector.getScrolledPosition = function(element, event) {
   if (!element.cachedBounds) {

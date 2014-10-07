@@ -11,7 +11,7 @@
 var ProgressCenter = function() {
   /**
    * Current items managed by the progress center.
-   * @type {Array.<ProgressItem>}
+   * @type {Array.<ProgressCenterItem>}
    * @private
    */
   this.items_ = [];

@@ -17,7 +17,7 @@
 function ImageLoaderClient() {
   /**
    * Hash array with active tasks.
-   * @type {Object}
+   * @type {!Object}
    * @private
    */
   this.tasks_ = {};
@@ -45,7 +45,7 @@ ImageLoaderClient.EXTENSION_ID = 'pmfjbimdmchhbnneeidfognadeopoehp';
 
 /**
  * Returns a singleton instance.
- * @return {Client} Client instance.
+ * @return {ImageLoaderClient} Client instance.
  */
 ImageLoaderClient.getInstance = function() {
   if (!ImageLoaderClient.instance_)
@@ -120,7 +120,7 @@ ImageLoaderClient.prototype.handleMessage_ = function(message) {
  * which are not valid anymore, which will reduce cpu consumption.
  *
  * @param {string} url Url of the requested image.
- * @param {function} callback Callback used to return response.
+ * @param {function(Object)} callback Callback used to return response.
  * @param {Object=} opt_options Loader options, such as: scale, maxHeight,
  *     width, height and/or cache.
  * @param {function(): boolean=} opt_isValid Function returning false in case
@@ -158,18 +158,18 @@ ImageLoaderClient.prototype.load = function(
   var cacheKey = ImageLoaderClient.Cache.createKey(url, opt_options);
   if (opt_options.cache) {
     // Load from cache.
-    ImageLoaderClient.recordBinary('Cached', 1);
+    ImageLoaderClient.recordBinary('Cached', true);
     var cachedData = this.cache_.loadImage(cacheKey, opt_options.timestamp);
     if (cachedData) {
-      ImageLoaderClient.recordBinary('Cache.HitMiss', 1);
+      ImageLoaderClient.recordBinary('Cache.HitMiss', true);
       callback({status: 'success', data: cachedData});
       return null;
     } else {
-      ImageLoaderClient.recordBinary('Cache.HitMiss', 0);
+      ImageLoaderClient.recordBinary('Cache.HitMiss', false);
     }
   } else {
     // Remove from cache.
-    ImageLoaderClient.recordBinary('Cached', 0);
+    ImageLoaderClient.recordBinary('Cached', false);
     this.cache_.removeImage(cacheKey);
   }
 
@@ -275,10 +275,10 @@ ImageLoaderClient.Cache.prototype.saveImage = function(
     this.removeImage(key);
 
   if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ < data.length) {
-    ImageLoaderClient.recordBinary('Evicted', 1);
+    ImageLoaderClient.recordBinary('Evicted', true);
     this.evictCache_(data.length);
   } else {
-    ImageLoaderClient.recordBinary('Evicted', 0);
+    ImageLoaderClient.recordBinary('Evicted', false);
   }
 
   if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
@@ -347,9 +347,9 @@ ImageLoaderClient.Cache.prototype.removeImage = function(key) {
  * @param {Image} image Image node to load the requested picture into.
  * @param {Object} options Loader options, such as: orientation, scale,
  *     maxHeight, width, height and/or cache.
- * @param {function} onSuccess Callback for success.
- * @param {function} onError Callback for failure.
- * @param {function=} opt_isValid Function returning false in case
+ * @param {function()} onSuccess Callback for success.
+ * @param {function()} onError Callback for failure.
+ * @param {function(): boolean=} opt_isValid Function returning false in case
  *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.
  */

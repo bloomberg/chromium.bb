@@ -9,7 +9,6 @@
  *
  * @param {string} itemId Item id to be installed.
  * @constructor
- * @extends {cr.EventType}
  */
 function AppInstaller(itemId) {
   this.itemId_ = itemId;

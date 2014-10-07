@@ -25,7 +25,7 @@ function FileBrowserBackground() {
 
   /**
    * Map of all currently open file dialogs. The key is an app ID.
-   * @type {Object.<string, DOMWindow>}
+   * @type {Object.<string, Window>}
    */
   this.dialogs = {};
 
@@ -390,7 +390,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
 /**
  * Registers dialog window to the background page.
  *
- * @param {DOMWindow} dialogWindow Window of the dialog.
+ * @param {Window} dialogWindow Window of the dialog.
  */
 function registerDialog(dialogWindow) {
   var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);

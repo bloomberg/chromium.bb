@@ -10,7 +10,7 @@
  *
  * @param {VolumeManagerCommon.VolumeType} volumeType The type of the volume.
  * @param {string} volumeId ID of the volume.
- * @param {DOMFileSystem} fileSystem The file system object for this volume.
+ * @param {FileSystem} fileSystem The file system object for this volume.
  * @param {string} error The error if an error is found.
  * @param {?string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
  *     |'unknown') (as defined in chromeos/disks/disk_mount_manager.cc).
@@ -91,7 +91,7 @@ VolumeInfo.prototype = {
     return this.volumeId_;
   },
   /**
-   * @return {DOMFileSystem} File system object.
+   * @return {FileSystem} File system object.
    */
   get fileSystem() {
     return this.fileSystem_;
@@ -826,7 +826,7 @@ VolumeManager.prototype.onTimeout_ = function(key) {
 
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
- * @param {VolumeManagerCommon.VolumeError|'success'} status Status received
+ * @param {VolumeManagerCommon.VolumeError|string} status Status received
  *     from the API.
  * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
  * @private

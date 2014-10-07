@@ -7,13 +7,13 @@
 /**
  * Search box.
  *
- * @param {element} element Root element of the search box.
+ * @param {HTMLElement} element Root element of the search box.
  * @constructor
  */
 function SearchBox(element) {
   /**
    * Autocomplete List.
-   * @type {AutocompleteList}
+   * @type {SearchBox.AutocompleteList}
    */
   this.autocompleteList = new SearchBox.AutocompleteList(element.ownerDocument);
 

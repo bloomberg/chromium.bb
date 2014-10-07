@@ -6,13 +6,13 @@
 
 /**
  * An event handler of the background page for file operations.
- * @param {Background} background Background page.
+ * @param {Window} background Background page.
  * @constructor
  */
 var FileOperationHandler = function(background) {
   /**
    * Background page.
-   * @type {Background}
+   * @type {Window}
    * @private
    */
   this.background_ = background;
@@ -26,7 +26,7 @@ var FileOperationHandler = function(background) {
 
   /**
    * Progress center.
-   * @type {progressCenter}
+   * @type {ProgressCenter}
    * @private
    */
   this.progressCenter_ = background.progressCenter;

@@ -496,60 +496,74 @@ SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
 /**
  * Utility methods and constants to record histograms.
  */
-SuggestAppsDialog.Metrics = Object.freeze({
-  LOAD: Object.freeze({
-    SUCCEEDED: 0,
-    CANCELLED: 1,
-    FAILED: 2,
-  }),
+SuggestAppsDialog.Metrics = {};
 
-  /**
-   * @param {SuggestAppsDialog.Metrics.LOAD} result Result of load.
-   */
-  recordLoad: function(result) {
-    if (0 <= result && result < 3)
-      metrics.recordEnum('SuggestApps.Load', result, 3);
-  },
+/**
+ * @enum {number}
+ * @const
+ */
+SuggestAppsDialog.Metrics.LOAD = {
+  SUCCEEDED: 0,
+  CANCELLED: 1,
+  FAILED: 2,
+};
 
-  CLOSE_DIALOG: Object.freeze({
-    UNKOWN_ERROR: 0,
-    ITEM_INSTALLED: 1,
-    USER_CANCELLED: 2,
-    WEBSTORE_LINK_OPENED: 3,
-  }),
+/**
+ * @enum {number}
+ * @const
+ */
+SuggestAppsDialog.Metrics.CLOSE_DIALOG = {
+  UNKOWN_ERROR: 0,
+  ITEM_INSTALLED: 1,
+  USER_CANCELLED: 2,
+  WEBSTORE_LINK_OPENED: 3,
+};
 
-  /**
-   * @param {SuggestAppsDialog.Metrics.CLOSE_DIALOG} reason Reason of closing
-   * dialog.
-   */
-  recordCloseDialog: function(reason) {
-    if (0 <= reason && reason < 4)
-      metrics.recordEnum('SuggestApps.CloseDialog', reason, 4);
-  },
+/**
+ * @enum {number}
+ * @const
+ */
+SuggestAppsDialog.Metrics.INSTALL = {
+  SUCCEEDED: 0,
+  CANCELLED: 1,
+  FAILED: 2,
+};
 
-  INSTALL: Object.freeze({
-    SUCCEEDED: 0,
-    CANCELLED: 1,
-    FAILED: 2,
-  }),
+/**
+ * @param {number} result Result of load, which must be defined in
+ *     SuggestAppsDialog.Metrics.LOAD.
+ */
+SuggestAppsDialog.Metrics.recordLoad = function(result) {
+  if (0 <= result && result < 3)
+    metrics.recordEnum('SuggestApps.Load', result, 3);
+};
 
-  /**
-   * @param {SuggestAppsDialog.Metrics.INSTALL} result Result of installation.
-   */
-  recordInstall: function(result) {
-    if (0 <= result && result < 3)
-      metrics.recordEnum('SuggestApps.Install', result, 3);
-  },
+/**
+ * @param {number} eason Reason of closing dialog, which must be defined in
+ *     SuggestAppsDialog.Metrics.CLOSE_DIALOG.
+ */
+SuggestAppsDialog.Metrics.recordCloseDialog = function(reason) {
+  if (0 <= reason && reason < 4)
+    metrics.recordEnum('SuggestApps.CloseDialog', reason, 4);
+};
 
-  recordShowDialog: function() {
-    metrics.recordUserAction('SuggestApps.ShowDialog');
-  },
+/**
+ * @param {number} result Result of installation, which must be defined in
+ *     SuggestAppsDialog.Metrics.INSTALL.
+ */
+SuggestAppsDialog.Metrics.recordInstall = function(result) {
+  if (0 <= result && result < 3)
+    metrics.recordEnum('SuggestApps.Install', result, 3);
+};
 
-  startLoad: function() {
-    metrics.startInterval('SuggestApps.LoadTime');
-  },
+SuggestAppsDialog.Metrics.recordShowDialog = function() {
+  metrics.recordUserAction('SuggestApps.ShowDialog');
+};
 
-  finishLoad: function() {
-    metrics.recordInterval('SuggestApps.LoadTime');
-  },
-});
+SuggestAppsDialog.Metrics.startLoad = function() {
+  metrics.startInterval('SuggestApps.LoadTime');
+};
+
+SuggestAppsDialog.Metrics.finishLoad = function() {
+  metrics.recordInterval('SuggestApps.LoadTime');
+};

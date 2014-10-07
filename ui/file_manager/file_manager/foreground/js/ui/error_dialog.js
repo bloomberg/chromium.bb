@@ -7,6 +7,7 @@
 /**
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
  * @constructor
+ * @extends {cr.ui.dialogs.BaseDialog}
  */
 function ErrorDialog(parentNode) {
   cr.ui.dialogs.BaseDialog.call(this, parentNode);

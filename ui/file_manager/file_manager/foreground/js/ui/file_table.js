@@ -212,6 +212,7 @@ FileTableSplitter.prototype.handleSplitterDragEnd = function() {
 /**
  * File list Table View.
  * @constructor
+ * @extends {cr.ui.Table}
  */
 function FileTable() {
   throw new Error('Designed to decorate elements');
@@ -294,7 +295,7 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
       /**
        * @this {FileTableColumnModel}
        * @param {number} x Horizontal position.
-       * @return {object} The object that contains column index, column width,
+       * @return {Object} The object that contains column index, column width,
        *     and hitPosition where the horizontal position is hit in the column.
        */
       value: function(x) {
@@ -681,7 +682,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
  * Renders table row.
  * @param {function(Entry, cr.ui.Table)} baseRenderFunction Base renderer.
  * @param {Entry} entry Corresponding entry.
- * @return {HTMLLiElement} Created element.
+ * @return {HTMLLIElement} Created element.
  * @private
  */
 FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
@@ -737,7 +738,7 @@ FileTable.prototype.relayoutImmediately_ = function() {
 
 /**
  * Common item decoration for table's and grid's items.
- * @param {ListItem} li List item.
+ * @param {cr.ui.ListItem} li List item.
  * @param {Entry} entry The entry.
  * @param {MetadataCache} metadataCache Cache to retrieve metadada.
  */
@@ -756,7 +757,7 @@ filelist.decorateListItem = function(li, entry, metadataCache) {
 
   Object.defineProperty(li, 'selected', {
     /**
-     * @this {ListItem}
+     * @this {cr.ui.ListItem}
      * @return {boolean} True if the list item is selected.
      */
     get: function() {
@@ -764,7 +765,7 @@ filelist.decorateListItem = function(li, entry, metadataCache) {
     },
 
     /**
-     * @this {ListItem}
+     * @this {cr.ui.ListItem}
      */
     set: function(v) {
       if (v)

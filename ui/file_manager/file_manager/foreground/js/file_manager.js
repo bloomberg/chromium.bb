@@ -19,7 +19,7 @@ function FileManager() {
 
   /**
    * Volume manager.
-   * @type {VolumeManager}
+   * @type {VolumeManagerWrapper}
    * @private
    */
   this.volumeManager_ = null;
@@ -88,7 +88,7 @@ function FileManager() {
 
   /**
    * Handler for the change of file selection.
-   * @type {SelectionHandler}
+   * @type {FileSelectionHandler}
    * @private
    */
   this.selectionHandler_ = null;
@@ -104,7 +104,7 @@ function FileManager() {
 
   /**
    * Current list type.
-   * @type {ListType}
+   * @type {FileManager.ListType}
    * @private
    */
   this.listType_ = null;
@@ -170,7 +170,7 @@ function FileManager() {
 
   /**
    * Auto-complete list.
-   * @type {AutocompleteList}
+   * @type {cr.ui.AutocompleteList}
    * @private
    */
   this.autocompleteList_ = null;
@@ -218,7 +218,7 @@ function FileManager() {
 
   /**
    * Default task picker.
-   * @type {DefaultActionDialog}
+   * @type {cr.filebrowser.DefaultActionDialog}
    */
   this.defaultTaskPicker = null;
 
@@ -412,21 +412,21 @@ function FileManager() {
 
   /**
    * Bound function for onCopyProgress_.
-   * @type {this:FileManager, function(Event)}
+   * @type {function(this:FileManager, Event)}
    * @private
    */
   this.onCopyProgressBound_ = null;
 
   /**
    * Bound function for onEntriesChanged_.
-   * @type {this:FileManager, function(Event)}
+   * @type {function(this:FileManager, Event)}
    * @private
    */
   this.onEntriesChangedBound_ = null;
 
   /**
    * Bound function for onCancel_.
-   * @type {this:FileManager, function(Event)}
+   * @type {function(this:FileManager, Event)}
    * @private
    */
   this.onCancelBound_ = null;
@@ -751,8 +751,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
-  // Public statics.
-
+  /**
+   * @enum {string}
+   * @const
+   */
   FileManager.ListType = {
     DETAIL: 'detail',
     THUMBNAIL: 'thumb'
@@ -3745,7 +3747,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    *
    * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
    * @param {string} name New file or folder name.
-   * @param {function} onDone Function to invoke when user closes the
+   * @param {function(boolean)} onDone Function to invoke when user closes the
    *    warning box or immediatelly if file name is correct. If the name was
    *    valid it is passed true, and false otherwise.
    * @private
@@ -4100,7 +4102,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @return {ArrayDataModel} File list.
+   * @return {cr.ui.ArrayDataModel} File list.
    */
   FileManager.prototype.getFileList = function() {
     return this.directoryModel_.getFileList();

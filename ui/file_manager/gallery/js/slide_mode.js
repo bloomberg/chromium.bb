@@ -244,8 +244,8 @@ SlideMode.prototype.initDom_ = function() {
 /**
  * Load items, display the selected item.
  * @param {ImageRect} zoomFromRect Rectangle for zoom effect.
- * @param {function} displayCallback Called when the image is displayed.
- * @param {function} loadCallback Called when the image is displayed.
+ * @param {function()} displayCallback Called when the image is displayed.
+ * @param {function()} loadCallback Called when the image is displayed.
  */
 SlideMode.prototype.enter = function(
     zoomFromRect, displayCallback, loadCallback) {
@@ -330,7 +330,7 @@ SlideMode.prototype.enter = function(
 /**
  * Leave the mode.
  * @param {ImageRect} zoomToRect Rectangle for zoom effect.
- * @param {function} callback Called when the image is committed and
+ * @param {function()} callback Called when the image is committed and
  *   the zoom-out animation has started.
  */
 SlideMode.prototype.leave = function(zoomToRect, callback) {
@@ -369,7 +369,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
 /**
  * Execute an action when the editor is not busy.
  *
- * @param {function} action Function to execute.
+ * @param {function()} action Function to execute.
  */
 SlideMode.prototype.executeWhenReady = function(action) {
   this.editor_.executeWhenReady(action);
@@ -673,9 +673,10 @@ SlideMode.prototype.selectLast = function() {
  *
  * @param {Gallery.Item} item Item.
  * @param {Object} effect Transition effect object.
- * @param {function} displayCallback Called when the image is displayed
+ * @param {function()} displayCallback Called when the image is displayed
  *     (which can happen before the image load due to caching).
- * @param {function} loadCallback Called when the image is fully loaded.
+ * @param {function(number, number)} loadCallback Called when the image is fully
+ *     loaded.
  * @private
  */
 SlideMode.prototype.loadItem_ = function(
@@ -763,7 +764,7 @@ SlideMode.prototype.loadItem_ = function(
 /**
  * Commit changes to the current item and reset all messages/indicators.
  *
- * @param {function} callback Callback.
+ * @param {function()} callback Callback.
  * @private
  */
 SlideMode.prototype.commitItem_ = function(callback) {
@@ -962,7 +963,7 @@ SlideMode.prototype.updateThumbnails = function() {
  * Save the current image to a file.
  *
  * @param {Gallery.Item} item Item to save the image.
- * @param {function} callback Callback.
+ * @param {function()} callback Callback.
  * @private
  */
 SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
@@ -1319,14 +1320,14 @@ SlideMode.prototype.applyViewportChange = function() {
 
 /**
  * Touch handlers of the slide mode.
- * @param {DOMElement} targetElement Event source.
+ * @param {Element} targetElement Event source.
  * @param {SlideMode} slideMode Slide mode to be operated by the handler.
  * @constructor
  */
 function TouchHandler(targetElement, slideMode) {
   /**
    * Event source.
-   * @type {DOMElement}
+   * @type {Element}
    * @private
    */
   this.targetElement_ = targetElement;

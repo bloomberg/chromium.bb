@@ -59,7 +59,7 @@ function FileSelection(fileManager, indexes) {
 /**
  * Computes data required to get file tasks and requests the tasks.
  *
- * @param {function} callback The callback.
+ * @param {function()} callback The callback.
  */
 FileSelection.prototype.createTasks = function(callback) {
   if (!this.fileManager_.isOnDrive()) {
@@ -88,7 +88,7 @@ FileSelection.prototype.createTasks = function(callback) {
 /**
  * Computes the total size of selected files.
  *
- * @param {function} callback Completion callback. Not called when cancelled,
+ * @param {function()} callback Completion callback. Not called when cancelled,
  *     or a new call has been invoked in the meantime.
  */
 FileSelection.prototype.computeBytes = function(callback) {

@@ -193,7 +193,7 @@ DeviceHandler.Notification.prototype.showOnce = function(devicePath) {
 /**
  * Shows the notificaiton without using AsyncQueue.
  * @param {string} notificaitonId Notification ID.
- * @param {?message} message Message overriding the normal message.
+ * @param {?string} message Message overriding the normal message.
  * @param {function()} callback Callback to be invoked when the notification is
  *     created.
  * @private

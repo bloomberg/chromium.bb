@@ -194,7 +194,7 @@ function ProgressCenterPanel(element) {
 
   /**
    * Toggle animation rule of the progress center.
-   * @type {CSSKeyFrameRule}
+   * @type {CSSKeyframeRule}
    * @private
    */
   this.toggleAnimation_ = ProgressCenterPanel.getToggleAnimation_(
@@ -254,7 +254,7 @@ function ProgressCenterPanel(element) {
 /**
  * Obtains the toggle animation keyframes rule from the document.
  * @param {HTMLDocument} document Document containing the rule.
- * @return {CSSKeyFrameRules} Animation rule.
+ * @return {CSSKeyframeRule} Animation rule.
  * @private
  */
 ProgressCenterPanel.getToggleAnimation_ = function(document) {

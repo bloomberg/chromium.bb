@@ -7,9 +7,11 @@
       'target_name': 'background',
       'variables': {
         'depends': [
+          '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           '../../../webui/resources/js/cr.js',
           '../../../webui/resources/js/cr/event_target.js',
           '../../../webui/resources/js/cr/ui/array_data_model.js',
+          '../../../webui/resources/js/cr/ui/dialogs.js',
           '../../../webui/resources/js/load_time_data.js',
           '../../file_manager/common/js/util.js',
           '../../file_manager/common/js/async_util.js',
@@ -32,6 +34,10 @@
       'target_name': 'gallery_scripts',
       'variables': {
         'depends': [
+          '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
+          '../../file_manager/background/js/volume_manager.js',
+          '../../file_manager/common/js/volume_manager_common.js',
+          '../../file_manager/common/js/async_util.js',
         ],
         'externs': [
           '<(CLOSURE_DIR)/externs/chrome_send_externs.js',

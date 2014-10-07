@@ -256,7 +256,7 @@ FileTransferController.prototype = {
   /**
    * Obtains entries that need to share with me.
    * The method also observers child entries of the given entries.
-   * @param {Array.<Entries>} entries Entries.
+   * @param {Array.<Entry>} entries Entries.
    * @return {Promise} Promise to be fulfilled with the entries that need to
    *     share.
    */
@@ -950,7 +950,7 @@ FileTransferController.prototype = {
    *
    * @this {FileTransferController}
    * @param {string} command 'copy', 'cut' or 'paste'.
-   * @param {function} handler Event handler.
+   * @param {function(Event)} handler Event handler.
    */
   simulateCommand_: function(command, handler) {
     var iframe = this.document_.querySelector('#command-dispatcher');

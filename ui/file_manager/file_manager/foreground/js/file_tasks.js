@@ -454,7 +454,7 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
 /**
  * Checks whether the remote files are available right now.
  *
- * @param {function} callback The callback.
+ * @param {function()} callback The callback.
  * @private
  */
 FileTasks.prototype.checkAvailability_ = function(callback) {
@@ -710,7 +710,8 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
 /**
  * Shows modal action picker dialog with currently available list of tasks.
  *
- * @param {DefaultActionDialog} actionDialog Action dialog to show and update.
+ * @param {cr.filebrowser.DefaultActionDialog} actionDialog Action dialog to
+ *     show and update.
  * @param {string} title Title to use.
  * @param {string} message Message to use.
  * @param {function(Object)} onSuccess Callback to pass selected task.

@@ -205,7 +205,7 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
  * Send a message to the widget. This method shouldn't be called directly,
  * should from more specified posting function (eg. postXyzMessage_()).
  *
- * @param {object} message Message object to be posted.
+ * @param {Object} message Message object to be posted.
  * @private
  */
 CWSContainerClient.prototype.postMessage_ = function(message) {

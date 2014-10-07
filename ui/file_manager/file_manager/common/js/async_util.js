@@ -17,7 +17,7 @@ var AsyncUtil = {};
  * sequentially done.
  *
  * @param {Array.<T>} array The array to be iterated.
- * @param {function(function(), T, number, Array.<T>} callback The iteration
+ * @param {function(function(), T, number, Array.<T>)} callback The iteration
  *     callback. The first argument is a callback to notify the completion of
  *     the iteration.
  * @param {function()} completionCallback Called when all iterations are
@@ -75,7 +75,7 @@ AsyncUtil.ConcurrentQueue.prototype.getWaitingTasksCount = function() {
 };
 
 /**
- * @return {boolean} Number of running tasks.
+ * @return {number} Number of running tasks.
  */
 AsyncUtil.ConcurrentQueue.prototype.getRunningTasksCount = function() {
   return this.pendingTasks_.length;

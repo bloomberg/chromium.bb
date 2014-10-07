@@ -11,7 +11,7 @@
  *
  * @param {Document} document Document to create canvases in.
  * @param {HTMLCanvasElement} canvas The canvas with the original image.
- * @param {function(callback)} saveFunction Function to save the image.
+ * @param {function(function())} saveFunction Function to save the image.
  * @constructor
  */
 function CommandQueue(document, canvas, saveFunction) {
@@ -61,7 +61,7 @@ CommandQueue.prototype.attachUI = function(imageView, prompt, lock) {
 
 /**
  * Execute the action when the queue is not busy.
- * @param {function} callback Callback.
+ * @param {function()} callback Callback.
  */
 CommandQueue.prototype.executeWhenReady = function(callback) {
   if (this.isBusy())
@@ -126,7 +126,7 @@ CommandQueue.prototype.commit_ = function(opt_delay) {
  *
  * @param {Command} command The command to execute.
  * @param {Object} uiContext The UI context.
- * @param {function} callback Completion callback.
+ * @param {function(number=)} callback Completion callback.
  * @private
  */
 CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {

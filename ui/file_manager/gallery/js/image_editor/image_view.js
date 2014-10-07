@@ -251,10 +251,10 @@ ImageView.prototype.cancelLoad = function() {
  *
  * @param {Gallery.Item} item Gallery item to be loaded.
  * @param {Object} effect Transition effect object.
- * @param {function(number} displayCallback Called when the image is displayed
- *   (possibly as a preview).
- * @param {function(number} loadCallback Called when the image is fully loaded.
- *   The parameter is the load type.
+ * @param {function(number)} displayCallback Called when the image is displayed
+ *     (possibly as a preview).
+ * @param {function(number, number, *=)} loadCallback Called when the image is
+ *     fully loaded. The first parameter is the load type.
  */
 ImageView.prototype.load =
     function(item, effect, displayCallback, loadCallback) {
@@ -480,7 +480,7 @@ ImageView.prototype.replaceContent_ = function(
 
 /**
  * Adds a listener for content changes.
- * @param {function} callback Callback.
+ * @param {function()} callback Callback.
  */
 ImageView.prototype.addContentCallback = function(callback) {
   this.contentCallbacks_.push(callback);
@@ -696,7 +696,8 @@ ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
 
 /**
  * Obtains the CSS transformation string of the effect.
- * @param {DOMCanvas} element Canvas element to be applied the transformation.
+ * @param {HTMLCanvasElement} element Canvas element to be applied the
+ *     transformation.
  * @param {Viewport} viewport Current viewport.
  * @return {string} CSS transformation description.
  */

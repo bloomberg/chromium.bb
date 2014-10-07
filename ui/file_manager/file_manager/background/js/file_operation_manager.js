@@ -465,7 +465,7 @@ FileOperationManager.EventRouter.prototype.dispatchEntryChangedEvent_ =
  *
  * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
  *     or "ERROR". TODO(hidehiko): Use enum.
- * @param {DeleteTask} task Delete task related with the event.
+ * @param {FileOperationManager.Task} task Delete task related with the event.
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
     reason, task) {
@@ -579,7 +579,7 @@ FileOperationManager.Task.prototype.run = function(
 /**
  * Get states of the task.
  * TOOD(hirono): Removes this method and sets a task to progress events.
- * @return {object} Status object.
+ * @return {Object} Status object.
  */
 FileOperationManager.Task.prototype.getStatus = function() {
   var processingEntry = this.sourceEntries[this.processingSourceIndex_];
@@ -817,7 +817,7 @@ FileOperationManager.CopyTask.prototype.run = function(
  * @param {Entry} sourceEntry An entry to be copied.
  * @param {DirectoryEntry} destinationEntry The entry which will contain the
  *     copied entry.
- * @param {function(Entry, Entry} entryChangedCallback
+ * @param {function(Entry, Entry)} entryChangedCallback
  *     Callback invoked when an entry is created with the source Entry and
  *     the destination Entry.
  * @param {function(Entry, number)} progressCallback Callback invoked

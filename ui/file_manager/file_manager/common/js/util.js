@@ -104,7 +104,9 @@ util.htmlUnescape = function(str) {
  *     is found.
  */
 util.rename = function(entry, newName, successCallback, errorCallback) {
-  entry.getParent(function(parent) {
+  entry.getParent(function(parentEntry) {
+    var parent = /** @type {!DirectoryEntry} */ (parentEntry);
+
     // Before moving, we need to check if there is an existing entry at
     // parent/newName, since moveTo will overwrite it.
     // Note that this way has some timing issue. After existing check,
@@ -246,7 +248,7 @@ util.applyTransform = function(element, transform) {
 /**
  * Extracts path from filesystem: URL.
  * @param {string} url Filesystem URL.
- * @return {string} The path.
+ * @return {?string} The path.
  */
 util.extractFilePath = function(url) {
   var match =
@@ -423,7 +425,7 @@ util.AppCache.read_ = function(callback) {
     var json = values[util.AppCache.KEY];
     if (json) {
       try {
-        callback(JSON.parse(json));
+        callback(/** @type {Object} */ (JSON.parse(json)));
       } catch (e) {
         // The local storage item somehow got messed up, start fresh.
       }
@@ -542,7 +544,7 @@ util.addIsFocusedMethod = function() {
 /**
  * Checks, if the Files.app's window is in a full screen mode.
  *
- * @param {AppWindow} appWindow App window to be maximized.
+ * @param {chrome.app.window.AppWindow} appWindow App window to be maximized.
  * @return {boolean} True if the full screen mode is enabled.
  */
 util.isFullScreen = function(appWindow) {
@@ -558,7 +560,7 @@ util.isFullScreen = function(appWindow) {
 /**
  * Toggles the full screen mode.
  *
- * @param {AppWindow} appWindow App window to be maximized.
+ * @param {chrome.app.window.AppWindow} appWindow App window to be maximized.
  * @param {boolean} enabled True for enabling, false for disabling.
  */
 util.toggleFullScreen = function(appWindow, enabled) {
@@ -625,7 +627,7 @@ util.isFakeEntry = function(entry) {
  * TODO(uekawa): remove reference to FileError.
  *
  * @param {string} name Error name for the file error.
- * @return {UserDOMError} FileError instance
+ * @return {util.UserDOMError} FileError instance
  */
 util.createDOMError = function(name) {
   return new util.UserDOMError(name);
@@ -671,8 +673,8 @@ util.isSameEntry = function(entry1, entry2) {
 
 /**
  * Compares two file systems.
- * @param {DOMFileSystem} fileSystem1 The file system to be compared.
- * @param {DOMFileSystem} fileSystem2 The file system to be compared.
+ * @param {FileSystem} fileSystem1 The file system to be compared.
+ * @param {FileSystem} fileSystem2 The file system to be compared.
  * @return {boolean} True if the both file systems are equal. Also, returns true
  *     if both file systems are null.
  */
@@ -782,7 +784,7 @@ util.entriesToURLs = function(entries) {
  */
 util.URLsToEntries = function(urls, opt_callback) {
   var promises = urls.map(function(url) {
-    return new Promise(webkitResolveLocalFileSystemURL.bind(null, url)).
+    return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url)).
         then(function(entry) {
           return {entry: entry};
         }, function(failureUrl) {
@@ -824,7 +826,7 @@ util.URLsToEntries = function(urls, opt_callback) {
 
 /**
  * Returns whether the window is teleported or not.
- * @param {DOMWindow} window Window.
+ * @param {Window} window Window.
  * @return {Promise.<boolean>} Whether the window is teleported or not.
  */
 util.isTeleported = function(window) {
@@ -841,7 +843,7 @@ util.isTeleported = function(window) {
  * desktop of the running profile.
  *
  * TODO(hirono): Move the function from the util namespace.
- * @param {cr.ui.AlertDialog} alertDialog Alert dialog to be shown.
+ * @param {cr.ui.dialogs.AlertDialog} alertDialog Alert dialog to be shown.
  * @param {Array.<Entry>} entries List of opened entries.
  */
 util.showOpenInOtherDesktopAlert = function(alertDialog, entries) {
@@ -862,16 +864,16 @@ util.showOpenInOtherDesktopAlert = function(alertDialog, entries) {
           return;
         }
 
-        var title = entries.size > 1 ?
+        var title = entries.length > 1 ?
             entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
-        var message = strf(entries.size > 1 ?
+        var message = strf(entries.length > 1 ?
                            'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
                            'OPEN_IN_OTHER_DESKTOP_MESSAGE',
                            displayName,
                            currentId);
 
         // Show the dialog.
-        alertDialog.showWithTitle(title, message);
+        alertDialog.showWithTitle(title, message, null, null, null);
       }.bind(this));
 };
 
@@ -998,7 +1000,7 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
         name,
         function(valid) {
           if (valid)
-            fulfill();
+            fulfill(null);
           else
             reject(str('ERROR_LONG_NAME'));
         });

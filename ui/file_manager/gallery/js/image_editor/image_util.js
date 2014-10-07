@@ -515,8 +515,8 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
  * attribute.
  *
  * @param {function()} onSuccess Success callback.
- * @param {function(opt_string)} onError Failure callback with an optional
- *     error identifier.
+ * @param {function(string=)} onError Failure callback with an optional error
+ *     identifier.
  * @private
  */
 ImageUtil.ImageLoader.prototype.resetImage_ = function(onSuccess, onError) {
@@ -556,7 +556,8 @@ ImageUtil.ImageLoader.prototype.isLoading = function(entry) {
 };
 
 /**
- * @param {function} callback To be called when the image loaded.
+ * @param {function(HTMLCanvasElement, string=)} callback To be called when the
+ *     image loaded.
  */
 ImageUtil.ImageLoader.prototype.setCallback = function(callback) {
   this.callback_ = callback;

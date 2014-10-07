@@ -27,7 +27,7 @@ var PreviewPanel = function(element,
 
   /**
    * Visibility type of the preview panel.
-   * @type {PreviewPanel.VisiblityType}
+   * @type {PreviewPanel.VisibilityType}
    * @private
    */
   this.visibilityType_ = visibilityType;
@@ -110,24 +110,30 @@ Object.freeze(PreviewPanel.Event);
 
 /**
  * Visibility type of the preview panel.
+ * @enum {string}
+ * @const
  */
-PreviewPanel.VisibilityType = Object.freeze({
+PreviewPanel.VisibilityType = {
   // Preview panel always shows.
   ALWAYS_VISIBLE: 'alwaysVisible',
   // Preview panel shows when the selection property are set.
   AUTO: 'auto',
   // Preview panel does not show.
   ALWAYS_HIDDEN: 'alwaysHidden'
-});
+};
+Object.freeze(PreviewPanel.VisibilityType);
 
 /**
+ * @enum {string}
+ * @const
  * @private
  */
-PreviewPanel.Visibility_ = Object.freeze({
+PreviewPanel.Visibility_ = {
   VISIBLE: 'visible',
   HIDING: 'hiding',
   HIDDEN: 'hidden'
-});
+};
+Object.freeze(PreviewPanel.Visibility_);
 
 PreviewPanel.prototype = {
   __proto__: cr.EventTarget.prototype,
@@ -465,7 +471,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
  * zoomed image.
  *
  * @param {Image} image Image to be source of the zoomed image.
- * @param {transform} transform Transformation to be applied to the image.
+ * @param {Object} transform Transformation to be applied to the image.
  * @private
  */
 PreviewPanel.Thumbnails.prototype.setZoomedImage_ = function(image, transform) {

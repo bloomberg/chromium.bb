@@ -9,7 +9,7 @@
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
- * @param {function} toggleMode Function to switch to the Slide mode.
+ * @param {function()} toggleMode Function to switch to the Slide mode.
  * @constructor
  */
 function MosaicMode(
@@ -40,7 +40,7 @@ MosaicMode.prototype.getTitle = function() { return 'GALLERY_MOSAIC'; };
 
 /**
  * Execute an action (this mode has no busy state).
- * @param {function} action Action to execute.
+ * @param {function()} action Action to execute.
  */
 MosaicMode.prototype.executeWhenReady = function(action) { action(); };
 
