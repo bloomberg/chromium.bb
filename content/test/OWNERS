@@ -4,3 +4,7 @@ sky@chromium.org
 
 # For WebRTC files.
 tommi@chromium.org
+
+# Anyone can add suppressions for the layout test files.
+per-file test_expectations.txt=*
+per-file test_expectations_chrome.txt=*
