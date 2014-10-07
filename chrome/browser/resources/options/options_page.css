@@ -320,7 +320,7 @@ list > [editing] [displaymode='static'] {
    * We shrink only height.  We don't shrink width to avoid to change the size
    * of containing boxes.
    */
-  height: 0;
+  height: 0 !important;
   overflow: hidden;
   pointer-events: none;
 }
