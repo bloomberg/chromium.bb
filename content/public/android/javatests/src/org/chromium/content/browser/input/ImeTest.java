@@ -639,6 +639,22 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testDpadKeyCodesWhileSwipingText() throws Throwable {
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // DPAD_CENTER should cause keyboard to appear
+        expectUpdateStateCall(mConnection);
+        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER);
+        mContentViewCore.dispatchKeyEvent(event);
+        assertUpdateStateCall(mConnection, 1000);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testTransitionsWhileComposingText() throws Throwable {
         DOMUtils.focusNode(mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(true);
