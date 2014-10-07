@@ -88,6 +88,9 @@ class BookmarkTabHelper
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
+  virtual void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) override;
 
   // Whether the current URL is starred.
   bool is_starred_;

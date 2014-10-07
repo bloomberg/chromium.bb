@@ -137,3 +137,9 @@ void BookmarkTabHelper::DidNavigateMainFrame(
     const content::FrameNavigateParams& /*params*/) {
   UpdateStarredStateForCurrentURL();
 }
+
+void BookmarkTabHelper::DidStartNavigationToPendingEntry(
+    const GURL& /*url*/,
+    content::NavigationController::ReloadType /*reload_type*/) {
+  UpdateStarredStateForCurrentURL();
+}

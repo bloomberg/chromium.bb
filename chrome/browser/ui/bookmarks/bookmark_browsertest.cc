@@ -11,22 +11,44 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace {
 const char kPersistBookmarkURL[] = "http://www.cnn.com/";
 const char kPersistBookmarkTitle[] = "CNN";
-}
+} // namespace
+
+class TestBookmarkTabHelperDelegate : public BookmarkTabHelperDelegate {
+ public:
+  TestBookmarkTabHelperDelegate()
+      : starred_(false) {
+  }
+  virtual ~TestBookmarkTabHelperDelegate() {}
+
+  virtual void URLStarredChanged(content::WebContents*, bool starred) override {
+    starred_ = starred;
+  }
+  bool is_starred() const { return starred_; }
+
+ private:
+  bool starred_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBookmarkTabHelperDelegate);
+};
 
 class BookmarkBrowsertest : public InProcessBrowserTest {
  public:
@@ -61,6 +83,9 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
     test::WaitForBookmarkModelToLoad(bookmark_model);
     return bookmark_model;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BookmarkBrowsertest);
 };
 
 // Test of bookmark bar toggling, visibility, and animation.
@@ -131,3 +156,42 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
 }
 
 #endif
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
+                       HideStarOnNonbookmarkedInterstitial) {
+  // Start an HTTPS server with a certificate error.
+  net::SpawnedTestServer::SSLOptions https_options;
+  https_options.server_certificate =
+      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, https_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
+  GURL bookmark_url = test_server()->GetURL("http://example.test");
+  bookmarks::AddIfNotBookmarked(bookmark_model,
+                                bookmark_url,
+                                base::ASCIIToUTF16("Bookmark"));
+
+  TestBookmarkTabHelperDelegate bookmark_delegate;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  BookmarkTabHelper* tab_helper =
+      BookmarkTabHelper::FromWebContents(web_contents);
+  tab_helper->set_delegate(&bookmark_delegate);
+
+  // Go to a bookmarked url. Bookmark star should show.
+  ui_test_utils::NavigateToURL(browser(), bookmark_url);
+  EXPECT_FALSE(web_contents->ShowingInterstitialPage());
+  EXPECT_TRUE(bookmark_delegate.is_starred());
+
+  // Now go to a non-bookmarked url which triggers an SSL warning. Bookmark
+  // star should disappear.
+  GURL error_url = https_server.GetURL(".");
+  ui_test_utils::NavigateToURL(browser(), error_url);
+  web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForInterstitialAttach(web_contents);
+  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(bookmark_delegate.is_starred());
+}
