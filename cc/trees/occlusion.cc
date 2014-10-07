@@ -20,14 +20,23 @@ Occlusion::Occlusion(const gfx::Transform& draw_transform,
       occlusion_from_inside_target_(occlusion_from_inside_target) {
 }
 
+Occlusion Occlusion::GetOcclusionWithGivenDrawTransform(
+    const gfx::Transform& transform) const {
+  return Occlusion(
+      transform, occlusion_from_outside_target_, occlusion_from_inside_target_);
+}
+
+bool Occlusion::HasOcclusion() const {
+  return !occlusion_from_inside_target_.IsEmpty() ||
+         !occlusion_from_outside_target_.IsEmpty();
+}
+
 bool Occlusion::IsOccluded(const gfx::Rect& content_rect) const {
   if (content_rect.IsEmpty())
     return true;
 
-  if (occlusion_from_inside_target_.IsEmpty() &&
-      occlusion_from_outside_target_.IsEmpty()) {
+  if (!HasOcclusion())
     return false;
-  }
 
   gfx::Rect unoccluded_rect_in_target_surface =
       GetUnoccludedRectInTargetSurface(content_rect);
@@ -39,10 +48,8 @@ gfx::Rect Occlusion::GetUnoccludedContentRect(
   if (content_rect.IsEmpty())
     return content_rect;
 
-  if (occlusion_from_inside_target_.IsEmpty() &&
-      occlusion_from_outside_target_.IsEmpty()) {
+  if (!HasOcclusion())
     return content_rect;
-  }
 
   gfx::Rect unoccluded_rect_in_target_surface =
       GetUnoccludedRectInTargetSurface(content_rect);

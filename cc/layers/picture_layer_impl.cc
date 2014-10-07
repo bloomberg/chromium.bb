@@ -165,16 +165,18 @@ void PictureLayerImpl::AppendQuads(
     AppendDebugBorderQuad(
         render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
-    SolidColorLayerImpl::AppendSolidQuads(
-        render_pass,
-        occlusion_tracker,
-        shared_quad_state,
-        content_bounds(),
-        draw_properties().target_space_transform,
-        pile_->solid_color(),
-        append_quads_data);
+    SolidColorLayerImpl::AppendSolidQuads(render_pass,
+                                          occlusion_tracker,
+                                          shared_quad_state,
+                                          content_bounds(),
+                                          draw_transform(),
+                                          pile_->solid_color(),
+                                          append_quads_data);
     return;
   }
+
+  Occlusion occlusion =
+      occlusion_tracker.GetCurrentOcclusionForLayer(draw_transform());
 
   float max_contents_scale = MaximumTilingContentsScale();
   gfx::Transform scaled_draw_transform = draw_transform();
@@ -182,13 +184,11 @@ void PictureLayerImpl::AppendQuads(
                               SK_MScalar1 / max_contents_scale);
   gfx::Size scaled_content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(content_bounds(), max_contents_scale));
-
   gfx::Rect scaled_visible_content_rect =
       gfx::ScaleToEnclosingRect(visible_content_rect(), max_contents_scale);
   scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
-
-  Occlusion occlusion =
-      occlusion_tracker.GetCurrentOcclusionForLayer(scaled_draw_transform);
+  Occlusion scaled_occlusion =
+      occlusion.GetOcclusionWithGivenDrawTransform(scaled_draw_transform);
 
   shared_quad_state->SetAll(scaled_draw_transform,
                             scaled_content_bounds,
@@ -211,7 +211,7 @@ void PictureLayerImpl::AppendQuads(
     gfx::Rect geometry_rect = scaled_visible_content_rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect =
-        occlusion.GetUnoccludedContentRect(geometry_rect);
+        scaled_occlusion.GetUnoccludedContentRect(geometry_rect);
     if (visible_geometry_rect.IsEmpty())
       return;
 
@@ -306,7 +306,7 @@ void PictureLayerImpl::AppendQuads(
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect =
-        occlusion.GetUnoccludedContentRect(geometry_rect);
+        scaled_occlusion.GetUnoccludedContentRect(geometry_rect);
     if (visible_geometry_rect.IsEmpty())
       continue;
 

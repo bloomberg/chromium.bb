@@ -19,7 +19,10 @@ class CC_EXPORT Occlusion {
   Occlusion(const gfx::Transform& draw_transform,
             const SimpleEnclosedRegion& occlusion_from_outside_target,
             const SimpleEnclosedRegion& occlusion_from_inside_target);
+  Occlusion GetOcclusionWithGivenDrawTransform(
+      const gfx::Transform& transform) const;
 
+  bool HasOcclusion() const;
   bool IsOccluded(const gfx::Rect& content_rect) const;
   gfx::Rect GetUnoccludedContentRect(const gfx::Rect& content_rect) const;
 
