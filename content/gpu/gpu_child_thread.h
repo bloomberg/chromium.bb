@@ -47,14 +47,14 @@ class GpuChildThread : public ChildThread {
 
   virtual ~GpuChildThread();
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
 
   // ChildThread overrides.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

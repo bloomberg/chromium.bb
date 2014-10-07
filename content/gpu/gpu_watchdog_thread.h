@@ -29,15 +29,15 @@ class GpuWatchdogThread : public base::Thread,
   void PostAcknowledge();
 
   // Implement GpuWatchdog.
-  virtual void CheckArmed() OVERRIDE;
+  virtual void CheckArmed() override;
 
   // Must be called after a PowerMonitor has been created. Can be called from
   // any thread.
   void AddPowerObserver();
 
  protected:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   friend class base::RefCountedThreadSafe<GpuWatchdogThread>;
@@ -51,8 +51,8 @@ class GpuWatchdogThread : public base::Thread,
 
     // Implements MessageLoop::TaskObserver.
     virtual void WillProcessTask(
-        const base::PendingTask& pending_task) OVERRIDE;
-    virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE;
+        const base::PendingTask& pending_task) override;
+    virtual void DidProcessTask(const base::PendingTask& pending_task) override;
 
    private:
     GpuWatchdogThread* watchdog_;
@@ -67,8 +67,8 @@ class GpuWatchdogThread : public base::Thread,
   void OnAddPowerObserver();
 
   // Implement PowerObserver.
-  virtual void OnSuspend() OVERRIDE;
-  virtual void OnResume() OVERRIDE;
+  virtual void OnSuspend() override;
+  virtual void OnResume() override;
 
 #if defined(OS_WIN)
   base::TimeDelta GetWatchedThreadTime();

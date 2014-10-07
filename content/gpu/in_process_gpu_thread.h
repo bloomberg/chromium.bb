@@ -20,8 +20,8 @@ class InProcessGpuThread : public base::Thread {
   virtual ~InProcessGpuThread();
 
  protected:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   std::string channel_id_;
