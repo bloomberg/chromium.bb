@@ -6,19 +6,15 @@ package org.chromium.ui.autofill;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.DropdownAdapter;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -93,23 +89,8 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         }
 
         setAdapter(new DropdownAdapter(mContext, cleanedData, separators));
+        setRtl(isRtl);
         show();
-        ApiCompatibilityUtils.setLayoutDirection(getListView(),
-                isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-
-        // HACK: The ListPopupWindow's mPopup automatically dismisses on an outside tap. There's
-        // no way to override it or prevent it, except reaching into ListPopupWindow's hidden
-        // API. This allows the C++ controller to completely control showing/hiding the popup.
-        // See http://crbug.com/400601
-        try {
-            Method setForceIgnoreOutsideTouch = ListPopupWindow.class.getMethod(
-                    "setForceIgnoreOutsideTouch", new Class[] { boolean.class });
-            setForceIgnoreOutsideTouch.invoke(this, new Object[] { true });
-        } catch (Exception e) {
-            Log.e("AutofillPopup",
-                    "ListPopupWindow.setForceIgnoreOutsideTouch not found",
-                    e);
-        }
     }
 
     /**

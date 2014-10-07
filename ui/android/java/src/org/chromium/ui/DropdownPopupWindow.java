@@ -6,6 +6,7 @@ package org.chromium.ui;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnLayoutChangeListener;
@@ -15,7 +16,10 @@ import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.base.ViewAndroidDelegate;
+
+import java.lang.reflect.Method;
 
 /**
  * The dropdown list popup window.
@@ -29,6 +33,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private float mAnchorHeight;
     private float mAnchorX;
     private float mAnchorY;
+    private boolean mRtl;
     private OnLayoutChangeListener mLayoutChangeListener;
     private PopupWindow.OnDismissListener mOnDismissListener;
     ListAdapter mAdapter;
@@ -117,11 +122,35 @@ public class DropdownPopupWindow extends ListPopupWindow {
                 mAnchorHeight);
         super.show();
         getListView().setDividerHeight(0);
+        ApiCompatibilityUtils.setLayoutDirection(getListView(),
+                mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+
+        // HACK: The ListPopupWindow's mPopup automatically dismisses on an outside tap. There's
+        // no way to override it or prevent it, except reaching into ListPopupWindow's hidden
+        // API. This allows the C++ controller to completely control showing/hiding the popup.
+        // See http://crbug.com/400601
+        try {
+            Method setForceIgnoreOutsideTouch = ListPopupWindow.class.getMethod(
+                    "setForceIgnoreOutsideTouch", new Class[] { boolean.class });
+            setForceIgnoreOutsideTouch.invoke(this, new Object[] { true });
+        } catch (Exception e) {
+            Log.e("AutofillPopup",
+                    "ListPopupWindow.setForceIgnoreOutsideTouch not found",
+                    e);
+        }
     }
 
     @Override
     public void setOnDismissListener(PopupWindow.OnDismissListener listener) {
         mOnDismissListener = listener;
+    }
+
+    /**
+     * Sets the text direction in the dropdown. Should be called before show().
+     * @param isRtl If true, then dropdown text direciton is right to left.
+     */
+    protected void setRtl(boolean isRtl) {
+        mRtl = isRtl;
     }
 
     /**
