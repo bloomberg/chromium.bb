@@ -53,8 +53,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // successful.
   bool GrabPointer(gfx::NativeCursor cursor);
 
-  // Grabs the keyboard. Returns true if successful.
-  bool GrabKeyboard();
+  void GrabEscKey();
 
   // Creates an input-only window to be used during the drag.
   Window CreateDragInputWindow(XDisplay* display);

@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
+#include <X11/keysym.h>
 #include <X11/Xlib.h>
 
 #include "base/bind.h"
@@ -22,6 +23,18 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 
 namespace views {
+
+// XGrabKey requires the modifier mask to explicitly be specified.
+const unsigned int kModifiersMasks[] = {
+  0,                                // No additional modifier.
+  Mod2Mask,                         // Num lock
+  LockMask,                         // Caps lock
+  Mod5Mask,                         // Scroll lock
+  Mod2Mask | LockMask,
+  Mod2Mask | Mod5Mask,
+  LockMask | Mod5Mask,
+  Mod2Mask | LockMask | Mod5Mask
+};
 
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
@@ -160,10 +173,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     }
   }
 
-  if (!GrabKeyboard()) {
-    XDestroyWindow(gfx::GetXDisplay(), grab_input_window_);
-    return false;
-  }
+  GrabEscKey();
 
   scoped_ptr<ui::ScopedEventDispatcher> old_dispatcher =
       nested_dispatcher_.Pass();
@@ -227,7 +237,10 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   else
     UpdateCursor(initial_cursor_);
 
-  XUngrabKeyboard(display, CurrentTime);
+  unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
+  for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+    XUngrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_);
+  }
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
@@ -264,20 +277,13 @@ bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
   return ret == GrabSuccess;
 }
 
-bool X11WholeScreenMoveLoop::GrabKeyboard() {
+void X11WholeScreenMoveLoop::GrabEscKey() {
   XDisplay* display = gfx::GetXDisplay();
-  int ret = XGrabKeyboard(display,
-                          grab_input_window_,
-                          False,
-                          GrabModeAsync,
-                          GrabModeAsync,
-                          CurrentTime);
-  if (ret != GrabSuccess) {
-    DLOG(ERROR) << "Grabbing keyboard for dragging failed: "
-                << ui::GetX11ErrorString(display, ret);
-    return false;
+  unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
+  for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+    XGrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_,
+             False, GrabModeAsync, GrabModeAsync);
   }
-  return true;
 }
 
 Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
