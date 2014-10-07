@@ -242,10 +242,7 @@ void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& 
         return;
 
     LayoutRect rect = m_renderer->localCaretRect(m_inlineBox, m_offset);
-    if (rect == LayoutRect())
-        return;
-
-    RenderLayer* layer;
+    RenderLayer* layer = nullptr;
     bound.edgeTopInLayer = m_renderer->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
     bound.edgeBottomInLayer = m_renderer->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
     bound.layer = layer->graphicsLayerBacking();

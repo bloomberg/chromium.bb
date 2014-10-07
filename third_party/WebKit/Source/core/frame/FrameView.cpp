@@ -1525,7 +1525,12 @@ bool FrameView::computeCompositedSelectionBounds(LocalFrame& frame, CompositedSe
     RenderedPosition renderedEnd(visibleEnd);
 
     renderedStart.positionInGraphicsLayerBacking(start);
+    if (!start.layer)
+        return false;
+
     renderedEnd.positionInGraphicsLayerBacking(end);
+    if (!end.layer)
+        return false;
 
     if (selection.isCaret()) {
         start.type = end.type = CompositedSelectionBound::Caret;
