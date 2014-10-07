@@ -49,7 +49,10 @@
 @implementation TabWindowController
 
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip {
-  NSRect contentRect = NSMakeRect(60, 229, 750, 600);
+  const CGFloat kDefaultWidth = 750;
+  const CGFloat kDefaultHeight = 600;
+
+  NSRect contentRect = NSMakeRect(60, 229, kDefaultWidth, kDefaultHeight);
   base::scoped_nsobject<FramedBrowserWindow> window(
       [[FramedBrowserWindow alloc] initWithContentRect:contentRect
                                            hasTabStrip:hasTabStrip]);
@@ -59,11 +62,18 @@
   if ((self = [super initWithWindow:window])) {
     [[self window] setDelegate:self];
 
-    tabContentArea_.reset([[FastResizeView alloc] initWithFrame:
-        NSMakeRect(0, 0, 750, 600)]);
+    chromeContentView_.reset([[NSView alloc]
+        initWithFrame:NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight)]);
+    [chromeContentView_
+        setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [chromeContentView_ setWantsLayer:YES];
+    [[[self window] contentView] addSubview:chromeContentView_];
+
+    tabContentArea_.reset(
+        [[FastResizeView alloc] initWithFrame:[chromeContentView_ bounds]]);
     [tabContentArea_ setAutoresizingMask:NSViewWidthSizable |
                                          NSViewHeightSizable];
-    [[[self window] contentView] addSubview:tabContentArea_];
+    [chromeContentView_ addSubview:tabContentArea_];
 
     // tabStripBackgroundView_ draws the theme image behind the tab strip area.
     // When making a tab dragging window (setUseOverlay:), this view stays in
@@ -85,7 +95,8 @@
     [self moveContentViewToBack:[window contentView]];
 
     tabStripView_.reset([[TabStripView alloc]
-        initWithFrame:NSMakeRect(0, 0, 750, chrome::kTabStripHeight)]);
+        initWithFrame:NSMakeRect(
+                          0, 0, kDefaultWidth, chrome::kTabStripHeight)]);
     [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
                                        NSViewMinYMargin];
     if (hasTabStrip)
@@ -104,6 +115,10 @@
 
 - (FastResizeView*)tabContentArea {
   return tabContentArea_;
+}
+
+- (NSView*)chromeContentView {
+  return chromeContentView_;
 }
 
 - (void)removeOverlay {
@@ -141,8 +156,9 @@
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];
     [overlayWindow_ setDelegate:self];
+    [[overlayWindow_ contentView] setWantsLayer:YES];
 
-    originalContentView_ = [window contentView];
+    originalContentView_ = self.chromeContentView;
     [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
 
     // Explicitly set the responder to be nil here (for restoring later).
@@ -168,8 +184,10 @@
     // places. The TabStripView always needs to be in front of the window's
     // content view and therefore it should always be added after the content
     // view is set.
-    [window setContentView:originalContentView_];
-    [self moveContentViewToBack:originalContentView_];
+    [[window contentView] addSubview:originalContentView_
+                          positioned:NSWindowBelow
+                          relativeTo:nil];
+    originalContentView_.frame = [[window contentView] bounds];
     [self insertTabStripView:[self tabStripView] intoWindow:window];
     [[window cr_windowView] updateTrackingAreas];
 
