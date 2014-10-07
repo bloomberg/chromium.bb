@@ -193,6 +193,9 @@ INSTANTIATE_TEST_CASE_P(
                   false),
         OncParams("valid_openvpn_with_cert_pems.onc",
                   &kNetworkConfigurationSignature,
+                  false),
+        OncParams("openvpn_with_password.onc",
+                  &kNetworkConfigurationSignature,
                   false)));
 
 namespace {

@@ -1231,13 +1231,40 @@
       to <span class="value">server</span> if set.
     </dd>
 
+    <dt class="field">OTP</dt>
+    <dd>
+      <span class="field_meta">
+        (optional if <span class="field">UserAuthenticationType</span> is
+        <span class="value">OTP</span>,
+        <span class="value">PasswordAndOTP</span> or unset, otherwise ignored,
+        defaults to empty string)
+        <span class="type">string</span>
+      </span>
+      If <span class="field">UserAuthenticationType</span> is
+      <span class="value">OTP</span> or <span class="value">PasswordAndOTP</span>
+      and this field is not set, the user will be asked for an OTP.
+      The OTP is never persisted and must be provided on every connection
+      attempt.
+    </dd>
+
     <dt class="field">Password</dt>
     <dd>
       <span class="field_meta">
-        (optional)
+        (optional if <span class="field">UserAuthenticationType</span> is
+        <span class="value">Password</span>,
+        <span class="value">PasswordAndOTP</span> or unset, otherwise ignored,
+        defaults to empty string)
         <span class="type">string</span>
       </span>
-      XAUTH password. If not specified, user is prompted at time of connection.
+      If <span class="field">UserAuthenticationType</span> is
+      <span class="value">Password</span> or
+      <span class="value">PasswordAndOTP</span> and this field is not set, the user
+      will be asked for a password.
+      If <span class="field">SaveCredentials</span> is
+      <span class="value">true</span>, the password is persisted for future
+      connection attempts. Otherwise it is not persisted but might still be
+      reused for consecutive connection attempts (opposed to an OTP, which will
+      never be reused).
     </dd>
 
     <dt class="field">Port</dt>
@@ -1394,6 +1421,47 @@
       </span>
       If set, only allow connections to server hosts with X509 name or common
       name equal to this string.
+    </dd>
+
+    <dt class="field">UserAuthenticationType</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, defaults to <span class="value">None</span>)
+        <span class="type">string</span>
+      </span>
+      <span class="rule">
+        <span class="rule_id"></span>
+        Allowed values are <span class="value">None</span>,
+        <span class="value">Password</span>,
+        <span class="value">PasswordAndOTP</span> and
+        <span class="value">OTP</span>.
+      </span>
+      Determines the required form of user authentication:
+      <ul><li>
+        <span class="value">PasswordAndOTP</span>: This VPN requires a password
+        and an OTP (possibly empty). Both will be send to the server in the
+        'password' response using the SCRv1 encoding.
+      </li><li>
+        <span class="value">Password</span>: This VPN requires only a password,
+        which will be send without modification to the server in the 'password'
+        response (no CRv1 or SCRv1 encoding).
+      </li><li>
+        <span class="value">OTP</span>: This VPN requires only an OTP, which
+        will be send without modification to the server in the 'password'
+        response (no CRv1 or SCRv1 encoding).
+      </li><li>
+        <span class="value">None</span>: Neither password nor OTP are required.
+        No password request from the server is expected.
+      </li></ul>
+      If not set, the user can provide a password and an OTP (both not
+      mandatory) and the network manager will send both in the SCRv1 encoding,
+      when the server sends a static-challenge. If the server does not send a
+      static-challenge, the client will reply with only the password (without
+      any encoding). This behavior is deprecated and new configurations should
+      explicitly set one of the above values.
+
+      See the fields <span class="field">Password</span> and
+      <span class="field">OTP</span> for configuring the password and OTP.
     </dd>
 
     <dt class="field">Username</dt>

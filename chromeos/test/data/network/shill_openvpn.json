@@ -9,7 +9,7 @@
   ],
   "OpenVPN.CompLZO":"true",
   "OpenVPN.KeyDirection":"1",
-  "OpenVPN.Password":"some password",
+  "OpenVPN.Token":"some OTP",
   "OpenVPN.Port":"443",
   "OpenVPN.Proto":"udp",
   "OpenVPN.PushPeerInfo":"true",

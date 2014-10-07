@@ -677,11 +677,20 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
                                              ::onc::openvpn::kServer};
   const std::vector<const char*> valid_cert_tls_values(
       toVector(kValidCertTlsValues));
+  const char* const kValidUserAuthTypes[] = {
+      ::onc::openvpn_user_auth_type::kNone,
+      ::onc::openvpn_user_auth_type::kOTP,
+      ::onc::openvpn_user_auth_type::kPassword,
+      ::onc::openvpn_user_auth_type::kPasswordAndOTP};
+  const std::vector<const char*> valid_user_auth_types(
+      toVector(kValidUserAuthTypes));
 
   if (FieldExistsAndHasNoValidValue(
           *result, kAuthRetry, valid_auth_retry_values) ||
       FieldExistsAndHasNoValidValue(
           *result, kRemoteCertTLS, valid_cert_tls_values) ||
+      FieldExistsAndHasNoValidValue(
+          *result, kUserAuthenticationType, valid_user_auth_types) ||
       FieldExistsAndIsEmpty(*result, kServerCARefs)) {
     return false;
   }

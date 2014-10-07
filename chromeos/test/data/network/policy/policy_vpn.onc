@@ -12,6 +12,7 @@
           "Port":443,
           "Proto":"udp",
           "SaveCredentials":false,
+          "UserAuthenticationType":"Password",
           "Username":"abc ${LOGIN_EMAIL} def"
         },
         "Type":"OpenVPN"

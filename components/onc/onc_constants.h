@@ -328,6 +328,8 @@ ONC_EXPORT extern const char kKeyDirection[];
 ONC_EXPORT extern const char kNoInteract[];
 ONC_EXPORT extern const char kNone[];
 ONC_EXPORT extern const char kNsCertType[];
+ONC_EXPORT extern const char kOTP[];
+ONC_EXPORT extern const char kPassword[];
 ONC_EXPORT extern const char kPort[];
 ONC_EXPORT extern const char kProto[];
 ONC_EXPORT extern const char kPushPeerInfo[];
@@ -346,10 +348,18 @@ ONC_EXPORT extern const char kShaper[];
 ONC_EXPORT extern const char kStaticChallenge[];
 ONC_EXPORT extern const char kTLSAuthContents[];
 ONC_EXPORT extern const char kTLSRemote[];
+ONC_EXPORT extern const char kUserAuthenticationType[];
 ONC_EXPORT extern const char kVerb[];
 ONC_EXPORT extern const char kVerifyHash[];
 ONC_EXPORT extern const char kVerifyX509[];
 }  // namespace openvpn
+
+namespace openvpn_user_auth_type {
+ONC_EXPORT extern const char kNone[];
+ONC_EXPORT extern const char kOTP[];
+ONC_EXPORT extern const char kPassword[];
+ONC_EXPORT extern const char kPasswordAndOTP[];
+}  // openvpn_user_auth_type
 
 namespace verify_x509 {
 ONC_EXPORT extern const char kName[];

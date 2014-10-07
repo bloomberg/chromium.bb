@@ -9,7 +9,6 @@
             "AuthRetry": "interact",
             "CompLZO": "true",
             "KeyDirection": "1",
-            "Password": "some password",
             "Port": 443,
             "Proto": "udp",
             "PushPeerInfo": true,

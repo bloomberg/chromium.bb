@@ -179,8 +179,6 @@ void Normalizer::NormalizeNetworkConfiguration(base::DictionaryValue* network) {
 }
 
 void Normalizer::NormalizeOpenVPN(base::DictionaryValue* openvpn) {
-  using namespace ::onc::vpn;
-
   std::string clientcert_type;
   openvpn->GetStringWithoutPathExpansion(::onc::client_cert::kClientCertType,
                                          &clientcert_type);
@@ -190,6 +188,20 @@ void Normalizer::NormalizeOpenVPN(base::DictionaryValue* openvpn) {
   RemoveEntryUnless(openvpn,
                     ::onc::client_cert::kClientCertRef,
                     clientcert_type == ::onc::client_cert::kRef);
+
+  std::string user_auth_type;
+  openvpn->GetStringWithoutPathExpansion(
+      ::onc::openvpn::kUserAuthenticationType, &user_auth_type);
+  RemoveEntryUnless(
+      openvpn,
+      ::onc::openvpn::kPassword,
+      user_auth_type == ::onc::openvpn_user_auth_type::kPassword ||
+          user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+  RemoveEntryUnless(
+      openvpn,
+      ::onc::openvpn::kOTP,
+      user_auth_type == ::onc::openvpn_user_auth_type::kOTP ||
+          user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
 }
 
 void Normalizer::NormalizeProxySettings(base::DictionaryValue* proxy) {

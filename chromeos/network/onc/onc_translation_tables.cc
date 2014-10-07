@@ -71,7 +71,10 @@ const FieldTranslationEntry openvpn_fields[] = {
       shill::kOpenVPNIgnoreDefaultRouteProperty},
     { ::onc::openvpn::kKeyDirection, shill::kOpenVPNKeyDirectionProperty},
     { ::onc::openvpn::kNsCertType, shill::kOpenVPNNsCertTypeProperty},
-    { ::onc::vpn::kPassword, shill::kOpenVPNPasswordProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::vpn::kOTP, shill::kOpenVPNTokenProperty or kOpenVPNOTPProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::vpn::kPassword, shill::kOpenVPNPasswordProperty},
     { ::onc::openvpn::kPort, shill::kOpenVPNPortProperty},
     { ::onc::openvpn::kProto, shill::kOpenVPNProtoProperty},
     { ::onc::openvpn::kPushPeerInfo, shill::kOpenVPNPushPeerInfoProperty},

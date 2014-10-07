@@ -26,6 +26,7 @@
           "AuthRetry": "interact",
           "CompLZO": "true",
           "KeyDirection": "1",
+          "OTP": "some OTP",
           "Port": 443,
           "Proto": "udp",
           "PushPeerInfo": true,
@@ -41,6 +42,7 @@
           "TLSRemote": "MyOpenVPNServer",
           "SaveCredentials": false,
           "ServerCAPEMs": [ "pem1" ],
+          "UserAuthenticationType": "OTP",
           "ClientCertType": "Pattern",
           "ClientCertPattern": {
             "Issuer": {

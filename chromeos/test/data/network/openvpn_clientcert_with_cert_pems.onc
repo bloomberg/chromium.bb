@@ -22,10 +22,10 @@
                 }
             },
             "ClientCertType": "Pattern",
-            "Password": "********",
+            "Password": "some password",
             "Port": 1234,
             "Proto": "udp",
-            "Recommended": [ "Username", "Password" ],
+            "Recommended": [ "Username", "Password", "OTP" ],
             "SaveCredentials": true,
             "Username": "hans"
         },

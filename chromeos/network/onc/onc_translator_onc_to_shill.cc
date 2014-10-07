@@ -75,8 +75,14 @@ class LocalTranslator {
   void TranslateNetworkConfiguration();
 
   // Copies all entries from |onc_object_| to |shill_dictionary_| for which a
-  // translation (shill_property_name) is defined by |onc_signature_|.
+  // translation (shill_property_name) is defined by the translation table for
+  // |onc_signature_|.
   void CopyFieldsAccordingToSignature();
+
+  // If existent, copies the value of field |onc_field_name| from |onc_object_|
+  // to the property |shill_property_name| in |shill_dictionary_|.
+  void CopyFieldFromONCToShill(const std::string& onc_field_name,
+                               const std::string& shill_property_name);
 
   // Adds |value| to |shill_dictionary| at the field shill_property_name given
   // by the associated signature. Takes ownership of |value|. Does nothing if
@@ -152,21 +158,38 @@ void LocalTranslator::TranslateStaticIPConfig() {
 void LocalTranslator::TranslateOpenVPN() {
   // SaveCredentials needs special handling when translating from Shill -> ONC
   // so handle it explicitly here.
-  bool save_credentials;
-  if (onc_object_->GetBooleanWithoutPathExpansion(
-          ::onc::vpn::kSaveCredentials, &save_credentials)) {
-    shill_dictionary_->SetBooleanWithoutPathExpansion(
-        shill::kSaveCredentialsProperty, save_credentials);
+  CopyFieldFromONCToShill(::onc::vpn::kSaveCredentials,
+                          shill::kSaveCredentialsProperty);
+
+  std::string user_auth_type;
+  onc_object_->GetStringWithoutPathExpansion(
+      ::onc::openvpn::kUserAuthenticationType, &user_auth_type);
+  // The default behavior (if user_auth_type is empty) is to use both password
+  // and OTP in a static challenge and only the password otherwise. As long as
+  // Shill doe not know about the exact user authentication type, this is
+  // identical to kPasswordAndOTP.
+  if (user_auth_type.empty())
+    user_auth_type = ::onc::openvpn_user_auth_type::kPasswordAndOTP;
+
+  if (user_auth_type == ::onc::openvpn_user_auth_type::kPassword ||
+      user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP) {
+    CopyFieldFromONCToShill(::onc::openvpn::kPassword,
+                            shill::kOpenVPNPasswordProperty);
   }
+  if (user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP)
+    CopyFieldFromONCToShill(::onc::openvpn::kOTP, shill::kOpenVPNOTPProperty);
+  if (user_auth_type == ::onc::openvpn_user_auth_type::kOTP)
+    CopyFieldFromONCToShill(::onc::openvpn::kOTP, shill::kOpenVPNTokenProperty);
+
   // Shill supports only one RemoteCertKU but ONC a list.
   // Copy only the first entry if existing.
-  const base::ListValue* certKUs = NULL;
-  std::string certKU;
+  const base::ListValue* cert_kus = NULL;
+  std::string cert_ku;
   if (onc_object_->GetListWithoutPathExpansion(::onc::openvpn::kRemoteCertKU,
-                                               &certKUs) &&
-      certKUs->GetString(0, &certKU)) {
+                                               &cert_kus) &&
+      cert_kus->GetString(0, &cert_ku)) {
     shill_dictionary_->SetStringWithoutPathExpansion(
-        shill::kOpenVPNRemoteCertKUProperty, certKU);
+        shill::kOpenVPNRemoteCertKUProperty, cert_ku);
   }
 
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
@@ -188,20 +211,12 @@ void LocalTranslator::TranslateIPsec() {
 
   // SaveCredentials needs special handling when translating from Shill -> ONC
   // so handle it explicitly here.
-  bool save_credentials;
-  if (onc_object_->GetBooleanWithoutPathExpansion(
-          ::onc::vpn::kSaveCredentials, &save_credentials)) {
-    shill_dictionary_->SetBooleanWithoutPathExpansion(
-        shill::kSaveCredentialsProperty, save_credentials);
-  }
+  CopyFieldFromONCToShill(::onc::vpn::kSaveCredentials,
+                          shill::kSaveCredentialsProperty);
 }
 
 void LocalTranslator::TranslateVPN() {
-  std::string host;
-  if (onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kHost, &host)) {
-    shill_dictionary_->SetStringWithoutPathExpansion(
-        shill::kProviderHostProperty, host);
-  }
+  CopyFieldFromONCToShill(::onc::vpn::kHost, shill::kProviderHostProperty);
   std::string type;
   onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
   TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);
@@ -266,13 +281,8 @@ void LocalTranslator::TranslateNetworkConfiguration() {
     TranslateWithTableAndSet(type, kNetworkTypeTable, shill::kTypeProperty);
 
   // Shill doesn't allow setting the name for non-VPN networks.
-  if (type == ::onc::network_type::kVPN) {
-    std::string name;
-    onc_object_->GetStringWithoutPathExpansion(::onc::network_config::kName,
-                                               &name);
-    shill_dictionary_->SetStringWithoutPathExpansion(shill::kNameProperty,
-                                                     name);
-  }
+  if (type == ::onc::network_type::kVPN)
+    CopyFieldFromONCToShill(::onc::network_config::kName, shill::kNameProperty);
 
   CopyFieldsAccordingToSignature();
 }
@@ -285,16 +295,42 @@ void LocalTranslator::CopyFieldsAccordingToSignature() {
   }
 }
 
+void LocalTranslator::CopyFieldFromONCToShill(
+    const std::string& onc_field_name,
+    const std::string& shill_property_name) {
+  const base::Value* value = NULL;
+  if (!onc_object_->GetWithoutPathExpansion(onc_field_name, &value))
+    return;
+
+  const OncFieldSignature* field_signature =
+      GetFieldSignature(*onc_signature_, onc_field_name);
+  if (field_signature) {
+    base::Value::Type expected_type =
+        field_signature->value_signature->onc_type;
+    if (value->GetType() != expected_type) {
+      LOG(ERROR) << "Found field " << onc_field_name << " of type "
+                 << value->GetType() << " but expected type " << expected_type;
+      return;
+    }
+  } else {
+    LOG(ERROR)
+        << "Attempt to translate a field that is not part of the ONC format.";
+    return;
+  }
+  shill_dictionary_->SetWithoutPathExpansion(shill_property_name,
+                                             value->DeepCopy());
+}
+
 void LocalTranslator::AddValueAccordingToSignature(
     const std::string& onc_name,
     scoped_ptr<base::Value> value) {
   if (!value || !field_translation_table_)
     return;
   std::string shill_property_name;
-  if (!GetShillPropertyName(onc_name,
-                            field_translation_table_,
-                            &shill_property_name))
+  if (!GetShillPropertyName(
+          onc_name, field_translation_table_, &shill_property_name)) {
     return;
+  }
 
   shill_dictionary_->SetWithoutPathExpansion(shill_property_name,
                                              value.release());
