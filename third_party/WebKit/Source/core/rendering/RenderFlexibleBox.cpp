@@ -1346,8 +1346,10 @@ void RenderFlexibleBox::applyStretchAlignmentToChild(RenderBox& child, LayoutUni
             LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-            if (desiredLogicalHeight != child.logicalHeight()) {
+            bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
+            if (childNeedsRelayout || !child.hasOverrideHeight())
                 child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
+            if (childNeedsRelayout) {
                 child.setLogicalHeight(0);
                 child.forceChildLayout();
             }
