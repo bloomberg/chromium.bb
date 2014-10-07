@@ -16,9 +16,9 @@ class CONTENT_EXPORT WifiDataProviderChromeOs : public WifiDataProvider {
   WifiDataProviderChromeOs();
 
   // WifiDataProvider
-  virtual void StartDataProvider() OVERRIDE;
-  virtual void StopDataProvider() OVERRIDE;
-  virtual bool GetData(WifiData* data) OVERRIDE;
+  virtual void StartDataProvider() override;
+  virtual void StopDataProvider() override;
+  virtual bool GetData(WifiData* data) override;
 
  private:
   friend class GeolocationChromeOsWifiDataProviderTest;

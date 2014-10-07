@@ -25,8 +25,8 @@ class CONTENT_EXPORT WifiDataProviderLinux : public WifiDataProviderCommon {
   virtual ~WifiDataProviderLinux();
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi() OVERRIDE;
-  virtual WifiPollingPolicy* NewPollingPolicy() OVERRIDE;
+  virtual WlanApiInterface* NewWlanApi() override;
+  virtual WifiPollingPolicy* NewPollingPolicy() override;
 
   // For testing.
   WlanApiInterface* NewWlanApiForTesting(dbus::Bus* bus);

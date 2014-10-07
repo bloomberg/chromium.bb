@@ -36,7 +36,7 @@ class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
 
  protected:
   // GeolocationProviderImpl implementation:
-  virtual LocationArbitrator* CreateArbitrator() OVERRIDE;
+  virtual LocationArbitrator* CreateArbitrator() override;
 
  private:
   MockLocationArbitrator* mock_arbitrator_;
@@ -61,7 +61,7 @@ class MockGeolocationObserver : public GeolocationObserver {
 
 class AsyncMockGeolocationObserver : public MockGeolocationObserver {
  public:
-  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE {
+  virtual void OnLocationUpdate(const Geoposition& position) override {
     MockGeolocationObserver::OnLocationUpdate(position);
     base::MessageLoop::current()->Quit();
   }
@@ -79,7 +79,7 @@ class GeopositionEqMatcher
       : expected_(expected) {}
 
   virtual bool MatchAndExplain(const Geoposition& actual,
-                               MatchResultListener* listener) const OVERRIDE {
+                               MatchResultListener* listener) const override {
     return actual.latitude == expected_.latitude &&
            actual.longitude == expected_.longitude &&
            actual.altitude == expected_.altitude &&
@@ -92,11 +92,11 @@ class GeopositionEqMatcher
            actual.error_message == expected_.error_message;
   }
 
-  virtual void DescribeTo(::std::ostream* os) const OVERRIDE {
+  virtual void DescribeTo(::std::ostream* os) const override {
     *os << "which matches the expected position";
   }
 
-  virtual void DescribeNegationTo(::std::ostream* os) const OVERRIDE {
+  virtual void DescribeNegationTo(::std::ostream* os) const override {
     *os << "which does not match the expected position";
   }
 

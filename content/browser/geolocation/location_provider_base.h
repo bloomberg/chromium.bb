@@ -21,8 +21,8 @@ class CONTENT_EXPORT LocationProviderBase
 
   // Overridden from LocationProvider:
   virtual void SetUpdateCallback(
-      const LocationProviderUpdateCallback& callback) OVERRIDE;
-  virtual void RequestRefresh() OVERRIDE;
+      const LocationProviderUpdateCallback& callback) override;
+  virtual void RequestRefresh() override;
 
  private:
   LocationProviderUpdateCallback callback_;

@@ -28,9 +28,9 @@ class CONTENT_EXPORT GeolocationProviderImpl
   // GeolocationProvider implementation:
   virtual scoped_ptr<GeolocationProvider::Subscription>
       AddLocationUpdateCallback(const LocationUpdateCallback& callback,
-                                bool use_high_accuracy) OVERRIDE;
-  virtual void UserDidOptIntoLocationServices() OVERRIDE;
-  virtual void OverrideLocationForTesting(const Geoposition& position) OVERRIDE;
+                                bool use_high_accuracy) override;
+  virtual void UserDidOptIntoLocationServices() override;
+  virtual void OverrideLocationForTesting(const Geoposition& position) override;
 
   // Callback from the LocationArbitrator. Public for testing.
   void OnLocationUpdate(const Geoposition& position);
@@ -75,8 +75,8 @@ class CONTENT_EXPORT GeolocationProviderImpl
   void NotifyClients(const Geoposition& position);
 
   // Thread
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
   base::CallbackList<void(const Geoposition&)> high_accuracy_callbacks_;
   base::CallbackList<void(const Geoposition&)> low_accuracy_callbacks_;

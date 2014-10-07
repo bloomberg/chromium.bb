@@ -54,7 +54,7 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   //
   // This function makes blocking D-Bus calls, but it's totally fine as
   // the code runs in "Geolocation" thread, not the browser's UI thread.
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) OVERRIDE;
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
 
  private:
   // Enumerates the list of available network adapter devices known to

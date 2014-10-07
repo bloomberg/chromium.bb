@@ -21,10 +21,10 @@ class MockLocationArbitrator : public LocationArbitrator {
 
   // LocationArbitrator:
   virtual void StartProviders(bool use_high_accuracy)
-      OVERRIDE;
-  virtual void StopProviders() OVERRIDE;
-  virtual void OnPermissionGranted() OVERRIDE;
-  virtual bool HasPermissionBeenGranted() const OVERRIDE;
+      override;
+  virtual void StopProviders() override;
+  virtual void OnPermissionGranted() override;
+  virtual bool HasPermissionBeenGranted() const override;
 
  private:
   bool permission_granted_;

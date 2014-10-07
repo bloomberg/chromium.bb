@@ -42,10 +42,10 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   static GURL DefaultNetworkProviderURL();
 
   // LocationArbitrator
-  virtual void StartProviders(bool use_high_accuracy) OVERRIDE;
-  virtual void StopProviders() OVERRIDE;
-  virtual void OnPermissionGranted() OVERRIDE;
-  virtual bool HasPermissionBeenGranted() const OVERRIDE;
+  virtual void StartProviders(bool use_high_accuracy) override;
+  virtual void StopProviders() override;
+  virtual void OnPermissionGranted() override;
+  virtual bool HasPermissionBeenGranted() const override;
 
  protected:
   AccessTokenStore* GetAccessTokenStore();

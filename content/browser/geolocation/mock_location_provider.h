@@ -26,10 +26,10 @@ class MockLocationProvider : public LocationProviderBase {
   void HandlePositionChanged(const Geoposition& position);
 
   // LocationProvider implementation.
-  virtual bool StartProvider(bool high_accuracy) OVERRIDE;
-  virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(Geoposition* position) OVERRIDE;
-  virtual void OnPermissionGranted() OVERRIDE;
+  virtual bool StartProvider(bool high_accuracy) override;
+  virtual void StopProvider() override;
+  virtual void GetPosition(Geoposition* position) override;
+  virtual void OnPermissionGranted() override;
 
   Geoposition position_;
   enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;

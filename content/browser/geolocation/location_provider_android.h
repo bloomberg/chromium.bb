@@ -23,11 +23,11 @@ class LocationProviderAndroid : public LocationProviderBase {
   void NotifyNewGeoposition(const Geoposition& position);
 
   // LocationProvider.
-  virtual bool StartProvider(bool high_accuracy) OVERRIDE;
-  virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(Geoposition* position) OVERRIDE;
-  virtual void RequestRefresh() OVERRIDE;
-  virtual void OnPermissionGranted() OVERRIDE;
+  virtual bool StartProvider(bool high_accuracy) override;
+  virtual void StopProvider() override;
+  virtual void GetPosition(Geoposition* position) override;
+  virtual void RequestRefresh() override;
+  virtual void OnPermissionGranted() override;
 
  private:
   Geoposition last_position_;

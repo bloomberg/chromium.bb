@@ -84,11 +84,11 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
         new_polling_policy_(new MockPollingPolicy) {}
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi() OVERRIDE {
+  virtual WlanApiInterface* NewWlanApi() override {
     CHECK(new_wlan_api_ != NULL);
     return new_wlan_api_.release();
   }
-  virtual WifiPollingPolicy* NewPollingPolicy() OVERRIDE {
+  virtual WifiPollingPolicy* NewPollingPolicy() override {
     CHECK(new_polling_policy_ != NULL);
     return new_polling_policy_.release();
   }

@@ -54,7 +54,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   LocationResponseCallback location_response_callback_;

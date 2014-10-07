@@ -19,7 +19,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
   GeolocationChromeOsWifiDataProviderTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     manager_client_ =
@@ -29,7 +29,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     provider_ = NULL;
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();

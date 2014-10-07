@@ -66,15 +66,15 @@ class MockWifiDataProvider : public WifiDataProvider {
   MockWifiDataProvider() : start_calls_(0), stop_calls_(0), got_data_(true) {}
 
   // WifiDataProvider implementation.
-  virtual void StartDataProvider() OVERRIDE {
+  virtual void StartDataProvider() override {
     ++start_calls_;
   }
 
-  virtual void StopDataProvider() OVERRIDE {
+  virtual void StopDataProvider() override {
     ++stop_calls_;
   }
 
-  virtual bool GetData(WifiData* data_out) OVERRIDE {
+  virtual bool GetData(WifiData* data_out) override {
     CHECK(data_out);
     *data_out = data_;
     return got_data_;
