@@ -115,10 +115,12 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
 
       stage = self.ConstructStage()
 
-      self.assertRaises(release_stages.SignerFailure,
-                        stage._WaitForSigningResults,
-                        {'chan1': ['chan1_uri1']}, notifier)
+      self.assertRaisesStringifyable(
+          release_stages.SignerFailure,
+          stage._WaitForSigningResults,
+          {'chan1': ['chan1_uri1']}, notifier)
 
+      # Ensure we didn't notify anyone of success.
       self.assertEqual(notifier.mock_calls, [])
       self.assertEqual(mock_gs_ctx.Cat.mock_calls,
                        [mock.call('chan1_uri1.json')])

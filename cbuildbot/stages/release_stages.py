@@ -296,7 +296,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       cros_build_lib.Error('Failure summary:')
       for failure in failures:
         cros_build_lib.Error('  %s', failure)
-      raise SignerFailure(failures)
+      raise SignerFailure(', '.join([str(f) for f in failures]))
 
   def PerformStage(self):
     """Do the work of generating our release payloads."""

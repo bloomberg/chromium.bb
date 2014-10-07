@@ -172,6 +172,38 @@ class StageTest(cros_test_lib.MockOutputTestCase,
 
     return hw_tests[0]
 
+  def assertRaisesStringifyable(self, exception, functor, *args, **kwargs):
+    """assertRaises replacement that also verifies exception is Stringifyable.
+
+    This helper is intended to be used anywhere assertRaises can be used, but
+    will also verify the exception raised can pass through
+    BuilderStage._StringifyException.
+
+    Args:
+      exception: See unittest.TestCase.assertRaises.
+      functor: See unittest.TestCase.assertRaises.
+      args: See unittest.TestCase.assertRaises.
+      kwargs: See unittest.TestCase.assertRaises.
+
+    Raises:
+      Unittest failures if the expected exception is not raised, or
+      _StringifyException exceptions if that process fails.
+    """
+    try:
+      functor(*args, **kwargs)
+
+      # We didn't get the exception, fail the test.
+      self.fail('%s was not raised.' % exception)
+
+    except exception:
+      # Ensure that this exception can be converted properly.
+      # Verifies fix for crbug.com/418358 and related.
+      generic_stages.BuilderStage._StringifyException(sys.exc_info())
+
+    except Exception as e:
+      # We didn't get the exception, fail the test.
+      self.fail('%s raised instead of %s' % (e, exception))
+
 
 class AbstractStageTest(StageTest):
   """Base class for tests that test a particular build stage.
