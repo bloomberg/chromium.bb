@@ -36,11 +36,11 @@ class ServiceRegistryImpl : public ServiceRegistry,
   virtual void AddService(
       const std::string& service_name,
       const base::Callback<void(mojo::ScopedMessagePipeHandle)> service_factory)
-      OVERRIDE;
-  virtual void RemoveService(const std::string& service_name) OVERRIDE;
+      override;
+  virtual void RemoveService(const std::string& service_name) override;
   virtual void ConnectToRemoteService(
       const base::StringPiece& service_name,
-      mojo::ScopedMessagePipeHandle handle) OVERRIDE;
+      mojo::ScopedMessagePipeHandle handle) override;
 
   base::WeakPtr<ServiceRegistry> GetWeakPtr();
 
@@ -48,8 +48,8 @@ class ServiceRegistryImpl : public ServiceRegistry,
   // mojo::InterfaceImpl<mojo::ServiceProvider> overrides.
   virtual void ConnectToService(
       const mojo::String& name,
-      mojo::ScopedMessagePipeHandle client_handle) OVERRIDE;
-  virtual void OnConnectionError() OVERRIDE;
+      mojo::ScopedMessagePipeHandle client_handle) override;
+  virtual void OnConnectionError() override;
 
   std::map<std::string, base::Callback<void(mojo::ScopedMessagePipeHandle)> >
       service_factories_;

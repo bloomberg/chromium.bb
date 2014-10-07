@@ -39,15 +39,15 @@ class VTVideoDecodeAccelerator
   // VideoDecodeAccelerator implementation.
   virtual bool Initialize(
       media::VideoCodecProfile profile,
-      Client* client) OVERRIDE;
-  virtual void Decode(const media::BitstreamBuffer& bitstream) OVERRIDE;
+      Client* client) override;
+  virtual void Decode(const media::BitstreamBuffer& bitstream) override;
   virtual void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& pictures) OVERRIDE;
-  virtual void ReusePictureBuffer(int32_t picture_id) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
-  virtual bool CanDecodeOnIOThread() OVERRIDE;
+      const std::vector<media::PictureBuffer>& pictures) override;
+  virtual void ReusePictureBuffer(int32_t picture_id) override;
+  virtual void Flush() override;
+  virtual void Reset() override;
+  virtual void Destroy() override;
+  virtual bool CanDecodeOnIOThread() override;
 
   // Called by OutputThunk() when VideoToolbox finishes decoding a frame.
   void Output(

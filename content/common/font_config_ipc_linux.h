@@ -23,9 +23,9 @@ class FontConfigIPC : public SkFontConfigInterface {
                                SkTypeface::Style requested,
                                FontIdentity* outFontIdentifier,
                                SkString* outFamilyName,
-                               SkTypeface::Style* outStyle) OVERRIDE;
+                               SkTypeface::Style* outStyle) override;
 
-  virtual SkStream* openStream(const FontIdentity&) OVERRIDE;
+  virtual SkStream* openStream(const FontIdentity&) override;
 
   enum Method {
     METHOD_MATCH = 0,

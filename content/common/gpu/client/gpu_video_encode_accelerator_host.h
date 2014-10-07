@@ -45,26 +45,26 @@ class GpuVideoEncodeAcceleratorHost
                                 CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   // media::VideoEncodeAccelerator implementation.
-  virtual std::vector<SupportedProfile> GetSupportedProfiles() OVERRIDE;
+  virtual std::vector<SupportedProfile> GetSupportedProfiles() override;
   virtual bool Initialize(media::VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
                           uint32 initial_bitrate,
-                          Client* client) OVERRIDE;
+                          Client* client) override;
   virtual void Encode(const scoped_refptr<media::VideoFrame>& frame,
-                      bool force_keyframe) OVERRIDE;
+                      bool force_keyframe) override;
   virtual void UseOutputBitstreamBuffer(
-      const media::BitstreamBuffer& buffer) OVERRIDE;
+      const media::BitstreamBuffer& buffer) override;
   virtual void RequestEncodingParametersChange(uint32 bitrate,
-                                               uint32 framerate_num) OVERRIDE;
-  virtual void Destroy() OVERRIDE;
+                                               uint32 framerate_num) override;
+  virtual void Destroy() override;
 
   // CommandBufferProxyImpl::DeletionObserver implemetnation.
-  virtual void OnWillDeleteImpl() OVERRIDE;
+  virtual void OnWillDeleteImpl() override;
 
  private:
   // Only Destroy() should be deleting |this|.

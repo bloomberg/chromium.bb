@@ -22,7 +22,7 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
       const SyntheticSmoothScrollGestureParams& other);
   virtual ~SyntheticSmoothScrollGestureParams();
 
-  virtual GestureType GetGestureType() const OVERRIDE;
+  virtual GestureType GetGestureType() const override;
 
   gfx::Point anchor;
   std::vector<gfx::Vector2d> distances;  // Positive X/Y to scroll left/up.

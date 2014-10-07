@@ -31,7 +31,7 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
     data_ = data;
     ready_ = ready;
   }
-  virtual void ThreadMain() OVERRIDE {
+  virtual void ThreadMain() override {
     while (AtomicRefCountIsZero(ready_)) {
       PlatformThread::YieldCurrentThread();
     }

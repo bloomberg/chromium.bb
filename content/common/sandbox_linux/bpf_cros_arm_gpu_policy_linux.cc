@@ -101,7 +101,7 @@ class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
   }
   virtual ~CrosArmGpuBrokerProcessPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   CrosArmGpuBrokerProcessPolicy() : CrosArmGpuProcessPolicy(false) {}

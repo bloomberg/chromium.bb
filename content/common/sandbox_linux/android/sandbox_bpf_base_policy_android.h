@@ -19,7 +19,7 @@ class SandboxBPFBasePolicyAndroid : public SandboxBPFBasePolicy {
 
   // sandbox::SandboxBPFPolicy:
   virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const OVERRIDE;
+      int system_call_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFBasePolicyAndroid);

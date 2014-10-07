@@ -18,28 +18,28 @@ class ExynosV4L2Device : public V4L2Device {
   virtual ~ExynosV4L2Device();
 
   // V4L2Device implementation.
-  virtual int Ioctl(int request, void* arg) OVERRIDE;
-  virtual bool Poll(bool poll_device, bool* event_pending) OVERRIDE;
-  virtual bool SetDevicePollInterrupt() OVERRIDE;
-  virtual bool ClearDevicePollInterrupt() OVERRIDE;
+  virtual int Ioctl(int request, void* arg) override;
+  virtual bool Poll(bool poll_device, bool* event_pending) override;
+  virtual bool SetDevicePollInterrupt() override;
+  virtual bool ClearDevicePollInterrupt() override;
   virtual void* Mmap(void* addr,
                      unsigned int len,
                      int prot,
                      int flags,
-                     unsigned int offset) OVERRIDE;
-  virtual void Munmap(void* addr, unsigned int len) OVERRIDE;
-  virtual bool Initialize() OVERRIDE;
+                     unsigned int offset) override;
+  virtual void Munmap(void* addr, unsigned int len) override;
+  virtual bool Initialize() override;
   virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
                                      EGLContext egl_context,
                                      GLuint texture_id,
                                      gfx::Size frame_buffer_size,
                                      unsigned int buffer_index,
-                                     size_t planes_count) OVERRIDE;
+                                     size_t planes_count) override;
   virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                                     EGLImageKHR egl_image) OVERRIDE;
-  virtual GLenum GetTextureTarget() OVERRIDE;
-  virtual uint32 PreferredInputFormat() OVERRIDE;
-  virtual uint32 PreferredOutputFormat() OVERRIDE;
+                                     EGLImageKHR egl_image) override;
+  virtual GLenum GetTextureTarget() override;
+  virtual uint32 PreferredInputFormat() override;
+  virtual uint32 PreferredOutputFormat() override;
 
  private:
   const Type type_;

@@ -105,7 +105,7 @@ class GpuChannelHost : public IPC::Sender,
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxyImpl* CreateViewCommandBuffer(
@@ -185,8 +185,8 @@ class GpuChannelHost : public IPC::Sender,
 
     // IPC::MessageFilter implementation
     // (called on the IO thread):
-    virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-    virtual void OnChannelError() OVERRIDE;
+    virtual bool OnMessageReceived(const IPC::Message& msg) override;
+    virtual void OnChannelError() override;
 
     // The following methods can be called on any thread.
 

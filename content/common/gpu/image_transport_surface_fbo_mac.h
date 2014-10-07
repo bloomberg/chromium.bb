@@ -62,20 +62,20 @@ class ImageTransportSurfaceFBO
                            gfx::PluginWindowHandle handle);
 
   // GLSurface implementation
-  virtual bool Initialize() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
-  virtual bool DeferDraws() OVERRIDE;
-  virtual bool IsOffscreen() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
-  virtual bool SupportsPostSubBuffer() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual void* GetHandle() OVERRIDE;
-  virtual void* GetDisplay() OVERRIDE;
-  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
-  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual void Destroy() override;
+  virtual bool DeferDraws() override;
+  virtual bool IsOffscreen() override;
+  virtual bool SwapBuffers() override;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
+  virtual bool SupportsPostSubBuffer() override;
+  virtual gfx::Size GetSize() override;
+  virtual void* GetHandle() override;
+  virtual void* GetDisplay() override;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) override;
+  virtual unsigned int GetBackingFrameBufferObject() override;
+  virtual bool SetBackbufferAllocation(bool allocated) override;
+  virtual void SetFrontbufferAllocation(bool allocated) override;
 
   // Called when the context may continue to make forward progress after a swap.
   void SendSwapBuffers(uint64 surface_handle,
@@ -85,17 +85,17 @@ class ImageTransportSurfaceFBO
  protected:
   // ImageTransportSurface implementation
   virtual void OnBufferPresented(
-      const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
-  virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
+  virtual void OnResize(gfx::Size size, float scale_factor) override;
   virtual void SetLatencyInfo(
-      const std::vector<ui::LatencyInfo>&) OVERRIDE;
-  virtual void WakeUpGpu() OVERRIDE;
+      const std::vector<ui::LatencyInfo>&) override;
+  virtual void WakeUpGpu() override;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
-  virtual void OnWillDestroyStub() OVERRIDE;
+  virtual void OnWillDestroyStub() override;
 
  private:
-  virtual ~ImageTransportSurfaceFBO() OVERRIDE;
+  virtual ~ImageTransportSurfaceFBO() override;
 
   void AdjustBufferAllocation();
   void DestroyFramebuffer();

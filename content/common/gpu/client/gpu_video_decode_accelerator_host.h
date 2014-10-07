@@ -31,22 +31,22 @@ class GpuVideoDecodeAcceleratorHost
                                 CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
-  virtual void OnChannelError() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(media::VideoCodecProfile profile,
-                          Client* client) OVERRIDE;
-  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
+                          Client* client) override;
+  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   virtual void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
-  virtual void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
+      const std::vector<media::PictureBuffer>& buffers) override;
+  virtual void ReusePictureBuffer(int32 picture_buffer_id) override;
+  virtual void Flush() override;
+  virtual void Reset() override;
+  virtual void Destroy() override;
 
   // CommandBufferProxyImpl::DeletionObserver implemetnation.
-  virtual void OnWillDeleteImpl() OVERRIDE;
+  virtual void OnWillDeleteImpl() override;
 
  private:
   // Only Destroy() should be deleting |this|.

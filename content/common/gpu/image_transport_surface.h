@@ -109,7 +109,7 @@ class ImageTransportHelper
   bool Initialize();
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Helper send functions. Caller fills in the surface specific params
   // like size and surface id. The helper fills in the rest.
@@ -173,20 +173,20 @@ class PassThroughImageTransportSurface
                                    gfx::GLSurface* surface);
 
   // GLSurface implementation.
-  virtual bool Initialize() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
-  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual void Destroy() override;
+  virtual bool SwapBuffers() override;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) override;
 
   // ImageTransportSurface implementation.
   virtual void OnBufferPresented(
-      const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
-  virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
+  virtual void OnResize(gfx::Size size, float scale_factor) override;
+  virtual gfx::Size GetSize() override;
   virtual void SetLatencyInfo(
-      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
-  virtual void WakeUpGpu() OVERRIDE;
+      const std::vector<ui::LatencyInfo>& latency_info) override;
+  virtual void WakeUpGpu() override;
 
  protected:
   virtual ~PassThroughImageTransportSurface();

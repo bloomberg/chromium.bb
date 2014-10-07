@@ -123,7 +123,7 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
   }
   virtual ~GpuBrokerProcessPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   GpuBrokerProcessPolicy() {}

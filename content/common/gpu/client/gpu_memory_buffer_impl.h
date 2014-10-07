@@ -67,7 +67,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   static size_t BytesPerPixel(unsigned internalformat);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual bool IsMapped() const OVERRIDE;
+  virtual bool IsMapped() const override;
 
  protected:
   GpuMemoryBufferImpl(const gfx::Size& size,

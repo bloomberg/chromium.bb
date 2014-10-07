@@ -22,8 +22,8 @@ class SandboxBPFBasePolicy : public sandbox::bpf_dsl::SandboxBPFDSLPolicy {
   virtual ~SandboxBPFBasePolicy();
 
   virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const OVERRIDE;
-  virtual sandbox::bpf_dsl::ResultExpr InvalidSyscall() const OVERRIDE;
+      int system_call_number) const override;
+  virtual sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
 
   // A policy can implement this hook to run code right before the policy
   // is passed to the BPF compiler and the sandbox is engaged.

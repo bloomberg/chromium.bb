@@ -31,17 +31,17 @@ class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
       GpuMemoryBufferFactory* gpu_memory_buffer_factory)
       : sender_(NULL), gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {}
 
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+  virtual void OnFilterAdded(IPC::Sender* sender) override {
     DCHECK(!sender_);
     sender_ = sender;
   }
 
-  virtual void OnFilterRemoved() OVERRIDE {
+  virtual void OnFilterRemoved() override {
     DCHECK(sender_);
     sender_ = NULL;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     DCHECK(sender_);
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(GpuChannelManagerMessageFilter, message)

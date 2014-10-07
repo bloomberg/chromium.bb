@@ -46,12 +46,12 @@ class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
 
   // cc::SharedBitmapManager implementation.
   virtual scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size& size) OVERRIDE;
+      const gfx::Size& size) override;
   virtual scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,
-      const cc::SharedBitmapId&) OVERRIDE;
+      const cc::SharedBitmapId&) override;
   virtual scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
-      base::SharedMemory*) OVERRIDE;
+      base::SharedMemory*) override;
 
   void AllocateSharedBitmapForChild(
       base::ProcessHandle process_handle,

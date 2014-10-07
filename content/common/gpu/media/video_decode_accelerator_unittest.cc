@@ -235,14 +235,14 @@ class GLRenderingVDAClient
   // The heart of the Client.
   virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                      const gfx::Size& dimensions,
-                                     uint32 texture_target) OVERRIDE;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
+                                     uint32 texture_target) override;
+  virtual void DismissPictureBuffer(int32 picture_buffer_id) override;
+  virtual void PictureReady(const media::Picture& picture) override;
   // Simple state changes.
-  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
+  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override;
+  virtual void NotifyFlushDone() override;
+  virtual void NotifyResetDone() override;
+  virtual void NotifyError(VideoDecodeAccelerator::Error error) override;
 
   void OutputFrameDeliveryTimes(base::File* output);
 

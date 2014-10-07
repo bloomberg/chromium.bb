@@ -19,7 +19,7 @@ struct CONTENT_EXPORT SyntheticPinchGestureParams
       const SyntheticPinchGestureParams& other);
   virtual ~SyntheticPinchGestureParams();
 
-  virtual GestureType GetGestureType() const OVERRIDE;
+  virtual GestureType GetGestureType() const override;
 
   float scale_factor;
   gfx::Point anchor;

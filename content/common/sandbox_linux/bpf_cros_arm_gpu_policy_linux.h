@@ -16,8 +16,8 @@ class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
   virtual ~CrosArmGpuProcessPolicy();
 
   virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const OVERRIDE;
-  virtual bool PreSandboxHook() OVERRIDE;
+      int system_call_number) const override;
+  virtual bool PreSandboxHook() override;
 
  private:
   const bool allow_shmat_;  // Allow shmat(2).

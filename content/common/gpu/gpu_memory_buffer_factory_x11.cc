@@ -19,7 +19,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       unsigned internalformat,
-      unsigned usage) OVERRIDE {
+      unsigned usage) override {
     switch (handle.type) {
       case gfx::X11_PIXMAP_BUFFER:
         x11_pixmap_factory_.CreateGpuMemoryBuffer(handle.global_id,
@@ -31,7 +31,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
     }
   }
   virtual void DestroyGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle) OVERRIDE {
+      const gfx::GpuMemoryBufferHandle& handle) override {
     switch (handle.type) {
       case gfx::X11_PIXMAP_BUFFER:
         x11_pixmap_factory_.DestroyGpuMemoryBuffer(handle.global_id);
@@ -45,7 +45,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       unsigned internalformat,
-      int client_id) OVERRIDE {
+      int client_id) override {
     switch (handle.type) {
       case gfx::SHARED_MEMORY_BUFFER: {
         scoped_refptr<gfx::GLImageSharedMemory> image(

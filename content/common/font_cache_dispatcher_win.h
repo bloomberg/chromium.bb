@@ -23,13 +23,13 @@ class FontCacheDispatcher : public IPC::MessageFilter, public IPC::Sender {
   virtual ~FontCacheDispatcher();
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
  private:
   // IPC::MessageFilter implementation:
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelClosing() override;
 
   // Message handlers.
   void OnPreCacheFont(const LOGFONT& font);

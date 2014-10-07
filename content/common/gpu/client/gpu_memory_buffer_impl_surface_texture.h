@@ -26,10 +26,10 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
   static int WindowFormat(unsigned internalformat);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
-  virtual uint32 GetStride() const OVERRIDE;
+  virtual void* Map() override;
+  virtual void Unmap() override;
+  virtual gfx::GpuMemoryBufferHandle GetHandle() const override;
+  virtual uint32 GetStride() const override;
 
  private:
   GpuMemoryBufferImplSurfaceTexture(

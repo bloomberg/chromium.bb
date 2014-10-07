@@ -71,10 +71,10 @@ class GpuChannelManager : public IPC::Listener,
   void RemoveChannel(int client_id);
 
   // Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Sender overrides.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   bool HandleMessagesScheduled();
   uint64 MessagesProcessed();

@@ -40,24 +40,24 @@ class GpuVideoDecodeAccelerator
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                      const gfx::Size& dimensions,
-                                     uint32 texture_target) OVERRIDE;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
-  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyResetDone() OVERRIDE;
+                                     uint32 texture_target) override;
+  virtual void DismissPictureBuffer(int32 picture_buffer_id) override;
+  virtual void PictureReady(const media::Picture& picture) override;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override;
+  virtual void NotifyFlushDone() override;
+  virtual void NotifyResetDone() override;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
-  virtual void OnWillDestroyStub() OVERRIDE;
+  virtual void OnWillDestroyStub() override;
 
   // Function to delegate sending to actual sender.
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   // Initialize the accelerator with the given profile and send the
   // |init_done_msg| when done.

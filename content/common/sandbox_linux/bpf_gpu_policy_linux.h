@@ -23,9 +23,9 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   virtual ~GpuProcessPolicy();
 
   virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const OVERRIDE;
+      int system_call_number) const override;
 
-  virtual bool PreSandboxHook() OVERRIDE;
+  virtual bool PreSandboxHook() override;
 
  protected:
   // Start a broker process to handle open() inside the sandbox.

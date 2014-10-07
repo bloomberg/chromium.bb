@@ -39,8 +39,8 @@ class ImageTransportSurfaceAndroid
                                const gfx::GLSurfaceHandle& handle);
 
   // gfx::GLSurface implementation.
-  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void WakeUpGpu() OVERRIDE;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) override;
+  virtual void WakeUpGpu() override;
 
  protected:
   virtual ~ImageTransportSurfaceAndroid();
@@ -59,7 +59,7 @@ class DirectSurfaceAndroid : public PassThroughImageTransportSurface {
                        gfx::GLSurface* surface);
 
   // gfx::GLSurface implementation.
-  virtual bool SwapBuffers() OVERRIDE;
+  virtual bool SwapBuffers() override;
 
  protected:
   virtual ~DirectSurfaceAndroid();

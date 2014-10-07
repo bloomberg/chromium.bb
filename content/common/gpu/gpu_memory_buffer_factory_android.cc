@@ -19,19 +19,19 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       unsigned internalformat,
-      unsigned usage) OVERRIDE {
+      unsigned usage) override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
   virtual void DestroyGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle) OVERRIDE {
+      const gfx::GpuMemoryBufferHandle& handle) override {
     NOTREACHED();
   }
   virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       unsigned internalformat,
-      int client_id) OVERRIDE {
+      int client_id) override {
     switch (handle.type) {
       case gfx::SHARED_MEMORY_BUFFER: {
         scoped_refptr<gfx::GLImageSharedMemory> image(

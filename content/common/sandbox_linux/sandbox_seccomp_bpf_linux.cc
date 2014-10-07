@@ -78,7 +78,7 @@ class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
   BlacklistDebugAndNumaPolicy() {}
   virtual ~BlacklistDebugAndNumaPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlacklistDebugAndNumaPolicy);
@@ -96,7 +96,7 @@ class AllowAllPolicy : public SandboxBPFBasePolicy {
   AllowAllPolicy() {}
   virtual ~AllowAllPolicy() {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);

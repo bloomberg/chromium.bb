@@ -39,10 +39,10 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   static uint32 PixelFormat(unsigned internalformat);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual uint32 GetStride() const OVERRIDE;
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
+  virtual void* Map() override;
+  virtual void Unmap() override;
+  virtual uint32 GetStride() const override;
+  virtual gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
   GpuMemoryBufferImplIOSurface(const gfx::Size& size,
