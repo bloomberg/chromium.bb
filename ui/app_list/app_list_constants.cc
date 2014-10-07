@@ -8,8 +8,8 @@ namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xFA, 0xFA, 0xFA);
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
-const SkColor kTopSeparatorColor = SkColorSetARGB(0x40, 0x00, 0x00, 0x00);
-const SkColor kBottomSeparatorColor = SkColorSetARGB(0x40, 0x00, 0x00, 0x00);
+const SkColor kTopSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
+const SkColor kBottomSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
 
 // The color of the separator used inside dialogs in the app list.
 const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
