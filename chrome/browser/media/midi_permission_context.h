@@ -20,7 +20,7 @@ class MidiPermissionContext : public PermissionContextBase {
   // PermissionContextBase:
   virtual void UpdateTabContext(const PermissionRequestID& id,
                                 const GURL& requesting_frame,
-                                bool allowed) OVERRIDE;
+                                bool allowed) override;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionContext);
 };

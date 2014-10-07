@@ -54,7 +54,7 @@ class LoginPromptObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     if (type == chrome::NOTIFICATION_AUTH_NEEDED) {
       LoginNotificationDetails* login_details =
           content::Details<LoginNotificationDetails>(details).ptr();
@@ -82,12 +82,12 @@ class ProxyBrowserTest : public InProcessBrowserTest {
                       base::FilePath()) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(proxy_server_.Start());
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
   }
@@ -152,12 +152,12 @@ class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
   }
   virtual ~HttpProxyScriptBrowserTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(http_server_.Start());
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     base::FilePath pac_script_path(FILE_PATH_LITERAL("files"));
     command_line->AppendSwitchASCII(switches::kProxyPacUrl, http_server_.GetURL(
         pac_script_path.Append(kPACScript).MaybeAsASCII()).spec());
@@ -179,7 +179,7 @@ class FileProxyScriptBrowserTest : public InProcessBrowserTest {
   FileProxyScriptBrowserTest() {}
   virtual ~FileProxyScriptBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyPacUrl,
         ui_test_utils::GetTestUrl(
             base::FilePath(base::FilePath::kCurrentDirectory),
@@ -204,12 +204,12 @@ class FtpProxyScriptBrowserTest : public InProcessBrowserTest {
   }
   virtual ~FtpProxyScriptBrowserTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(ftp_server_.Start());
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     base::FilePath pac_script_path(kPACScript);
     command_line->AppendSwitchASCII(
         switches::kProxyPacUrl,
@@ -232,7 +232,7 @@ class DataProxyScriptBrowserTest : public InProcessBrowserTest {
   DataProxyScriptBrowserTest() {}
   virtual ~DataProxyScriptBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     std::string contents;
     // Read in kPACScript contents.
     ASSERT_TRUE(base::ReadFileToString(ui_test_utils::GetTestFilePath(

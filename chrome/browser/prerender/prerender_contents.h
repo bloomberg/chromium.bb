@@ -206,32 +206,32 @@ class PrerenderContents : public content::NotificationObserver,
 
   // content::WebContentsObserver implementation.
   virtual void RenderFrameCreated(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   virtual void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE;
+                             const GURL& validated_url) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
   virtual void DidGetRedirectForResourceRequest(
       content::RenderViewHost* render_view_host,
-      const content::ResourceRedirectDetails& details) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const content::ResourceRedirectDetails& details) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Checks that a URL may be prerendered, for one of the many redirections. If
   // the URL can not be prerendered - for example, it's an ftp URL - |this| will

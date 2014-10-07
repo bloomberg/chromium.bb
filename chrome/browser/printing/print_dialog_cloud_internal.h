@@ -102,12 +102,12 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   virtual ~CloudPrintFlowHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Callbacks from the page.
   void HandleShowDebugger(const base::ListValue* args);
@@ -155,19 +155,19 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
   virtual ~CloudPrintWebDialogDelegate();
 
   // ui::WebDialogDelegate implementation:
-  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual base::string16 GetDialogTitle() const OVERRIDE;
-  virtual GURL GetDialogContentURL() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const override;
+  virtual base::string16 GetDialogTitle() const override;
+  virtual GURL GetDialogContentURL() const override;
   virtual void GetWebUIMessageHandlers(
-      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
-  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual std::string GetDialogArgs() const OVERRIDE;
-  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const override;
+  virtual void GetDialogSize(gfx::Size* size) const override;
+  virtual std::string GetDialogArgs() const override;
+  virtual void OnDialogClosed(const std::string& json_retval) override;
   virtual void OnCloseContents(content::WebContents* source,
-                               bool* out_close_dialog) OVERRIDE;
-  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+                               bool* out_close_dialog) override;
+  virtual bool ShouldShowDialogTitle() const override;
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
 
  private:
   friend class ::CloudPrintWebDialogDelegateTest;

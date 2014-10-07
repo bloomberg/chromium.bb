@@ -29,12 +29,12 @@ class TestPopupObserver : public autofill::PasswordGenerationPopupObserver {
         password_visible_(false) {}
   virtual ~TestPopupObserver() {}
 
-  virtual void OnPopupShown(bool password_visible) OVERRIDE {
+  virtual void OnPopupShown(bool password_visible) override {
     popup_showing_ = true;
     password_visible_ = password_visible;
   }
 
-  virtual void OnPopupHidden() OVERRIDE {
+  virtual void OnPopupHidden() override {
     popup_showing_ = false;
   }
 
@@ -50,7 +50,7 @@ class TestPopupObserver : public autofill::PasswordGenerationPopupObserver {
 
 class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Make sure the feature is enabled.
     command_line->AppendSwitch(autofill::switches::kEnablePasswordGeneration);
 
@@ -59,7 +59,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
         autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Disable Autofill requesting access to AddressBook data. This will cause
     // the tests to hang on Mac.
     autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
@@ -74,7 +74,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // Clean up UI.
     ChromePasswordManagerClient* client =
         ChromePasswordManagerClient::FromWebContents(GetWebContents());

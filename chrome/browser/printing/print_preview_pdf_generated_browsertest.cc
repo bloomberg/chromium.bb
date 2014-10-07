@@ -130,7 +130,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(PrintPreviewObserver, message)
       IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
                           OnDidGetPreviewPageCount)
@@ -242,7 +242,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     // successfully set and its effects have been finalized.
     // 'UIFailedLoadingForTest' is sent when the setting could not be set. This
     // causes the browser test to fail.
-    virtual void RegisterMessages() OVERRIDE {
+    virtual void RegisterMessages() override {
       web_ui()->RegisterMessageCallback(
           "UILoadedForTest",
           base::Bind(&UIDoneLoadingMessageHandler::HandleDone,
@@ -279,7 +279,7 @@ class PrintPreviewObserver : public WebContentsObserver {
 
   virtual void DidCloneToNewWebContents(
       WebContents* old_web_contents,
-      WebContents* new_web_contents) OVERRIDE {
+      WebContents* new_web_contents) override {
     Observe(new_web_contents);
   }
 

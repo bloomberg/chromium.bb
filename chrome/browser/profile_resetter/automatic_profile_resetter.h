@@ -139,7 +139,7 @@ class AutomaticProfileResetter : public KeyedService {
       const scoped_refptr<base::TaskRunner>& task_runner);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   class InputBuilder;

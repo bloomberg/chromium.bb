@@ -24,9 +24,9 @@ class GoogleNowNotificationStatsCollector
   // MessageCenterObserver
   virtual void OnNotificationDisplayed(
       const std::string& notification_id,
-      const message_center::DisplaySource source) OVERRIDE;
+      const message_center::DisplaySource source) override;
   virtual void OnCenterVisibilityChanged(
-      message_center::Visibility visibility) OVERRIDE;
+      message_center::Visibility visibility) override;
 
   // Counts the number of Google Now Notifications in the message center.
   int CountVisibleGoogleNowNotifications();

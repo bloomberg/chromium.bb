@@ -35,7 +35,7 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
 
   // content::RenderProcessHostObserver override.
   virtual void RenderProcessHostDestroyed(
-      content::RenderProcessHost* host) OVERRIDE;
+      content::RenderProcessHost* host) override;
 
   // Called by the timer to cancel the pending destruction and do it now.
   void DestroyProfile();

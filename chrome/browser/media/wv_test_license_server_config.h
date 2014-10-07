@@ -13,11 +13,11 @@ class WVTestLicenseServerConfig : public TestLicenseServerConfig {
   WVTestLicenseServerConfig();
   virtual ~WVTestLicenseServerConfig();
 
-  virtual std::string GetServerURL() OVERRIDE;
+  virtual std::string GetServerURL() override;
 
-  virtual bool GetServerCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual bool GetServerCommandLine(base::CommandLine* command_line) override;
 
-  virtual bool IsPlatformSupported() OVERRIDE;
+  virtual bool IsPlatformSupported() override;
 
  private:
   // Server port. The port value should be set by calling SelectServerPort().

@@ -32,7 +32,7 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
 
 class LevelDBPrefStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
@@ -40,7 +40,7 @@ class LevelDBPrefStoreTest : public testing::Test {
     ASSERT_TRUE(PathExists(data_dir_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Close();
   }
 

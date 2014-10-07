@@ -155,7 +155,7 @@ void RemoveCookieTester::Notify() {
 class ProfileResetTest : public InProcessBrowserTest,
                          public ProfileResetterTestBase {
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     resetter_.reset(new ProfileResetter(browser()->profile()));
   }
 };

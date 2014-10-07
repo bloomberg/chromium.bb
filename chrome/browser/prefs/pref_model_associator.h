@@ -45,16 +45,16 @@ class PrefModelAssociator
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
 
   // Returns the list of preference names that are registered as syncable, and
   // hence should be monitored for changes.

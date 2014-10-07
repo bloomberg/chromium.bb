@@ -25,13 +25,13 @@ class TestNetLogTempFile : public NetLogTempFile {
   }
 
   // NetLogTempFile implementation:
-  virtual bool GetNetExportLogDirectory(base::FilePath* path) OVERRIDE {
+  virtual bool GetNetExportLogDirectory(base::FilePath* path) override {
     if (lie_about_net_export_log_directory_)
       return false;
     return NetLogTempFile::GetNetExportLogDirectory(path);
   }
 
-  virtual bool NetExportLogExists() OVERRIDE {
+  virtual bool NetExportLogExists() override {
     if (lie_about_file_existence_)
       return false;
     return NetLogTempFile::NetExportLogExists();
@@ -61,7 +61,7 @@ class NetLogTempFileTest : public ::testing::Test {
   }
 
   // ::testing::Test implementation:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Get a temporary file name for unit tests.
     base::FilePath net_log_dir;
     ASSERT_TRUE(net_log_temp_file_->GetNetExportLogDirectory(&net_log_dir));
@@ -76,7 +76,7 @@ class NetLogTempFileTest : public ::testing::Test {
     ASSERT_FALSE(net_export_log_.empty());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Delete the temporary file we have created.
     ASSERT_TRUE(base::DeleteFile(net_export_log_, false));
   }

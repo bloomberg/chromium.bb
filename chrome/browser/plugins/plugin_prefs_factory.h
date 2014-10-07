@@ -31,15 +31,15 @@ class PluginPrefsFactory : public RefcountedBrowserContextKeyedServiceFactory {
 
   // RefcountedBrowserContextKeyedServiceFactory methods:
   virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* context) const OVERRIDE;
+      BuildServiceInstanceFor(content::BrowserContext* context) const override;
 
   // BrowserContextKeyedServiceFactory methods:
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_PLUGIN_PREFS_FACTORY_H_

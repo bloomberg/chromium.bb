@@ -55,14 +55,14 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
   }
 
   // Prepare the title watcher.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     watcher_.reset(new content::TitleWatcher(
         browser()->tab_strip_model()->GetActiveWebContents(),
         base::ASCIIToUTF16("PASS")));
     watcher_->AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE { watcher_.reset(); }
+  virtual void TearDownOnMainThread() override { watcher_.reset(); }
 
   std::string WaitAndGetTitle() {
     return base::UTF16ToUTF8(watcher_->WaitAndGetTitle());
@@ -90,7 +90,7 @@ class WebSocketBrowserConnectToTest : public WebSocketBrowserTest {
   // The title watcher and HTTP server are set up automatically by the test
   // framework. Each test case still needs to configure and start the
   // WebSocket server(s) it needs.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WebSocketBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(http_server_.StartInBackground());
   }
@@ -129,7 +129,7 @@ class AutoLogin : public content::NotificationObserver {
   // NotificationObserver implementation
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_AUTH_NEEDED, type);
     scoped_refptr<LoginHandler> login_handler =
         content::Details<LoginNotificationDetails>(details)->handler();

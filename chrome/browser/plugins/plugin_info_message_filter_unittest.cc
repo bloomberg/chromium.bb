@@ -41,10 +41,10 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
                                  const void* context,
                                  const GURL& url,
                                  const GURL& policy_url,
-                                 content::WebPluginInfo* plugin) OVERRIDE;
+                                 content::WebPluginInfo* plugin) override;
 
   virtual bool CanLoadPlugin(int render_process_id,
-                             const base::FilePath& path) OVERRIDE;
+                             const base::FilePath& path) override;
 
   void set_plugin_enabled(const base::FilePath& plugin_path, bool enabled) {
     plugin_state_[plugin_path] = enabled;
@@ -85,7 +85,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
       context_(0, &profile_) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plug-in"),
                                       foo_plugin_path_,
                                       base::ASCIIToUTF16("1"),

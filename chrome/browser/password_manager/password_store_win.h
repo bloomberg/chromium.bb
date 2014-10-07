@@ -30,7 +30,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
       PasswordWebDataService* web_data_service);
 
   // PasswordStore:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   class DBHandler;
@@ -43,7 +43,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) OVERRIDE;
+      const ConsumerCallbackRunner& callback_runner) override;
 
   void GetIE7LoginIfNecessary(
     const autofill::PasswordForm& form,

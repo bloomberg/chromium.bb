@@ -38,7 +38,7 @@ class InterceptablePrefFilter
   // PrefFilter partial implementation.
   virtual void FilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
-      scoped_ptr<base::DictionaryValue> pref_store_contents) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> pref_store_contents) override;
 
   // Registers |filter_on_load_interceptor| to intercept the next FilterOnLoad
   // event. At most one FilterOnLoadInterceptor should be registered per

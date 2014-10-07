@@ -66,7 +66,7 @@ class ITunesDataProvider : public iapps::IAppsDataProvider {
 
   // Parse the library xml file.
   virtual void DoParseLibrary(const base::FilePath& library_path,
-                              const ReadyCallback& ready_callback) OVERRIDE;
+                              const ReadyCallback& ready_callback) override;
 
   // Called when the utility process finishes parsing the library XML file.
   void OnLibraryParsed(const ReadyCallback& ready_callback,

@@ -134,35 +134,35 @@ class AutomaticProfileResetterDelegateImpl
   }
 
   // AutomaticProfileResetterDelegate:
-  virtual void EnumerateLoadedModulesIfNeeded() OVERRIDE;
+  virtual void EnumerateLoadedModulesIfNeeded() override;
   virtual void RequestCallbackWhenLoadedModulesAreEnumerated(
-      const base::Closure& ready_callback) const OVERRIDE;
-  virtual void LoadTemplateURLServiceIfNeeded() OVERRIDE;
+      const base::Closure& ready_callback) const override;
+  virtual void LoadTemplateURLServiceIfNeeded() override;
   virtual void RequestCallbackWhenTemplateURLServiceIsLoaded(
-      const base::Closure& ready_callback) const OVERRIDE;
-  virtual void FetchBrandcodedDefaultSettingsIfNeeded() OVERRIDE;
+      const base::Closure& ready_callback) const override;
+  virtual void FetchBrandcodedDefaultSettingsIfNeeded() override;
   virtual void RequestCallbackWhenBrandcodedDefaultsAreFetched(
-      const base::Closure& ready_callback) const OVERRIDE;
+      const base::Closure& ready_callback) const override;
   virtual scoped_ptr<base::ListValue>
-      GetLoadedModuleNameDigests() const OVERRIDE;
+      GetLoadedModuleNameDigests() const override;
   virtual scoped_ptr<base::DictionaryValue>
-      GetDefaultSearchProviderDetails() const OVERRIDE;
-  virtual bool IsDefaultSearchProviderManaged() const OVERRIDE;
+      GetDefaultSearchProviderDetails() const override;
+  virtual bool IsDefaultSearchProviderManaged() const override;
   virtual scoped_ptr<base::ListValue>
-      GetPrepopulatedSearchProvidersDetails() const OVERRIDE;
-  virtual bool TriggerPrompt() OVERRIDE;
+      GetPrepopulatedSearchProvidersDetails() const override;
+  virtual bool TriggerPrompt() override;
   virtual void TriggerProfileSettingsReset(
       bool send_feedback,
-      const base::Closure& completion) OVERRIDE;
-  virtual void DismissPrompt() OVERRIDE;
+      const base::Closure& completion) override;
+  virtual void DismissPrompt() override;
 
   // TemplateURLServiceObserver:
-  virtual void OnTemplateURLServiceChanged() OVERRIDE;
+  virtual void OnTemplateURLServiceChanged() override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   // Sends a feedback |report|, where |report| is supposed to be result of

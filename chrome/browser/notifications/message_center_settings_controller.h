@@ -57,42 +57,42 @@ class MessageCenterSettingsController
 
   // Overridden from message_center::NotifierSettingsProvider.
   virtual void AddObserver(
-      message_center::NotifierSettingsObserver* observer) OVERRIDE;
+      message_center::NotifierSettingsObserver* observer) override;
   virtual void RemoveObserver(
-      message_center::NotifierSettingsObserver* observer) OVERRIDE;
-  virtual size_t GetNotifierGroupCount() const OVERRIDE;
+      message_center::NotifierSettingsObserver* observer) override;
+  virtual size_t GetNotifierGroupCount() const override;
   virtual const message_center::NotifierGroup& GetNotifierGroupAt(
-      size_t index) const OVERRIDE;
-  virtual bool IsNotifierGroupActiveAt(size_t index) const OVERRIDE;
-  virtual void SwitchToNotifierGroup(size_t index) OVERRIDE;
+      size_t index) const override;
+  virtual bool IsNotifierGroupActiveAt(size_t index) const override;
+  virtual void SwitchToNotifierGroup(size_t index) override;
   virtual const message_center::NotifierGroup& GetActiveNotifierGroup() const
-      OVERRIDE;
+      override;
   virtual void GetNotifierList(
-      std::vector<message_center::Notifier*>* notifiers) OVERRIDE;
+      std::vector<message_center::Notifier*>* notifiers) override;
   virtual void SetNotifierEnabled(const message_center::Notifier& notifier,
-                                  bool enabled) OVERRIDE;
-  virtual void OnNotifierSettingsClosing() OVERRIDE;
+                                  bool enabled) override;
+  virtual void OnNotifierSettingsClosing() override;
   virtual bool NotifierHasAdvancedSettings(
-      const message_center::NotifierId& notifier_id) const OVERRIDE;
+      const message_center::NotifierId& notifier_id) const override;
   virtual void OnNotifierAdvancedSettingsRequested(
       const message_center::NotifierId& notifier_id,
-      const std::string* notification_id) OVERRIDE;
+      const std::string* notification_id) override;
 
 #if defined(OS_CHROMEOS)
   // Overridden from user_manager::UserManager::UserSessionStateObserver.
   virtual void ActiveUserChanged(
-      const user_manager::User* active_user) OVERRIDE;
+      const user_manager::User* active_user) override;
 #endif
 
   // Overridden from extensions::AppIconLoader::Delegate.
   virtual void SetAppImage(const std::string& id,
-                           const gfx::ImageSkia& image) OVERRIDE;
+                           const gfx::ImageSkia& image) override;
 
  private:
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void OnFaviconLoaded(const GURL& url,
                        const favicon_base::FaviconImageResult& favicon_result);

@@ -24,7 +24,7 @@ class PluginsResourceService : public WebResourceService {
   virtual ~PluginsResourceService();
 
   // WebResourceService override to process the parsed information.
-  virtual void Unpack(const base::DictionaryValue& parsed_json) OVERRIDE;
+  virtual void Unpack(const base::DictionaryValue& parsed_json) override;
 
   DISALLOW_COPY_AND_ASSIGN(PluginsResourceService);
 };

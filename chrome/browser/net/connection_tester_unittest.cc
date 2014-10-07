@@ -40,22 +40,22 @@ class ConnectionTesterDelegate : public ConnectionTester::Delegate {
        completed_connection_test_suite_count_(0) {
   }
 
-  virtual void OnStartConnectionTestSuite() OVERRIDE {
+  virtual void OnStartConnectionTestSuite() override {
     start_connection_test_suite_count_++;
   }
 
   virtual void OnStartConnectionTestExperiment(
-      const ConnectionTester::Experiment& experiment) OVERRIDE {
+      const ConnectionTester::Experiment& experiment) override {
     start_connection_test_experiment_count_++;
   }
 
   virtual void OnCompletedConnectionTestExperiment(
       const ConnectionTester::Experiment& experiment,
-      int result) OVERRIDE {
+      int result) override {
     completed_connection_test_experiment_count_++;
   }
 
-  virtual void OnCompletedConnectionTestSuite() OVERRIDE {
+  virtual void OnCompletedConnectionTestSuite() override {
     completed_connection_test_suite_count_++;
     base::MessageLoop::current()->Quit();
   }

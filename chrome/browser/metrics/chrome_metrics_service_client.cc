@@ -106,7 +106,7 @@ class MetricsMemoryDetails : public MemoryDetails {
     SetMemoryGrowthTracker(memory_growth_tracker);
   }
 
-  virtual void OnDetailsAvailable() OVERRIDE {
+  virtual void OnDetailsAvailable() override {
     base::MessageLoop::current()->PostTask(FROM_HERE, callback_);
   }
 

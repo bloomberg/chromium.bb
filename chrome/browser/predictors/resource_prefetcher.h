@@ -125,18 +125,18 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   // net::URLRequest::Delegate methods.
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) OVERRIDE;
+                                  bool* defer_redirect) override;
   virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) OVERRIDE;
+                              net::AuthChallengeInfo* auth_info) override;
   virtual void OnCertificateRequested(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
+      net::SSLCertRequestInfo* cert_request_info) override;
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      const net::SSLInfo& ssl_info,
-                                     bool fatal) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+                                     bool fatal) override;
+  virtual void OnResponseStarted(net::URLRequest* request) override;
   virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE;
+                               int bytes_read) override;
 
   enum PrefetcherState {
     INITIALIZED = 0,  // Prefetching hasn't started.

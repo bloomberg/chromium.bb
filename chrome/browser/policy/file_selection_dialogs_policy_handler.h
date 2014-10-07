@@ -19,7 +19,7 @@ class FileSelectionDialogsPolicyHandler : public TypeCheckingPolicyHandler {
 
   // ConfigurationPolicyHandler methods:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsPolicyHandler);

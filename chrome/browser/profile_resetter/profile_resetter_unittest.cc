@@ -103,7 +103,7 @@ class ProfileResetterTest : public extensions::ExtensionServiceTestBase,
   virtual ~ProfileResetterTest();
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   TestingProfile* profile() { return profile_.get(); }
 
@@ -161,7 +161,7 @@ KeyedService* ProfileResetterTest::CreateTemplateURLService(
 class PinnedTabsResetTest : public BrowserWithTestWindowTest,
                             public ProfileResetterTestBase {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   content::WebContents* CreateWebContents();
 };
@@ -184,7 +184,7 @@ struct URLFetcherRequestListener : net::URLFetcherDelegate {
   URLFetcherRequestListener();
   virtual ~URLFetcherRequestListener();
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   std::string upload_data;
   net::URLFetcherDelegate* real_delegate;

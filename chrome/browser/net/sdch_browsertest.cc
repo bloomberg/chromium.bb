@@ -520,7 +520,7 @@ class SdchBrowserTest : public InProcessBrowserTest, net::URLFetcherDelegate {
   }
 
   // InProcessBrowserTest
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kHostResolverRules,
         "MAP " + std::string(kTestHost) + " 127.0.0.1");
@@ -530,7 +530,7 @@ class SdchBrowserTest : public InProcessBrowserTest, net::URLFetcherDelegate {
 #endif
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     test_server_.RegisterRequestHandler(
         base::Bind(&SdchResponseHandler::HandleRequest,
                    base::Unretained(&response_handler_)));
@@ -538,12 +538,12 @@ class SdchBrowserTest : public InProcessBrowserTest, net::URLFetcherDelegate {
     url_request_context_getter_ = browser()->profile()->GetRequestContext();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     CHECK(test_server_.ShutdownAndWaitUntilComplete());
   }
 
   // URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     url_fetch_complete_ = true;
     if (waiting_)
       base::MessageLoopForUI::current()->Quit();

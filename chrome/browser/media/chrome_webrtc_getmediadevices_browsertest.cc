@@ -43,11 +43,11 @@ class WebRtcGetMediaDevicesBrowserTest
       : has_audio_output_devices_initialized_(false),
         has_audio_output_devices_(false) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Ensure the infobar is enabled, since we expect that in this test.
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 

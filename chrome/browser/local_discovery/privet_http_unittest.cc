@@ -382,7 +382,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
   virtual void OnPrivetRegisterClaimToken(
       PrivetRegisterOperation* operation,
       const std::string& token,
-      const GURL& url) OVERRIDE {
+      const GURL& url) override {
     OnPrivetRegisterClaimTokenInternal(token, url);
   }
 
@@ -395,7 +395,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
       int printer_http_code,
-      const base::DictionaryValue* json) OVERRIDE {
+      const base::DictionaryValue* json) override {
     // TODO(noamsml): Save and test for JSON?
     OnPrivetRegisterErrorInternal(action, reason, printer_http_code);
   }
@@ -407,7 +407,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
 
   virtual void OnPrivetRegisterDone(
       PrivetRegisterOperation* operation,
-      const std::string& device_id) OVERRIDE {
+      const std::string& device_id) override {
     OnPrivetRegisterDoneInternal(device_id);
   }
 
@@ -441,7 +441,7 @@ class PrivetInfoTest : public PrivetHTTPTest {
 
   virtual ~PrivetInfoTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     info_operation_ = privet_client_->CreateInfoOperation(
         info_callback_.callback());
   }
@@ -488,7 +488,7 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   virtual ~PrivetRegisterTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     info_operation_ = privet_client_->CreateInfoOperation(
         info_callback_.callback());
     register_operation_ =
@@ -677,7 +677,7 @@ class PrivetCapabilitiesTest : public PrivetHTTPTest {
 
   virtual ~PrivetCapabilitiesTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     capabilities_operation_ = privet_client_->CreateCapabilitiesOperation(
         capabilities_callback_.callback());
   }
@@ -768,7 +768,7 @@ class FakePWGRasterConverter : public PWGRasterConverter {
   virtual void Start(base::RefCountedMemory* data,
                      const printing::PdfRenderSettings& conversion_settings,
                      const printing::PwgRasterSettings& bitmap_settings,
-                     const ResultCallback& callback) OVERRIDE {
+                     const ResultCallback& callback) override {
     bitmap_settings_ = bitmap_settings;
     std::string data_str(data->front_as<char>(), data->size());
     callback.Run(true, base::FilePath().AppendASCII(data_str + "test.pdf"));
@@ -788,7 +788,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
 
   virtual ~PrivetLocalPrintTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     PrivetURLFetcher::ResetTokenMapForTests();
 
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(

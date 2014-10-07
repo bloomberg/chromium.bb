@@ -18,16 +18,16 @@ class ChromeMetroViewerProcessHost : public win8::MetroViewerProcessHost {
 
  private:
   // win8::MetroViewerProcessHost implementation
-  virtual void OnChannelError() OVERRIDE;
+  virtual void OnChannelError() override;
 
   // IPC::Listener implementation
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) override;
   virtual void OnSetTargetSurface(gfx::NativeViewId target_surface,
-                                  float device_scale) OVERRIDE;
-  virtual void OnOpenURL(const base::string16& url) OVERRIDE;
+                                  float device_scale) override;
+  virtual void OnOpenURL(const base::string16& url) override;
   virtual void OnHandleSearchRequest(
-      const base::string16& search_string) OVERRIDE;
-  virtual void OnWindowSizeChanged(uint32 width, uint32 height) OVERRIDE;
+      const base::string16& search_string) override;
+  virtual void OnWindowSizeChanged(uint32 width, uint32 height) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetroViewerProcessHost);
 };

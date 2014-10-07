@@ -31,11 +31,11 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
   WebRtcDisableEncryptionFlagBrowserTest() {}
   virtual ~WebRtcDisableEncryptionFlagBrowserTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // This test should run with fake devices.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 

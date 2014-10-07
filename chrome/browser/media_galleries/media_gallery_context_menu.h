@@ -24,12 +24,12 @@ class MediaGalleryContextMenu : public ui::SimpleMenuModel,
   }
 
   // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
+  virtual bool IsCommandIdVisible(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      int command_id, ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   MediaGalleryPrefId pref_id_;

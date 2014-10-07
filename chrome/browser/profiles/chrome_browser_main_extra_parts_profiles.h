@@ -26,7 +26,7 @@ class ChromeBrowserMainExtraPartsProfiles : public ChromeBrowserMainExtraParts {
   static void EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void PreProfileInit() OVERRIDE;
+  virtual void PreProfileInit() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsProfiles);

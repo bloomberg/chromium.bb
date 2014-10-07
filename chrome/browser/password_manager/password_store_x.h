@@ -79,27 +79,27 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
 
   // Implements PasswordStore interface.
   virtual password_manager::PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual password_manager::PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual password_manager::PasswordStoreChangeList RemoveLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual password_manager::PasswordStoreChangeList
       RemoveLoginsCreatedBetweenImpl(base::Time delete_begin,
-                                     base::Time delete_end) OVERRIDE;
+                                     base::Time delete_end) override;
   virtual password_manager::PasswordStoreChangeList
       RemoveLoginsSyncedBetweenImpl(base::Time delete_begin,
-                                    base::Time delete_end) OVERRIDE;
+                                    base::Time delete_end) override;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) OVERRIDE;
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
+      const ConsumerCallbackRunner& callback_runner) override;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
   virtual bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
   virtual bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
 
   // Sort logins by origin, like the ORDER BY clause in login_database.cc.
   void SortLoginsByOrigin(NativeBackend::PasswordFormList* list);

@@ -73,11 +73,11 @@ class TestITunesDataProvider : public ITunesDataProvider {
 
   virtual ~TestITunesDataProvider() {}
 
-  virtual void RefreshData(const ReadyCallback& ready_callback) OVERRIDE {
+  virtual void RefreshData(const ReadyCallback& ready_callback) override {
     ready_callback.Run(true /* success */);
   }
 
-  virtual const base::FilePath& auto_add_path() const OVERRIDE {
+  virtual const base::FilePath& auto_add_path() const override {
     return fake_auto_add_dir_.path();
   }
 
@@ -104,7 +104,7 @@ class TestITunesFileUtil : public ITunesFileUtil {
   virtual ~TestITunesFileUtil() {}
 
  private:
-  virtual ITunesDataProvider* GetDataProvider() OVERRIDE {
+  virtual ITunesDataProvider* GetDataProvider() override {
     return data_provider_;
   }
 
@@ -121,7 +121,7 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
         test_file_util_(itunes_file_util) {}
 
   virtual storage::AsyncFileUtil* GetAsyncFileUtil(
-      storage::FileSystemType type) OVERRIDE {
+      storage::FileSystemType type) override {
     if (type != storage::kFileSystemTypeItunes)
       return NULL;
 
@@ -152,7 +152,7 @@ class ItunesFileUtilTest : public testing::Test {
         new TestITunesDataProvider(fake_library_dir_.path()));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 

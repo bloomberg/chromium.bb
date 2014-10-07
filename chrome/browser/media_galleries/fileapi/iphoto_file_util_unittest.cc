@@ -75,11 +75,11 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
 
   virtual ~TestIPhotoDataProvider() {}
 
-  virtual void RefreshData(const ReadyCallback& ready_callback) OVERRIDE {
+  virtual void RefreshData(const ReadyCallback& ready_callback) override {
     ready_callback.Run(true /* success */);
   }
 
-  virtual std::vector<std::string> GetAlbumNames() const OVERRIDE {
+  virtual std::vector<std::string> GetAlbumNames() const override {
     std::vector<std::string> names;
     names.push_back("Album1");
     names.push_back("has_originals");
@@ -87,7 +87,7 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
   }
 
   virtual std::map<std::string, base::FilePath> GetAlbumContents(
-      const std::string& album) const OVERRIDE {
+      const std::string& album) const override {
     std::map<std::string, base::FilePath> contents;
     contents["a.jpg"] = library_path().AppendASCII("a.jpg");
     return contents;
@@ -95,16 +95,16 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
 
   virtual base::FilePath GetPhotoLocationInAlbum(
       const std::string& album,
-      const std::string& filename) const OVERRIDE {
+      const std::string& filename) const override {
     return library_path().AppendASCII("a.jpg");
   }
 
-  virtual bool HasOriginals(const std::string& album) const OVERRIDE {
+  virtual bool HasOriginals(const std::string& album) const override {
     return (album == "has_originals");
   }
 
   virtual std::map<std::string, base::FilePath> GetOriginals(
-      const std::string& album) const OVERRIDE {
+      const std::string& album) const override {
     std::map<std::string, base::FilePath> contents;
     contents["a.jpg"] = library_path().AppendASCII("orig.jpg");
     return contents;
@@ -112,7 +112,7 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
 
   virtual base::FilePath GetOriginalPhotoLocation(
       const std::string& album,
-      const std::string& filename) const OVERRIDE {
+      const std::string& filename) const override {
     return library_path().AppendASCII("orig.jpg");
   }
 
@@ -130,7 +130,7 @@ class TestIPhotoFileUtil : public IPhotoFileUtil {
   virtual ~TestIPhotoFileUtil() {}
 
  private:
-  virtual IPhotoDataProvider* GetDataProvider() OVERRIDE {
+  virtual IPhotoDataProvider* GetDataProvider() override {
     return data_provider_;
   }
 
@@ -147,7 +147,7 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
         test_file_util_(iphoto_file_util) {}
 
   virtual storage::AsyncFileUtil* GetAsyncFileUtil(
-      storage::FileSystemType type) OVERRIDE {
+      storage::FileSystemType type) override {
     if (type != storage::kFileSystemTypeIphoto)
       return NULL;
 
@@ -184,7 +184,7 @@ class IPhotoFileUtilTest : public testing::Test {
         new TestIPhotoDataProvider(fake_library_dir_.path()));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 

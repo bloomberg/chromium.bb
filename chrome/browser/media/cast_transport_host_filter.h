@@ -40,7 +40,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
                        const media::cast::RtcpCastMessage& cast_message);
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Forwarding functions.
   void OnInitializeAudio(

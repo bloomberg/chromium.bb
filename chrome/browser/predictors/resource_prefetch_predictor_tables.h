@@ -137,8 +137,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   bool StringsAreSmallerThanDBLimit(const PrefetchData& data) const;
 
   // PredictorTableBase methods.
-  virtual void CreateTableIfNonExistent() OVERRIDE;
-  virtual void LogDatabaseStats() OVERRIDE;
+  virtual void CreateTableIfNonExistent() override;
+  virtual void LogDatabaseStats() override;
 
   // Helpers to return Statements for cached Statements. The caller must take
   // ownership of the return Statements.

@@ -41,13 +41,13 @@ class AutomaticProfileResetterFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   // BrowserContextKeyedBaseFactory:
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterFactory);
 };

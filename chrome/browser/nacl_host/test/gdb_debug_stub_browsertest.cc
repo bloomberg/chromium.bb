@@ -19,7 +19,7 @@ class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
   NaClGdbDebugStubTest() {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
 
   void StartTestScript(base::ProcessHandle* test_process,
                        std::string test_name, int debug_stub_port);

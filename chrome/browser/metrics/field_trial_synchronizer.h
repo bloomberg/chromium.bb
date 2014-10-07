@@ -47,7 +47,7 @@ class FieldTrialSynchronizer
   // selected state from the browser process into all the renderer processes.
   virtual void OnFieldTrialGroupFinalized(
       const std::string& name,
-      const std::string& group_name) OVERRIDE;
+      const std::string& group_name) override;
 
  private:
   friend class base::RefCountedThreadSafe<FieldTrialSynchronizer>;

@@ -30,40 +30,40 @@ class ITunesFileUtil : public NativeMediaFileUtil {
   virtual void GetFileInfoOnTaskRunnerThread(
       scoped_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const GetFileInfoCallback& callback) OVERRIDE;
+      const GetFileInfoCallback& callback) override;
   virtual void ReadDirectoryOnTaskRunnerThread(
       scoped_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const ReadDirectoryCallback& callback) OVERRIDE;
+      const ReadDirectoryCallback& callback) override;
   virtual void CreateSnapshotFileOnTaskRunnerThread(
       scoped_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const CreateSnapshotFileCallback& callback) OVERRIDE;
+      const CreateSnapshotFileCallback& callback) override;
   virtual base::File::Error GetFileInfoSync(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
       base::File::Info* file_info,
-      base::FilePath* platform_path) OVERRIDE;
+      base::FilePath* platform_path) override;
   virtual base::File::Error ReadDirectorySync(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
-      EntryList* file_list) OVERRIDE;
+      EntryList* file_list) override;
   virtual base::File::Error DeleteDirectorySync(
       storage::FileSystemOperationContext* context,
-      const storage::FileSystemURL& url) OVERRIDE;
+      const storage::FileSystemURL& url) override;
   virtual base::File::Error DeleteFileSync(
       storage::FileSystemOperationContext* context,
-      const storage::FileSystemURL& url) OVERRIDE;
+      const storage::FileSystemURL& url) override;
   virtual base::File::Error CreateSnapshotFileSync(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
       base::File::Info* file_info,
       base::FilePath* platform_path,
-      scoped_refptr<storage::ShareableFileReference>* file_ref) OVERRIDE;
+      scoped_refptr<storage::ShareableFileReference>* file_ref) override;
   virtual base::File::Error GetLocalFilePath(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
-      base::FilePath* local_file_path) OVERRIDE;
+      base::FilePath* local_file_path) override;
 
  private:
   void GetFileInfoWithFreshDataProvider(

@@ -48,8 +48,8 @@ class SafeAudioVideoChecker : public content::UtilityProcessHostClient {
   void OnCheckingFinished(bool valid);
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   State state_;
 

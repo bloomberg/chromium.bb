@@ -58,7 +58,7 @@ class TestVariationsService : public VariationsService {
 
   bool seed_stored() const { return seed_stored_; }
 
-  virtual void DoActualFetch() OVERRIDE {
+  virtual void DoActualFetch() override {
     if (intercepts_fetch_) {
       fetch_attempted_ = true;
       return;
@@ -70,7 +70,7 @@ class TestVariationsService : public VariationsService {
  protected:
   virtual void StoreSeed(const std::string& seed_data,
                          const std::string& seed_signature,
-                         const base::Time& date_fetched) OVERRIDE {
+                         const base::Time& date_fetched) override {
     seed_stored_ = true;
   }
 
@@ -91,7 +91,7 @@ class TestVariationsServiceObserver : public VariationsService::Observer {
   virtual ~TestVariationsServiceObserver() {
   }
 
-  virtual void OnExperimentChangesDetected(Severity severity) OVERRIDE {
+  virtual void OnExperimentChangesDetected(Severity severity) override {
     switch (severity) {
       case BEST_EFFORT:
         ++best_effort_changes_notified_;
@@ -198,7 +198,7 @@ class VariationsServiceTestChromeOS : public VariationsServiceTest {
  protected:
   VariationsServiceTestChromeOS() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     cros_settings_ = chromeos::CrosSettings::Get();
     DCHECK(cros_settings_ != NULL);
     // Remove the real DeviceSettingsProvider and replace it with a stub that
@@ -211,7 +211,7 @@ class VariationsServiceTestChromeOS : public VariationsServiceTest {
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Restore the real DeviceSettingsProvider.
     EXPECT_TRUE(
         cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));

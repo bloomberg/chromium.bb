@@ -20,7 +20,7 @@ class LoginStateNotificationBlockerChromeOSTest
   virtual ~LoginStateNotificationBlockerChromeOSTest() {}
 
   // ash::tests::AshTestBase overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     chromeos::LoginState::Initialize();
     chromeos::LoginState::Get()->set_always_logged_in(false);
     ash::test::AshTestBase::SetUp();
@@ -29,7 +29,7 @@ class LoginStateNotificationBlockerChromeOSTest
     blocker_->AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     blocker_->RemoveObserver(this);
     blocker_.reset();
     ash::test::AshTestBase::TearDown();
@@ -38,7 +38,7 @@ class LoginStateNotificationBlockerChromeOSTest
 
   // message_center::NotificationBlocker::Observer overrides:
   virtual void OnBlockingStateChanged(
-      message_center::NotificationBlocker* blocker) OVERRIDE {
+      message_center::NotificationBlocker* blocker) override {
     state_changed_count_++;
   }
 

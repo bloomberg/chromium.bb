@@ -23,9 +23,9 @@ class VariationsRequestSchedulerMobile : public VariationsRequestScheduler {
   virtual ~VariationsRequestSchedulerMobile();
 
   // Base class overrides.
-  virtual void Start() OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual void OnAppEnterForeground() OVERRIDE;
+  virtual void Start() override;
+  virtual void Reset() override;
+  virtual void OnAppEnterForeground() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsRequestSchedulerMobileTest,

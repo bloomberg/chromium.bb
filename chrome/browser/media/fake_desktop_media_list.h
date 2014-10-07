@@ -21,13 +21,13 @@ class FakeDesktopMediaList : public DesktopMediaList {
   void SetSourceName(int index, base::string16 name);
 
   // DesktopMediaList implementation:
-  virtual void SetUpdatePeriod(base::TimeDelta period) OVERRIDE;
-  virtual void SetThumbnailSize(const gfx::Size& thumbnail_size) OVERRIDE;
+  virtual void SetUpdatePeriod(base::TimeDelta period) override;
+  virtual void SetThumbnailSize(const gfx::Size& thumbnail_size) override;
   virtual void SetViewDialogWindowId(
-      content::DesktopMediaID::Id dialog_id) OVERRIDE;
-  virtual void StartUpdating(DesktopMediaListObserver* observer) OVERRIDE;
-  virtual int GetSourceCount() const OVERRIDE;
-  virtual const Source& GetSource(int index) const OVERRIDE;
+      content::DesktopMediaID::Id dialog_id) override;
+  virtual void StartUpdating(DesktopMediaListObserver* observer) override;
+  virtual int GetSourceCount() const override;
+  virtual const Source& GetSource(int index) const override;
 
  private:
   std::vector<Source> sources_;

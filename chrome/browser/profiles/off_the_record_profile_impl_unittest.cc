@@ -37,7 +37,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
   virtual ~TestingProfileWithHostZoomMap() {}
 
   // Profile overrides:
-  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE {
+  virtual PrefService* GetOffTheRecordPrefs() override {
     return GetPrefs();
   }
 
@@ -77,7 +77,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
   virtual ~OffTheRecordProfileImplTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(new TestingProfileManager(browser_process()));
     ASSERT_TRUE(profile_manager_->SetUp());
 
@@ -88,7 +88,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
 
     testing_io_thread_state_.reset();
@@ -97,7 +97,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
   }
 
   // BrowserWithTestWindowTest overrides:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
+  virtual TestingProfile* CreateProfile() override {
     return new TestingProfileWithHostZoomMap;
   }
 

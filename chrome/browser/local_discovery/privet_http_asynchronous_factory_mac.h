@@ -19,7 +19,7 @@ class PrivetHTTPAsynchronousFactoryMac : public PrivetHTTPAsynchronousFactory {
   virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name,
       const net::HostPortPair& address,
-      const ResultCallback& callback) OVERRIDE;
+      const ResultCallback& callback) override;
 
  private:
   class ResolutionMac : public PrivetHTTPResolution {
@@ -30,8 +30,8 @@ class PrivetHTTPAsynchronousFactoryMac : public PrivetHTTPAsynchronousFactory {
                   const ResultCallback& callback);
     virtual ~ResolutionMac();
 
-    virtual void Start() OVERRIDE;
-    virtual const std::string& GetName() OVERRIDE;
+    virtual void Start() override;
+    virtual const std::string& GetName() override;
 
    private:
     net::URLRequestContextGetter* request_context_;

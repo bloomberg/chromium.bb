@@ -40,7 +40,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   // This is the same implementation as ExtensionPrefsTest::TearDown(), except
   // for also resetting the ExtensionPrefs used by |gallery_prefs_| after
   // TestExtensionPrefs reconstructs them.
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     Verify();
 
     // Reset ExtensionPrefs, and re-verify.
@@ -57,7 +57,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     testing::Test::TearDown();
   }
 
-  virtual void Initialize() OVERRIDE {
+  virtual void Initialize() override {
     file_thread_.Start();
 
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
@@ -110,7 +110,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     Verify();
   }
 
-  virtual void Verify() OVERRIDE {
+  virtual void Verify() override {
     struct TestData {
       std::string* id;
       std::vector<MediaGalleryPermission>* expectation;

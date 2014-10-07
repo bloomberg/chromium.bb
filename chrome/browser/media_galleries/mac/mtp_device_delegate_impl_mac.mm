@@ -47,11 +47,11 @@ class MTPDeviceDelegateImplMac::DeviceListener
 
   // ImageCaptureDeviceListener
   virtual void ItemAdded(const std::string& name,
-                         const base::File::Info& info) OVERRIDE;
-  virtual void NoMoreItems() OVERRIDE;
+                         const base::File::Info& info) override;
+  virtual void NoMoreItems() override;
   virtual void DownloadedFile(const std::string& name,
-                              base::File::Error error) OVERRIDE;
-  virtual void DeviceRemoved() OVERRIDE;
+                              base::File::Error error) override;
+  virtual void DeviceRemoved() override;
 
   // Used during delegate destruction to ensure there are no more calls
   // to the delegate by the listener.

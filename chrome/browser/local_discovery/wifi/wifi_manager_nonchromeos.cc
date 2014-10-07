@@ -80,7 +80,7 @@ class WifiManagerNonChromeos::WifiServiceWrapper
  private:
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   void GetSSIDListInternal(NetworkPropertiesList* ssid_list);
 

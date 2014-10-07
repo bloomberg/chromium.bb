@@ -63,21 +63,21 @@ class MessageCenterStatsCollector
   };
 
   // MessageCenterObserver
-  virtual void OnNotificationAdded(const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationAdded(const std::string& notification_id) override;
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) OVERRIDE;
+                                     bool by_user) override;
   virtual void OnNotificationUpdated(
-      const std::string& notification_id) OVERRIDE;
+      const std::string& notification_id) override;
   virtual void OnNotificationClicked(
-      const std::string& notification_id) OVERRIDE;
+      const std::string& notification_id) override;
   virtual void OnNotificationButtonClicked(const std::string& notification_id,
-                                           int button_index) OVERRIDE;
+                                           int button_index) override;
   virtual void OnNotificationDisplayed(
       const std::string& notification_id,
-      const message_center::DisplaySource source) OVERRIDE;
+      const message_center::DisplaySource source) override;
   virtual void OnCenterVisibilityChanged(
-      message_center::Visibility visibility) OVERRIDE;
-  virtual void OnQuietModeChanged(bool in_quiet_mode) OVERRIDE;
+      message_center::Visibility visibility) override;
+  virtual void OnQuietModeChanged(bool in_quiet_mode) override;
 
   // Weak, global.
   message_center::MessageCenter* message_center_;

@@ -28,11 +28,11 @@ class MediaFolderFinderTest : public testing::Test {
   virtual ~MediaFolderFinderTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(fake_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ASSERT_EQ(NULL, media_folder_finder_.get());
   }
 

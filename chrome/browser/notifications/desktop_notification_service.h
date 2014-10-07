@@ -136,13 +136,13 @@ class DesktopNotificationService : public PermissionContextBase
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 #endif
 
   // PermissionContextBase:
   virtual void UpdateContentSetting(const GURL& requesting_origin,
                                     const GURL& embedder_origin,
-                                    bool allowed) OVERRIDE;
+                                    bool allowed) override;
 
   // The profile which owns this object.
   Profile* profile_;

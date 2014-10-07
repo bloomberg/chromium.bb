@@ -21,7 +21,7 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
   virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name,
       const net::HostPortPair& address,
-      const ResultCallback& callback) OVERRIDE;
+      const ResultCallback& callback) override;
 
  private:
   class ResolutionImpl : public PrivetHTTPResolution {
@@ -33,8 +33,8 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
                    net::URLRequestContextGetter* request_context);
     virtual ~ResolutionImpl();
 
-    virtual void Start() OVERRIDE;
-    virtual const std::string& GetName() OVERRIDE;
+    virtual void Start() override;
+    virtual const std::string& GetName() override;
 
    private:
     void ResolveComplete(bool success,

@@ -34,11 +34,11 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   virtual ~PrerenderMessageFilter();
 
   // Overridden from content::BrowserMessageFilter.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
+      content::BrowserThread::ID* thread) override;
+  virtual void OnChannelClosing() override;
 
   void OnAddPrerender(int prerender_id,
                       const PrerenderAttributes& attributes,

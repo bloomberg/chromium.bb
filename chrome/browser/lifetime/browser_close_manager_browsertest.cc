@@ -103,7 +103,7 @@ class RepeatedNotificationObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     ASSERT_GT(num_outstanding_, 0);
     if (!--num_outstanding_ && running_) {
       content::BrowserThread::PostTask(
@@ -149,7 +149,7 @@ class TestBrowserCloseManager : public BrowserCloseManager {
 
   virtual void ConfirmCloseWithPendingDownloads(
       int download_count,
-      const base::Callback<void(bool)>& callback) OVERRIDE {
+      const base::Callback<void(bool)>& callback) override {
     EXPECT_NE(NO_USER_CHOICE, user_choice_);
     switch (user_choice_) {
       case NO_USER_CHOICE:
@@ -183,7 +183,7 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) OVERRIDE {
+      const content::DownloadTargetCallback& callback) override {
     content::DownloadTargetCallback dangerous_callback =
         base::Bind(&TestDownloadManagerDelegate::SetDangerous, callback);
     return ChromeDownloadManagerDelegate::DetermineDownloadTarget(
@@ -211,12 +211,12 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
             &g_browser_process->profile_manager()->GetProfileInfoCache()),
         suspended_(false) {}
 
-  virtual void SuspendBackgroundMode() OVERRIDE {
+  virtual void SuspendBackgroundMode() override {
     BackgroundModeManager::SuspendBackgroundMode();
     suspended_ = true;
   }
 
-  virtual void ResumeBackgroundMode() OVERRIDE {
+  virtual void ResumeBackgroundMode() override {
     BackgroundModeManager::ResumeBackgroundMode();
     suspended_ = false;
   }
@@ -237,7 +237,7 @@ class BrowserCloseManagerBrowserTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<bool> {
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     SessionStartupPref::SetStartupPref(
         browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
@@ -249,7 +249,7 @@ class BrowserCloseManagerBrowserTest
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     if (GetParam())
       command_line->AppendSwitch(switches::kEnableFastUnload);
 #if defined(OS_CHROMEOS)
@@ -712,7 +712,7 @@ class BrowserCloseManagerWithDownloadsBrowserTest :
   BrowserCloseManagerWithDownloadsBrowserTest() {}
   virtual ~BrowserCloseManagerWithDownloadsBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserCloseManagerBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(scoped_download_directory_.CreateUniqueTempDir());
   }
@@ -895,7 +895,7 @@ class BrowserCloseManagerWithBackgroundModeBrowserTest
  public:
   BrowserCloseManagerWithBackgroundModeBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserCloseManagerBrowserTest::SetUpOnMainThread();
     g_browser_process->set_background_mode_manager_for_test(
         scoped_ptr<BackgroundModeManager>(new FakeBackgroundModeManager));

@@ -37,8 +37,8 @@ class EvictedDomainCookieCounterTest : public testing::Test {
     // EvictedDomainCookieCounter::Delegate implementation.
     virtual void Report(
         const EvictedDomainCookieCounter::EvictedCookie& evicted_cookie,
-        const Time& reinstatement_time) OVERRIDE;
-    virtual Time CurrentTime() const OVERRIDE;
+        const Time& reinstatement_time) override;
+    virtual Time CurrentTime() const override;
 
    private:
     EvictedDomainCookieCounterTest* tester_;
@@ -48,8 +48,8 @@ class EvictedDomainCookieCounterTest : public testing::Test {
   virtual ~EvictedDomainCookieCounterTest();
 
   // testing::Test implementation.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Initialization that allows parameters to be specified.
   void InitCounter(size_t max_size, size_t purge_count);
@@ -189,11 +189,11 @@ TEST_F(EvictedDomainCookieCounterTest, TestChain) {
 
     virtual void OnCookieChanged(const net::CanonicalCookie& cookie,
                                  bool removed,
-                                 ChangeCause cause) OVERRIDE {
+                                 ChangeCause cause) override {
       ++(*result_);
     }
 
-    virtual void OnLoaded() OVERRIDE {}
+    virtual void OnLoaded() override {}
 
    private:
     virtual ~ChangedDelegateDummy() {}

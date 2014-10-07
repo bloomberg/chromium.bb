@@ -213,7 +213,7 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
   // net::URLRequestInterceptor implementation.
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     base::FilePath path;
     if (IsSupportedDevToolsURL(request->url(), &path))
       return new net::URLRequestFileJob(

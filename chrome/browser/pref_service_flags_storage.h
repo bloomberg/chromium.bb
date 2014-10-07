@@ -19,8 +19,8 @@ class PrefServiceFlagsStorage : public FlagsStorage {
   explicit PrefServiceFlagsStorage(PrefService *prefs);
   virtual ~PrefServiceFlagsStorage();
 
-  virtual std::set<std::string> GetFlags() OVERRIDE;
-  virtual bool SetFlags(const std::set<std::string>& flags) OVERRIDE;
+  virtual std::set<std::string> GetFlags() override;
+  virtual bool SetFlags(const std::set<std::string>& flags) override;
 
  private:
   PrefService* prefs_;

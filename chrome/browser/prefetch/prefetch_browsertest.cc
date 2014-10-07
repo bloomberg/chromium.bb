@@ -32,14 +32,14 @@ const char kPrefetchPage[] = "files/prerender/simple_prefetch.html";
 
 class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
  public:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  virtual ConnectionType GetCurrentConnectionType() const override {
     return NetworkChangeNotifier::CONNECTION_WIFI;
   }
 };
 
 class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
  public:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  virtual ConnectionType GetCurrentConnectionType() const override {
     return NetworkChangeNotifier::CONNECTION_4G;
   }
 };
@@ -49,7 +49,7 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
   explicit PrefetchBrowserTestBase(bool disabled_via_field_trial)
       : disabled_via_field_trial_(disabled_via_field_trial) {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     if (disabled_via_field_trial_) {
       command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                       "Prefetch/ExperimentDisabled/");
@@ -95,7 +95,7 @@ class HangingURLRequestJob : public net::URLRequestJob {
       : net::URLRequestJob(request, network_delegate) {}
 
   // net::URLRequestJob implementation
-  virtual void Start() OVERRIDE {}
+  virtual void Start() override {}
 
  private:
   virtual ~HangingURLRequestJob() {}
@@ -112,7 +112,7 @@ class HangingRequestInterceptor : public net::URLRequestInterceptor {
 
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     if (!callback_.is_null())
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
     return new HangingURLRequestJob(request, network_delegate);

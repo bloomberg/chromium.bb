@@ -129,7 +129,7 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
         weak_factory_(this) {}
 
   // net::URLRequestFileJob implementation:
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     base::TimeDelta time_to_wait;
     start_time_ = base::TimeTicks::Now();
     if (!load_timing_deltas_.receive_headers_end.is_null()) {
@@ -147,7 +147,7 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
   }
 
   virtual void GetLoadTimingInfo(
-      net::LoadTimingInfo* load_timing_info) const OVERRIDE {
+      net::LoadTimingInfo* load_timing_info) const override {
     // Make sure enough time has elapsed since start was called.  If this
     // fails, the test fixture itself is flaky.
     if (!load_timing_deltas_.receive_headers_end.is_null()) {
@@ -247,7 +247,7 @@ class TestInterceptor : public net::URLRequestInterceptor {
   // net::URLRequestJobFactory::ProtocolHandler implementation:
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     return new MockUrlRequestJobWithTiming(request, network_delegate, path_,

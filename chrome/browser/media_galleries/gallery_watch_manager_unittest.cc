@@ -61,7 +61,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
 
   virtual ~GalleryWatchManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -85,7 +85,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
     manager_->AddObserver(profile_.get(), this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     manager_->RemoveObserver(profile_.get());
     manager_.reset();
     storage_monitor::TestStorageMonitor::Destroy();
@@ -149,13 +149,13 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
  private:
   // GalleryWatchManagerObserver implementation.
   virtual void OnGalleryChanged(const std::string& extension_id,
-                                MediaGalleryPrefId gallery_id) OVERRIDE {
+                                MediaGalleryPrefId gallery_id) override {
     EXPECT_TRUE(expect_gallery_changed_);
     pending_loop_->Quit();
   }
 
   virtual void OnGalleryWatchDropped(const std::string& extension_id,
-                                     MediaGalleryPrefId gallery_id) OVERRIDE {
+                                     MediaGalleryPrefId gallery_id) override {
     EXPECT_TRUE(expect_gallery_watch_dropped_);
     pending_loop_->Quit();
   }

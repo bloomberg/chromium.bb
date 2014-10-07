@@ -154,7 +154,7 @@ class MockPrefHashStore : public PrefHashStore {
 
   // PrefHashStore implementation.
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
-      scoped_ptr<HashStoreContents> storage) OVERRIDE;
+      scoped_ptr<HashStoreContents> storage) override;
 
  private:
   // A MockPrefHashStoreTransaction is handed to the caller on
@@ -173,22 +173,22 @@ class MockPrefHashStore : public PrefHashStore {
 
     // PrefHashStoreTransaction implementation.
     virtual PrefHashStoreTransaction::ValueState CheckValue(
-        const std::string& path, const base::Value* value) const OVERRIDE;
+        const std::string& path, const base::Value* value) const override;
     virtual void StoreHash(const std::string& path,
-                           const base::Value* new_value) OVERRIDE;
+                           const base::Value* new_value) override;
     virtual PrefHashStoreTransaction::ValueState CheckSplitValue(
         const std::string& path,
         const base::DictionaryValue* initial_split_value,
-        std::vector<std::string>* invalid_keys) const OVERRIDE;
+        std::vector<std::string>* invalid_keys) const override;
     virtual void StoreSplitHash(
         const std::string& path,
-        const base::DictionaryValue* split_value) OVERRIDE;
-    virtual bool HasHash(const std::string& path) const OVERRIDE;
+        const base::DictionaryValue* split_value) override;
+    virtual bool HasHash(const std::string& path) const override;
     virtual void ImportHash(const std::string& path,
-                            const base::Value* hash) OVERRIDE;
-    virtual void ClearHash(const std::string& path) OVERRIDE;
-    virtual bool IsSuperMACValid() const OVERRIDE;
-    virtual bool StampSuperMac() OVERRIDE;
+                            const base::Value* hash) override;
+    virtual void ClearHash(const std::string& path) override;
+    virtual bool IsSuperMACValid() const override;
+    virtual bool StampSuperMac() override;
 
    private:
     MockPrefHashStore* outer_;
@@ -369,7 +369,7 @@ class PrefHashFilterTest
                          last_filter_on_load_modified_prefs_(false),
                          reset_recorded_(false) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::StatisticsRecorder::Initialize();
     Reset();
   }

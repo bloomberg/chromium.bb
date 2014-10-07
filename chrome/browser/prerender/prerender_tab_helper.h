@@ -53,18 +53,18 @@ class PrerenderTabHelper
   // content::WebContentsObserver implementation.
   virtual void DidGetRedirectForResourceRequest(
       content::RenderViewHost* render_view_host,
-      const content::ResourceRedirectDetails& details) OVERRIDE;
+      const content::ResourceRedirectDetails& details) override;
   virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
-      ui::PageTransition transition_type) OVERRIDE;
+      ui::PageTransition transition_type) override;
 
   // Called when the URL of the main frame changed, either when the load
   // commits, or a redirect happens.

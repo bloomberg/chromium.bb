@@ -61,8 +61,8 @@ class LazyEmf : public MetafilePlayer {
       : temp_dir_(temp_dir), file_(file.Pass()) {}
   virtual ~LazyEmf() { Close(); }
 
-  virtual bool SafePlayback(HDC hdc) const OVERRIDE;
-  virtual bool SaveTo(base::File* file) const OVERRIDE;
+  virtual bool SafePlayback(HDC hdc) const override;
+  virtual bool SaveTo(base::File* file) const override;
 
  private:
   void Close() const;
@@ -103,9 +103,9 @@ class PdfToEmfUtilityProcessHostClient
   void Stop();
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual void OnProcessLaunchFailed() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual void OnProcessLaunchFailed() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   class GetPageCallbackData {
@@ -183,10 +183,10 @@ class PdfToEmfConverterImpl : public PdfToEmfConverter {
 
   virtual void Start(const scoped_refptr<base::RefCountedMemory>& data,
                      const PdfRenderSettings& conversion_settings,
-                     const StartCallback& start_callback) OVERRIDE;
+                     const StartCallback& start_callback) override;
 
   virtual void GetPage(int page_number,
-                       const GetPageCallback& get_page_callback) OVERRIDE;
+                       const GetPageCallback& get_page_callback) override;
 
   // Helps to cancel callbacks if this object is destroyed.
   void RunCallback(const base::Closure& callback);

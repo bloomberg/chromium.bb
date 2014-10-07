@@ -28,7 +28,7 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PluginInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
 
   virtual std::string GetLearnMoreURL() const = 0;
 
@@ -36,8 +36,8 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetLinkText() const override;
 
   std::string identifier_;
 
@@ -61,13 +61,13 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual ~UnauthorizedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-  virtual std::string GetLearnMoreURL() const OVERRIDE;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
+  virtual void InfoBarDismissed() override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
+  virtual std::string GetLearnMoreURL() const override;
 
   HostContentSettingsMap* content_settings_;
   base::string16 name_;
@@ -93,22 +93,22 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   virtual ~OutdatedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-  virtual std::string GetLearnMoreURL() const OVERRIDE;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
+  virtual void InfoBarDismissed() override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
+  virtual std::string GetLearnMoreURL() const override;
 
   // PluginInstallerObserver:
-  virtual void DownloadStarted() OVERRIDE;
-  virtual void DownloadError(const std::string& message) OVERRIDE;
-  virtual void DownloadCancelled() OVERRIDE;
-  virtual void DownloadFinished() OVERRIDE;
+  virtual void DownloadStarted() override;
+  virtual void DownloadError(const std::string& message) override;
+  virtual void DownloadCancelled() override;
+  virtual void DownloadFinished() override;
 
   // WeakPluginInstallerObserver:
-  virtual void OnlyWeakObserversLeft() OVERRIDE;
+  virtual void OnlyWeakObserversLeft() override;
 
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
@@ -154,22 +154,22 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual ~PluginInstallerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual int GetButtons() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual base::string16 GetLinkText() const override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // PluginInstallerObserver:
-  virtual void DownloadStarted() OVERRIDE;
-  virtual void DownloadError(const std::string& message) OVERRIDE;
-  virtual void DownloadCancelled() OVERRIDE;
-  virtual void DownloadFinished() OVERRIDE;
+  virtual void DownloadStarted() override;
+  virtual void DownloadError(const std::string& message) override;
+  virtual void DownloadCancelled() override;
+  virtual void DownloadFinished() override;
 
   // WeakPluginInstallerObserver:
-  virtual void OnlyWeakObserversLeft() OVERRIDE;
+  virtual void OnlyWeakObserversLeft() override;
 
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
@@ -210,13 +210,13 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PluginMetroModeInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual int GetButtons() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual base::string16 GetLinkText() const override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
 
   const Mode mode_;
   const base::string16 name_;

@@ -27,7 +27,7 @@ class ChromeNotifierService : public KeyedService {
   virtual ~ChromeNotifierService();
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns the SyncableService for syncer::SYNCED_NOTIFICATIONS and
   // syncer::SYNCED_NOTIFICATION_APP_INFO

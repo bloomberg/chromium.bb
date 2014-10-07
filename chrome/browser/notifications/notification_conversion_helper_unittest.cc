@@ -18,9 +18,9 @@ class NotificationConversionHelperTest : public testing::Test {
  public:
   NotificationConversionHelperTest() {}
 
-  virtual void SetUp() OVERRIDE {}
+  virtual void SetUp() override {}
 
-  virtual void TearDown() OVERRIDE {}
+  virtual void TearDown() override {}
 
  protected:
   scoped_ptr<Notification> CreateNotification(

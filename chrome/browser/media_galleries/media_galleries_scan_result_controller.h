@@ -52,21 +52,21 @@ class MediaGalleriesScanResultController
       const base::Closure& on_finish);
 
   // MediaGalleriesDialogController implementation.
-  virtual base::string16 GetHeader() const OVERRIDE;
-  virtual base::string16 GetSubtext() const OVERRIDE;
-  virtual bool IsAcceptAllowed() const OVERRIDE;
-  virtual bool ShouldShowFolderViewer(const Entry& entry) const OVERRIDE;
-  virtual std::vector<base::string16> GetSectionHeaders() const OVERRIDE;
-  virtual Entries GetSectionEntries(size_t index) const OVERRIDE;
-  virtual base::string16 GetAuxiliaryButtonText() const OVERRIDE;
-  virtual void DidClickAuxiliaryButton() OVERRIDE;
-  virtual void DidToggleEntry(MediaGalleryPrefId id, bool selected) OVERRIDE;
-  virtual void DidClickOpenFolderViewer(MediaGalleryPrefId id) OVERRIDE;
-  virtual void DidForgetEntry(MediaGalleryPrefId id) OVERRIDE;
-  virtual base::string16 GetAcceptButtonText() const OVERRIDE;
-  virtual void DialogFinished(bool accepted) OVERRIDE;
-  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId id) OVERRIDE;
-  virtual content::WebContents* WebContents() OVERRIDE;
+  virtual base::string16 GetHeader() const override;
+  virtual base::string16 GetSubtext() const override;
+  virtual bool IsAcceptAllowed() const override;
+  virtual bool ShouldShowFolderViewer(const Entry& entry) const override;
+  virtual std::vector<base::string16> GetSectionHeaders() const override;
+  virtual Entries GetSectionEntries(size_t index) const override;
+  virtual base::string16 GetAuxiliaryButtonText() const override;
+  virtual void DidClickAuxiliaryButton() override;
+  virtual void DidToggleEntry(MediaGalleryPrefId id, bool selected) override;
+  virtual void DidClickOpenFolderViewer(MediaGalleryPrefId id) override;
+  virtual void DidForgetEntry(MediaGalleryPrefId id) override;
+  virtual base::string16 GetAcceptButtonText() const override;
+  virtual void DialogFinished(bool accepted) override;
+  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId id) override;
+  virtual content::WebContents* WebContents() override;
 
  protected:
   typedef base::Callback<MediaGalleriesDialog* (
@@ -109,24 +109,24 @@ class MediaGalleriesScanResultController
   // RemovableStorageObserver implementation.
   // Used to keep dialog in sync with removable device status.
   virtual void OnRemovableStorageAttached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
   virtual void OnRemovableStorageDetached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
 
   // MediaGalleriesPreferences::GalleryChangeObserver implementations.
   // Used to keep the dialog in sync when the preferences change.
   virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
                                  const std::string& extension_id,
-                                 MediaGalleryPrefId pref_id) OVERRIDE;
+                                 MediaGalleryPrefId pref_id) override;
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) OVERRIDE;
+                                   MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryAdded(MediaGalleriesPreferences* pref,
-                              MediaGalleryPrefId pref_id) OVERRIDE;
+                              MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) OVERRIDE;
+                                MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
-                                    MediaGalleryPrefId pref_id) OVERRIDE;
+                                    MediaGalleryPrefId pref_id) override;
 
   // The web contents from which the request originated.
   content::WebContents* web_contents_;

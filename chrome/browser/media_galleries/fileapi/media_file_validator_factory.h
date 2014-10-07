@@ -28,7 +28,7 @@ class MediaFileValidatorFactory
   // CopyOrMoveFileValidatorFactory implementation.
   virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const storage::FileSystemURL& src,
-      const base::FilePath& platform_path) OVERRIDE;
+      const base::FilePath& platform_path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaFileValidatorFactory);

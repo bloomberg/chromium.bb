@@ -29,9 +29,9 @@ class ExtensionWelcomeNotificationFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_EXTENSION_WELCOME_NOTIFICATION_FACTORY_H_

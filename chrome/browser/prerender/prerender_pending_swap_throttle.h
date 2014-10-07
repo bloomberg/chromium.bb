@@ -31,9 +31,9 @@ class PrerenderPendingSwapThrottle
                                PrerenderTracker* tracker);
 
   // content::ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
+  virtual void WillStartRequest(bool* defer) override;
 
-  virtual const char* GetNameForLogging() const OVERRIDE;
+  virtual const char* GetNameForLogging() const override;
 
   // Called by the PrerenderTracker when the swap failed.
   // May only be called if currently throttling the resource.

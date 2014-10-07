@@ -153,7 +153,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
  public:
   MTPDeviceDelegateImplMacTest() : camera_(NULL), delegate_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ui_thread_.reset(new content::TestBrowserThread(
         content::BrowserThread::UI, &message_loop_));
     file_thread_.reset(new content::TestBrowserThread(
@@ -173,7 +173,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     delegate_ = new MTPDeviceDelegateImplMac(kDeviceId, kDevicePath);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
     [delegate deviceBrowser:nil didRemoveDevice:camera_ moreGoing:NO];
 

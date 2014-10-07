@@ -37,7 +37,7 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
   virtual ~MediaStreamInfoBarTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // This test expects to run with fake devices but real UI.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream))

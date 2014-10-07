@@ -84,23 +84,23 @@ class UserPolicySigninServiceBase : public KeyedService,
 
   // SigninManagerBase::Observer implementation:
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // CloudPolicyService::Observer implementation:
-  virtual void OnInitializationCompleted(CloudPolicyService* service) OVERRIDE;
+  virtual void OnInitializationCompleted(CloudPolicyService* service) override;
 
   // CloudPolicyClient::Observer implementation:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
-  virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
+  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  virtual void OnClientError(CloudPolicyClient* client) override;
 
   // KeyedService implementation:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void SetSystemRequestContext(
       scoped_refptr<net::URLRequestContextGetter> request_context);

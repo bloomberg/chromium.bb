@@ -100,7 +100,7 @@ class MediaFileSystemRegistry
 
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageDetached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
 
  private:
   class MediaFileSystemContextImpl;
@@ -117,9 +117,9 @@ class MediaFileSystemRegistry
 
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) OVERRIDE;
+                                   MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) OVERRIDE;
+                                MediaGalleryPrefId pref_id) override;
 
   // Look up or create the extension gallery host.
   ExtensionGalleriesHost* GetExtensionGalleryHost(

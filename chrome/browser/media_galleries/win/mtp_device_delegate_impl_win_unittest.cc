@@ -53,8 +53,8 @@ void GetGalleryInfoCallback(
 
 class MTPDeviceDelegateImplWinTest : public ChromeRenderViewHostTestHarness {
  protected:
-  void SetUp() OVERRIDE;
-  void TearDown() OVERRIDE;
+  void SetUp() override;
+  void TearDown() override;
 
   void ProcessAttach(const std::string& id,
                      const base::string16& name,

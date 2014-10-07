@@ -23,16 +23,16 @@ class PrivetV3CryptoProviderEmpty : public PrivetV3CryptoProvider {
   virtual ~PrivetV3CryptoProviderEmpty();
 
   // PrivetV3CryptoProvider implementation.
-  virtual HandshakeState GetState() OVERRIDE;
-  virtual std::string GetAuthMethod() OVERRIDE;
-  virtual HandshakeState GetNextStep(int* step, std::string* package) OVERRIDE;
+  virtual HandshakeState GetState() override;
+  virtual std::string GetAuthMethod() override;
+  virtual HandshakeState GetNextStep(int* step, std::string* package) override;
   virtual HandshakeState SetStepResponse(int step,
                                          const std::string& state,
-                                         const std::string& package) OVERRIDE;
-  virtual std::string GetVerificationCode() OVERRIDE;
-  virtual HandshakeState AcceptVerificationCode() OVERRIDE;
+                                         const std::string& package) override;
+  virtual std::string GetVerificationCode() override;
+  virtual HandshakeState AcceptVerificationCode() override;
   virtual bool EncryptData(const std::string& input,
-                           std::string* output) OVERRIDE;
+                           std::string* output) override;
 
  private:
   HandshakeState state_;

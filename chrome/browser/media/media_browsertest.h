@@ -49,7 +49,7 @@ class MediaBrowserTest : public InProcessBrowserTest,
   // Fails test and sets document title to kPluginCrashed when a plugin crashes.
   // If IgnorePluginCrash(true) is called then plugin crash is ignored.
   virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) OVERRIDE;
+                             base::ProcessId plugin_pid) override;
 
   // When called, the test will ignore any plugin crashes and not fail the test.
   void IgnorePluginCrash();

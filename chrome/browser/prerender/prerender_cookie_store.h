@@ -52,20 +52,20 @@ class PrerenderCookieStore : public net::CookieStore {
       const GURL& url,
       const std::string& cookie_line,
       const net::CookieOptions& options,
-      const SetCookiesCallback& callback) OVERRIDE;
+      const SetCookiesCallback& callback) override;
 
   virtual void GetCookiesWithOptionsAsync(
       const GURL& url,
       const net::CookieOptions& options,
-      const GetCookiesCallback& callback) OVERRIDE;
+      const GetCookiesCallback& callback) override;
 
   virtual void GetAllCookiesForURLAsync(
       const GURL& url,
-      const GetCookieListCallback& callback) OVERRIDE;
+      const GetCookieListCallback& callback) override;
 
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,
-                                 const base::Closure& callback) OVERRIDE;
+                                 const base::Closure& callback) override;
 
   // All the following methods should not be used in the scenarios where
   // a PrerenderCookieStore is used. This will be checked via NOTREACHED().
@@ -76,17 +76,17 @@ class PrerenderCookieStore : public net::CookieStore {
   virtual void DeleteAllCreatedBetweenAsync(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      const DeleteCallback& callback) OVERRIDE;
+      const DeleteCallback& callback) override;
 
   virtual void DeleteAllCreatedBetweenForHostAsync(
       const base::Time delete_begin,
       const base::Time delete_end,
       const GURL& url,
-      const DeleteCallback& callback) OVERRIDE;
+      const DeleteCallback& callback) override;
 
-  virtual void DeleteSessionCookiesAsync(const DeleteCallback&) OVERRIDE;
+  virtual void DeleteSessionCookiesAsync(const DeleteCallback&) override;
 
-  virtual net::CookieMonster* GetCookieMonster() OVERRIDE;
+  virtual net::CookieMonster* GetCookieMonster() override;
 
   // Commits the changes made to the underlying cookie store, and switches
   // into forwarding mode. To be called on the IO thread.

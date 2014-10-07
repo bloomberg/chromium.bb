@@ -21,12 +21,12 @@ class SetupRequest : public PrivetV3Session::Request {
   explicit SetupRequest(PrivetV3SetupFlow* setup_flow);
   virtual ~SetupRequest();
 
-  virtual std::string GetName() OVERRIDE { return "/privet/v3/setup/start"; }
-  virtual const base::DictionaryValue& GetInput() OVERRIDE;
+  virtual std::string GetName() override { return "/privet/v3/setup/start"; }
+  virtual const base::DictionaryValue& GetInput() override;
 
-  virtual void OnError(PrivetURLFetcher::ErrorType error) OVERRIDE;
+  virtual void OnError(PrivetURLFetcher::ErrorType error) override;
   virtual void OnParsedJson(const base::DictionaryValue& value,
-                            bool has_error) OVERRIDE;
+                            bool has_error) override;
 
   void SetWiFiCridentials(const std::string& ssid, const std::string& password);
 

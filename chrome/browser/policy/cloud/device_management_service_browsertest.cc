@@ -141,7 +141,7 @@ class DeviceManagementServiceIntegrationTest
     base::MessageLoop::current()->Run();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     std::string service_url((this->*(GetParam()))());
     service_.reset(new DeviceManagementService(
         scoped_ptr<DeviceManagementService::Configuration>(
@@ -149,7 +149,7 @@ class DeviceManagementServiceIntegrationTest
     service_->ScheduleInitialization(0);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     service_.reset();
     test_server_.reset();
     interceptor_.reset();

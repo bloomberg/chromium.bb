@@ -201,7 +201,7 @@ class MediaGalleriesPreferences
 
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
 
   // Lookup a media gallery and fill in information about it and return true if
   // it exists. Return false if it does not, filling in default information.
@@ -277,7 +277,7 @@ class MediaGalleriesPreferences
   void SetLastScanCompletionTime(const base::Time& time);
 
   // KeyedService implementation:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

@@ -39,41 +39,41 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   // Initializes |thread_|.
   virtual bool Init(
       const syncer::SyncableService::StartSyncFlare& flare,
-      const std::string& sync_username) OVERRIDE;
+      const std::string& sync_username) override;
 
   // Stops |thread_|.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  protected:
   virtual ~PasswordStoreMac();
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetBackgroundTaskRunner() OVERRIDE;
+      GetBackgroundTaskRunner() override;
 
  private:
-  virtual void ReportMetricsImpl(const std::string& sync_username) OVERRIDE;
+  virtual void ReportMetricsImpl(const std::string& sync_username) override;
   virtual password_manager::PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual password_manager::PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual password_manager::PasswordStoreChangeList RemoveLoginImpl(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual password_manager::PasswordStoreChangeList
       RemoveLoginsCreatedBetweenImpl(base::Time delete_begin,
-                                     base::Time delete_end) OVERRIDE;
+                                     base::Time delete_end) override;
   virtual password_manager::PasswordStoreChangeList
       RemoveLoginsSyncedBetweenImpl(base::Time delete_begin,
-                                    base::Time delete_end) OVERRIDE;
+                                    base::Time delete_end) override;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) OVERRIDE;
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
+      const ConsumerCallbackRunner& callback_runner) override;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
   virtual bool FillAutofillableLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
   virtual bool FillBlacklistLogins(
-      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) override;
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry). Returns true if the operation

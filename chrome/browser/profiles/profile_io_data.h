@@ -495,16 +495,16 @@ class ProfileIOData {
     virtual ~ResourceContext();
 
     // ResourceContext implementation:
-    virtual net::HostResolver* GetHostResolver() OVERRIDE;
-    virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-    virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() OVERRIDE;
+    virtual net::HostResolver* GetHostResolver() override;
+    virtual net::URLRequestContext* GetRequestContext() override;
+    virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() override;
     virtual void CreateKeygenHandler(
         uint32 key_size_in_bits,
         const std::string& challenge_string,
         const GURL& url,
         const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback)
-        OVERRIDE;
-    virtual SaltCallback GetMediaDeviceIDSalt() OVERRIDE;
+        override;
+    virtual SaltCallback GetMediaDeviceIDSalt() override;
 
    private:
     friend class ProfileIOData;

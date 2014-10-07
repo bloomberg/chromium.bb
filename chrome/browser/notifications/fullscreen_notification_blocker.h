@@ -22,15 +22,15 @@ class FullscreenNotificationBlocker
   bool is_fullscreen_mode() const { return is_fullscreen_mode_; }
 
   // message_center::NotificationBlocker overrides:
-  virtual void CheckState() OVERRIDE;
+  virtual void CheckState() override;
   virtual bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const OVERRIDE;
+      const message_center::NotifierId& notifier_id) const override;
 
  private:
   // content::NotificationObserver override.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   bool is_fullscreen_mode_;
 

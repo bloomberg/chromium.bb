@@ -79,7 +79,7 @@ class MediaScanManager : public extensions::ExtensionRegistryObserver {
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
   bool ScanInProgress() const;
 

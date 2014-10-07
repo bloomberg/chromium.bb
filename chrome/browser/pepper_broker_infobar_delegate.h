@@ -42,13 +42,13 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PepperBrokerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
+  virtual base::string16 GetLinkText() const override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
 
   void DispatchCallback(bool result);
 

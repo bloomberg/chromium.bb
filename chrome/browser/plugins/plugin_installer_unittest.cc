@@ -21,8 +21,8 @@ namespace {
 class PluginInstallerTest : public ChromeRenderViewHostTestHarness {
  public:
   PluginInstallerTest();
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   PluginInstaller* installer() { return installer_.get(); }
 
@@ -68,12 +68,12 @@ class TestPluginInstallerObserver : public PluginInstallerObserver {
   const std::string& download_error() const { return download_error_; }
 
  private:
-  virtual void DownloadStarted() OVERRIDE { download_started_ = true; }
-  virtual void DownloadFinished() OVERRIDE { download_finished_ = true; }
-  virtual void DownloadError(const std::string& message) OVERRIDE {
+  virtual void DownloadStarted() override { download_started_ = true; }
+  virtual void DownloadFinished() override { download_finished_ = true; }
+  virtual void DownloadError(const std::string& message) override {
     download_error_ = message;
   }
-  virtual void DownloadCancelled() OVERRIDE { download_cancelled_ = true; }
+  virtual void DownloadCancelled() override { download_cancelled_ = true; }
 
   bool download_started_;
   bool download_finished_;

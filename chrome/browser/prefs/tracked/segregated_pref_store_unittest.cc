@@ -42,7 +42,7 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
   }
 
   // PersistentPrefStore::ReadErrorDelegate implementation
-  virtual void OnError(PersistentPrefStore::PrefReadError read_error) OVERRIDE {
+  virtual void OnError(PersistentPrefStore::PrefReadError read_error) override {
     EXPECT_FALSE(data_->invoked);
     data_->invoked = true;
     data_->read_error = read_error;
@@ -62,7 +62,7 @@ class SegregatedPrefStoreTest : public testing::Test {
         read_error_delegate_(
             new MockReadErrorDelegate(&read_error_delegate_data_)) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     selected_store_ = new TestingPrefStore;
     default_store_ = new TestingPrefStore;
 
@@ -77,7 +77,7 @@ class SegregatedPrefStoreTest : public testing::Test {
     segregated_store_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     segregated_store_->RemoveObserver(&observer_);
   }
 

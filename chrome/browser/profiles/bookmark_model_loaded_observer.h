@@ -16,10 +16,10 @@ class BookmarkModelLoadedObserver : public BaseBookmarkModelObserver {
   explicit BookmarkModelLoadedObserver(Profile* profile);
 
  private:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+                                   bool ids_reassigned) override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
 
   Profile* profile_;
 

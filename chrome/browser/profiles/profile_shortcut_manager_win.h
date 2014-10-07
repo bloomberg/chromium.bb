@@ -54,34 +54,34 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
 
   // ProfileShortcutManager implementation:
   virtual void CreateOrUpdateProfileIcon(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
   virtual void CreateProfileShortcut(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
   virtual void RemoveProfileShortcuts(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
   virtual void HasProfileShortcuts(
       const base::FilePath& profile_path,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback) override;
   virtual void GetShortcutProperties(const base::FilePath& profile_path,
                                      base::CommandLine* command_line,
                                      base::string16* name,
-                                     base::FilePath* icon_path) OVERRIDE;
+                                     base::FilePath* icon_path) override;
 
   // ProfileInfoCacheObserver implementation:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
   virtual void OnProfileWasRemoved(
       const base::FilePath& profile_path,
-      const base::string16& profile_name) OVERRIDE;
+      const base::string16& profile_name) override;
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const base::string16& old_profile_name) OVERRIDE;
+      const base::string16& old_profile_name) override;
   virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   // Gives the profile path of an alternate profile than |profile_path|.

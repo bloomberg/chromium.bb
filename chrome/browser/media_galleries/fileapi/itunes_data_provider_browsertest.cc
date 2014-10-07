@@ -58,7 +58,7 @@ class TestITunesDataProvider : public ITunesDataProvider {
 
  private:
   virtual void OnLibraryChanged(const base::FilePath& path,
-                                bool error) OVERRIDE {
+                                bool error) override {
     ITunesDataProvider::OnLibraryChanged(path, error);
     callback_.Run();
   }
@@ -74,7 +74,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
   virtual ~ITunesDataProviderTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(library_dir_.CreateUniqueTempDir());
     WriteLibraryInternal(SetUpLibrary());
     // The ImportedMediaGalleryRegistry is created on which ever thread calls
@@ -217,14 +217,14 @@ class ITunesDataProviderBasicTest : public ITunesDataProviderTest {
   ITunesDataProviderBasicTest() {}
   virtual ~ITunesDataProviderBasicTest() {}
 
-  virtual std::vector<LibraryEntry> SetUpLibrary() OVERRIDE {
+  virtual std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
     std::vector<LibraryEntry> entries;
     entries.push_back(LibraryEntry("Artist", "Album", track));
     return entries;
   }
 
-  virtual void StartTest(bool parse_success) OVERRIDE {
+  virtual void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     // KnownArtist
@@ -285,14 +285,14 @@ class ITunesDataProviderRefreshTest : public ITunesDataProviderTest {
   ITunesDataProviderRefreshTest() {}
   virtual ~ITunesDataProviderRefreshTest() {}
 
-  virtual std::vector<LibraryEntry> SetUpLibrary() OVERRIDE {
+  virtual std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
     std::vector<LibraryEntry> entries;
     entries.push_back(LibraryEntry("Artist", "Album", track));
     return entries;
   }
 
-  virtual void StartTest(bool parse_success) OVERRIDE {
+  virtual void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     // Initial contents.
@@ -335,14 +335,14 @@ class ITunesDataProviderInvalidTest : public ITunesDataProviderTest {
   ITunesDataProviderInvalidTest() {}
   virtual ~ITunesDataProviderInvalidTest() {}
 
-  virtual std::vector<LibraryEntry> SetUpLibrary() OVERRIDE {
+  virtual std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
     std::vector<LibraryEntry> entries;
     entries.push_back(LibraryEntry("Artist", "Album", track));
     return entries;
   }
 
-  virtual void StartTest(bool parse_success) OVERRIDE {
+  virtual void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     SetLibraryChangeCallback(
@@ -367,7 +367,7 @@ class ITunesDataProviderUniqueNameTest : public ITunesDataProviderTest {
   ITunesDataProviderUniqueNameTest() {}
   virtual ~ITunesDataProviderUniqueNameTest() {}
 
-  virtual std::vector<LibraryEntry> SetUpLibrary() OVERRIDE {
+  virtual std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
     std::vector<LibraryEntry> entries;
     // Dupe album names should get uniquified with the track id, which in the
@@ -378,7 +378,7 @@ class ITunesDataProviderUniqueNameTest : public ITunesDataProviderTest {
     return entries;
   }
 
-  virtual void StartTest(bool parse_success) OVERRIDE {
+  virtual void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     base::FilePath track =
@@ -411,7 +411,7 @@ class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
   ITunesDataProviderEscapeTest() {}
   virtual ~ITunesDataProviderEscapeTest() {}
 
-  virtual std::vector<LibraryEntry> SetUpLibrary() OVERRIDE {
+  virtual std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track:1.mp3");
     std::vector<LibraryEntry> entries;
     entries.push_back(LibraryEntry("Artist:/name", "Album:name/", track));
@@ -421,7 +421,7 @@ class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
     return entries;
   }
 
-  virtual void StartTest(bool parse_success) OVERRIDE {
+  virtual void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     base::FilePath track =

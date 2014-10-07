@@ -21,7 +21,7 @@ class TestingOffTheRecordDestructionProfile : public TestingProfile {
         destroyed_otr_profile_(false) {
     set_incognito(true);
   }
-  virtual void DestroyOffTheRecordProfile() OVERRIDE {
+  virtual void DestroyOffTheRecordProfile() override {
     destroyed_otr_profile_ = true;
   }
   bool destroyed_otr_profile_;
@@ -39,7 +39,7 @@ class TestingOriginalDestructionProfile : public TestingProfile {
     DCHECK_EQ(this, living_instance_);
     living_instance_ = NULL;
   }
-  virtual void DestroyOffTheRecordProfile() OVERRIDE {
+  virtual void DestroyOffTheRecordProfile() override {
     SetOffTheRecordProfile(NULL);
     destroyed_otr_profile_ = true;
   }
@@ -62,7 +62,7 @@ class ProfileDestroyerTest : public BrowserWithTestWindowTest {
   ProfileDestroyerTest() : off_the_record_profile_(NULL) {}
 
  protected:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
+  virtual TestingProfile* CreateProfile() override {
     if (off_the_record_profile_ == NULL)
       off_the_record_profile_ = new TestingOffTheRecordDestructionProfile();
     return off_the_record_profile_;

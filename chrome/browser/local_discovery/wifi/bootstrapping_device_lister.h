@@ -52,7 +52,7 @@ class BootstrappingDeviceLister : public NetworkListObserver {
       ActiveDeviceList;
 
   virtual void OnNetworkListChanged(
-      const std::vector<NetworkProperties>& ssids) OVERRIDE;
+      const std::vector<NetworkProperties>& ssids) override;
 
   void UpdateChangedSSIDs(bool available,
                           const ActiveDeviceList& changed,

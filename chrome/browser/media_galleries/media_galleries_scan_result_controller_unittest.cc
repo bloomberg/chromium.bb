@@ -45,7 +45,7 @@ class MediaGalleriesScanResultControllerTest : public testing::Test {
     EXPECT_FALSE(dialog_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -65,7 +65,7 @@ class MediaGalleriesScanResultControllerTest : public testing::Test {
     extension_ = AddMediaGalleriesApp("read", read_permissions, profile_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     storage_monitor::TestStorageMonitor::Destroy();
   }
 

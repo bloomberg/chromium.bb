@@ -77,13 +77,13 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
       const void* context,
       const GURL& url,
       const GURL& policy_url,
-      content::WebPluginInfo* plugin) OVERRIDE;
+      content::WebPluginInfo* plugin) override;
 
   // CanLoadPlugin always grants permission to the browser
   // (render_process_id == 0)
   virtual bool CanLoadPlugin(
       int render_process_id,
-      const base::FilePath& path) OVERRIDE;
+      const base::FilePath& path) override;
 
  private:
   friend struct DefaultSingletonTraits<ChromePluginServiceFilter>;
@@ -111,7 +111,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   ProcessDetails* GetOrRegisterProcess(int render_process_id);
   const ProcessDetails* GetProcess(int render_process_id) const;

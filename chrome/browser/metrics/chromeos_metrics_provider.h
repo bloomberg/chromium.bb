@@ -36,13 +36,13 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   void InitTaskGetHardwareClass(const base::Closure& callback);
 
   // metrics::MetricsProvider:
-  virtual void OnDidCreateMetricsLog() OVERRIDE;
+  virtual void OnDidCreateMetricsLog() override;
   virtual void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) override;
   virtual void ProvideStabilityMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) override;
   virtual void ProvideGeneralMetrics(
-      metrics::ChromeUserMetricsExtension* uma_proto) OVERRIDE;
+      metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:
   // Called on the FILE thread to load hardware class information.

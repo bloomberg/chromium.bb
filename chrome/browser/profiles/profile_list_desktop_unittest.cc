@@ -33,7 +33,7 @@ class MockObserver : public AvatarMenuObserver {
   virtual ~MockObserver() {}
 
   virtual void OnAvatarMenuChanged(
-      AvatarMenu* avatar_menu) OVERRIDE {
+      AvatarMenu* avatar_menu) override {
     ++count_;
   }
 

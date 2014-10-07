@@ -40,7 +40,7 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
 
   virtual ~ITunesFinderWinTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(app_data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(music_dir_.CreateUniqueTempDir());
     app_data_dir_override_.reset(

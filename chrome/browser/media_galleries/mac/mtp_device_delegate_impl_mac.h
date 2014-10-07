@@ -35,28 +35,28 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   virtual void GetFileInfo(
       const base::FilePath& file_path,
       const GetFileInfoSuccessCallback& success_callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
 
   // Note: passed absolute paths, but expects relative paths in reply.
   virtual void ReadDirectory(
       const base::FilePath& root,
       const ReadDirectorySuccessCallback& success_callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) override;
 
   // Note: passed absolute paths.
   virtual void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
       const CreateSnapshotFileSuccessCallback& success_callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  virtual bool IsStreaming() OVERRIDE;
+      const ErrorCallback& error_callback) override;
+  virtual bool IsStreaming() override;
   virtual void ReadBytes(const base::FilePath& device_file_path,
                          const scoped_refptr<net::IOBuffer>& buf,
                          int64 offset,
                          int buf_len,
                          const ReadBytesSuccessCallback& success_callback,
-                         const ErrorCallback& error_callback) OVERRIDE;
-  virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
+                         const ErrorCallback& error_callback) override;
+  virtual void CancelPendingTasksAndDeleteDelegate() override;
 
   // Forward delegates for ImageCaptureDeviceListener. These are
   // invoked in callbacks of the ImageCapture library on the UI thread.

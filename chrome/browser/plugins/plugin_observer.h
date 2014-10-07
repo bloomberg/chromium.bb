@@ -38,13 +38,13 @@ class PluginObserver : public content::WebContentsObserver,
 
   // content::WebContentsObserver implementation.
   virtual void RenderFrameCreated(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) OVERRIDE;
+                             base::ProcessId plugin_pid) override;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit PluginObserver(content::WebContents* web_contents);

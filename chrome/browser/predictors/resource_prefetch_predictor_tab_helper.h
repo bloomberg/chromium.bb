@@ -17,9 +17,9 @@ class ResourcePrefetchPredictorTabHelper
   virtual ~ResourcePrefetchPredictorTabHelper();
 
   // content::WebContentsObserver implementation
-  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
+  virtual void DocumentOnLoadCompletedInMainFrame() override;
   virtual void DidLoadResourceFromMemoryCache(
-      const content::LoadFromMemoryCacheDetails& details) OVERRIDE;
+      const content::LoadFromMemoryCacheDetails& details) override;
 
  private:
   explicit ResourcePrefetchPredictorTabHelper(

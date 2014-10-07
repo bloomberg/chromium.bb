@@ -109,7 +109,7 @@ class SSLConfigServicePref : public net::SSLConfigService {
   SSLConfigServicePref() {}
 
   // Store SSL config settings in |config|. Must only be called from IO thread.
-  virtual void GetSSLConfig(net::SSLConfig* config) OVERRIDE;
+  virtual void GetSSLConfig(net::SSLConfig* config) override;
 
  private:
   // Allow the pref watcher to update our internal state.
@@ -151,7 +151,7 @@ class SSLConfigServiceManagerPref
   // Register local_state SSL preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  virtual net::SSLConfigService* Get() OVERRIDE;
+  virtual net::SSLConfigService* Get() override;
 
  private:
   // Callback for preference changes.  This will post the changes to the IO

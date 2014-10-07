@@ -48,7 +48,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
         firefox_(base::kNullProcessHandle) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
     // The video playback will not work without a GPU, so force its use here.
@@ -57,7 +57,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
         switches::kUseFakeDeviceForMediaStream);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Kill any processes we may have brought up.
     LOG(INFO) << "Entering TearDown";
     if (dev_appserver_ != base::kNullProcessHandle)

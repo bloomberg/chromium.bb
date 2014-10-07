@@ -489,7 +489,7 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
  protected:
   // chromeos::CrasAudioHandler::AudioObserver overrides.
-  virtual void OnOutputMuteChanged() OVERRIDE {
+  virtual void OnOutputMuteChanged() override {
     ++output_mute_changed_count_;
   }
 
@@ -512,9 +512,9 @@ class WebContentsLoadedOrDestroyedWatcher
   void Wait();
 
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void WebContentsDestroyed() override;
   virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -553,7 +553,7 @@ class TestAddAppWindowObserver
   virtual ~TestAddAppWindowObserver();
 
   // extensions::AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override;
 
   extensions::AppWindow* WaitForAppWindow();
 
@@ -595,19 +595,19 @@ class PolicyTest : public InProcessBrowserTest {
   PolicyTest() {}
   virtual ~PolicyTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test_extension_cache_.reset(new extensions::ExtensionCacheFake());
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -643,7 +643,7 @@ class PolicyTest : public InProcessBrowserTest {
    public:
     virtual void OnScreenshotCompleted(
         ScreenshotTakerObserver::Result screenshot_result,
-        const base::FilePath& screenshot_path) OVERRIDE {
+        const base::FilePath& screenshot_path) override {
       BrowserThread::PostTaskAndReply(BrowserThread::IO,
                                       FROM_HERE,
                                       base::Bind(base::DoNothing),
@@ -771,7 +771,7 @@ class LocalePolicyTest : public PolicyTest {
   LocalePolicyTest() {}
   virtual ~LocalePolicyTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
     policies.Set(key::kApplicationLocaleValue,
@@ -2675,14 +2675,14 @@ class RestoreOnStartupPolicyTest
   virtual ~RestoreOnStartupPolicyTest() {}
 
 #if defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // TODO(nkostylev): Investigate if we can remove this switch.
     command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
     PolicyTest::SetUpCommandLine(command_line);
   }
 #endif
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     // Set early policies now, before the browser is created.
     (this->*(GetParam()))();
@@ -2698,7 +2698,7 @@ class RestoreOnStartupPolicyTest
                            command_line->argv().begin()));
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -2846,7 +2846,7 @@ class PolicyStatisticsCollectorTest : public PolicyTest {
   PolicyStatisticsCollectorTest() {}
   virtual ~PolicyStatisticsCollectorTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
     policies.Set(key::kShowHomeButton,
@@ -3136,7 +3136,7 @@ INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
 // started.
 class PolicyVariationsServiceTest : public PolicyTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
     policies.Set(key::kVariationsRestrictParameter,

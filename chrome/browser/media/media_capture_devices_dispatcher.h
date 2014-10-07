@@ -132,17 +132,17 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void DisableDeviceEnumerationForTesting();
 
   // Overridden from content::MediaObserver:
-  virtual void OnAudioCaptureDevicesChanged() OVERRIDE;
-  virtual void OnVideoCaptureDevicesChanged() OVERRIDE;
+  virtual void OnAudioCaptureDevicesChanged() override;
+  virtual void OnVideoCaptureDevicesChanged() override;
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
       int render_frame_id,
       int page_request_id,
       const GURL& security_origin,
       content::MediaStreamType stream_type,
-      content::MediaRequestState state) OVERRIDE;
+      content::MediaRequestState state) override;
   virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_frame_id) OVERRIDE;
+                                     int render_frame_id) override;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
 
@@ -176,7 +176,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Helpers for ProcessMediaAccessRequest().
   void ProcessDesktopCaptureAccessRequest(

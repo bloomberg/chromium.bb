@@ -33,17 +33,17 @@ class GAIAInfoUpdateService : public KeyedService,
   static bool ShouldUseGAIAProfileInfo(Profile* profile);
 
   // ProfileDownloaderDelegate:
-  virtual bool NeedsProfilePicture() const OVERRIDE;
-  virtual int GetDesiredImageSideLength() const OVERRIDE;
-  virtual Profile* GetBrowserProfile() OVERRIDE;
-  virtual std::string GetCachedPictureURL() const OVERRIDE;
-  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
+  virtual bool NeedsProfilePicture() const override;
+  virtual int GetDesiredImageSideLength() const override;
+  virtual Profile* GetBrowserProfile() override;
+  virtual std::string GetCachedPictureURL() const override;
+  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
   virtual void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
-      ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
+      ProfileDownloaderDelegate::FailureReason reason) override;
 
   // Overridden from KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GAIAInfoUpdateServiceTest, ScheduleUpdate);
@@ -54,9 +54,9 @@ class GAIAInfoUpdateService : public KeyedService,
   // Overridden from SigninManagerBase::Observer:
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   Profile* profile_;
   scoped_ptr<ProfileDownloader> profile_image_downloader_;

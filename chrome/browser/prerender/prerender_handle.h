@@ -103,14 +103,14 @@ class PrerenderHandle : public base::NonThreadSafe,
   explicit PrerenderHandle(PrerenderManager::PrerenderData* prerender_data);
 
   // From PrerenderContents::Observer:
-  virtual void OnPrerenderStart(PrerenderContents* prerender_contents) OVERRIDE;
+  virtual void OnPrerenderStart(PrerenderContents* prerender_contents) override;
   virtual void OnPrerenderStopLoading(PrerenderContents* prerender_contents)
-      OVERRIDE;
+      override;
   virtual void OnPrerenderDomContentLoaded(
-      PrerenderContents* prerender_contents) OVERRIDE;
-  virtual void OnPrerenderStop(PrerenderContents* prerender_contents) OVERRIDE;
+      PrerenderContents* prerender_contents) override;
+  virtual void OnPrerenderStop(PrerenderContents* prerender_contents) override;
   virtual void OnPrerenderCreatedMatchCompleteReplacement(
-      PrerenderContents* contents, PrerenderContents* replacement) OVERRIDE;
+      PrerenderContents* contents, PrerenderContents* replacement) override;
 
   Observer* observer_;
 

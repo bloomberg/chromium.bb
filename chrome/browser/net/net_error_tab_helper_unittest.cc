@@ -33,12 +33,12 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   int mock_sent_count() const { return mock_sent_count_; }
 
  private:
-  virtual void StartDnsProbe() OVERRIDE {
+  virtual void StartDnsProbe() override {
     EXPECT_FALSE(mock_probe_running_);
     mock_probe_running_ = true;
   }
 
-  virtual void SendInfo() OVERRIDE {
+  virtual void SendInfo() override {
     last_status_sent_ = dns_probe_status();
     mock_sent_count_++;
   }
@@ -54,7 +54,7 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
   enum ErrorPage { NORMAL_PAGE, ERROR_PAGE };
   enum ErrorType { DNS_ERROR, OTHER_ERROR };
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     subframe_ = content::RenderFrameHostTester::For(main_rfh())
                     ->AppendChild("subframe");

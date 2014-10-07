@@ -19,8 +19,8 @@ class PrintPreviewContextMenuObserver : public RenderViewContextMenuObserver {
   virtual ~PrintPreviewContextMenuObserver();
 
   // RenderViewContextMenuObserver implementation.
-  virtual bool IsCommandIdSupported(int command_id) OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
+  virtual bool IsCommandIdSupported(int command_id) override;
+  virtual bool IsCommandIdEnabled(int command_id) override;
 
  private:
   bool IsPrintPreviewDialog();

@@ -76,7 +76,7 @@ class ExtensionWelcomeNotification : public KeyedService,
                                               Delegate* const delegate);
 
   // PrefServiceSyncableObserver
-  virtual void OnIsSyncingChanged() OVERRIDE;
+  virtual void OnIsSyncingChanged() override;
 
   // Adds in the welcome notification if required for components built
   // into Chrome that show notifications like Chrome Now.

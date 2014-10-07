@@ -149,12 +149,12 @@ class AvatarMenu :
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
 #if defined(ENABLE_MANAGED_USERS)
   // SupervisedUserServiceObserver:
-  virtual void OnCustodianInfoChanged() OVERRIDE;
+  virtual void OnCustodianInfoChanged() override;
 #endif
 
   // The model that provides the list of menu items.

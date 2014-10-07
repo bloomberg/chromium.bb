@@ -26,7 +26,7 @@ class PrintPreviewTestBrowserWindow
   PrintPreviewTestBrowserWindow() {}
 
   // BrowserWindow overrides
-  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost() OVERRIDE {
+  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost() override {
     return this;
   }
 
@@ -34,23 +34,23 @@ class PrintPreviewTestBrowserWindow
 
   // The web contents modal dialog must be parented to *something*; use the
   // WebContents window since there is no true browser window for unit tests.
-  virtual gfx::NativeView GetHostView() const OVERRIDE {
+  virtual gfx::NativeView GetHostView() const override {
     return FindBrowser()->tab_strip_model()->GetActiveWebContents()->
         GetNativeView();
   }
 
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override {
     return gfx::Point();
   }
 
-  virtual gfx::Size GetMaximumDialogSize() OVERRIDE {
+  virtual gfx::Size GetMaximumDialogSize() override {
     return gfx::Size();
   }
 
   virtual void AddObserver(
-      ModalDialogHostObserver* observer) OVERRIDE {}
+      ModalDialogHostObserver* observer) override {}
   virtual void RemoveObserver(
-      ModalDialogHostObserver* observer) OVERRIDE {}
+      ModalDialogHostObserver* observer) override {}
 
  private:
   Browser* FindBrowser() const {

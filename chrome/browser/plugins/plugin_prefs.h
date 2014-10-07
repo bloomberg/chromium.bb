@@ -75,7 +75,7 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
   void set_profile(Profile* profile) { profile_ = profile; }
 
   // RefCountedProfileKeyedBase method override.
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void ShutdownOnUIThread() override;
 
  private:
   friend class base::RefCountedThreadSafe<PluginPrefs>;

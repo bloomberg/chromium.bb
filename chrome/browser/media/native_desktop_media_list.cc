@@ -97,8 +97,8 @@ class NativeDesktopMediaList::Worker
   typedef std::map<DesktopMediaID, uint32> ImageHashesMap;
 
   // webrtc::DesktopCapturer::Callback interface.
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
+  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   base::WeakPtr<NativeDesktopMediaList> media_list_;
 

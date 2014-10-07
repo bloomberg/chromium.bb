@@ -69,8 +69,8 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   AlbumTableFiles album_table_files_;
 

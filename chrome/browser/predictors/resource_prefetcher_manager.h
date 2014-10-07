@@ -56,8 +56,8 @@ class ResourcePrefetcherManager
   // ResourcePrefetcher::Delegate methods.
   virtual void ResourcePrefetcherFinished(
       ResourcePrefetcher* prefetcher,
-      ResourcePrefetcher::RequestVector* requests) OVERRIDE;
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+      ResourcePrefetcher::RequestVector* requests) override;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
 
  private:
   friend class base::RefCountedThreadSafe<ResourcePrefetcherManager>;

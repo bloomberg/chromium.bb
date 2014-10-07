@@ -190,12 +190,12 @@ class ProfileManager : public base::NonThreadSafe,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Profile::Delegate implementation:
   virtual void OnProfileCreated(Profile* profile,
                                 bool success,
-                                bool is_new_profile) OVERRIDE;
+                                bool is_new_profile) override;
 
  protected:
   // Does final initial actions.
@@ -290,9 +290,9 @@ class ProfileManager : public base::NonThreadSafe,
     virtual ~BrowserListObserver();
 
     // chrome::BrowserListObserver implementation.
-    virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
-    virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
-    virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+    virtual void OnBrowserAdded(Browser* browser) override;
+    virtual void OnBrowserRemoved(Browser* browser) override;
+    virtual void OnBrowserSetLastActive(Browser* browser) override;
 
    private:
     ProfileManager* profile_manager_;
@@ -359,8 +359,8 @@ class ProfileManagerWithoutInit : public ProfileManager {
   explicit ProfileManagerWithoutInit(const base::FilePath& user_data_dir);
 
  protected:
-  virtual void DoFinalInitForServices(Profile*, bool) OVERRIDE {}
-  virtual void DoFinalInitLogging(Profile*) OVERRIDE {}
+  virtual void DoFinalInitForServices(Profile*, bool) override {}
+  virtual void DoFinalInitLogging(Profile*) override {}
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_

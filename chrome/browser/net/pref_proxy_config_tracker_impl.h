@@ -39,12 +39,12 @@ class ChromeProxyConfigService
 
   // ProxyConfigService implementation:
   virtual void AddObserver(
-      net::ProxyConfigService::Observer* observer) OVERRIDE;
+      net::ProxyConfigService::Observer* observer) override;
   virtual void RemoveObserver(
-      net::ProxyConfigService::Observer* observer) OVERRIDE;
+      net::ProxyConfigService::Observer* observer) override;
   virtual ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* config) OVERRIDE;
-  virtual void OnLazyPoll() OVERRIDE;
+      net::ProxyConfig* config) override;
+  virtual void OnLazyPoll() override;
 
   // Method on IO thread that receives the preference proxy settings pushed from
   // PrefProxyConfigTrackerImpl.
@@ -54,7 +54,7 @@ class ChromeProxyConfigService
  private:
   // ProxyConfigService::Observer implementation:
   virtual void OnProxyConfigChanged(const net::ProxyConfig& config,
-                                    ConfigAvailability availability) OVERRIDE;
+                                    ConfigAvailability availability) override;
 
   // Makes sure that the observer registration with the base service is set up.
   void RegisterObserver();
@@ -89,11 +89,11 @@ class PrefProxyConfigTrackerImpl : public PrefProxyConfigTracker {
 
   // PrefProxyConfigTracker implementation:
   virtual scoped_ptr<net::ProxyConfigService> CreateTrackingProxyConfigService(
-      scoped_ptr<net::ProxyConfigService> base_service) OVERRIDE;
+      scoped_ptr<net::ProxyConfigService> base_service) override;
 
   // Notifies the tracker that the pref service passed upon construction is
   // about to go away. This must be called from the UI thread.
-  virtual void DetachFromPrefService() OVERRIDE;
+  virtual void DetachFromPrefService() override;
 
   // Determines if |config_state| takes precedence regardless, which happens if
   // config is from policy or extension or other-precede.

@@ -121,9 +121,9 @@ class PrerenderLinkManager::PendingPrerenderManager
     launcher->AddObserver(this);
   }
 
-  virtual void OnPrerenderStart(PrerenderContents* launcher) OVERRIDE {}
+  virtual void OnPrerenderStart(PrerenderContents* launcher) override {}
 
-  virtual void OnPrerenderStop(PrerenderContents* launcher) OVERRIDE {
+  virtual void OnPrerenderStop(PrerenderContents* launcher) override {
     observed_launchers_.erase(launcher);
     if (launcher->final_status() == FINAL_STATUS_USED) {
       link_manager_->StartPendingPrerendersForLauncher(launcher);

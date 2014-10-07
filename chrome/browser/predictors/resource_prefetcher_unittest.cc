@@ -36,7 +36,7 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
 
   MOCK_METHOD1(StartURLRequest, void(net::URLRequest* request));
 
-  void ReadFullResponse(net::URLRequest* request) OVERRIDE {
+  void ReadFullResponse(net::URLRequest* request) override {
     FinishRequest(request, Request::PREFETCH_STATUS_FROM_CACHE);
   }
 
@@ -53,7 +53,7 @@ class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
           loop->message_loop_proxy())) { }
   ~TestResourcePrefetcherDelegate() { }
 
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     return request_context_getter_->GetURLRequestContext();
   }
 

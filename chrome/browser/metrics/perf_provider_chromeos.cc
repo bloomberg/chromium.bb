@@ -117,7 +117,7 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
 
  private:
   // chrome::BrowserListObserver implementation.
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
+  virtual void OnBrowserAdded(Browser* browser) override {
     if (browser->profile()->IsOffTheRecord())
       incognito_launched_ = true;
   }

@@ -41,7 +41,7 @@ class PrivetTrafficDetector
 
     // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   void StartOnIOThread();
   void ScheduleRestart();

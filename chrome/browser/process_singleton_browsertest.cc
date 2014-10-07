@@ -169,7 +169,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
       explicit ProcessTreeFilter(base::ProcessId parent_pid) {
         ancestor_pids_.insert(parent_pid);
       }
-      virtual bool Includes(const base::ProcessEntry & entry) const OVERRIDE {
+      virtual bool Includes(const base::ProcessEntry & entry) const override {
         if (ancestor_pids_.find(entry.parent_pid()) != ancestor_pids_.end()) {
           ancestor_pids_.insert(entry.pid());
           return true;

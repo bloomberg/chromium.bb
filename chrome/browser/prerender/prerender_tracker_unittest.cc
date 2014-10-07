@@ -52,12 +52,12 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderResourceThrottle::OverridePrerenderContentsForTesting(NULL);
   }
 
-  virtual bool GetChildId(int* child_id) const OVERRIDE {
+  virtual bool GetChildId(int* child_id) const override {
     *child_id = child_id_;
     return true;
   }
 
-  virtual bool GetRouteId(int* route_id) const OVERRIDE {
+  virtual bool GetRouteId(int* route_id) const override {
     *route_id = route_id_;
     return true;
   }
@@ -90,7 +90,7 @@ class TestPrerenderManager : public PrerenderManager {
   // We never allocate our PrerenderContents in PrerenderManager, so we don't
   // ever want the default pending delete behaviour.
   virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
-                                        FinalStatus final_status) OVERRIDE {
+                                        FinalStatus final_status) override {
   }
 };
 
@@ -121,7 +121,7 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
   // net::URLRequest::Delegate implementation:
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) OVERRIDE {
+                                  bool* defer_redirect) override {
     // Defer the redirect either way.
     *defer_redirect = true;
 
@@ -129,22 +129,22 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
     throttle_->WillRedirectRequest(redirect_info.new_url, &was_deferred_);
     run_loop_->Quit();
   }
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE { }
+  virtual void OnResponseStarted(net::URLRequest* request) override { }
   virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE {
+                               int bytes_read) override {
   }
 
   // content::ResourceController implementation:
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     EXPECT_FALSE(cancel_called_);
     EXPECT_FALSE(resume_called_);
 
     cancel_called_ = true;
     run_loop_->Quit();
   }
-  virtual void CancelAndIgnore() OVERRIDE { Cancel(); }
-  virtual void CancelWithError(int error_code) OVERRIDE { Cancel(); }
-  virtual void Resume() OVERRIDE {
+  virtual void CancelAndIgnore() override { Cancel(); }
+  virtual void CancelWithError(int error_code) override { Cancel(); }
+  virtual void Resume() override {
     EXPECT_TRUE(was_deferred_);
     EXPECT_FALSE(cancel_called_);
     EXPECT_FALSE(resume_called_);

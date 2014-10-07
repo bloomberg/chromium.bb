@@ -183,13 +183,13 @@ class ResourcePrefetchPredictor
   // Returns true if the request (should have a response in it) is cacheable.
   static bool IsCacheable(const net::URLRequest* request);
 
-  // content::NotificationObserver methods OVERRIDE.
+  // content::NotificationObserver methods override.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
-  // KeyedService methods OVERRIDE.
-  virtual void Shutdown() OVERRIDE;
+  // KeyedService methods override.
+  virtual void Shutdown() override;
 
   // Functions called on different network events pertaining to the loading of
   // main frame resource or sub resources.

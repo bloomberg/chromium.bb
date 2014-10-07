@@ -168,10 +168,10 @@ class VariationsService
       const variations::VariationsSeedSimulator::Result& result);
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // ResourceRequestAllowedNotifier::Observer implementation:
-  virtual void OnResourceRequestsAllowed() OVERRIDE;
+  virtual void OnResourceRequestsAllowed() override;
 
   // Performs a variations seed simulation with the given |seed| and |version|
   // and logs the simulation results as histograms.

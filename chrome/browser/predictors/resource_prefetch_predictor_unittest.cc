@@ -73,8 +73,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
  public:
   ResourcePrefetchPredictorTest();
   virtual ~ResourcePrefetchPredictorTest();
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   void AddUrlToHistory(const std::string& url, int visit_count) {

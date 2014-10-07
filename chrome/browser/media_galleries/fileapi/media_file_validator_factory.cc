@@ -17,14 +17,14 @@ class InvalidFileValidator : public storage::CopyOrMoveFileValidator {
   virtual ~InvalidFileValidator() {}
   virtual void StartPreWriteValidation(
       const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
-      OVERRIDE {
+      override {
     result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 
   virtual void StartPostWriteValidation(
       const base::FilePath& dest_platform_path,
       const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
-      OVERRIDE {
+      override {
     result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 

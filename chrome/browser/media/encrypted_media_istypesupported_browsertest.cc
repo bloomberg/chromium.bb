@@ -325,7 +325,7 @@ class EncryptedMediaIsTypeSupportedExternalClearKeyTest
     : public EncryptedMediaIsTypeSupportedTest {
 #if defined(ENABLE_PEPPER_CDMS)
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Platform-specific filename relative to the chrome executable.
     const char adapter_file_name[] =
 #if defined(OS_MACOSX)
@@ -348,7 +348,7 @@ class EncryptedMediaIsTypeSupportedWidevineTest
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
     defined(WIDEVINE_CDM_IS_COMPONENT)
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // File name of the adapter on different platforms.
     const char adapter_file_name[] =
 #if defined(OS_MACOSX)
@@ -371,7 +371,7 @@ class EncryptedMediaIsTypeSupportedWidevineTest
 class EncryptedMediaIsTypeSupportedClearKeyCDMRegisteredWithWrongPathTest
     : public EncryptedMediaIsTypeSupportedTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
    RegisterPepperCdm(command_line,
                      "clearkeycdmadapterwrongname.dll",
                      "application/x-ppapi-clearkey-cdm",
@@ -383,7 +383,7 @@ class EncryptedMediaIsTypeSupportedClearKeyCDMRegisteredWithWrongPathTest
 class EncryptedMediaIsTypeSupportedWidevineCDMRegisteredWithWrongPathTest
     : public EncryptedMediaIsTypeSupportedTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
    RegisterPepperCdm(command_line,
                      "widevinecdmadapterwrongname.dll",
                      "application/x-ppapi-widevine-cdm",

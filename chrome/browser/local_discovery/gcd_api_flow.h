@@ -73,8 +73,8 @@ class GCDApiFlowRequest : public GCDApiFlow::Request {
   virtual ~GCDApiFlowRequest();
 
   // GCDApiFlowRequest implementation
-  virtual std::string GetOAuthScope() OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() OVERRIDE;
+  virtual std::string GetOAuthScope() override;
+  virtual std::vector<std::string> GetExtraRequestHeaders() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowRequest);
@@ -86,8 +86,8 @@ class CloudPrintApiFlowRequest : public GCDApiFlow::Request {
   virtual ~CloudPrintApiFlowRequest();
 
   // GCDApiFlowRequest implementation
-  virtual std::string GetOAuthScope() OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() OVERRIDE;
+  virtual std::string GetOAuthScope() override;
+  virtual std::vector<std::string> GetExtraRequestHeaders() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPrintApiFlowRequest);

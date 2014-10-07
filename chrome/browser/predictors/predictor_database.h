@@ -35,7 +35,7 @@ class PredictorDatabase : public KeyedService {
 
  private:
   // KeyedService
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   scoped_refptr<PredictorDatabaseInternal> db_;
 

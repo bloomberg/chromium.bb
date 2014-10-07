@@ -40,10 +40,10 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
 
   // metrics::MetricsDataProvider:
   virtual void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) override;
   virtual void ProvideStabilityMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
-  virtual void ClearSavedStabilityMetrics() OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) override;
+  virtual void ClearSavedStabilityMetrics() override;
 
   // Notifies the provider about an error loading the plugin at |plugin_path|.
   void LogPluginLoadingError(const base::FilePath& plugin_path);
@@ -89,11 +89,11 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
 
   // content::BrowserChildProcessObserver:
   virtual void BrowserChildProcessHostConnected(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
   virtual void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
   virtual void BrowserChildProcessInstanceCreated(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
 
   PrefService* local_state_;
 

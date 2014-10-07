@@ -704,7 +704,7 @@ class TestPredictorObserver : public PredictorObserver {
   virtual void OnPreconnectUrl(const GURL& url,
                                const GURL& first_party_for_cookies,
                                UrlInfo::ResolutionMotivation motivation,
-                               int count) OVERRIDE {
+                               int count) override {
     preconnected_urls_.push_back(url);
   }
 
@@ -780,11 +780,11 @@ class TestProxyAdvisor : public ProxyAdvisor {
 
   virtual void Advise(const GURL& url,
                       UrlInfo::ResolutionMotivation motivation,
-                      bool is_preconnect) OVERRIDE {
+                      bool is_preconnect) override {
     ++advise_count_;
   }
 
-  virtual bool WouldProxyURL(const GURL& url) OVERRIDE {
+  virtual bool WouldProxyURL(const GURL& url) override {
     ++would_proxy_count_;
     return would_proxy_;
   }

@@ -96,7 +96,7 @@ class ProcessPowerCollector
 #if defined(OS_CHROMEOS)
   // PowerManagerClient::Observer implementation:
   virtual void PowerChanged(
-      const power_manager::PowerSupplyProperties& prop) OVERRIDE;
+      const power_manager::PowerSupplyProperties& prop) override;
 #endif
 
   // Begin periodically updating the power consumption numbers by profile.

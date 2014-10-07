@@ -45,7 +45,7 @@ class PerfProvider : public base::NonThreadSafe,
 
     // Called when either the login state or the logged in user type changes.
     // Activates |perf_provider_| to start collecting.
-    virtual void LoggedInStateChanged() OVERRIDE;
+    virtual void LoggedInStateChanged() override;
 
    private:
     // Points to a PerfProvider instance that can be turned on or off based on
@@ -56,7 +56,7 @@ class PerfProvider : public base::NonThreadSafe,
   // Called when a suspend finishes. This is either a successful suspend
   // followed by a resume, or a suspend that was canceled. Inherited from
   // PowerManagerClient::Observer.
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // Turns on perf collection. Resets the timer that's used to schedule
   // collections.
@@ -66,7 +66,7 @@ class PerfProvider : public base::NonThreadSafe,
   // Inherited from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Turns off perf collection. Does not delete any data that was already
   // collected and stored in |cached_perf_data_|.

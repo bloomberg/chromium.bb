@@ -77,8 +77,8 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // All member variables are only accessed on the IO thread.
   Profile* const profile_;

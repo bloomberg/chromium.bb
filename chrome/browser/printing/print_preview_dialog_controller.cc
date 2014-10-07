@@ -71,17 +71,17 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
   explicit PrintPreviewDialogDelegate(WebContents* initiator);
   virtual ~PrintPreviewDialogDelegate();
 
-  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual base::string16 GetDialogTitle() const OVERRIDE;
-  virtual GURL GetDialogContentURL() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const override;
+  virtual base::string16 GetDialogTitle() const override;
+  virtual GURL GetDialogContentURL() const override;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
-  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual std::string GetDialogArgs() const OVERRIDE;
-  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+      std::vector<WebUIMessageHandler*>* handlers) const override;
+  virtual void GetDialogSize(gfx::Size* size) const override;
+  virtual std::string GetDialogArgs() const override;
+  virtual void OnDialogClosed(const std::string& json_retval) override;
   virtual void OnCloseContents(WebContents* source,
-                               bool* out_close_dialog) OVERRIDE;
-  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+                               bool* out_close_dialog) override;
+  virtual bool ShouldShowDialogTitle() const override;
 
  private:
   WebContents* initiator_;

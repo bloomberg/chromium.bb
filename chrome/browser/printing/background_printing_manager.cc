@@ -27,8 +27,8 @@ class BackgroundPrintingManager::Observer
   Observer(BackgroundPrintingManager* manager, WebContents* web_contents);
 
  private:
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  virtual void WebContentsDestroyed() override;
 
   BackgroundPrintingManager* manager_;
 };

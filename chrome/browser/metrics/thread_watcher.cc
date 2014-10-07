@@ -932,7 +932,7 @@ class StartupWatchDogThread : public base::Watchdog {
   // Alarm is called if the time expires after an Arm() without someone calling
   // Disarm(). When Alarm goes off, in release mode we get the crash dump
   // without crashing and in debug mode we break into the debugger.
-  virtual void Alarm() OVERRIDE {
+  virtual void Alarm() override {
 #if !defined(NDEBUG)
     StartupHang();
     return;
@@ -978,7 +978,7 @@ class ShutdownWatchDogThread : public base::Watchdog {
 
   // Alarm is called if the time expires after an Arm() without someone calling
   // Disarm(). We crash the browser if this method is called.
-  virtual void Alarm() OVERRIDE {
+  virtual void Alarm() override {
     ShutdownHang();
   }
 

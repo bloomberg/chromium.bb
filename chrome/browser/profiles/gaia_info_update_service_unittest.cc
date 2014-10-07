@@ -135,8 +135,8 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
   }
 
  private:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   Profile* profile_;
   scoped_ptr<NiceMock<GAIAInfoUpdateServiceMock> > service_;

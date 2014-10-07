@@ -51,7 +51,7 @@ class RegistryVerifier : public PrefStore::Observer {
       : pref_registry_(pref_registry) {}
 
   // PrefStore::Observer implementation
-  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE {
+  virtual void OnPrefValueChanged(const std::string& key) override {
     EXPECT_TRUE(pref_registry_->end() !=
                 std::find_if(pref_registry_->begin(),
                              pref_registry_->end(),
@@ -59,7 +59,7 @@ class RegistryVerifier : public PrefStore::Observer {
         << "Unregistered key " << key << " was changed.";
   }
 
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE {}
+  virtual void OnInitializationCompleted(bool succeeded) override {}
 
  private:
   scoped_refptr<PrefRegistry> pref_registry_;
@@ -95,7 +95,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
         seed_("seed"),
         reset_recorded_(false) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ProfilePrefStoreManager::RegisterPrefs(local_state_.registry());
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
     for (const PrefHashFilter::TrackedPreferenceMetadata* it = kConfiguration;
@@ -140,7 +140,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
                                                &local_state_));
   }
 
-  virtual void TearDown() OVERRIDE { DestroyPrefStore(); }
+  virtual void TearDown() override { DestroyPrefStore(); }
 
  protected:
   // Verifies whether a reset was reported via the RecordReset() hook. Also

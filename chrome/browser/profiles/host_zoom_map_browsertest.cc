@@ -127,7 +127,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
   }
 
   // BrowserTestBase:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     embedded_test_server()->RegisterRequestHandler(base::Bind(
         &HostZoomMapBrowserTest::HandleRequest, base::Unretained(this)));
@@ -143,7 +143,7 @@ class HostZoomMapSanitizationBrowserTest : public HostZoomMapBrowserTest {
 
  private:
   // InProcessBrowserTest:
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     // Zoom-related preferences demonstrating the two problems that could be
     // caused by the bug. They incorrectly contain a per-host zoom level for the
     // empty host; and a value for 'host1' that only differs from the default by

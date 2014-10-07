@@ -99,14 +99,14 @@ class PrivetNotificationService
 
   // PrivetDeviceLister::Delegate implementation:
   virtual void DeviceChanged(bool added, const std::string& name,
-                             const DeviceDescription& description) OVERRIDE;
-  virtual void DeviceRemoved(const std::string& name) OVERRIDE;
+                             const DeviceDescription& description) override;
+  virtual void DeviceRemoved(const std::string& name) override;
 
   // PrivetNotificationListener::Delegate implementation:
-  virtual void PrivetNotify(bool has_multiple, bool added) OVERRIDE;
+  virtual void PrivetNotify(bool has_multiple, bool added) override;
 
-  virtual void PrivetRemoveNotification() OVERRIDE;
-  virtual void DeviceCacheFlushed() OVERRIDE;
+  virtual void PrivetRemoveNotification() override;
+  virtual void DeviceCacheFlushed() override;
 
   static bool IsEnabled();
   static bool IsForced();
@@ -132,13 +132,13 @@ class PrivetNotificationDelegate : public NotificationDelegate {
   explicit PrivetNotificationDelegate(content::BrowserContext* profile);
 
   // NotificationDelegate implementation.
-  virtual std::string id() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual void Display() OVERRIDE;
-  virtual void Error() OVERRIDE;
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual void Click() OVERRIDE;
-  virtual void ButtonClick(int button_index) OVERRIDE;
+  virtual std::string id() const override;
+  virtual content::WebContents* GetWebContents() const override;
+  virtual void Display() override;
+  virtual void Error() override;
+  virtual void Close(bool by_user) override;
+  virtual void Click() override;
+  virtual void ButtonClick(int button_index) override;
 
  private:
   void OpenTab(const GURL& url);

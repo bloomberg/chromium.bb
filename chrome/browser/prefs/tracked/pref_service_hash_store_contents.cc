@@ -23,7 +23,7 @@ class PrefServiceMutableDictionary
                                PrefService* pref_service);
 
   // HashStoreContents::MutableDictionary implementation
-  virtual base::DictionaryValue* operator->() OVERRIDE;
+  virtual base::DictionaryValue* operator->() override;
 
  private:
   const std::string key_;

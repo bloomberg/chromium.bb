@@ -35,7 +35,7 @@ class ExtensionsMetricsProvider : public metrics::MetricsProvider {
 
   // metrics::MetricsProvider:
   virtual void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile) OVERRIDE;
+      metrics::SystemProfileProto* system_profile) override;
 
  protected:
   // Exposed for the sake of mocking in test code.

@@ -23,7 +23,7 @@ class Service : public KeyedService {
     return context_.get();
   }
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
     context()->ShutdownOnUIThread();
   }
 

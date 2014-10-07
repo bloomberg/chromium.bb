@@ -78,7 +78,7 @@ class NavigationObserver : public content::WebContentsObserver {
 
   // content::WebContentsObserver:
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE {
+                             const GURL& validated_url) override {
     if (!wait_for_path_.empty()) {
       if (validated_url.path() == wait_for_path_)
         message_loop_runner_->Quit();
@@ -145,11 +145,11 @@ class InfoBarObserver : public PromptObserver,
 
  private:
   // PromptObserver:
-  virtual bool IsShowingPrompt() const OVERRIDE {
+  virtual bool IsShowingPrompt() const override {
     return infobar_is_being_shown_;
   }
 
-  virtual void AcceptImpl() const OVERRIDE {
+  virtual void AcceptImpl() const override {
     EXPECT_EQ(1u, infobar_service_->infobar_count());
     if (!infobar_service_->infobar_count())
       return;  // Let the test finish to gather possibly more diagnostics.
@@ -165,17 +165,17 @@ class InfoBarObserver : public PromptObserver,
   }
 
   // infobars::InfoBarManager::Observer:
-  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) OVERRIDE {
+  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) override {
     infobar_is_being_shown_ = true;
   }
 
   virtual void OnInfoBarRemoved(infobars::InfoBar* infobar,
-                                bool animate) OVERRIDE {
+                                bool animate) override {
     infobar_is_being_shown_ = false;
   }
 
   virtual void OnManagerShuttingDown(
-      infobars::InfoBarManager* manager) OVERRIDE {
+      infobars::InfoBarManager* manager) override {
     ASSERT_EQ(infobar_service_, manager);
     infobar_service_->RemoveObserver(this);
     infobar_service_ = NULL;
@@ -197,11 +197,11 @@ class BubbleObserver : public PromptObserver {
 
  private:
   // PromptObserver:
-  virtual bool IsShowingPrompt() const OVERRIDE {
+  virtual bool IsShowingPrompt() const override {
     return ui_controller_->PasswordPendingUserDecision();
   }
 
-  virtual void AcceptImpl() const OVERRIDE {
+  virtual void AcceptImpl() const override {
     ui_controller_->SavePassword();
     EXPECT_FALSE(IsShowingPrompt());
   }
@@ -264,7 +264,7 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
   virtual ~PasswordManagerBrowserTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Use TestPasswordStore to remove a possible race. Normally the
     // PasswordStore does its database manipulation on the DB thread, which
     // creates a possible race during navigation. Specifically the
@@ -277,7 +277,7 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
         password_manager::switches::kEnableAutomaticPasswordSaving));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
   }
 

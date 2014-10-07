@@ -40,7 +40,7 @@ class ProfilePolicyConnector : public KeyedService {
   void InitForTesting(scoped_ptr<PolicyService> service);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // This is never NULL.
   PolicyService* policy_service() const { return policy_service_.get(); }

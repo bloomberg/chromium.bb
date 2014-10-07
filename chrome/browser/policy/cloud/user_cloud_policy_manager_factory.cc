@@ -42,7 +42,7 @@ class UserCloudPolicyManagerFactory::ManagerWrapper : public KeyedService {
   }
   virtual ~ManagerWrapper() {}
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
     manager_->Shutdown();
   }
 

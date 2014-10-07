@@ -73,15 +73,15 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
             content::MediaStreamRequestResult result);
 
   // PermissionBubbleRequest:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetMessageTextFragment() const OVERRIDE;
-  virtual bool HasUserGesture() const OVERRIDE;
-  virtual GURL GetRequestingHostname() const OVERRIDE;
-  virtual void PermissionGranted() OVERRIDE;
-  virtual void PermissionDenied() OVERRIDE;
-  virtual void Cancelled() OVERRIDE;
-  virtual void RequestFinished() OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetMessageTextFragment() const override;
+  virtual bool HasUserGesture() const override;
+  virtual GURL GetRequestingHostname() const override;
+  virtual void PermissionGranted() override;
+  virtual void PermissionDenied() override;
+  virtual void Cancelled() override;
+  virtual void RequestFinished() override;
 
  private:
   // Returns true if the origin of the request has been granted the media

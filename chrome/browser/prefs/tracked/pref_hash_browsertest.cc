@@ -147,7 +147,7 @@ class PrefHashBrowserTestBase
       : protection_level_(GetProtectionLevelFromTrialGroup(GetParam())) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     EXPECT_FALSE(command_line->HasSwitch(switches::kForceFieldTrials));
     command_line->AppendSwitchASCII(
@@ -160,7 +160,7 @@ class PrefHashBrowserTestBase
 #endif
   }
 
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     // Do the normal setup in the PRE test and attack preferences in the main
     // test.
     if (IsPRETest())
@@ -231,7 +231,7 @@ class PrefHashBrowserTestBase
   // In the PRE_ test, find the number of tracked preferences that were
   // initialized and save it to a file to be read back in the main test and used
   // as the total number of tracked preferences.
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     // File in which the PRE_ test will save the number of tracked preferences
@@ -354,17 +354,17 @@ class PrefHashBrowserTestBase
 // Also sanity checks that the expected preferences files are in place.
 class PrefHashBrowserTestUnchangedDefault : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     // Default Chrome setup.
   }
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     // No attack.
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Expect all prefs to be reported as Unchanged with no resets.
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
                   ? num_tracked_prefs() : 0,
@@ -408,14 +408,14 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUnchangedDefault, UnchangedDefault);
 class PrefHashBrowserTestUnchangedCustom
     : public PrefHashBrowserTestUnchangedDefault {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     profile()->GetPrefs()->SetString(prefs::kHomePage, "http://example.com");
 
     InstallExtensionWithUIAutoConfirm(
         test_data_dir_.AppendASCII("good.crx"), 1, browser());
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Make sure the settings written in the last run stuck.
     EXPECT_EQ("http://example.com",
               profile()->GetPrefs()->GetString(prefs::kHomePage));
@@ -432,13 +432,13 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUnchangedCustom, UnchangedCustom);
 // Verifies that cleared prefs are reported.
 class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     profile()->GetPrefs()->SetString(prefs::kHomePage, "http://example.com");
   }
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     base::DictionaryValue* selected_prefs =
         protection_level_ >= PROTECTION_ENABLED_BASIC ? protected_preferences
                                                       : unprotected_preferences;
@@ -448,7 +448,7 @@ class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
     EXPECT_TRUE(selected_prefs->Remove(prefs::kHomePage, NULL));
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // The clearance of homepage should have been noticed (as pref #2 being
     // cleared), but shouldn't have triggered a reset (as there is nothing we
     // can do when the pref is already gone).
@@ -492,7 +492,7 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestClearedAtomic, ClearedAtomic);
 // non-null protected prefs.
 class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     // Explicitly set the DSE (it's otherwise NULL by default, preventing
     // thorough testing of the PROTECTION_ENABLED_DSE level).
     DefaultSearchManager default_search_manager(
@@ -518,13 +518,13 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     EXPECT_TRUE(unprotected_preferences->Remove("protection.macs", NULL));
     if (protected_preferences)
       EXPECT_TRUE(protected_preferences->Remove("protection.macs", NULL));
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Preferences that are NULL by default will be NullInitialized.
     int num_null_values = GetTrackedPrefHistogramCount(
         "Settings.TrackedPreferenceNullInitialized", ALLOW_ANY);
@@ -613,7 +613,7 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedInitialized,
 // if the protection level allows it).
 class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     profile()->GetPrefs()->SetInteger(prefs::kRestoreOnStartup,
                                       SessionStartupPref::URLS);
 
@@ -624,7 +624,7 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     base::DictionaryValue* selected_prefs =
         protection_level_ >= PROTECTION_ENABLED_BASIC ? protected_preferences
                                                       : unprotected_preferences;
@@ -639,7 +639,7 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
     startup_urls->AppendString("http://example.org");
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Expect a single Changed event for tracked pref #4 (startup URLs).
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
               GetTrackedPrefHistogramCount("Settings.TrackedPreferenceChanged",
@@ -695,14 +695,14 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestChangedAtomic, ChangedAtomic);
 // items being reported (and remove if the protection level allows it).
 class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     InstallExtensionWithUIAutoConfirm(
         test_data_dir_.AppendASCII("good.crx"), 1, browser());
   }
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     base::DictionaryValue* selected_prefs =
         protection_level_ >= PROTECTION_ENABLED_EXTENSIONS
             ? protected_preferences
@@ -730,7 +730,7 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
     extensions_dict->Set(std::string(32, 'a'), fake_extension);
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Expect a single split pref changed report with a count of 2 for tracked
     // pref #5 (extensions).
     EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
@@ -788,7 +788,7 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestChangedSplitPref, ChangedSplitPref);
 class PrefHashBrowserTestUntrustedAdditionToPrefs
     : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     // Ensure there is no user-selected value for kRestoreOnStartup.
     EXPECT_FALSE(
         profile()->GetPrefs()->GetUserPrefValue(prefs::kRestoreOnStartup));
@@ -796,12 +796,12 @@ class PrefHashBrowserTestUntrustedAdditionToPrefs
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     unprotected_preferences->SetInteger(prefs::kRestoreOnStartup,
                                         SessionStartupPref::LAST);
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Expect a single Changed event for tracked pref #3 (kRestoreOnStartup) if
     // not protecting; if protection is enabled the change should be a no-op.
     int changed_expected =
@@ -854,13 +854,13 @@ PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedAdditionToPrefs,
 class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
     : public PrefHashBrowserTestBase {
  public:
-  virtual void SetupPreferences() OVERRIDE {
+  virtual void SetupPreferences() override {
     profile()->GetPrefs()->SetString(prefs::kHomePage, "http://example.com");
   }
 
   virtual void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
-      base::DictionaryValue* protected_preferences) OVERRIDE {
+      base::DictionaryValue* protected_preferences) override {
     // Set or change the value in Preferences to the attacker's choice.
     unprotected_preferences->SetString(prefs::kHomePage, "http://example.net");
     // Clear the value in Secure Preferences, if any.
@@ -868,7 +868,7 @@ class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
       protected_preferences->Remove(prefs::kHomePage, NULL);
   }
 
-  virtual void VerifyReactionToPrefAttack() OVERRIDE {
+  virtual void VerifyReactionToPrefAttack() override {
     // Expect a single Changed event for tracked pref #2 (kHomePage) if
     // not protecting; if protection is enabled the change should be a Cleared.
     int changed_expected =

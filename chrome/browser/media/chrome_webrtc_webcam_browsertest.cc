@@ -39,7 +39,7 @@ static const char* kTestConfigFlags[] = {
 class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     public testing::WithParamInterface<const char*> {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(
@@ -49,7 +49,7 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
   }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 

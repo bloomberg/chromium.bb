@@ -28,7 +28,7 @@ class PolicyHeaderServiceFactory : public BrowserContextKeyedServiceFactory {
  protected:
   // BrowserContextKeyedServiceFactory implementation.
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 
  private:
   friend struct DefaultSingletonTraits<PolicyHeaderServiceFactory>;

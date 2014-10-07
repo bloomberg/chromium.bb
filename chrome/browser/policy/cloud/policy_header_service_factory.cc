@@ -36,7 +36,7 @@ class PolicyHeaderServiceWrapper : public KeyedService {
     return policy_header_service_.get();
   }
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
     // Shutdown our core object so it can unregister any observers before the
     // services we depend on are shutdown.
     policy_header_service_.reset();

@@ -16,14 +16,14 @@ class MockMediaGalleriesDialog : public MediaGalleriesDialog {
   virtual ~MockMediaGalleriesDialog();
 
   // MediaGalleriesDialog implementation.
-  virtual void UpdateGalleries() OVERRIDE;
+  virtual void UpdateGalleries() override;
 
   // Number up times UpdateResults has been called.
   int update_count() const;
 
  private:
   // MediaGalleriesDialog implementation.
-  virtual void AcceptDialogForTesting() OVERRIDE;
+  virtual void AcceptDialogForTesting() override;
 
   int update_count_;
 

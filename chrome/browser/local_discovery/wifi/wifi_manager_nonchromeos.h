@@ -25,21 +25,21 @@ class WifiManagerNonChromeos : public WifiManager {
   virtual ~WifiManagerNonChromeos();
 
   // WifiManager implementation.
-  virtual void Start() OVERRIDE;
-  virtual void GetSSIDList(const SSIDListCallback& callback) OVERRIDE;
-  virtual void RequestScan() OVERRIDE;
+  virtual void Start() override;
+  virtual void GetSSIDList(const SSIDListCallback& callback) override;
+  virtual void RequestScan() override;
   virtual void ConfigureAndConnectNetwork(
       const std::string& ssid,
       const WifiCredentials& credentials,
-      const SuccessCallback& callback) OVERRIDE;
+      const SuccessCallback& callback) override;
   virtual void ConnectToNetworkByID(const std::string& internal_id,
-                                    const SuccessCallback& callback) OVERRIDE;
+                                    const SuccessCallback& callback) override;
   virtual void RequestNetworkCredentials(
       const std::string& ssid,
-      const CredentialsCallback& callback) OVERRIDE;
-  virtual void AddNetworkListObserver(NetworkListObserver* observer) OVERRIDE;
+      const CredentialsCallback& callback) override;
+  virtual void AddNetworkListObserver(NetworkListObserver* observer) override;
   virtual void RemoveNetworkListObserver(
-      NetworkListObserver* observer) OVERRIDE;
+      NetworkListObserver* observer) override;
 
  private:
   class WifiServiceWrapper;

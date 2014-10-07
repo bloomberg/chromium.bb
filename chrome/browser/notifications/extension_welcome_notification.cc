@@ -47,10 +47,10 @@ class NotificationCallbacks
   }
 
   // Overridden from NotificationDelegate:
-  virtual void Display() OVERRIDE {}
-  virtual void Error() OVERRIDE {}
+  virtual void Display() override {}
+  virtual void Error() override {}
 
-  virtual void Close(bool by_user) OVERRIDE {
+  virtual void Close(bool by_user) override {
     if (by_user) {
       // Setting the preference here may cause the notification erasing
       // to reenter. Posting a task avoids this issue.
@@ -60,8 +60,8 @@ class NotificationCallbacks
     }
   }
 
-  virtual void Click() OVERRIDE {}
-  virtual void ButtonClick(int index) OVERRIDE {
+  virtual void Click() override {}
+  virtual void ButtonClick(int index) override {
     if (index == 0) {
       OpenNotificationLearnMoreTab();
     } else if (index == 1) {
@@ -116,17 +116,17 @@ class DefaultDelegate : public ExtensionWelcomeNotification::Delegate {
  public:
   DefaultDelegate() {}
 
-  virtual message_center::MessageCenter* GetMessageCenter() OVERRIDE {
+  virtual message_center::MessageCenter* GetMessageCenter() override {
     return g_browser_process->message_center();
   }
 
-  virtual base::Time GetCurrentTime() OVERRIDE {
+  virtual base::Time GetCurrentTime() override {
     return base::Time::Now();
   }
 
   virtual void PostTask(
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE {
+      const base::Closure& task) override {
     base::MessageLoop::current()->PostTask(from_here, task);
   }
 

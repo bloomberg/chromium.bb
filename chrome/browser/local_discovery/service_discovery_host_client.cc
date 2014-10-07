@@ -69,28 +69,28 @@ class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
       host_->Send(new LocalDiscoveryMsg_DestroyWatcher(id_));
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DVLOG(1) << "ServiceWatcher::Start with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_StartWatcher(id_, service_type_));
     started_ = true;
   }
 
-  virtual void DiscoverNewServices(bool force_update) OVERRIDE {
+  virtual void DiscoverNewServices(bool force_update) override {
     DVLOG(1) << "ServiceWatcher::DiscoverNewServices with id " << id_;
     DCHECK(started_);
     host_->Send(new LocalDiscoveryMsg_DiscoverServices(id_, force_update));
   }
 
   virtual void SetActivelyRefreshServices(
-      bool actively_refresh_services) OVERRIDE {
+      bool actively_refresh_services) override {
     DVLOG(1) << "ServiceWatcher::SetActivelyRefreshServices with id " << id_;
     DCHECK(started_);
     host_->Send(new LocalDiscoveryMsg_SetActivelyRefreshServices(
         id_, actively_refresh_services));
   }
 
-  virtual std::string GetServiceType() const OVERRIDE {
+  virtual std::string GetServiceType() const override {
     return service_type_;
   }
 
@@ -120,14 +120,14 @@ class ServiceDiscoveryHostClient::ServiceResolverProxy
       host_->Send(new LocalDiscoveryMsg_DestroyResolver(id_));
   }
 
-  virtual void StartResolving() OVERRIDE {
+  virtual void StartResolving() override {
     DVLOG(1) << "ServiceResolverProxy::StartResolving with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveService(id_, service_name_));
     started_ = true;
   }
 
-  virtual std::string GetName() const OVERRIDE {
+  virtual std::string GetName() const override {
     return service_name_;
   }
 
@@ -159,7 +159,7 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
       host_->Send(new LocalDiscoveryMsg_DestroyLocalDomainResolver(id_));
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DVLOG(1) << "LocalDomainResolverProxy::Start with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveLocalDomain(id_, domain_,

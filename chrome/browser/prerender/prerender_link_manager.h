@@ -144,17 +144,17 @@ class PrerenderLinkManager : public KeyedService,
   void CancelPendingPrerendersForLauncher(PrerenderContents* launcher);
 
   // From KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // From PrerenderHandle::Observer:
-  virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) OVERRIDE;
+  virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) override;
   virtual void OnPrerenderStopLoading(PrerenderHandle* prerender_handle)
-      OVERRIDE;
+      override;
   virtual void OnPrerenderDomContentLoaded(PrerenderHandle* prerender_handle)
-      OVERRIDE;
-  virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) OVERRIDE;
+      override;
+  virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) override;
   virtual void OnPrerenderCreatedMatchCompleteReplacement(
-      PrerenderHandle* handle) OVERRIDE;
+      PrerenderHandle* handle) override;
 
   bool has_shutdown_;
 

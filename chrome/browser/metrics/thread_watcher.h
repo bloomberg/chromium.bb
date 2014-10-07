@@ -529,7 +529,7 @@ class ThreadWatcherObserver : public content::NotificationObserver {
   // is called.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // The singleton of this class.
   static ThreadWatcherObserver* g_thread_watcher_observer_;
@@ -572,8 +572,8 @@ class WatchDogThread : public base::Thread {
                               base::TimeDelta delay);
 
  protected:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   static bool PostTaskHelper(

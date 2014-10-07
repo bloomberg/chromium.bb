@@ -62,12 +62,12 @@ class ImageDecoderDelegateAdapter : public ImageDecoder::Delegate {
 
   // ImageDecoder::Delegate methods.
   virtual void OnImageDecoded(const ImageDecoder* /*decoder*/,
-                              const SkBitmap& /*decoded_image*/) OVERRIDE {
+                              const SkBitmap& /*decoded_image*/) override {
     callback_.Run(base::File::FILE_OK);
     delete this;
   }
 
-  virtual void OnDecodeImageFailed(const ImageDecoder* /*decoder*/) OVERRIDE {
+  virtual void OnDecodeImageFailed(const ImageDecoder* /*decoder*/) override {
     callback_.Run(base::File::FILE_ERROR_SECURITY);
     delete this;
   }

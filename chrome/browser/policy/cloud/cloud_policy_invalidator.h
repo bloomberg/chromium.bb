@@ -96,19 +96,19 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
 
   // syncer::InvalidationHandler:
   virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
+      syncer::InvalidatorState state) override;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
   // CloudPolicyCore::Observer:
-  virtual void OnCoreConnected(CloudPolicyCore* core) OVERRIDE;
-  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) OVERRIDE;
-  virtual void OnCoreDisconnecting(CloudPolicyCore* core) OVERRIDE;
+  virtual void OnCoreConnected(CloudPolicyCore* core) override;
+  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) override;
+  virtual void OnCoreDisconnecting(CloudPolicyCore* core) override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
+  virtual void OnStoreError(CloudPolicyStore* store) override;
 
  private:
   // Handle an invalidation to the policy.

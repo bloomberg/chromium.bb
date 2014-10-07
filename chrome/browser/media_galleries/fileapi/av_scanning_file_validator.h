@@ -21,7 +21,7 @@ class AVScanningFileValidator : public storage::CopyOrMoveFileValidator {
   // Subclasses will not typically override this method.
   virtual void StartPostWriteValidation(
       const base::FilePath& dest_platform_path,
-      const ResultCallback& result_callback) OVERRIDE;
+      const ResultCallback& result_callback) override;
 
  protected:
   AVScanningFileValidator();

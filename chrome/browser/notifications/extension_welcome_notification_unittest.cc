@@ -39,14 +39,14 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
   // message_center::FakeMessageCenter Overrides
   virtual message_center::Notification* FindVisibleNotificationById(
-      const std::string& id) OVERRIDE {
+      const std::string& id) override {
     if (last_notification.get() && last_notification->id() == id)
       return last_notification.get();
     return NULL;
   }
 
   virtual void AddNotification(
-      scoped_ptr<message_center::Notification> notification) OVERRIDE {
+      scoped_ptr<message_center::Notification> notification) override {
     EXPECT_FALSE(last_notification.get());
     last_notification.swap(notification);
     add_notification_calls_++;
@@ -55,7 +55,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   }
 
   virtual void RemoveNotification(const std::string& id,
-                                  bool by_user) OVERRIDE {
+                                  bool by_user) override {
     EXPECT_TRUE(last_notification.get());
     last_notification.reset();
     remove_notification_calls_++;
@@ -85,17 +85,17 @@ public:
   }
 
   // ExtensionWelcomeNotification::Delegate
-  virtual message_center::MessageCenter* GetMessageCenter() OVERRIDE {
+  virtual message_center::MessageCenter* GetMessageCenter() override {
     return message_center_.get();
   }
 
-  virtual base::Time GetCurrentTime() OVERRIDE {
+  virtual base::Time GetCurrentTime() override {
     return start_time_ + elapsed_time_;
   }
 
   virtual void PostTask(
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE {
+      const base::Closure& task) override {
     EXPECT_TRUE(pending_task_.is_null());
     pending_task_ = task;
   }
@@ -209,15 +209,15 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     explicit TestNotificationDelegate(const std::string& id) : id_(id) {}
 
     // Overridden from NotificationDelegate:
-    virtual void Display() OVERRIDE {}
-    virtual void Error() OVERRIDE {}
-    virtual void Close(bool by_user) OVERRIDE {}
-    virtual void Click() OVERRIDE {}
-    virtual void ButtonClick(int index) OVERRIDE {}
+    virtual void Display() override {}
+    virtual void Error() override {}
+    virtual void Close(bool by_user) override {}
+    virtual void Click() override {}
+    virtual void ButtonClick(int index) override {}
 
-    virtual std::string id() const OVERRIDE { return id_; }
+    virtual std::string id() const override { return id_; }
 
-    virtual content::WebContents* GetWebContents() const OVERRIDE {
+    virtual content::WebContents* GetWebContents() const override {
       return NULL;
     }
 

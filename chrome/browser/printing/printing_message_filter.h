@@ -42,8 +42,8 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      content::BrowserThread::ID* thread) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~PrintingMessageFilter();

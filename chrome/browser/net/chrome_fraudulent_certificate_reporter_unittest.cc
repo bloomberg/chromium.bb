@@ -83,7 +83,7 @@ class SendingTestReporter : public TestReporter {
   // Passes if invoked with a good SSLInfo and for a hostname that is a Google
   // pinned property.
   virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info) OVERRIDE {
+                          const SSLInfo& ssl_info) override {
     EXPECT_TRUE(IsGoodSSLInfo(ssl_info));
     EXPECT_TRUE(net::TransportSecurityState::IsGooglePinnedProperty(hostname));
     passed_ = true;
@@ -106,7 +106,7 @@ class NotSendingTestReporter : public TestReporter {
   // Passes if invoked with a bad SSLInfo and for a hostname that is not a
   // Google pinned property.
   virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info) OVERRIDE {
+                          const SSLInfo& ssl_info) override {
     EXPECT_FALSE(IsGoodSSLInfo(ssl_info));
     EXPECT_FALSE(net::TransportSecurityState::IsGooglePinnedProperty(hostname));
   }
@@ -120,7 +120,7 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
     : ChromeFraudulentCertificateReporter(request_context) {}
 
   virtual scoped_ptr<net::URLRequest> CreateURLRequest(
-      net::URLRequestContext* context) OVERRIDE {
+      net::URLRequestContext* context) override {
     return context->CreateRequest(GURL(std::string()),
                                   net::DEFAULT_PRIORITY,
                                   NULL,
@@ -129,7 +129,7 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 
   virtual void SendReport(
       const std::string& hostname,
-      const net::SSLInfo& ssl_info) OVERRIDE {
+      const net::SSLInfo& ssl_info) override {
     DCHECK(!hostname.empty());
     DCHECK(ssl_info.is_valid());
     ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info);

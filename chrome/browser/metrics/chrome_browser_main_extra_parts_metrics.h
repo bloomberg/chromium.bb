@@ -22,9 +22,9 @@ class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts {
   virtual ~ChromeBrowserMainExtraPartsMetrics();
 
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void PreProfileInit() OVERRIDE;
-  virtual void PreBrowserStart() OVERRIDE;
-  virtual void PostBrowserStart() OVERRIDE;
+  virtual void PreProfileInit() override;
+  virtual void PreBrowserStart() override;
+  virtual void PostBrowserStart() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetrics);

@@ -118,32 +118,32 @@ class CustomThreadWatcher : public ThreadWatcher {
     return old_state;
   }
 
-  virtual void ActivateThreadWatching() OVERRIDE {
+  virtual void ActivateThreadWatching() override {
     State old_state = UpdateState(ACTIVATED);
     EXPECT_EQ(old_state, INITIALIZED);
     ThreadWatcher::ActivateThreadWatching();
   }
 
-  virtual void DeActivateThreadWatching() OVERRIDE {
+  virtual void DeActivateThreadWatching() override {
     State old_state = UpdateState(DEACTIVATED);
     EXPECT_TRUE(old_state == ACTIVATED || old_state == SENT_PING ||
                 old_state == RECEIVED_PONG);
     ThreadWatcher::DeActivateThreadWatching();
   }
 
-  virtual void PostPingMessage() OVERRIDE {
+  virtual void PostPingMessage() override {
     State old_state = UpdateState(SENT_PING);
     EXPECT_TRUE(old_state == ACTIVATED || old_state == RECEIVED_PONG);
     ThreadWatcher::PostPingMessage();
   }
 
-  virtual void OnPongMessage(uint64 ping_sequence_number) OVERRIDE {
+  virtual void OnPongMessage(uint64 ping_sequence_number) override {
     State old_state = UpdateState(RECEIVED_PONG);
     EXPECT_TRUE(old_state == SENT_PING || old_state == DEACTIVATED);
     ThreadWatcher::OnPongMessage(ping_sequence_number);
   }
 
-  virtual void OnCheckResponsiveness(uint64 ping_sequence_number) OVERRIDE {
+  virtual void OnCheckResponsiveness(uint64 ping_sequence_number) override {
     ThreadWatcher::OnCheckResponsiveness(ping_sequence_number);
     {
       base::AutoLock auto_lock(custom_lock_);

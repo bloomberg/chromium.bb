@@ -33,7 +33,7 @@ class HostResolutionRequestRecorder : public net::HostResolverProc {
                       net::AddressFamily address_family,
                       net::HostResolverFlags host_resolver_flags,
                       net::AddressList* addrlist,
-                      int* os_error) OVERRIDE {
+                      int* os_error) override {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -102,13 +102,13 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     scoped_host_resolver_proc_.reset(new net::ScopedDefaultHostResolverProc(
         host_resolution_request_recorder_.get()));
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     scoped_host_resolver_proc_.reset();
   }

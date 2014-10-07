@@ -84,7 +84,7 @@ class ProfileResetter : public base::NonThreadSafe,
   void ResetShortcuts();
 
   // BrowsingDataRemover::Observer:
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+  virtual void OnBrowsingDataRemoverDone() override;
 
   // Callback for when TemplateURLService has loaded.
   void OnTemplateURLServiceLoaded();

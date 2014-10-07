@@ -109,8 +109,8 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
                const PWGRasterConverter::ResultCallback& callback);
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~PwgUtilityProcessHostClient();
@@ -248,7 +248,7 @@ class PWGRasterConverterImpl : public PWGRasterConverter {
   virtual void Start(base::RefCountedMemory* data,
                      const printing::PdfRenderSettings& conversion_settings,
                      const printing::PwgRasterSettings& bitmap_settings,
-                     const ResultCallback& callback) OVERRIDE;
+                     const ResultCallback& callback) override;
 
  private:
   scoped_refptr<PwgUtilityProcessHostClient> utility_client_;

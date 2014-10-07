@@ -26,7 +26,7 @@ class SupportedAudioVideoChecker : public AVScanningFileValidator {
   static bool SupportsFileType(const base::FilePath& path);
 
   virtual void StartPreWriteValidation(
-      const ResultCallback& result_callback) OVERRIDE;
+      const ResultCallback& result_callback) override;
 
  private:
   friend class MediaFileValidatorFactory;

@@ -35,12 +35,12 @@ class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
   static enterprise_management::DeviceRegisterRequest::Type GetPolicyType();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   // The profile associated with the invalidator.

@@ -52,8 +52,8 @@ class SafeITunesPrefParserWin : public content::UtilityProcessHostClient {
   void OnGotITunesDirectory(const base::FilePath& library_file);
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   const std::string unsafe_xml_;
   const ParserCallback callback_;

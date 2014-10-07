@@ -109,11 +109,11 @@ static const char kMainWebrtcTestHtmlPage[] =
 class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
   WebRtcAudioQualityBrowserTest() {}
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // This test expects real device handling and requires a real webcam / audio
     // device; it will not work with fake devices.
     EXPECT_FALSE(command_line->HasSwitch(

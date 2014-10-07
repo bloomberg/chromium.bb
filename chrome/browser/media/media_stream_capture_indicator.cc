@@ -156,7 +156,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
 
  private:
   // content::WebContentsObserver overrides.
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     indicator_->UnregisterWebContents(web_contents());
     delete this;
   }
@@ -195,7 +195,7 @@ class MediaStreamCaptureIndicator::UIDelegate
  private:
   // content::MediaStreamUI interface.
   virtual gfx::NativeViewId OnStarted(const base::Closure& close_callback)
-      OVERRIDE {
+      override {
     DCHECK(!started_);
     started_ = true;
     if (device_usage_.get())

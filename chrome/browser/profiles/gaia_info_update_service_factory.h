@@ -36,11 +36,11 @@ class GAIAInfoUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(GAIAInfoUpdateServiceFactory);
 };

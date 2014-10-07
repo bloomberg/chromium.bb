@@ -36,76 +36,76 @@ class OffTheRecordProfileImpl : public Profile {
   void Init();
 
   // Profile implementation.
-  virtual std::string GetProfileName() OVERRIDE;
-  virtual ProfileType GetProfileType() const OVERRIDE;
-  virtual Profile* GetOffTheRecordProfile() OVERRIDE;
-  virtual void DestroyOffTheRecordProfile() OVERRIDE;
-  virtual bool HasOffTheRecordProfile() OVERRIDE;
-  virtual Profile* GetOriginalProfile() OVERRIDE;
-  virtual bool IsSupervised() OVERRIDE;
+  virtual std::string GetProfileName() override;
+  virtual ProfileType GetProfileType() const override;
+  virtual Profile* GetOffTheRecordProfile() override;
+  virtual void DestroyOffTheRecordProfile() override;
+  virtual bool HasOffTheRecordProfile() override;
+  virtual Profile* GetOriginalProfile() override;
+  virtual bool IsSupervised() override;
   virtual ExtensionSpecialStoragePolicy*
-      GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+      GetExtensionSpecialStoragePolicy() override;
+  virtual PrefService* GetPrefs() override;
+  virtual PrefService* GetOffTheRecordPrefs() override;
   virtual net::URLRequestContextGetter*
-      GetRequestContextForExtensions() OVERRIDE;
+      GetRequestContextForExtensions() override;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
-  virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
-  virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual bool IsSameProfile(Profile* profile) OVERRIDE;
-  virtual Time GetStartTime() const OVERRIDE;
-  virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
-  virtual history::TopSites* GetTopSites() OVERRIDE;
-  virtual base::FilePath last_selected_directory() OVERRIDE;
-  virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
-  virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
-  virtual void SetExitType(ExitType exit_type) OVERRIDE;
-  virtual ExitType GetLastSessionExitType() OVERRIDE;
+      content::URLRequestInterceptorScopedVector request_interceptors) override;
+  virtual net::SSLConfigService* GetSSLConfigService() override;
+  virtual HostContentSettingsMap* GetHostContentSettingsMap() override;
+  virtual bool IsSameProfile(Profile* profile) override;
+  virtual Time GetStartTime() const override;
+  virtual history::TopSites* GetTopSitesWithoutCreating() override;
+  virtual history::TopSites* GetTopSites() override;
+  virtual base::FilePath last_selected_directory() override;
+  virtual void set_last_selected_directory(const base::FilePath& path) override;
+  virtual bool WasCreatedByVersionOrLater(const std::string& version) override;
+  virtual void SetExitType(ExitType exit_type) override;
+  virtual ExitType GetLastSessionExitType() override;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,
-                               AppLocaleChangedVia) OVERRIDE;
-  virtual void OnLogin() OVERRIDE;
-  virtual void InitChromeOSPreferences() OVERRIDE;
+                               AppLocaleChangedVia) override;
+  virtual void OnLogin() override;
+  virtual void InitChromeOSPreferences() override;
 #endif  // defined(OS_CHROMEOS)
 
-  virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker() override;
 
-  virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
-  virtual DevToolsNetworkController* GetDevToolsNetworkController() OVERRIDE;
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor() override;
+  virtual DevToolsNetworkController* GetDevToolsNetworkController() override;
   virtual void ClearNetworkingHistorySince(
       base::Time time,
-      const base::Closure& completion) OVERRIDE;
-  virtual GURL GetHomePage() OVERRIDE;
+      const base::Closure& completion) override;
+  virtual GURL GetHomePage() override;
 
   // content::BrowserContext implementation:
-  virtual base::FilePath GetPath() const OVERRIDE;
-  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
-  virtual bool IsOffTheRecord() const OVERRIDE;
+  virtual base::FilePath GetPath() const override;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
+  virtual bool IsOffTheRecord() const override;
   virtual content::DownloadManagerDelegate*
-      GetDownloadManagerDelegate() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+      GetDownloadManagerDelegate() override;
+  virtual net::URLRequestContextGetter* GetRequestContext() override;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
+      int renderer_child_id) override;
+  virtual net::URLRequestContextGetter* GetMediaRequestContext() override;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
+      int renderer_child_id) override;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,
-          bool in_memory) OVERRIDE;
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
-  virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
-  virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
-  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
+          bool in_memory) override;
+  virtual content::ResourceContext* GetResourceContext() override;
+  virtual content::BrowserPluginGuestManager* GetGuestManager() override;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  virtual content::PushMessagingService* GetPushMessagingService() override;
+  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);

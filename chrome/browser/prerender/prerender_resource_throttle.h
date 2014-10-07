@@ -31,9 +31,9 @@ class PrerenderResourceThrottle
   explicit PrerenderResourceThrottle(net::URLRequest* request);
 
   // content::ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
-  virtual const char* GetNameForLogging() const OVERRIDE;
+  virtual void WillStartRequest(bool* defer) override;
+  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  virtual const char* GetNameForLogging() const override;
 
   // Called by the PrerenderContents when a prerender becomes visible.
   // May only be called if currently throttling the resource.

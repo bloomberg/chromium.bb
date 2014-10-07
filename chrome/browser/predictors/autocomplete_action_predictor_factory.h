@@ -33,9 +33,9 @@ class AutocompleteActionPredictorFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictorFactory);
 };

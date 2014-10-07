@@ -33,8 +33,8 @@ class PluginInstaller : public content::DownloadItem::Observer {
   PluginInstaller();
   virtual ~PluginInstaller();
 
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   void AddObserver(PluginInstallerObserver* observer);
   void RemoveObserver(PluginInstallerObserver* observer);

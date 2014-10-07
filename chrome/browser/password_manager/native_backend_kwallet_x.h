@@ -37,27 +37,27 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
 
   virtual ~NativeBackendKWallet();
 
-  virtual bool Init() OVERRIDE;
+  virtual bool Init() override;
 
   // Implements NativeBackend interface.
   virtual password_manager::PasswordStoreChangeList AddLogin(
-      const autofill::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) override;
   virtual bool UpdateLogin(
       const autofill::PasswordForm& form,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
-  virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
+      password_manager::PasswordStoreChangeList* changes) override;
+  virtual bool RemoveLogin(const autofill::PasswordForm& form) override;
   virtual bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
+      password_manager::PasswordStoreChangeList* changes) override;
   virtual bool RemoveLoginsSyncedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
+      password_manager::PasswordStoreChangeList* changes) override;
   virtual bool GetLogins(const autofill::PasswordForm& form,
-                         PasswordFormList* forms) OVERRIDE;
-  virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE;
-  virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE;
+                         PasswordFormList* forms) override;
+  virtual bool GetAutofillableLogins(PasswordFormList* forms) override;
+  virtual bool GetBlacklistLogins(PasswordFormList* forms) override;
 
  protected:
   // Invalid handle returned by WalletHandle().

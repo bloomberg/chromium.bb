@@ -52,13 +52,13 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
-      TrackedPreferenceHelper::ResetAction reset_action) OVERRIDE;
+      TrackedPreferenceHelper::ResetAction reset_action) override;
   virtual void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
-      TrackedPreferenceHelper::ResetAction reset_action) OVERRIDE;
+      TrackedPreferenceHelper::ResetAction reset_action) override;
 
  private:
   // Adds a new validation event.

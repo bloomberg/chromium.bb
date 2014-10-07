@@ -44,7 +44,7 @@ class TestChromePasswordManagerClient : public ChromePasswordManagerClient {
 
   virtual bool IsSyncAccountCredential(
       const std::string& username,
-      const std::string& origin) const OVERRIDE {
+      const std::string& origin) const override {
     return is_sync_account_credential_;
   }
 
@@ -64,7 +64,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
   ChromePasswordManagerClientTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   ChromePasswordManagerClient* GetClient();

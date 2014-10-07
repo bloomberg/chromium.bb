@@ -31,8 +31,8 @@ class CloudPrintProxyServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      content::BrowserContext* profile) const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 };
 
 #endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_PROXY_SERVICE_FACTORY_H_

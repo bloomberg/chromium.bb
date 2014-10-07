@@ -87,27 +87,27 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   virtual void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> user_info) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
   // Overriden from net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Overriden from ImageDecoder::Delegate:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+                              const SkBitmap& decoded_image) override;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // Overriden from OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // Overriden from OAuth2TokenService::Consumer:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // Parses the entry response and gets the name, profile image URL and locale.
   // |data| should be the JSON formatted data return by the response.

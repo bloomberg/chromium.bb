@@ -102,13 +102,13 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     test_config_ = GetParam();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
 
     ASSERT_TRUE(temp_working_dir_.CreateUniqueTempDir());
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Set up the command line option with the expected file name. We will check
     // its existence in HasAllRequiredResources().
     webrtc_reference_video_y4m_ = test::GetReferenceFilesDir()

@@ -44,7 +44,7 @@ class PrivetV3SessionTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     quit_closure_ = run_loop_.QuitClosure();
     EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_, _)).Times(0);
     EXPECT_CALL(delegate_, OnSessionStatus(_)).Times(0);

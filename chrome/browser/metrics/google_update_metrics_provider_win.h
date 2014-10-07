@@ -24,7 +24,7 @@ class GoogleUpdateMetricsProviderWin : public metrics::MetricsProvider {
 
   // metrics::MetricsProvider
   virtual void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) override;
 
  private:
   // This is a small helper struct containing the Google Update metrics state.

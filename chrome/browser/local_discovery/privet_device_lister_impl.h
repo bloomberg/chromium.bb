@@ -28,15 +28,15 @@ class PrivetDeviceListerImpl : public PrivetDeviceLister,
 
   virtual ~PrivetDeviceListerImpl();
 
-  virtual void Start() OVERRIDE;
-  virtual void DiscoverNewDevices(bool force_update) OVERRIDE;
+  virtual void Start() override;
+  virtual void DiscoverNewDevices(bool force_update) override;
 
  protected:
   virtual void OnDeviceChanged(
       bool added,
-      const ServiceDescription& service_description) OVERRIDE;
-  virtual void OnDeviceRemoved(const std::string& service_name) OVERRIDE;
-  virtual void OnDeviceCacheFlushed() OVERRIDE;
+      const ServiceDescription& service_description) override;
+  virtual void OnDeviceRemoved(const std::string& service_name) override;
+  virtual void OnDeviceCacheFlushed() override;
 
  private:
   PrivetDeviceLister::Delegate* delegate_;

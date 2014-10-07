@@ -52,8 +52,8 @@ class LoggedInPredictorTable : public PredictorTableBase {
   virtual ~LoggedInPredictorTable();
 
   // PredictorTableBase methods.
-  virtual void CreateTableIfNonExistent() OVERRIDE;
-  virtual void LogDatabaseStats() OVERRIDE;
+  virtual void CreateTableIfNonExistent() override;
+  virtual void LogDatabaseStats() override;
 
   DISALLOW_COPY_AND_ASSIGN(LoggedInPredictorTable);
 };

@@ -165,7 +165,7 @@ class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   // net::URLRequestInterceptor implementation:
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
   void GetPendingSize(size_t* pending_size) const;
   void PushJobCallback(const JobCallback& callback);

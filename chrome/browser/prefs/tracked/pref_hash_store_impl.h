@@ -52,7 +52,7 @@ class PrefHashStoreImpl : public PrefHashStore {
 
   // PrefHashStore implementation.
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
-      scoped_ptr<HashStoreContents> storage) OVERRIDE;
+      scoped_ptr<HashStoreContents> storage) override;
 
  private:
   class PrefHashStoreTransactionImpl;

@@ -52,26 +52,26 @@ class MessageCenterNotificationManager
 
   // NotificationUIManager
   virtual void Add(const Notification& notification,
-                   Profile* profile) OVERRIDE;
+                   Profile* profile) override;
   virtual bool Update(const Notification& notification,
-                      Profile* profile) OVERRIDE;
+                      Profile* profile) override;
   virtual const Notification* FindById(const std::string& delegate_id,
-                                       ProfileID profile_id) const OVERRIDE;
+                                       ProfileID profile_id) const override;
   virtual bool CancelById(const std::string& delegate_id,
-                          ProfileID profile_id) OVERRIDE;
+                          ProfileID profile_id) override;
   virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,
-      const GURL& source) OVERRIDE;
-  virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
-  virtual bool CancelAllByProfile(ProfileID profile_id) OVERRIDE;
-  virtual void CancelAll() OVERRIDE;
+      const GURL& source) override;
+  virtual bool CancelAllBySourceOrigin(const GURL& source_origin) override;
+  virtual bool CancelAllByProfile(ProfileID profile_id) override;
+  virtual void CancelAll() override;
 
   // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) OVERRIDE;
-  virtual void OnCenterVisibilityChanged(message_center::Visibility) OVERRIDE;
+                                     bool by_user) override;
+  virtual void OnCenterVisibilityChanged(message_center::Visibility) override;
   virtual void OnNotificationUpdated(const std::string& notification_id)
-      OVERRIDE;
+      override;
 
   void EnsureMessageCenterClosed();
 
@@ -169,7 +169,7 @@ class MessageCenterNotificationManager
     void StartDownloads();
 
     // Overridden from ImageDownloadsObserver.
-    virtual void OnDownloadsCompleted() OVERRIDE;
+    virtual void OnDownloadsCompleted() override;
 
     Profile* profile() const { return profile_; }
     const Notification& notification() const { return notification_; }

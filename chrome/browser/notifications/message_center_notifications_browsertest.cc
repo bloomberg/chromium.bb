@@ -31,14 +31,14 @@ class TestAddObserver : public message_center::MessageCenterObserver {
 
   virtual ~TestAddObserver() { message_center_->RemoveObserver(this); }
 
-  virtual void OnNotificationAdded(const std::string& id) OVERRIDE {
+  virtual void OnNotificationAdded(const std::string& id) override {
     std::string log = logs_[id];
     if (log != "")
       log += "_";
     logs_[id] = log + "add-" + id;
   }
 
-  virtual void OnNotificationUpdated(const std::string& id) OVERRIDE {
+  virtual void OnNotificationUpdated(const std::string& id) override {
     std::string log = logs_[id];
     if (log != "")
       log += "_";
@@ -72,19 +72,19 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
    public:
     explicit TestDelegate(const std::string& id) : id_(id) {}
 
-    virtual void Display() OVERRIDE { log_ += "Display_"; }
-    virtual void Error() OVERRIDE { log_ += "Error_"; }
-    virtual void Close(bool by_user) OVERRIDE {
+    virtual void Display() override { log_ += "Display_"; }
+    virtual void Error() override { log_ += "Error_"; }
+    virtual void Close(bool by_user) override {
       log_ += "Close_";
       log_ += ( by_user ? "by_user_" : "programmatically_");
     }
-    virtual void Click() OVERRIDE { log_ += "Click_"; }
-    virtual void ButtonClick(int button_index) OVERRIDE {
+    virtual void Click() override { log_ += "Click_"; }
+    virtual void ButtonClick(int button_index) override {
       log_ += "ButtonClick_";
       log_ += base::IntToString(button_index) + "_";
     }
-    virtual std::string id() const OVERRIDE { return id_; }
-    virtual content::WebContents* GetWebContents() const OVERRIDE {
+    virtual std::string id() const override { return id_; }
+    virtual content::WebContents* GetWebContents() const override {
       return NULL;
     }
 

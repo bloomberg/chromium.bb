@@ -112,7 +112,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual ~PrerenderManager();
 
   // From KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Entry points for adding prerenders.
 
@@ -281,11 +281,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // MediaCaptureDevicesDispatcher::Observer
   virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_frame_id) OVERRIDE;
+                                     int render_frame_id) override;
 
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
@@ -369,7 +369,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // content::RenderProcessHostObserver implementation.
   virtual void RenderProcessHostDestroyed(
-      content::RenderProcessHost* host) OVERRIDE;
+      content::RenderProcessHost* host) override;
 
   // To be called once the cookie store for this profile has been loaded.
   void OnCookieStoreLoaded();
@@ -477,22 +477,22 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     // content::WebContentsObserver implementation.
     virtual void AboutToNavigateRenderView(
-        content::RenderViewHost* render_view_host) OVERRIDE;
+        content::RenderViewHost* render_view_host) override;
     virtual void DidStartProvisionalLoadForFrame(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
         bool is_error_page,
-        bool is_iframe_srcdoc) OVERRIDE;
+        bool is_iframe_srcdoc) override;
     virtual void DidCommitProvisionalLoadForFrame(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
-        ui::PageTransition transition_type) OVERRIDE;
+        ui::PageTransition transition_type) override;
     virtual void DidFailProvisionalLoad(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
         int error_code,
-        const base::string16& error_description) OVERRIDE;
-    virtual void WebContentsDestroyed() OVERRIDE;
+        const base::string16& error_description) override;
+    virtual void WebContentsDestroyed() override;
 
    private:
     void RecordEvent(PrerenderEvent event) const;

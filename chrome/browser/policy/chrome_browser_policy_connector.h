@@ -35,7 +35,7 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   virtual void Init(
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) OVERRIDE;
+      scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
  private:
   ConfigurationPolicyProvider* CreatePlatformProvider();

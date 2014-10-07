@@ -28,7 +28,7 @@ class ResourcePrefetchPredictorFactory
 
   // RefcountedBrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorFactory);
 };

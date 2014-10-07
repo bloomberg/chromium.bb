@@ -176,9 +176,9 @@ class ProfileImplIOData : public ProfileIOData {
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-          const OVERRIDE;
+          const override;
   virtual void InitializeExtensionsRequestContext(
-      ProfileParams* profile_params) const OVERRIDE;
+      ProfileParams* profile_params) const override;
   virtual net::URLRequestContext* InitializeAppRequestContext(
       net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
@@ -186,12 +186,12 @@ class ProfileImplIOData : public ProfileIOData {
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-          const OVERRIDE;
+          const override;
   virtual net::URLRequestContext* InitializeMediaRequestContext(
       net::URLRequestContext* original_context,
-      const StoragePartitionDescriptor& partition_descriptor) const OVERRIDE;
+      const StoragePartitionDescriptor& partition_descriptor) const override;
   virtual net::URLRequestContext*
-      AcquireMediaRequestContext() const OVERRIDE;
+      AcquireMediaRequestContext() const override;
   virtual net::URLRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
@@ -199,12 +199,12 @@ class ProfileImplIOData : public ProfileIOData {
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-          const OVERRIDE;
+          const override;
   virtual net::URLRequestContext*
       AcquireIsolatedMediaRequestContext(
           net::URLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor)
-              const OVERRIDE;
+              const override;
 
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and also deletes HttpServerProperties data.

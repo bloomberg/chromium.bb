@@ -80,12 +80,12 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
   // MediaFileSystemContext implementation.
   virtual bool RegisterFileSystem(const std::string& device_id,
                                   const std::string& fs_name,
-                                  const base::FilePath& path) OVERRIDE;
+                                  const base::FilePath& path) override;
 
-  virtual void RevokeFileSystem(const std::string& fs_name) OVERRIDE;
+  virtual void RevokeFileSystem(const std::string& fs_name) override;
 
   virtual base::FilePath GetRegisteredPath(
-      const std::string& fs_name) const OVERRIDE;
+      const std::string& fs_name) const override;
 
   MediaFileSystemRegistry* registry() { return registry_; }
 
@@ -201,7 +201,7 @@ class MockProfileSharedRenderProcessHostFactory
 
   virtual content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) const OVERRIDE;
+      content::SiteInstance* site_instance) const override;
 
  private:
   typedef std::map<content::BrowserContext*, content::MockRenderProcessHost*>
@@ -350,8 +350,8 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  private:
   // This makes sure that at least one default gallery exists on the file

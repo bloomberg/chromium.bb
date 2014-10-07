@@ -48,7 +48,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
 
   CloudPolicyInvalidatorTest();
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // Starts the invalidator which will be tested.
   // |initialize| determines if the invalidator should be initialized.
@@ -854,7 +854,7 @@ class CloudPolicyInvalidatorUserTypedTest
   virtual ~CloudPolicyInvalidatorUserTypedTest();
 
   // CloudPolicyInvalidatorTest:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Get the current count for the given metric.
   base::HistogramBase::Count GetCount(MetricPolicyRefresh metric);
@@ -862,7 +862,7 @@ class CloudPolicyInvalidatorUserTypedTest
 
  private:
   // CloudPolicyInvalidatorTest:
-  virtual em::DeviceRegisterRequest::Type GetPolicyType() const OVERRIDE;
+  virtual em::DeviceRegisterRequest::Type GetPolicyType() const override;
 
   // Get histogram samples for the given histogram.
   scoped_ptr<base::HistogramSamples> GetHistogramSamples(

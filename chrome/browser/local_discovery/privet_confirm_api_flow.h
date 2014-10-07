@@ -24,12 +24,12 @@ class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
 
   virtual ~PrivetConfirmApiCallFlow();
 
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) override;
   virtual void OnGCDAPIFlowComplete(
-      const base::DictionaryValue& value) OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() OVERRIDE;
+      const base::DictionaryValue& value) override;
+  virtual net::URLFetcher::RequestType GetRequestType() override;
 
-  virtual GURL GetURL() OVERRIDE;
+  virtual GURL GetURL() override;
 
  private:
   ResponseCallback callback_;

@@ -182,17 +182,17 @@ class PrerenderManager::OnCloseWebContentsDeleter
         base::TimeDelta::FromSeconds(kDeleteWithExtremePrejudiceSeconds));
   }
 
-  virtual void CloseContents(WebContents* source) OVERRIDE {
+  virtual void CloseContents(WebContents* source) override {
     DCHECK_EQ(tab_, source);
     ScheduleWebContentsForDeletion(false);
   }
 
-  virtual void SwappedOut(WebContents* source) OVERRIDE {
+  virtual void SwappedOut(WebContents* source) override {
     DCHECK_EQ(tab_, source);
     ScheduleWebContentsForDeletion(false);
   }
 
-  virtual bool ShouldSuppressDialogs() OVERRIDE {
+  virtual bool ShouldSuppressDialogs() override {
     // Use this as a proxy for getting statistics on how often we fail to honor
     // the beforeunload event.
     suppressed_dialog_ = true;

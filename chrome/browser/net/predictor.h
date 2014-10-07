@@ -610,12 +610,12 @@ class SimplePredictor : public Predictor {
       PrefService* local_state,
       IOThread* io_thread,
       net::URLRequestContextGetter* getter,
-      ProfileIOData* profile_io_data) OVERRIDE;
-  virtual void ShutdownOnUIThread() OVERRIDE;
+      ProfileIOData* profile_io_data) override;
+  virtual void ShutdownOnUIThread() override;
  private:
   // These member functions return True for unittests.
-  virtual bool CanPrefetchAndPrerender() const OVERRIDE;
-  virtual bool CanPreresolveAndPreconnect() const OVERRIDE;
+  virtual bool CanPrefetchAndPrerender() const override;
+  virtual bool CanPreresolveAndPreconnect() const override;
 };
 
 }  // namespace chrome_browser_net

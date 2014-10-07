@@ -32,7 +32,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
   ProfilePolicyConnectorTest() {}
   virtual ~ProfilePolicyConnectorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // This must be set up before the TestingBrowserProcess is created.
     BrowserPolicyConnector::SetPolicyProviderForTesting(&mock_provider_);
 

@@ -80,11 +80,11 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   GURL GetServiceURL() const;
 
   // net::LocalTestServer:
-  virtual bool SetPythonPath() const OVERRIDE;
+  virtual bool SetPythonPath() const override;
   virtual bool GetTestServerPath(
-      base::FilePath* testserver_path) const OVERRIDE;
+      base::FilePath* testserver_path) const override;
   virtual bool GenerateAdditionalArguments(
-      base::DictionaryValue* arguments) const OVERRIDE;
+      base::DictionaryValue* arguments) const override;
 
  private:
   std::string GetSelector(const std::string& type,

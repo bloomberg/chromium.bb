@@ -19,7 +19,7 @@ namespace {
 
 class TestSource : public printing::PrintedPagesSource {
  public:
-  virtual base::string16 RenderSourceName() OVERRIDE {
+  virtual base::string16 RenderSourceName() override {
     return base::string16();
   }
 };
@@ -37,11 +37,11 @@ class TestOwner : public printing::PrintJobWorkerOwner {
  public:
   virtual void GetSettingsDone(
       const printing::PrintSettings& new_settings,
-      printing::PrintingContext::Result result) OVERRIDE {
+      printing::PrintingContext::Result result) override {
     EXPECT_FALSE(true);
   }
   virtual printing::PrintJobWorker* DetachWorker(
-      printing::PrintJobWorkerOwner* new_owner) OVERRIDE {
+      printing::PrintJobWorkerOwner* new_owner) override {
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
     TestPrintJobWorker* worker(new TestPrintJobWorker(new_owner));
@@ -50,10 +50,10 @@ class TestOwner : public printing::PrintJobWorkerOwner {
     settings_ = worker->printing_context()->settings();
     return worker;
   }
-  virtual const printing::PrintSettings& settings() const OVERRIDE {
+  virtual const printing::PrintSettings& settings() const override {
     return settings_;
   }
-  virtual int cookie() const OVERRIDE {
+  virtual int cookie() const override {
     return 42;
   }
 
@@ -79,7 +79,7 @@ class TestPrintNotifObserv : public content::NotificationObserver {
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     ADD_FAILURE();
   }
 };

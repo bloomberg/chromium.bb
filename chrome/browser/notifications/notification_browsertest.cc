@@ -77,7 +77,7 @@ class MessageCenterChangeObserver
   }
 
   // NotificationChangeObserver:
-  virtual bool Wait() OVERRIDE {
+  virtual bool Wait() override {
     if (notification_received_)
       return true;
 
@@ -88,17 +88,17 @@ class MessageCenterChangeObserver
 
   // message_center::MessageCenterObserver:
   virtual void OnNotificationAdded(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     OnMessageCenterChanged();
   }
 
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) OVERRIDE {
+                                     bool by_user) override {
     OnMessageCenterChanged();
   }
 
   virtual void OnNotificationUpdated(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     OnMessageCenterChanged();
   }
 

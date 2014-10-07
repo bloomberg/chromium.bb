@@ -48,7 +48,7 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Schedule deletion of |preview_contents|.
   void DeletePreviewContents(content::WebContents* preview_contents);

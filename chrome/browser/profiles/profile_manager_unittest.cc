@@ -72,7 +72,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
 
  protected:
   virtual Profile* CreateProfileHelper(
-      const base::FilePath& file_path) OVERRIDE {
+      const base::FilePath& file_path) override {
     if (!base::PathExists(file_path)) {
       if (!base::CreateDirectory(file_path))
         return NULL;
@@ -81,7 +81,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
   }
 
   virtual Profile* CreateProfileAsyncHelper(const base::FilePath& path,
-                                            Delegate* delegate) OVERRIDE {
+                                            Delegate* delegate) override {
     // This is safe while all file operations are done on the FILE thread.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -393,7 +393,7 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
 
  protected:
   virtual Profile* CreateProfileHelper(
-      const base::FilePath& file_path) OVERRIDE {
+      const base::FilePath& file_path) override {
     TestingProfile::Builder builder;
     builder.SetGuestSession();
     builder.SetPath(file_path);

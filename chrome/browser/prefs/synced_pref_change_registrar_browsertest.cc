@@ -94,7 +94,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
 
  private:
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
@@ -102,7 +102,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   }
 #endif
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     prefs_ = PrefServiceSyncable::FromProfile(browser()->profile());
     syncer_ = prefs_->GetSyncableService(syncer::PREFERENCES);
     syncer_->MergeDataAndStartSyncing(
@@ -114,7 +114,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     registrar_.reset(new SyncedPrefChangeRegistrar(prefs_));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     registrar_.reset();
   }
 

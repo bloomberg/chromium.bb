@@ -43,7 +43,7 @@ class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
   // Override the GetInstalledExtensions method to return a set of extensions
   // for tests.
   virtual scoped_ptr<extensions::ExtensionSet> GetInstalledExtensions(
-      Profile* profile) OVERRIDE {
+      Profile* profile) override {
     scoped_ptr<extensions::ExtensionSet> extensions(
         new extensions::ExtensionSet());
     scoped_refptr<const extensions::Extension> extension;
@@ -76,7 +76,7 @@ class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
 
   // Override GetClientID() to return a specific value on which test
   // expectations are based.
-  virtual uint64 GetClientID() OVERRIDE { return 0x3f1bfee9; }
+  virtual uint64 GetClientID() override { return 0x3f1bfee9; }
 };
 
 }  // namespace

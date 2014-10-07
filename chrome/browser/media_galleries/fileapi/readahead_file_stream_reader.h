@@ -22,9 +22,9 @@ class ReadaheadFileStreamReader
 
   // FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int64 GetLength(
-      const net::Int64CompletionCallback& callback) OVERRIDE;
+      const net::Int64CompletionCallback& callback) override;
 
  private:
   // Returns the number of bytes consumed from the internal cache into |sink|.

@@ -55,23 +55,23 @@ class MediaGalleriesPermissionController
                                      const base::Closure& on_finish);
 
   // MediaGalleriesDialogController implementation.
-  virtual base::string16 GetHeader() const OVERRIDE;
-  virtual base::string16 GetSubtext() const OVERRIDE;
-  virtual bool IsAcceptAllowed() const OVERRIDE;
-  virtual bool ShouldShowFolderViewer(const Entry& entry) const OVERRIDE;
-  virtual std::vector<base::string16> GetSectionHeaders() const OVERRIDE;
-  virtual Entries GetSectionEntries(size_t index) const OVERRIDE;
+  virtual base::string16 GetHeader() const override;
+  virtual base::string16 GetSubtext() const override;
+  virtual bool IsAcceptAllowed() const override;
+  virtual bool ShouldShowFolderViewer(const Entry& entry) const override;
+  virtual std::vector<base::string16> GetSectionHeaders() const override;
+  virtual Entries GetSectionEntries(size_t index) const override;
   // Auxiliary button for this dialog is the 'Add Folder' button.
-  virtual base::string16 GetAuxiliaryButtonText() const OVERRIDE;
-  virtual void DidClickAuxiliaryButton() OVERRIDE;
+  virtual base::string16 GetAuxiliaryButtonText() const override;
+  virtual void DidClickAuxiliaryButton() override;
   virtual void DidToggleEntry(GalleryDialogId gallery_id,
-                              bool selected) OVERRIDE;
-  virtual void DidClickOpenFolderViewer(GalleryDialogId gallery_id) OVERRIDE;
-  virtual void DidForgetEntry(GalleryDialogId gallery_id) OVERRIDE;
-  virtual base::string16 GetAcceptButtonText() const OVERRIDE;
-  virtual void DialogFinished(bool accepted) OVERRIDE;
-  virtual ui::MenuModel* GetContextMenu(GalleryDialogId gallery_id) OVERRIDE;
-  virtual content::WebContents* WebContents() OVERRIDE;
+                              bool selected) override;
+  virtual void DidClickOpenFolderViewer(GalleryDialogId gallery_id) override;
+  virtual void DidForgetEntry(GalleryDialogId gallery_id) override;
+  virtual base::string16 GetAcceptButtonText() const override;
+  virtual void DialogFinished(bool accepted) override;
+  virtual ui::MenuModel* GetContextMenu(GalleryDialogId gallery_id) override;
+  virtual content::WebContents* WebContents() override;
 
  protected:
   friend class MediaGalleriesPermissionControllerTest;
@@ -114,29 +114,29 @@ class MediaGalleriesPermissionController
   // SelectFileDialog::Listener implementation:
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
+                            void* params) override;
 
   // RemovableStorageObserver implementation.
   // Used to keep dialog in sync with removable device status.
   virtual void OnRemovableStorageAttached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
   virtual void OnRemovableStorageDetached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
 
   // MediaGalleriesPreferences::GalleryChangeObserver implementations.
   // Used to keep the dialog in sync when the preferences change.
   virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
                                  const std::string& extension_id,
-                                 MediaGalleryPrefId pref_id) OVERRIDE;
+                                 MediaGalleryPrefId pref_id) override;
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) OVERRIDE;
+                                   MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryAdded(MediaGalleriesPreferences* pref,
-                              MediaGalleryPrefId pref_id) OVERRIDE;
+                              MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) OVERRIDE;
+                                MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
-                                    MediaGalleryPrefId pref_id) OVERRIDE;
+                                    MediaGalleryPrefId pref_id) override;
 
   // Populates |known_galleries_| from |preferences_|. Subsequent calls merge
   // into |known_galleries_| and do not change permissions for user toggled

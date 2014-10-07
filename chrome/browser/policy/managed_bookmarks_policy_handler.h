@@ -21,7 +21,7 @@ class ManagedBookmarksPolicyHandler : public SchemaValidatingPolicyHandler {
 
   // ConfigurationPolicyHandler methods:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   void FilterBookmarks(base::ListValue* bookmarks);

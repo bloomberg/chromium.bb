@@ -51,7 +51,7 @@ class GCDApiFlowTest : public testing::Test {
   virtual ~GCDApiFlowTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     token_service_.set_request_context(request_context_.get());
     token_service_.AddAccount(account_id_);
     ui_thread_.Stop();  // HACK: Fake being on the UI thread

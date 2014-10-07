@@ -26,8 +26,8 @@ class ChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
   void CleanupOnUIThread();
 
   // net::HttpUserAgentSettings implementation
-  virtual std::string GetAcceptLanguage() const OVERRIDE;
-  virtual std::string GetUserAgent() const OVERRIDE;
+  virtual std::string GetAcceptLanguage() const override;
+  virtual std::string GetUserAgent() const override;
 
  private:
   StringPrefMember pref_accept_language_;

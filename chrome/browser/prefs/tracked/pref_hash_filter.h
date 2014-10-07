@@ -94,16 +94,16 @@ class PrefHashFilter : public InterceptablePrefFilter {
   void Initialize(base::DictionaryValue* pref_store_contents);
 
   // PrefFilter remaining implementation.
-  virtual void FilterUpdate(const std::string& path) OVERRIDE;
+  virtual void FilterUpdate(const std::string& path) override;
   virtual void FilterSerializeData(
-      base::DictionaryValue* pref_store_contents) OVERRIDE;
+      base::DictionaryValue* pref_store_contents) override;
 
  private:
   // InterceptablePrefFilter implementation.
   virtual void FinalizeFilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       scoped_ptr<base::DictionaryValue> pref_store_contents,
-      bool prefs_altered) OVERRIDE;
+      bool prefs_altered) override;
 
   // Callback to be invoked only once (and subsequently reset) on the next
   // FilterOnLoad event. It will be allowed to modify the |prefs| handed to

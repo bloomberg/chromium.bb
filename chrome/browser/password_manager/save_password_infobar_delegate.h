@@ -54,18 +54,18 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       scoped_ptr<SavePasswordInfoBarDelegate> delegate);
 
   // InfoBarDelegate
-  virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
+  virtual bool ShouldExpire(const NavigationDetails& details) const override;
 
   // ConfirmInfoBarDelegate
-  virtual int GetIconID() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual Type GetInfoBarType() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
+  virtual void InfoBarDismissed() override;
 
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const override;
 
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.

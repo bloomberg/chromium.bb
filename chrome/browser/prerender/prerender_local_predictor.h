@@ -157,7 +157,7 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
   void Shutdown();
 
   // history::VisitDatabaseObserver implementation
-  virtual void OnAddVisit(const history::BriefVisitInfo& info) OVERRIDE;
+  virtual void OnAddVisit(const history::BriefVisitInfo& info) override;
 
   void OnGetInitialVisitHistory(
       scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history);
@@ -167,7 +167,7 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
   void OnTabHelperURLSeen(const GURL& url, content::WebContents* web_contents);
 
   // net::URLFetcherDelegate implementation:
-  void virtual OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  void virtual OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   struct PrerenderProperties;

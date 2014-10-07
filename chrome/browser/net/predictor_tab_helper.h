@@ -21,7 +21,7 @@ class PredictorTabHelper
   // content::WebContentsObserver implementation
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) override;
 
  private:
   explicit PredictorTabHelper(content::WebContents* web_contents);

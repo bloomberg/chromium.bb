@@ -36,12 +36,12 @@ class PrivetV3Session::FetcherDelegate : public PrivetURLFetcher::Delegate {
   // PrivetURLFetcher::Delegate methods.
   virtual void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
-      const PrivetURLFetcher::TokenCallback& callback) OVERRIDE;
+      const PrivetURLFetcher::TokenCallback& callback) override;
   virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) OVERRIDE;
+                       PrivetURLFetcher::ErrorType error) override;
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
                             const base::DictionaryValue& value,
-                            bool has_error) OVERRIDE;
+                            bool has_error) override;
 
  private:
   friend class PrivetV3Session;

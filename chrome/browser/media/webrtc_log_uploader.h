@@ -51,9 +51,9 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   virtual ~WebRtcLogUploader();
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE;
+                                        int64 current, int64 total) override;
 
   // Returns true is number of logs limit is not reached yet. Increases log
   // count if true is returned. Must be called before UploadLog().

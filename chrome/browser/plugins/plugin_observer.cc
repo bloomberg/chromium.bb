@@ -64,15 +64,15 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
                                scoped_ptr<PluginMetadata> plugin_metadata);
 
   // TabModalConfirmDialogDelegate methods:
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetDialogMessage() OVERRIDE;
-  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
+  virtual base::string16 GetTitle() override;
+  virtual base::string16 GetDialogMessage() override;
+  virtual base::string16 GetAcceptButtonTitle() override;
+  virtual void OnAccepted() override;
+  virtual void OnCanceled() override;
 
   // WeakPluginInstallerObserver methods:
-  virtual void DownloadStarted() OVERRIDE;
-  virtual void OnlyWeakObserversLeft() OVERRIDE;
+  virtual void DownloadStarted() override;
+  virtual void OnlyWeakObserversLeft() override;
 
  private:
   content::WebContents* web_contents_;
@@ -134,11 +134,11 @@ class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ReloadPluginInfoBarDelegate();
 
   // ConfirmInfobarDelegate:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual int GetButtons() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
 
   content::NavigationController* controller_;
   base::string16 message_;
@@ -214,19 +214,19 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
   }
 
   // PluginInstallerObserver methods:
-  virtual void DownloadStarted() OVERRIDE {
+  virtual void DownloadStarted() override {
     observer_->Send(new ChromeViewMsg_StartedDownloadingPlugin(routing_id_));
   }
 
-  virtual void DownloadError(const std::string& msg) OVERRIDE {
+  virtual void DownloadError(const std::string& msg) override {
     observer_->Send(new ChromeViewMsg_ErrorDownloadingPlugin(routing_id_, msg));
   }
 
-  virtual void DownloadCancelled() OVERRIDE {
+  virtual void DownloadCancelled() override {
     observer_->Send(new ChromeViewMsg_CancelledDownloadingPlugin(routing_id_));
   }
 
-  virtual void DownloadFinished() OVERRIDE {
+  virtual void DownloadFinished() override {
     observer_->Send(new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
   }
 

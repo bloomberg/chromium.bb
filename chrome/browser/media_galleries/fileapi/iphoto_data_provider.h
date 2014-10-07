@@ -32,7 +32,7 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
 
   // Parse the library xml file.
   virtual void DoParseLibrary(const base::FilePath& library_path,
-                              const ReadyCallback& ready_callback) OVERRIDE;
+                              const ReadyCallback& ready_callback) override;
 
   virtual std::vector<std::string> GetAlbumNames() const;
   virtual std::map<std::string, base::FilePath> GetAlbumContents(

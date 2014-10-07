@@ -57,56 +57,56 @@ class MockPasswordStoreObserver
 
 class FailingBackend : public PasswordStoreX::NativeBackend {
  public:
-  virtual bool Init() OVERRIDE { return true; }
+  virtual bool Init() override { return true; }
 
-  virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) OVERRIDE {
+  virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) override {
     return PasswordStoreChangeList();
   }
   virtual bool UpdateLogin(const PasswordForm& form,
-                           PasswordStoreChangeList* changes) OVERRIDE {
+                           PasswordStoreChangeList* changes) override {
     return false;
   }
-  virtual bool RemoveLogin(const PasswordForm& form) OVERRIDE { return false; }
+  virtual bool RemoveLogin(const PasswordForm& form) override { return false; }
 
   virtual bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE {
+      password_manager::PasswordStoreChangeList* changes) override {
     return false;
   }
 
   virtual bool RemoveLoginsSyncedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE {
+      password_manager::PasswordStoreChangeList* changes) override {
     return false;
   }
 
   virtual bool GetLogins(const PasswordForm& form,
-                         PasswordFormList* forms) OVERRIDE {
+                         PasswordFormList* forms) override {
     return false;
   }
 
-  virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE {
+  virtual bool GetAutofillableLogins(PasswordFormList* forms) override {
     return false;
   }
-  virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE {
+  virtual bool GetBlacklistLogins(PasswordFormList* forms) override {
     return false;
   }
 };
 
 class MockBackend : public PasswordStoreX::NativeBackend {
  public:
-  virtual bool Init() OVERRIDE { return true; }
+  virtual bool Init() override { return true; }
 
-  virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) OVERRIDE {
+  virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) override {
     all_forms_.push_back(form);
     PasswordStoreChange change(PasswordStoreChange::ADD, form);
     return PasswordStoreChangeList(1, change);
   }
 
   virtual bool UpdateLogin(const PasswordForm& form,
-                           PasswordStoreChangeList* changes) OVERRIDE {
+                           PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (CompareForms(all_forms_[i], form, true)) {
         all_forms_[i] = form;
@@ -116,7 +116,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     return true;
   }
 
-  virtual bool RemoveLogin(const PasswordForm& form) OVERRIDE {
+  virtual bool RemoveLogin(const PasswordForm& form) override {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (CompareForms(all_forms_[i], form, false))
         erase(i--);
@@ -126,7 +126,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   virtual bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE {
+      password_manager::PasswordStoreChangeList* changes) override {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
       if (delete_begin <= all_forms_[i].date_created &&
           (delete_end.is_null() || all_forms_[i].date_created < delete_end))
@@ -138,7 +138,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   virtual bool RemoveLoginsSyncedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) OVERRIDE {
+      password_manager::PasswordStoreChangeList* changes) override {
     DCHECK(changes);
     for (size_t i = 0; i < all_forms_.size(); ++i) {
       if (delete_begin <= all_forms_[i].date_synced &&
@@ -152,21 +152,21 @@ class MockBackend : public PasswordStoreX::NativeBackend {
   }
 
   virtual bool GetLogins(const PasswordForm& form,
-                         PasswordFormList* forms) OVERRIDE {
+                         PasswordFormList* forms) override {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (all_forms_[i].signon_realm == form.signon_realm)
         forms->push_back(new PasswordForm(all_forms_[i]));
     return true;
   }
 
-  virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE {
+  virtual bool GetAutofillableLogins(PasswordFormList* forms) override {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (!all_forms_[i].blacklisted_by_user)
         forms->push_back(new PasswordForm(all_forms_[i]));
     return true;
   }
 
-  virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE {
+  virtual bool GetBlacklistLogins(PasswordFormList* forms) override {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (all_forms_[i].blacklisted_by_user)
         forms->push_back(new PasswordForm(all_forms_[i]));

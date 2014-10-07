@@ -64,7 +64,7 @@ class PrintPreviewDialogController
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns true if |contents| is a print preview dialog.
   static bool IsPrintPreviewDialog(content::WebContents* contents);

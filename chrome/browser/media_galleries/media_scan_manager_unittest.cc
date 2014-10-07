@@ -60,7 +60,7 @@ class MockMediaFolderFinder : MediaFolderFinder {
     destruction_callback_.Run();
   }
 
-  virtual void StartScan() OVERRIDE {
+  virtual void StartScan() override {
     started_callback_.Run(callback_);
   }
 
@@ -103,7 +103,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
     EXPECT_EQ(find_folders_start_count_, find_folders_destroy_count_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -138,7 +138,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
     media_scan_manager_->AddObserver(profile_.get(), this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     media_scan_manager_->RemoveObserver(profile_.get());
     media_scan_manager_.reset();
     storage_monitor::TestStorageMonitor::Destroy();
@@ -234,7 +234,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   virtual void OnScanFinished(
       const std::string& extension_id,
       int gallery_count,
-      const MediaGalleryScanResult& file_counts) OVERRIDE {
+      const MediaGalleryScanResult& file_counts) override {
     EXPECT_EQ(extension_->id(), extension_id);
     EXPECT_EQ(expected_gallery_count_, gallery_count);
     EXPECT_EQ(expected_file_counts_.audio_count, file_counts.audio_count);

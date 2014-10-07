@@ -54,7 +54,7 @@ class PreferenceServiceTest : public InProcessBrowserTest {
   explicit PreferenceServiceTest(bool new_profile) : new_profile_(new_profile) {
   }
 
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
 

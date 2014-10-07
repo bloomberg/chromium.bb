@@ -69,7 +69,7 @@ class LocaleTestBase : public InProcessBrowserTest {
   explicit LocaleTestBase(const char* locale) : locale_(locale) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kLang, locale_.locale());
   }
 

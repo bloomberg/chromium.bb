@@ -44,17 +44,17 @@ class TestProxyConfigService : public net::ProxyConfigService {
 
  private:
   virtual void AddObserver(
-      net::ProxyConfigService::Observer* observer) OVERRIDE {
+      net::ProxyConfigService::Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
   virtual void RemoveObserver(
-      net::ProxyConfigService::Observer* observer) OVERRIDE {
+      net::ProxyConfigService::Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
   virtual net::ProxyConfigService::ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* config) OVERRIDE {
+      net::ProxyConfig* config) override {
     *config = config_;
     return availability_;
   }

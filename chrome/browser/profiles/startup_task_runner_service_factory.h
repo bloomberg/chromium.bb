@@ -32,7 +32,7 @@ class StartupTaskRunnerServiceFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(StartupTaskRunnerServiceFactory);
 };

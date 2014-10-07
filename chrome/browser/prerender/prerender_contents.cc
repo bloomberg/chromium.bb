@@ -102,7 +102,7 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile,
       const GURL& url, const content::Referrer& referrer,
-      Origin origin, uint8 experiment_id) OVERRIDE {
+      Origin origin, uint8 experiment_id) override {
     return new PrerenderContents(prerender_manager, profile,
                                  url, referrer, origin, experiment_id);
   }
@@ -119,7 +119,7 @@ class PrerenderContents::WebContentsDelegateImpl
 
   // content::WebContentsDelegate implementation:
   virtual WebContents* OpenURLFromTab(WebContents* source,
-                                      const OpenURLParams& params) OVERRIDE {
+                                      const OpenURLParams& params) override {
     // |OpenURLFromTab| is typically called when a frame performs a navigation
     // that requires the browser to perform the transition instead of WebKit.
     // Examples include prerendering a site that redirects to an app URL,
@@ -131,7 +131,7 @@ class PrerenderContents::WebContentsDelegateImpl
     return NULL;
   }
 
-  virtual void CloseContents(content::WebContents* contents) OVERRIDE {
+  virtual void CloseContents(content::WebContents* contents) override {
     prerender_contents_->Destroy(FINAL_STATUS_CLOSED);
   }
 
@@ -139,7 +139,7 @@ class PrerenderContents::WebContentsDelegateImpl
       RenderViewHost* render_view_host,
       const GURL& url,
       const std::string& request_method,
-      const base::Callback<void(bool)>& callback) OVERRIDE {
+      const base::Callback<void(bool)>& callback) override {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
     // Cancel the download.
     callback.Run(false);
@@ -152,7 +152,7 @@ class PrerenderContents::WebContentsDelegateImpl
        const base::string16& frame_name,
        const GURL& target_url,
        const std::string& partition_id,
-       SessionStorageNamespace* session_storage_namespace) OVERRIDE {
+       SessionStorageNamespace* session_storage_namespace) override {
     // Since we don't want to permit child windows that would have a
     // window.opener property, terminate prerendering.
     prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
@@ -160,7 +160,7 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  virtual bool OnGoToEntryOffset(int offset) OVERRIDE {
+  virtual bool OnGoToEntryOffset(int offset) override {
     // This isn't allowed because the history merge operation
     // does not work if there are renderer issued challenges.
     // TODO(cbentzel): Cancel in this case? May not need to do
@@ -169,7 +169,7 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  virtual bool ShouldSuppressDialogs() OVERRIDE {
+  virtual bool ShouldSuppressDialogs() override {
     // We still want to show the user the message when they navigate to this
     // page, so cancel this prerender.
     prerender_contents_->Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
@@ -181,14 +181,14 @@ class PrerenderContents::WebContentsDelegateImpl
   virtual void RegisterProtocolHandler(WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       bool user_gesture) OVERRIDE {
+                                       bool user_gesture) override {
     // TODO(mmenke): Consider supporting this if it is a common case during
     // prerenders.
     prerender_contents_->Destroy(FINAL_STATUS_REGISTER_PROTOCOL_HANDLER);
   }
 
   virtual gfx::Size GetSizeForNewRenderView(
-      WebContents* web_contents) const OVERRIDE {
+      WebContents* web_contents) const override {
     // Have to set the size of the RenderView on initialization to be sure it is
     // set before the RenderView is hidden on all platforms (esp. Android).
     return prerender_contents_->size_;

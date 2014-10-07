@@ -25,7 +25,7 @@ class MostVisitedURLsProvider : public URLListProvider {
   // Returns a list of the user's most visited URLs via a callback. May be
   // called from any thread. The callback may be run before the call to GetURLs
   // returns.
-  virtual void GetURLs(const GetURLsCallback& callback) OVERRIDE;
+  virtual void GetURLs(const GetURLsCallback& callback) override;
 
  private:
   scoped_refptr<history::TopSites> top_sites_;

@@ -24,9 +24,9 @@ class UserCloudPolicyInvalidatorFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyInvalidatorFactory);
 };

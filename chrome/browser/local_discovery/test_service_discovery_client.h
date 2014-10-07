@@ -21,14 +21,14 @@ class TestServiceDiscoveryClient : public ServiceDiscoverySharedClient {
 
   virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
-      const ServiceWatcher::UpdatedCallback& callback) OVERRIDE;
+      const ServiceWatcher::UpdatedCallback& callback) override;
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
+      const ServiceResolver::ResolveCompleteCallback& callback) override;
   virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
+      const LocalDomainResolver::IPAddressCallback& callback) override;
 
   MOCK_METHOD1(OnSendTo, void(const std::string& data));
 

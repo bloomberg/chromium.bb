@@ -46,30 +46,30 @@ class ChromeExtensionsNetworkDelegate : public net::NetworkDelegate {
   // NetworkDelegate implementation.
   virtual int OnBeforeURLRequest(net::URLRequest* request,
                                  const net::CompletionCallback& callback,
-                                 GURL* new_url) OVERRIDE;
+                                 GURL* new_url) override;
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
-                                  net::HttpRequestHeaders* headers) OVERRIDE;
+                                  net::HttpRequestHeaders* headers) override;
   virtual void OnSendHeaders(net::URLRequest* request,
-                             const net::HttpRequestHeaders& headers) OVERRIDE;
+                             const net::HttpRequestHeaders& headers) override;
   virtual int OnHeadersReceived(
       net::URLRequest* request,
       const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url) OVERRIDE;
+      GURL* allowed_unsafe_redirect_url) override;
   virtual void OnBeforeRedirect(net::URLRequest* request,
-                                const GURL& new_location) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
-  virtual void OnCompleted(net::URLRequest* request, bool started) OVERRIDE;
-  virtual void OnURLRequestDestroyed(net::URLRequest* request) OVERRIDE;
+                                const GURL& new_location) override;
+  virtual void OnResponseStarted(net::URLRequest* request) override;
+  virtual void OnCompleted(net::URLRequest* request, bool started) override;
+  virtual void OnURLRequestDestroyed(net::URLRequest* request) override;
   virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) OVERRIDE;
+                                const base::string16& error) override;
   virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
-      net::AuthCredentials* credentials) OVERRIDE;
+      net::AuthCredentials* credentials) override;
 
  protected:
   ChromeExtensionsNetworkDelegate();

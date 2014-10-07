@@ -125,13 +125,13 @@ class GalleryWatchManager
   // MediaGalleriesPreferences::GalleryChangeObserver implementation.
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) OVERRIDE;
+                                   MediaGalleryPrefId pref_id) override;
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) OVERRIDE;
+                                MediaGalleryPrefId pref_id) override;
 
   // storage_monitor::RemovableStorageObserver implementation.
   virtual void OnRemovableStorageDetached(
-      const storage_monitor::StorageInfo& info) OVERRIDE;
+      const storage_monitor::StorageInfo& info) override;
 
   // True if the we are already observing the storage monitor.
   bool storage_monitor_observed_;

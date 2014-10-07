@@ -21,9 +21,9 @@ class DeviceManagementServiceConfiguration
   explicit DeviceManagementServiceConfiguration(const std::string& server_url);
   virtual ~DeviceManagementServiceConfiguration();
 
-  virtual std::string GetServerUrl() OVERRIDE;
-  virtual std::string GetAgentParameter() OVERRIDE;
-  virtual std::string GetPlatformParameter() OVERRIDE;
+  virtual std::string GetServerUrl() override;
+  virtual std::string GetAgentParameter() override;
+  virtual std::string GetPlatformParameter() override;
 
  private:
   const std::string server_url_;

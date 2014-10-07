@@ -75,9 +75,9 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   virtual void OnSetupConfirmationNeeded(
       const std::string& confirmation_code,
       extensions::api::gcd_private::ConfirmationType confirmation_type)
-      OVERRIDE;
+      override;
   virtual void OnSessionStatus(
-      extensions::api::gcd_private::Status status) OVERRIDE;
+      extensions::api::gcd_private::Status status) override;
 
   void OnSetupError();
   void OnDeviceRegistered();

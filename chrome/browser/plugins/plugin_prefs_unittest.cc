@@ -58,7 +58,7 @@ void GotPlugins(const base::Closure& quit_closure,
 
 class PluginPrefsTest : public ::testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     plugin_prefs_ = new PluginPrefs();
   }
 

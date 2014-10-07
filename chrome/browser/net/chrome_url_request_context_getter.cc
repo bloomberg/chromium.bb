@@ -48,7 +48,7 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
-  virtual net::URLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() override {
     profile_io_data_->Init(&protocol_handlers_, request_interceptors_.Pass());
     return profile_io_data_->GetMainRequestContext();
   }
@@ -65,7 +65,7 @@ class FactoryForExtensions : public ChromeURLRequestContextFactory {
   explicit FactoryForExtensions(const ProfileIOData* profile_io_data)
       : profile_io_data_(profile_io_data) {}
 
-  virtual net::URLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() override {
     return profile_io_data_->GetExtensionsRequestContext();
   }
 
@@ -92,7 +92,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
-  virtual net::URLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() override {
     // We will copy most of the state from the main request context.
     //
     // Note that this factory is one-shot.  After Create() is called once, the
@@ -129,7 +129,7 @@ class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
       partition_descriptor_(partition_descriptor),
       app_context_getter_(app_context) {}
 
-  virtual net::URLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() override {
     // We will copy most of the state from the corresopnding app's
     // request context. We expect to have the same lifetime as
     // the associated |app_context_getter_| so we can just reuse
@@ -153,7 +153,7 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
       : profile_io_data_(profile_io_data) {
   }
 
-  virtual net::URLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() override {
     return profile_io_data_->GetMediaRequestContext();
   }
 

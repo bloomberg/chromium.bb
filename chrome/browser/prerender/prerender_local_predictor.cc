@@ -176,14 +176,14 @@ class GetURLForURLIDTask : public history::HistoryDBTask {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     DoURLLookup(db, &request_->source_url_);
     for (int i = 0; i < static_cast<int>(request_->candidate_urls_.size()); i++)
       DoURLLookup(db, &request_->candidate_urls_[i]);
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     callback_.Run();
     TIMING_HISTOGRAM("Prerender.LocalPredictorURLLookupTime",
                      base::Time::Now() - start_time_);
@@ -217,12 +217,12 @@ class GetVisitHistoryTask : public history::HistoryDBTask {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     db->GetBriefVisitInfoOfMostRecentVisits(max_visits_, visit_history_.get());
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     local_predictor_->OnGetInitialVisitHistory(visit_history_.Pass());
   }
 

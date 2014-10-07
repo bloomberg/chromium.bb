@@ -112,7 +112,7 @@ class SocketFactory : public net::MDnsSocketFactory {
 
   // net::MDnsSocketFactory implementation:
   virtual void CreateSockets(
-      ScopedVector<net::DatagramServerSocket>* sockets) OVERRIDE {
+      ScopedVector<net::DatagramServerSocket>* sockets) override {
     for (size_t i = 0; i < interfaces_.size(); ++i) {
       DCHECK(interfaces_[i].second == net::ADDRESS_FAMILY_IPV4 ||
              interfaces_[i].second == net::ADDRESS_FAMILY_IPV6);
@@ -149,11 +149,11 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
     DeleteOnMdnsThread(implementation_.release());
   }
 
-  virtual bool IsValid() OVERRIDE {
+  virtual bool IsValid() override {
     return !!implementation();
   }
 
-  virtual void OnMdnsDestroy() OVERRIDE {
+  virtual void OnMdnsDestroy() override {
     DeleteOnMdnsThread(implementation_.release());
   };
 
@@ -187,14 +187,14 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
   }
 
   // ServiceWatcher methods.
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::Start,
                                   base::Unretained(implementation())));
     }
   }
 
-  virtual void DiscoverNewServices(bool force_update) OVERRIDE {
+  virtual void DiscoverNewServices(bool force_update) override {
     if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::DiscoverNewServices,
                                   base::Unretained(implementation()),
@@ -203,7 +203,7 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
   }
 
   virtual void SetActivelyRefreshServices(
-      bool actively_refresh_services) OVERRIDE {
+      bool actively_refresh_services) override {
     if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::SetActivelyRefreshServices,
                                   base::Unretained(implementation()),
@@ -211,11 +211,11 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
     }
   }
 
-  virtual std::string GetServiceType() const OVERRIDE {
+  virtual std::string GetServiceType() const override {
     return service_type_;
   }
 
-  virtual void OnNewMdnsReady() OVERRIDE {
+  virtual void OnNewMdnsReady() override {
     ProxyBase<ServiceWatcher>::OnNewMdnsReady();
     if (!implementation())
       callback_.Run(ServiceWatcher::UPDATE_INVALIDATED, "");
@@ -250,14 +250,14 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
   }
 
   // ServiceResolver methods.
-  virtual void StartResolving() OVERRIDE {
+  virtual void StartResolving() override {
     if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceResolver::StartResolving,
                                   base::Unretained(implementation())));
     }
   };
 
-  virtual std::string GetName() const OVERRIDE {
+  virtual std::string GetName() const override {
     return service_name_;
   }
 
@@ -294,7 +294,7 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
   }
 
   // LocalDomainResolver methods.
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     if (implementation()) {
       PostToMdnsThread(base::Bind(&LocalDomainResolver::Start,
                                   base::Unretained(implementation())));

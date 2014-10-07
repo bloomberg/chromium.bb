@@ -89,8 +89,8 @@ class EvictedDomainCookieCounter : public net::CookieMonster::Delegate {
   // CookieMonster::Delegate implementation.
   virtual void OnCookieChanged(const net::CanonicalCookie& cookie,
                                bool removed,
-                               ChangeCause cause) OVERRIDE;
-  virtual void OnLoaded() OVERRIDE;
+                               ChangeCause cause) override;
+  virtual void OnLoaded() override;
 
  private:
   // Identifier of an evicted cookie.

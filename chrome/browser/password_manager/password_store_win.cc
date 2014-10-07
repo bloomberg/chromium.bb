@@ -63,7 +63,7 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
       PasswordWebDataService::Handle handle,
-      const WDTypedResult* result) OVERRIDE;
+      const WDTypedResult* result) override;
 
   scoped_refptr<PasswordWebDataService> web_data_service_;
 

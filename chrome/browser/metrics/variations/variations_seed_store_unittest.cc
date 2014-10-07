@@ -30,7 +30,7 @@ class TestVariationsSeedStore : public VariationsSeedStore {
 
   virtual VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
       const std::string& seed_bytes,
-      const std::string& base64_seed_signature) OVERRIDE {
+      const std::string& base64_seed_signature) override {
     return VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_ENUM_SIZE;
   }
 

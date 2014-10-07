@@ -17,7 +17,7 @@ class ChromeOmahaQueryParamsDelegate
   static ChromeOmahaQueryParamsDelegate* GetInstance();
 
   // omaha_query_params::OmahaQueryParamsDelegate:
-  virtual std::string GetExtraParams() OVERRIDE;
+  virtual std::string GetExtraParams() override;
 
   // Returns the value we use for the "updaterchannel=" and "prodchannel="
   // parameters. Possible return values include: "canary", "dev", "beta", and

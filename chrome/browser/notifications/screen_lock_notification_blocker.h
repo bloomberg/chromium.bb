@@ -21,9 +21,9 @@ class ScreenLockNotificationBlocker
   bool is_locked() const { return is_locked_; }
 
   // message_center::NotificationBlocker overrides:
-  virtual void CheckState() OVERRIDE;
+  virtual void CheckState() override;
   virtual bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const OVERRIDE;
+      const message_center::NotifierId& notifier_id) const override;
 
  private:
   bool is_locked_;

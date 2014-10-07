@@ -37,9 +37,9 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
   // GetIOMessageLoopProxy however can be called from any thread.
   //
   // net::URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
   // Create an instance for use with an 'original' (non-OTR) profile. This is
   // expected to get called on the UI thread.

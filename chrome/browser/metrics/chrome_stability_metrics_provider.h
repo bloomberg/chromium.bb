@@ -31,11 +31,11 @@ class ChromeStabilityMetricsProvider
   virtual ~ChromeStabilityMetricsProvider();
 
   // metrics::MetricsDataProvider:
-  virtual void OnRecordingEnabled() OVERRIDE;
-  virtual void OnRecordingDisabled() OVERRIDE;
+  virtual void OnRecordingEnabled() override;
+  virtual void OnRecordingDisabled() override;
   virtual void ProvideStabilityMetrics(
-      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
-  virtual void ClearSavedStabilityMetrics() OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) override;
+  virtual void ClearSavedStabilityMetrics() override;
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -44,11 +44,11 @@ class ChromeStabilityMetricsProvider
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // content::BrowserChildProcessObserver:
   virtual void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
 
   // Logs the initiation of a page load and uses |web_contents| to do
   // additional logging of the type of page loaded.

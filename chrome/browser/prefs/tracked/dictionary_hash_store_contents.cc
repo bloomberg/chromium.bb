@@ -21,7 +21,7 @@ class MutablePreferenceMacDictionary
   explicit MutablePreferenceMacDictionary(base::DictionaryValue* storage);
 
   // MutableDictionary implementation
-  virtual base::DictionaryValue* operator->() OVERRIDE;
+  virtual base::DictionaryValue* operator->() override;
 
  private:
   base::DictionaryValue* storage_;

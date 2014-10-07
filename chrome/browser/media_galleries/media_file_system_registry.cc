@@ -86,9 +86,9 @@ class RPHReferenceManager {
 
    private:
     // content::WebContentsObserver
-    virtual void WebContentsDestroyed() OVERRIDE;
+    virtual void WebContentsDestroyed() override;
     virtual void NavigationEntryCommitted(
-        const content::LoadCommittedDetails& load_details) OVERRIDE;
+        const content::LoadCommittedDetails& load_details) override;
 
     RPHReferenceManager* manager_;
   };
@@ -105,7 +105,7 @@ class RPHReferenceManager {
     }
 
    private:
-    virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
+    virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
     RPHReferenceManager* manager_;
     RenderProcessHost* host_;
@@ -639,7 +639,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 
   virtual bool RegisterFileSystem(const std::string& device_id,
                                   const std::string& fs_name,
-                                  const base::FilePath& path) OVERRIDE {
+                                  const base::FilePath& path) override {
     if (StorageInfo::IsMassStorageDevice(device_id)) {
       return RegisterFileSystemForMassStorage(device_id, fs_name, path);
     } else {
@@ -647,7 +647,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     }
   }
 
-  virtual void RevokeFileSystem(const std::string& fs_name) OVERRIDE {
+  virtual void RevokeFileSystem(const std::string& fs_name) override {
     ImportedMediaGalleryRegistry* imported_registry =
         ImportedMediaGalleryRegistry::GetInstance();
     if (imported_registry->RevokeImportedFilesystemOnUIThread(fs_name))
@@ -662,7 +662,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   }
 
   virtual base::FilePath GetRegisteredPath(
-      const std::string& fs_name) const OVERRIDE {
+      const std::string& fs_name) const override {
     base::FilePath result;
     if (!ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(fs_name,
                                                                      &result)) {
