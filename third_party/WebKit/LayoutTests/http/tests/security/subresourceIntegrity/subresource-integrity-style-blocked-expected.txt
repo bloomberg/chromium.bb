@@ -1,0 +1,8 @@
+CONSOLE ERROR: line 7: The computed SHA-256 integrity 'RvLeYLQyPa/ZQk95Rj0XQpfsoBHW9Vrqb3zwo5DScrI=' does not match the 'integrity' attribute 'BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=' for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-1-of-3.css'.
+CONSOLE ERROR: line 8: The computed SHA-384 integrity 'j1bGpDxu0bZAb4jBJzciDWuVUuOTXlLvB9WNKDh7Gik9ygF6CctjgYISUwShHmFM' does not match the 'integrity' attribute 'XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr' for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-2-of-3.css'.
+CONSOLE ERROR: line 9: The computed SHA-512 integrity 'P302RfA5c/H9Ao/miirSIPVBr3uxOdTzm8IzaGwidneeOOwuyTfOhCp8+c1yg+W16rKf1IW/+4TxD0yAKdkV+Q==' does not match the 'integrity' attribute 'tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==' for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-3-of-3.css'.
+Test 1
+
+Test 2
+
+Test 3
