@@ -168,14 +168,6 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 
 @implementation IOSurfaceLayer
 
-- (content::IOSurfaceTexture*)iosurface {
-  return iosurface_.get();
-}
-
-- (content::IOSurfaceContext*)context {
-  return context_.get();
-}
-
 - (id)initWithClient:(content::IOSurfaceLayerClient*)client
      withScaleFactor:(float)scale_factor {
   if (self = [super init]) {
@@ -211,7 +203,7 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 - (bool)gotFrameWithIOSurface:(IOSurfaceID)io_surface_id
                 withPixelSize:(gfx::Size)pixel_size
               withScaleFactor:(float)scale_factor {
-  return iosurface_->SetIOSurface(context_, io_surface_id, pixel_size);
+  return iosurface_->SetIOSurface(io_surface_id, pixel_size);
 }
 
 - (void)poisonContextAndSharegroup {
@@ -229,7 +221,13 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 }
 
 - (int)rendererID {
-  return iosurface_->GetRendererID();
+  GLint current_renderer_id = -1;
+  if (CGLGetParameter(context_->cgl_context(),
+                      kCGLCPCurrentRendererID,
+                      &current_renderer_id) == kCGLNoError) {
+    return current_renderer_id & kCGLRendererIDMatchingMask;
+  }
+  return -1;
 }
 
 - (void)resetClient {
@@ -290,12 +288,6 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
             forLayerTime:(CFTimeInterval)timeInterval
              displayTime:(const CVTimeStamp*)timeStamp {
   TRACE_EVENT0("browser", "IOSurfaceLayer::drawInCGLContext");
-
-  if (!iosurface_->HasIOSurface() || context_->cgl_context() != glContext) {
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    return;
-  }
 
   bool draw_succeeded = iosurface_->DrawIOSurface();
   if (helper_)

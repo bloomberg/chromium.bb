@@ -49,20 +49,14 @@ class IOSurfaceTexture
 
   // Set IOSurfaceTexture that will be drawn on the next NSView drawRect.
   bool SetIOSurface(
-      scoped_refptr<IOSurfaceContext> context,
       IOSurfaceID io_surface_id,
       const gfx::Size& pixel_size) WARN_UNUSED_RESULT;
-
-  // Get the CGL renderer ID currently associated with this context.
-  int GetRendererID();
 
   // Blit the IOSurface to the rectangle specified by |window_rect| in DIPs,
   // with the origin in the lower left corner. If the window rect's size is
   // larger than the IOSurface, the remaining right and bottom edges will be
   // white. |window_scale_factor| is 1 in normal views, 2 in HiDPI views.
   bool DrawIOSurface() WARN_UNUSED_RESULT;
-
-  bool HasIOSurface() { return !!io_surface_.get(); }
 
   // Returns true if the offscreen context used by this surface has been
   // poisoned.
@@ -77,8 +71,7 @@ class IOSurfaceTexture
 
   // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
   // process is no longer referencing it, this will delete the IOSurface.
-  void UnrefIOSurface();
-  void UnrefIOSurfaceWithContextCurrent();
+  void ReleaseIOSurfaceAndTexture();
 
   // Check for GL errors and store the result in error_. Only return new
   // errors

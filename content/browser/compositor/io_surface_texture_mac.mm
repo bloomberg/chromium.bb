@@ -11,8 +11,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
@@ -55,27 +57,21 @@ IOSurfaceTexture::IOSurfaceTexture(
 }
 
 IOSurfaceTexture::~IOSurfaceTexture() {
-  {
-    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-        offscreen_context_->cgl_context());
-    UnrefIOSurfaceWithContextCurrent();
-  }
+  ReleaseIOSurfaceAndTexture();
   offscreen_context_ = NULL;
   DCHECK(eviction_queue_iterator_ == eviction_queue_.Get().end());
 }
 
-int IOSurfaceTexture::GetRendererID() {
-  GLint current_renderer_id = -1;
-  if (CGLGetParameter(offscreen_context_->cgl_context(),
-                      kCGLCPCurrentRendererID,
-                      &current_renderer_id) == kCGLNoError)
-    return current_renderer_id & kCGLRendererIDMatchingMask;
-  return -1;
-}
-
 bool IOSurfaceTexture::DrawIOSurface() {
   TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurface");
-  DCHECK(HasIOSurface());
+
+  // If we have release the IOSurface, clear the screen to light grey and
+  // early-out.
+  if (!io_surface_) {
+    glClearColor(0.9, 0.9, 0.9, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    return false;
+  }
 
   // The viewport is the size of the CALayer, which should always match the
   // IOSurface pixel size.
@@ -139,19 +135,15 @@ bool IOSurfaceTexture::DrawIOSurface() {
 }
 
 bool IOSurfaceTexture::SetIOSurface(
-    scoped_refptr<IOSurfaceContext> context,
     IOSurfaceID io_surface_id,
     const gfx::Size& pixel_size) {
   TRACE_EVENT0("browser", "IOSurfaceTexture::MapIOSurfaceToTexture");
-
-  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-      context->cgl_context());
 
   // Destroy the old IOSurface and texture if it is no longer needed.
   bool needs_new_iosurface =
       !io_surface_ || io_surface_id != IOSurfaceGetID(io_surface_);
   if (needs_new_iosurface)
-    UnrefIOSurfaceWithContextCurrent();
+    ReleaseIOSurfaceAndTexture();
 
   // Note that because IOSurface sizes are rounded, the same IOSurface may have
   // two different sizes associated with it, so update the sizes before the
@@ -162,12 +154,16 @@ bool IOSurfaceTexture::SetIOSurface(
   if (!needs_new_iosurface)
     return true;
 
+  // If we early-out at any point from now on, it's because of an error, and we
+  // should destroy the texture and release the IOSurface.
+  base::ScopedClosureRunner error_runner(base::BindBlock(^{
+      ReleaseIOSurfaceAndTexture();
+  }));
+
   // Open the IOSurface handle.
   io_surface_.reset(IOSurfaceLookup(io_surface_id));
-  if (!io_surface_) {
-    UnrefIOSurfaceWithContextCurrent();
+  if (!io_surface_)
     return false;
-  }
 
   // Actual IOSurface size is rounded up to reduce reallocations during window
   // resize. Get the actual size to properly map the texture.
@@ -175,46 +171,48 @@ bool IOSurfaceTexture::SetIOSurface(
                          IOSurfaceGetHeight(io_surface_));
 
   // Create the GL texture and set it to be backed by the IOSurface.
-  glGenTextures(1, &texture_);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
-  glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  GLuint plane = 0;
-  CGLError cgl_error = CGLTexImageIOSurface2D(
-      context->cgl_context(),
-      GL_TEXTURE_RECTANGLE_ARB,
-      GL_RGBA,
-      rounded_size.width(),
-      rounded_size.height(),
-      GL_BGRA,
-      GL_UNSIGNED_INT_8_8_8_8_REV,
-      io_surface_.get(),
-      plane);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-  GetAndSaveGLError();
+  CGLError cgl_error = kCGLNoError;
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        offscreen_context_->cgl_context());
+    glGenTextures(1, &texture_);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
+    glTexParameterf(
+        GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(
+        GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    cgl_error = CGLTexImageIOSurface2D(
+        offscreen_context_->cgl_context(),
+        GL_TEXTURE_RECTANGLE_ARB,
+        GL_RGBA,
+        rounded_size.width(),
+        rounded_size.height(),
+        GL_BGRA,
+        GL_UNSIGNED_INT_8_8_8_8_REV,
+        io_surface_.get(),
+        0 /* plane */);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
+    GetAndSaveGLError();
+  }
 
   // Return failure if an error was encountered by CGL or GL.
   if (cgl_error != kCGLNoError) {
     LOG(ERROR) << "CGLTexImageIOSurface2D failed with CGL error: " << cgl_error;
-    UnrefIOSurfaceWithContextCurrent();
     return false;
   }
   if (gl_error_ != GL_NO_ERROR) {
     LOG(ERROR) << "Hit GL error in SetIOSurface: " << gl_error_;
-    UnrefIOSurfaceWithContextCurrent();
     return false;
   }
 
+  ignore_result(error_runner.Release());
   return true;
 }
 
-void IOSurfaceTexture::UnrefIOSurface() {
+void IOSurfaceTexture::ReleaseIOSurfaceAndTexture() {
   gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
       offscreen_context_->cgl_context());
-  UnrefIOSurfaceWithContextCurrent();
-}
 
-void IOSurfaceTexture::UnrefIOSurfaceWithContextCurrent() {
   if (texture_) {
     glDeleteTextures(1, &texture_);
     texture_ = 0;
@@ -285,7 +283,7 @@ void IOSurfaceTexture::EvictionDoEvict() {
       continue;
 
     // Evict the surface.
-    surface->UnrefIOSurface();
+    surface->ReleaseIOSurfaceAndTexture();
   }
 }
 
