@@ -48,6 +48,7 @@ class CC_EXPORT LayerTreeSettings {
   };
   ScrollbarAnimator scrollbar_animator;
   int scrollbar_fade_delay_ms;
+  int scrollbar_fade_resize_delay_ms;
   int scrollbar_fade_duration_ms;
   SkColor solid_color_scrollbar_color;
   bool calculate_top_controls_position;

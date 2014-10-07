@@ -386,7 +386,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::ScrollOffset MaxScrollOffset() const;
   gfx::Vector2dF ClampScrollToMaxScrollOffset();
   void SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
-                            LayerImpl* scrollbar_clip_layer) const;
+                            LayerImpl* scrollbar_clip_layer,
+                            bool on_resize) const;
   void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
   gfx::Vector2dF ScrollDelta() const;
 
@@ -513,7 +514,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void AddScrollbar(ScrollbarLayerImplBase* layer);
   void RemoveScrollbar(ScrollbarLayerImplBase* layer);
   bool HasScrollbar(ScrollbarOrientation orientation) const;
-  void ScrollbarParametersDidChange();
+  void ScrollbarParametersDidChange(bool on_resize);
 
   gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
 

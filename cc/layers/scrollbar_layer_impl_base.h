@@ -56,7 +56,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   }
   bool SetThumbThicknessScaleFactor(float thumb_thickness_scale_factor);
 
-  void ScrollbarParametersDidChange();
+  void ScrollbarParametersDidChange(bool on_resize);
 
  protected:
   ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,

@@ -15,17 +15,26 @@ ScrollbarAnimationControllerLinearFade::Create(
     LayerImpl* scroll_layer,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
+    base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration) {
-  return make_scoped_ptr(new ScrollbarAnimationControllerLinearFade(
-      scroll_layer, client, delay_before_starting, duration));
+  return make_scoped_ptr(
+      new ScrollbarAnimationControllerLinearFade(scroll_layer,
+                                                 client,
+                                                 delay_before_starting,
+                                                 resize_delay_before_starting,
+                                                 duration));
 }
 
 ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
     LayerImpl* scroll_layer,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
+    base::TimeDelta resize_delay_before_starting,
     base::TimeDelta duration)
-    : ScrollbarAnimationController(client, delay_before_starting, duration),
+    : ScrollbarAnimationController(client,
+                                   delay_before_starting,
+                                   resize_delay_before_starting,
+                                   duration),
       scroll_layer_(scroll_layer) {
 }
 
@@ -38,8 +47,8 @@ void ScrollbarAnimationControllerLinearFade::RunAnimationFrame(float progress) {
     StopAnimation();
 }
 
-void ScrollbarAnimationControllerLinearFade::DidScrollUpdate() {
-  ScrollbarAnimationController::DidScrollUpdate();
+void ScrollbarAnimationControllerLinearFade::DidScrollUpdate(bool on_resize) {
+  ScrollbarAnimationController::DidScrollUpdate(on_resize);
   ApplyOpacityToScrollbars(1.f);
 }
 

@@ -19,17 +19,19 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
       LayerImpl* scroll_layer,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,
+      base::TimeDelta resize_delay_before_starting,
       base::TimeDelta duration);
 
   virtual ~ScrollbarAnimationControllerLinearFade();
 
-  virtual void DidScrollUpdate() override;
+  virtual void DidScrollUpdate(bool on_resize) override;
 
  protected:
   ScrollbarAnimationControllerLinearFade(
       LayerImpl* scroll_layer,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,
+      base::TimeDelta resize_delay_before_starting,
       base::TimeDelta duration);
 
   virtual void RunAnimationFrame(float progress) override;

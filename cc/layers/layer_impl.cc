@@ -782,7 +782,7 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
 
   bounds_ = bounds;
 
-  ScrollbarParametersDidChange();
+  ScrollbarParametersDidChange(true);
   if (masks_to_bounds())
     NoteLayerPropertyChangedForSubtree();
   else
@@ -795,7 +795,7 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 
   bounds_delta_ = bounds_delta;
 
-  ScrollbarParametersDidChange();
+  ScrollbarParametersDidChange(false);
   if (masks_to_bounds())
     NoteLayerPropertyChangedForSubtree();
   else
@@ -1122,7 +1122,7 @@ void LayerImpl::SetScrollOffsetAndDelta(const gfx::ScrollOffset& scroll_offset,
 
   if (changed) {
     NoteLayerPropertyChangedForSubtree();
-    ScrollbarParametersDidChange();
+    ScrollbarParametersDidChange(false);
   }
 }
 
@@ -1228,7 +1228,8 @@ gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
 }
 
 void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
-                                     LayerImpl* scrollbar_clip_layer) const {
+                                     LayerImpl* scrollbar_clip_layer,
+                                     bool on_resize) const {
   DCHECK(scrollbar_layer);
   LayerImpl* page_scale_layer = layer_tree_impl()->page_scale_layer();
 
@@ -1313,7 +1314,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
             layer_tree_impl()->min_page_scale_factor()) ||
            !layer_tree_impl()->settings().use_pinch_zoom_scrollbars);
       if (is_animatable_scrollbar)
-        scrollbar_animation_controller_->DidScrollUpdate();
+        scrollbar_animation_controller_->DidScrollUpdate(on_resize);
     }
   }
 }
@@ -1376,14 +1377,14 @@ bool LayerImpl::HasScrollbar(ScrollbarOrientation orientation) const {
   return false;
 }
 
-void LayerImpl::ScrollbarParametersDidChange() {
+void LayerImpl::ScrollbarParametersDidChange(bool on_resize) {
   if (!scrollbars_)
     return;
 
   for (ScrollbarSet::iterator it = scrollbars_->begin();
        it != scrollbars_->end();
        ++it)
-    (*it)->ScrollbarParametersDidChange();
+    (*it)->ScrollbarParametersDidChange(on_resize);
 }
 
 void LayerImpl::SetNeedsPushProperties() {

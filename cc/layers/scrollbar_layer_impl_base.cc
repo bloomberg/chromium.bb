@@ -92,7 +92,7 @@ void ScrollbarLayerImplBase::SetScrollLayerAndClipLayerByIds(
   RegisterScrollbarWithLayers(
       this, clip_layer_, scroll_layer_, &LayerImpl::AddScrollbar);
 
-  ScrollbarParametersDidChange();
+  ScrollbarParametersDidChange(false);
 }
 
 gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(
@@ -247,11 +247,11 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   return ScrollbarLayerRectToContentRect(thumb_rect);
 }
 
-void ScrollbarLayerImplBase::ScrollbarParametersDidChange() {
+void ScrollbarLayerImplBase::ScrollbarParametersDidChange(bool on_resize) {
   if (!clip_layer_ || !scroll_layer_)
     return;
 
-  scroll_layer_->SetScrollbarPosition(this, clip_layer_);
+  scroll_layer_->SetScrollbarPosition(this, clip_layer_, on_resize);
 }
 
 }  // namespace cc

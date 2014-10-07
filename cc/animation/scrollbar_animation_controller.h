@@ -32,7 +32,7 @@ class CC_EXPORT ScrollbarAnimationController {
   void Animate(base::TimeTicks now);
 
   virtual void DidScrollBegin();
-  virtual void DidScrollUpdate();
+  virtual void DidScrollUpdate(bool on_resize);
   virtual void DidScrollEnd();
   virtual void DidMouseMoveOffScrollbar() {}
   virtual void DidMouseMoveNear(float distance) {}
@@ -40,6 +40,7 @@ class CC_EXPORT ScrollbarAnimationController {
  protected:
   ScrollbarAnimationController(ScrollbarAnimationControllerClient* client,
                                base::TimeDelta delay_before_starting,
+                               base::TimeDelta resize_delay_before_starting,
                                base::TimeDelta duration);
 
   virtual void RunAnimationFrame(float progress) = 0;
@@ -52,11 +53,12 @@ class CC_EXPORT ScrollbarAnimationController {
   // 0 to 1.
   float AnimationProgressAtTime(base::TimeTicks now);
 
-  void PostDelayedFade();
+  void PostDelayedFade(bool on_resize);
 
   ScrollbarAnimationControllerClient* client_;
   base::TimeTicks last_awaken_time_;
   base::TimeDelta delay_before_starting_;
+  base::TimeDelta resize_delay_before_starting_;
   base::TimeDelta duration_;
   bool is_animating_;
 

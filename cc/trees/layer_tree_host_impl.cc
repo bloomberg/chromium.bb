@@ -2536,7 +2536,7 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
         // Force updating of vertical adjust values if needed.
         if (applied_delta.y() != 0) {
           did_scroll_top_controls = true;
-          layer_impl->ScrollbarParametersDidChange();
+          layer_impl->ScrollbarParametersDidChange(false);
         }
       }
       // Track root layer deltas for reporting overscroll.

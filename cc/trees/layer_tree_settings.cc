@@ -33,6 +33,7 @@ LayerTreeSettings::LayerTreeSettings()
       create_low_res_tiling(false),
       scrollbar_animator(NoAnimator),
       scrollbar_fade_delay_ms(0),
+      scrollbar_fade_resize_delay_ms(0),
       scrollbar_fade_duration_ms(0),
       solid_color_scrollbar_color(SK_ColorWHITE),
       calculate_top_controls_position(false),

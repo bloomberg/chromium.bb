@@ -193,7 +193,7 @@ TEST(PaintedScrollbarLayerTest, ScrollOffsetSynchronization) {
     root_layer_impl = root_clip_layer_impl->children()[0];          \
     scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>( \
         root_layer_impl->children()[1]);                            \
-    scrollbar_layer_impl->ScrollbarParametersDidChange();           \
+    scrollbar_layer_impl->ScrollbarParametersDidChange(false);      \
   } while (false)
 
 TEST(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
