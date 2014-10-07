@@ -124,6 +124,7 @@ void WebDevToolsFrontendImpl::windowObjectCleared()
             "     ['append', 2],"
             "     ['bringToFront', 0],"
             "     ['closeWindow', 0],"
+            "     ['loadCompleted', 0],"
             "     ['indexPath', 2],"
             "     ['inspectElementCompleted', 0],"
             "     ['inspectedURLChanged', 1],"
