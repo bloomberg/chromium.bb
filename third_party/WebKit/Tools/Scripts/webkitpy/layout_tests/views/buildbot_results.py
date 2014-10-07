@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2012 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -113,11 +112,11 @@ class BuildBotPrinter(object):
                     add_to_dict_of_lists(passes, 'Expected to fail, but passed', test)
             elif enabled_pixel_tests_in_retry and actual == ['TEXT', 'IMAGE+TEXT']:
                 add_to_dict_of_lists(regressions, actual[0], test)
-            elif len(actual) > 1:
+            elif len(actual) > 1 and actual[-1] in expected:
                 # We group flaky tests by the first actual result we got.
                 add_to_dict_of_lists(flaky, actual[0], test)
             else:
-                add_to_dict_of_lists(regressions, results['actual'], test)
+                add_to_dict_of_lists(regressions, actual[0], test)
 
         layouttestresults.for_each_test(summarized_results['tests'], add_result)
 
@@ -135,15 +134,14 @@ class BuildBotPrinter(object):
         if len(flaky):
             descriptions = TestExpectations.EXPECTATION_DESCRIPTIONS
             for key, tests in flaky.iteritems():
-                result = TestExpectations.EXPECTATIONS[key.lower()]
-                self._print("Unexpected flakiness: %s (%d)" % (descriptions[result], len(tests)))
+                result_type = TestExpectations.EXPECTATIONS[key.lower()]
+                self._print("Unexpected flakiness: %s (%d)" % (descriptions[result_type], len(tests)))
                 tests.sort()
 
                 for test in tests:
                     result = layouttestresults.result_for_test(summarized_results['tests'], test)
                     actual = result['actual'].split(" ")
                     expected = result['expected'].split(" ")
-                    result = TestExpectations.EXPECTATIONS[key.lower()]
                     # FIXME: clean this up once the old syntax is gone
                     new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp] for exp in list(set(actual) | set(expected))]
                     self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
@@ -153,11 +151,15 @@ class BuildBotPrinter(object):
         if len(regressions):
             descriptions = TestExpectations.EXPECTATION_DESCRIPTIONS
             for key, tests in regressions.iteritems():
-                result = TestExpectations.EXPECTATIONS[key.lower()]
-                self._print("Regressions: Unexpected %s (%d)" % (descriptions[result], len(tests)))
+                result_type = TestExpectations.EXPECTATIONS[key.lower()]
+                self._print("Regressions: Unexpected %s (%d)" % (descriptions[result_type], len(tests)))
                 tests.sort()
                 for test in tests:
-                    self._print("  %s [ %s ]" % (test, TestExpectationParser._inverted_expectation_tokens[key]))
+                    result = layouttestresults.result_for_test(summarized_results['tests'], test)
+                    actual = result['actual'].split(" ")
+                    expected = result['expected'].split(" ")
+                    new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp] for exp in actual]
+                    self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
                 self._print("")
 
         if len(summarized_results['tests']) and self.debug_logging:

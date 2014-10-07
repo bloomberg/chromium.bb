@@ -57,7 +57,7 @@ def run_results(port, extra_skipped_tests=[]):
     return test_run_results.TestRunResults(expectations, len(tests))
 
 
-def summarized_results(port, expected, passing, flaky, only_include_failing=False, extra_skipped_tests=[]):
+def summarized_results(port, expected, passing, flaky, only_include_failing=False, extra_skipped_tests=[], fail_on_retry=False):
     test_is_slow = False
 
     initial_results = run_results(port, extra_skipped_tests)
@@ -90,7 +90,10 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
     if flaky:
         retry_results = run_results(port, extra_skipped_tests)
         retry_results.add(get_result('passes/text.html'), True, test_is_slow)
-        retry_results.add(get_result('failures/expected/timeout.html'), True, test_is_slow)
+        if fail_on_retry:
+            retry_results.add(get_result('failures/expected/timeout.html', test_expectations.AUDIO), False, test_is_slow)
+        else:
+            retry_results.add(get_result('failures/expected/timeout.html'), True, test_is_slow)
         retry_results.add(get_result('failures/expected/crash.html'), True, test_is_slow)
         retry_results.add(get_result('failures/expected/leak.html'), True, test_is_slow)
     else:

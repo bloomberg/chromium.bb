@@ -90,6 +90,14 @@ class BuildBotPrinterTests(unittest.TestCase):
         self.assertTrue(output)
         self.assertTrue(output.find('Skip') == -1)
 
+    def test_print_unexpected_results_fail_on_retry_also(self):
+        port = MockHost().port_factory.get('test')
+        printer, out = self.get_printer()
+        summary = test_run_results_unittest.summarized_results(port, expected=False, passing=False, flaky=True, fail_on_retry=True)
+        printer.print_unexpected_results(summary)
+        output = out.getvalue()
+        self.assertIn('Regressions: Unexpected crashes (1)\n  failures/expected/timeout.html [ Crash Failure ]', output)
+
     def test_print_results(self):
         port = MockHost().port_factory.get('test')
         printer, out = self.get_printer()
