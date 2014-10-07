@@ -202,7 +202,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   }
 
   if (!cryptohome_util::InstallAttributesIsFirstInstall()) {
-    callback.Run(LOCK_WRONG_USER);
+    callback.Run(LOCK_BACKEND_ERROR);
     return;
   }
 
