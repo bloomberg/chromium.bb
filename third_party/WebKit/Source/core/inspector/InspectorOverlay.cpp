@@ -119,29 +119,29 @@ private:
     const ShapeOutsideInfo& m_shapeOutsideInfo;
 };
 
-class InspectorOverlayChromeClient FINAL: public EmptyChromeClient {
+class InspectorOverlayChromeClient final: public EmptyChromeClient {
 public:
     InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlay* overlay)
         : m_client(client)
         , m_overlay(overlay)
     { }
 
-    virtual void setCursor(const Cursor& cursor) OVERRIDE
+    virtual void setCursor(const Cursor& cursor) override
     {
         m_client.setCursor(cursor);
     }
 
-    virtual void setToolTip(const String& tooltip, TextDirection direction) OVERRIDE
+    virtual void setToolTip(const String& tooltip, TextDirection direction) override
     {
         m_client.setToolTip(tooltip, direction);
     }
 
-    virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE
+    virtual void invalidateContentsAndRootView(const IntRect&) override
     {
         m_overlay->invalidate();
     }
 
-    virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE
+    virtual void invalidateContentsForSlowScroll(const IntRect&) override
     {
         m_overlay->invalidate();
     }

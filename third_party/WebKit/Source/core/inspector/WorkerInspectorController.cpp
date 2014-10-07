@@ -57,28 +57,28 @@ namespace blink {
 
 namespace {
 
-class PageInspectorProxy FINAL : public InspectorFrontendChannel {
+class PageInspectorProxy final : public InspectorFrontendChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope) : m_workerGlobalScope(workerGlobalScope) { }
     virtual ~PageInspectorProxy() { }
 private:
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) override
     {
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }
-    virtual void flush() OVERRIDE { }
+    virtual void flush() override { }
     WorkerGlobalScope* m_workerGlobalScope;
 };
 
-class WorkerStateClient FINAL : public InspectorStateClient {
+class WorkerStateClient final : public InspectorStateClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     WorkerStateClient(WorkerGlobalScope* context) : m_workerGlobalScope(context) { }
     virtual ~WorkerStateClient() { }
 
 private:
-    virtual void updateInspectorStateCookie(const String& cookie) OVERRIDE
+    virtual void updateInspectorStateCookie(const String& cookie) override
     {
         m_workerGlobalScope->thread()->workerReportingProxy().updateInspectorStateCookie(cookie);
     }

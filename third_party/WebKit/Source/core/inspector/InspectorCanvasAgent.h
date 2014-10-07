@@ -52,18 +52,18 @@ class ScriptValue;
 
 typedef String ErrorString;
 
-class InspectorCanvasAgent FINAL : public InspectorBaseAgent<InspectorCanvasAgent>, public InspectorBackendDispatcher::CanvasCommandHandler {
+class InspectorCanvasAgent final : public InspectorBaseAgent<InspectorCanvasAgent>, public InspectorBackendDispatcher::CanvasCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorCanvasAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
     {
         return adoptPtrWillBeNoop(new InspectorCanvasAgent(pageAgent, injectedScriptManager));
     }
     virtual ~InspectorCanvasAgent();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
-    virtual void clearFrontend() OVERRIDE;
-    virtual void restore() OVERRIDE;
+    virtual void setFrontend(InspectorFrontend*) override;
+    virtual void clearFrontend() override;
+    virtual void restore() override;
 
     void didCommitLoad(LocalFrame*, DocumentLoader*);
     void frameDetachedFromParent(LocalFrame*);
@@ -74,18 +74,17 @@ public:
     ScriptValue wrapWebGLRenderingContextForInstrumentation(const ScriptValue&);
 
     // Called from the front-end.
-    virtual void enable(ErrorString*) OVERRIDE;
-    virtual void disable(ErrorString*) OVERRIDE;
-    virtual void dropTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&) OVERRIDE;
-    virtual void hasUninstrumentedCanvases(ErrorString*, bool*) OVERRIDE;
-    virtual void captureFrame(ErrorString*, const TypeBuilder::Page::FrameId*, TypeBuilder::Canvas::TraceLogId*) OVERRIDE;
-    virtual void startCapturing(ErrorString*, const TypeBuilder::Page::FrameId*, TypeBuilder::Canvas::TraceLogId*) OVERRIDE;
-    virtual void stopCapturing(ErrorString*, const TypeBuilder::Canvas::TraceLogId&) OVERRIDE;
-    virtual void getTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const int*, const int*, RefPtr<TypeBuilder::Canvas::TraceLog>&) OVERRIDE;
-    virtual void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>&, double*) OVERRIDE;
-    virtual void getResourceState(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const TypeBuilder::Canvas::ResourceId&, RefPtr<TypeBuilder::Canvas::ResourceState>&) OVERRIDE;
-    virtual void evaluateTraceLogCallArgument(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, int, const String*, RefPtr<TypeBuilder::Runtime::RemoteObject>&, RefPtr<TypeBuilder::Canvas::ResourceState>&) OVERRIDE;
-
+    virtual void enable(ErrorString*) override;
+    virtual void disable(ErrorString*) override;
+    virtual void dropTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&) override;
+    virtual void hasUninstrumentedCanvases(ErrorString*, bool*) override;
+    virtual void captureFrame(ErrorString*, const TypeBuilder::Page::FrameId*, TypeBuilder::Canvas::TraceLogId*) override;
+    virtual void startCapturing(ErrorString*, const TypeBuilder::Page::FrameId*, TypeBuilder::Canvas::TraceLogId*) override;
+    virtual void stopCapturing(ErrorString*, const TypeBuilder::Canvas::TraceLogId&) override;
+    virtual void getTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const int*, const int*, RefPtr<TypeBuilder::Canvas::TraceLog>&) override;
+    virtual void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>&, double*) override;
+    virtual void getResourceState(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const TypeBuilder::Canvas::ResourceId&, RefPtr<TypeBuilder::Canvas::ResourceState>&) override;
+    virtual void evaluateTraceLogCallArgument(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, int, const String*, RefPtr<TypeBuilder::Runtime::RemoteObject>&, RefPtr<TypeBuilder::Canvas::ResourceState>&) override;
 private:
     InspectorCanvasAgent(InspectorPageAgent*, InjectedScriptManager*);
 

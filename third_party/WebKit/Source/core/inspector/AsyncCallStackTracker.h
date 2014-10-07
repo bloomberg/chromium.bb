@@ -50,10 +50,10 @@ class ExecutionContextTask;
 class MutationObserver;
 class XMLHttpRequest;
 
-class AsyncCallStackTracker FINAL : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallStackTracker> {
+class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallStackTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
 public:
-    class AsyncCallStack FINAL : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallStack> {
+    class AsyncCallStack final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallStack> {
     public:
         AsyncCallStack(const String&, const ScriptValue&);
         ~AsyncCallStack();
@@ -67,7 +67,7 @@ public:
 
     typedef WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4> AsyncCallStackVector;
 
-    class AsyncCallChain FINAL : public RefCountedWillBeGarbageCollected<AsyncCallChain> {
+    class AsyncCallChain final : public RefCountedWillBeGarbageCollected<AsyncCallChain> {
     public:
         AsyncCallChain() { }
         AsyncCallChain(const AsyncCallChain& t) : m_callStacks(t.m_callStacks) { }
@@ -78,7 +78,7 @@ public:
         AsyncCallStackVector m_callStacks;
     };
 
-    class ExecutionContextData FINAL : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
+    class ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
         WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
         ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
@@ -88,7 +88,7 @@ public:
         {
         }
 
-        virtual void contextDestroyed() OVERRIDE;
+        virtual void contextDestroyed() override;
 
         int circularSequentialID();
 

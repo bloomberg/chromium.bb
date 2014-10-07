@@ -44,7 +44,7 @@ class Page;
 class PageScriptDebugServer;
 class ScriptSourceCode;
 
-class PageDebuggerAgent FINAL
+class PageDebuggerAgent final
     : public InspectorDebuggerAgent
     , public InspectorOverlayHost::Listener {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
@@ -53,28 +53,28 @@ class PageDebuggerAgent FINAL
 public:
     static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~PageDebuggerAgent();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 
 protected:
-    virtual void enable() OVERRIDE;
-    virtual void disable() OVERRIDE;
+    virtual void enable() override;
+    virtual void disable() override;
 
 private:
-    virtual void startListeningScriptDebugServer() OVERRIDE;
-    virtual void stopListeningScriptDebugServer() OVERRIDE;
-    virtual PageScriptDebugServer& scriptDebugServer() OVERRIDE;
-    virtual void muteConsole() OVERRIDE;
-    virtual void unmuteConsole() OVERRIDE;
+    virtual void startListeningScriptDebugServer() override;
+    virtual void stopListeningScriptDebugServer() override;
+    virtual PageScriptDebugServer& scriptDebugServer() override;
+    virtual void muteConsole() override;
+    virtual void unmuteConsole() override;
 
     // InspectorOverlayHost::Listener implementation.
-    virtual void overlayResumed() OVERRIDE;
-    virtual void overlaySteppedOver() OVERRIDE;
+    virtual void overlayResumed() override;
+    virtual void overlaySteppedOver() override;
 
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
-    virtual void setOverlayMessage(ErrorString*, const String*) OVERRIDE;
+    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    virtual void setOverlayMessage(ErrorString*, const String*) override;
 
     PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     // FIXME: Oilpan: Move PageScriptDebugServer to heap in follow-up CL.

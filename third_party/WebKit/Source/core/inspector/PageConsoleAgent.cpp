@@ -74,10 +74,10 @@ ConsoleMessageStorage* PageConsoleAgent::messageStorage()
     return m_page->deprecatedLocalMainFrame()->console().messageStorage();
 }
 
-class InspectableNode FINAL : public InjectedScriptHost::InspectableObject {
+class InspectableNode final : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableNode(Node* node) : m_node(node) { }
-    virtual ScriptValue get(ScriptState* state) OVERRIDE
+    virtual ScriptValue get(ScriptState* state) override
     {
         return InjectedScriptHost::nodeAsScriptValue(state, m_node);
     }

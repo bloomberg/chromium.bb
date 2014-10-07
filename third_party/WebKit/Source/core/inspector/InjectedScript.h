@@ -45,7 +45,7 @@ class InjectedScriptModule;
 class Node;
 class SerializedScriptValue;
 
-class InjectedScript FINAL : public InjectedScriptBase {
+class InjectedScript final : public InjectedScriptBase {
 public:
     InjectedScript();
     virtual ~InjectedScript() { }

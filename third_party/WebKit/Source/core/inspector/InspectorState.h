@@ -47,7 +47,7 @@ public:
     virtual void inspectorStateUpdated() = 0;
 };
 
-class InspectorState FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
+class InspectorState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
@@ -88,7 +88,7 @@ private:
     RefPtr<JSONObject> m_properties;
 };
 
-class InspectorCompositeState FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
+class InspectorCompositeState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCompositeState);
 public:
     InspectorCompositeState(InspectorStateClient* inspectorClient)
@@ -110,7 +110,7 @@ private:
     typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<InspectorState> > InspectorStateMap;
 
     // From InspectorStateUpdateListener.
-    virtual void inspectorStateUpdated() OVERRIDE;
+    virtual void inspectorStateUpdated() override;
 
     InspectorStateClient* m_client;
     RefPtr<JSONObject> m_stateObject;

@@ -149,15 +149,15 @@ public:
     {
         return adoptPtrWillBeNoop(new InspectorTimelineAgentTraceEventListener(instance, method));
     }
-    virtual void call(const TraceEventDispatcher::TraceEvent& event) OVERRIDE
+    virtual void call(const TraceEventDispatcher::TraceEvent& event) override
     {
         (m_instance->*m_method)(event);
     }
-    virtual void* target() OVERRIDE
+    virtual void* target() override
     {
         return m_instance;
     }
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_instance);
         TraceEventDispatcher::TraceEventListener::trace(visitor);

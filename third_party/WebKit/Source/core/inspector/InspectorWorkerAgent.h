@@ -44,15 +44,15 @@ class WorkerInspectorProxy;
 
 typedef String ErrorString;
 
-class InspectorWorkerAgent FINAL : public InspectorBaseAgent<InspectorWorkerAgent>, public InspectorBackendDispatcher::WorkerCommandHandler {
+class InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent>, public InspectorBackendDispatcher::WorkerCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create();
     virtual ~InspectorWorkerAgent();
 
-    virtual void init() OVERRIDE;
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
-    virtual void restore() OVERRIDE;
-    virtual void clearFrontend() OVERRIDE;
+    virtual void init() override;
+    virtual void setFrontend(InspectorFrontend*) override;
+    virtual void restore() override;
+    virtual void clearFrontend() override;
 
     // Called from InspectorInstrumentation
     bool shouldPauseDedicatedWorkerOnStart();
@@ -60,13 +60,13 @@ public:
     void workerTerminated(WorkerInspectorProxy*);
 
     // Called from InspectorBackendDispatcher
-    virtual void enable(ErrorString*) OVERRIDE;
-    virtual void disable(ErrorString*) OVERRIDE;
-    virtual void canInspectWorkers(ErrorString*, bool*) OVERRIDE;
-    virtual void connectToWorker(ErrorString*, int workerId) OVERRIDE;
-    virtual void disconnectFromWorker(ErrorString*, int workerId) OVERRIDE;
-    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message) OVERRIDE;
-    virtual void setAutoconnectToWorkers(ErrorString*, bool value) OVERRIDE;
+    virtual void enable(ErrorString*) override;
+    virtual void disable(ErrorString*) override;
+    virtual void canInspectWorkers(ErrorString*, bool*) override;
+    virtual void connectToWorker(ErrorString*, int workerId) override;
+    virtual void disconnectFromWorker(ErrorString*, int workerId) override;
+    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message) override;
+    virtual void setAutoconnectToWorkers(ErrorString*, bool value) override;
 
     void setTracingSessionId(const String&);
 

@@ -41,7 +41,7 @@ class InstrumentingAgents;
 
 typedef String ErrorString;
 
-class InspectorMemoryAgent FINAL : public InspectorBaseAgent<InspectorMemoryAgent>, public InspectorBackendDispatcher::MemoryCommandHandler {
+class InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent>, public InspectorBackendDispatcher::MemoryCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorMemoryAgent> create()
@@ -50,10 +50,10 @@ public:
     }
     virtual ~InspectorMemoryAgent();
 
-    virtual void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners) OVERRIDE;
+    virtual void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners) override;
 
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
-    virtual void clearFrontend() OVERRIDE;
+    virtual void setFrontend(InspectorFrontend*) override;
+    virtual void clearFrontend() override;
 
 private:
     InspectorMemoryAgent();

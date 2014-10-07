@@ -40,7 +40,7 @@ class ConsoleMessageStorage;
 class InspectorDOMAgent;
 class Page;
 
-class PageConsoleAgent FINAL : public InspectorConsoleAgent {
+class PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
     static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, Page* page)
@@ -48,17 +48,17 @@ public:
         return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, timelineAgent, page));
     }
     virtual ~PageConsoleAgent();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual bool isWorkerAgent() OVERRIDE { return false; }
+    virtual bool isWorkerAgent() override { return false; }
 
 protected:
-    virtual ConsoleMessageStorage* messageStorage() OVERRIDE;
+    virtual ConsoleMessageStorage* messageStorage() override;
 
 private:
     PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*, Page*);
-    virtual void clearMessages(ErrorString*) OVERRIDE;
-    virtual void addInspectedNode(ErrorString*, int nodeId) OVERRIDE;
+    virtual void clearMessages(ErrorString*) override;
+    virtual void addInspectedNode(ErrorString*, int nodeId) override;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
     RawPtrWillBeMember<Page> m_page;

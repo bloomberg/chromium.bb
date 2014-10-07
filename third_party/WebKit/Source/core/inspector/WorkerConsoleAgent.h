@@ -38,7 +38,7 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerConsoleAgent FINAL : public InspectorConsoleAgent {
+class WorkerConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(WorkerConsoleAgent);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerConsoleAgent> create(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager, WorkerGlobalScope* workerGlobalScope)
@@ -47,14 +47,14 @@ public:
     }
     virtual ~WorkerConsoleAgent();
 
-    virtual bool isWorkerAgent() OVERRIDE { return true; }
+    virtual bool isWorkerAgent() override { return true; }
 
 protected:
-    virtual ConsoleMessageStorage* messageStorage() OVERRIDE;
+    virtual ConsoleMessageStorage* messageStorage() override;
 
 private:
     WorkerConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*, WorkerGlobalScope*);
-    virtual void addInspectedNode(ErrorString*, int nodeId) OVERRIDE;
+    virtual void addInspectedNode(ErrorString*, int nodeId) override;
 
     WorkerGlobalScope* m_workerGlobalScope;
 };

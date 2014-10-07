@@ -44,7 +44,7 @@ class Text;
 
 typedef String ErrorString;
 
-class DOMEditor FINAL : public NoBaseWillBeGarbageCollected<DOMEditor> {
+class DOMEditor final : public NoBaseWillBeGarbageCollected<DOMEditor> {
     WTF_MAKE_NONCOPYABLE(DOMEditor);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

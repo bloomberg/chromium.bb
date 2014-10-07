@@ -266,7 +266,7 @@ InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(Erro
 
 void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
 {
-    class NodeVisitor FINAL : public WrappedNodeVisitor {
+    class NodeVisitor final : public WrappedNodeVisitor {
     public:
         NodeVisitor(Page* page, FramesWithUninstrumentedCanvases& result)
             : m_page(page)
@@ -274,7 +274,7 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
         {
         }
 
-        virtual void visitNode(Node* node) OVERRIDE
+        virtual void visitNode(Node* node) override
         {
             ASSERT(node);
             if (!isHTMLCanvasElement(*node) || !node->document().frame())

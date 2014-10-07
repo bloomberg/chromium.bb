@@ -18,7 +18,7 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
-class PromiseTracker FINAL : public NoBaseWillBeGarbageCollected<PromiseTracker> {
+class PromiseTracker final : public NoBaseWillBeGarbageCollected<PromiseTracker> {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 public:

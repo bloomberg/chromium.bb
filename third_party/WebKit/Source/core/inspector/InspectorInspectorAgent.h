@@ -48,7 +48,7 @@ class Page;
 
 typedef String ErrorString;
 
-class InspectorInspectorAgent FINAL : public InspectorBaseAgent<InspectorInspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
+class InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create(Page* page, InjectedScriptManager* injectedScriptManager)
@@ -57,16 +57,16 @@ public:
     }
 
     virtual ~InspectorInspectorAgent();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     // Inspector front-end API.
-    virtual void enable(ErrorString*) OVERRIDE;
-    virtual void disable(ErrorString*) OVERRIDE;
-    virtual void reset(ErrorString*) OVERRIDE;
+    virtual void enable(ErrorString*) override;
+    virtual void disable(ErrorString*) override;
+    virtual void reset(ErrorString*) override;
 
-    virtual void init() OVERRIDE;
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
-    virtual void clearFrontend() OVERRIDE;
+    virtual void init() override;
+    virtual void setFrontend(InspectorFrontend*) override;
+    virtual void clearFrontend() override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
 

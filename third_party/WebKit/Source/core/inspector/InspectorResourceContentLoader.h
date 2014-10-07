@@ -16,7 +16,7 @@ class Page;
 class Resource;
 class VoidCallback;
 
-class InspectorResourceContentLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorResourceContentLoader> {
+class InspectorResourceContentLoader final : public NoBaseWillBeGarbageCollectedFinalized<InspectorResourceContentLoader> {
     WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

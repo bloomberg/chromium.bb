@@ -40,7 +40,7 @@ class InstrumentingAgents;
 
 typedef String ErrorString;
 
-class InspectorApplicationCacheAgent FINAL : public InspectorBaseAgent<InspectorApplicationCacheAgent>, public InspectorBackendDispatcher::ApplicationCacheCommandHandler {
+class InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent>, public InspectorBackendDispatcher::ApplicationCacheCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -49,22 +49,22 @@ public:
         return adoptPtrWillBeNoop(new InspectorApplicationCacheAgent(pageAgent));
     }
     virtual ~InspectorApplicationCacheAgent() { }
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     // InspectorBaseAgent
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
-    virtual void clearFrontend() OVERRIDE;
-    virtual void restore() OVERRIDE;
+    virtual void setFrontend(InspectorFrontend*) override;
+    virtual void clearFrontend() override;
+    virtual void restore() override;
 
     // InspectorInstrumentation API
     void updateApplicationCacheStatus(LocalFrame*);
     void networkStateChanged(bool online);
 
     // ApplicationCache API for InspectorFrontend
-    virtual void enable(ErrorString*) OVERRIDE;
-    virtual void getFramesWithManifests(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest> >& result) OVERRIDE;
-    virtual void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) OVERRIDE;
-    virtual void getApplicationCacheForFrame(ErrorString*, const String& frameId, RefPtr<TypeBuilder::ApplicationCache::ApplicationCache>&) OVERRIDE;
+    virtual void enable(ErrorString*) override;
+    virtual void getFramesWithManifests(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest> >& result) override;
+    virtual void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;
+    virtual void getApplicationCacheForFrame(ErrorString*, const String& frameId, RefPtr<TypeBuilder::ApplicationCache::ApplicationCache>&) override;
 
 private:
     InspectorApplicationCacheAgent(InspectorPageAgent*);

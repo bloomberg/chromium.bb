@@ -17,7 +17,7 @@ namespace blink {
 class InspectorClient;
 class InspectorWorkerAgent;
 
-class InspectorTracingAgent FINAL
+class InspectorTracingAgent final
     : public InspectorBaseAgent<InspectorTracingAgent>
     , public InspectorBackendDispatcher::TracingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
@@ -28,11 +28,11 @@ public:
     }
 
     // Base agent methods.
-    virtual void restore() OVERRIDE;
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void restore() override;
+    virtual void setFrontend(InspectorFrontend*) override;
 
     // Protocol method implementations.
-    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback>) OVERRIDE;
+    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback>) override;
     virtual void end(ErrorString*, PassRefPtrWillBeRawPtr<EndCallback>);
 
     // Methods for other agents to use.

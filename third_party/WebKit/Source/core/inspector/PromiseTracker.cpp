@@ -19,7 +19,7 @@ using blink::TypeBuilder::Debugger::PromiseDetails;
 
 namespace blink {
 
-class PromiseTracker::PromiseData FINAL : public RefCountedWillBeGarbageCollectedFinalized<PromiseData> {
+class PromiseTracker::PromiseData final : public RefCountedWillBeGarbageCollectedFinalized<PromiseData> {
 public:
     static PassRefPtrWillBeRawPtr<PromiseData> create(ScriptState* scriptState, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
     {
@@ -92,7 +92,7 @@ static int indexOf(PromiseTracker::PromiseDataVector* vector, const ScopedPersis
 
 namespace {
 
-class PromiseDataWrapper FINAL : public NoBaseWillBeGarbageCollected<PromiseDataWrapper> {
+class PromiseDataWrapper final : public NoBaseWillBeGarbageCollected<PromiseDataWrapper> {
 public:
     static PassOwnPtrWillBeRawPtr<PromiseDataWrapper> create(PromiseTracker::PromiseData* data, PromiseTracker* tracker)
     {

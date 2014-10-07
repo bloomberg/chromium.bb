@@ -67,7 +67,7 @@ static CSSParserContext parserContextForDocument(Document *document)
     return document ? CSSParserContext(*document, 0) : strictCSSParserContext();
 }
 
-class StyleSheetHandler FINAL : public CSSParserObserver {
+class StyleSheetHandler final : public CSSParserObserver {
 public:
     StyleSheetHandler(const String& parsedText, Document* document, StyleSheetContents* styleSheetContents, RuleSourceDataList* result)
         : m_parsedText(parsedText)
@@ -83,20 +83,20 @@ public:
     }
 
 private:
-    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned) OVERRIDE;
-    virtual void endRuleHeader(unsigned) OVERRIDE;
-    virtual void startSelector(unsigned) OVERRIDE;
-    virtual void endSelector(unsigned) OVERRIDE;
-    virtual void startRuleBody(unsigned) OVERRIDE;
-    virtual void endRuleBody(unsigned, bool) OVERRIDE;
-    virtual void startProperty(unsigned) OVERRIDE;
-    virtual void endProperty(bool, bool, unsigned, CSSParserError) OVERRIDE;
-    virtual void startComment(unsigned) OVERRIDE;
-    virtual void endComment(unsigned) OVERRIDE;
-    virtual void startMediaQueryExp(unsigned offset) OVERRIDE;
-    virtual void endMediaQueryExp(unsigned offset) OVERRIDE;
-    virtual void startMediaQuery() OVERRIDE;
-    virtual void endMediaQuery() OVERRIDE;
+    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned) override;
+    virtual void endRuleHeader(unsigned) override;
+    virtual void startSelector(unsigned) override;
+    virtual void endSelector(unsigned) override;
+    virtual void startRuleBody(unsigned) override;
+    virtual void endRuleBody(unsigned, bool) override;
+    virtual void startProperty(unsigned) override;
+    virtual void endProperty(bool, bool, unsigned, CSSParserError) override;
+    virtual void startComment(unsigned) override;
+    virtual void endComment(unsigned) override;
+    virtual void startMediaQueryExp(unsigned offset) override;
+    virtual void endMediaQueryExp(unsigned offset) override;
+    virtual void startMediaQuery() override;
+    virtual void endMediaQuery() override;
 
     void addNewRuleToSourceTree(PassRefPtrWillBeRawPtr<CSSRuleSourceData>);
     PassRefPtrWillBeRawPtr<CSSRuleSourceData> popRuleData();

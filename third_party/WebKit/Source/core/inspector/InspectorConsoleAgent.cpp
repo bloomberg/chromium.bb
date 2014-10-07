@@ -305,10 +305,10 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     m_frontend->flush();
 }
 
-class InspectableHeapObject FINAL : public InjectedScriptHost::InspectableObject {
+class InspectableHeapObject final : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
-    virtual ScriptValue get(ScriptState*) OVERRIDE
+    virtual ScriptValue get(ScriptState*) override
     {
         return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
     }

@@ -95,7 +95,7 @@ static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers
     return headersObject;
 }
 
-class InspectorThreadableLoaderClient FINAL : public ThreadableLoaderClient {
+class InspectorThreadableLoaderClient final : public ThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorThreadableLoaderClient);
 public:
     InspectorThreadableLoaderClient(PassRefPtrWillBeRawPtr<LoadResourceForFrontendCallback> callback)
@@ -104,7 +104,7 @@ public:
 
     virtual ~InspectorThreadableLoaderClient() { }
 
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) OVERRIDE
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) override
     {
         WTF::TextEncoding textEncoding(response.textEncodingName());
         bool useDetector = false;
@@ -117,7 +117,7 @@ public:
         m_responseHeaders = response.httpHeaderFields();
     }
 
-    virtual void didReceiveData(const char* data, unsigned dataLength) OVERRIDE
+    virtual void didReceiveData(const char* data, unsigned dataLength) override
     {
         if (!dataLength)
             return;
@@ -125,7 +125,7 @@ public:
         m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, dataLength));
     }
 
-    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) OVERRIDE
+    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) override
     {
         if (m_decoder)
             m_responseText = m_responseText.concatenateWith(m_decoder->flush());
@@ -133,13 +133,13 @@ public:
         dispose();
     }
 
-    virtual void didFail(const ResourceError&) OVERRIDE
+    virtual void didFail(const ResourceError&) override
     {
         m_callback->sendFailure("Loading resource for inspector failed");
         dispose();
     }
 
-    virtual void didFailRedirectCheck() OVERRIDE
+    virtual void didFailRedirectCheck() override
     {
         m_callback->sendFailure("Loading resource for inspector failed redirect check");
         dispose();

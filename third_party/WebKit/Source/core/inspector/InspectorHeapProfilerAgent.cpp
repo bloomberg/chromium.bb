@@ -48,7 +48,7 @@ static const char heapObjectsTrackingEnabled[] = "heapObjectsTrackingEnabled";
 static const char allocationTrackingEnabled[] = "allocationTrackingEnabled";
 }
 
-class InspectorHeapProfilerAgent::HeapStatsUpdateTask FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorHeapProfilerAgent::HeapStatsUpdateTask> {
+class InspectorHeapProfilerAgent::HeapStatsUpdateTask final : public NoBaseWillBeGarbageCollectedFinalized<InspectorHeapProfilerAgent::HeapStatsUpdateTask> {
 public:
     explicit HeapStatsUpdateTask(InspectorHeapProfilerAgent*);
     void startTimer();
@@ -132,14 +132,14 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::trace(Visitor* visitor)
     visitor->trace(m_heapProfilerAgent);
 }
 
-class InspectorHeapProfilerAgent::HeapStatsStream FINAL : public ScriptProfiler::OutputStream {
+class InspectorHeapProfilerAgent::HeapStatsStream final : public ScriptProfiler::OutputStream {
 public:
     HeapStatsStream(InspectorHeapProfilerAgent* heapProfilerAgent)
         : m_heapProfilerAgent(heapProfilerAgent)
     {
     }
 
-    virtual void write(const uint32_t* chunk, const int size) OVERRIDE
+    virtual void write(const uint32_t* chunk, const int size) override
     {
         ASSERT(chunk);
         ASSERT(size > 0);
@@ -221,22 +221,22 @@ void InspectorHeapProfilerAgent::disable(ErrorString* error)
 
 void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, const bool* reportProgress)
 {
-    class HeapSnapshotProgress FINAL : public ScriptProfiler::HeapSnapshotProgress {
+    class HeapSnapshotProgress final : public ScriptProfiler::HeapSnapshotProgress {
     public:
         explicit HeapSnapshotProgress(InspectorFrontend::HeapProfiler* frontend)
             : m_frontend(frontend) { }
-        virtual void Start(int totalWork) OVERRIDE
+        virtual void Start(int totalWork) override
         {
             m_totalWork = totalWork;
         }
-        virtual void Worked(int workDone) OVERRIDE
+        virtual void Worked(int workDone) override
         {
             if (m_frontend) {
                 m_frontend->reportHeapSnapshotProgress(workDone, m_totalWork, 0);
                 m_frontend->flush();
             }
         }
-        virtual void Done() OVERRIDE
+        virtual void Done() override
         {
             const bool finished = true;
             if (m_frontend) {
@@ -244,7 +244,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
                 m_frontend->flush();
             }
         }
-        virtual bool isCanceled() OVERRIDE { return false; }
+        virtual bool isCanceled() override { return false; }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;
         int m_totalWork;

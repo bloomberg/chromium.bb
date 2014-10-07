@@ -146,11 +146,11 @@ static float calculateFontScaleFactor(int width, int height, float deviceScaleFa
 
 }
 
-class InspectorPageAgent::GetResourceContentLoadListener FINAL : public VoidCallback {
+class InspectorPageAgent::GetResourceContentLoadListener final : public VoidCallback {
 public:
     GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
-    virtual void trace(Visitor*) OVERRIDE;
-    virtual void handleEvent() OVERRIDE;
+    virtual void trace(Visitor*) override;
+    virtual void handleEvent() override;
 private:
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     String m_frameId;

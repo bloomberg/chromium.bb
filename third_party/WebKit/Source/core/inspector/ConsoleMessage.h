@@ -22,7 +22,7 @@ class ScriptCallStack;
 class ScriptState;
 class WorkerGlobalScopeProxy;
 
-class ConsoleMessage FINAL: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
+class ConsoleMessage final: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
 public:
     static PassRefPtrWillBeRawPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
     {

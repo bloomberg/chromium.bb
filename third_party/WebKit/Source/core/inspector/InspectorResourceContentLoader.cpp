@@ -23,7 +23,7 @@
 
 namespace blink {
 
-class InspectorResourceContentLoader::ResourceClient FINAL : private RawResourceClient, private StyleSheetResourceClient {
+class InspectorResourceContentLoader::ResourceClient final : private RawResourceClient, private StyleSheetResourceClient {
 public:
     ResourceClient(InspectorResourceContentLoader* loader)
         : m_loader(loader)
@@ -41,8 +41,8 @@ public:
 private:
     InspectorResourceContentLoader* m_loader;
 
-    virtual void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) OVERRIDE;
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) override;
+    virtual void notifyFinished(Resource*) override;
     void resourceFinished(Resource*);
 
     friend class InspectorResourceContentLoader;

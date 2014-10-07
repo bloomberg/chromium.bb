@@ -41,12 +41,12 @@ namespace blink {
 
 namespace {
 
-class RunInspectorCommandsTask FINAL : public ScriptDebugServer::Task {
+class RunInspectorCommandsTask final : public ScriptDebugServer::Task {
 public:
     explicit RunInspectorCommandsTask(WorkerThread* thread)
         : m_thread(thread) { }
     virtual ~RunInspectorCommandsTask() { }
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         // Process all queued debugger commands. WorkerThread is certainly
         // alive if this task is being executed.

@@ -46,7 +46,7 @@ class Document;
 class ExceptionState;
 class Node;
 
-class DOMPatchSupport FINAL {
+class DOMPatchSupport final {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
 public:

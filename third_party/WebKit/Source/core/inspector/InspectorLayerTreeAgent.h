@@ -49,18 +49,18 @@ class RenderLayerCompositor;
 
 typedef String ErrorString;
 
-class InspectorLayerTreeAgent FINAL : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
+class InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(Page* page)
     {
         return adoptPtrWillBeNoop(new InspectorLayerTreeAgent(page));
     }
     virtual ~InspectorLayerTreeAgent();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
-    virtual void clearFrontend() OVERRIDE;
-    virtual void restore() OVERRIDE;
+    virtual void setFrontend(InspectorFrontend*) override;
+    virtual void clearFrontend() override;
+    virtual void restore() override;
 
     // Called from InspectorController
     void willAddPageOverlay(const GraphicsLayer*);
@@ -71,15 +71,15 @@ public:
     void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     // Called from the front-end.
-    virtual void enable(ErrorString*) OVERRIDE;
-    virtual void disable(ErrorString*) OVERRIDE;
-    virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&) OVERRIDE;
-    virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) OVERRIDE;
-    virtual void loadSnapshot(ErrorString*, const String& data, String* snapshotId) OVERRIDE;
-    virtual void releaseSnapshot(ErrorString*, const String& snapshotId) OVERRIDE;
-    virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, const double* scale, String* dataURL) OVERRIDE;
-    virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) OVERRIDE;
-    virtual void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject> >&) OVERRIDE;
+    virtual void enable(ErrorString*) override;
+    virtual void disable(ErrorString*) override;
+    virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&) override;
+    virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
+    virtual void loadSnapshot(ErrorString*, const String& data, String* snapshotId) override;
+    virtual void releaseSnapshot(ErrorString*, const String& snapshotId) override;
+    virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, const double* scale, String* dataURL) override;
+    virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) override;
+    virtual void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<TypeBuilder::Array<JSONObject> >&) override;
 
     // Called by other agents.
     PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();

@@ -180,7 +180,7 @@ static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& ev
     return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
 }
 
-class RevalidateStyleAttributeTask FINAL : public NoBaseWillBeGarbageCollectedFinalized<RevalidateStyleAttributeTask> {
+class RevalidateStyleAttributeTask final : public NoBaseWillBeGarbageCollectedFinalized<RevalidateStyleAttributeTask> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     explicit RevalidateStyleAttributeTask(InspectorDOMAgent*);

@@ -71,7 +71,7 @@ private:
     String m_name;
 };
 
-class InspectorAgentRegistry FINAL {
+class InspectorAgentRegistry final {
     DISALLOW_ALLOCATION();
 public:
     InspectorAgentRegistry(InstrumentingAgents*, InspectorCompositeState*);
@@ -98,7 +98,7 @@ class InspectorBaseAgent : public InspectorAgent {
 public:
     virtual ~InspectorBaseAgent() { }
 
-    virtual void registerInDispatcher(InspectorBackendDispatcher* dispatcher) OVERRIDE FINAL
+    virtual void registerInDispatcher(InspectorBackendDispatcher* dispatcher) override final
     {
         dispatcher->registerAgent(static_cast<T*>(this));
     }

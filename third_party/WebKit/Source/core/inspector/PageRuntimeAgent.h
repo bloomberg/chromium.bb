@@ -42,17 +42,17 @@ class InspectorPageAgent;
 class Page;
 class SecurityOrigin;
 
-class PageRuntimeAgent FINAL : public InspectorRuntimeAgent {
+class PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
     static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorClient* client, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
     {
         return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, scriptDebugServer, page, pageAgent));
     }
     virtual ~PageRuntimeAgent();
-    virtual void trace(Visitor*) OVERRIDE;
-    virtual void init() OVERRIDE;
-    virtual void enable(ErrorString*) OVERRIDE;
-    virtual void run(ErrorString*) OVERRIDE;
+    virtual void trace(Visitor*) override;
+    virtual void init() override;
+    virtual void enable(ErrorString*) override;
+    virtual void run(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
@@ -61,9 +61,9 @@ public:
 private:
     PageRuntimeAgent(InjectedScriptManager*, InspectorClient*, ScriptDebugServer*, Page*, InspectorPageAgent*);
 
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
-    virtual void muteConsole() OVERRIDE;
-    virtual void unmuteConsole() OVERRIDE;
+    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    virtual void muteConsole() override;
+    virtual void unmuteConsole() override;
     void reportExecutionContextCreation();
 
     InspectorClient* m_client;

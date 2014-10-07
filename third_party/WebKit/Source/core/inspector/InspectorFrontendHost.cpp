@@ -57,7 +57,7 @@
 
 namespace blink {
 
-class FrontendMenuProvider FINAL : public ContextMenuProvider {
+class FrontendMenuProvider final : public ContextMenuProvider {
 public:
     static PassRefPtr<FrontendMenuProvider> create(InspectorFrontendHost* frontendHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
     {
@@ -83,13 +83,13 @@ private:
         contextMenuCleared();
     }
 
-    virtual void populateContextMenu(ContextMenu* menu) OVERRIDE
+    virtual void populateContextMenu(ContextMenu* menu) override
     {
         for (size_t i = 0; i < m_items.size(); ++i)
             menu->appendItem(m_items[i]);
     }
 
-    virtual void contextMenuItemSelected(const ContextMenuItem* item) OVERRIDE
+    virtual void contextMenuItemSelected(const ContextMenuItem* item) override
     {
         if (m_frontendHost) {
             UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
@@ -101,7 +101,7 @@ private:
         }
     }
 
-    virtual void contextMenuCleared() OVERRIDE
+    virtual void contextMenuCleared() override
     {
         if (m_frontendHost) {
             ScriptFunctionCall function(m_frontendApiObject, "contextMenuCleared");
