@@ -660,9 +660,11 @@ bool AXNodeObject::isChecked() const
     if (isHTMLInputElement(*node))
         return toHTMLInputElement(*node).shouldAppearChecked();
 
-    // Else, if this is an ARIA checkbox or radio, respect the aria-checked attribute
+    // Else, if this is an ARIA checkbox or radio OR ARIA role menuitemcheckbox
+    // or menuitemradio, respect the aria-checked attribute
     AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole == RadioButtonRole || ariaRole == CheckBoxRole) {
+    if (ariaRole == RadioButtonRole || ariaRole == CheckBoxRole
+        || ariaRole == MenuItemCheckBoxRole || ariaRole == MenuItemRadioRole) {
         if (equalIgnoringCase(getAttribute(aria_checkedAttr), "true"))
             return true;
         return false;
