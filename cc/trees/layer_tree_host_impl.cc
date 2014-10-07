@@ -336,6 +336,10 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
+  // Ask to be animated if there are animations
+  if (needs_animate_layers())
+    SetNeedsAnimate();
+
   if (pending_tree_)
     pending_tree_->ApplyScrollDeltasSinceBeginMainFrame();
   sync_tree()->set_needs_update_draw_properties();

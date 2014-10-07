@@ -108,7 +108,6 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
       inside_draw(false),
       input_throttled_until_commit(false),
       animations_frozen_until_next_draw(false),
-      did_commit_after_animating(false),
       smoothness_priority_expiration_notifier(
           proxy->ImplThreadTaskRunner(),
           base::Bind(&ThreadProxy::RenewTreePriority, base::Unretained(proxy)),
@@ -944,7 +943,6 @@ void ThreadProxy::ScheduledActionAnimate() {
         impl().layer_tree_host_impl->CurrentBeginFrameArgs().frame_time;
   }
   impl().layer_tree_host_impl->Animate(impl().animation_time);
-  impl().did_commit_after_animating = false;
 }
 
 void ThreadProxy::ScheduledActionCommit() {
@@ -962,7 +960,6 @@ void ThreadProxy::ScheduledActionCommit() {
     impl().animation_time = std::max(
         impl().animation_time, blocked_main().last_monotonic_frame_begin_time);
   }
-  impl().did_commit_after_animating = true;
 
   blocked_main().main_thread_inside_commit = true;
   impl().layer_tree_host_impl->BeginCommit();
@@ -1030,11 +1027,6 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
 
   impl().timing_history.DidStartDrawing();
   base::AutoReset<bool> mark_inside(&impl().inside_draw, true);
-
-  if (impl().did_commit_after_animating) {
-    impl().layer_tree_host_impl->Animate(impl().animation_time);
-    impl().did_commit_after_animating = false;
-  }
 
   if (impl().layer_tree_host_impl->pending_tree())
     impl().layer_tree_host_impl->pending_tree()->UpdateDrawProperties();
