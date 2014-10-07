@@ -37,13 +37,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void MaybeCallNotifyWinEvent(DWORD event, LONG child_id);
 
   // AXTree methods
-  virtual void OnNodeWillBeDeleted(ui::AXNode* node) OVERRIDE;
-  virtual void OnNodeCreated(ui::AXNode* node) OVERRIDE;
+  virtual void OnNodeWillBeDeleted(ui::AXNode* node) override;
+  virtual void OnNodeCreated(ui::AXNode* node) override;
 
   // BrowserAccessibilityManager methods
-  virtual void OnWindowFocused() OVERRIDE;
+  virtual void OnWindowFocused() override;
   virtual void NotifyAccessibilityEvent(
-      ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      ui::AXEvent event_type, BrowserAccessibility* node) override;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
@@ -59,7 +59,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // BrowserAccessibilityManager methods
-  virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE;
+  virtual void OnRootChanged(ui::AXNode* new_root) override;
 
  private:
   // Give BrowserAccessibilityManager::Create access to our constructor.

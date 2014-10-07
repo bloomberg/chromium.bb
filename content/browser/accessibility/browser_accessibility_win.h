@@ -100,12 +100,12 @@ BrowserAccessibilityWin
   //
   // BrowserAccessibility methods.
   //
-  CONTENT_EXPORT virtual void OnDataChanged() OVERRIDE;
-  CONTENT_EXPORT virtual void OnUpdateFinished() OVERRIDE;
-  CONTENT_EXPORT virtual void NativeAddReference() OVERRIDE;
-  CONTENT_EXPORT virtual void NativeReleaseReference() OVERRIDE;
-  CONTENT_EXPORT virtual bool IsNative() const OVERRIDE;
-  CONTENT_EXPORT virtual void OnLocationChanged() OVERRIDE;
+  CONTENT_EXPORT virtual void OnDataChanged() override;
+  CONTENT_EXPORT virtual void OnUpdateFinished() override;
+  CONTENT_EXPORT virtual void NativeAddReference() override;
+  CONTENT_EXPORT virtual void NativeReleaseReference() override;
+  CONTENT_EXPORT virtual bool IsNative() const override;
+  CONTENT_EXPORT virtual void OnLocationChanged() override;
 
   //
   // IAccessible methods.

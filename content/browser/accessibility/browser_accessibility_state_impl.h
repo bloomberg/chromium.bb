@@ -40,14 +40,14 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   static BrowserAccessibilityStateImpl* GetInstance();
 
-  virtual void EnableAccessibility() OVERRIDE;
-  virtual void DisableAccessibility() OVERRIDE;
-  virtual void ResetAccessibilityMode() OVERRIDE;
-  virtual void OnScreenReaderDetected() OVERRIDE;
-  virtual bool IsAccessibleBrowser() OVERRIDE;
-  virtual void AddHistogramCallback(base::Closure callback) OVERRIDE;
+  virtual void EnableAccessibility() override;
+  virtual void DisableAccessibility() override;
+  virtual void ResetAccessibilityMode() override;
+  virtual void OnScreenReaderDetected() override;
+  virtual bool IsAccessibleBrowser() override;
+  virtual void AddHistogramCallback(base::Closure callback) override;
 
-  virtual void UpdateHistogramsForTesting() OVERRIDE;
+  virtual void UpdateHistogramsForTesting() override;
 
   AccessibilityMode accessibility_mode() const { return accessibility_mode_; };
 

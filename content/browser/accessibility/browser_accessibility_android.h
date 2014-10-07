@@ -13,11 +13,11 @@ namespace content {
 class BrowserAccessibilityAndroid : public BrowserAccessibility {
  public:
   // Overrides from BrowserAccessibility.
-  virtual void OnDataChanged() OVERRIDE;
-  virtual bool IsNative() const OVERRIDE;
-  virtual void OnLocationChanged() OVERRIDE;
+  virtual void OnDataChanged() override;
+  virtual bool IsNative() const override;
+  virtual void OnLocationChanged() override;
 
-  virtual bool PlatformIsLeaf() const OVERRIDE;
+  virtual bool PlatformIsLeaf() const override;
 
   bool IsCheckable() const;
   bool IsChecked() const;

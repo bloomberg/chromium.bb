@@ -34,7 +34,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
-      ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      ui::AXEvent event_type, BrowserAccessibility* node) override;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -67,9 +67,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
  protected:
   // AXTreeDelegate overrides.
-  virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE;
+  virtual void OnRootChanged(ui::AXNode* new_root) override;
 
-  virtual bool UseRootScrollOffsetsWhenComputingBounds() OVERRIDE;
+  virtual bool UseRootScrollOffsetsWhenComputingBounds() override;
 
  private:
   // This gives BrowserAccessibilityManager::Create access to the class

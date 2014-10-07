@@ -26,11 +26,11 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
     global_obj_count_--;
   }
 
-  virtual void NativeAddReference() OVERRIDE {
+  virtual void NativeAddReference() override {
     native_ref_count_++;
   }
 
-  virtual void NativeReleaseReference() OVERRIDE {
+  virtual void NativeReleaseReference() override {
     native_ref_count_--;
     if (native_ref_count_ == 0)
       delete this;
@@ -56,7 +56,7 @@ class CountedBrowserAccessibilityFactory
     : public BrowserAccessibilityFactory {
  public:
   virtual ~CountedBrowserAccessibilityFactory() {}
-  virtual BrowserAccessibility* Create() OVERRIDE {
+  virtual BrowserAccessibility* Create() override {
     return new CountedBrowserAccessibility();
   }
 };
@@ -67,41 +67,41 @@ class TestBrowserAccessibilityDelegate
   TestBrowserAccessibilityDelegate()
       : got_fatal_error_(false) {}
 
-  virtual void AccessibilitySetFocus(int acc_obj_id) OVERRIDE {}
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE {}
-  virtual void AccessibilityShowMenu(const gfx::Point& point) OVERRIDE {}
+  virtual void AccessibilitySetFocus(int acc_obj_id) override {}
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) override {}
+  virtual void AccessibilityShowMenu(const gfx::Point& point) override {}
   virtual void AccessibilityScrollToMakeVisible(
-      int acc_obj_id, const gfx::Rect& subfocus) OVERRIDE {}
+      int acc_obj_id, const gfx::Rect& subfocus) override {}
   virtual void AccessibilityScrollToPoint(
-      int acc_obj_id, const gfx::Point& point) OVERRIDE {}
+      int acc_obj_id, const gfx::Point& point) override {}
   virtual void AccessibilitySetTextSelection(
-      int acc_obj_id, int start_offset, int end_offset) OVERRIDE {}
-  virtual bool AccessibilityViewHasFocus() const OVERRIDE {
+      int acc_obj_id, int start_offset, int end_offset) override {}
+  virtual bool AccessibilityViewHasFocus() const override {
     return false;
   }
-  virtual gfx::Rect AccessibilityGetViewBounds() const OVERRIDE {
+  virtual gfx::Rect AccessibilityGetViewBounds() const override {
     return gfx::Rect();
   }
   virtual gfx::Point AccessibilityOriginInScreen(
-      const gfx::Rect& bounds) const OVERRIDE {
+      const gfx::Rect& bounds) const override {
     return gfx::Point();
   }
-  virtual void AccessibilityHitTest(const gfx::Point& point) OVERRIDE {}
-  virtual void AccessibilityFatalError() OVERRIDE {
+  virtual void AccessibilityHitTest(const gfx::Point& point) override {}
+  virtual void AccessibilityFatalError() override {
     got_fatal_error_ = true;
   }
-  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() OVERRIDE {
+  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
     return gfx::kNullAcceleratedWidget;
   }
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
-      OVERRIDE {
+      override {
     return NULL;
   }
   virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int accessibility_node_id) OVERRIDE {
+      int accessibility_node_id) override {
     return NULL;
   }
-  virtual BrowserAccessibility* AccessibilityGetParentFrame() OVERRIDE {
+  virtual BrowserAccessibility* AccessibilityGetParentFrame() override {
     return NULL;
   }
 

@@ -187,12 +187,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node);
 
   // AXTreeDelegate implementation.
-  virtual void OnNodeWillBeDeleted(ui::AXNode* node) OVERRIDE;
-  virtual void OnNodeCreated(ui::AXNode* node) OVERRIDE;
-  virtual void OnNodeChanged(ui::AXNode* node) OVERRIDE;
-  virtual void OnNodeCreationFinished(ui::AXNode* node) OVERRIDE;
-  virtual void OnNodeChangeFinished(ui::AXNode* node) OVERRIDE;
-  virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE {}
+  virtual void OnNodeWillBeDeleted(ui::AXNode* node) override;
+  virtual void OnNodeCreated(ui::AXNode* node) override;
+  virtual void OnNodeChanged(ui::AXNode* node) override;
+  virtual void OnNodeCreationFinished(ui::AXNode* node) override;
+  virtual void OnNodeChangeFinished(ui::AXNode* node) override;
+  virtual void OnRootChanged(ui::AXNode* new_root) override {}
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
   void set_delegate(BrowserAccessibilityDelegate* delegate) {
