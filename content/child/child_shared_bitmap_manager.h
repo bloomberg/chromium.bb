@@ -19,12 +19,12 @@ class ChildSharedBitmapManager : public cc::SharedBitmapManager {
   virtual ~ChildSharedBitmapManager();
 
   virtual scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size& size) OVERRIDE;
+      const gfx::Size& size) override;
   virtual scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
-      const cc::SharedBitmapId&) OVERRIDE;
+      const cc::SharedBitmapId&) override;
   virtual scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
-      base::SharedMemory* mem) OVERRIDE;
+      base::SharedMemory* mem) override;
 
  private:
   scoped_refptr<ThreadSafeSender> sender_;

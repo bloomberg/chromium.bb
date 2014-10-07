@@ -27,7 +27,7 @@ class ChildMessageFilter
       public IPC::Sender {
  public:
   // IPC::Sender implementation. Can be called on any threads.
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   // If implementers want to run OnMessageReceived on a different task
   // runner it should override this and return the TaskRunner for the message.

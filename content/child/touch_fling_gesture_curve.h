@@ -29,7 +29,7 @@ class TouchFlingGestureCurve : public blink::WebGestureCurve {
       const blink::WebSize& cumulativeScroll);
 
  virtual bool apply(double monotonicTime,
-                    blink::WebGestureCurveTarget*) OVERRIDE;
+                    blink::WebGestureCurveTarget*) override;
 
  private:
   TouchFlingGestureCurve(const blink::WebFloatPoint& initial_velocity,

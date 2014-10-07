@@ -31,8 +31,8 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
       int request_id);
 
   // IPC::ChannelProxy::MessageFilter
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE FINAL;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE FINAL;
+  virtual void OnFilterAdded(IPC::Sender* sender) override final;
+  virtual bool OnMessageReceived(const IPC::Message& message) override final;
 
  private:
   virtual ~DataProviderMessageFilter() { }

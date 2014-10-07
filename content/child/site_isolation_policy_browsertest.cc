@@ -19,7 +19,7 @@ class SiteIsolationPolicyBrowserTest : public ContentBrowserTest {
   SiteIsolationPolicyBrowserTest() {}
   virtual ~SiteIsolationPolicyBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ASSERT_TRUE(test_server()->Start());
     net::SpawnedTestServer https_server(
         net::SpawnedTestServer::TYPE_HTTPS,

@@ -12,22 +12,22 @@ namespace content {
 class AppCacheFrontendImpl : public AppCacheFrontend {
  public:
   virtual void OnCacheSelected(int host_id,
-                               const AppCacheInfo& info) OVERRIDE;
+                               const AppCacheInfo& info) override;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               AppCacheStatus status) OVERRIDE;
+                               AppCacheStatus status) override;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             AppCacheEventID event_id) OVERRIDE;
+                             AppCacheEventID event_id) override;
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
                                      int num_total,
-                                     int num_complete) OVERRIDE;
+                                     int num_complete) override;
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
                                   const AppCacheErrorDetails& details)
-      OVERRIDE;
+      override;
   virtual void OnLogMessage(int host_id,
                             AppCacheLogLevel log_level,
-                            const std::string& message) OVERRIDE;
-  virtual void OnContentBlocked(int host_id, const GURL& manifest_url) OVERRIDE;
+                            const std::string& message) override;
+  virtual void OnContentBlocked(int host_id, const GURL& manifest_url) override;
 };
 
 }  // namespace content

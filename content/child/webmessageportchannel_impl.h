@@ -69,7 +69,7 @@ class WebMessagePortChannelImpl
                    blink::WebMessagePortChannelArray* channels);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnMessage(const base::string16& message,
                  const std::vector<int>& sent_message_port_ids,

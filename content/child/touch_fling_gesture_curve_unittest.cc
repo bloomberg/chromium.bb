@@ -25,7 +25,7 @@ namespace {
 class MockGestureCurveTarget : public WebGestureCurveTarget {
  public:
   virtual bool scrollBy(const WebFloatSize& delta,
-                        const WebFloatSize& velocity) OVERRIDE {
+                        const WebFloatSize& velocity) override {
     cumulative_delta_.width += delta.width;
     cumulative_delta_.height += delta.height;
     current_velocity_ = velocity;

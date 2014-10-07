@@ -145,7 +145,7 @@ class AesGcmImplementation : public AesAlgorithm {
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const OVERRIDE {
+      blink::WebCryptoKeyUsageMask usage_mask) const override {
     // Prevent importing AES-GCM keys if it is unavailable.
     Status status = NssSupportsAesGcm();
     if (status.IsError())
@@ -154,7 +154,7 @@ class AesGcmImplementation : public AesAlgorithm {
   }
 
   virtual Status VerifyKeyUsagesBeforeGenerateKey(
-      blink::WebCryptoKeyUsageMask usage_mask) const OVERRIDE {
+      blink::WebCryptoKeyUsageMask usage_mask) const override {
     // Prevent generating AES-GCM keys if it is unavailable.
     Status status = NssSupportsAesGcm();
     if (status.IsError())
@@ -165,14 +165,14 @@ class AesGcmImplementation : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const override {
     return AesGcmEncryptDecrypt(ENCRYPT, algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const override {
     return AesGcmEncryptDecrypt(DECRYPT, algorithm, key, data, buffer);
   }
 };

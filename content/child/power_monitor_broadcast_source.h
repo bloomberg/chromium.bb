@@ -30,7 +30,7 @@ class CONTENT_EXPORT PowerMonitorBroadcastSource :
  private:
   friend class PowerMessageFilter;
 
-  virtual bool IsOnBatteryPowerImpl() OVERRIDE;
+  virtual bool IsOnBatteryPowerImpl() override;
 
   void OnPowerStateChange(bool on_battery_power);
   void OnSuspend();

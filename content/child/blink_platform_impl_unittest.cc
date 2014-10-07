@@ -19,13 +19,13 @@ class TestBlinkPlatformImpl : public BlinkPlatformImpl {
   TestBlinkPlatformImpl() : mock_monotonically_increasing_time_(0) {}
 
   // Returns mock time when enabled.
-  virtual double monotonicallyIncreasingTime() OVERRIDE {
+  virtual double monotonicallyIncreasingTime() override {
     if (mock_monotonically_increasing_time_ > 0.0)
       return mock_monotonically_increasing_time_;
     return BlinkPlatformImpl::monotonicallyIncreasingTime();
   }
 
-  virtual void OnStartSharedTimer(base::TimeDelta delay) OVERRIDE {
+  virtual void OnStartSharedTimer(base::TimeDelta delay) override {
     shared_timer_delay_ = delay;
   }
 

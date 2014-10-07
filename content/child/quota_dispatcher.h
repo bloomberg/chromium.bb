@@ -54,7 +54,7 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
       QuotaMessageFilter* quota_message_filter);
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() OVERRIDE;
+  virtual void OnWorkerRunLoopStopped() override;
 
   void OnMessageReceived(const IPC::Message& msg);
 

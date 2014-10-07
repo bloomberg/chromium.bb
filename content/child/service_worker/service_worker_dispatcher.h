@@ -147,7 +147,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   friend class WebServiceWorkerRegistrationImpl;
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() OVERRIDE;
+  virtual void OnWorkerRunLoopStopped() override;
 
   void OnAssociateRegistration(int thread_id,
                                int provider_id,

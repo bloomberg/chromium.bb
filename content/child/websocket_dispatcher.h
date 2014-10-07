@@ -32,7 +32,7 @@ class WebSocketDispatcher : public IPC::Listener {
   void RemoveBridge(int channel_id);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   WebSocketBridge* GetBridge(int channel_id, uint32 type);

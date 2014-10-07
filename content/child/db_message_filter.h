@@ -17,7 +17,7 @@ class DBMessageFilter : public IPC::MessageFilter {
   DBMessageFilter();
 
   // IPC::MessageFilter
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~DBMessageFilter() {}

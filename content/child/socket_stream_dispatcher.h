@@ -34,7 +34,7 @@ class SocketStreamDispatcher : public IPC::Listener {
       WebSocketStreamHandleDelegate* delegate);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   void OnConnected(int socket_id, int max_amount_send_allowed);

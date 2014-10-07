@@ -49,7 +49,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   explicit MockDispatcher(ThreadSafeSender* sender)
       : IndexedDBDispatcher(sender) {}
 
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     delete msg;
     return true;
   }
@@ -143,12 +143,12 @@ class CursorCallbacks : public WebIDBCallbacks {
       : cursor_(cursor) {}
 
   virtual void onSuccess(const WebData&,
-                         const WebVector<WebBlobInfo>&) OVERRIDE {}
+                         const WebVector<WebBlobInfo>&) override {}
   virtual void onSuccess(WebIDBCursor* cursor,
                          const WebIDBKey& key,
                          const WebIDBKey& primaryKey,
                          const WebData& value,
-                         const WebVector<WebBlobInfo>&) OVERRIDE {
+                         const WebVector<WebBlobInfo>&) override {
     cursor_->reset(cursor);
   }
 
@@ -257,7 +257,7 @@ class MockCursor : public WebIDBCursorImpl {
         reset_count_(0) {}
 
   // This method is virtual so it can be overridden in unit tests.
-  virtual void ResetPrefetchCache() OVERRIDE { ++reset_count_; }
+  virtual void ResetPrefetchCache() override { ++reset_count_; }
 
   int reset_count() const { return reset_count_; }
 

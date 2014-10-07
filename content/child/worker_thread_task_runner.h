@@ -24,8 +24,8 @@ class WorkerThreadTaskRunner : public base::TaskRunner {
   // TaskRunner overrides.
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE;
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+                               base::TimeDelta delay) override;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
  protected:
   virtual ~WorkerThreadTaskRunner();

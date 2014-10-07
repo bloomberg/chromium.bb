@@ -26,7 +26,7 @@ class CONTENT_EXPORT ThreadSafeSender
     : public IPC::Sender,
       public base::RefCountedThreadSafe<ThreadSafeSender> {
  public:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
  private:
   friend class ChildThread;  // for construction

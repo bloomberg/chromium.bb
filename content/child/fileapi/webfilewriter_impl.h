@@ -31,10 +31,10 @@ class WebFileWriterImpl : public WebFileWriterBase,
 
  protected:
   // WebFileWriterBase overrides
-  virtual void DoTruncate(const GURL& path, int64 offset) OVERRIDE;
+  virtual void DoTruncate(const GURL& path, int64 offset) override;
   virtual void DoWrite(const GURL& path, const std::string& blob_id,
-                       int64 offset) OVERRIDE;
-  virtual void DoCancel() OVERRIDE;
+                       int64 offset) override;
+  virtual void DoCancel() override;
 
  private:
   class WriterBridge;

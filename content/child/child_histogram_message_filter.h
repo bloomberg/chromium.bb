@@ -24,9 +24,9 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
   ChildHistogramMessageFilter();
 
   // IPC::MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual void OnFilterRemoved() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual void OnFilterRemoved() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void SendHistograms(int sequence_number);
 

@@ -265,14 +265,14 @@ class AesCtrImplementation : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const override {
     return AesCtrEncryptDecrypt(algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const override {
     return AesCtrEncryptDecrypt(algorithm, key, data, buffer);
   }
 };

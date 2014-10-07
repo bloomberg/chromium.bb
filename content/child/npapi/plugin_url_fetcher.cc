@@ -46,7 +46,7 @@ class MultiPartResponseClient : public blink::WebURLLoaderClient {
   // blink::WebURLLoaderClient implementation:
   virtual void didReceiveResponse(
       blink::WebURLLoader* loader,
-      const blink::WebURLResponse& response) OVERRIDE {
+      const blink::WebURLResponse& response) override {
     int64 byte_range_upper_bound, instance_size;
     if (!MultipartResponseDelegate::ReadContentRanges(response,
                                                       &byte_range_lower_bound_,
@@ -58,7 +58,7 @@ class MultiPartResponseClient : public blink::WebURLLoaderClient {
   virtual void didReceiveData(blink::WebURLLoader* loader,
                               const char* data,
                               int data_length,
-                              int encoded_data_length) OVERRIDE {
+                              int encoded_data_length) override {
     // TODO(ananta)
     // We should defer further loads on multipart resources on the same lines
     // as regular resources requested by plugins to prevent reentrancy.

@@ -83,9 +83,9 @@ class WaitAndExitDelegate : public base::PlatformThread::Delegate {
  public:
   explicit WaitAndExitDelegate(base::TimeDelta duration)
       : duration_(duration) {}
-  virtual ~WaitAndExitDelegate() OVERRIDE {}
+  virtual ~WaitAndExitDelegate() override {}
 
-  virtual void ThreadMain() OVERRIDE {
+  virtual void ThreadMain() override {
     base::PlatformThread::Sleep(duration_);
     _exit(0);
   }
@@ -116,7 +116,7 @@ bool CreateWaitAndExitThread(base::TimeDelta duration) {
 class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
  public:
   // IPC::MessageFilter
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     // For renderer/worker processes:
     // On POSIX, at least, one can install an unload handler which loops
     // forever and leave behind a renderer process which eats 100% CPU forever.

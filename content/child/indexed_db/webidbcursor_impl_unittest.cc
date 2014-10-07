@@ -40,7 +40,7 @@ class MockDispatcher : public IndexedDBDispatcher {
 
   virtual void RequestIDBCursorPrefetch(int n,
                                         WebIDBCallbacks* callbacks,
-                                        int32 ipc_cursor_id) OVERRIDE {
+                                        int32 ipc_cursor_id) override {
     ++prefetch_calls_;
     last_prefetch_count_ = n;
     callbacks_.reset(callbacks);
@@ -48,7 +48,7 @@ class MockDispatcher : public IndexedDBDispatcher {
 
   virtual void RequestIDBCursorPrefetchReset(int used_prefetches,
                                              int unused_prefetches,
-                                             int32 ipc_cursor_id) OVERRIDE {
+                                             int32 ipc_cursor_id) override {
     ++reset_calls_;
     last_used_count_ = used_prefetches;
   }
@@ -56,7 +56,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   virtual void RequestIDBCursorAdvance(unsigned long count,
                                        WebIDBCallbacks* callbacks,
                                        int32 ipc_cursor_id,
-                                       int64 transaction_id) OVERRIDE {
+                                       int64 transaction_id) override {
     ++advance_calls_;
     callbacks_.reset(callbacks);
   }
@@ -65,12 +65,12 @@ class MockDispatcher : public IndexedDBDispatcher {
                                         const IndexedDBKey& primary_key,
                                         WebIDBCallbacks* callbacks,
                                         int32 ipc_cursor_id,
-                                        int64 transaction_id) OVERRIDE {
+                                        int64 transaction_id) override {
     ++continue_calls_;
     callbacks_.reset(callbacks);
   }
 
-  virtual void CursorDestroyed(int32 ipc_cursor_id) OVERRIDE {
+  virtual void CursorDestroyed(int32 ipc_cursor_id) override {
     destroyed_cursor_id_ = ipc_cursor_id;
   }
 
@@ -102,7 +102,7 @@ class MockContinueCallbacks : public WebIDBCallbacks {
   virtual void onSuccess(const WebIDBKey& key,
                          const WebIDBKey& primaryKey,
                          const WebData& value,
-                         const WebVector<WebBlobInfo>& webBlobInfo) OVERRIDE {
+                         const WebVector<WebBlobInfo>& webBlobInfo) override {
     if (key_)
       *key_ = IndexedDBKeyBuilder::Build(key);
     if (webBlobInfo_)

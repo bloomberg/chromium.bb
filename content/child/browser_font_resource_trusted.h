@@ -40,25 +40,25 @@ class BrowserFontResource_Trusted
 
   // Resource override.
   virtual ::ppapi::thunk::PPB_BrowserFont_Trusted_API*
-      AsPPB_BrowserFont_Trusted_API() OVERRIDE;
+      AsPPB_BrowserFont_Trusted_API() override;
 
   // PPB_BrowserFont_Trusted_API implementation.
   virtual PP_Bool Describe(PP_BrowserFont_Trusted_Description* description,
-                           PP_BrowserFont_Trusted_Metrics* metrics) OVERRIDE;
+                           PP_BrowserFont_Trusted_Metrics* metrics) override;
   virtual PP_Bool DrawTextAt(PP_Resource image_data,
                              const PP_BrowserFont_Trusted_TextRun* text,
                              const PP_Point* position,
                              uint32_t color,
                              const PP_Rect* clip,
-                             PP_Bool image_data_is_opaque) OVERRIDE;
+                             PP_Bool image_data_is_opaque) override;
   virtual int32_t MeasureText(
-      const PP_BrowserFont_Trusted_TextRun* text) OVERRIDE;
+      const PP_BrowserFont_Trusted_TextRun* text) override;
   virtual uint32_t CharacterOffsetForPixel(
       const PP_BrowserFont_Trusted_TextRun* text,
-      int32_t pixel_position) OVERRIDE;
+      int32_t pixel_position) override;
   virtual int32_t PixelOffsetForCharacter(
       const PP_BrowserFont_Trusted_TextRun* text,
-      uint32_t char_offset) OVERRIDE;
+      uint32_t char_offset) override;
 
  private:
   virtual ~BrowserFontResource_Trusted();

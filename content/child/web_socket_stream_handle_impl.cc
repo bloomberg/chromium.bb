@@ -52,15 +52,15 @@ class WebSocketStreamHandleImpl::Context
   void Detach();
 
   // WebSocketStreamHandleDelegate methods:
-  virtual void DidOpenStream(WebSocketStreamHandle*, int) OVERRIDE;
-  virtual void DidSendData(WebSocketStreamHandle*, int) OVERRIDE;
+  virtual void DidOpenStream(WebSocketStreamHandle*, int) override;
+  virtual void DidSendData(WebSocketStreamHandle*, int) override;
   virtual void DidReceiveData(WebSocketStreamHandle*,
                               const char*,
-                              int) OVERRIDE;
-  virtual void DidClose(WebSocketStreamHandle*) OVERRIDE;
+                              int) override;
+  virtual void DidClose(WebSocketStreamHandle*) override;
   virtual void DidFail(WebSocketStreamHandle*,
                        int,
-                       const base::string16&) OVERRIDE;
+                       const base::string16&) override;
 
  private:
   friend class base::RefCounted<Context>;

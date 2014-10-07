@@ -138,7 +138,7 @@ class AesKwCryptoAlgorithmNss : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& wrapping_key,
                          const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const override {
     if (data.byte_length() < 16)
       return Status::ErrorDataTooSmall();
     if (data.byte_length() % 8)
@@ -165,7 +165,7 @@ class AesKwCryptoAlgorithmNss : public AesAlgorithm {
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& wrapping_key,
                          const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const override {
     if (data.byte_length() < 24)
       return Status::ErrorDataTooSmall();
     if (data.byte_length() % 8)

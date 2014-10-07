@@ -52,20 +52,20 @@ class PluginURLFetcher : public RequestPeer {
 
  private:
   // RequestPeer implementation:
-  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
+  virtual void OnUploadProgress(uint64 position, uint64 size) override;
   virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                                  const ResourceResponseInfo& info) OVERRIDE;
-  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
-  virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE;
+                                  const ResourceResponseInfo& info) override;
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) override;
+  virtual void OnDownloadedData(int len, int encoded_data_length) override;
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length) OVERRIDE;
+                              int encoded_data_length) override;
   virtual void OnCompletedRequest(int error_code,
                                   bool was_ignored_by_handler,
                                   bool stale_copy_in_cache,
                                   const std::string& security_info,
                                   const base::TimeTicks& completion_time,
-                                  int64 total_transfer_size) OVERRIDE;
+                                  int64 total_transfer_size) override;
 
   // |plugin_stream_| becomes NULL after Cancel() to ensure no further calls
   // |reach it.

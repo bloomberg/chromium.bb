@@ -29,34 +29,34 @@ class AesAlgorithm : public AlgorithmImplementation {
   explicit AesAlgorithm(const std::string& jwk_suffix);
 
   virtual Status VerifyKeyUsagesBeforeGenerateKey(
-      blink::WebCryptoKeyUsageMask usage_mask) const OVERRIDE;
+      blink::WebCryptoKeyUsageMask usage_mask) const override;
 
   virtual Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
                                    bool extractable,
                                    blink::WebCryptoKeyUsageMask usage_mask,
-                                   blink::WebCryptoKey* key) const OVERRIDE;
+                                   blink::WebCryptoKey* key) const override;
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const OVERRIDE;
+      blink::WebCryptoKeyUsageMask usage_mask) const override;
 
   virtual Status ImportKeyRaw(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
                               blink::WebCryptoKeyUsageMask usage_mask,
-                              blink::WebCryptoKey* key) const OVERRIDE;
+                              blink::WebCryptoKey* key) const override;
 
   virtual Status ImportKeyJwk(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
                               blink::WebCryptoKeyUsageMask usage_mask,
-                              blink::WebCryptoKey* key) const OVERRIDE;
+                              blink::WebCryptoKey* key) const override;
 
   virtual Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                              std::vector<uint8_t>* buffer) const OVERRIDE;
+                              std::vector<uint8_t>* buffer) const override;
 
   virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                              std::vector<uint8_t>* buffer) const OVERRIDE;
+                              std::vector<uint8_t>* buffer) const override;
 
  private:
   const blink::WebCryptoKeyUsageMask all_key_usages_;

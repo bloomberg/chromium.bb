@@ -48,7 +48,7 @@ class SymKeyOpenSsl : public KeyOpenSsl {
 
   static SymKeyOpenSsl* Cast(const blink::WebCryptoKey& key);
 
-  virtual SymKeyOpenSsl* AsSymKey() OVERRIDE;
+  virtual SymKeyOpenSsl* AsSymKey() override;
 
   const std::vector<uint8_t>& raw_key_data() const {
     return serialized_key_data();
@@ -66,7 +66,7 @@ class AsymKeyOpenSsl : public KeyOpenSsl {
 
   static AsymKeyOpenSsl* Cast(const blink::WebCryptoKey& key);
 
-  virtual AsymKeyOpenSsl* AsAsymKey() OVERRIDE;
+  virtual AsymKeyOpenSsl* AsAsymKey() override;
 
   EVP_PKEY* key() { return key_.get(); }
 

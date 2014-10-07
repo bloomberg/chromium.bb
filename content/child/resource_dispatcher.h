@@ -51,7 +51,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   virtual ~ResourceDispatcher();
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
   // this can be tested regardless of the ResourceLoaderBridge::Create

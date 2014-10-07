@@ -34,14 +34,14 @@ class WebSocketBridge : public blink::WebSocketHandle {
   virtual void connect(const blink::WebURL& url,
                        const blink::WebVector<blink::WebString>& protocols,
                        const blink::WebSerializedOrigin& origin,
-                       blink::WebSocketHandleClient* client) OVERRIDE;
+                       blink::WebSocketHandleClient* client) override;
   virtual void send(bool fin,
                     WebSocketHandle::MessageType type,
                     const char* data,
-                    size_t size) OVERRIDE;
-  virtual void flowControl(int64_t quota) OVERRIDE;
+                    size_t size) override;
+  virtual void flowControl(int64_t quota) override;
   virtual void close(unsigned short code,
-                     const blink::WebString& reason) OVERRIDE;
+                     const blink::WebString& reason) override;
 
   virtual void Disconnect();
 

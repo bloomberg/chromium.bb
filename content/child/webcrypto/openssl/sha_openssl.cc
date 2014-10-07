@@ -113,7 +113,7 @@ class ShaImplementation : public AlgorithmImplementation {
  public:
   virtual Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                         const CryptoData& data,
-                        std::vector<uint8_t>* buffer) const OVERRIDE {
+                        std::vector<uint8_t>* buffer) const override {
     DigestorOpenSsl digestor(algorithm.id());
     Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
     // http://crbug.com/366427: the spec does not define any other failures for

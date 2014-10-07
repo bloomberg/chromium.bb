@@ -26,7 +26,7 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
                            blink::WebCryptoKeyUsageSign) {}
 
   virtual const char* GetJwkAlgorithm(
-      const blink::WebCryptoAlgorithmId hash) const OVERRIDE {
+      const blink::WebCryptoAlgorithmId hash) const override {
     switch (hash) {
       case blink::WebCryptoAlgorithmIdSha1:
         return "RS1";
@@ -44,7 +44,7 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
   virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
-                      std::vector<uint8_t>* buffer) const OVERRIDE {
+                      std::vector<uint8_t>* buffer) const override {
     if (key.type() != blink::WebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 
@@ -91,7 +91,7 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
                         const blink::WebCryptoKey& key,
                         const CryptoData& signature,
                         const CryptoData& data,
-                        bool* signature_match) const OVERRIDE {
+                        bool* signature_match) const override {
     if (key.type() != blink::WebCryptoKeyTypePublic)
       return Status::ErrorUnexpectedKeyType();
 

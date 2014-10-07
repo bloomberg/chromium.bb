@@ -63,7 +63,7 @@ class GeofencingDispatcher : public WorkerTaskRunner::Observer {
       const std::map<std::string, blink::WebCircularGeofencingRegion>& regions);
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() OVERRIDE;
+  virtual void OnWorkerRunLoopStopped() override;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   IDMap<blink::WebGeofencingCallbacks, IDMapOwnPointer>

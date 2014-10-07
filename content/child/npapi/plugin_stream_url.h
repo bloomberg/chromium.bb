@@ -39,25 +39,25 @@ class PluginStreamUrl : public PluginStream,
   // Stop sending the stream to the client.
   // Overrides the base Close so we can cancel our fetching the URL if
   // it is still loading.
-  virtual bool Close(NPReason reason) OVERRIDE;
-  virtual WebPluginResourceClient* AsResourceClient() OVERRIDE;
-  virtual void CancelRequest() OVERRIDE;
+  virtual bool Close(NPReason reason) override;
+  virtual WebPluginResourceClient* AsResourceClient() override;
+  virtual void CancelRequest() override;
 
   // WebPluginResourceClient methods
-  virtual void WillSendRequest(const GURL& url, int http_status_code) OVERRIDE;
+  virtual void WillSendRequest(const GURL& url, int http_status_code) override;
   virtual void DidReceiveResponse(const std::string& mime_type,
                                   const std::string& headers,
                                   uint32 expected_length,
                                   uint32 last_modified,
-                                  bool request_is_seekable) OVERRIDE;
+                                  bool request_is_seekable) override;
   virtual void DidReceiveData(const char* buffer,
                               int length,
-                              int data_offset) OVERRIDE;
-  virtual void DidFinishLoading(unsigned long resource_id) OVERRIDE;
-  virtual void DidFail(unsigned long resource_id) OVERRIDE;
-  virtual bool IsMultiByteResponseExpected() OVERRIDE;
-  virtual int ResourceId() OVERRIDE;
-  virtual void AddRangeRequestResourceId(unsigned long resource_id) OVERRIDE;
+                              int data_offset) override;
+  virtual void DidFinishLoading(unsigned long resource_id) override;
+  virtual void DidFail(unsigned long resource_id) override;
+  virtual bool IsMultiByteResponseExpected() override;
+  virtual int ResourceId() override;
+  virtual void AddRangeRequestResourceId(unsigned long resource_id) override;
 
  protected:
   virtual ~PluginStreamUrl();

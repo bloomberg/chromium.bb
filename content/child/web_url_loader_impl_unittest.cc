@@ -61,31 +61,31 @@ class TestBridge : public ResourceLoaderBridge,
   virtual ~TestBridge() {}
 
   // ResourceLoaderBridge implementation:
-  virtual void SetRequestBody(ResourceRequestBody* request_body) OVERRIDE {}
+  virtual void SetRequestBody(ResourceRequestBody* request_body) override {}
 
-  virtual bool Start(RequestPeer* peer) OVERRIDE {
+  virtual bool Start(RequestPeer* peer) override {
     EXPECT_FALSE(peer_);
     peer_ = peer;
     return true;
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     EXPECT_FALSE(canceled_);
     canceled_ = true;
   }
 
-  virtual void SetDefersLoading(bool value) OVERRIDE {}
+  virtual void SetDefersLoading(bool value) override {}
 
   virtual void DidChangePriority(net::RequestPriority new_priority,
-                                 int intra_priority_value) OVERRIDE {}
+                                 int intra_priority_value) override {}
 
   virtual bool AttachThreadedDataReceiver(
-      blink::WebThreadedDataReceiver* threaded_data_receiver) OVERRIDE {
+      blink::WebThreadedDataReceiver* threaded_data_receiver) override {
     NOTREACHED();
     return false;
   }
 
-  virtual void SyncLoad(SyncLoadResponse* response) OVERRIDE {}
+  virtual void SyncLoad(SyncLoadResponse* response) override {}
 
   RequestPeer* peer() { return peer_; }
 
@@ -105,7 +105,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
   // ResourceDispatcher implementation:
   virtual ResourceLoaderBridge* CreateBridge(
-      const RequestInfo& request_info) OVERRIDE {
+      const RequestInfo& request_info) override {
     EXPECT_FALSE(bridge_.get());
     TestBridge* bridge = new TestBridge();
     bridge_ = bridge->AsWeakPtr();
@@ -141,7 +141,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   virtual void willSendRequest(
       blink::WebURLLoader* loader,
       blink::WebURLRequest& newRequest,
-      const blink::WebURLResponse& redirectResponse) OVERRIDE {
+      const blink::WebURLResponse& redirectResponse) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     // No test currently simulates mutiple redirects.
@@ -154,14 +154,14 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   virtual void didSendData(blink::WebURLLoader* loader,
                            unsigned long long bytesSent,
-                           unsigned long long totalBytesToBeSent) OVERRIDE {
+                           unsigned long long totalBytesToBeSent) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
   }
 
   virtual void didReceiveResponse(
       blink::WebURLLoader* loader,
-      const blink::WebURLResponse& response) OVERRIDE {
+      const blink::WebURLResponse& response) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
 
@@ -175,7 +175,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   virtual void didDownloadData(blink::WebURLLoader* loader,
                                int dataLength,
-                               int encodedDataLength) OVERRIDE {
+                               int encodedDataLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
   }
@@ -183,7 +183,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   virtual void didReceiveData(blink::WebURLLoader* loader,
                               const char* data,
                               int dataLength,
-                              int encodedDataLength) OVERRIDE {
+                              int encodedDataLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     // The response should have started, but must not have finished, or failed.
@@ -200,13 +200,13 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   virtual void didReceiveCachedMetadata(blink::WebURLLoader* loader,
                                         const char* data,
-                                        int dataLength) OVERRIDE {
+                                        int dataLength) override {
     EXPECT_EQ(loader_.get(), loader);
   }
 
   virtual void didFinishLoading(blink::WebURLLoader* loader,
                                 double finishTime,
-                                int64_t totalEncodedDataLength) OVERRIDE {
+                                int64_t totalEncodedDataLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     EXPECT_TRUE(did_receive_response_);
@@ -218,7 +218,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   }
 
   virtual void didFail(blink::WebURLLoader* loader,
-                       const blink::WebURLError& error) OVERRIDE {
+                       const blink::WebURLError& error) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     EXPECT_FALSE(did_finish_);

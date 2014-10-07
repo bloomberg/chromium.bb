@@ -76,7 +76,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   virtual void Shutdown();
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -168,16 +168,16 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   }
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
  private:
   class ChildThreadMessageRouter : public MessageRouter {
    public:
     // |sender| must outlive this object.
     explicit ChildThreadMessageRouter(IPC::Sender* sender);
-    virtual bool Send(IPC::Message* msg) OVERRIDE;
+    virtual bool Send(IPC::Message* msg) override;
 
    private:
     IPC::Sender* const sender_;

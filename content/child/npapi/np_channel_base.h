@@ -84,7 +84,7 @@ class NPChannelBase : public IPC::Listener,
   int GetExistingRouteForNPObjectOwner(struct _NPP* owner);
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   base::ProcessId peer_pid() { return channel_->GetPeerPID(); }
   IPC::ChannelHandle channel_handle() const { return channel_handle_; }
@@ -145,9 +145,9 @@ class NPChannelBase : public IPC::Listener,
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   void set_send_unblocking_only_during_unblock_dispatch() {
     send_unblocking_only_during_unblock_dispatch_ = true;
