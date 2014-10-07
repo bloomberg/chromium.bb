@@ -61,6 +61,7 @@ TEST(SizesAttributeParserTest, Basic)
         {"(max-width: 3000px) 200px, 400px", 200, false},
         {"(max-width: 3000px) 20em, 40em", 320, false},
         {"(max-width: 3000px) 0, 40em", 0, false},
+        {"(max-width: 3000px) 0px, 40em", 0, false},
         {"(max-width: 3000px) 50vw, 40em", 250, true},
         {"(max-width: 3000px) 50px, 40vw", 50, false},
         {0, 0, false} // Do not remove the terminator line.

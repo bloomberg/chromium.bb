@@ -39,7 +39,7 @@ bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator start
         if (!CSSPrimitiveValue::isLength(startToken->unitType()))
             return false;
         m_viewportDependant = CSSPrimitiveValue::isViewportPercentageLength(startToken->unitType());
-        if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length > 0)) {
+        if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length >= 0)) {
             result = (unsigned)length;
             return true;
         }
