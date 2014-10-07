@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 
+#include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
@@ -43,7 +44,7 @@ void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     if (hasSelection) {
         for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
             if (child->isSVGInlineTextBox())
-                toSVGInlineTextBox(child)->paintSelectionBackground(childPaintInfo);
+                SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
             else if (child->isSVGInlineFlowBox())
                 toSVGInlineFlowBox(child)->paintSelectionBackground(childPaintInfo);
         }

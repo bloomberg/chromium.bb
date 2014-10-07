@@ -1532,6 +1532,8 @@
             'paint/SVGForeignObjectPainter.h',
             'paint/SVGImagePainter.cpp',
             'paint/SVGImagePainter.h',
+            'paint/SVGInlineTextBoxPainter.cpp',
+            'paint/SVGInlineTextBoxPainter.h',
             'paint/SVGTextPainter.cpp',
             'paint/SVGTextPainter.h',
             'paint/TablePainter.cpp',

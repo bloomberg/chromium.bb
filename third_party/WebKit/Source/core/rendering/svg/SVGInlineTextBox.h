@@ -40,7 +40,6 @@ public:
     virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const OVERRIDE;
     virtual float positionForOffset(int offset) const OVERRIDE;
 
-    void paintSelectionBackground(PaintInfo&);
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
     virtual LayoutRect localSelectionRect(int startPosition, int endPosition) OVERRIDE;
 
@@ -58,24 +57,15 @@ public:
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
 
     int offsetForPositionInFragment(const SVGTextFragment&, float position, bool includePartialGlyphs) const;
-
-private:
+    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, RenderStyle*);
     TextRun constructTextRun(RenderStyle*, const SVGTextFragment&) const;
 
-    void paintDecoration(GraphicsContext*, TextDecoration, const SVGTextFragment&);
-    void paintDecorationWithStyle(GraphicsContext*, TextDecoration, const SVGTextFragment&,
-        RenderObject* decorationRenderer, RenderSVGResourceModeFlags);
-    void paintTextWithShadows(GraphicsContext*, RenderStyle*, TextRun&, const SVGTextFragment&,
-        int startPosition, int endPosition, RenderSVGResourceModeFlags);
-    void paintText(GraphicsContext*, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&,
-        RenderSVGResourceModeFlags, bool hasSelection, bool paintSelectedTextOnly);
+private:
 
     virtual void paintDocumentMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&, bool) OVERRIDE FINAL;
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&) OVERRIDE FINAL;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
-
-    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, RenderStyle*);
 
 private:
     float m_logicalHeight;

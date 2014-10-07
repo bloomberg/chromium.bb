@@ -206,6 +206,7 @@ void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
         GraphicsContextStateSaver stateSaver(*context, false);
         TextPainter::updateGraphicsContext(context, textStyle, m_inlineTextBox.isHorizontal(), stateSaver);
         if (combinedText)
+
             context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
         paintDecoration(context, boxOrigin, textDecorations);
         if (combinedText)

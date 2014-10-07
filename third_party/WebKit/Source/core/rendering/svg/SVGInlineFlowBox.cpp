@@ -23,6 +23,7 @@
 #include "config.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 
+#include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
@@ -36,7 +37,7 @@ void SVGInlineFlowBox::paintSelectionBackground(PaintInfo& paintInfo)
     PaintInfo childPaintInfo(paintInfo);
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
         if (child->isSVGInlineTextBox())
-            toSVGInlineTextBox(child)->paintSelectionBackground(childPaintInfo);
+            SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
         else if (child->isSVGInlineFlowBox())
             toSVGInlineFlowBox(child)->paintSelectionBackground(childPaintInfo);
     }

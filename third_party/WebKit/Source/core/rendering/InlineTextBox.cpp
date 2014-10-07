@@ -71,7 +71,6 @@ COMPILE_ASSERT(sizeof(InlineTextBox) == sizeof(SameSizeAsInlineTextBox), InlineT
 typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* gTextBoxesWithOverflow;
 
-
 void InlineTextBox::destroy()
 {
     AbstractInlineTextBox::willDestroy(this);
