@@ -85,7 +85,7 @@ public:
         : m_thread(thread)
     {
     }
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         m_thread->exitRunLoop();
     }

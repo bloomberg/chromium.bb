@@ -98,16 +98,16 @@ static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerEleme
     return isHTMLObjectElement(frameOwner) ? HTMLNames::dataAttr : HTMLNames::srcAttr;
 }
 
-class SerializerMarkupAccumulator FINAL : public MarkupAccumulator {
+class SerializerMarkupAccumulator final : public MarkupAccumulator {
 public:
     SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node> >*);
     virtual ~SerializerMarkupAccumulator();
 
 protected:
-    virtual void appendText(StringBuilder& out, Text&) OVERRIDE;
-    virtual void appendElement(StringBuilder& out, Element&, Namespaces*) OVERRIDE;
-    virtual void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) OVERRIDE;
-    virtual void appendEndTag(const Element&) OVERRIDE;
+    virtual void appendText(StringBuilder& out, Text&) override;
+    virtual void appendElement(StringBuilder& out, Element&, Namespaces*) override;
+    virtual void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) override;
+    virtual void appendEndTag(const Element&) override;
 
 private:
     PageSerializer* m_serializer;

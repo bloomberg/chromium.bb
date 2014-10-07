@@ -28,7 +28,7 @@ namespace blink {
 class Frame;
 class TreeScope;
 
-class FrameTree FINAL {
+class FrameTree final {
     WTF_MAKE_NONCOPYABLE(FrameTree);
     DISALLOW_ALLOCATION();
 public:

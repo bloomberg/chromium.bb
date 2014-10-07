@@ -52,7 +52,7 @@ struct DateTimeChooserParameters;
 struct ViewportDescription;
 struct WindowFeatures;
 
-class Chrome FINAL : public HostWindow {
+class Chrome final : public HostWindow {
 public:
     virtual ~Chrome();
 
@@ -61,12 +61,12 @@ public:
     ChromeClient& client() { return *m_client; }
 
     // HostWindow methods.
-    virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
-    virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE;
-    virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
-    virtual blink::WebScreenInfo screenInfo() const OVERRIDE;
+    virtual void invalidateContentsAndRootView(const IntRect&) override;
+    virtual void invalidateContentsForSlowScroll(const IntRect&) override;
+    virtual IntRect rootViewToScreen(const IntRect&) const override;
+    virtual blink::WebScreenInfo screenInfo() const override;
 
-    virtual void scheduleAnimation() OVERRIDE;
+    virtual void scheduleAnimation() override;
 
     void contentsSizeChanged(LocalFrame*, const IntSize&) const;
 

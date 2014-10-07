@@ -48,7 +48,7 @@ class Node;
 class Page;
 class PlatformMouseEvent;
 
-class DragController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
+class DragController final : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
     WTF_MAKE_NONCOPYABLE(DragController);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

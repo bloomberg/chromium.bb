@@ -16,7 +16,7 @@ class HTMLElement;
 class HTMLMenuElement;
 class HTMLMenuItemElement;
 
-class CustomContextMenuProvider FINAL : public ContextMenuProvider {
+class CustomContextMenuProvider final : public ContextMenuProvider {
 public:
     static PassRefPtr<CustomContextMenuProvider> create(HTMLMenuElement& menu, HTMLElement& subject)
     {
@@ -27,9 +27,9 @@ private:
     CustomContextMenuProvider(HTMLMenuElement&, HTMLElement&);
     virtual ~CustomContextMenuProvider();
 
-    virtual void populateContextMenu(ContextMenu*) OVERRIDE;
-    virtual void contextMenuItemSelected(const ContextMenuItem*) OVERRIDE;
-    virtual void contextMenuCleared() OVERRIDE;
+    virtual void populateContextMenu(ContextMenu*) override;
+    virtual void contextMenuItemSelected(const ContextMenuItem*) override;
+    virtual void contextMenuCleared() override;
     void populateContextMenuItems(const HTMLMenuElement&, ContextMenu&);
     void appendSeparator(ContextMenu&);
     void appendMenuItem(HTMLMenuItemElement*, ContextMenu&);

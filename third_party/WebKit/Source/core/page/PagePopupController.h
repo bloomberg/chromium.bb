@@ -40,7 +40,7 @@ namespace blink {
 
 class PagePopupClient;
 
-class PagePopupController FINAL : public RefCountedWillBeGarbageCollected<PagePopupController>, public ScriptWrappable {
+class PagePopupController final : public RefCountedWillBeGarbageCollected<PagePopupController>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PagePopupController> create(PagePopupClient*);

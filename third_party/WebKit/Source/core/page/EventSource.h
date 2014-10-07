@@ -50,7 +50,7 @@ class ResourceResponse;
 class TextResourceDecoder;
 class ThreadableLoader;
 
-class EventSource FINAL : public RefCountedWillBeGarbageCollectedFinalized<EventSource>, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
+class EventSource final : public RefCountedWillBeGarbageCollectedFinalized<EventSource>, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(EventSource);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventSource);
@@ -77,8 +77,8 @@ public:
 
     void close();
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
     //
@@ -86,19 +86,19 @@ public:
     // Page::setDefersLoading() and it defers delivery of events from the
     // loader, and therefore the methods of this class for receiving
     // asynchronous events from the loader won't be invoked.
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
 
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual bool hasPendingActivity() const override;
 
 private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(const char*, unsigned) OVERRIDE;
-    virtual void didFinishLoading(unsigned long, double) OVERRIDE;
-    virtual void didFail(const ResourceError&) OVERRIDE;
-    virtual void didFailAccessControlCheck(const ResourceError&) OVERRIDE;
-    virtual void didFailRedirectCheck() OVERRIDE;
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) override;
+    virtual void didReceiveData(const char*, unsigned) override;
+    virtual void didFinishLoading(unsigned long, double) override;
+    virtual void didFail(const ResourceError&) override;
+    virtual void didFailAccessControlCheck(const ResourceError&) override;
+    virtual void didFailRedirectCheck() override;
 
     void scheduleInitialConnect();
     void connect();

@@ -60,7 +60,7 @@ private:
     RawPtrWillBeMember<TreeScope> m_rootTreeScope;
 };
 
-class FocusController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
+class FocusController final : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
     WTF_MAKE_NONCOPYABLE(FocusController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FocusController> create(Page*);

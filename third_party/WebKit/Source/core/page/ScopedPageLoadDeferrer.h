@@ -29,7 +29,7 @@ namespace blink {
 class LocalFrame;
 class Page;
 
-class ScopedPageLoadDeferrer FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScopedPageLoadDeferrer> {
+class ScopedPageLoadDeferrer final : public NoBaseWillBeGarbageCollectedFinalized<ScopedPageLoadDeferrer> {
     WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
 public:
     ScopedPageLoadDeferrer(Page* exclusion = 0);

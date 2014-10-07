@@ -42,14 +42,14 @@ public:
 
     MockCanvas() : SkCanvas(kPageWidth, kPageHeight) { }
 
-    virtual void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE
+    virtual void drawRect(const SkRect& rect, const SkPaint& paint) override
     {
         ASSERT_TRUE(paint.getAnnotation());
         Operation operation = { DrawRect, rect };
         m_recordedOperations.append(operation);
     }
 
-    virtual void drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint) OVERRIDE
+    virtual void drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint) override
     {
         ASSERT_EQ(1u, count); // Only called from drawPoint().
         ASSERT_TRUE(paint.getAnnotation());
