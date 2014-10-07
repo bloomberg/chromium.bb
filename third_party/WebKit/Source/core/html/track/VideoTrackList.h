@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class VideoTrackList FINAL : public TrackListBase<VideoTrack> {
+class VideoTrackList final : public TrackListBase<VideoTrack> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<VideoTrackList> create(HTMLMediaElement&);
@@ -20,7 +20,7 @@ public:
     int selectedIndex() const;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     void trackSelected(blink::WebMediaPlayer::TrackId selectedTrackId);
 

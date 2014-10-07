@@ -105,7 +105,7 @@ class Document;
 class Element;
 class HTMLFormElement;
 
-class HTMLConstructionSite FINAL {
+class HTMLConstructionSite final {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
     DISALLOW_ALLOCATION();
 public:
@@ -256,7 +256,7 @@ private:
 
     TaskQueue m_taskQueue;
 
-    class PendingText FINAL {
+    class PendingText final {
         DISALLOW_ALLOCATION();
     public:
         PendingText()

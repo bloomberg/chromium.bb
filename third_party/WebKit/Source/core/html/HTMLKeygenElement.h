@@ -30,35 +30,35 @@ namespace blink {
 
 class HTMLSelectElement;
 
-class HTMLKeygenElement FINAL : public HTMLFormControlElementWithState {
+class HTMLKeygenElement final : public HTMLFormControlElementWithState {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLKeygenElement> create(Document&, HTMLFormElement*);
 
-    virtual bool willValidate() const OVERRIDE { return false; }
+    virtual bool willValidate() const override { return false; }
 
 private:
     HTMLKeygenElement(Document&, HTMLFormElement*);
 
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool areAuthorShadowsAllowed() const override { return false; }
 
-    virtual bool canStartSelection() const OVERRIDE { return false; }
+    virtual bool canStartSelection() const override { return false; }
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool isOptionalFormControl() const OVERRIDE { return false; }
+    virtual bool appendFormData(FormDataList&, bool) override;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool isOptionalFormControl() const override { return false; }
 
-    virtual bool isEnumeratable() const OVERRIDE { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
-    virtual bool supportsAutofocus() const OVERRIDE;
-    virtual bool supportLabels() const OVERRIDE { return true; }
+    virtual bool isEnumeratable() const override { return true; }
+    virtual bool isInteractiveContent() const override;
+    virtual bool supportsAutofocus() const override;
+    virtual bool supportLabels() const override { return true; }
 
-    virtual void resetImpl() OVERRIDE;
-    virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE { return false; }
+    virtual void resetImpl() override;
+    virtual bool shouldSaveAndRestoreFormControlState() const override { return false; }
 
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
     HTMLSelectElement* shadowSelect() const;
 };

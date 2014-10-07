@@ -28,7 +28,7 @@ namespace blink {
 class ProgressValueElement;
 class RenderProgress;
 
-class HTMLProgressElement FINAL : public LabelableElement {
+class HTMLProgressElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static const double IndeterminatePosition;
@@ -44,27 +44,27 @@ public:
 
     double position() const;
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
+    virtual bool canContainRangeEndPoint() const override { return false; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit HTMLProgressElement(Document&);
     virtual ~HTMLProgressElement();
 
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
-    virtual bool shouldAppearIndeterminate() const OVERRIDE;
-    virtual bool supportLabels() const OVERRIDE { return true; }
+    virtual bool areAuthorShadowsAllowed() const override { return false; }
+    virtual bool shouldAppearIndeterminate() const override;
+    virtual bool supportLabels() const override { return true; }
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
     RenderProgress* renderProgress() const;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) override;
 
     void didElementStateChange();
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
     bool isDeterminate() const;
 
     RawPtrWillBeMember<ProgressValueElement> m_value;

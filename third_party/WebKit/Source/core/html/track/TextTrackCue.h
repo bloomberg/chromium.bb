@@ -73,7 +73,7 @@ public:
     void invalidateCueIndex();
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     bool isActive();
     void setIsActive(bool);
@@ -86,7 +86,7 @@ public:
     virtual void removeDisplayTree() = 0;
     virtual void notifyRegionWhenRemovingDisplayTree(bool notifyRegion) = 0;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
 #ifndef NDEBUG
     virtual String toString() const = 0;
@@ -95,7 +95,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     TextTrackCue(double start, double end);

@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class HTMLAllCollection FINAL : public HTMLCollection {
+class HTMLAllCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLAllCollection> create(ContainerNode&, CollectionType);

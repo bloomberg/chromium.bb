@@ -46,7 +46,7 @@ namespace blink {
 class Blob;
 class HTMLFormElement;
 
-class DOMFormData FINAL : public FormDataList, public ScriptWrappable {
+class DOMFormData final : public FormDataList, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form = 0)

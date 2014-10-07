@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class TextDocumentParser FINAL : public HTMLDocumentParser {
+class TextDocumentParser final : public HTMLDocumentParser {
 public:
     static PassRefPtrWillBeRawPtr<TextDocumentParser> create(HTMLDocument& document)
     {
@@ -41,7 +41,7 @@ public:
 private:
     explicit TextDocumentParser(HTMLDocument&);
 
-    virtual void appendBytes(const char*, size_t) OVERRIDE;
+    virtual void appendBytes(const char*, size_t) override;
     void insertFakePreElement();
 
     bool m_haveInsertedFakePreElement;

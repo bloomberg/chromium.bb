@@ -39,7 +39,7 @@ class ExceptionState;
 class ExecutionContext;
 class GenericEventQueue;
 
-class MediaController FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaController>, public EventTargetWithInlineData {
+class MediaController final : public RefCountedWillBeGarbageCollectedFinalized<MediaController>, public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(MediaController);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaController);
@@ -88,7 +88,7 @@ public:
     void clearExecutionContext() { m_executionContext = nullptr; }
 #endif
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaController(ExecutionContext*);
@@ -105,8 +105,8 @@ private:
     void startTimeupdateTimer();
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE { return m_executionContext; }
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override { return m_executionContext; }
 
     friend class HTMLMediaElement;
     friend class MediaControllerEventListener;

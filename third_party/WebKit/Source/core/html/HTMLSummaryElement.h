@@ -27,21 +27,21 @@ namespace blink {
 
 class HTMLDetailsElement;
 
-class HTMLSummaryElement FINAL : public HTMLElement {
+class HTMLSummaryElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLSummaryElement> create(Document&);
     bool isMainSummary() const;
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    virtual bool willRespondToMouseClickEvents() override;
 
 private:
     explicit HTMLSummaryElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual void defaultEventHandler(Event*) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
     HTMLDetailsElement* detailsElement() const;
 
-    virtual bool supportsFocus() const OVERRIDE;
+    virtual bool supportsFocus() const override;
 };
 
 }

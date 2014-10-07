@@ -42,36 +42,36 @@ class ExceptionState;
 class BaseDateAndTimeInputType : public InputType {
 protected:
     BaseDateAndTimeInputType(HTMLInputElement& element) : InputType(element) { }
-    virtual Decimal parseToNumber(const String&, const Decimal&) const OVERRIDE;
+    virtual Decimal parseToNumber(const String&, const Decimal&) const override;
     // Parses the specified string for this InputType, and returns true if it
     // is successfully parsed. An instance pointed by the DateComponents*
     // parameter will have parsed values and be modified even if the parsing
     // fails. The DateComponents* parameter may be 0.
     bool parseToDateComponents(const String&, DateComponents*) const;
-    virtual String sanitizeValue(const String&) const OVERRIDE;
-    virtual String serialize(const Decimal&) const OVERRIDE;
+    virtual String sanitizeValue(const String&) const override;
+    virtual String serialize(const Decimal&) const override;
     String serializeWithComponents(const DateComponents&) const;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
-    virtual String visibleValue() const OVERRIDE;
+    virtual String visibleValue() const override;
 
 private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
-    virtual double valueAsDate() const OVERRIDE;
-    virtual void setValueAsDate(double, ExceptionState&) const OVERRIDE;
-    virtual double valueAsDouble() const OVERRIDE;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
-    virtual bool typeMismatchFor(const String&) const OVERRIDE;
-    virtual bool typeMismatch() const OVERRIDE;
-    virtual bool valueMissing(const String&) const OVERRIDE;
-    virtual String rangeOverflowText(const Decimal& maximum) const OVERRIDE;
-    virtual String rangeUnderflowText(const Decimal& minimum) const OVERRIDE;
-    virtual Decimal defaultValueForStepUp() const OVERRIDE;
-    virtual bool isSteppable() const OVERRIDE;
+    virtual double valueAsDate() const override;
+    virtual void setValueAsDate(double, ExceptionState&) const override;
+    virtual double valueAsDouble() const override;
+    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
+    virtual bool typeMismatchFor(const String&) const override;
+    virtual bool typeMismatch() const override;
+    virtual bool valueMissing(const String&) const override;
+    virtual String rangeOverflowText(const Decimal& maximum) const override;
+    virtual String rangeUnderflowText(const Decimal& minimum) const override;
+    virtual Decimal defaultValueForStepUp() const override;
+    virtual bool isSteppable() const override;
     virtual String serializeWithMilliseconds(double) const;
-    virtual String localizeValue(const String&) const OVERRIDE;
-    virtual bool supportsReadOnly() const OVERRIDE;
-    virtual bool shouldRespectListAttribute() OVERRIDE;
-    virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
+    virtual String localizeValue(const String&) const override;
+    virtual bool supportsReadOnly() const override;
+    virtual bool shouldRespectListAttribute() override;
+    virtual bool shouldShowFocusRingOnMouseFocus() const override;
 };
 
 } // namespace blink

@@ -51,7 +51,7 @@ public:
         return adoptRefWillBeNoop(new PluginDocumentParser(document));
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_embedElement);
         RawDataDocumentParser::trace(visitor);
@@ -64,9 +64,9 @@ private:
     {
     }
 
-    virtual void appendBytes(const char*, size_t) OVERRIDE;
+    virtual void appendBytes(const char*, size_t) override;
 
-    virtual void finish() OVERRIDE;
+    virtual void finish() override;
 
     void createDocumentStructure();
 

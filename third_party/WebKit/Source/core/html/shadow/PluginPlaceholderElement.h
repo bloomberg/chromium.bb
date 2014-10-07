@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class PluginPlaceholderElement FINAL : public HTMLDivElement {
+class PluginPlaceholderElement final : public HTMLDivElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PluginPlaceholderElement> create(Document&);

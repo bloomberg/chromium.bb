@@ -37,7 +37,7 @@ namespace blink {
 class HTMLTableElement;
 class HTMLTableRowElement;
 
-class HTMLTableRowsCollection FINAL : public HTMLCollection {
+class HTMLTableRowsCollection final : public HTMLCollection {
 public:
     static PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> create(ContainerNode&, CollectionType);
 
@@ -49,7 +49,7 @@ public:
 private:
     explicit HTMLTableRowsCollection(ContainerNode&);
 
-    virtual Element* virtualItemAfter(Element*) const OVERRIDE;
+    virtual Element* virtualItemAfter(Element*) const override;
 };
 
 DEFINE_TYPE_CASTS(HTMLTableRowsCollection, LiveNodeListBase, collection, collection->type() == TableRows, collection.type() == TableRows);

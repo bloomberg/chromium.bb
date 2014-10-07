@@ -50,14 +50,14 @@ namespace blink {
 
 using namespace HTMLNames;
 
-class HTMLImageElement::ViewportChangeListener FINAL : public MediaQueryListListener {
+class HTMLImageElement::ViewportChangeListener final : public MediaQueryListListener {
 public:
     static RefPtrWillBeRawPtr<ViewportChangeListener> create(HTMLImageElement* element)
     {
         return adoptRefWillBeNoop(new ViewportChangeListener(element));
     }
 
-    virtual void notifyMediaQueryChanged() OVERRIDE
+    virtual void notifyMediaQueryChanged() override
     {
         if (m_element)
             m_element->notifyViewportChanged();
@@ -66,7 +66,7 @@ public:
 #if !ENABLE(OILPAN)
     void clearElement() { m_element = nullptr; }
 #endif
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_element);
         MediaQueryListListener::trace(visitor);

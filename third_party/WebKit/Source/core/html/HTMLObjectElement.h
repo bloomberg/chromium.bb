@@ -30,70 +30,70 @@ namespace blink {
 
 class HTMLFormElement;
 
-class HTMLObjectElement FINAL : public HTMLPlugInElement, public FormAssociatedElement {
+class HTMLObjectElement final : public HTMLPlugInElement, public FormAssociatedElement {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 public:
     static PassRefPtrWillBeRawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     const String& classId() const { return m_classId; }
 
-    virtual HTMLFormElement* formOwner() const OVERRIDE;
+    virtual HTMLFormElement* formOwner() const override;
 
     bool containsJavaApplet() const;
 
-    virtual bool hasFallbackContent() const OVERRIDE;
-    virtual bool useFallbackContent() const OVERRIDE;
-    virtual void renderFallbackContent() OVERRIDE;
+    virtual bool hasFallbackContent() const override;
+    virtual bool useFallbackContent() const override;
+    virtual void renderFallbackContent() override;
 
-    virtual bool isFormControlElement() const OVERRIDE { return false; }
+    virtual bool isFormControlElement() const override { return false; }
 
-    virtual bool isEnumeratable() const OVERRIDE { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
-    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
+    virtual bool isEnumeratable() const override { return true; }
+    virtual bool isInteractiveContent() const override;
+    virtual bool appendFormData(FormDataList&, bool) override;
 
-    virtual bool isObjectElement() const OVERRIDE { return true; }
+    virtual bool isObjectElement() const override { return true; }
 
     // Implementations of constraint validation API.
     // Note that the object elements are always barred from constraint validation.
-    virtual String validationMessage() const OVERRIDE { return String(); }
+    virtual String validationMessage() const override { return String(); }
     bool checkValidity() { return true; }
-    virtual void setCustomValidity(const String&) OVERRIDE { }
+    virtual void setCustomValidity(const String&) override { }
 
 #if !ENABLE(OILPAN)
     using Node::ref;
     using Node::deref;
 #endif
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return useFallbackContent(); }
+    virtual bool canContainRangeEndPoint() const override { return useFallbackContent(); }
 
     bool isExposed() const;
 
 private:
     HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
-    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
+    virtual void didMoveToNewDocument(Document& oldDocument) override;
 
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
+    virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
-    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
-    virtual const AtomicString imageSourceURL() const OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const override;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    virtual const QualifiedName& subResourceAttributeName() const override;
+    virtual const AtomicString imageSourceURL() const override;
 
-    virtual RenderWidget* existingRenderWidget() const OVERRIDE;
+    virtual RenderWidget* existingRenderWidget() const override;
 
-    virtual void updateWidgetInternal() OVERRIDE;
+    virtual void updateWidgetInternal() override;
     void updateDocNamedItem();
 
     void reattachFallbackContent();
@@ -107,12 +107,12 @@ private:
     void reloadPluginOnAttributeChange(const QualifiedName&);
 
 #if !ENABLE(OILPAN)
-    virtual void refFormAssociatedElement() OVERRIDE { ref(); }
-    virtual void derefFormAssociatedElement() OVERRIDE { deref(); }
+    virtual void refFormAssociatedElement() override { ref(); }
+    virtual void derefFormAssociatedElement() override { deref(); }
 #endif
 
-    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
-    virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
+    virtual bool shouldRegisterAsNamedItem() const override { return true; }
+    virtual bool shouldRegisterAsExtraNamedItem() const override { return true; }
 
     String m_classId;
     bool m_useFallbackContent : 1;

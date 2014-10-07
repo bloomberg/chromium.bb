@@ -34,7 +34,7 @@ namespace blink {
 
 class Event;
 
-class MediaControls FINAL : public HTMLDivElement {
+class MediaControls final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<MediaControls> create(HTMLMediaElement&);
 
@@ -72,7 +72,7 @@ public:
 
     void mediaElementFocused();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit MediaControls(HTMLMediaElement&);
@@ -101,13 +101,13 @@ private:
     void hideTextTrackDisplay();
 
     // Node
-    virtual bool isMediaControls() const OVERRIDE { return true; }
-    virtual bool willRespondToMouseMoveEvents() OVERRIDE { return true; }
-    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual bool isMediaControls() const override { return true; }
+    virtual bool willRespondToMouseMoveEvents() override { return true; }
+    virtual void defaultEventHandler(Event*) override;
     bool containsRelatedTarget(Event*);
 
     // Element
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual const AtomicString& shadowPseudoId() const override;
 
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 

@@ -37,14 +37,14 @@ namespace blink {
 
 // <wbr> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's createRenderer doesn't need to know about it.
-class HTMLWBRElement FINAL : public HTMLElement {
+class HTMLWBRElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLWBRElement);
 
 private:
     explicit HTMLWBRElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 };
 
 } // namespace

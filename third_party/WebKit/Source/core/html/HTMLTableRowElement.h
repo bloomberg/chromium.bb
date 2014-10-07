@@ -32,7 +32,7 @@ namespace blink {
 
 class ExceptionState;
 
-class HTMLTableRowElement FINAL : public HTMLTablePartElement {
+class HTMLTableRowElement final : public HTMLTablePartElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTableRowElement);
@@ -49,8 +49,8 @@ public:
 private:
     explicit HTMLTableRowElement(Document&);
 
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
-    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    virtual const QualifiedName& subResourceAttributeName() const override;
 };
 
 } // namespace blink

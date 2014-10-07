@@ -31,7 +31,7 @@ namespace blink {
 
 class ExceptionState;
 
-class HTMLOptionsCollection FINAL : public HTMLCollection {
+class HTMLOptionsCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptionsCollection> create(ContainerNode&, CollectionType);
@@ -54,7 +54,7 @@ public:
 private:
     explicit HTMLOptionsCollection(ContainerNode&);
 
-    virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
+    virtual void supportedPropertyNames(Vector<String>& names) override;
 };
 
 DEFINE_TYPE_CASTS(HTMLOptionsCollection, LiveNodeListBase, collection, collection->type() == SelectOptions, collection.type() == SelectOptions);

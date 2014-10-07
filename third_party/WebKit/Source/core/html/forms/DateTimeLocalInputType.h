@@ -44,24 +44,24 @@ typedef BaseMultipleFieldsDateAndTimeInputType BaseDateTimeLocalInputType;
 typedef BaseChooserOnlyDateAndTimeInputType BaseDateTimeLocalInputType;
 #endif
 
-class DateTimeLocalInputType FINAL : public BaseDateTimeLocalInputType {
+class DateTimeLocalInputType final : public BaseDateTimeLocalInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     DateTimeLocalInputType(HTMLInputElement& element) : BaseDateTimeLocalInputType(element) { }
-    virtual void countUsage() OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual double valueAsDate() const OVERRIDE;
-    virtual void setValueAsDate(double, ExceptionState&) const OVERRIDE;
+    virtual void countUsage() override;
+    virtual const AtomicString& formControlType() const override;
+    virtual double valueAsDate() const override;
+    virtual void setValueAsDate(double, ExceptionState&) const override;
     virtual StepRange createStepRange(AnyStepHandling) const;
-    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const OVERRIDE;
-    virtual bool setMillisecondToDateComponents(double, DateComponents*) const OVERRIDE;
+    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
+    virtual bool setMillisecondToDateComponents(double, DateComponents*) const override;
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // BaseMultipleFieldsDateAndTimeInputType functions
-    virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const OVERRIDE FINAL;
-    virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const OVERRIDE FINAL;
+    virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const override final;
+    virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override final;
     virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const;
 #endif
 };

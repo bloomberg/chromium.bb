@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class TextDocument FINAL : public HTMLDocument {
+class TextDocument final : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -39,7 +39,7 @@ public:
 private:
     TextDocument(const DocumentInit&);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 };
 
 }

@@ -36,12 +36,12 @@
 
 namespace blink {
 
-class HTMLOutputElement FINAL : public HTMLFormControlElement {
+class HTMLOutputElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
 
-    virtual bool willValidate() const OVERRIDE { return false; }
+    virtual bool willValidate() const override { return false; }
 
     String value() const;
     void setValue(const String&);
@@ -50,20 +50,20 @@ public:
     void setFor(const AtomicString&);
     DOMSettableTokenList* htmlFor() const;
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
+    virtual bool canContainRangeEndPoint() const override { return false; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     HTMLOutputElement(Document&, HTMLFormElement*);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool isEnumeratable() const OVERRIDE { return true; }
-    virtual bool supportLabels() const OVERRIDE { return true; }
-    virtual bool supportsFocus() const OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual void resetImpl() OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool isEnumeratable() const override { return true; }
+    virtual bool supportLabels() const override { return true; }
+    virtual bool supportsFocus() const override;
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual void resetImpl() override;
 
     bool m_isDefaultValueMode;
     String m_defaultValue;

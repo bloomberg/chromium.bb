@@ -37,14 +37,14 @@ namespace blink {
 
 // <noscript> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's rendererIsNeeded doesn't need to know about it.
-class HTMLNoScriptElement FINAL : public HTMLElement {
+class HTMLNoScriptElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLNoScriptElement);
 
 private:
     explicit HTMLNoScriptElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 };
 
 } // namespace

@@ -56,7 +56,7 @@ public:
     virtual void fileFailedToParse() = 0;
 };
 
-class VTTParser FINAL : public NoBaseWillBeGarbageCollectedFinalized<VTTParser> {
+class VTTParser final : public NoBaseWillBeGarbageCollectedFinalized<VTTParser> {
 public:
     enum ParseState {
         Initial,

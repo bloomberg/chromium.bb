@@ -32,64 +32,64 @@
 
 namespace blink {
 
-class TextControlInnerContainer FINAL : public HTMLDivElement {
+class TextControlInnerContainer final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<TextControlInnerContainer> create(Document&);
 
 protected:
     explicit TextControlInnerContainer(Document&);
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 };
 
-class EditingViewPortElement FINAL : public HTMLDivElement {
+class EditingViewPortElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<EditingViewPortElement> create(Document&);
 
 protected:
     explicit EditingViewPortElement(Document&);
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
 
 private:
-    virtual bool supportsFocus() const OVERRIDE { return false; }
+    virtual bool supportsFocus() const override { return false; }
 };
 
-class TextControlInnerEditorElement FINAL : public HTMLDivElement {
+class TextControlInnerEditorElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<TextControlInnerEditorElement> create(Document&);
 
-    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual void defaultEventHandler(Event*) override;
 
 private:
     explicit TextControlInnerEditorElement(Document&);
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual bool supportsFocus() const OVERRIDE { return false; }
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
+    virtual bool supportsFocus() const override { return false; }
 };
 
-class SearchFieldDecorationElement FINAL : public HTMLDivElement {
+class SearchFieldDecorationElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<SearchFieldDecorationElement> create(Document&);
 
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    virtual void defaultEventHandler(Event*) override;
+    virtual bool willRespondToMouseClickEvents() override;
 
 private:
     explicit SearchFieldDecorationElement(Document&);
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-    virtual bool supportsFocus() const OVERRIDE { return false; }
+    virtual const AtomicString& shadowPseudoId() const override;
+    virtual bool supportsFocus() const override { return false; }
 };
 
-class SearchFieldCancelButtonElement FINAL : public HTMLDivElement {
+class SearchFieldCancelButtonElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<SearchFieldCancelButtonElement> create(Document&);
 
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    virtual void defaultEventHandler(Event*) override;
+    virtual bool willRespondToMouseClickEvents() override;
 
 private:
     explicit SearchFieldCancelButtonElement(Document&);
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual bool supportsFocus() const OVERRIDE { return false; }
+    virtual void detach(const AttachContext& = AttachContext()) override;
+    virtual bool supportsFocus() const override { return false; }
 
     bool m_capturing;
 };

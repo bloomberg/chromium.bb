@@ -66,7 +66,7 @@ class TextMetrics;
 
 typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > MutableStylePropertyMap;
 
-class CanvasRenderingContext2D FINAL: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
+class CanvasRenderingContext2D final: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
@@ -241,7 +241,7 @@ public:
     void loseContext();
     void restoreContext();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     enum Direction {
@@ -250,7 +250,7 @@ private:
         DirectionLTR
     };
 
-    class State FINAL : public CSSFontSelectorClient {
+    class State final : public CSSFontSelectorClient {
     public:
         State();
         virtual ~State();
@@ -259,9 +259,9 @@ private:
         State& operator=(const State&);
 
         // CSSFontSelectorClient implementation
-        virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
+        virtual void fontsNeedUpdate(CSSFontSelector*) override;
 
-        virtual void trace(Visitor*) OVERRIDE;
+        virtual void trace(Visitor*) override;
 
         unsigned m_unrealizedSaveCount;
 
@@ -357,14 +357,14 @@ private:
 
     void validateStateStack();
 
-    virtual bool is2d() const OVERRIDE { return true; }
-    virtual bool isAccelerated() const OVERRIDE;
-    virtual bool hasAlpha() const OVERRIDE { return m_hasAlpha; }
-    virtual void setIsHidden(bool) OVERRIDE;
+    virtual bool is2d() const override { return true; }
+    virtual bool isAccelerated() const override;
+    virtual bool hasAlpha() const override { return m_hasAlpha; }
+    virtual void setIsHidden(bool) override;
 
-    virtual bool isTransformInvertible() const OVERRIDE { return state().m_invertibleCTM; }
+    virtual bool isTransformInvertible() const override { return state().m_invertibleCTM; }
 
-    virtual blink::WebLayer* platformLayer() const OVERRIDE;
+    virtual blink::WebLayer* platformLayer() const override;
     TextDirection toTextDirection(Direction, RenderStyle** computedStyle = nullptr) const;
 
     WillBeHeapVector<OwnPtrWillBeMember<State> > m_stateStack;

@@ -59,17 +59,17 @@ namespace blink {
 
 using namespace HTMLNames;
 
-class DataListIndicatorElement FINAL : public HTMLDivElement {
+class DataListIndicatorElement final : public HTMLDivElement {
 private:
     inline DataListIndicatorElement(Document& document) : HTMLDivElement(document) { }
     inline HTMLInputElement* hostInput() const { return toHTMLInputElement(shadowHost()); }
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE
+    virtual RenderObject* createRenderer(RenderStyle*) override
     {
         return new RenderDetailsMarker(this);
     }
 
-    virtual void* preDispatchEventHandler(Event* event) OVERRIDE
+    virtual void* preDispatchEventHandler(Event* event) override
     {
         // Chromium opens autofill popup in a mousedown event listener
         // associated to the document. We don't want to open it in this case
@@ -80,7 +80,7 @@ private:
         return 0;
     }
 
-    virtual void defaultEventHandler(Event* event) OVERRIDE
+    virtual void defaultEventHandler(Event* event) override
     {
         ASSERT(document().isActive());
         if (event->type() != EventTypeNames::click)
@@ -92,7 +92,7 @@ private:
         }
     }
 
-    virtual bool willRespondToMouseClickEvents() OVERRIDE
+    virtual bool willRespondToMouseClickEvents() override
     {
         return hostInput() && !hostInput()->isDisabledOrReadOnly() && document().isActive();
     }

@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class HTMLButtonElement FINAL : public HTMLFormControlElement {
+class HTMLButtonElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLButtonElement> create(Document&, HTMLFormElement*);
@@ -37,44 +37,44 @@ public:
 
     const AtomicString& value() const;
 
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    virtual bool willRespondToMouseClickEvents() override;
 
 private:
     HTMLButtonElement(Document&, HTMLFormElement*);
 
     enum Type { SUBMIT, RESET, BUTTON };
 
-    virtual const AtomicString& formControlType() const OVERRIDE;
+    virtual const AtomicString& formControlType() const override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
     // HTMLFormControlElement always creates one, but buttons don't need it.
-    virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE { return false; }
+    virtual bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
-    virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual void defaultEventHandler(Event*) override;
 
-    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
+    virtual bool appendFormData(FormDataList&, bool) override;
 
-    virtual bool isEnumeratable() const OVERRIDE { return true; }
-    virtual bool supportLabels() const OVERRIDE { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
-    virtual bool supportsAutofocus() const OVERRIDE;
+    virtual bool isEnumeratable() const override { return true; }
+    virtual bool supportLabels() const override { return true; }
+    virtual bool isInteractiveContent() const override;
+    virtual bool supportsAutofocus() const override;
 
-    virtual bool canBeSuccessfulSubmitButton() const OVERRIDE;
-    virtual bool isActivatedSubmit() const OVERRIDE;
-    virtual void setActivatedSubmit(bool flag) OVERRIDE;
+    virtual bool canBeSuccessfulSubmitButton() const override;
+    virtual bool isActivatedSubmit() const override;
+    virtual void setActivatedSubmit(bool flag) override;
 
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual void accessKeyAction(bool sendMouseEvents) override;
+    virtual bool isURLAttribute(const Attribute&) const override;
 
-    virtual bool canStartSelection() const OVERRIDE { return false; }
+    virtual bool canStartSelection() const override { return false; }
 
-    virtual bool isOptionalFormControl() const OVERRIDE { return true; }
-    virtual bool recalcWillValidate() const OVERRIDE;
+    virtual bool isOptionalFormControl() const override { return true; }
+    virtual bool recalcWillValidate() const override;
 
     Type m_type;
     bool m_isActivatedSubmit;

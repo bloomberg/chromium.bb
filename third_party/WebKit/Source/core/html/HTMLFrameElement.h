@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class HTMLFrameElement FINAL : public HTMLFrameElementBase {
+class HTMLFrameElement final : public HTMLFrameElementBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLFrameElement);
@@ -40,12 +40,12 @@ public:
 private:
     explicit HTMLFrameElement(Document&);
 
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     bool m_frameBorder;
     bool m_frameBorderSet;

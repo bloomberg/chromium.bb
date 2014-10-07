@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class VTTRegionList FINAL : public RefCountedWillBeGarbageCollected<VTTRegionList>, public ScriptWrappable {
+class VTTRegionList final : public RefCountedWillBeGarbageCollected<VTTRegionList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<VTTRegionList> create()

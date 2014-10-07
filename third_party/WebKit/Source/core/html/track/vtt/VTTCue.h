@@ -40,7 +40,7 @@ class ExecutionContext;
 class VTTCue;
 class VTTScanner;
 
-class VTTCueBox FINAL : public HTMLDivElement {
+class VTTCueBox final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<VTTCueBox> create(Document& document, VTTCue* cue)
     {
@@ -50,17 +50,17 @@ public:
     VTTCue* getCue() const { return m_cue; }
     void applyCSSProperties(const IntSize& videoSize);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     VTTCueBox(Document&, VTTCue*);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
     RawPtrWillBeMember<VTTCue> m_cue;
 };
 
-class VTTCue FINAL : public TextTrackCue {
+class VTTCue final : public TextTrackCue {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<VTTCue> create(Document& document, double startTime, double endTime, const String& text)
@@ -99,11 +99,11 @@ public:
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
 
-    virtual void updateDisplay(const IntSize& videoSize, HTMLDivElement& container) OVERRIDE;
+    virtual void updateDisplay(const IntSize& videoSize, HTMLDivElement& container) override;
 
-    virtual void updateDisplayTree(double movieTime) OVERRIDE;
-    virtual void removeDisplayTree() OVERRIDE;
-    virtual void notifyRegionWhenRemovingDisplayTree(bool notifyRegion) OVERRIDE;
+    virtual void updateDisplayTree(double movieTime) override;
+    virtual void removeDisplayTree() override;
+    virtual void notifyRegionWhenRemovingDisplayTree(bool notifyRegion) override;
 
     void markFutureAndPastNodes(ContainerNode*, double previousTimestamp, double movieTime);
 
@@ -134,13 +134,13 @@ public:
     };
     CueAlignment getAlignment() const { return m_cueAlignment; }
 
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const override;
 
 #ifndef NDEBUG
-    virtual String toString() const OVERRIDE;
+    virtual String toString() const override;
 #endif
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     VTTCue(Document&, double startTime, double endTime, const String& text);
@@ -150,7 +150,7 @@ private:
     VTTCueBox& ensureDisplayTree();
     PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree(const IntSize& videoSize);
 
-    virtual void cueDidChange() OVERRIDE;
+    virtual void cueDidChange() override;
 
     void createVTTNodeTree();
     void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);

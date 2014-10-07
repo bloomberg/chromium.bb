@@ -77,7 +77,7 @@ public:
         void performDeferredWidgetTreeOperations();
     };
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
@@ -86,13 +86,13 @@ protected:
     bool loadOrRedirectSubframe(const KURL&, const AtomicString& frameName, bool lockBackForwardList);
 
 private:
-    virtual bool isKeyboardFocusable() const OVERRIDE;
-    virtual bool isFrameOwnerElement() const OVERRIDE FINAL { return true; }
+    virtual bool isKeyboardFocusable() const override;
+    virtual bool isFrameOwnerElement() const override final { return true; }
 
     // FrameOwner overrides:
     virtual bool isLocal() const { return true; }
-    virtual SandboxFlags sandboxFlags() const OVERRIDE { return m_sandboxFlags; }
-    virtual void dispatchLoad() OVERRIDE;
+    virtual SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
+    virtual void dispatchLoad() override;
 
     RawPtrWillBeMember<Frame> m_contentFrame;
     RefPtr<Widget> m_widget;

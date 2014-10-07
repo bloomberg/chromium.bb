@@ -104,10 +104,10 @@ private:
 class MediaControlDivElement : public HTMLDivElement, public MediaControlElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
 public:
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
-    virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
+    virtual bool isMediaControlElement() const override final { return true; }
     MediaControlDivElement(MediaControls&, MediaControlElementType);
 };
 
@@ -116,15 +116,15 @@ protected:
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
 public:
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
-    virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
+    virtual bool isMediaControlElement() const override final { return true; }
     MediaControlInputElement(MediaControls&, MediaControlElementType);
 
 private:
     virtual void updateDisplayType() { }
-    virtual bool isMouseFocusable() const OVERRIDE;
+    virtual bool isMouseFocusable() const override;
 };
 
 // ----------------------------

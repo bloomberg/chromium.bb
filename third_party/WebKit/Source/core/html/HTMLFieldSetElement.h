@@ -31,11 +31,11 @@ namespace blink {
 class FormAssociatedElement;
 class HTMLFormControlsCollection;
 
-class HTMLFieldSetElement FINAL : public HTMLFormControlElement {
+class HTMLFieldSetElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
     HTMLLegendElement* legend() const;
 
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
@@ -43,18 +43,18 @@ public:
     const FormAssociatedElement::List& associatedElements() const;
 
 protected:
-    virtual void disabledAttributeChanged() OVERRIDE;
+    virtual void disabledAttributeChanged() override;
 
 private:
     HTMLFieldSetElement(Document&, HTMLFormElement*);
 
-    virtual bool isEnumeratable() const OVERRIDE { return true; }
-    virtual bool supportsFocus() const OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool recalcWillValidate() const OVERRIDE { return false; }
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool isEnumeratable() const override { return true; }
+    virtual bool supportsFocus() const override;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool recalcWillValidate() const override { return false; }
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual bool areAuthorShadowsAllowed() const override { return false; }
 
     static void invalidateDisabledStateUnder(Element&);
     void refreshElementsIfNeeded() const;

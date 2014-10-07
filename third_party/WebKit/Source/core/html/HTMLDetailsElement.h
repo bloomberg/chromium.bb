@@ -28,7 +28,7 @@ namespace blink {
 template<typename T> class EventSender;
 typedef EventSender<HTMLDetailsElement> DetailsEventSender;
 
-class HTMLDetailsElement FINAL : public HTMLElement {
+class HTMLDetailsElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLDetailsElement> create(Document&);
@@ -42,10 +42,10 @@ public:
 private:
     explicit HTMLDetailsElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
-    virtual bool isInteractiveContent() const OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual bool isInteractiveContent() const override;
 
     bool m_isOpen;
 };

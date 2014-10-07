@@ -40,11 +40,11 @@ class DateTimeSymbolicFieldElement : public DateTimeFieldElement, public TypeAhe
 protected:
     DateTimeSymbolicFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
     size_t symbolsSize() const { return m_symbols.size(); }
-    virtual bool hasValue() const OVERRIDE FINAL;
+    virtual bool hasValue() const override final;
     void initialize(const AtomicString& pseudo, const String& axHelpText);
-    virtual void setEmptyValue(EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
-    virtual int valueAsInteger() const OVERRIDE FINAL;
+    virtual void setEmptyValue(EventBehavior = DispatchNoEvent) override final;
+    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override final;
+    virtual int valueAsInteger() const override final;
 
 private:
     static const int invalidIndex = -1;
@@ -53,18 +53,18 @@ private:
     bool indexIsInRange(int index) const { return index >= m_minimumIndex && index <= m_maximumIndex; }
 
     // DateTimeFieldElement functions.
-    virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE FINAL;
-    virtual float maximumWidth(const Font&) OVERRIDE;
-    virtual void stepDown() OVERRIDE FINAL;
-    virtual void stepUp() OVERRIDE FINAL;
-    virtual String value() const OVERRIDE FINAL;
-    virtual int valueForARIAValueNow() const OVERRIDE FINAL;
-    virtual String visibleValue() const OVERRIDE FINAL;
+    virtual void handleKeyboardEvent(KeyboardEvent*) override final;
+    virtual float maximumWidth(const Font&) override;
+    virtual void stepDown() override final;
+    virtual void stepUp() override final;
+    virtual String value() const override final;
+    virtual int valueForARIAValueNow() const override final;
+    virtual String visibleValue() const override final;
 
     // TypeAheadDataSource functions.
-    virtual int indexOfSelectedOption() const OVERRIDE;
-    virtual int optionCount() const OVERRIDE;
-    virtual String optionAtIndex(int index) const OVERRIDE;
+    virtual int indexOfSelectedOption() const override;
+    virtual int optionCount() const override;
+    virtual String optionAtIndex(int index) const override;
 
     const Vector<String> m_symbols;
 

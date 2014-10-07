@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class RadioNodeList FINAL : public LiveNodeList {
+class RadioNodeList final : public LiveNodeList {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<RadioNodeList> create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
@@ -54,7 +54,7 @@ private:
     bool matchesByIdOrName(const Element&) const;
     bool shouldOnlyMatchImgElements() const { return type() == RadioImgNodeListType; }
 
-    virtual bool elementMatches(const Element&) const OVERRIDE;
+    virtual bool elementMatches(const Element&) const override;
 
     AtomicString m_name;
 };

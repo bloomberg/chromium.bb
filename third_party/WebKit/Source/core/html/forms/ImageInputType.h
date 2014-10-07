@@ -38,30 +38,30 @@
 
 namespace blink {
 
-class ImageInputType FINAL : public BaseButtonInputType {
+class ImageInputType final : public BaseButtonInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     ImageInputType(HTMLInputElement&);
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool isFormDataAppendable() const OVERRIDE;
-    virtual bool appendFormData(FormDataList&, bool) const OVERRIDE;
-    virtual String resultForDialogSubmit() const OVERRIDE;
-    virtual bool supportsValidation() const OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
-    virtual void handleDOMActivateEvent(Event*) OVERRIDE;
-    virtual void altAttributeChanged() OVERRIDE;
-    virtual void srcAttributeChanged() OVERRIDE;
-    virtual void startResourceLoading() OVERRIDE;
-    virtual bool shouldRespectAlignAttribute() OVERRIDE;
-    virtual bool canBeSuccessfulSubmitButton() OVERRIDE;
-    virtual bool isEnumeratable() OVERRIDE;
-    virtual bool shouldRespectHeightAndWidthAttributes() OVERRIDE;
-    virtual unsigned height() const OVERRIDE;
-    virtual unsigned width() const OVERRIDE;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
-    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool isFormDataAppendable() const override;
+    virtual bool appendFormData(FormDataList&, bool) const override;
+    virtual String resultForDialogSubmit() const override;
+    virtual bool supportsValidation() const override;
+    virtual RenderObject* createRenderer(RenderStyle*) const override;
+    virtual void handleDOMActivateEvent(Event*) override;
+    virtual void altAttributeChanged() override;
+    virtual void srcAttributeChanged() override;
+    virtual void startResourceLoading() override;
+    virtual bool shouldRespectAlignAttribute() override;
+    virtual bool canBeSuccessfulSubmitButton() override;
+    virtual bool isEnumeratable() override;
+    virtual bool shouldRespectHeightAndWidthAttributes() override;
+    virtual unsigned height() const override;
+    virtual unsigned width() const override;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    virtual const QualifiedName& subResourceAttributeName() const override;
 
     IntPoint m_clickLocation; // Valid only during HTMLFormElement::prepareForSubmission().
 };

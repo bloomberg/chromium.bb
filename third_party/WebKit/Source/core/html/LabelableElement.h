@@ -45,13 +45,13 @@ public:
     PassRefPtrWillBeRawPtr<LabelsNodeList> labels();
     virtual bool supportLabels() const { return false; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     LabelableElement(const QualifiedName& tagName, Document&);
 
 private:
-    virtual bool isLabelable() const OVERRIDE FINAL { return true; }
+    virtual bool isLabelable() const override final { return true; }
 };
 
 inline bool isLabelableElement(const HTMLElement& element)

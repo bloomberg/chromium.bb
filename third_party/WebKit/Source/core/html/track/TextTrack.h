@@ -57,7 +57,7 @@ public:
     virtual void setTrackList(TextTrackList*);
     TextTrackList* trackList() { return m_trackList; }
 
-    virtual void setKind(const AtomicString&) OVERRIDE;
+    virtual void setKind(const AtomicString&) override;
 
     static const AtomicString& subtitlesKeyword();
     static const AtomicString& captionsKeyword();
@@ -113,16 +113,16 @@ public:
     void removeAllCues();
 
     // EventTarget methods
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
 
-    virtual bool isValidKind(const AtomicString& kind) const OVERRIDE { return isValidKindKeyword(kind); }
-    virtual AtomicString defaultKind() const OVERRIDE { return subtitlesKeyword(); }
+    virtual bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
+    virtual AtomicString defaultKind() const override { return subtitlesKeyword(); }
 
     RefPtrWillBeMember<TextTrackCueList> m_cues;
 

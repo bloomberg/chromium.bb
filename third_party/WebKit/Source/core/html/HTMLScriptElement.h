@@ -31,7 +31,7 @@ namespace blink {
 
 class ScriptLoader;
 
-class HTMLScriptElement FINAL : public HTMLElement, public ScriptLoaderClient {
+class HTMLScriptElement final : public HTMLElement, public ScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);
@@ -49,30 +49,30 @@ public:
 private:
     HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void didNotifySubtreeInsertionsToDocument() override;
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual void didMoveToNewDocument(Document& oldDocument) override;
 
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
-    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const override;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    virtual const QualifiedName& subResourceAttributeName() const override;
 
-    virtual String sourceAttributeValue() const OVERRIDE;
-    virtual String charsetAttributeValue() const OVERRIDE;
-    virtual String typeAttributeValue() const OVERRIDE;
-    virtual String languageAttributeValue() const OVERRIDE;
-    virtual String forAttributeValue() const OVERRIDE;
-    virtual String eventAttributeValue() const OVERRIDE;
-    virtual bool asyncAttributeValue() const OVERRIDE;
-    virtual bool deferAttributeValue() const OVERRIDE;
-    virtual bool hasSourceAttribute() const OVERRIDE;
+    virtual String sourceAttributeValue() const override;
+    virtual String charsetAttributeValue() const override;
+    virtual String typeAttributeValue() const override;
+    virtual String languageAttributeValue() const override;
+    virtual String forAttributeValue() const override;
+    virtual String eventAttributeValue() const override;
+    virtual bool asyncAttributeValue() const override;
+    virtual bool deferAttributeValue() const override;
+    virtual bool hasSourceAttribute() const override;
 
-    virtual void dispatchLoadEvent() OVERRIDE;
+    virtual void dispatchLoadEvent() override;
 
-    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
 
     OwnPtr<ScriptLoader> m_loader;
 };

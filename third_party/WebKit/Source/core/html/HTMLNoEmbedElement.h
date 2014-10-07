@@ -37,14 +37,14 @@ namespace blink {
 
 // <noembed> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's rendererIsNeeded doesn't need to know about it.
-class HTMLNoEmbedElement FINAL : public HTMLElement {
+class HTMLNoEmbedElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLNoEmbedElement);
 
 private:
     explicit HTMLNoEmbedElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 };
 
 } // namespace

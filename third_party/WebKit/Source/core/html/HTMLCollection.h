@@ -42,7 +42,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
-    virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
+    virtual void invalidateCache(Document* oldDocument = 0) const override;
     void invalidateCacheForAttribute(const QualifiedName*) const;
 
     // DOM API
@@ -70,7 +70,7 @@ public:
 protected:
     HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
 
-    class NamedItemCache FINAL : public NoBaseWillBeGarbageCollected<NamedItemCache> {
+    class NamedItemCache final : public NoBaseWillBeGarbageCollected<NamedItemCache> {
     public:
         static PassOwnPtrWillBeRawPtr<NamedItemCache> create()
         {

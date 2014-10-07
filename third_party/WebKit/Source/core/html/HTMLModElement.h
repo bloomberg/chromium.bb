@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class HTMLModElement FINAL : public HTMLElement {
+class HTMLModElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement);
@@ -36,9 +36,9 @@ public:
 private:
     HTMLModElement(const QualifiedName&, Document&);
 
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
-    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const override;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    virtual const QualifiedName& subResourceAttributeName() const override;
 };
 
 } // namespace blink

@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class HTMLParamElement FINAL : public HTMLElement {
+class HTMLParamElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLParamElement);
@@ -40,7 +40,7 @@ public:
 private:
     explicit HTMLParamElement(Document&);
 
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const override;
 };
 
 } // namespace blink

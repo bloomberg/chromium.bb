@@ -36,7 +36,7 @@ class HTMLImageElement;
 // This class is just a big hack to find form elements even in malformed HTML elements.
 // The famous <table><tr><form><td> problem.
 
-class HTMLFormControlsCollection FINAL : public HTMLCollection {
+class HTMLFormControlsCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> create(ContainerNode&, CollectionType);
@@ -45,21 +45,21 @@ public:
 
     HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLCollection::item(offset)); }
 
-    virtual HTMLElement* namedItem(const AtomicString& name) const OVERRIDE;
+    virtual HTMLElement* namedItem(const AtomicString& name) const override;
     void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>&, RefPtrWillBeRawPtr<Element>&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit HTMLFormControlsCollection(ContainerNode&);
 
-    virtual void updateIdNameCache() const OVERRIDE;
-    virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
+    virtual void updateIdNameCache() const override;
+    virtual void supportedPropertyNames(Vector<String>& names) override;
 
     const FormAssociatedElement::List& formControlElements() const;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& formImageElements() const;
-    virtual HTMLElement* virtualItemAfter(Element*) const OVERRIDE;
-    virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
+    virtual HTMLElement* virtualItemAfter(Element*) const override;
+    virtual void invalidateCache(Document* oldDocument = 0) const override;
 
     mutable RawPtrWillBeMember<HTMLElement> m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;

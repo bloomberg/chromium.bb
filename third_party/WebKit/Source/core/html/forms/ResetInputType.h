@@ -35,17 +35,17 @@
 
 namespace blink {
 
-class ResetInputType FINAL : public BaseButtonInputType {
+class ResetInputType final : public BaseButtonInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     ResetInputType(HTMLInputElement& element) : BaseButtonInputType(element) { }
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool supportsValidation() const OVERRIDE;
-    virtual void handleDOMActivateEvent(Event*) OVERRIDE;
-    virtual String defaultValue() const OVERRIDE;
-    virtual bool isTextButton() const OVERRIDE;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool supportsValidation() const override;
+    virtual void handleDOMActivateEvent(Event*) override;
+    virtual String defaultValue() const override;
+    virtual bool isTextButton() const override;
 };
 
 } // namespace blink

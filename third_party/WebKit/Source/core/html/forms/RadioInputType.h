@@ -35,23 +35,23 @@
 
 namespace blink {
 
-class RadioInputType FINAL : public BaseCheckableInputType {
+class RadioInputType final : public BaseCheckableInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) { }
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool valueMissing(const String&) const OVERRIDE;
-    virtual String valueMissingText() const OVERRIDE;
-    virtual void handleClickEvent(MouseEvent*) OVERRIDE;
-    virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
-    virtual void handleKeyupEvent(KeyboardEvent*) OVERRIDE;
-    virtual bool isKeyboardFocusable() const OVERRIDE;
-    virtual bool shouldSendChangeEventAfterCheckedChanged() OVERRIDE;
-    virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() OVERRIDE;
-    virtual void didDispatchClick(Event*, const ClickHandlingState&) OVERRIDE;
-    virtual bool shouldAppearIndeterminate() const OVERRIDE;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool valueMissing(const String&) const override;
+    virtual String valueMissingText() const override;
+    virtual void handleClickEvent(MouseEvent*) override;
+    virtual void handleKeydownEvent(KeyboardEvent*) override;
+    virtual void handleKeyupEvent(KeyboardEvent*) override;
+    virtual bool isKeyboardFocusable() const override;
+    virtual bool shouldSendChangeEventAfterCheckedChanged() override;
+    virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
+    virtual void didDispatchClick(Event*, const ClickHandlingState&) override;
+    virtual bool shouldAppearIndeterminate() const override;
 };
 
 } // namespace blink

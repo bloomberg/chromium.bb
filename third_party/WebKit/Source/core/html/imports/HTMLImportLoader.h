@@ -54,7 +54,7 @@ class HTMLImportsController;
 // HTMLImportLoader is owned by HTMLImportsController.
 //
 //
-class HTMLImportLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportLoader>, public ResourceOwner<RawResource>, public DocumentParserClient {
+class HTMLImportLoader final : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportLoader>, public ResourceOwner<RawResource>, public DocumentParserClient {
 public:
     enum State {
         StateLoading,
@@ -102,9 +102,9 @@ private:
     HTMLImportLoader(HTMLImportsController*);
 
     // RawResourceClient
-    virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
-    virtual void dataReceived(Resource*, const char* data, unsigned length) OVERRIDE;
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void responseReceived(Resource*, const ResourceResponse&) override;
+    virtual void dataReceived(Resource*, const char* data, unsigned length) override;
+    virtual void notifyFinished(Resource*) override;
 
     // DocumentParserClient
 

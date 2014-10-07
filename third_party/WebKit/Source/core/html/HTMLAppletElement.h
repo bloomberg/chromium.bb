@@ -29,32 +29,32 @@ namespace blink {
 
 class KURL;
 
-class HTMLAppletElement FINAL : public HTMLPlugInElement {
+class HTMLAppletElement final : public HTMLPlugInElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLAppletElement> create(Document&, bool createdByParser);
 
 protected:
-    virtual RenderWidget* renderWidgetForJSBindings() const OVERRIDE;
+    virtual RenderWidget* renderWidgetForJSBindings() const override;
 
 private:
     HTMLAppletElement(Document&, bool createdByParser);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isURLAttribute(const Attribute&) const override;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual RenderWidget* existingRenderWidget() const OVERRIDE;
-    virtual void updateWidgetInternal() OVERRIDE;
+    virtual RenderWidget* existingRenderWidget() const override;
+    virtual void updateWidgetInternal() override;
 
     bool canEmbedJava() const;
     bool canEmbedURL(const KURL&) const;
 
-    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
-    virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
+    virtual bool shouldRegisterAsNamedItem() const override { return true; }
+    virtual bool shouldRegisterAsExtraNamedItem() const override { return true; }
 };
 
 } // namespace blink

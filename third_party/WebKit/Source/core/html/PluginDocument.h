@@ -32,7 +32,7 @@ namespace blink {
 class Node;
 class Widget;
 
-class PluginDocument FINAL : public HTMLDocument {
+class PluginDocument final : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<PluginDocument> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -44,14 +44,14 @@ public:
     Widget* pluginWidget();
     Node* pluginNode();
 
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void detach(const AttachContext& = AttachContext()) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit PluginDocument(const DocumentInit&);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
     RefPtrWillBeMember<Node> m_pluginNode;
 };

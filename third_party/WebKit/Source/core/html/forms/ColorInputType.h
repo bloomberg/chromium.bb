@@ -38,36 +38,36 @@ namespace blink {
 
 class ColorChooser;
 
-class ColorInputType FINAL : public BaseClickableWithKeyInputType, public ColorChooserClient {
+class ColorInputType final : public BaseClickableWithKeyInputType, public ColorChooserClient {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
     virtual ~ColorInputType();
 
     // ColorChooserClient implementation.
-    virtual void didChooseColor(const Color&) OVERRIDE;
-    virtual void didEndChooser() OVERRIDE;
-    virtual Element& ownerElement() const OVERRIDE;
-    virtual IntRect elementRectRelativeToRootView() const OVERRIDE;
-    virtual Color currentColor() OVERRIDE;
-    virtual bool shouldShowSuggestions() const OVERRIDE;
-    virtual Vector<ColorSuggestion> suggestions() const OVERRIDE;
-    ColorChooserClient* colorChooserClient() OVERRIDE;
+    virtual void didChooseColor(const Color&) override;
+    virtual void didEndChooser() override;
+    virtual Element& ownerElement() const override;
+    virtual IntRect elementRectRelativeToRootView() const override;
+    virtual Color currentColor() override;
+    virtual bool shouldShowSuggestions() const override;
+    virtual Vector<ColorSuggestion> suggestions() const override;
+    ColorChooserClient* colorChooserClient() override;
 
 private:
     ColorInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
-    virtual void countUsage() OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool supportsRequired() const OVERRIDE;
-    virtual String fallbackValue() const OVERRIDE;
-    virtual String sanitizeValue(const String&) const OVERRIDE;
-    virtual void createShadowSubtree() OVERRIDE;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
-    virtual void handleDOMActivateEvent(Event*) OVERRIDE;
-    virtual void closePopupView() OVERRIDE;
-    virtual bool shouldRespectListAttribute() OVERRIDE;
-    virtual bool typeMismatchFor(const String&) const OVERRIDE;
-    virtual void updateView() OVERRIDE;
-    virtual AXObject* popupRootAXObject() OVERRIDE;
+    virtual void countUsage() override;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool supportsRequired() const override;
+    virtual String fallbackValue() const override;
+    virtual String sanitizeValue(const String&) const override;
+    virtual void createShadowSubtree() override;
+    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    virtual void handleDOMActivateEvent(Event*) override;
+    virtual void closePopupView() override;
+    virtual bool shouldRespectListAttribute() override;
+    virtual bool typeMismatchFor(const String&) const override;
+    virtual void updateView() override;
+    virtual AXObject* popupRootAXObject() override;
 
     Color valueAsColor() const;
     void endColorChooser();

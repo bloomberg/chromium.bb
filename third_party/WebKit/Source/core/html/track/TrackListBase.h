@@ -53,7 +53,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const OVERRIDE
+    virtual ExecutionContext* executionContext() const override
     {
         if (m_mediaElement)
             return m_mediaElement->executionContext();

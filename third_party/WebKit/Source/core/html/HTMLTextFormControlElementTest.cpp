@@ -30,7 +30,7 @@ namespace {
 
 class HTMLTextFormControlElementTest : public ::testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
@@ -53,17 +53,17 @@ class DummyTextCheckerClient : public EmptyTextCheckerClient {
 public:
     ~DummyTextCheckerClient() { }
 
-    virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const OVERRIDE { return false; }
+    virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override { return false; }
 };
 
 class DummySpellCheckerClient : public EmptySpellCheckerClient {
 public:
     virtual ~DummySpellCheckerClient() { }
 
-    virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return true; }
-    virtual bool isGrammarCheckingEnabled() OVERRIDE { return true; }
+    virtual bool isContinuousSpellCheckingEnabled() override { return true; }
+    virtual bool isGrammarCheckingEnabled() override { return true; }
 
-    virtual TextCheckerClient& textChecker() OVERRIDE { return m_dummyTextCheckerClient; }
+    virtual TextCheckerClient& textChecker() override { return m_dummyTextCheckerClient; }
 
 private:
     DummyTextCheckerClient m_dummyTextCheckerClient;

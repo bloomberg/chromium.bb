@@ -27,18 +27,18 @@
 
 namespace blink {
 
-class HTMLHRElement FINAL : public HTMLElement {
+class HTMLHRElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLHRElement);
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return hasChildren(); }
+    virtual bool canContainRangeEndPoint() const override { return hasChildren(); }
 
 private:
     explicit HTMLHRElement(Document&);
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 };
 
 } // namespace blink

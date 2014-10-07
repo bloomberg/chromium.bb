@@ -55,7 +55,7 @@ class RenderObject;
 class RenderStyle;
 class TouchEvent;
 
-struct ClickHandlingState FINAL : public NoBaseWillBeGarbageCollected<ClickHandlingState> {
+struct ClickHandlingState final : public NoBaseWillBeGarbageCollected<ClickHandlingState> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 
 public:

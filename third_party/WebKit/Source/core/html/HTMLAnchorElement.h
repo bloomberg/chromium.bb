@@ -67,15 +67,15 @@ public:
 
     const AtomicString& name() const;
 
-    virtual KURL url() const OVERRIDE FINAL;
-    virtual void setURL(const KURL&) OVERRIDE FINAL;
+    virtual KURL url() const override final;
+    virtual void setURL(const KURL&) override final;
 
-    virtual String input() const OVERRIDE FINAL;
-    virtual void setInput(const String&) OVERRIDE FINAL;
+    virtual String input() const override final;
+    virtual void setInput(const String&) override final;
 
-    virtual bool isLiveLink() const OVERRIDE FINAL;
+    virtual bool isLiveLink() const override final;
 
-    virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
+    virtual bool willRespondToMouseClickEvents() override final;
 
     bool hasRel(uint32_t relation) const;
     void setRel(const AtomicString&);
@@ -88,25 +88,25 @@ public:
 protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
 
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool supportsFocus() const OVERRIDE;
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool supportsFocus() const override;
 
 private:
-    virtual bool shouldHaveFocusAppearance() const OVERRIDE FINAL;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) OVERRIDE;
-    virtual bool isMouseFocusable() const OVERRIDE;
-    virtual bool isKeyboardFocusable() const OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE FINAL;
-    virtual void setActive(bool = true) OVERRIDE FINAL;
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE FINAL;
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE FINAL;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE FINAL;
-    virtual bool canStartSelection() const OVERRIDE FINAL;
-    virtual short tabIndex() const OVERRIDE FINAL;
-    virtual bool draggable() const OVERRIDE FINAL;
-    virtual bool isInteractiveContent() const OVERRIDE FINAL;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual bool shouldHaveFocusAppearance() const override final;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) override;
+    virtual bool isMouseFocusable() const override;
+    virtual bool isKeyboardFocusable() const override;
+    virtual void defaultEventHandler(Event*) override final;
+    virtual void setActive(bool = true) override final;
+    virtual void accessKeyAction(bool sendMouseEvents) override final;
+    virtual bool isURLAttribute(const Attribute&) const override final;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override final;
+    virtual bool canStartSelection() const override final;
+    virtual short tabIndex() const override final;
+    virtual bool draggable() const override final;
+    virtual bool isInteractiveContent() const override final;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void handleClick(Event*);
 
     uint32_t m_linkRelations;

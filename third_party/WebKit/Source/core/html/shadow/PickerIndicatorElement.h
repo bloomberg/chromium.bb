@@ -40,7 +40,7 @@ namespace blink {
 
 class HTMLInputElement;
 
-class PickerIndicatorElement FINAL : public HTMLDivElement, public DateTimeChooserClient {
+class PickerIndicatorElement final : public HTMLDivElement, public DateTimeChooserClient {
 public:
     // PickerIndicatorOwner implementer must call removePickerIndicatorOwner when
     // it doesn't handle event, e.g. at destruction.
@@ -57,28 +57,28 @@ public:
 
     static PassRefPtrWillBeRawPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
     virtual ~PickerIndicatorElement();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     void openPopup();
     void closePopup();
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    virtual bool willRespondToMouseClickEvents() override;
     void removePickerIndicatorOwner() { m_pickerIndicatorOwner = nullptr; }
     AXObject* popupRootAXObject() const;
 
     // DateTimeChooserClient implementation.
-    virtual Element& ownerElement() const OVERRIDE;
-    virtual void didChooseValue(const String&) OVERRIDE;
-    virtual void didChooseValue(double) OVERRIDE;
-    virtual void didEndChooser() OVERRIDE;
+    virtual Element& ownerElement() const override;
+    virtual void didChooseValue(const String&) override;
+    virtual void didChooseValue(double) override;
+    virtual void didEndChooser() override;
 
 private:
     PickerIndicatorElement(Document&, PickerIndicatorOwner&);
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual bool isPickerIndicatorElement() const OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual void defaultEventHandler(Event*) override;
+    virtual void detach(const AttachContext& = AttachContext()) override;
+    virtual bool isPickerIndicatorElement() const override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void didNotifySubtreeInsertionsToDocument() override;
 
     HTMLInputElement* hostInput();
 

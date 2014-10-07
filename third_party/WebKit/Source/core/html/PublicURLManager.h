@@ -40,7 +40,7 @@ class SecurityOrigin;
 class URLRegistry;
 class URLRegistrable;
 
-class PublicURLManager FINAL : public ActiveDOMObject {
+class PublicURLManager final : public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<PublicURLManager> create(ExecutionContext*);
@@ -50,7 +50,7 @@ public:
     void revoke(const String& uuid);
 
     // ActiveDOMObject interface.
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
 
 private:
     PublicURLManager(ExecutionContext*);

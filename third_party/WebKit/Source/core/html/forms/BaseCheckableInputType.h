@@ -42,17 +42,17 @@ protected:
     virtual void handleKeydownEvent(KeyboardEvent*);
 
 private:
-    virtual FormControlState saveFormControlState() const OVERRIDE FINAL;
-    virtual void restoreFormControlState(const FormControlState&) OVERRIDE FINAL;
-    virtual bool appendFormData(FormDataList&, bool) const OVERRIDE FINAL;
-    virtual void handleKeypressEvent(KeyboardEvent*) OVERRIDE FINAL;
-    virtual bool canSetStringValue() const OVERRIDE FINAL;
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE FINAL;
-    virtual String fallbackValue() const OVERRIDE FINAL;
-    virtual bool storesValueSeparateFromAttribute() OVERRIDE FINAL;
-    virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE FINAL;
-    virtual bool isCheckable() OVERRIDE FINAL;
-    virtual bool shouldDispatchFormControlChangeEvent(String&, String&) OVERRIDE;
+    virtual FormControlState saveFormControlState() const override final;
+    virtual void restoreFormControlState(const FormControlState&) override final;
+    virtual bool appendFormData(FormDataList&, bool) const override final;
+    virtual void handleKeypressEvent(KeyboardEvent*) override final;
+    virtual bool canSetStringValue() const override final;
+    virtual void accessKeyAction(bool sendMouseEvents) override final;
+    virtual String fallbackValue() const override final;
+    virtual bool storesValueSeparateFromAttribute() override final;
+    virtual void setValue(const String&, bool, TextFieldEventBehavior) override final;
+    virtual bool isCheckable() override final;
+    virtual bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 };
 
 } // namespace blink

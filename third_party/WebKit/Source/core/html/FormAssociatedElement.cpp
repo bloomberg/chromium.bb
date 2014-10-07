@@ -42,8 +42,8 @@ class FormAttributeTargetObserver : public IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
-    virtual void trace(Visitor*) OVERRIDE;
-    virtual void idTargetChanged() OVERRIDE;
+    virtual void trace(Visitor*) override;
+    virtual void idTargetChanged() override;
 
 private:
     FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement*);

@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class HTMLBDIElement FINAL : public HTMLElement {
+class HTMLBDIElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLBDIElement);
 

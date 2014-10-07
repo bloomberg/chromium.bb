@@ -87,7 +87,7 @@ private:
 
 typedef Vector<OwnPtr<PreloadRequest> > PreloadRequestStream;
 
-class HTMLResourcePreloader FINAL : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader> {
+class HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader> {
     WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);

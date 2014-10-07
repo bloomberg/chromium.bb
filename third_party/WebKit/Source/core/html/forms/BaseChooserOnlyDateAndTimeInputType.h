@@ -43,21 +43,21 @@ private:
     void closeDateTimeChooser();
 
     // InputType functions:
-    virtual void createShadowSubtree() OVERRIDE;
-    virtual void closePopupView() OVERRIDE;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
-    virtual void handleDOMActivateEvent(Event*) OVERRIDE;
-    virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
-    virtual void handleKeypressEvent(KeyboardEvent*) OVERRIDE;
-    virtual void handleKeyupEvent(KeyboardEvent*) OVERRIDE;
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
-    virtual void updateView() OVERRIDE;
+    virtual void createShadowSubtree() override;
+    virtual void closePopupView() override;
+    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    virtual void handleDOMActivateEvent(Event*) override;
+    virtual void handleKeydownEvent(KeyboardEvent*) override;
+    virtual void handleKeypressEvent(KeyboardEvent*) override;
+    virtual void handleKeyupEvent(KeyboardEvent*) override;
+    virtual void accessKeyAction(bool sendMouseEvents) override;
+    virtual void updateView() override;
 
     // DateTimeChooserClient functions:
-    virtual Element& ownerElement() const OVERRIDE;
-    virtual void didChooseValue(const String&) OVERRIDE;
-    virtual void didChooseValue(double) OVERRIDE;
-    virtual void didEndChooser() OVERRIDE;
+    virtual Element& ownerElement() const override;
+    virtual void didChooseValue(const String&) override;
+    virtual void didChooseValue(double) override;
+    virtual void didEndChooser() override;
 
     RefPtr<DateTimeChooser> m_dateTimeChooser;
 };

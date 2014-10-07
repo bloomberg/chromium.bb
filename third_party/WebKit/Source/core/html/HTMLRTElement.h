@@ -11,14 +11,14 @@ namespace blink {
 
 // <rt> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's createRenderer doesn't need to know about it.
-class HTMLRTElement FINAL : public HTMLElement {
+class HTMLRTElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLRTElement);
 
 private:
     explicit HTMLRTElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 };
 
 } // namespace

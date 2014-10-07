@@ -14,7 +14,7 @@ namespace blink {
 
 class HTMLLinkElement;
 
-class LinkManifest FINAL : public LinkResource {
+class LinkManifest final : public LinkResource {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
@@ -23,10 +23,10 @@ public:
     virtual ~LinkManifest();
 
     // LinkResource
-    virtual void process() OVERRIDE;
-    virtual Type type() const OVERRIDE { return Manifest; }
-    virtual bool hasLoaded() const OVERRIDE;
-    virtual void ownerRemoved() OVERRIDE;
+    virtual void process() override;
+    virtual Type type() const override { return Manifest; }
+    virtual bool hasLoaded() const override;
+    virtual void ownerRemoved() override;
 
 private:
     explicit LinkManifest(HTMLLinkElement* owner);

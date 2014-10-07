@@ -35,21 +35,21 @@
 
 namespace blink {
 
-class PasswordInputType FINAL : public BaseTextInputType {
+class PasswordInputType final : public BaseTextInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    virtual void countUsage() OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE;
-    virtual FormControlState saveFormControlState() const OVERRIDE;
-    virtual void restoreFormControlState(const FormControlState&) OVERRIDE;
-    virtual bool shouldRespectListAttribute() OVERRIDE;
-    virtual bool shouldRespectSpeechAttribute() OVERRIDE;
-    virtual void enableSecureTextInput() OVERRIDE;
-    virtual void disableSecureTextInput() OVERRIDE;
+    virtual void countUsage() override;
+    virtual const AtomicString& formControlType() const override;
+    virtual bool shouldSaveAndRestoreFormControlState() const override;
+    virtual FormControlState saveFormControlState() const override;
+    virtual void restoreFormControlState(const FormControlState&) override;
+    virtual bool shouldRespectListAttribute() override;
+    virtual bool shouldRespectSpeechAttribute() override;
+    virtual void enableSecureTextInput() override;
+    virtual void disableSecureTextInput() override;
 };
 
 } // namespace blink

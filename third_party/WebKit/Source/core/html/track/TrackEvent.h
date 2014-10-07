@@ -37,7 +37,7 @@ struct TrackEventInit : public EventInit {
     RefPtrWillBeMember<TrackBase> track;
 };
 
-class TrackEvent FINAL : public Event {
+class TrackEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~TrackEvent();
@@ -52,11 +52,11 @@ public:
         return adoptRefWillBeNoop(new TrackEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     TrackBase* track() const { return m_track.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     TrackEvent();

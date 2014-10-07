@@ -38,40 +38,40 @@ namespace blink {
 class ExceptionState;
 class SliderThumbElement;
 
-class RangeInputType FINAL : public InputType {
+class RangeInputType final : public InputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
     RangeInputType(HTMLInputElement&);
-    virtual void countUsage() OVERRIDE;
-    virtual const AtomicString& formControlType() const OVERRIDE;
-    virtual double valueAsDouble() const OVERRIDE;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
-    virtual bool typeMismatchFor(const String&) const OVERRIDE;
-    virtual bool supportsRequired() const OVERRIDE;
-    virtual StepRange createStepRange(AnyStepHandling) const OVERRIDE;
-    virtual bool isSteppable() const OVERRIDE;
-    virtual void handleMouseDownEvent(MouseEvent*) OVERRIDE;
-    virtual void handleTouchEvent(TouchEvent*) OVERRIDE;
-    virtual bool hasTouchEventHandler() const OVERRIDE;
-    virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
-    virtual void createShadowSubtree() OVERRIDE;
-    virtual Decimal parseToNumber(const String&, const Decimal&) const OVERRIDE;
-    virtual String serialize(const Decimal&) const OVERRIDE;
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
-    virtual void sanitizeValueInResponseToMinOrMaxAttributeChange() OVERRIDE;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
-    virtual String fallbackValue() const OVERRIDE;
-    virtual String sanitizeValue(const String& proposedValue) const OVERRIDE;
-    virtual bool shouldRespectListAttribute() OVERRIDE;
+    virtual void countUsage() override;
+    virtual const AtomicString& formControlType() const override;
+    virtual double valueAsDouble() const override;
+    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
+    virtual bool typeMismatchFor(const String&) const override;
+    virtual bool supportsRequired() const override;
+    virtual StepRange createStepRange(AnyStepHandling) const override;
+    virtual bool isSteppable() const override;
+    virtual void handleMouseDownEvent(MouseEvent*) override;
+    virtual void handleTouchEvent(TouchEvent*) override;
+    virtual bool hasTouchEventHandler() const override;
+    virtual void handleKeydownEvent(KeyboardEvent*) override;
+    virtual RenderObject* createRenderer(RenderStyle*) const override;
+    virtual void createShadowSubtree() override;
+    virtual Decimal parseToNumber(const String&, const Decimal&) const override;
+    virtual String serialize(const Decimal&) const override;
+    virtual void accessKeyAction(bool sendMouseEvents) override;
+    virtual void sanitizeValueInResponseToMinOrMaxAttributeChange() override;
+    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    virtual String fallbackValue() const override;
+    virtual String sanitizeValue(const String& proposedValue) const override;
+    virtual bool shouldRespectListAttribute() override;
     SliderThumbElement* sliderThumbElement() const;
     Element* sliderTrackElement() const;
-    virtual void disabledAttributeChanged() OVERRIDE;
-    virtual void listAttributeTargetChanged() OVERRIDE;
+    virtual void disabledAttributeChanged() override;
+    virtual void listAttributeTargetChanged() override;
     void updateTickMarkValues();
-    virtual Decimal findClosestTickMarkValue(const Decimal&) OVERRIDE;
+    virtual Decimal findClosestTickMarkValue(const Decimal&) override;
 
     bool m_tickMarkValuesDirty;
     Vector<Decimal> m_tickMarkValues;

@@ -38,14 +38,14 @@ namespace blink {
 
 class HTMLSummaryElement;
 
-class DetailsMarkerControl FINAL : public HTMLDivElement {
+class DetailsMarkerControl final : public HTMLDivElement {
 public:
     explicit DetailsMarkerControl(Document&);
     static PassRefPtrWillBeRawPtr<DetailsMarkerControl> create(Document&);
 
 private:
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 
     HTMLSummaryElement* summaryElement();
 };

@@ -49,7 +49,7 @@ public:
     HTMLElementStack();
     ~HTMLElementStack();
 
-    class ElementRecord FINAL : public NoBaseWillBeGarbageCollected<ElementRecord> {
+    class ElementRecord final : public NoBaseWillBeGarbageCollected<ElementRecord> {
         WTF_MAKE_NONCOPYABLE(ElementRecord); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
 #if !ENABLE(OILPAN)

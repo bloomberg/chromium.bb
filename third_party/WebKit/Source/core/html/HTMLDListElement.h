@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class HTMLDListElement FINAL : public HTMLElement {
+class HTMLDListElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLDListElement);

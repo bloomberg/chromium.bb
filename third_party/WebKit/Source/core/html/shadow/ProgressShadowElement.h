@@ -45,21 +45,21 @@ public:
     HTMLProgressElement* progressElement() const;
 
 protected:
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 };
 
-class ProgressInnerElement FINAL : public ProgressShadowElement {
+class ProgressInnerElement final : public ProgressShadowElement {
 public:
     DECLARE_NODE_FACTORY(ProgressInnerElement);
 
 private:
     explicit ProgressInnerElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 };
 
-class ProgressBarElement FINAL : public ProgressShadowElement {
+class ProgressBarElement final : public ProgressShadowElement {
 public:
     DECLARE_NODE_FACTORY(ProgressBarElement);
 
@@ -67,7 +67,7 @@ private:
     explicit ProgressBarElement(Document&);
 };
 
-class ProgressValueElement FINAL : public ProgressShadowElement {
+class ProgressValueElement final : public ProgressShadowElement {
 public:
     DECLARE_NODE_FACTORY(ProgressValueElement);
     void setWidthPercentage(double);

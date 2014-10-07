@@ -41,7 +41,7 @@ class StepRange;
 // representing date and time, such as
 //  - Year, Month, Day Of Month
 //  - Hour, Minute, Second, Millisecond, AM/PM
-class DateTimeEditElement FINAL : public HTMLDivElement, public DateTimeFieldElement::FieldOwner {
+class DateTimeEditElement final : public HTMLDivElement, public DateTimeFieldElement::FieldOwner {
     WTF_MAKE_NONCOPYABLE(DateTimeEditElement);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DateTimeEditElement);
 
@@ -82,12 +82,12 @@ public:
     static PassRefPtrWillBeRawPtr<DateTimeEditElement> create(Document&, EditControlOwner&);
 
     virtual ~DateTimeEditElement();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     void addField(PassRefPtrWillBeRawPtr<DateTimeFieldElement>);
     bool anyEditableFieldsHaveValues() const;
     void blurByOwner();
-    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual void defaultEventHandler(Event*) override;
     void disabledStateChanged();
     Element* fieldsWrapperElement() const;
     void focusIfNoFocus();
@@ -134,19 +134,19 @@ private:
     void updateUIState();
 
     // Element function.
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual bool isDateTimeEditElement() const OVERRIDE;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
+    virtual bool isDateTimeEditElement() const override;
 
     // DateTimeFieldElement::FieldOwner functions.
-    virtual void didBlurFromField() OVERRIDE;
-    virtual void didFocusOnField() OVERRIDE;
-    virtual void fieldValueChanged() OVERRIDE;
-    virtual bool focusOnNextField(const DateTimeFieldElement&) OVERRIDE;
-    virtual bool focusOnPreviousField(const DateTimeFieldElement&) OVERRIDE;
-    virtual bool isFieldOwnerDisabled() const OVERRIDE;
-    virtual bool isFieldOwnerReadOnly() const OVERRIDE;
-    virtual AtomicString localeIdentifier() const OVERRIDE;
-    virtual void fieldDidChangeValueByKeyboard() OVERRIDE;
+    virtual void didBlurFromField() override;
+    virtual void didFocusOnField() override;
+    virtual void fieldValueChanged() override;
+    virtual bool focusOnNextField(const DateTimeFieldElement&) override;
+    virtual bool focusOnPreviousField(const DateTimeFieldElement&) override;
+    virtual bool isFieldOwnerDisabled() const override;
+    virtual bool isFieldOwnerReadOnly() const override;
+    virtual AtomicString localeIdentifier() const override;
+    virtual void fieldDidChangeValueByKeyboard() override;
 
     WillBeHeapVector<RawPtrWillBeMember<DateTimeFieldElement>, maximumNumberOfFields> m_fields;
     RawPtrWillBeMember<EditControlOwner> m_editControlOwner;

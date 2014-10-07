@@ -54,7 +54,7 @@ class BaseMultipleFieldsDateAndTimeInputType
 public:
     virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const = 0;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { BaseDateAndTimeInputType::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { BaseDateAndTimeInputType::trace(visitor); }
 
 protected:
     BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement&);
@@ -65,59 +65,59 @@ protected:
 
 private:
     // DateTimeEditElement::EditControlOwner functions
-    virtual void didBlurFromControl() OVERRIDE FINAL;
-    virtual void didFocusOnControl() OVERRIDE FINAL;
-    virtual void editControlValueChanged() OVERRIDE FINAL;
-    virtual bool isEditControlOwnerDisabled() const OVERRIDE FINAL;
-    virtual bool isEditControlOwnerReadOnly() const OVERRIDE FINAL;
-    virtual AtomicString localeIdentifier() const OVERRIDE FINAL;
-    virtual void editControlDidChangeValueByKeyboard() OVERRIDE FINAL;
+    virtual void didBlurFromControl() override final;
+    virtual void didFocusOnControl() override final;
+    virtual void editControlValueChanged() override final;
+    virtual bool isEditControlOwnerDisabled() const override final;
+    virtual bool isEditControlOwnerReadOnly() const override final;
+    virtual AtomicString localeIdentifier() const override final;
+    virtual void editControlDidChangeValueByKeyboard() override final;
 
     // SpinButtonElement::SpinButtonOwner functions.
-    virtual void focusAndSelectSpinButtonOwner() OVERRIDE;
-    virtual bool shouldSpinButtonRespondToMouseEvents() OVERRIDE;
-    virtual bool shouldSpinButtonRespondToWheelEvents() OVERRIDE;
-    virtual void spinButtonStepDown() OVERRIDE;
-    virtual void spinButtonStepUp() OVERRIDE;
-    virtual void spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch) OVERRIDE;
+    virtual void focusAndSelectSpinButtonOwner() override;
+    virtual bool shouldSpinButtonRespondToMouseEvents() override;
+    virtual bool shouldSpinButtonRespondToWheelEvents() override;
+    virtual void spinButtonStepDown() override;
+    virtual void spinButtonStepUp() override;
+    virtual void spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch) override;
 
     // PickerIndicatorElement::PickerIndicatorOwner functions
-    virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const OVERRIDE FINAL;
-    virtual void pickerIndicatorChooseValue(const String&) OVERRIDE FINAL;
-    virtual void pickerIndicatorChooseValue(double) OVERRIDE FINAL;
-    virtual Element& pickerOwnerElement() const OVERRIDE FINAL;
-    virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) OVERRIDE FINAL;
+    virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const override final;
+    virtual void pickerIndicatorChooseValue(const String&) override final;
+    virtual void pickerIndicatorChooseValue(double) override final;
+    virtual Element& pickerOwnerElement() const override final;
+    virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) override final;
 
     // ClearButtonElement::ClearButtonOwner functions.
-    virtual void focusAndSelectClearButtonOwner() OVERRIDE;
-    virtual bool shouldClearButtonRespondToMouseEvents() OVERRIDE;
-    virtual void clearValue() OVERRIDE;
+    virtual void focusAndSelectClearButtonOwner() override;
+    virtual bool shouldClearButtonRespondToMouseEvents() override;
+    virtual void clearValue() override;
 
     // InputType functions
-    virtual String badInputText() const OVERRIDE;
-    virtual void blur() OVERRIDE FINAL;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>) OVERRIDE;
-    virtual void createShadowSubtree() OVERRIDE FINAL;
-    virtual void destroyShadowSubtree() OVERRIDE FINAL;
-    virtual void disabledAttributeChanged() OVERRIDE FINAL;
-    virtual void forwardEvent(Event*) OVERRIDE FINAL;
-    virtual void handleFocusInEvent(Element* oldFocusedElement, FocusType) OVERRIDE FINAL;
-    virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE FINAL;
-    virtual bool hasBadInput() const OVERRIDE;
-    virtual bool hasCustomFocusLogic() const OVERRIDE FINAL;
-    virtual void minOrMaxAttributeChanged() OVERRIDE FINAL;
-    virtual void readonlyAttributeChanged() OVERRIDE FINAL;
-    virtual void requiredAttributeChanged() OVERRIDE FINAL;
-    virtual void restoreFormControlState(const FormControlState&) OVERRIDE FINAL;
-    virtual FormControlState saveFormControlState() const OVERRIDE FINAL;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE FINAL;
-    virtual void stepAttributeChanged() OVERRIDE FINAL;
-    virtual void updateView() OVERRIDE FINAL;
-    virtual void valueAttributeChanged() OVERRIDE;
-    virtual void listAttributeTargetChanged() OVERRIDE FINAL;
-    virtual void updateClearButtonVisibility() OVERRIDE FINAL;
-    virtual TextDirection computedTextDirection() OVERRIDE FINAL;
-    virtual AXObject* popupRootAXObject() OVERRIDE FINAL;
+    virtual String badInputText() const override;
+    virtual void blur() override final;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>) override;
+    virtual void createShadowSubtree() override final;
+    virtual void destroyShadowSubtree() override final;
+    virtual void disabledAttributeChanged() override final;
+    virtual void forwardEvent(Event*) override final;
+    virtual void handleFocusInEvent(Element* oldFocusedElement, FocusType) override final;
+    virtual void handleKeydownEvent(KeyboardEvent*) override final;
+    virtual bool hasBadInput() const override;
+    virtual bool hasCustomFocusLogic() const override final;
+    virtual void minOrMaxAttributeChanged() override final;
+    virtual void readonlyAttributeChanged() override final;
+    virtual void requiredAttributeChanged() override final;
+    virtual void restoreFormControlState(const FormControlState&) override final;
+    virtual FormControlState saveFormControlState() const override final;
+    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override final;
+    virtual void stepAttributeChanged() override final;
+    virtual void updateView() override final;
+    virtual void valueAttributeChanged() override;
+    virtual void listAttributeTargetChanged() override final;
+    virtual void updateClearButtonVisibility() override final;
+    virtual TextDirection computedTextDirection() override final;
+    virtual AXObject* popupRootAXObject() override final;
 
     DateTimeEditElement* dateTimeEditElement() const;
     SpinButtonElement* spinButtonElement() const;

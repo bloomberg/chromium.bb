@@ -32,7 +32,7 @@ class HitTestResult;
 class HTMLImageElement;
 class Path;
 
-class HTMLAreaElement FINAL : public HTMLAnchorElement {
+class HTMLAreaElement final : public HTMLAnchorElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLAreaElement);
@@ -50,12 +50,12 @@ public:
 private:
     explicit HTMLAreaElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isKeyboardFocusable() const OVERRIDE;
-    virtual bool isMouseFocusable() const OVERRIDE;
-    virtual bool rendererIsFocusable() const OVERRIDE;
-    virtual void updateFocusAppearance(bool /*restorePreviousSelection*/) OVERRIDE;
-    virtual void setFocus(bool) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isKeyboardFocusable() const override;
+    virtual bool isMouseFocusable() const override;
+    virtual bool rendererIsFocusable() const override;
+    virtual void updateFocusAppearance(bool /*restorePreviousSelection*/) override;
+    virtual void setFocus(bool) override;
 
     enum Shape { Default, Poly, Rect, Circle, Unknown };
     Path getRegion(const LayoutSize&) const;

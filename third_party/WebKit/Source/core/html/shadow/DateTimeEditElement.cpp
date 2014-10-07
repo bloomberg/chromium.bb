@@ -69,8 +69,8 @@ private:
     DateTimeNumericFieldElement::Step createStep(double msPerFieldUnit, double msPerFieldSize) const;
 
     // DateTimeFormat::TokenHandler functions.
-    virtual void visitField(DateTimeFormat::FieldType, int) OVERRIDE FINAL;
-    virtual void visitLiteral(const String&) OVERRIDE FINAL;
+    virtual void visitField(DateTimeFormat::FieldType, int) override final;
+    virtual void visitLiteral(const String&) override final;
 
     DateTimeEditElement& m_editElement;
     const DateComponents m_dateValue;

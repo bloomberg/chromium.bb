@@ -38,18 +38,18 @@ class WebString;
 
 namespace blink {
 
-class InbandTextTrack FINAL : public TextTrack, public blink::WebInbandTextTrackClient {
+class InbandTextTrack final : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
     static PassRefPtrWillBeRawPtr<InbandTextTrack> create(blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();
 
     size_t inbandTrackIndex();
-    virtual void setTrackList(TextTrackList*) OVERRIDE FINAL;
+    virtual void setTrackList(TextTrackList*) override final;
 
 private:
     InbandTextTrack(blink::WebInbandTextTrack*);
 
-    virtual void addWebVTTCue(double, double, const blink::WebString&, const blink::WebString&, const blink::WebString&) OVERRIDE;
+    virtual void addWebVTTCue(double, double, const blink::WebString&, const blink::WebString&, const blink::WebString&) override;
 
     blink::WebInbandTextTrack* m_webTrack;
 };

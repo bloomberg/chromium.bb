@@ -32,7 +32,7 @@ namespace blink {
 
 class ExceptionState;
 
-class HTMLTableSectionElement FINAL : public HTMLTablePartElement {
+class HTMLTableSectionElement final : public HTMLTablePartElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
@@ -47,7 +47,7 @@ public:
 private:
     HTMLTableSectionElement(const QualifiedName& tagName, Document&);
 
-    virtual const StylePropertySet* additionalPresentationAttributeStyle() OVERRIDE;
+    virtual const StylePropertySet* additionalPresentationAttributeStyle() override;
 };
 
 inline bool isHTMLTableSectionElement(const HTMLElement& element)

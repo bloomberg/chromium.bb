@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class AudioTrack FINAL : public TrackBase, public ScriptWrappable {
+class AudioTrack final : public TrackBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AudioTrack> create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled)
@@ -34,8 +34,8 @@ private:
     AudioTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled);
 
     // TrackBase
-    virtual bool isValidKind(const AtomicString&) const OVERRIDE;
-    virtual AtomicString defaultKind() const OVERRIDE;
+    virtual bool isValidKind(const AtomicString&) const override;
+    virtual AtomicString defaultKind() const override;
 
     bool m_enabled;
 };

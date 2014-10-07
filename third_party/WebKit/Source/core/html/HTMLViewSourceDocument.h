@@ -33,7 +33,7 @@ class HTMLTableCellElement;
 class HTMLTableSectionElement;
 class HTMLToken;
 
-class HTMLViewSourceDocument FINAL : public HTMLDocument {
+class HTMLViewSourceDocument final : public HTMLDocument {
 public:
     enum SourceAnnotation {
         AnnotateSourceAsSafe,
@@ -47,12 +47,12 @@ public:
 
     void addSource(const String&, HTMLToken&, SourceAnnotation);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     HTMLViewSourceDocument(const DocumentInit&, const String& mimeType);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
     void processDoctypeToken(const String& source, HTMLToken&);
     void processEndOfFileToken(const String& source, HTMLToken&);

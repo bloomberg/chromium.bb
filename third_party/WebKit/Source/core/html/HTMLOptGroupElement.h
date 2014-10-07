@@ -31,12 +31,12 @@ namespace blink {
 class HTMLSelectElement;
 class HTMLDivElement;
 
-class HTMLOptGroupElement FINAL : public HTMLElement {
+class HTMLOptGroupElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptGroupElement> create(Document&);
 
-    virtual bool isDisabledFormControl() const OVERRIDE;
+    virtual bool isDisabledFormControl() const override;
     HTMLSelectElement* ownerSelectElement() const;
 
     String groupLabelText() const;
@@ -44,18 +44,18 @@ public:
 private:
     explicit HTMLOptGroupElement(Document&);
 
-    virtual bool rendererIsFocusable() const OVERRIDE { return true; }
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual bool rendererIsFocusable() const override { return true; }
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual void accessKeyAction(bool sendMouseEvents) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void attach(const AttachContext& = AttachContext()) override;
+    virtual void detach(const AttachContext& = AttachContext()) override;
 
     // <optgroup> might not have a renderer so we manually manage a cached style.
     void updateNonRenderStyle();
-    virtual RenderStyle* nonRendererStyle() const OVERRIDE;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
+    virtual RenderStyle* nonRendererStyle() const override;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
 
     void updateGroupLabel();
     void recalcSelectOptions();

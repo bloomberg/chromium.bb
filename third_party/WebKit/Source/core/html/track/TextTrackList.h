@@ -40,7 +40,7 @@ namespace blink {
 class GenericEventQueue;
 class TextTrack;
 
-class TextTrackList FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextTrackList>, public EventTargetWithInlineData {
+class TextTrackList final : public RefCountedWillBeGarbageCollectedFinalized<TextTrackList>, public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TextTrackList);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackList);
@@ -62,8 +62,8 @@ public:
     void remove(TextTrack*);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
@@ -77,7 +77,7 @@ public:
     void scheduleChangeEvent();
     void removeAllInbandTracks();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit TextTrackList(HTMLMediaElement*);

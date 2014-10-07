@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class MediaDocument FINAL : public HTMLDocument {
+class MediaDocument final : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -40,9 +40,9 @@ public:
 private:
     MediaDocument(const DocumentInit&);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
-    virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual void defaultEventHandler(Event*) override;
 };
 
 }

@@ -33,7 +33,7 @@ namespace blink {
 class ImageResource;
 class HTMLImageElement;
 
-class ImageDocument FINAL : public HTMLDocument {
+class ImageDocument final : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<ImageDocument> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -52,14 +52,14 @@ public:
     void imageUpdated();
     void imageClicked(int x, int y);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit ImageDocument(const DocumentInit&);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 #if !ENABLE(OILPAN)
-    virtual void dispose() OVERRIDE;
+    virtual void dispose() override;
 #endif
 
     void createDocumentStructure();

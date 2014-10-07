@@ -35,7 +35,7 @@ namespace blink {
 class HTMLFormElement;
 class ImageCandidate;
 
-class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
+class HTMLImageElement final : public HTMLElement, public CanvasImageSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class ViewportChangeListener;
@@ -45,7 +45,7 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     int width(bool ignorePendingStylesheets = false);
     int height(bool ignorePendingStylesheets = false);
@@ -79,54 +79,54 @@ public:
 
     bool hasPendingActivity() const { return imageLoader().hasPendingActivity(); }
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
+    virtual bool canContainRangeEndPoint() const override { return false; }
 
     void addClient(ImageLoaderClient* client) { imageLoader().addClient(client); }
     void removeClient(ImageLoaderClient* client) { imageLoader().removeClient(client); }
 
-    virtual const AtomicString imageSourceURL() const OVERRIDE;
+    virtual const AtomicString imageSourceURL() const override;
 
-    virtual HTMLFormElement* formOwner() const OVERRIDE;
+    virtual HTMLFormElement* formOwner() const override;
     void formRemovedFromTree(const Node& formRoot);
 
     // CanvasImageSourceImplementations
     virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const;
-    virtual bool wouldTaintOrigin(SecurityOrigin*) const OVERRIDE;
-    virtual FloatSize sourceSize() const OVERRIDE;
-    virtual FloatSize defaultDestinationSize() const OVERRIDE;
-    virtual const KURL& sourceURL() const OVERRIDE;
+    virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
+    virtual FloatSize sourceSize() const override;
+    virtual FloatSize defaultDestinationSize() const override;
+    virtual const KURL& sourceURL() const override;
 
     // public so that HTMLPictureElement can call this as well.
     void selectSourceURL(ImageLoader::UpdateFromElementBehavior);
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0, bool createdByParser = false);
 
-    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+    virtual void didMoveToNewDocument(Document& oldDocument) override;
 
 private:
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool areAuthorShadowsAllowed() const override { return false; }
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) override;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual bool canStartSelection() const OVERRIDE;
+    virtual bool canStartSelection() const override;
 
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
-    virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const override;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    virtual const QualifiedName& subResourceAttributeName() const override;
 
-    virtual bool draggable() const OVERRIDE;
+    virtual bool draggable() const override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
-    virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
-    virtual Image* imageContents() OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
+    virtual bool shouldRegisterAsNamedItem() const override { return true; }
+    virtual bool shouldRegisterAsExtraNamedItem() const override { return true; }
+    virtual bool isInteractiveContent() const override;
+    virtual Image* imageContents() override;
 
     void resetFormOwner();
     ImageCandidate findBestFitImageFromPictureParent();

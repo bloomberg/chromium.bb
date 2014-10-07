@@ -64,7 +64,7 @@ private:
     { }
 };
 
-class XSSAuditorDelegate FINAL {
+class XSSAuditorDelegate final {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(XSSAuditorDelegate);
 public:

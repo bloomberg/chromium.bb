@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class AudioTrackList FINAL : public TrackListBase<AudioTrack> {
+class AudioTrackList final : public TrackListBase<AudioTrack> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AudioTrackList> create(HTMLMediaElement&);
@@ -20,7 +20,7 @@ public:
     bool hasEnabledTrack() const;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
 private:
     explicit AudioTrackList(HTMLMediaElement&);

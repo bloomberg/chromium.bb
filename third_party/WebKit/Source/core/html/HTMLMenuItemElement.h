@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class HTMLMenuItemElement FINAL : public HTMLElement {
+class HTMLMenuItemElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLMenuItemElement);

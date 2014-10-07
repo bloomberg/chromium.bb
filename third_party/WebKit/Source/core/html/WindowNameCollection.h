@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class WindowNameCollection FINAL : public HTMLNameCollection {
+class WindowNameCollection final : public HTMLNameCollection {
 public:
     static PassRefPtrWillBeRawPtr<WindowNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {

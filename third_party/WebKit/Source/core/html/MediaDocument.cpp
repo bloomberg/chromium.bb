@@ -63,7 +63,7 @@ private:
     {
     }
 
-    virtual void appendBytes(const char*, size_t) OVERRIDE;
+    virtual void appendBytes(const char*, size_t) override;
 
     void createDocumentStructure();
 

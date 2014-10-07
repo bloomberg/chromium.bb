@@ -42,30 +42,30 @@ namespace blink {
 class HTMLInputElement;
 class Event;
 
-class SliderThumbElement FINAL : public HTMLDivElement {
+class SliderThumbElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<SliderThumbElement> create(Document&);
 
     void setPositionFromValue();
 
     void dragFrom(const LayoutPoint&);
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual bool willRespondToMouseMoveEvents() OVERRIDE;
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual void defaultEventHandler(Event*) override;
+    virtual bool willRespondToMouseMoveEvents() override;
+    virtual bool willRespondToMouseClickEvents() override;
+    virtual void detach(const AttachContext& = AttachContext()) override;
+    virtual const AtomicString& shadowPseudoId() const override;
     HTMLInputElement* hostInput() const;
     void setPositionFromPoint(const LayoutPoint&);
     void stopDragging();
 
 private:
     SliderThumbElement(Document&);
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
-    virtual bool isDisabledFormControl() const OVERRIDE;
-    virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
-    virtual bool matchesReadWritePseudoClass() const OVERRIDE;
-    virtual Node* focusDelegate() OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    virtual bool isDisabledFormControl() const override;
+    virtual bool matchesReadOnlyPseudoClass() const override;
+    virtual bool matchesReadWritePseudoClass() const override;
+    virtual Node* focusDelegate() override;
     void startDragging();
 
     bool m_inDragMode;
@@ -79,14 +79,14 @@ inline PassRefPtrWillBeRawPtr<Element> SliderThumbElement::cloneElementWithoutAt
 // FIXME: There are no ways to check if a node is a SliderThumbElement.
 DEFINE_ELEMENT_TYPE_CASTS(SliderThumbElement, isHTMLElement());
 
-class SliderContainerElement FINAL : public HTMLDivElement {
+class SliderContainerElement final : public HTMLDivElement {
 public:
     DECLARE_NODE_FACTORY(SliderContainerElement);
 
 private:
     explicit SliderContainerElement(Document&);
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual const AtomicString& shadowPseudoId() const override;
 };
 
 }

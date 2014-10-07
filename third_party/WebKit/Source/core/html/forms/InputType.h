@@ -201,8 +201,8 @@ public:
     void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
     // InputTypeView override
-    virtual bool shouldSubmitImplicitly(Event*) OVERRIDE;
-    virtual bool hasCustomFocusLogic() const OVERRIDE;
+    virtual bool shouldSubmitImplicitly(Event*) override;
+    virtual bool hasCustomFocusLogic() const override;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
 

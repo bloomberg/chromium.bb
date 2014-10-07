@@ -70,24 +70,24 @@ protected:
     const Range& range() const { return m_range; }
 
     // DateTimeFieldElement functions.
-    virtual bool hasValue() const OVERRIDE FINAL;
+    virtual bool hasValue() const override final;
     void initialize(const AtomicString& pseudo, const String& axHelpText);
     int maximum() const;
-    virtual void setEmptyValue(EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE;
-    virtual int valueAsInteger() const OVERRIDE FINAL;
-    virtual String visibleValue() const OVERRIDE FINAL;
+    virtual void setEmptyValue(EventBehavior = DispatchNoEvent) override final;
+    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
+    virtual int valueAsInteger() const override final;
+    virtual String visibleValue() const override final;
 
 private:
     // DateTimeFieldElement functions.
-    virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE FINAL;
-    virtual float maximumWidth(const Font&) OVERRIDE;
-    virtual void stepDown() OVERRIDE FINAL;
-    virtual void stepUp() OVERRIDE FINAL;
-    virtual String value() const OVERRIDE FINAL;
+    virtual void handleKeyboardEvent(KeyboardEvent*) override final;
+    virtual float maximumWidth(const Font&) override;
+    virtual void stepDown() override final;
+    virtual void stepUp() override final;
+    virtual String value() const override final;
 
     // Node functions.
-    virtual void setFocus(bool) OVERRIDE FINAL;
+    virtual void setFocus(bool) override final;
 
     String formatValue(int) const;
     int roundUp(int) const;

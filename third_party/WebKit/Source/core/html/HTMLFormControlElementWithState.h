@@ -34,7 +34,7 @@ class HTMLFormControlElementWithState : public HTMLFormControlElement {
 public:
     virtual ~HTMLFormControlElementWithState();
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE FINAL { return false; }
+    virtual bool canContainRangeEndPoint() const override final { return false; }
 
     virtual bool shouldAutocomplete() const;
     virtual bool shouldSaveAndRestoreFormControlState() const;
@@ -46,10 +46,10 @@ public:
 protected:
     HTMLFormControlElementWithState(const QualifiedName& tagName, Document&, HTMLFormElement*);
 
-    virtual void finishParsingChildren() OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual bool isFormControlElementWithState() const OVERRIDE FINAL;
+    virtual void finishParsingChildren() override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
+    virtual bool isFormControlElementWithState() const override final;
 };
 
 DEFINE_TYPE_CASTS(HTMLFormControlElementWithState, FormAssociatedElement, control, control->isFormControlElementWithState(), control.isFormControlElementWithState());
