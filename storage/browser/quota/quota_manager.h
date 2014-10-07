@@ -358,13 +358,13 @@ class STORAGE_EXPORT QuotaManager
   // QuotaEvictionHandler.
   virtual void GetLRUOrigin(
       StorageType type,
-      const GetLRUOriginCallback& callback) OVERRIDE;
+      const GetLRUOriginCallback& callback) override;
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
-      const EvictOriginDataCallback& callback) OVERRIDE;
+      const EvictOriginDataCallback& callback) override;
   virtual void GetUsageAndQuotaForEviction(
-      const UsageAndQuotaCallback& callback) OVERRIDE;
+      const UsageAndQuotaCallback& callback) override;
 
   void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,
                                           const int64* new_quota,

@@ -53,7 +53,7 @@ class STORAGE_EXPORT BlobProtocolHandler
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
   scoped_refptr<BlobData> LookupBlobData(

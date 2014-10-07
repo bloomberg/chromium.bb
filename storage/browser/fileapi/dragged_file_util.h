@@ -27,10 +27,10 @@ class STORAGE_EXPORT_PRIVATE DraggedFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::File::Info* file_info,
-      base::FilePath* platform_path) OVERRIDE;
+      base::FilePath* platform_path) override;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) OVERRIDE;
+      const FileSystemURL& root_url) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtil);

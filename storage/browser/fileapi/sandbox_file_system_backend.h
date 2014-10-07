@@ -32,40 +32,40 @@ class STORAGE_EXPORT SandboxFileSystemBackend
   virtual ~SandboxFileSystemBackend();
 
   // FileSystemBackend overrides.
-  virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
-  virtual void Initialize(FileSystemContext* context) OVERRIDE;
+  virtual bool CanHandleType(FileSystemType type) const override;
+  virtual void Initialize(FileSystemContext* context) override;
   virtual void ResolveURL(const FileSystemURL& url,
                           OpenFileSystemMode mode,
-                          const OpenFileSystemCallback& callback) OVERRIDE;
-  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
-  virtual WatcherManager* GetWatcherManager(FileSystemType type) OVERRIDE;
+                          const OpenFileSystemCallback& callback) override;
+  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) override;
+  virtual WatcherManager* GetWatcherManager(FileSystemType type) override;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
-      base::File::Error* error_code) OVERRIDE;
+      base::File::Error* error_code) override;
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,
-      base::File::Error* error_code) const OVERRIDE;
-  virtual bool SupportsStreaming(const FileSystemURL& url) const OVERRIDE;
+      base::File::Error* error_code) const override;
+  virtual bool SupportsStreaming(const FileSystemURL& url) const override;
   virtual bool HasInplaceCopyImplementation(
-      storage::FileSystemType type) const OVERRIDE;
+      storage::FileSystemType type) const override;
   virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
       int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
-      FileSystemContext* context) const OVERRIDE;
+      FileSystemContext* context) const override;
   virtual scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
       int64 offset,
-      FileSystemContext* context) const OVERRIDE;
-  virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+      FileSystemContext* context) const override;
+  virtual FileSystemQuotaUtil* GetQuotaUtil() override;
   virtual const UpdateObserverList* GetUpdateObservers(
-      FileSystemType type) const OVERRIDE;
+      FileSystemType type) const override;
   virtual const ChangeObserverList* GetChangeObservers(
-      FileSystemType type) const OVERRIDE;
+      FileSystemType type) const override;
   virtual const AccessObserverList* GetAccessObservers(
-      FileSystemType type) const OVERRIDE;
+      FileSystemType type) const override;
 
   // Returns an origin enumerator of this backend.
   // This method can only be called on the file thread.

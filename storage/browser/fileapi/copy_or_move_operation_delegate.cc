@@ -61,7 +61,7 @@ class CopyOrMoveOnSameFileSystemImpl
   }
 
   virtual void Run(
-      const CopyOrMoveOperationDelegate::StatusCallback& callback) OVERRIDE {
+      const CopyOrMoveOperationDelegate::StatusCallback& callback) override {
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_MOVE) {
       operation_runner_->MoveFileLocal(src_url_, dest_url_, option_, callback);
     } else {
@@ -70,7 +70,7 @@ class CopyOrMoveOnSameFileSystemImpl
     }
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     // We can do nothing for the copy/move operation on a local file system.
     // Assuming the operation is quickly done, it should be ok to just wait
     // for the completion.
@@ -114,7 +114,7 @@ class SnapshotCopyOrMoveImpl
   }
 
   virtual void Run(
-      const CopyOrMoveOperationDelegate::StatusCallback& callback) OVERRIDE {
+      const CopyOrMoveOperationDelegate::StatusCallback& callback) override {
     file_progress_callback_.Run(0);
     operation_runner_->CreateSnapshotFile(
         src_url_,
@@ -122,7 +122,7 @@ class SnapshotCopyOrMoveImpl
                    weak_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     cancel_requested_ = true;
   }
 
@@ -389,7 +389,7 @@ class StreamCopyOrMoveImpl
         weak_factory_(this) {}
 
   virtual void Run(
-      const CopyOrMoveOperationDelegate::StatusCallback& callback) OVERRIDE {
+      const CopyOrMoveOperationDelegate::StatusCallback& callback) override {
     // Reader can be created even if the entry does not exist or the entry is
     // a directory. To check errors before destination file creation,
     // check metadata first.
@@ -399,7 +399,7 @@ class StreamCopyOrMoveImpl
                    weak_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     cancel_requested_ = true;
     if (copy_helper_)
       copy_helper_->Cancel();

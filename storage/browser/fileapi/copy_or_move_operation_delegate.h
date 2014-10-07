@@ -101,18 +101,18 @@ class CopyOrMoveOperationDelegate
   virtual ~CopyOrMoveOperationDelegate();
 
   // RecursiveOperationDelegate overrides:
-  virtual void Run() OVERRIDE;
-  virtual void RunRecursively() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunRecursively() override;
   virtual void ProcessFile(const FileSystemURL& url,
-                           const StatusCallback& callback) OVERRIDE;
+                           const StatusCallback& callback) override;
   virtual void ProcessDirectory(const FileSystemURL& url,
-                                const StatusCallback& callback) OVERRIDE;
+                                const StatusCallback& callback) override;
   virtual void PostProcessDirectory(const FileSystemURL& url,
-                                    const StatusCallback& callback) OVERRIDE;
+                                    const StatusCallback& callback) override;
 
 
  protected:
-  virtual void OnCancel() OVERRIDE;
+  virtual void OnCancel() override;
 
  private:
   void DidCopyOrMoveFile(const FileSystemURL& src_url,

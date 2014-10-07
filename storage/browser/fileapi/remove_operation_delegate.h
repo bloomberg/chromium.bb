@@ -19,14 +19,14 @@ class RemoveOperationDelegate : public RecursiveOperationDelegate {
   virtual ~RemoveOperationDelegate();
 
   // RecursiveOperationDelegate overrides:
-  virtual void Run() OVERRIDE;
-  virtual void RunRecursively() OVERRIDE;
+  virtual void Run() override;
+  virtual void RunRecursively() override;
   virtual void ProcessFile(const FileSystemURL& url,
-                           const StatusCallback& callback) OVERRIDE;
+                           const StatusCallback& callback) override;
   virtual void ProcessDirectory(const FileSystemURL& url,
-                                const StatusCallback& callback) OVERRIDE;
+                                const StatusCallback& callback) override;
   virtual void PostProcessDirectory(const FileSystemURL& url,
-                                    const StatusCallback& callback) OVERRIDE;
+                                    const StatusCallback& callback) override;
 
  private:
   void DidTryRemoveFile(base::File::Error error);

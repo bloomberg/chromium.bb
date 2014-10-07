@@ -44,12 +44,12 @@ class SandboxQuotaObserver
   virtual ~SandboxQuotaObserver();
 
   // FileUpdateObserver overrides.
-  virtual void OnStartUpdate(const FileSystemURL& url) OVERRIDE;
-  virtual void OnUpdate(const FileSystemURL& url, int64 delta) OVERRIDE;
-  virtual void OnEndUpdate(const FileSystemURL& url) OVERRIDE;
+  virtual void OnStartUpdate(const FileSystemURL& url) override;
+  virtual void OnUpdate(const FileSystemURL& url, int64 delta) override;
+  virtual void OnEndUpdate(const FileSystemURL& url) override;
 
   // FileAccessObserver overrides.
-  virtual void OnAccess(const FileSystemURL& url) OVERRIDE;
+  virtual void OnAccess(const FileSystemURL& url) override;
 
   void SetUsageCacheEnabled(const GURL& origin,
                             FileSystemType type,

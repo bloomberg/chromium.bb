@@ -49,10 +49,10 @@ class STORAGE_EXPORT FileSystemFileUtil {
 
   class STORAGE_EXPORT EmptyFileEnumerator
       : public AbstractFileEnumerator {
-    virtual base::FilePath Next() OVERRIDE;
-    virtual int64 Size() OVERRIDE;
-    virtual base::Time LastModifiedTime() OVERRIDE;
-    virtual bool IsDirectory() OVERRIDE;
+    virtual base::FilePath Next() override;
+    virtual int64 Size() override;
+    virtual base::Time LastModifiedTime() override;
+    virtual bool IsDirectory() override;
   };
 
   virtual ~FileSystemFileUtil() {}

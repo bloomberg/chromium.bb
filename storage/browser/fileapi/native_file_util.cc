@@ -83,10 +83,10 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 
   virtual ~NativeFileEnumerator() {}
 
-  virtual base::FilePath Next() OVERRIDE;
-  virtual int64 Size() OVERRIDE;
-  virtual base::Time LastModifiedTime() OVERRIDE;
-  virtual bool IsDirectory() OVERRIDE;
+  virtual base::FilePath Next() override;
+  virtual int64 Size() override;
+  virtual base::Time LastModifiedTime() override;
+  virtual bool IsDirectory() override;
 
  private:
   base::FileEnumerator file_enum_;

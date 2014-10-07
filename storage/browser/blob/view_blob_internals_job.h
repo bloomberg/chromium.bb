@@ -29,14 +29,14 @@ class STORAGE_EXPORT ViewBlobInternalsJob
                        net::NetworkDelegate* network_delegate,
                        BlobStorageContext* blob_storage_context);
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE;
+                      const net::CompletionCallback& callback) const override;
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
-  virtual void Kill() OVERRIDE;
+                                  int* http_status_code) override;
+  virtual void Kill() override;
 
  private:
   virtual ~ViewBlobInternalsJob();

@@ -65,22 +65,22 @@ class STORAGE_EXPORT ExternalMountPoints
                           const base::FilePath& path);
 
   // MountPoints overrides.
-  virtual bool HandlesFileSystemMountType(FileSystemType type) const OVERRIDE;
-  virtual bool RevokeFileSystem(const std::string& mount_name) OVERRIDE;
+  virtual bool HandlesFileSystemMountType(FileSystemType type) const override;
+  virtual bool RevokeFileSystem(const std::string& mount_name) override;
   virtual bool GetRegisteredPath(const std::string& mount_name,
-                                 base::FilePath* path) const OVERRIDE;
+                                 base::FilePath* path) const override;
   virtual bool CrackVirtualPath(
       const base::FilePath& virtual_path,
       std::string* mount_name,
       FileSystemType* type,
       std::string* cracked_id,
       base::FilePath* path,
-      FileSystemMountOption* mount_option) const OVERRIDE;
-  virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;
+      FileSystemMountOption* mount_option) const override;
+  virtual FileSystemURL CrackURL(const GURL& url) const override;
   virtual FileSystemURL CreateCrackedFileSystemURL(
       const GURL& origin,
       FileSystemType type,
-      const base::FilePath& path) const OVERRIDE;
+      const base::FilePath& path) const override;
 
   // Returns a list of registered MountPointInfos (of <mount_name, path>).
   void AddMountPointInfosTo(std::vector<MountPointInfo>* mount_points) const;
@@ -130,7 +130,7 @@ class STORAGE_EXPORT ExternalMountPoints
 
   // MountPoint overrides.
   virtual FileSystemURL CrackFileSystemURL(
-      const FileSystemURL& url) const OVERRIDE;
+      const FileSystemURL& url) const override;
 
   // Performs sanity checks on the new mount point.
   // Checks the following:

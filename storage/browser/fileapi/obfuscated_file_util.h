@@ -114,58 +114,58 @@ class STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   virtual base::File CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      int file_flags) OVERRIDE;
+      int file_flags) override;
   virtual base::File::Error EnsureFileExists(
       FileSystemOperationContext* context,
-      const FileSystemURL& url, bool* created) OVERRIDE;
+      const FileSystemURL& url, bool* created) override;
   virtual base::File::Error CreateDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       bool exclusive,
-      bool recursive) OVERRIDE;
+      bool recursive) override;
   virtual base::File::Error GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::File::Info* file_info,
-      base::FilePath* platform_file) OVERRIDE;
+      base::FilePath* platform_file) override;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) OVERRIDE;
+      const FileSystemURL& root_url) override;
   virtual base::File::Error GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
-      base::FilePath* local_path) OVERRIDE;
+      base::FilePath* local_path) override;
   virtual base::File::Error Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       const base::Time& last_access_time,
-      const base::Time& last_modified_time) OVERRIDE;
+      const base::Time& last_modified_time) override;
   virtual base::File::Error Truncate(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      int64 length) OVERRIDE;
+      int64 length) override;
   virtual base::File::Error CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       CopyOrMoveOption option,
-      bool copy) OVERRIDE;
+      bool copy) override;
   virtual base::File::Error CopyInForeignFile(
         FileSystemOperationContext* context,
         const base::FilePath& src_file_path,
-        const FileSystemURL& dest_url) OVERRIDE;
+        const FileSystemURL& dest_url) override;
   virtual base::File::Error DeleteFile(
       FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
+      const FileSystemURL& url) override;
   virtual base::File::Error DeleteDirectory(
       FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
+      const FileSystemURL& url) override;
   virtual storage::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::File::Error* error,
       base::File::Info* file_info,
-      base::FilePath* platform_path) OVERRIDE;
+      base::FilePath* platform_path) override;
 
   // Same as the other CreateFileEnumerator, but with recursive support.
   scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(

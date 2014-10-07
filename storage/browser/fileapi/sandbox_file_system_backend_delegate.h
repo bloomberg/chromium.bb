@@ -131,22 +131,22 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       FileSystemContext* context,
       storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
+      FileSystemType type) override;
   virtual void GetOriginsForTypeOnFileTaskRunner(
       FileSystemType type,
-      std::set<GURL>* origins) OVERRIDE;
+      std::set<GURL>* origins) override;
   virtual void GetOriginsForHostOnFileTaskRunner(
       FileSystemType type,
       const std::string& host,
-      std::set<GURL>* origins) OVERRIDE;
+      std::set<GURL>* origins) override;
   virtual int64 GetOriginUsageOnFileTaskRunner(
       FileSystemContext* context,
       const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
+      FileSystemType type) override;
   virtual scoped_refptr<QuotaReservation>
       CreateQuotaReservationOnFileTaskRunner(
           const GURL& origin_url,
-          FileSystemType type) OVERRIDE;
+          FileSystemType type) override;
 
   // Adds an observer for the secified |type| of a file system, bound to
   // |task_runner|.

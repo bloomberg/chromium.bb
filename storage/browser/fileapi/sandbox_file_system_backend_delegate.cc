@@ -94,11 +94,11 @@ class ObfuscatedOriginEnumerator
   }
   virtual ~ObfuscatedOriginEnumerator() {}
 
-  virtual GURL Next() OVERRIDE {
+  virtual GURL Next() override {
     return enum_->Next();
   }
 
-  virtual bool HasFileSystemType(FileSystemType type) const OVERRIDE {
+  virtual bool HasFileSystemType(FileSystemType type) const override {
     return enum_->HasTypeDirectory(
         SandboxFileSystemBackendDelegate::GetTypeString(type));
   }

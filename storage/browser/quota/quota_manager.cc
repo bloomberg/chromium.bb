@@ -420,19 +420,19 @@ class UsageAndQuotaCallbackDispatcher
     CheckCompleted();
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     // We initialize waiting_callbacks to 1 so that we won't run
     // the completion callback until here even some of the callbacks
     // are dispatched synchronously.
     CheckCompleted();
   }
 
-  virtual void Aborted() OVERRIDE {
+  virtual void Aborted() override {
     callback_.Run(kQuotaErrorAbort, UsageAndQuota());
     DeleteSoon();
   }
 
-  virtual void Completed() OVERRIDE {
+  virtual void Completed() override {
     DCHECK(!has_usage_ || usage_and_quota_.usage >= 0);
     DCHECK(!has_global_limited_usage_ ||
            usage_and_quota_.global_limited_usage >= 0);
@@ -474,7 +474,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
   }
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     remaining_trackers_ = 3;
     // This will populate cached hosts and usage info.
     manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
@@ -491,12 +491,12 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
                    kStorageTypeSyncable));
   }
 
-  virtual void Completed() OVERRIDE {
+  virtual void Completed() override {
     callback_.Run(entries_);
     DeleteSoon();
   }
 
-  virtual void Aborted() OVERRIDE {
+  virtual void Aborted() override {
     callback_.Run(UsageInfoEntries());
     DeleteSoon();
   }
@@ -549,7 +549,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
         weak_factory_(this) {}
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
     for (QuotaClientList::iterator iter = manager()->clients_.begin();
@@ -567,7 +567,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
     }
   }
 
-  virtual void Completed() OVERRIDE {
+  virtual void Completed() override {
     if (error_count_ == 0) {
       // Only remove the entire origin if we didn't skip any client types.
       if (skipped_clients_ == 0)
@@ -579,7 +579,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
     DeleteSoon();
   }
 
-  virtual void Aborted() OVERRIDE {
+  virtual void Aborted() override {
     callback_.Run(kQuotaErrorAbort);
     DeleteSoon();
   }
@@ -629,7 +629,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
         weak_factory_(this) {}
 
  protected:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
     for (QuotaClientList::iterator iter = manager()->clients_.begin();
@@ -641,7 +641,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
     }
   }
 
-  virtual void Completed() OVERRIDE {
+  virtual void Completed() override {
     if (error_count_ == 0) {
       callback_.Run(kQuotaStatusOk);
     } else {
@@ -650,7 +650,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
     DeleteSoon();
   }
 
-  virtual void Aborted() OVERRIDE {
+  virtual void Aborted() override {
     callback_.Run(kQuotaErrorAbort);
     DeleteSoon();
   }

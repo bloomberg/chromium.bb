@@ -47,21 +47,21 @@ class STORAGE_EXPORT QuotaBackendImpl
       const GURL& origin,
       FileSystemType type,
       int64 delta,
-      const ReserveQuotaCallback& callback) OVERRIDE;
+      const ReserveQuotaCallback& callback) override;
   virtual void ReleaseReservedQuota(
       const GURL& origin,
       FileSystemType type,
-      int64 size) OVERRIDE;
+      int64 size) override;
   virtual void CommitQuotaUsage(
       const GURL& origin,
       FileSystemType type,
-      int64 delta) OVERRIDE;
+      int64 delta) override;
   virtual void IncrementDirtyCount(
       const GURL& origin,
-      FileSystemType type) OVERRIDE;
+      FileSystemType type) override;
   virtual void DecrementDirtyCount(
       const GURL& origin,
-      FileSystemType type) OVERRIDE;
+      FileSystemType type) override;
 
  private:
   friend class content::QuotaBackendImplTest;

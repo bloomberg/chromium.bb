@@ -169,9 +169,9 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   bool GetCachedOriginUsage(const GURL& origin, int64* usage) const;
 
   // SpecialStoragePolicy::Observer overrides
-  virtual void OnGranted(const GURL& origin, int change_flags) OVERRIDE;
-  virtual void OnRevoked(const GURL& origin, int change_flags) OVERRIDE;
-  virtual void OnCleared() OVERRIDE;
+  virtual void OnGranted(const GURL& origin, int change_flags) override;
+  virtual void OnRevoked(const GURL& origin, int change_flags) override;
+  virtual void OnCleared() override;
 
   bool IsStorageUnlimited(const GURL& origin) const;
 

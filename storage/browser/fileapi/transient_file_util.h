@@ -25,7 +25,7 @@ class STORAGE_EXPORT_PRIVATE TransientFileUtil
       const FileSystemURL& url,
       base::File::Error* error,
       base::File::Info* file_info,
-      base::FilePath* platform_path) OVERRIDE;
+      base::FilePath* platform_path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransientFileUtil);

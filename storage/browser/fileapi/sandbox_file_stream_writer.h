@@ -34,9 +34,9 @@ class STORAGE_EXPORT_PRIVATE SandboxFileStreamWriter
 
   // FileStreamWriter overrides.
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual int Cancel(const net::CompletionCallback& callback) override;
+  virtual int Flush(const net::CompletionCallback& callback) override;
 
   // Used only by tests.
   void set_default_quota(int64 quota) {

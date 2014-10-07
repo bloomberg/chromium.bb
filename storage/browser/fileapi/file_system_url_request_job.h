@@ -40,20 +40,20 @@ class STORAGE_EXPORT_PRIVATE FileSystemURLRequestJob
       FileSystemContext* file_system_context);
 
   // URLRequestJob methods:
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
+                           int* bytes_read) override;
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
+                                  int* http_status_code) override;
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
+      const net::HttpRequestHeaders& headers) override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
+  virtual int GetResponseCode() const override;
 
   // FilterContext methods (via URLRequestJob):
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual bool GetMimeType(std::string* mime_type) const override;
 
  private:
   class CallbackDispatcher;
