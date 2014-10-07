@@ -34,6 +34,9 @@ public:
     explicit RenderSVGResourceContainer(SVGElement*);
     virtual ~RenderSVGResourceContainer();
 
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) = 0;
+
     virtual void layout() OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
 

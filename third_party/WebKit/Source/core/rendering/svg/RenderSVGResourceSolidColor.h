@@ -31,9 +31,6 @@ public:
     RenderSVGResourceSolidColor();
     virtual ~RenderSVGResourceSolidColor();
 
-    virtual void removeAllClientsFromCache(bool = true) OVERRIDE { }
-    virtual void removeClientFromCache(RenderObject*, bool = true) OVERRIDE { }
-
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) OVERRIDE;
 
     virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
