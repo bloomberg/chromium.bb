@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
@@ -45,7 +46,8 @@ public final class DomDistillerFeedbackReporter implements
      * @return whether the DOM Distiller feature is enabled.
      */
     public static boolean isEnabled() {
-        return false;
+        return (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isDevBuild()) &&
+                nativeIsEnabled();
     }
 
     /**
