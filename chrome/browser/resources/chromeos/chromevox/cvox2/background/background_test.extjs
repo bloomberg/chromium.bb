@@ -1,0 +1,74 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
+
+GEN_INCLUDE(['../../testing/mock_tts.js']);
+
+/**
+ * Test fixture for cvox2.Background.
+ * @constructor
+ * @extends {ChromeVoxNextE2ETest}
+ */
+function BackgroundTest() {}
+
+BackgroundTest.prototype = {
+  __proto__: ChromeVoxNextE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    this.mockTts = new MockTts();
+    cvox.ChromeVox.tts = this.mockTts;
+  }
+};
+
+/** Tests that ChromeVox classic is in this context. */
+SYNC_TEST_F('BackgroundTest', 'ClassicNamespaces', function() {
+  assertEquals('object', typeof(cvox));
+  assertEquals('function', typeof(cvox.ChromeVoxBackground));
+});
+
+/** Tests that ChromeVox next is in this context. */
+SYNC_TEST_F('BackgroundTest', 'NextNamespaces', function() {
+  assertEquals('object', typeof(cvox2));
+  assertEquals('function', typeof(cvox2.Background));
+});
+
+/** Tests that ChromeVox reads the desktop tree. */
+TEST_F('BackgroundTest', 'DesktopFocus', function() {
+  function findStatusTray(root) {
+    if (root.role == chrome.automation.RoleType.button &&
+        root.attributes.name &&
+        root.attributes.name.indexOf('Status tray') != -1) {
+      return root;
+    }
+    for (var i = 0; i < root.children().length; i++) {
+      var found = findStatusTray(root.children()[i]);
+      if (found)
+        return found;
+    }
+    return null;
+  }
+
+  chrome.automation.getDesktop(function(root) {
+    var testButton = findStatusTray(root);
+    cvox.ChromeVox.tts.expectSpeech('Status tray', testDone);
+    testButton.focus();
+  });
+});
+
+/** Tests feedback once a page loads. */
+TEST_F('BackgroundTest', 'InitialFeedback', function() {
+  this.runWithDocument(function() {/*!
+    <p>start
+    <p>end
+  */},
+  function() {
+    cvox.ChromeVox.tts.expectSpeech('start', function() {
+      cvox2.global.backgroundObj.onGotCommand('nextLine');
+    });
+    cvox.ChromeVox.tts.expectSpeech('end', testDone);
+  }.bind(this));
+});
