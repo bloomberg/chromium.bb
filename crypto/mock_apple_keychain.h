@@ -40,9 +40,9 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
       const char* accountName,
       UInt32* passwordLength,
       void** passwordData,
-      SecKeychainItemRef* itemRef) const OVERRIDE;
+      SecKeychainItemRef* itemRef) const override;
   virtual OSStatus ItemFreeContent(SecKeychainAttributeList* attrList,
-                                   void* data) const OVERRIDE;
+                                   void* data) const override;
   virtual OSStatus AddGenericPassword(
       SecKeychainRef keychain,
       UInt32 serviceNameLength,
@@ -51,7 +51,7 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
       const char* accountName,
       UInt32 passwordLength,
       const void* passwordData,
-      SecKeychainItemRef* itemRef) const OVERRIDE;
+      SecKeychainItemRef* itemRef) const override;
 
 #if !defined(OS_IOS)
   virtual OSStatus ItemCopyAttributesAndData(
@@ -60,23 +60,23 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
       SecItemClass* itemClass,
       SecKeychainAttributeList** attrList,
       UInt32* length,
-      void** outData) const OVERRIDE;
+      void** outData) const override;
   // Pass "fail_me" as the data to get errSecAuthFailed.
   virtual OSStatus ItemModifyAttributesAndData(
       SecKeychainItemRef itemRef,
       const SecKeychainAttributeList* attrList,
       UInt32 length,
-      const void* data) const OVERRIDE;
+      const void* data) const override;
   virtual OSStatus ItemFreeAttributesAndData(SecKeychainAttributeList* attrList,
-                                             void* data) const OVERRIDE;
-  virtual OSStatus ItemDelete(SecKeychainItemRef itemRef) const OVERRIDE;
+                                             void* data) const override;
+  virtual OSStatus ItemDelete(SecKeychainItemRef itemRef) const override;
   virtual OSStatus SearchCreateFromAttributes(
       CFTypeRef keychainOrArray,
       SecItemClass itemClass,
       const SecKeychainAttributeList* attrList,
-      SecKeychainSearchRef* searchRef) const OVERRIDE;
+      SecKeychainSearchRef* searchRef) const override;
   virtual OSStatus SearchCopyNext(SecKeychainSearchRef searchRef,
-                                  SecKeychainItemRef* itemRef) const OVERRIDE;
+                                  SecKeychainItemRef* itemRef) const override;
   // Pass "some.domain.com" as the serverName to get errSecDuplicateItem.
   virtual OSStatus AddInternetPassword(
       SecKeychainRef keychain,
@@ -91,8 +91,8 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
       SecAuthenticationType authenticationType,
       UInt32 passwordLength,
       const void* passwordData,
-      SecKeychainItemRef* itemRef) const OVERRIDE;
-  virtual void Free(CFTypeRef ref) const OVERRIDE;
+      SecKeychainItemRef* itemRef) const override;
+  virtual void Free(CFTypeRef ref) const override;
 
   // Return the counts of objects returned by Create/Copy functions but never
   // Free'd as they should have been.

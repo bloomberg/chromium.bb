@@ -28,17 +28,17 @@ class SecureHashSHA256NSS : public SecureHash {
   }
 
   // SecureHash implementation:
-  virtual void Update(const void* input, size_t len) OVERRIDE {
+  virtual void Update(const void* input, size_t len) override {
     SHA256_Update(&ctx_, static_cast<const unsigned char*>(input), len);
   }
 
-  virtual void Finish(void* output, size_t len) OVERRIDE {
+  virtual void Finish(void* output, size_t len) override {
     SHA256_End(&ctx_, static_cast<unsigned char*>(output), NULL,
                static_cast<unsigned int>(len));
   }
 
-  virtual bool Serialize(Pickle* pickle) OVERRIDE;
-  virtual bool Deserialize(PickleIterator* data_iterator) OVERRIDE;
+  virtual bool Serialize(Pickle* pickle) override;
+  virtual bool Deserialize(PickleIterator* data_iterator) override;
 
  private:
   SHA256Context ctx_;
