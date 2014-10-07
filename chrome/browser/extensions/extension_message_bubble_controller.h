@@ -30,7 +30,7 @@ class ExtensionMessageBubbleController {
 
   class Delegate {
    public:
-    Delegate();
+    explicit Delegate(Profile* profile);
     virtual ~Delegate();
 
     virtual bool ShouldIncludeExtension(const std::string& extension_id) = 0;
@@ -51,7 +51,7 @@ class ExtensionMessageBubbleController {
         bool anchored_to_browser_action) const = 0;
     virtual base::string16 GetOverflowText(
         const base::string16& overflow_count) const = 0;
-    virtual base::string16 GetLearnMoreLabel() const = 0;
+    virtual base::string16 GetLearnMoreLabel() const;
     virtual GURL GetLearnMoreUrl() const = 0;
     virtual base::string16 GetActionButtonLabel() const = 0;
     virtual base::string16 GetDismissButtonLabel() const = 0;
@@ -66,6 +66,25 @@ class ExtensionMessageBubbleController {
     // Record, through UMA, how many extensions were found.
     virtual void LogExtensionCount(size_t count) = 0;
     virtual void LogAction(BubbleAction action) = 0;
+
+    // Has the user acknowledged info about the extension the bubble reports.
+    virtual bool HasBubbleInfoBeenAcknowledged(const std::string& extension_id);
+    virtual void SetBubbleInfoBeenAcknowledged(const std::string& extension_id,
+                                               bool value);
+
+   protected:
+    Profile* profile() const;
+
+    std::string get_acknowledged_flag_pref_name() const;
+    void set_acknowledged_flag_pref_name(std::string pref_name);
+
+   private:
+    // A weak pointer to the profile we are associated with. Not owned by us.
+    Profile* profile_;
+
+    // Name for corresponding pref that keeps if the info the bubble contains
+    // was acknowledged by user.
+    std::string acknowledged_pref_name_;
   };
 
   ExtensionMessageBubbleController(Delegate* delegate, Profile* profile);

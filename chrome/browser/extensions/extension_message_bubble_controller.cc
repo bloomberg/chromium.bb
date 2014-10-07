@@ -13,14 +13,18 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleController::Delegate
 
-ExtensionMessageBubbleController::Delegate::Delegate() {
+ExtensionMessageBubbleController::Delegate::Delegate(Profile* profile)
+    : profile_(profile) {
 }
 
 ExtensionMessageBubbleController::Delegate::~Delegate() {
@@ -29,6 +33,50 @@ ExtensionMessageBubbleController::Delegate::~Delegate() {
 void ExtensionMessageBubbleController::Delegate::RestrictToSingleExtension(
     const std::string& extension_id) {
   NOTIMPLEMENTED();  // Derived classes that need this should implement.
+}
+
+base::string16 ExtensionMessageBubbleController::Delegate::GetLearnMoreLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool ExtensionMessageBubbleController::Delegate::HasBubbleInfoBeenAcknowledged(
+    const std::string& extension_id) {
+  std::string pref_name = get_acknowledged_flag_pref_name();
+  if (pref_name.empty())
+    return false;
+  bool pref_state = false;
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  prefs->ReadPrefAsBoolean(extension_id, pref_name, &pref_state);
+  return pref_state;
+}
+
+void ExtensionMessageBubbleController::Delegate::SetBubbleInfoBeenAcknowledged(
+    const std::string& extension_id,
+    bool value) {
+  std::string pref_name = get_acknowledged_flag_pref_name();
+  if (pref_name.empty())
+    return;
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  prefs->UpdateExtensionPref(extension_id,
+                             pref_name,
+                             value ? new base::FundamentalValue(value) : NULL);
+}
+
+Profile* ExtensionMessageBubbleController::Delegate::profile() const {
+  return profile_;
+}
+
+std::string
+ExtensionMessageBubbleController::Delegate::get_acknowledged_flag_pref_name()
+    const {
+  return acknowledged_pref_name_;
+}
+
+void
+ExtensionMessageBubbleController::Delegate::set_acknowledged_flag_pref_name(
+    std::string pref_name) {
+  acknowledged_pref_name_ = pref_name;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

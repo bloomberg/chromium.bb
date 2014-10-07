@@ -49,7 +49,6 @@ class DevModeBubbleDelegate
       bool anchored_to_browser_action) const override;
   virtual base::string16 GetOverflowText(
       const base::string16& overflow_count) const override;
-  virtual base::string16 GetLearnMoreLabel() const override;
   virtual GURL GetLearnMoreUrl() const override;
   virtual base::string16 GetActionButtonLabel() const override;
   virtual base::string16 GetDismissButtonLabel() const override;
@@ -59,9 +58,6 @@ class DevModeBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction action) override;
 
  private:
-  // The associated profile (weak).
-  Profile* profile_;
-
   // Our extension service. Weak, not owned by us.
   ExtensionService* service_;
 
@@ -69,8 +65,9 @@ class DevModeBubbleDelegate
 };
 
 DevModeBubbleDelegate::DevModeBubbleDelegate(Profile* profile)
-    : profile_(profile),
-      service_(ExtensionSystem::Get(profile)->extension_service()) {}
+    : ExtensionMessageBubbleController::Delegate(profile),
+      service_(ExtensionSystem::Get(profile)->extension_service()) {
+}
 
 DevModeBubbleDelegate::~DevModeBubbleDelegate() {
 }
@@ -94,7 +91,7 @@ void DevModeBubbleDelegate::PerformAction(const ExtensionIdList& list) {
 }
 
 void DevModeBubbleDelegate::OnClose() {
-  ExtensionToolbarModel* toolbar_model = ExtensionToolbarModel::Get(profile_);
+  ExtensionToolbarModel* toolbar_model = ExtensionToolbarModel::Get(profile());
   if (toolbar_model)
     toolbar_model->StopHighlighting();
 }
@@ -113,10 +110,6 @@ base::string16 DevModeBubbleDelegate::GetOverflowText(
   return l10n_util::GetStringFUTF16(
             IDS_EXTENSIONS_DISABLED_AND_N_MORE,
             overflow_count);
-}
-
-base::string16 DevModeBubbleDelegate::GetLearnMoreLabel() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 GURL DevModeBubbleDelegate::GetLearnMoreUrl() const {

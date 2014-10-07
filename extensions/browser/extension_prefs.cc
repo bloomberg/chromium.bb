@@ -76,10 +76,6 @@ const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 // Indicates whether the user has acknowledged various types of extensions.
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
-const char kPrefWipeoutAcknowledged[] = "ack_wiped";
-const char kPrefSettingsBubbleAcknowledged[] = "ack_settings_bubble";
-const char kPrefNtpBubbleAcknowledged[] = "ack_ntp_bubble";
-const char kPrefProxyBubbleAcknowledged[] = "ack_proxy_bubble";
 
 // Indicates whether the external extension was installed during the first
 // run of this profile.
@@ -712,59 +708,6 @@ void ExtensionPrefs::SetExternalInstallFirstRun(
   DCHECK(crx_file::id_util::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefExternalInstallFirstRun,
                       new base::FundamentalValue(true));
-}
-
-bool ExtensionPrefs::HasWipeoutBeenAcknowledged(
-    const std::string& extension_id) {
-  return ReadPrefAsBooleanAndReturn(extension_id, kPrefWipeoutAcknowledged);
-}
-
-void ExtensionPrefs::SetWipeoutAcknowledged(
-    const std::string& extension_id,
-    bool value) {
-  UpdateExtensionPref(extension_id,
-                      kPrefWipeoutAcknowledged,
-                      value ? new base::FundamentalValue(value) : NULL);
-}
-
-bool ExtensionPrefs::HasSettingsApiBubbleBeenAcknowledged(
-    const std::string& extension_id) {
-  return ReadPrefAsBooleanAndReturn(extension_id,
-                                    kPrefSettingsBubbleAcknowledged);
-}
-
-void ExtensionPrefs::SetSettingsApiBubbleBeenAcknowledged(
-    const std::string& extension_id,
-    bool value) {
-  UpdateExtensionPref(extension_id,
-                      kPrefSettingsBubbleAcknowledged,
-                      value ? new base::FundamentalValue(value) : NULL);
-}
-
-bool ExtensionPrefs::HasNtpOverriddenBubbleBeenAcknowledged(
-    const std::string& extension_id) {
-  return ReadPrefAsBooleanAndReturn(extension_id, kPrefNtpBubbleAcknowledged);
-}
-
-void ExtensionPrefs::SetNtpOverriddenBubbleBeenAcknowledged(
-    const std::string& extension_id,
-    bool value) {
-  UpdateExtensionPref(extension_id,
-                      kPrefNtpBubbleAcknowledged,
-                      value ? new base::FundamentalValue(value) : NULL);
-}
-
-bool ExtensionPrefs::HasProxyOverriddenBubbleBeenAcknowledged(
-    const std::string& extension_id) {
-  return ReadPrefAsBooleanAndReturn(extension_id, kPrefProxyBubbleAcknowledged);
-}
-
-void ExtensionPrefs::SetProxyOverriddenBubbleBeenAcknowledged(
-    const std::string& extension_id,
-    bool value) {
-  UpdateExtensionPref(extension_id,
-                      kPrefProxyBubbleAcknowledged,
-                      value ? new base::FundamentalValue(value) : NULL);
 }
 
 bool ExtensionPrefs::SetAlertSystemFirstRun() {

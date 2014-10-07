@@ -76,7 +76,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
     DELAY_REASON_WAIT_FOR_IMPORTS = 3,
   };
 
-
   // Creates base::Time classes. The default implementation is just to return
   // the current time, but tests can inject alternative implementations.
   class TimeProvider {
@@ -313,31 +312,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // of this profile.
   bool IsExternalInstallFirstRun(const std::string& extension_id);
   void SetExternalInstallFirstRun(const std::string& extension_id);
-
-  // Whether the user has been notified about extension with |extension_id|
-  // being wiped out.
-  bool HasWipeoutBeenAcknowledged(const std::string& extension_id);
-  void SetWipeoutAcknowledged(const std::string& extension_id, bool value);
-
-  // Whether the user has been notified about extension with |extension_id|
-  // taking over some aspect of the user's settings (homepage, startup pages,
-  // or search engine).
-  bool HasSettingsApiBubbleBeenAcknowledged(const std::string& extension_id);
-  void SetSettingsApiBubbleBeenAcknowledged(const std::string& extension_id,
-                                            bool value);
-
-  // Whether the user has been notified about extension with |extension_id|
-  // overriding the new tab page.
-  bool HasNtpOverriddenBubbleBeenAcknowledged(const std::string& extension_id);
-  void SetNtpOverriddenBubbleBeenAcknowledged(const std::string& extension_id,
-                                              bool value);
-
-  // Whether the user has been notified about extension with |extension_id|
-  // overriding the proxy.
-  bool HasProxyOverriddenBubbleBeenAcknowledged(
-      const std::string& extension_id);
-  void SetProxyOverriddenBubbleBeenAcknowledged(const std::string& extension_id,
-                                                bool value);
 
   // Returns true if the extension notification code has already run for the
   // first time for this profile. Currently we use this flag to mean that any
