@@ -79,8 +79,9 @@ void OAuth2ApiCallFlow::EndApiCall(const net::URLFetcher* source) {
   // If the response code is 401 Unauthorized then access token may have
   // expired. So try generating a new access token.
   if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
-    // If we already tried minting a new access token, don't do it again.
-    if (tried_mint_access_token_) {
+    // If we already tried minting a new access token or we don't have a
+    // refresh token, don't do it again.
+    if (tried_mint_access_token_ || refresh_token_.empty()) {
       state_ = ERROR_STATE;
       ProcessApiCallFailure(source);
     } else {
@@ -119,6 +120,7 @@ void OAuth2ApiCallFlow::EndMintAccessToken(
 
   if (!error) {
     state_ = MINT_ACCESS_TOKEN_DONE;
+    ProcessNewAccessToken(access_token_);
     BeginApiCall();
   } else {
     state_ = ERROR_STATE;

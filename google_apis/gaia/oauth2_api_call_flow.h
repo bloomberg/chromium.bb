@@ -38,9 +38,11 @@ class OAuth2ApiCallFlow
     : public net::URLFetcherDelegate,
       public OAuth2AccessTokenConsumer {
  public:
-  // Creates an instance that works with the given data.
-  // Note that |access_token| can be empty. In that case, the flow will skip
-  // the first step (of trying an existing access token).
+  // Creates an instance that works with the given data.  Note that
+  // |access_token| xor |refresh_token| can be empty (but not both).  If
+  // |access_token| is empty, the flow will skip the first step (of trying an
+  // existing access token). If |refresh_token| is empty, the flow wlll skip
+  // the second and third steps (only performing the API call).
   OAuth2ApiCallFlow(
       net::URLRequestContextGetter* context,
       const std::string& refresh_token,

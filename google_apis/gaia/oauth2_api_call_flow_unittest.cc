@@ -189,6 +189,7 @@ TEST_F(OAuth2ApiCallFlowTest, SecondApiCallSucceeds) {
   SetupAccessTokenFetcher(scopes);
   flow_->OnURLFetchComplete(url_fetcher1);
   TestURLFetcher* url_fetcher2 = SetupApiCall(true, net::HTTP_OK);
+  EXPECT_CALL(*flow_, ProcessNewAccessToken(at));
   EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher2));
   flow_->OnGetTokenSuccess(
       at,
@@ -274,6 +275,32 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenNewTokenGenerationFails) {
   EXPECT_CALL(*flow_, ProcessMintAccessTokenFailure(error));
   flow_->Start();
   flow_->OnGetTokenFailure(error);
+}
+
+TEST_F(OAuth2ApiCallFlowTest, EmptyRefreshTokenApiCallSuccess) {
+  std::string rt = "";
+  std::string at = "access_token";
+  std::vector<std::string> scopes(CreateTestScopes());
+
+  CreateFlow(rt, at, scopes);
+  EXPECT_CALL(*flow_, CreateAccessTokenFetcher()).Times(0);
+  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
+  EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher));
+  flow_->Start();
+  flow_->OnURLFetchComplete(url_fetcher);
+}
+
+TEST_F(OAuth2ApiCallFlowTest, EmptyRefreshTokenApiCallFails) {
+  std::string rt = "";
+  std::string at = "access_token";
+  std::vector<std::string> scopes(CreateTestScopes());
+
+  CreateFlow(rt, at, scopes);
+  EXPECT_CALL(*flow_, CreateAccessTokenFetcher()).Times(0);
+  TestURLFetcher* url_fetcher = SetupApiCall(false, net::HTTP_UNAUTHORIZED);
+  EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher));
+  flow_->Start();
+  flow_->OnURLFetchComplete(url_fetcher);
 }
 
 TEST_F(OAuth2ApiCallFlowTest, CreateURLFetcher) {
