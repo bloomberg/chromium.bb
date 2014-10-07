@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
-#include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/messaging/message.h"
 
@@ -60,8 +60,7 @@ class LazyBackgroundTaskQueue;
 // case that the port is a tab).  The Process is usually either a
 // RenderProcessHost or a RenderViewHost.
 class MessageService : public BrowserContextKeyedAPI,
-                       public content::NotificationObserver,
-                       public NativeMessageProcessHost::Client {
+                       public content::NotificationObserver {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
@@ -105,6 +104,16 @@ class MessageService : public BrowserContextKeyedAPI,
     DISALLOW_COPY_AND_ASSIGN(MessagePort);
   };
 
+  enum PolicyPermission {
+    DISALLOW,           // The host is not allowed.
+    ALLOW_SYSTEM_ONLY,  // Allowed only when installed on system level.
+    ALLOW_ALL,          // Allowed when installed on system or user level.
+  };
+
+  static PolicyPermission IsNativeMessagingHostAllowed(
+      const PrefService* pref_service,
+      const std::string& native_host_name);
+
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
@@ -146,17 +155,11 @@ class MessageService : public BrowserContextKeyedAPI,
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
-  virtual void CloseChannel(int port_id,
-                            const std::string& error_message) override;
+  void CloseChannel(int port_id, const std::string& error_message);
 
   // Enqueues a message on a pending channel, or sends a message to the given
   // port if the channel isn't pending.
   void PostMessage(int port_id, const Message& message);
-
-  // NativeMessageProcessHost::Client
-  virtual void PostMessageFromNativeProcess(
-      int port_id,
-      const std::string& message) override;
 
  private:
   friend class MockMessageService;
