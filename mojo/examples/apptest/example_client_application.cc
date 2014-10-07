@@ -4,8 +4,6 @@
 
 #include "mojo/examples/apptest/example_client_application.h"
 
-#include "mojo/examples/apptest/example_client_impl.h"
-
 namespace mojo {
 
 ExampleClientApplication::ExampleClientApplication() {}

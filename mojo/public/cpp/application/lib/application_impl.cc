@@ -78,6 +78,13 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   return registry;
 }
 
+bool ApplicationImpl::WaitForInitialize() {
+  MOJO_CHECK(!initialized_);
+  bool result = shell_.WaitForIncomingMethodCall();
+  MOJO_CHECK(initialized_ || !result);
+  return result;
+}
+
 void ApplicationImpl::BindShell(ScopedMessagePipeHandle shell_handle) {
   shell_watch_ = new ShellPtrWatcher(this);
   shell_.Bind(shell_handle.Pass());

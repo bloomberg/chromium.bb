@@ -74,6 +74,9 @@ class ApplicationImpl : public InterfaceImpl<Application> {
     ConnectToApplication(application_url)->ConnectToService(ptr);
   }
 
+  // Wait for the ShellPtr's Initialize message.
+  bool WaitForInitialize();
+
  private:
   class ShellPtrWatcher;
 

@@ -10,19 +10,17 @@
 
 namespace mojo {
 
-class ApplicationConnection;
-
 class ExampleClientImpl : public InterfaceImpl<ExampleClient> {
  public:
-  explicit ExampleClientImpl();
+  ExampleClientImpl();
   virtual ~ExampleClientImpl();
 
   int16_t last_pong_value() const { return last_pong_value_; }
 
- private:
   // InterfaceImpl<ExampleClient> overrides.
   virtual void Pong(uint16_t pong_value) override;
 
+ private:
   int16_t last_pong_value_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(ExampleClientImpl);
 };

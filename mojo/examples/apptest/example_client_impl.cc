@@ -8,11 +8,11 @@
 namespace mojo {
 
 ExampleClientImpl::ExampleClientImpl() : last_pong_value_(0) {}
+
 ExampleClientImpl::~ExampleClientImpl() {}
 
 void ExampleClientImpl::Pong(uint16_t pong_value) {
   last_pong_value_ = pong_value;
-  RunLoop::current()->Quit();
 }
 
 }  // namespace mojo
