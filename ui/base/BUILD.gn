@@ -895,7 +895,7 @@ test("ui_unittests") {
       "//ui/aura:test_support",
       "//ui/events:gesture_detection",
       "//ui/chromeos:ui_chromeos",
-      #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
+      #'../../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
     ]
   }
 }
