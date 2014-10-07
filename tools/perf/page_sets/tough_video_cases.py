@@ -44,7 +44,7 @@ class Page1(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -57,7 +57,7 @@ class Page2(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -71,7 +71,7 @@ class Page3(ToughVideoCasesPage):
     self.add_browser_metrics = True
     self.is_50fps = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -85,7 +85,7 @@ class Page4(ToughVideoCasesPage):
     self.add_browser_metrics = True
     self.is_50fps = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -100,7 +100,7 @@ class Page5(ToughVideoCasesPage):
     self.is_4k = True
     self.is_50fps = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -115,7 +115,7 @@ class Page6(ToughVideoCasesPage):
     self.is_4k = True
     self.is_50fps = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -128,7 +128,7 @@ class Page7(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -141,7 +141,7 @@ class Page8(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -154,7 +154,7 @@ class Page9(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -167,7 +167,7 @@ class Page10(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -181,7 +181,7 @@ class Page11(ToughVideoCasesPage):
     self.add_browser_metrics = True
     self.is_50fps = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -196,7 +196,7 @@ class Page12(ToughVideoCasesPage):
     self.is_4k = True
     self.is_50fps = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -209,7 +209,7 @@ class Page13(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -222,7 +222,7 @@ class Page14(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -235,7 +235,7 @@ class Page15(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -249,7 +249,7 @@ class Page16(ToughVideoCasesPage):
     self.is_4k = True
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -263,7 +263,7 @@ class Page17(ToughVideoCasesPage):
     self.is_4k = True
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -277,7 +277,7 @@ class Page18(ToughVideoCasesPage):
     self.is_4k = True
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 
@@ -290,7 +290,7 @@ class Page19(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -303,7 +303,7 @@ class Page20(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -316,7 +316,7 @@ class Page21(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -329,7 +329,7 @@ class Page22(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -342,7 +342,7 @@ class Page23(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -355,7 +355,7 @@ class Page24(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -369,7 +369,7 @@ class Page25(ToughVideoCasesPage):
     self.skip_basic_metrics = True
     self.is_4k = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -383,7 +383,7 @@ class Page26(ToughVideoCasesPage):
     self.skip_basic_metrics = True
     self.is_4k = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -397,7 +397,7 @@ class Page27(ToughVideoCasesPage):
     self.skip_basic_metrics = True
     self.is_4k = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
@@ -410,7 +410,7 @@ class Page28(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.LoopSingleAudio(action_runner)
 
 
@@ -423,7 +423,7 @@ class Page29(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.LoopMixedAudio(action_runner)
 
 class Page30(ToughVideoCasesPage):
@@ -435,7 +435,7 @@ class Page30(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 class Page31(ToughVideoCasesPage):
@@ -447,7 +447,7 @@ class Page31(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 class Page32(ToughVideoCasesPage):
@@ -459,7 +459,7 @@ class Page32(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 class Page33(ToughVideoCasesPage):
@@ -471,7 +471,7 @@ class Page33(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 class Page34(ToughVideoCasesPage):
@@ -483,7 +483,7 @@ class Page34(ToughVideoCasesPage):
 
     self.add_browser_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.PlayAction(action_runner)
 
 class Page35(ToughVideoCasesPage):
@@ -495,7 +495,7 @@ class Page35(ToughVideoCasesPage):
 
     self.skip_basic_metrics = True
 
-  def RunMediaMetrics(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 class ToughVideoCasesPageSet(page_set_module.PageSet):

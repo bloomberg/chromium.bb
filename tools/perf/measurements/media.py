@@ -17,7 +17,7 @@ class Media(page_test.PageTest):
   """
 
   def __init__(self):
-    super(Media, self).__init__('RunMediaMetrics')
+    super(Media, self).__init__('RunPageInteractions')
     self._media_metric = None
     # Used to add browser power and CPU metrics to results per test.
     self._add_browser_metrics = False
