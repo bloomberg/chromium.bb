@@ -80,14 +80,17 @@ class DataReductionProxyAuthRequestHandler {
       const net::HostPortPair& proxy_server,
       net::HttpRequestHeaders* request_headers);
 
-  // Sets a new authentication key. This must be called for platforms that do
-  // not have a default key defined. See the constructor implementation for
-  // those platforms. Must be called on the UI thread.
-  void SetKeyOnUI(const std::string& key);
+  // Stores the supplied key and sets up credentials suitable for authenticating
+  // with the data reduction proxy.
+  // This can be called more than once. For example on a platform that does not
+  // have a default key defined, this function will be called some time after
+  // this class has been constructed. Android WebView is a platform that does
+  // this. The caller needs to make sure |this| pointer is valid when
+  // InitAuthentication is called.
+  void InitAuthentication(const std::string& key);
 
  protected:
   void Init();
-  void InitAuthenticationOnUI(const std::string& key);
 
   void AddAuthorizationHeader(net::HttpRequestHeaders* headers);
 
@@ -112,7 +115,9 @@ class DataReductionProxyAuthRequestHandler {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
-                           Authorization);
+                           AuthorizationOnIO);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+                           AuthorizationIgnoresEmptyKey);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            AuthorizationBogusVersion);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
@@ -126,10 +131,6 @@ class DataReductionProxyAuthRequestHandler {
   void GetChromiumBuildAndPatch(const std::string& version,
                                 std::string* build,
                                 std::string* patch) const;
-
-  // Stores the supplied key and sets up credentials suitable for authenticating
-  // with the data reduction proxy.
-  void InitAuthentication(const std::string& key);
 
   // Generates a session ID and credentials suitable for authenticating with
   // the data reduction proxy.

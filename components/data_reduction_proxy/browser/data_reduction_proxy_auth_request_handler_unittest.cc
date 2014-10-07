@@ -136,7 +136,7 @@ class DataReductionProxyAuthRequestHandlerTest : public testing::Test {
   base::MessageLoopProxy* loop_proxy_;
 };
 
-TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
+TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIO) {
   scoped_ptr<TestDataReductionProxyParams> params;
   params.reset(
       new TestDataReductionProxyParams(
@@ -146,6 +146,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
           TestDataReductionProxyParams::HAS_EVERYTHING &
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
           ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+  // loop_proxy_ is just the current message loop. This means loop_proxy_
+  // is the network thread used by DataReductionProxyAuthRequestHandler.
   TestDataReductionProxyAuthRequestHandler auth_handler(kClient,
                                                         kVersion,
                                                         params.get(),
@@ -160,7 +162,7 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   EXPECT_EQ(kExpectedSession, auth_handler.session_);
 
   // Now set a key.
-  auth_handler.SetKeyOnUI(kTestKey2);
+  auth_handler.InitAuthentication(kTestKey2);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestKey2, auth_handler.key_);
   EXPECT_EQ(kExpectedCredentials2, auth_handler.credentials_);
@@ -241,6 +243,40 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   EXPECT_EQ(kExpectedHeader3, header_value3);
 }
 
+TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationIgnoresEmptyKey) {
+scoped_ptr<TestDataReductionProxyParams> params;
+  params.reset(
+      new TestDataReductionProxyParams(
+          DataReductionProxyParams::kAllowed |
+          DataReductionProxyParams::kFallbackAllowed |
+          DataReductionProxyParams::kPromoAllowed,
+          TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+  // loop_proxy_ is just the current message loop. This means loop_proxy_
+  // is the network thread used by DataReductionProxyAuthRequestHandler.
+  TestDataReductionProxyAuthRequestHandler auth_handler(kClient,
+                                                        kVersion,
+                                                        params.get(),
+                                                        loop_proxy_);
+  auth_handler.Init();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(auth_handler.client_, kClientStr);
+  EXPECT_EQ(kExpectedBuild, auth_handler.build_number_);
+  EXPECT_EQ(kExpectedPatch, auth_handler.patch_number_);
+  EXPECT_EQ(auth_handler.key_, kTestKey);
+  EXPECT_EQ(kExpectedCredentials, auth_handler.credentials_);
+  EXPECT_EQ(kExpectedSession, auth_handler.session_);
+
+  // Now set an empty key. The auth handler should ignore that, and the key
+  // remains |kTestKey|.
+  auth_handler.InitAuthentication("");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(auth_handler.key_, kTestKey);
+  EXPECT_EQ(kExpectedCredentials, auth_handler.credentials_);
+  EXPECT_EQ(kExpectedSession, auth_handler.session_);
+}
+
 TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationBogusVersion) {
   scoped_ptr<TestDataReductionProxyParams> params;
   params.reset(
@@ -259,7 +295,7 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationBogusVersion) {
   EXPECT_TRUE(auth_handler.patch_number_.empty());
 
   // Now set a key.
-  auth_handler.SetKeyOnUI(kTestKey2);
+  auth_handler.InitAuthentication(kTestKey2);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestKey2, auth_handler.key_);
   EXPECT_EQ(kExpectedCredentials2, auth_handler.credentials_);

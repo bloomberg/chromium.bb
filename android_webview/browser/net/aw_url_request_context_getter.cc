@@ -283,4 +283,9 @@ net::NetLog* AwURLRequestContextGetter::GetNetLog() {
   return net_log_.get();
 }
 
+void AwURLRequestContextGetter::SetKeyOnIO(const std::string& key) {
+  DCHECK(data_reduction_proxy_auth_request_handler_);
+  data_reduction_proxy_auth_request_handler_->InitAuthentication(key);
+}
+
 }  // namespace android_webview

@@ -94,7 +94,7 @@ void DataReductionProxyAuthRequestHandler::GetChromiumBuildAndPatch(
 }
 
 void DataReductionProxyAuthRequestHandler::Init() {
-  InitAuthenticationOnUI(GetDefaultKey());
+  InitAuthentication(GetDefaultKey());
 }
 
 
@@ -168,14 +168,6 @@ void DataReductionProxyAuthRequestHandler::AddAuthorizationHeader(
   headers->SetHeader(kChromeProxyHeader, header_value);
 }
 
-void DataReductionProxyAuthRequestHandler::InitAuthenticationOnUI(
-    const std::string& key) {
-  network_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &DataReductionProxyAuthRequestHandler::InitAuthentication,
-      base::Unretained(this),
-      key));
-}
-
 void DataReductionProxyAuthRequestHandler::ComputeCredentials(
     const base::Time& now,
     std::string* session,
@@ -200,17 +192,22 @@ void DataReductionProxyAuthRequestHandler::ComputeCredentials(
 
 void DataReductionProxyAuthRequestHandler::InitAuthentication(
     const std::string& key) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DataReductionProxyAuthRequestHandler::InitAuthentication,
+                   base::Unretained(this),
+                   key));
+    return;
+  }
+
+  if (key.empty())
+    return;
+
   key_ = key;
   last_update_time_ = Now();
   ComputeCredentials(last_update_time_, &session_, &credentials_);
 }
-
-void DataReductionProxyAuthRequestHandler::SetKeyOnUI(const std::string& key) {
-  if (!key.empty())
-    InitAuthenticationOnUI(key);
-}
-
 
 std::string DataReductionProxyAuthRequestHandler::GetDefaultKey() const {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

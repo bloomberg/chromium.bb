@@ -56,17 +56,21 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
   DCHECK(browser_context->GetRequestContext());
+  // The following call to GetRequestContext() could possibly be the first such
+  // call, which means AwURLRequestContextGetter::InitializeURLRequestContext
+  // will be called on IO thread as a result. InitializeURLRequestContext()
+  // will initialize DataReductionProxyAuthRequestHandler.
   AwURLRequestContextGetter* aw_url_request_context_getter =
       static_cast<AwURLRequestContextGetter*>(
           browser_context->GetRequestContext());
-  DataReductionProxyAuthRequestHandler* auth_request_handler =
-      aw_url_request_context_getter->GetDataReductionProxyAuthRequestHandler();
-  if (auth_request_handler) {
-    auth_request_handler->SetKeyOnUI(
-        ConvertJavaStringToUTF8(env, key));
-  } else {
-    DLOG(ERROR) << "Data reduction proxy auth request handler does not exist";
-  }
+
+  // This PostTask has to be called after GetRequestContext, because SetKeyOnIO
+  // needs a valid DataReductionProxyAuthRequestHandler object.
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&AwURLRequestContextGetter::SetKeyOnIO,
+                                     aw_url_request_context_getter,
+                                     ConvertJavaStringToUTF8(env, key)));
 }
 
 // static
