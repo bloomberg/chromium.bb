@@ -66,9 +66,9 @@ class WorkerGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<Worke
 public:
     virtual ~WorkerGlobalScope();
 
-    virtual bool isWorkerGlobalScope() const OVERRIDE FINAL { return true; }
+    virtual bool isWorkerGlobalScope() const override final { return true; }
 
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
+    virtual ExecutionContext* executionContext() const override final;
 
     virtual void countFeature(UseCounter::Feature) const;
     virtual void countDeprecation(UseCounter::Feature) const;
@@ -76,8 +76,8 @@ public:
     const KURL& url() const { return m_url; }
     KURL completeURL(const String&) const;
 
-    virtual String userAgent(const KURL&) const OVERRIDE FINAL;
-    virtual void disableEval(const String& errorMessage) OVERRIDE FINAL;
+    virtual String userAgent(const KURL&) const override final;
+    virtual void disableEval(const String& errorMessage) override final;
 
     WorkerScriptController* script() { return m_script.get(); }
     void clearScript() { m_script.clear(); }
@@ -87,7 +87,7 @@ public:
 
     WorkerThread* thread() const { return m_thread; }
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE FINAL; // Executes the task on context's thread asynchronously.
+    virtual void postTask(PassOwnPtr<ExecutionContextTask>) override final; // Executes the task on context's thread asynchronously.
 
     // WorkerGlobalScope
     WorkerGlobalScope* self() { return this; }
@@ -102,13 +102,13 @@ public:
     WorkerNavigator* navigator() const;
 
     // ExecutionContextClient
-    virtual WorkerEventQueue* eventQueue() const OVERRIDE FINAL;
-    virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
+    virtual WorkerEventQueue* eventQueue() const override final;
+    virtual SecurityContext& securityContext() override final { return *this; }
 
-    virtual bool isContextThread() const OVERRIDE FINAL;
-    virtual bool isJSExecutionForbidden() const OVERRIDE FINAL;
+    virtual bool isContextThread() const override final;
+    virtual bool isJSExecutionForbidden() const override final;
 
-    virtual double timerAlignmentInterval() const OVERRIDE FINAL;
+    virtual double timerAlignmentInterval() const override final;
 
     WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
 
@@ -125,31 +125,31 @@ public:
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;
 
-    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
+    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override final;
     ConsoleMessageStorage* messageStorage();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType);
 
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
     void addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
 
 private:
 #if !ENABLE(OILPAN)
-    virtual void refExecutionContext() OVERRIDE FINAL { ref(); }
-    virtual void derefExecutionContext() OVERRIDE FINAL { deref(); }
+    virtual void refExecutionContext() override final { ref(); }
+    virtual void derefExecutionContext() override final { deref(); }
 #endif
 
-    virtual const KURL& virtualURL() const OVERRIDE FINAL;
-    virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL;
+    virtual const KURL& virtualURL() const override final;
+    virtual KURL virtualCompleteURL(const String&) const override final;
 
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override final;
 
-    virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
-    virtual void didUpdateSecurityOrigin() OVERRIDE FINAL { }
+    virtual EventTarget* errorEventTarget() override final;
+    virtual void didUpdateSecurityOrigin() override final { }
 
     KURL m_url;
     String m_userAgent;

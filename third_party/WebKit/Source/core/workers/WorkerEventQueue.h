@@ -39,7 +39,7 @@ class Event;
 class Node;
 class ExecutionContext;
 
-class WorkerEventQueue FINAL : public EventQueue {
+class WorkerEventQueue final : public EventQueue {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
@@ -48,9 +48,9 @@ public:
     void trace(Visitor*);
 
     // EventQueue
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
-    virtual bool cancelEvent(Event*) OVERRIDE;
-    virtual void close() OVERRIDE;
+    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    virtual bool cancelEvent(Event*) override;
+    virtual void close() override;
 
 private:
     explicit WorkerEventQueue(ExecutionContext*);

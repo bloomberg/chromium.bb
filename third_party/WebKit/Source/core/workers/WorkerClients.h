@@ -51,7 +51,7 @@ public:
     virtual ~WorkerClients() { }
 
 #if ENABLE(OILPAN)
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         HeapSupplementable<WorkerClients>::trace(visitor);
     }

@@ -46,31 +46,31 @@ class ExecutionContext;
 class WorkerGlobalScopeProxy;
 class WorkerScriptLoader;
 
-class Worker FINAL : public AbstractWorker, private WorkerScriptLoaderClient {
+class Worker final : public AbstractWorker, private WorkerScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
     virtual ~Worker();
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
     void terminate();
 
-    virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() override;
+    virtual bool hasPendingActivity() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit Worker(ExecutionContext*);
 
     // WorkerScriptLoaderClient callbacks
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
-    virtual void notifyFinished() OVERRIDE;
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) override;
+    virtual void notifyFinished() override;
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.

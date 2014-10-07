@@ -58,8 +58,8 @@ const int64 kLongIdleHandlerDelayMs = 10*1000;
 
 class MicrotaskRunner : public WebThread::TaskObserver {
 public:
-    virtual void willProcessTask() OVERRIDE { }
-    virtual void didProcessTask() OVERRIDE
+    virtual void willProcessTask() override { }
+    virtual void didProcessTask() override
     {
         Microtask::performCheckpoint();
     }
@@ -85,7 +85,7 @@ unsigned WorkerThread::workerThreadCount()
     return workerThreads().size();
 }
 
-class WorkerThreadCancelableTask FINAL : public ExecutionContextTask {
+class WorkerThreadCancelableTask final : public ExecutionContextTask {
     WTF_MAKE_NONCOPYABLE(WorkerThreadCancelableTask); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<WorkerThreadCancelableTask> create(const Closure& closure)
@@ -93,7 +93,7 @@ public:
         return adoptPtr(new WorkerThreadCancelableTask(closure));
     }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE
+    virtual void performTask(ExecutionContext*) override
     {
         if (!m_taskCanceled)
             m_closure();
@@ -188,7 +188,7 @@ public:
 
     virtual ~WorkerThreadTask() { }
 
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         WorkerGlobalScope* workerGlobalScope = m_workerThread.workerGlobalScope();
         // Tasks could be put on the message loop after the cleanup task,
@@ -221,13 +221,13 @@ private:
     bool m_isInstrumented;
 };
 
-class RunDebuggerQueueTask FINAL : public ExecutionContextTask {
+class RunDebuggerQueueTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<RunDebuggerQueueTask> create(WorkerThread* thread)
     {
         return adoptPtr(new RunDebuggerQueueTask(thread));
     }
-    virtual void performTask(ExecutionContext* context) OVERRIDE
+    virtual void performTask(ExecutionContext* context) override
     {
         ASSERT(context->isWorkerGlobalScope());
         m_thread->runDebuggerTask(WorkerThread::DontWaitForMessage);

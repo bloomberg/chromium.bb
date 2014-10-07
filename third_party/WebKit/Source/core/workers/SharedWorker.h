@@ -40,7 +40,7 @@ namespace blink {
 
 class ExceptionState;
 
-class SharedWorker FINAL : public AbstractWorker, public WillBeHeapSupplementable<SharedWorker> {
+class SharedWorker final : public AbstractWorker, public WillBeHeapSupplementable<SharedWorker> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:
@@ -49,13 +49,13 @@ public:
 
     MessagePort* port() const { return m_port.get(); }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     void setIsBeingConnected(bool b) { m_isBeingConnected = b; }
 
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual bool hasPendingActivity() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SharedWorker(ExecutionContext*);

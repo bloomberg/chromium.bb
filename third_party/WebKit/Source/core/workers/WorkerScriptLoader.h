@@ -46,7 +46,7 @@ namespace blink {
     class TextResourceDecoder;
     class WorkerScriptLoaderClient;
 
-    class WorkerScriptLoader FINAL : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
+    class WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static PassRefPtr<WorkerScriptLoader> create()
@@ -71,11 +71,11 @@ namespace blink {
         bool failed() const { return m_failed; }
         unsigned long identifier() const { return m_identifier; }
 
-        virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&) OVERRIDE;
-        virtual void didReceiveData(const char* data, unsigned dataLength) OVERRIDE;
-        virtual void didFinishLoading(unsigned long identifier, double) OVERRIDE;
-        virtual void didFail(const ResourceError&) OVERRIDE;
-        virtual void didFailRedirectCheck() OVERRIDE;
+        virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&) override;
+        virtual void didReceiveData(const char* data, unsigned dataLength) override;
+        virtual void didFinishLoading(unsigned long identifier, double) override;
+        virtual void didFail(const ResourceError&) override;
+        virtual void didFailRedirectCheck() override;
 
         void setRequestContext(blink::WebURLRequest::RequestContext requestContext) { m_requestContext = requestContext; }
 

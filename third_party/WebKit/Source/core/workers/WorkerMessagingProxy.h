@@ -46,18 +46,18 @@ class Worker;
 class WorkerClients;
 class WorkerInspectorProxy;
 
-class WorkerMessagingProxy FINAL : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
+class WorkerMessagingProxy final : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
     WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;
 public:
     WorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 
     // Implementations of WorkerGlobalScopeProxy.
     // (Only use these methods in the worker object thread.)
-    virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) OVERRIDE;
-    virtual void terminateWorkerGlobalScope() OVERRIDE;
-    virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void workerObjectDestroyed() OVERRIDE;
+    virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) override;
+    virtual void terminateWorkerGlobalScope() override;
+    virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) override;
+    virtual bool hasPendingActivity() const override;
+    virtual void workerObjectDestroyed() override;
 
     // These methods come from worker context thread via WorkerObjectProxy
     // and are called on the worker object thread (e.g. main thread).
@@ -74,8 +74,8 @@ public:
     // Implementation of WorkerLoaderProxy.
     // These methods are called on different threads to schedule loading
     // requests and to send callbacks back to WorkerGlobalScope.
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
+    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
     void workerThreadCreated(PassRefPtr<DedicatedWorkerThread>);
 

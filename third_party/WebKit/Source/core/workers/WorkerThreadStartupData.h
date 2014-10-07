@@ -43,7 +43,7 @@ namespace blink {
 
 class WorkerClients;
 
-class WorkerThreadStartupData FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
+class WorkerThreadStartupData final : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

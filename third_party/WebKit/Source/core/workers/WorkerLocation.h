@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class WorkerLocation FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
+class WorkerLocation final : public RefCountedWillBeGarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WorkerLocation> create(const KURL& url)
@@ -46,8 +46,8 @@ public:
         return adoptRefWillBeNoop(new WorkerLocation(url));
     }
 
-    virtual KURL url() const OVERRIDE { return m_url; }
-    virtual String input() const OVERRIDE
+    virtual KURL url() const override { return m_url; }
+    virtual String input() const override
     {
         ASSERT_NOT_REACHED();
         return String();

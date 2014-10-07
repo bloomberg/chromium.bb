@@ -38,15 +38,15 @@ namespace blink {
 class WorkerObjectProxy;
 class WorkerThreadStartupData;
 
-class DedicatedWorkerThread FINAL : public WorkerThread {
+class DedicatedWorkerThread final : public WorkerThread {
 public:
     static PassRefPtr<DedicatedWorkerThread> create(WorkerLoaderProxy&, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     virtual ~DedicatedWorkerThread();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) OVERRIDE;
-    virtual void postInitialize() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) override;
+    virtual void postInitialize() override;
 
 private:
     DedicatedWorkerThread(WorkerLoaderProxy&, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);

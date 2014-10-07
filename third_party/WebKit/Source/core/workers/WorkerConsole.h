@@ -45,7 +45,7 @@ class ConsoleMessage;
 class ScriptArguments;
 class WorkerGlobalScope;
 
-class WorkerConsole FINAL : public ConsoleBase {
+class WorkerConsole final : public ConsoleBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WorkerConsole> create(WorkerGlobalScope* scope)
@@ -54,11 +54,11 @@ public:
     }
     virtual ~WorkerConsole();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
-    virtual ExecutionContext* context() OVERRIDE;
-    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE;
+    virtual ExecutionContext* context() override;
+    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);

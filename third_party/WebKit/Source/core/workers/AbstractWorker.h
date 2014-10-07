@@ -51,7 +51,7 @@ class AbstractWorker : public RefCountedWillBeGarbageCollectedFinalized<Abstract
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 public:
     // EventTarget APIs
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
+    virtual ExecutionContext* executionContext() const override final { return ActiveDOMObject::executionContext(); }
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
 

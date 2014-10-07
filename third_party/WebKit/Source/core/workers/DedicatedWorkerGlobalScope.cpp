@@ -94,7 +94,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context) OVERRIDE
+    virtual void performTask(ExecutionContext* context) override
     {
         ASSERT(context->isDocument());
         if (m_isDeprecation)
