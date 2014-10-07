@@ -149,11 +149,15 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);
   // Checks the continuous invalidate and block invalidate state, and schedule
   // invalidates appropriately. If |force_invalidate| is true, then send a view
-  // invalidate regardless of compositor expectation.
-  void EnsureContinuousInvalidation(bool force_invalidate);
+  // invalidate regardless of compositor expectation. If |skip_reschedule_tick|
+  // is true and if there is already a pending fallback tick, don't reschedule
+  // them.
+  void EnsureContinuousInvalidation(bool force_invalidate,
+                                    bool skip_reschedule_tick);
   bool OnDrawSoftware(jobject java_canvas);
   bool CompositeSW(SkCanvas* canvas);
   void DidComposite();
+  void SkippedCompositeInDraw();
   scoped_ptr<base::Value> RootLayerStateAsValue(
       const gfx::Vector2dF& total_scroll_offset_dip,
       const gfx::SizeF& scrollable_size_dip);
@@ -219,6 +223,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   base::CancelableClosure post_fallback_tick_;
   base::CancelableClosure fallback_tick_fired_;
+  bool fallback_tick_pending_;
 
   int width_;
   int height_;
