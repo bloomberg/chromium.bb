@@ -138,23 +138,29 @@ void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
 void NewAvatarButton::OnProfileWasRemoved(
       const base::FilePath& profile_path,
       const base::string16& profile_name) {
-  UpdateAvatarButtonAndRelayoutParent();
+  // If deleting the active profile, don't bother updating the avatar
+  // button, as the browser window is being closed anyway.
+  if (browser_->profile()->GetPath() != profile_path)
+    UpdateAvatarButtonAndRelayoutParent();
 }
 
 void NewAvatarButton::OnProfileNameChanged(
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) {
-  UpdateAvatarButtonAndRelayoutParent();
+  if (browser_->profile()->GetPath() == profile_path)
+    UpdateAvatarButtonAndRelayoutParent();
 }
 
 void NewAvatarButton::OnProfileAvatarChanged(
       const base::FilePath& profile_path) {
-  UpdateAvatarButtonAndRelayoutParent();
+  if (browser_->profile()->GetPath() == profile_path)
+    UpdateAvatarButtonAndRelayoutParent();
 }
 
 void NewAvatarButton::OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) {
-  UpdateAvatarButtonAndRelayoutParent();
+  if (browser_->profile()->GetPath() == profile_path)
+    UpdateAvatarButtonAndRelayoutParent();
 }
 
 void NewAvatarButton::OnErrorChanged() {

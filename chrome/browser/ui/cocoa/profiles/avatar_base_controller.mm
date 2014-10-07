@@ -81,23 +81,29 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   virtual void OnProfileWasRemoved(
       const base::FilePath& profile_path,
       const base::string16& profile_name) override {
-    [avatarController_ updateAvatarButtonAndLayoutParent:YES];
+    // If deleting the active profile, don't bother updating the avatar
+    // button, as the browser window is being closed anyway.
+    if (profile_->GetPath() != profile_path)
+      [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) override {
-    [avatarController_ updateAvatarButtonAndLayoutParent:YES];
+    if (profile_->GetPath() == profile_path)
+      [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileAvatarChanged(
       const base::FilePath& profile_path) override {
-    [avatarController_ updateAvatarButtonAndLayoutParent:YES];
+    if (profile_->GetPath() == profile_path)
+      [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   virtual void OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) override {
-    [avatarController_ updateAvatarButtonAndLayoutParent:YES];
+    if (profile_->GetPath() == profile_path)
+      [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
   // SigninErrorController::Observer:
