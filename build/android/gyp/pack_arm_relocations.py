@@ -7,10 +7,10 @@
 """Pack ARM relative relocations in a library (or copy unchanged).
 
 If --enable-packing and --configuration-name=='Release', invoke the
-relocation_packer tool to pack the .rel.dyn section in the given library
-files.  This step is inserted after the libraries are stripped.  Packing
-adds a new .android.rel.dyn section to the file and reduces the size of
-.rel.dyn accordingly.
+relocation_packer tool to pack the .rel.dyn or .rela.dyn section in the given
+library files.  This step is inserted after the libraries are stripped.
+Packing adds a new .android.rel.dyn or .android.rela.dyn section to the file
+and reduces the size of .rel.dyn or .rela.dyn accordingly.
 
 Currently packing only understands ARM32 shared libraries.  For all other
 architectures --enable-packing should be set to zero.  In this case the
@@ -32,17 +32,24 @@ from util import build_utils
 
 def PackArmLibraryRelocations(android_pack_relocations,
                               android_objcopy,
+                              has_relocations_with_addends,
                               library_path,
                               output_path):
   if not build_utils.IsTimeStale(output_path, [library_path]):
     return
 
-  # Copy and add a 'NULL' .android.rel.dyn section for the packing tool.
+  # Select an appropriate name for the section we add.
+  if has_relocations_with_addends:
+    new_section = '.android.rela.dyn'
+  else:
+    new_section = '.android.rel.dyn'
+
+  # Copy and add a 'NULL' packed relocations section for the packing tool.
   with tempfile.NamedTemporaryFile() as stream:
     stream.write('NULL')
     stream.flush()
     objcopy_command = [android_objcopy,
-                       '--add-section', '.android.rel.dyn=%s' % stream.name,
+                       '--add-section', '%s=%s' % (new_section, stream.name),
                        library_path, output_path]
     build_utils.CheckOutput(objcopy_command)
 
@@ -69,6 +76,9 @@ def main(args):
       choices=['0', '1'],
       help=('Pack relocations if 1 and configuration name is \'Release\','
             ' otherwise plain file copy'))
+  parser.add_option('--has-relocations-with-addends',
+      choices=['0', '1'],
+      help=('Pack into \'.android.rela.dyn\' if 1, else \'.android.rel.dyn\''))
   parser.add_option('--exclude-packing-list',
       default='',
       help='Names of any libraries explicitly not packed')
@@ -87,6 +97,7 @@ def main(args):
   options, _ = parser.parse_args(args)
   enable_packing = (options.enable_packing == '1' and
                     options.configuration_name == 'Release')
+  has_relocations_with_addends = (options.has_relocations_with_addends == '1')
   exclude_packing_set = set(shlex.split(options.exclude_packing_list))
 
   libraries = build_utils.ParseGypList(options.libraries)
@@ -100,6 +111,7 @@ def main(args):
     if enable_packing and library not in exclude_packing_set:
       PackArmLibraryRelocations(options.android_pack_relocations,
                                 options.android_objcopy,
+                                has_relocations_with_addends,
                                 library_path,
                                 output_path)
     else:
