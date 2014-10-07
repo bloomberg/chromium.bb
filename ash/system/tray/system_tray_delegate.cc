@@ -40,4 +40,13 @@ IMEPropertyInfo::IMEPropertyInfo()
 IMEPropertyInfo::~IMEPropertyInfo() {
 }
 
+UpdateInfo::UpdateInfo()
+    : severity(UPDATE_NORMAL),
+      update_required(false),
+      factory_reset_required(false) {
+}
+
+UpdateInfo::~UpdateInfo() {
+}
+
 }  // namespace ash

@@ -286,6 +286,10 @@ Press Ctrl+Alt+Z to disable.
         Restart to update
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE" desc="The label used in the tray popup to notify that the user should restart and powerwash the device to get system updates.">
+        Restart and powerwash to update
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
         Volume
       </message>

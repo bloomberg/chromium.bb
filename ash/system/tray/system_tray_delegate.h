@@ -75,6 +75,22 @@ struct ASH_EXPORT IMEInfo {
   base::string16 short_name;
 };
 
+struct ASH_EXPORT UpdateInfo {
+  enum UpdateSeverity {
+    UPDATE_NORMAL,
+    UPDATE_LOW_GREEN,
+    UPDATE_HIGH_ORANGE,
+    UPDATE_SEVERE_RED,
+  };
+
+  UpdateInfo();
+  ~UpdateInfo();
+
+  UpdateSeverity severity;
+  bool update_required;
+  bool factory_reset_required;
+};
+
 typedef std::vector<IMEInfo> IMEInfoList;
 
 class VolumeControlDelegate;
@@ -121,8 +137,8 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns true if the current user is supervised.
   virtual bool IsUserSupervised() const = 0;
 
-  // Returns whether a system upgrade is available.
-  virtual bool SystemShouldUpgrade() const = 0;
+  // Fills |info| structure with current update info.
+  virtual void GetSystemUpdateInfo(UpdateInfo* info) const = 0;
 
   // Returns the desired hour clock type.
   virtual base::HourClockType GetHourClockType() const = 0;

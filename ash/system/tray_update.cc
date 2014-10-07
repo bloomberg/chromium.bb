@@ -37,21 +37,21 @@ const int kUpdateNaggingTimeSeconds = 24 * 60 * 60;
 // How long should the nag reminder be displayed?
 const int kShowUpdateNaggerForSeconds = 15;
 
-int DecideResource(ash::UpdateObserver::UpdateSeverity severity, bool dark) {
+int DecideResource(ash::UpdateInfo::UpdateSeverity severity, bool dark) {
   switch (severity) {
-    case ash::UpdateObserver::UPDATE_NORMAL:
+    case ash::UpdateInfo::UPDATE_NORMAL:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK:
                     IDR_AURA_UBER_TRAY_UPDATE;
 
-    case ash::UpdateObserver::UPDATE_LOW_GREEN:
+    case ash::UpdateInfo::UPDATE_LOW_GREEN:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN :
                     IDR_AURA_UBER_TRAY_UPDATE_GREEN;
 
-    case ash::UpdateObserver::UPDATE_HIGH_ORANGE:
+    case ash::UpdateInfo::UPDATE_HIGH_ORANGE:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE :
                     IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
 
-    case ash::UpdateObserver::UPDATE_SEVERE_RED:
+    case ash::UpdateInfo::UPDATE_SEVERE_RED:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED :
                     IDR_AURA_UBER_TRAY_UPDATE_RED;
   }
@@ -62,7 +62,7 @@ int DecideResource(ash::UpdateObserver::UpdateSeverity severity, bool dark) {
 
 class UpdateView : public ash::ActionableView {
  public:
-  explicit UpdateView(ash::UpdateObserver::UpdateSeverity severity) {
+  explicit UpdateView(const ash::UpdateInfo& info) {
     SetLayoutManager(new
         views::BoxLayout(views::BoxLayout::kHorizontal,
         ash::kTrayPopupPaddingHorizontal, 0,
@@ -71,13 +71,18 @@ class UpdateView : public ash::ActionableView {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* image =
         new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
-    image->SetImage(bundle.GetImageNamed(DecideResource(severity, true)).
-        ToImageSkia());
+    image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))
+                        .ToImageSkia());
 
     AddChildView(image);
-    AddChildView(new views::Label(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE)));
-    SetAccessibleName(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE));
+
+    base::string16 label =
+        info.factory_reset_required
+            ? bundle.GetLocalizedString(
+                  IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE)
+            : bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
+    AddChildView(new views::Label(label));
+    SetAccessibleName(label);
   }
 
   virtual ~UpdateView() {}
@@ -155,8 +160,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 }  // namespace tray
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE),
-      severity_(UpdateObserver::UPDATE_NORMAL) {
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE) {
   Shell::GetInstance()->system_tray_notifier()->AddUpdateObserver(this);
 }
 
@@ -165,13 +169,15 @@ TrayUpdate::~TrayUpdate() {
 }
 
 bool TrayUpdate::GetInitialVisibility() {
-  return Shell::GetInstance()->system_tray_delegate()->SystemShouldUpgrade();
+  UpdateInfo info;
+  Shell::GetInstance()->system_tray_delegate()->GetSystemUpdateInfo(&info);
+  return info.update_required;
 }
 
 views::View* TrayUpdate::CreateDefaultView(user::LoginStatus status) {
-  if (!Shell::GetInstance()->system_tray_delegate()->SystemShouldUpgrade())
-    return NULL;
-  return new UpdateView(severity_);
+  UpdateInfo info;
+  Shell::GetInstance()->system_tray_delegate()->GetSystemUpdateInfo(&info);
+  return info.update_required ? new UpdateView(info) : nullptr;
 }
 
 views::View* TrayUpdate::CreateDetailedView(user::LoginStatus status) {
@@ -188,9 +194,8 @@ void TrayUpdate::DestroyDetailedView() {
   }
 }
 
-void TrayUpdate::OnUpdateRecommended(UpdateObserver::UpdateSeverity severity) {
-  severity_ = severity;
-  SetImageFromResourceId(DecideResource(severity_, false));
+void TrayUpdate::OnUpdateRecommended(const UpdateInfo& info) {
+  SetImageFromResourceId(DecideResource(info.severity, false));
   tray_view()->SetVisible(true);
   if (!Shell::GetPrimaryRootWindowController()->shelf()->IsVisible() &&
       !nagger_.get()) {

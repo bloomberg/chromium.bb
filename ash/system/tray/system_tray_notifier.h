@@ -35,6 +35,8 @@
 
 namespace ash {
 
+struct UpdateInfo;
+
 #if defined(OS_CHROMEOS)
 class NetworkStateNotifier;
 #endif
@@ -121,7 +123,7 @@ class ASH_EXPORT SystemTrayNotifier {
                            const std::string& cur_locale,
                            const std::string& from_locale,
                            const std::string& to_locale);
-  void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
+  void NotifyUpdateRecommended(const UpdateInfo& info);
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)

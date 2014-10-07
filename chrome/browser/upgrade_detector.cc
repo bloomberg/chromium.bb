@@ -62,6 +62,7 @@ UpgradeDetector::UpgradeDetector()
       best_effort_experiment_updates_available_(false),
       critical_experiment_updates_available_(false),
       critical_update_acknowledged_(false),
+      is_factory_reset_required_(false),
       upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
       notify_upgrade_(false) {
 }

@@ -71,6 +71,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/ash/user_accounts_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser.h"
@@ -406,8 +407,9 @@ bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
   return user && user->IsSupervised();
 }
 
-bool SystemTrayDelegateChromeOS::SystemShouldUpgrade() const {
-  return UpgradeDetector::GetInstance()->notify_upgrade();
+void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
+    ash::UpdateInfo* info) const {
+  GetUpdateInfo(UpgradeDetector::GetInstance(), info);
 }
 
 base::HourClockType SystemTrayDelegateChromeOS::GetHourClockType() const {
@@ -1087,29 +1089,9 @@ void SystemTrayDelegateChromeOS::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-      UpgradeDetector* detector =
-          content::Source<UpgradeDetector>(source).ptr();
-      ash::UpdateObserver::UpdateSeverity severity =
-          ash::UpdateObserver::UPDATE_NORMAL;
-      switch (detector->upgrade_notification_stage()) {
-        case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-          severity = ash::UpdateObserver::UPDATE_SEVERE_RED;
-          break;
-
-        case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-          severity = ash::UpdateObserver::UPDATE_HIGH_ORANGE;
-          break;
-
-        case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-          severity = ash::UpdateObserver::UPDATE_LOW_GREEN;
-          break;
-
-        case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-        default:
-          severity = ash::UpdateObserver::UPDATE_NORMAL;
-          break;
-      }
-      GetSystemTrayNotifier()->NotifyUpdateRecommended(severity);
+      ash::UpdateInfo info;
+      GetUpdateInfo(content::Source<UpgradeDetector>(source).ptr(), &info);
+      GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
       break;
     }
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {

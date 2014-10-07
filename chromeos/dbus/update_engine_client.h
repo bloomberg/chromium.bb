@@ -5,13 +5,13 @@
 #ifndef CHROMEOS_DBUS_UPDATE_ENGINE_CLIENT_H_
 #define CHROMEOS_DBUS_UPDATE_ENGINE_CLIENT_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-
-#include <string>
 
 namespace chromeos {
 
@@ -133,6 +133,10 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
 
   // Creates the instance.
   static UpdateEngineClient* Create(DBusClientImplementationType type);
+
+  // Returns true if |target_channel| is more stable than |current_channel|.
+  static bool IsTargetChannelMoreStable(const std::string& current_channel,
+                                        const std::string& target_channel);
 
  protected:
   // Create() should be used instead.

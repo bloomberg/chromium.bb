@@ -66,6 +66,8 @@ class UpgradeDetector {
     return critical_update_acknowledged_;
   }
 
+  bool is_factory_reset_required() const { return is_factory_reset_required_; }
+
   // Retrieves the right icon ID based on the degree of severity (see
   // UpgradeNotificationAnnoyanceLevel, each level has an an accompanying icon
   // to go with it) to display within the wrench menu.
@@ -125,6 +127,10 @@ class UpgradeDetector {
     upgrade_notification_stage_ = stage;
   }
 
+  void set_is_factory_reset_required(bool is_factory_reset_required) {
+    is_factory_reset_required_ = is_factory_reset_required;
+  }
+
  private:
   // Initiates an Idle check. See IdleCallback below.
   void CheckIdle();
@@ -148,6 +154,9 @@ class UpgradeDetector {
 
   // Whether the user has acknowledged the critical update.
   bool critical_update_acknowledged_;
+
+  // Whether a factory reset is needed to complete an update.
+  bool is_factory_reset_required_;
 
   // A timer to check to see if we've been idle for long enough to show the
   // critical warning. Should only be set if |upgrade_available_| is

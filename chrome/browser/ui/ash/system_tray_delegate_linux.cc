@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -87,8 +88,8 @@ class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
     return false;
   }
 
-  virtual bool SystemShouldUpgrade() const override {
-    return UpgradeDetector::GetInstance()->notify_upgrade();
+  virtual void GetSystemUpdateInfo(ash::UpdateInfo* info) const override {
+    GetUpdateInfo(UpgradeDetector::GetInstance(), info);
   }
 
   virtual base::HourClockType GetHourClockType() const override {
@@ -302,27 +303,9 @@ class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override {
     if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
-        UpgradeDetector* detector =
-            content::Source<UpgradeDetector>(source).ptr();
-      ash::UpdateObserver::UpdateSeverity severity =
-          ash::UpdateObserver::UPDATE_NORMAL;
-      switch (detector->upgrade_notification_stage()) {
-        case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
-        case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-          severity = ash::UpdateObserver::UPDATE_SEVERE_RED;
-          break;
-        case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-          severity = ash::UpdateObserver::UPDATE_HIGH_ORANGE;
-          break;
-        case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-          severity = ash::UpdateObserver::UPDATE_LOW_GREEN;
-          break;
-        case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-        case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-          severity = ash::UpdateObserver::UPDATE_NORMAL;
-          break;
-      }
-      GetSystemTrayNotifier()->NotifyUpdateRecommended(severity);
+      ash::UpdateInfo info;
+      GetUpdateInfo(content::Source<UpgradeDetector>(source).ptr(), &info);
+      GetSystemTrayNotifier()->NotifyUpdateRecommended(info);
     } else {
       NOTREACHED();
     }

@@ -26,11 +26,10 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual const std::string GetEnterpriseDomain() const override;
   virtual const base::string16 GetEnterpriseMessage() const override;
   virtual const std::string GetSupervisedUserManager() const override;
-  virtual const base::string16 GetSupervisedUserManagerName() const
-      override;
+  virtual const base::string16 GetSupervisedUserManagerName() const override;
   virtual const base::string16 GetSupervisedUserMessage() const override;
   virtual bool IsUserSupervised() const override;
-  virtual bool SystemShouldUpgrade() const override;
+  virtual void GetSystemUpdateInfo(UpdateInfo* info) const override;
   virtual base::HourClockType GetHourClockType() const override;
   virtual void ShowSettings() override;
   virtual bool ShouldShowSettings() override;

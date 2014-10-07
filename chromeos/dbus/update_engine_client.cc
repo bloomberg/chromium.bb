@@ -4,9 +4,12 @@
 
 #include "chromeos/dbus/update_engine_client.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
@@ -23,6 +26,11 @@ namespace {
 const char kReleaseChannelDev[] = "dev-channel";
 const char kReleaseChannelBeta[] = "beta-channel";
 const char kReleaseChannelStable[] = "stable-channel";
+
+// List of release channels ordered by stability.
+const char* kReleaseChannelsList[] = {kReleaseChannelDev,
+                                      kReleaseChannelBeta,
+                                      kReleaseChannelStable};
 
 // Delay between successive state transitions during AU.
 const int kStateTransitionDefaultDelayMs = 3000;
@@ -66,9 +74,8 @@ void EmptyUpdateCheckCallbackBody(
 }
 
 bool IsValidChannel(const std::string& channel) {
-  return channel == kReleaseChannelDev ||
-      channel == kReleaseChannelBeta ||
-      channel == kReleaseChannelStable;
+  return channel == kReleaseChannelDev || channel == kReleaseChannelBeta ||
+         channel == kReleaseChannelStable;
 }
 
 }  // namespace
@@ -559,6 +566,19 @@ UpdateEngineClient* UpdateEngineClient::Create(
     return new UpdateEngineClientFakeImpl();
   else
     return new UpdateEngineClientStubImpl();
+}
+
+// static
+bool UpdateEngineClient::IsTargetChannelMoreStable(
+    const std::string& current_channel,
+    const std::string& target_channel) {
+  auto cix = std::find(kReleaseChannelsList,
+                       kReleaseChannelsList + arraysize(kReleaseChannelsList),
+                       current_channel);
+  auto tix = std::find(kReleaseChannelsList,
+                       kReleaseChannelsList + arraysize(kReleaseChannelsList),
+                       target_channel);
+  return tix > cix;
 }
 
 }  // namespace chromeos

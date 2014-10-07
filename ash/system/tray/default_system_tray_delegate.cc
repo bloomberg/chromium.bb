@@ -90,8 +90,11 @@ bool DefaultSystemTrayDelegate::IsUserSupervised() const {
   return false;
 }
 
-bool DefaultSystemTrayDelegate::SystemShouldUpgrade() const {
-  return true;
+void DefaultSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
+  DCHECK(info);
+  info->severity = UpdateInfo::UPDATE_NORMAL;
+  info->update_required = true;
+  info->factory_reset_required = false;
 }
 
 base::HourClockType DefaultSystemTrayDelegate::GetHourClockType() const {

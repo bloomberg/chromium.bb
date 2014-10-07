@@ -285,11 +285,9 @@ void SystemTrayNotifier::NotifyLocaleChanged(
       OnLocaleChanged(delegate, cur_locale, from_locale, to_locale));
 }
 
-void SystemTrayNotifier::NotifyUpdateRecommended(
-    UpdateObserver::UpdateSeverity severity) {
-  FOR_EACH_OBSERVER(UpdateObserver,
-                    update_observers_,
-                    OnUpdateRecommended(severity));
+void SystemTrayNotifier::NotifyUpdateRecommended(const UpdateInfo& info) {
+  FOR_EACH_OBSERVER(
+      UpdateObserver, update_observers_, OnUpdateRecommended(info));
 }
 
 void SystemTrayNotifier::NotifyUserUpdate() {

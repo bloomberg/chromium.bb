@@ -52,6 +52,12 @@ cr.define('help', function() {
      */
     message_: null,
 
+    /**
+     * True if user is allowed to change channels, false otherwise.
+     * @private
+     */
+    can_change_channel_: false,
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -315,6 +321,12 @@ cr.define('help', function() {
         $('update-status-message').innerHTML = message;
       }
 
+      if (cr.isChromeOS) {
+        $('change-channel').disabled = !this.can_change_channel_ ||
+            status == 'nearly_updated';
+        $('channel-change-disallowed-icon').hidden = this.can_change_channel_;
+      }
+
       // Following invariant must be established at the end of this function:
       // { ~$('relaunch_and_powerwash').hidden -> $('relaunch').hidden }
       var relaunchAndPowerwashHidden = true;
@@ -495,8 +507,8 @@ cr.define('help', function() {
      */
     updateEnableReleaseChannel_: function(enabled) {
       this.updateChannelChangerContainerVisibility_(enabled);
-      $('change-channel').disabled = !enabled;
-      $('channel-change-disallowed-icon').hidden = enabled;
+      this.can_change_channel_ = enabled;
+      this.updateUI_();
     },
 
     /**

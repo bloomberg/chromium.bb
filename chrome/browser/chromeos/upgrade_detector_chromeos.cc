@@ -6,6 +6,10 @@
 
 #include "base/memory/singleton.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/update_engine_client.h"
+
+using chromeos::DBusThreadManager;
+using chromeos::UpdateEngineClient;
 
 namespace {
 
@@ -15,10 +19,57 @@ const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
 
 }  // namespace
 
-using chromeos::DBusThreadManager;
-using chromeos::UpdateEngineClient;
+class UpgradeDetectorChromeos::ChannelsRequester {
+ public:
+  typedef base::Callback<void(const std::string&, const std::string&)>
+      OnChannelsReceivedCallback;
 
-UpgradeDetectorChromeos::UpgradeDetectorChromeos() : initialized_(false) {
+  ChannelsRequester() : weak_factory_(this) {}
+
+  void RequestChannels(const OnChannelsReceivedCallback& callback) {
+    UpdateEngineClient* client =
+        DBusThreadManager::Get()->GetUpdateEngineClient();
+    callback_ = callback;
+    client->GetChannel(true /* get_current_channel */,
+                       base::Bind(&ChannelsRequester::SetCurrentChannel,
+                                  weak_factory_.GetWeakPtr()));
+    client->GetChannel(false /* get_current_channel */,
+                       base::Bind(&ChannelsRequester::SetTargetChannel,
+                                  weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void SetCurrentChannel(const std::string& current_channel) {
+    DCHECK(!current_channel.empty());
+    current_channel_ = current_channel;
+    TriggerCallbackIfReady();
+  }
+
+  void SetTargetChannel(const std::string& target_channel) {
+    DCHECK(!target_channel.empty());
+    target_channel_ = target_channel;
+    TriggerCallbackIfReady();
+  }
+
+  void TriggerCallbackIfReady() {
+    if (current_channel_.empty() || target_channel_.empty())
+      return;
+    if (!callback_.is_null())
+      callback_.Run(current_channel_, target_channel_);
+  }
+
+  std::string current_channel_;
+  std::string target_channel_;
+
+  OnChannelsReceivedCallback callback_;
+
+  base::WeakPtrFactory<ChannelsRequester> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChannelsRequester);
+};
+
+UpgradeDetectorChromeos::UpgradeDetectorChromeos()
+    : initialized_(false), weak_factory_(this) {
 }
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
@@ -43,13 +94,10 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
 
   upgrade_detected_time_ = base::Time::Now();
 
-  // ChromeOS shows upgrade arrow once the upgrade becomes available.
-  NotifyOnUpgrade();
-
-  // Setup timer to to move along the upgrade advisory system.
-  upgrade_notification_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kNotifyCycleTimeMs),
-      this, &UpgradeDetectorChromeos::NotifyOnUpgrade);
+  channels_requester_.reset(new UpgradeDetectorChromeos::ChannelsRequester());
+  channels_requester_->RequestChannels(
+      base::Bind(&UpgradeDetectorChromeos::OnChannelsReceived,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
@@ -78,6 +126,26 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
   }
 
   NotifyUpgradeRecommended();
+}
+
+void UpgradeDetectorChromeos::OnChannelsReceived(
+    const std::string& current_channel,
+    const std::string& target_channel) {
+  // As current update engine status is UPDATE_STATUS_UPDATED_NEED_REBOOT
+  // and target channel is more stable than current channel, powerwash
+  // will be performed after reboot.
+  set_is_factory_reset_required(UpdateEngineClient::IsTargetChannelMoreStable(
+      current_channel, target_channel));
+
+  // ChromeOS shows upgrade arrow once the upgrade becomes available.
+  NotifyOnUpgrade();
+
+  // Setup timer to to move along the upgrade advisory system.
+  upgrade_notification_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kNotifyCycleTimeMs),
+      this,
+      &UpgradeDetectorChromeos::NotifyOnUpgrade);
 }
 
 // static
