@@ -134,7 +134,8 @@ void CompositorOutputSurface::ShortcutSwapAck(
 }
 
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
-  if (layout_test_mode_ && use_swap_compositor_frame_message_) {
+  DCHECK(use_swap_compositor_frame_message_);
+  if (layout_test_mode_) {
     // This code path is here to support layout tests that are currently
     // doing a readback in the renderer instead of the browser. So they
     // are using deprecated code paths in the renderer and don't need to
@@ -164,9 +165,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     }
     client_->DidSwapBuffers();
     return;
-  }
-
-  if (use_swap_compositor_frame_message_) {
+  } else {
     {
       ScopedVector<IPC::Message> messages;
       std::vector<IPC::Message> messages_to_deliver_with_frame;
@@ -182,19 +181,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
       // ~send_message_scope.
     }
     client_->DidSwapBuffers();
-    return;
   }
-
-  if (frame->gl_frame_data) {
-    ContextProviderCommandBuffer* provider_command_buffer =
-        static_cast<ContextProviderCommandBuffer*>(context_provider());
-    CommandBufferProxyImpl* command_buffer_proxy =
-        provider_command_buffer->GetCommandBufferProxy();
-    DCHECK(command_buffer_proxy);
-    command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
-  }
-
-  OutputSurface::SwapBuffers(frame);
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
