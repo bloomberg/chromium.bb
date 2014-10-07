@@ -72,11 +72,15 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   typedef void* EGLContext;
   EGLContext last_egl_context_;
 
-  scoped_ptr<DrawGLInput> committed_input_;
+  scoped_ptr<cc::CompositorFrame> committed_frame_;
 
   // Information about last delegated frame.
   gfx::Size frame_size_;
+
+  // Infromation from UI on last commit.
   gfx::Vector2d scroll_offset_;
+  int width_;
+  int height_;
 
   // Information from draw.
   gfx::Size viewport_;

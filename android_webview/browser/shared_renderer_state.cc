@@ -67,12 +67,6 @@ base::LazyInstance<internal::RequestDrawGLTracker> g_request_draw_gl_tracker =
 
 }
 
-DrawGLInput::DrawGLInput() : width(0), height(0) {
-}
-
-DrawGLInput::~DrawGLInput() {
-}
-
 SharedRendererState::SharedRendererState(
     scoped_refptr<base::MessageLoopProxy> ui_loop,
     BrowserViewRendererClient* client)
@@ -135,20 +129,31 @@ void SharedRendererState::UpdateParentDrawConstraintsOnUIThread() {
   client_on_ui_->UpdateParentDrawConstraints();
 }
 
-bool SharedRendererState::HasDrawGLInput() const {
+void SharedRendererState::SetScrollOffset(gfx::Vector2d scroll_offset) {
   base::AutoLock lock(lock_);
-  return draw_gl_input_.get();
+  scroll_offset_ = scroll_offset;
 }
 
-void SharedRendererState::SetDrawGLInput(scoped_ptr<DrawGLInput> input) {
+gfx::Vector2d SharedRendererState::GetScrollOffset() {
   base::AutoLock lock(lock_);
-  DCHECK(!draw_gl_input_.get());
-  draw_gl_input_ = input.Pass();
+  return scroll_offset_;
 }
 
-scoped_ptr<DrawGLInput> SharedRendererState::PassDrawGLInput() {
+bool SharedRendererState::HasCompositorFrame() const {
   base::AutoLock lock(lock_);
-  return draw_gl_input_.Pass();
+  return compositor_frame_.get();
+}
+
+void SharedRendererState::SetCompositorFrame(
+    scoped_ptr<cc::CompositorFrame> frame) {
+  base::AutoLock lock(lock_);
+  DCHECK(!compositor_frame_.get());
+  compositor_frame_ = frame.Pass();
+}
+
+scoped_ptr<cc::CompositorFrame> SharedRendererState::PassCompositorFrame() {
+  base::AutoLock lock(lock_);
+  return compositor_frame_.Pass();
 }
 
 bool SharedRendererState::UpdateDrawConstraints(

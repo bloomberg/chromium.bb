@@ -240,6 +240,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   if (!compositor_)
     return false;
 
+  shared_renderer_state_->SetScrollOffset(last_on_draw_scroll_offset_);
   if (last_on_draw_global_visible_rect_.IsEmpty()) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_EmptyVisibleRect",
@@ -262,18 +263,13 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   RequestMemoryPolicy(new_policy);
   compositor_->SetMemoryPolicy(memory_policy_);
 
-  if (shared_renderer_state_->HasDrawGLInput()) {
+  if (shared_renderer_state_->HasCompositorFrame()) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
     SkippedCompositeInDraw();
     return client_->RequestDrawGL(java_canvas, false);
   }
-
-  scoped_ptr<DrawGLInput> draw_gl_input(new DrawGLInput);
-  draw_gl_input->scroll_offset = last_on_draw_scroll_offset_;
-  draw_gl_input->width = width_;
-  draw_gl_input->height = height_;
 
   parent_draw_constraints_ = shared_renderer_state_->ParentDrawConstraints();
   gfx::Size surface_size(width_, height_);
@@ -303,8 +299,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
 
   GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
 
-  frame->AssignTo(&draw_gl_input->frame);
-  shared_renderer_state_->SetDrawGLInput(draw_gl_input.Pass());
+  shared_renderer_state_->SetCompositorFrame(frame.Pass());
   DidComposite();
   return client_->RequestDrawGL(java_canvas, false);
 }
@@ -320,14 +315,14 @@ void BrowserViewRenderer::UpdateParentDrawConstraints() {
   }
 }
 
-void BrowserViewRenderer::ReturnUnusedResource(scoped_ptr<DrawGLInput> input) {
-  if (!input.get())
+void BrowserViewRenderer::ReturnUnusedResource(
+    scoped_ptr<cc::CompositorFrame> frame) {
+  if (!frame.get())
     return;
 
   cc::CompositorFrameAck frame_ack;
   cc::TransferableResource::ReturnResources(
-      input->frame.delegated_frame_data->resource_list,
-      &frame_ack.resources);
+      frame->delegated_frame_data->resource_list, &frame_ack.resources);
   if (!frame_ack.resources.empty())
     compositor_->ReturnResources(frame_ack);
 }
@@ -462,7 +457,7 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
 
 void BrowserViewRenderer::ReleaseHardware() {
   DCHECK(hardware_enabled_);
-  ReturnUnusedResource(shared_renderer_state_->PassDrawGLInput());
+  ReturnUnusedResource(shared_renderer_state_->PassCompositorFrame());
   ReturnResourceFromParent();
   DCHECK(shared_renderer_state_->ReturnedResourcesEmpty());
 

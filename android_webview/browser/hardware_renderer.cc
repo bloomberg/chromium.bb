@@ -76,6 +76,8 @@ scoped_refptr<cc::ContextProvider> CreateContext(
 HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
+      width_(0),
+      height_(0),
       stencil_enabled_(false),
       viewport_clip_valid_for_dcheck_(false),
       gl_surface_(new AwGLSurface),
@@ -139,40 +141,39 @@ void HardwareRenderer::DidBeginMainFrame() {
 }
 
 void HardwareRenderer::CommitFrame() {
-  if (committed_input_.get()) {
+  scroll_offset_ = shared_renderer_state_->GetScrollOffset();
+  if (committed_frame_.get()) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
-  committed_input_ = shared_renderer_state_->PassDrawGLInput();
+  committed_frame_ = shared_renderer_state_->PassCompositorFrame();
   // Happens with empty global visible rect.
-  if (!committed_input_.get())
+  if (!committed_frame_.get())
     return;
 
-  DCHECK(!committed_input_->frame.gl_frame_data);
-  DCHECK(!committed_input_->frame.software_frame_data);
+  DCHECK(!committed_frame_->gl_frame_data);
+  DCHECK(!committed_frame_->software_frame_data);
 
   // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
   // renderer frame, assuming that the browser compositor will scale
   // it back up to device scale.  But on Android we put our browser layers in
   // physical pixels and set our browser CC device_scale_factor to 1, so this
   // suppresses the transform.
-  committed_input_->frame.delegated_frame_data->device_scale_factor = 1.0f;
+  committed_frame_->delegated_frame_data->device_scale_factor = 1.0f;
 }
 
 void HardwareRenderer::SetFrameData() {
-  if (!committed_input_.get())
+  if (!committed_frame_.get())
     return;
 
-  scoped_ptr<DrawGLInput> input = committed_input_.Pass();
+  scoped_ptr<cc::CompositorFrame> frame = committed_frame_.Pass();
   gfx::Size frame_size =
-      input->frame.delegated_frame_data->render_pass_list.back()
-          ->output_rect.size();
+      frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
   bool size_changed = frame_size != frame_size_;
   frame_size_ = frame_size;
-  scroll_offset_ = input->scroll_offset;
 
   if (!frame_provider_ || size_changed) {
     if (delegated_layer_) {
@@ -180,15 +181,15 @@ void HardwareRenderer::SetFrameData() {
     }
 
     frame_provider_ = new cc::DelegatedFrameProvider(
-        resource_collection_.get(), input->frame.delegated_frame_data.Pass());
+        resource_collection_.get(), frame->delegated_frame_data.Pass());
 
     delegated_layer_ = cc::DelegatedRendererLayer::Create(frame_provider_);
-    delegated_layer_->SetBounds(gfx::Size(input->width, input->height));
+    delegated_layer_->SetBounds(frame_size_);
     delegated_layer_->SetIsDrawable(true);
 
     root_layer_->AddChild(delegated_layer_);
   } else {
-    frame_provider_->SetFrameData(input->frame.delegated_frame_data.Pass());
+    frame_provider_->SetFrameData(frame->delegated_frame_data.Pass());
   }
 }
 

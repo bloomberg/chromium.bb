@@ -163,7 +163,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       const gfx::SizeF& scrollable_size_dip);
 
   bool OnDrawHardware(jobject java_canvas);
-  void ReturnUnusedResource(scoped_ptr<DrawGLInput> input);
+  void ReturnUnusedResource(scoped_ptr<cc::CompositorFrame> frame);
   void ReturnResourceFromParent();
 
   // If we call up view invalidate and OnDraw is not called before a deadline,
