@@ -101,6 +101,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   // DevToolsEmbedderMessageDispatcher::Delegate implementation.
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
+  virtual void LoadCompleted() OVERRIDE;
   virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE;
   virtual void InspectElementCompleted() OVERRIDE;
   virtual void InspectedURLChanged(const std::string& url) OVERRIDE;
@@ -143,6 +144,8 @@ class DevToolsUIBindings : public content::NotificationObserver,
                               const base::ListValue& targets);
 
   void DocumentOnLoadCompletedInMainFrame();
+  void DidNavigateMainFrame();
+  void FrontendLoaded();
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
@@ -189,6 +192,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
 
   bool device_count_updates_enabled_;
   bool devices_updates_enabled_;
+  bool frontend_loaded_;
   scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   GURL url_;

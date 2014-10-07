@@ -226,6 +226,7 @@ DevToolsEmbedderMessageDispatcher*
 
   d->RegisterHandler("bringToFront", &Delegate::ActivateWindow, delegate);
   d->RegisterHandler("closeWindow", &Delegate::CloseWindow, delegate);
+  d->RegisterHandler("loadCompleted", &Delegate::LoadCompleted, delegate);
   d->RegisterHandler("setInspectedPageBounds",
                      &Delegate::SetInspectedPageBounds, delegate);
   d->RegisterHandler("inspectElementCompleted",

@@ -54,6 +54,11 @@
 using base::DictionaryValue;
 using content::BrowserThread;
 
+namespace content {
+struct LoadCommittedDetails;
+struct FrameNavigateParams;
+}
+
 namespace {
 
 static const char kFrontendHostId[] = "id";
@@ -237,6 +242,9 @@ class DevToolsUIBindings::FrontendWebContentsObserver
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
 
   DevToolsUIBindings* devtools_bindings_;
   DISALLOW_COPY_AND_ASSIGN(FrontendWebContentsObserver);
@@ -277,6 +285,12 @@ void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(
 void DevToolsUIBindings::FrontendWebContentsObserver::
     DocumentOnLoadCompletedInMainFrame() {
   devtools_bindings_->DocumentOnLoadCompletedInMainFrame();
+}
+
+void DevToolsUIBindings::FrontendWebContentsObserver::
+    DidNavigateMainFrame(const content::LoadCommittedDetails& details,
+                         const content::FrameNavigateParams& params) {
+  devtools_bindings_->DidNavigateMainFrame();
 }
 
 // DevToolsUIBindings ---------------------------------------------------------
@@ -323,6 +337,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       device_count_updates_enabled_(false),
       devices_updates_enabled_(false),
+      frontend_loaded_(false),
       weak_factory_(this) {
   g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
@@ -442,6 +457,10 @@ void DevToolsUIBindings::ActivateWindow() {
 
 void DevToolsUIBindings::CloseWindow() {
   delegate_->CloseWindow();
+}
+
+void DevToolsUIBindings::LoadCompleted() {
+  FrontendLoaded();
 }
 
 void DevToolsUIBindings::SetInspectedPageBounds(const gfx::Rect& rect) {
@@ -842,6 +861,24 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
+  // In the DEBUG_DEVTOOLS mode, the DocumentOnLoadCompletedInMainFrame event
+  // arrives before the LoadCompleted event, thus it should not trigger the
+  // frontend load handling.
+#if defined(DEBUG_DEVTOOLS)
+  return;
+#endif
+  FrontendLoaded();
+}
+
+void DevToolsUIBindings::DidNavigateMainFrame() {
+  frontend_loaded_ = false;
+}
+
+void DevToolsUIBindings::FrontendLoaded() {
+  if (frontend_loaded_)
+    return;
+  frontend_loaded_ = true;
+
   // Call delegate first - it seeds importants bit of information.
   delegate_->OnLoadCompleted();
 

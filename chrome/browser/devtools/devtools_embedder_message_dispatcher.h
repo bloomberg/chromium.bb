@@ -31,6 +31,7 @@ class DevToolsEmbedderMessageDispatcher {
 
     virtual void ActivateWindow() = 0;
     virtual void CloseWindow() = 0;
+    virtual void LoadCompleted() = 0;
     virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
     virtual void InspectElementCompleted() = 0;
     virtual void InspectedURLChanged(const std::string& url) = 0;
