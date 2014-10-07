@@ -39,12 +39,12 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
                                base::TimeDelta interval);
 
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   // cc::SurfaceFactoryClient implementation.
   virtual void ReturnResources(
-      const cc::ReturnedResourceArray& resources) OVERRIDE;
+      const cc::ReturnedResourceArray& resources) override;
 
  private:
   void SwapBuffersComplete();

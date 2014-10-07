@@ -26,15 +26,15 @@ class MockSurfaceOzone : public ui::SurfaceOzoneCanvas {
   virtual ~MockSurfaceOzone() {}
 
   // ui::SurfaceOzoneCanvas overrides:
-  virtual void ResizeCanvas(const gfx::Size& size) OVERRIDE {
+  virtual void ResizeCanvas(const gfx::Size& size) override {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(
         SkImageInfo::MakeN32Premul(size.width(), size.height())));
   }
-  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
+  virtual skia::RefPtr<SkCanvas> GetCanvas() override {
     return skia::SharePtr(surface_->getCanvas());
   }
-  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE {}
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE {
+  virtual void PresentCanvas(const gfx::Rect& damage) override {}
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
     return scoped_ptr<gfx::VSyncProvider>();
   }
 
@@ -51,11 +51,11 @@ class MockSurfaceFactoryOzone : public ui::SurfaceFactoryOzone {
 
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override {
     return false;
   }
   virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget) OVERRIDE {
+      gfx::AcceleratedWidget widget) override {
     return make_scoped_ptr<ui::SurfaceOzoneCanvas>(new MockSurfaceOzone());
   }
 
@@ -70,8 +70,8 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
   SoftwareOutputDeviceOzoneTest();
   virtual ~SoftwareOutputDeviceOzoneTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   scoped_ptr<content::SoftwareOutputDeviceOzone> output_device_;
@@ -122,7 +122,7 @@ void SoftwareOutputDeviceOzoneTest::TearDown() {
 class SoftwareOutputDeviceOzonePixelTest
     : public SoftwareOutputDeviceOzoneTest {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 void SoftwareOutputDeviceOzonePixelTest::SetUp() {

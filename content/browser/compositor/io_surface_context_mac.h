@@ -45,7 +45,7 @@ class IOSurfaceContext
   CGLContextObj cgl_context() const { return cgl_context_; }
 
   // content::GpuDataManagerObserver implementation.
-  virtual void OnGpuSwitching() OVERRIDE;
+  virtual void OnGpuSwitching() override;
 
  private:
   friend class base::RefCounted<IOSurfaceContext>;

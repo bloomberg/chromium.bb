@@ -19,7 +19,7 @@ class FakeVSyncProvider : public gfx::VSyncProvider {
   virtual ~FakeVSyncProvider() {}
 
   virtual void GetVSyncParameters(const UpdateVSyncCallback& callback)
-      OVERRIDE {
+      override {
     callback.Run(timebase_, interval_);
     call_count_++;
   }
@@ -43,7 +43,7 @@ class FakeSoftwareOutputDevice : public cc::SoftwareOutputDevice {
   FakeSoftwareOutputDevice() : vsync_provider_(new FakeVSyncProvider()) {}
   virtual ~FakeSoftwareOutputDevice() {}
 
-  virtual gfx::VSyncProvider* GetVSyncProvider() OVERRIDE {
+  virtual gfx::VSyncProvider* GetVSyncProvider() override {
     return vsync_provider_.get();
   }
 
@@ -60,8 +60,8 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
   SoftwareBrowserCompositorOutputSurfaceTest();
   virtual ~SoftwareBrowserCompositorOutputSurfaceTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   scoped_ptr<content::BrowserCompositorOutputSurface> CreateSurface(
       scoped_ptr<cc::SoftwareOutputDevice> device);

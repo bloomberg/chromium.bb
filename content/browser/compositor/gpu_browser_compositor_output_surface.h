@@ -34,7 +34,7 @@ class GpuBrowserCompositorOutputSurface
 
  protected:
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };

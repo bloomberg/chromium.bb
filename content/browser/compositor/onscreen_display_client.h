@@ -37,13 +37,13 @@ class OnscreenDisplayClient : cc::DisplayClient {
   }
 
   // cc::DisplayClient implementation.
-  virtual void DisplayDamaged() OVERRIDE;
-  virtual void DidSwapBuffers() OVERRIDE;
-  virtual void DidSwapBuffersComplete() OVERRIDE;
+  virtual void DisplayDamaged() override;
+  virtual void DidSwapBuffers() override;
+  virtual void DidSwapBuffersComplete() override;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) OVERRIDE;
-  virtual void OutputSurfaceLost() OVERRIDE;
-  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) OVERRIDE;
+                                     base::TimeDelta interval) override;
+  virtual void OutputSurfaceLost() override;
+  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
 
  private:
   void ScheduleDraw();

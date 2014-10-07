@@ -22,16 +22,16 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   virtual ~NoTransportImageTransportFactory();
 
   // ImageTransportFactory implementation.
-  virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
-  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() OVERRIDE;
+  virtual ui::ContextFactory* GetContextFactory() override;
+  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
   virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
-      OVERRIDE;
-  virtual cc::SurfaceManager* GetSurfaceManager() OVERRIDE;
-  virtual GLHelper* GetGLHelper() OVERRIDE;
-  virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
+      override;
+  virtual cc::SurfaceManager* GetSurfaceManager() override;
+  virtual GLHelper* GetGLHelper() override;
+  virtual void AddObserver(ImageTransportFactoryObserver* observer) override;
+  virtual void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
-  virtual void OnSurfaceDisplayed(int surface_id) OVERRIDE {}
+  virtual void OnSurfaceDisplayed(int surface_id) override {}
 #endif
 
  private:

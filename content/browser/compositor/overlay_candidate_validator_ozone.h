@@ -25,7 +25,7 @@ class CONTENT_EXPORT OverlayCandidateValidatorOzone
   virtual ~OverlayCandidateValidatorOzone();
 
   // cc::OverlayCandidateValidator implementation.
-  virtual void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) OVERRIDE;
+  virtual void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
 
  private:
   gfx::AcceleratedWidget widget_;

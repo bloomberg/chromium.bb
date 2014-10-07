@@ -22,7 +22,7 @@ class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
 
   virtual ~SoftwareOutputDeviceX11();
 
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
+  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
 
  private:
   ui::Compositor* compositor_;

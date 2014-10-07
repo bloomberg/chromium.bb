@@ -26,9 +26,9 @@ class CONTENT_EXPORT SoftwareOutputDeviceOzone
   virtual ~SoftwareOutputDeviceOzone();
 
   virtual void Resize(const gfx::Size& viewport_pixel_size,
-                      float scale_factor) OVERRIDE;
-  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE;
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
+                      float scale_factor) override;
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
+  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
 
  private:
   ui::Compositor* compositor_;

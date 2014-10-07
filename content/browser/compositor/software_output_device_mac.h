@@ -22,7 +22,7 @@ class SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice {
   explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
   virtual ~SoftwareOutputDeviceMac();
 
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
+  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
 
  private:
   ui::Compositor* compositor_;

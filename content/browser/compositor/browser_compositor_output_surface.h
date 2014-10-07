@@ -28,12 +28,12 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   virtual ~BrowserCompositorOutputSurface();
 
   // cc::OutputSurface implementation.
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
-  virtual void OnSwapBuffersComplete() OVERRIDE;
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
+  virtual void OnSwapBuffersComplete() override;
 
   // ui::CompositorOutputSurface::Observer implementation.
   virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                       base::TimeDelta interval) OVERRIDE;
+                                       base::TimeDelta interval) override;
 
   void OnUpdateVSyncParametersFromGpu(base::TimeTicks tiembase,
                                       base::TimeDelta interval);

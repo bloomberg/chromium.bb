@@ -34,7 +34,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   virtual ~SoftwareBrowserCompositorOutputSurface();
 
  private:
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
 
   // On the software path we need to explicitly call the proxy to update the
   // VSync parameters.

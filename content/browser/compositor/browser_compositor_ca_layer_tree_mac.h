@@ -52,9 +52,9 @@ class BrowserCompositorCALayerTreeMac
 
 private:
   // IOSurfaceLayerClient implementation:
-  virtual bool IOSurfaceLayerShouldAckImmediately() const OVERRIDE;
-  virtual void IOSurfaceLayerDidDrawFrame() OVERRIDE;
-  virtual void IOSurfaceLayerHitError() OVERRIDE;
+  virtual bool IOSurfaceLayerShouldAckImmediately() const override;
+  virtual void IOSurfaceLayerDidDrawFrame() override;
+  virtual void IOSurfaceLayerHitError() override;
 
   void GotAcceleratedCAContextFrame(
       CAContextID ca_context_id, gfx::Size pixel_size, float scale_factor);

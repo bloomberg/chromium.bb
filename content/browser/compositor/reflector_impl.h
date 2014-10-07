@@ -53,7 +53,7 @@ class ReflectorImpl : public base::SupportsWeakPtr<ReflectorImpl>,
       BrowserCompositorOutputSurface* surface);
 
   // ui::Reflector implementation.
-  virtual void OnMirroringCompositorResized() OVERRIDE;
+  virtual void OnMirroringCompositorResized() override;
 
   // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
   // the full screen image to the |texture_id_|. This must be called

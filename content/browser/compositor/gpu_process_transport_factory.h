@@ -44,31 +44,31 @@ class GpuProcessTransportFactory
 
   // ui::ContextFactory implementation.
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      ui::Compositor* compositor, bool software_fallback) OVERRIDE;
+      ui::Compositor* compositor, bool software_fallback) override;
   virtual scoped_refptr<ui::Reflector> CreateReflector(
       ui::Compositor* source,
-      ui::Layer* target) OVERRIDE;
+      ui::Layer* target) override;
   virtual void RemoveReflector(
-      scoped_refptr<ui::Reflector> reflector) OVERRIDE;
-  virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE;
+      scoped_refptr<ui::Reflector> reflector) override;
+  virtual void RemoveCompositor(ui::Compositor* compositor) override;
   virtual scoped_refptr<cc::ContextProvider>
-      SharedMainThreadContextProvider() OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
-  virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
+      SharedMainThreadContextProvider() override;
+  virtual bool DoesCreateTestContexts() override;
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
 
   // ImageTransportFactory implementation.
-  virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
-  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() OVERRIDE;
+  virtual ui::ContextFactory* GetContextFactory() override;
+  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
   virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
-      OVERRIDE;
-  virtual cc::SurfaceManager* GetSurfaceManager() OVERRIDE;
-  virtual GLHelper* GetGLHelper() OVERRIDE;
-  virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
+      override;
+  virtual cc::SurfaceManager* GetSurfaceManager() override;
+  virtual GLHelper* GetGLHelper() override;
+  virtual void AddObserver(ImageTransportFactoryObserver* observer) override;
   virtual void RemoveObserver(
-      ImageTransportFactoryObserver* observer) OVERRIDE;
+      ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
-  virtual void OnSurfaceDisplayed(int surface_id) OVERRIDE;
+  virtual void OnSurfaceDisplayed(int surface_id) override;
 #endif
 
  private:

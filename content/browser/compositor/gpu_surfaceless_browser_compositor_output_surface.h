@@ -25,11 +25,11 @@ class GpuSurfacelessBrowserCompositorOutputSurface
 
  private:
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
-  virtual void OnSwapBuffersComplete() OVERRIDE;
-  virtual void BindFramebuffer() OVERRIDE;
-  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  virtual void OnSwapBuffersComplete() override;
+  virtual void BindFramebuffer() override;
+  virtual void Reshape(const gfx::Size& size, float scale_factor) override;
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   unsigned int internalformat_;
   scoped_ptr<BufferQueue> output_surface_;
