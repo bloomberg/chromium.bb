@@ -443,11 +443,12 @@ void BrowserMediaPlayerManager::OnInitialize(
 
   RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
       web_contents()->GetRenderProcessHost());
-  MediaPlayerAndroid* player = CreateMediaPlayer(
-      media_player_params,
+  MediaPlayerAndroid* player =
+      CreateMediaPlayer(media_player_params,
 
-      host->GetBrowserContext()->IsOffTheRecord(), this,
-      host->browser_demuxer_android());
+                        host->GetBrowserContext()->IsOffTheRecord(),
+                        this,
+                        host->browser_demuxer_android().get());
 
   if (!player)
     return;

@@ -644,7 +644,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     video_frame = current_frame_;
   }
 
-  if (!video_frame ||
+  if (!video_frame.get() ||
       video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
   const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
@@ -1302,7 +1302,7 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
     return;
 
   // No factory to create proxy.
-  if (!stream_texture_factory_)
+  if (!stream_texture_factory_.get())
     return;
 
   // Not needed for hole punching.

@@ -366,8 +366,9 @@ void MediaSourceDelegate::OnBufferReady(
     const scoped_refptr<media::DecoderBuffer>& buffer) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << "(" << index << ", " << status << ", "
-           << ((!buffer || buffer->end_of_stream()) ?
-               -1 : buffer->timestamp().InMilliseconds())
+           << ((!buffer.get() || buffer->end_of_stream())
+                   ? -1
+                   : buffer->timestamp().InMilliseconds())
            << ") : " << demuxer_client_id_;
   DCHECK(chunk_demuxer_);
 

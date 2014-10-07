@@ -66,7 +66,7 @@ BrowserCdmManager::BrowserCdmManager(
       task_runner_(task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!task_runner_) {
+  if (!task_runner_.get()) {
     task_runner_ =
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
   }

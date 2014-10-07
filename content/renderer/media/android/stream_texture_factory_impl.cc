@@ -69,11 +69,11 @@ void StreamTextureProxyImpl::BindToLoop(
     int32 stream_id,
     cc::VideoFrameProvider::Client* client,
     scoped_refptr<base::MessageLoopProxy> loop) {
-  DCHECK(loop);
+  DCHECK(loop.get());
 
   {
     base::AutoLock lock(lock_);
-    DCHECK(!loop_ || (loop == loop_));
+    DCHECK(!loop_.get() || (loop.get() == loop_.get()));
     loop_ = loop;
     client_ = client;
   }
