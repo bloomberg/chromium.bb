@@ -55,19 +55,23 @@
 #reset #reset-revert-spinner-message {
   display: inline-block;
   padding: 25px 0;
+  vertical-align: middle;
+}
+
+#reset #reset-revert-spinner {
+  margin-top: 0;
+  vertical-align: middle;
 }
 
 .powerwash-proposal-specific,
-.powerwash-confirm-specific,
-.rollback-confirm-specific,
+.rollback-proposal-specific,
 .revert-promise-specific,
 .restart-required-specific {
   display: none;
 }
 
 .powerwash-proposal-view .powerwash-proposal-specific,
-.powerwash-confirm-view .powerwash-confirm-specific,
-.rollback-confirm-view .rollback-confirm-specific,
+.rollback-proposal-view .rollback-proposal-specific,
 .restart-required-view .restart-required-specific,
 .revert-promise-view .revert-promise-specific {
   display: block;
@@ -76,14 +80,17 @@
 #reset-restart-button,
 #reset-button,
 #reset-toconfirm-button,
+#reset-cancel-button,
 .revert-promise-view #reset-controls {
   display: none;
 }
 
 .restart-required-view #reset-restart-button,
-.powerwash-confirm-view #reset-button,
-.rollback-confirm-view #reset-button,
-.powerwash-proposal-view #reset-toconfirm-button {
+.powerwash-proposal-view #reset-toconfirm-button,
+.rollback-proposal-view #reset-toconfirm-button,
+.restart-required-view #reset-cancel-button,
+.powerwash-proposal-view #reset-cancel-button,
+.rollback-proposal-view #reset-cancel-button {
   display: inline-block;
 }
 

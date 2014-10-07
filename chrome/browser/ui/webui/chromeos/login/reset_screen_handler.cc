@@ -76,6 +76,9 @@ void ResetScreenHandler::ShowWithParams() {
   base::DictionaryValue reset_screen_params;
   reset_screen_params.SetBoolean("restartRequired", restart_required_);
   reset_screen_params.SetBoolean("rollbackAvailable", rollback_available_);
+#if defined(OFFICIAL_BUILD)
+  reset_screen_params.SetBoolean("isOfficialBuild", true);
+#endif
   ShowScreen(kResetScreen, &reset_screen_params);
 }
 
@@ -130,7 +133,7 @@ void ResetScreenHandler::DeclareLocalizedValues(
   builder->Add("resetScreenAccessibleTitle", IDS_RESET_SCREEN_TITLE);
   builder->Add("resetScreenIconTitle", IDS_RESET_SCREEN_ICON_TITLE);
   builder->Add("cancelButton", IDS_CANCEL);
-  builder->Add("resetButtonReset", IDS_RESET_SCREEN_RESET);
+
   builder->Add("resetButtonRestart", IDS_RELAUNCH_BUTTON);
   builder->Add("resetButtonPowerwash", IDS_RESET_SCREEN_POWERWASH);
   builder->Add("resetButtonPowerwashAndRollback",
@@ -150,26 +153,21 @@ void ResetScreenHandler::DeclareLocalizedValues(
   builder->AddF("resetWarningTitle",
                 IDS_RESET_SCREEN_WARNING_MSG,
                 IDS_SHORT_PRODUCT_NAME);
-  builder->AddF("resetPowerwashWarningTitle",
-                IDS_RESET_SCREEN_WARNING_POWERWASH_MSG,
-                IDS_SHORT_PRODUCT_NAME);
-  builder->AddF("resetPowerwasAndRollbackhWarningTitle",
-                IDS_RESET_SCREEN_WARNING_POWERWASH_AND_ROLLBACK_MSG,
-                IDS_SHORT_PRODUCT_NAME);
 
   // Variants for screen message.
   builder->AddF("resetPowerwashWarningDetails",
-                IDS_RESET_SCREEN_WARNING_DETAILS,
+                IDS_RESET_SCREEN_WARNING_POWERWASH_MSG,
                 IDS_SHORT_PRODUCT_NAME);
   builder->AddF("resetPowerwashRollbackWarningDetails",
                 IDS_RESET_SCREEN_WARNING_POWERWASH_AND_ROLLBACK_MSG,
                 IDS_SHORT_PRODUCT_NAME);
-  builder->AddF("resetPowerwashConfirmationDetails",
-                IDS_RESET_SCREEN_CONFIRMATION_WARNING_DETAILS,
-                IDS_SHORT_PRODUCT_NAME);
-  builder->AddF("resetPowerwashRollbackConfirmationDetails",
-                IDS_RESET_SCREEN_CONFIRMATION_WARNING_ROLLBACK_DETAILS,
-                IDS_SHORT_PRODUCT_NAME);
+
+  builder->Add("confirmPowerwashTitle", IDS_RESET_SCREEN_POPUP_POWERWASH_TITLE);
+  builder->Add("confirmRollbackTitle", IDS_RESET_SCREEN_POPUP_ROLLBACK_TITLE);
+  builder->Add("confirmPowerwashMessage",
+               IDS_RESET_SCREEN_POPUP_POWERWASH_TEXT);
+  builder->Add("confirmRollbackMessage", IDS_RESET_SCREEN_POPUP_ROLLBACK_TEXT);
+  builder->Add("confirmResetButton", IDS_RESET_SCREEN_POPUP_CONFIRM_BUTTON);
 }
 
 // Invoked from call to CanRollbackCheck upon completion of the DBus call.
@@ -199,10 +197,8 @@ void ResetScreenHandler::RegisterMessages() {
   AddCallback("restartOnReset", &ResetScreenHandler::HandleOnRestart);
   AddCallback("powerwashOnReset", &ResetScreenHandler::HandleOnPowerwash);
   AddCallback("resetOnLearnMore", &ResetScreenHandler::HandleOnLearnMore);
-  AddCallback(
-      "showRollbackOnResetScreen", &ResetScreenHandler::HandleOnShowRollback);
-  AddCallback(
-      "hideRollbackOnResetScreen", &ResetScreenHandler::HandleOnHideRollback);
+  AddCallback("toggleRollbackOnResetScreen",
+              &ResetScreenHandler::HandleOnToggleRollback);
   AddCallback(
       "showConfirmationOnReset", &ResetScreenHandler::HandleOnShowConfirm);
 }
@@ -210,6 +206,9 @@ void ResetScreenHandler::RegisterMessages() {
 void ResetScreenHandler::HandleOnCancel() {
   if (preparing_for_rollback_)
     return;
+  // Hide Rollback view for the next show.
+  if (rollback_available_ && rollback_checked_)
+    HandleOnToggleRollback();
   if (delegate_)
     delegate_->OnExit();
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
@@ -242,27 +241,30 @@ void ResetScreenHandler::HandleOnPowerwash(bool rollback_checked) {
 }
 
 void ResetScreenHandler::HandleOnLearnMore() {
+  VLOG(1) << "Trying to view the help article about reset options.";
   if (!help_app_.get())
     help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_POWERWASH);
 }
 
-void ResetScreenHandler::HandleOnShowRollback() {
+void ResetScreenHandler::HandleOnToggleRollback() {
+  // Hide Rollback if visible.
+  if (rollback_available_ && rollback_checked_) {
+    VLOG(1) << "Hiding rollback view on reset screen";
+    CallJS("hideRollbackOption");
+    rollback_checked_ = false;
+    return;
+  }
+
+  // Show Rollback if available.
   VLOG(1) << "Requested rollback availability" << rollback_available_;
-  if (rollback_available_) {
+  if (rollback_available_ && !rollback_checked_) {
     UMA_HISTOGRAM_ENUMERATION(
         "Reset.ChromeOS.PowerwashDialogShown",
         reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE,
         reset::DIALOG_VIEW_TYPE_SIZE);
     CallJS("showRollbackOption");
     rollback_checked_ = true;
-  }
-}
-
-void ResetScreenHandler::HandleOnHideRollback() {
-  if (rollback_available_ && rollback_checked_) {
-    CallJS("hideRollbackOption");
-    rollback_checked_ = false;
   }
 }
 

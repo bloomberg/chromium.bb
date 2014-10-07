@@ -14,6 +14,7 @@
 <include src="../../../../../ui/login/display_manager.js">
 <include src="header_bar.js">
 <include src="network_dropdown.js">
+<include src="oobe_screen_reset_confirmation_overlay.js">
 <include src="oobe_screen_reset.js">
 <include src="oobe_screen_autolaunch.js">
 <include src="oobe_screen_enable_kiosk.js">

@@ -54,8 +54,7 @@ class ResetScreenHandler : public ResetScreenActor,
   void HandleOnRestart();
   void HandleOnPowerwash(bool rollback_checked);
   void HandleOnLearnMore();
-  void HandleOnShowRollback();
-  void HandleOnHideRollback();
+  void HandleOnToggleRollback();
   void HandleOnShowConfirm();
 
   void ChooseAndApplyShowScenario();

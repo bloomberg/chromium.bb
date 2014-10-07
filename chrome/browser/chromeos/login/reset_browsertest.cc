@@ -75,8 +75,7 @@ class ResetTest : public LoginManagerTest {
   }
 
   void InvokeRollbackOption() {
-    ASSERT_TRUE(JSExecuted(
-        "cr.ui.Oobe.handleAccelerator('show_rollback_on_reset_screen');"));
+    ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('reset');"));
   }
 
   void CloseResetScreen() {
@@ -84,7 +83,7 @@ class ResetTest : public LoginManagerTest {
   }
 
   void ClickResetButton() {
-    ASSERT_TRUE(JSExecuted("$('reset-button').click();"));
+    ASSERT_TRUE(JSExecuted("$('reset-confirm-commit').click();"));
   }
 
   void ClickRestartButton() {
@@ -243,6 +242,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest,
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, SuccessOnRollbackRequested) {
   update_engine_client_->set_can_rollback_check_result(true);
   OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  LOG(ERROR) << "1";
   InvokeRollbackOption();
   ClickToConfirmButton();
   ClickResetButton();
