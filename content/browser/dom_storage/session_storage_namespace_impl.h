@@ -40,22 +40,22 @@ class SessionStorageNamespaceImpl
       SessionStorageNamespaceImpl* master_session_storage_namespace);
 
   // SessionStorageNamespace implementation.
-  virtual int64 id() const OVERRIDE;
-  virtual const std::string& persistent_id() const OVERRIDE;
-  virtual void SetShouldPersist(bool should_persist) OVERRIDE;
-  virtual bool should_persist() const OVERRIDE;
+  virtual int64 id() const override;
+  virtual const std::string& persistent_id() const override;
+  virtual void SetShouldPersist(bool should_persist) override;
+  virtual bool should_persist() const override;
 
   SessionStorageNamespaceImpl* Clone();
   bool IsFromContext(DOMStorageContextWrapper* context);
 
-  virtual void AddTransactionLogProcessId(int process_id) OVERRIDE;
-  virtual void RemoveTransactionLogProcessId(int process_id) OVERRIDE;
+  virtual void AddTransactionLogProcessId(int process_id) override;
+  virtual void RemoveTransactionLogProcessId(int process_id) override;
   virtual void Merge(bool actually_merge,
                      int process_id,
                      SessionStorageNamespace* other,
-                     const MergeResultCallback& callback) OVERRIDE;
-  virtual bool IsAliasOf(SessionStorageNamespace* other) OVERRIDE;
-  virtual SessionStorageNamespace* CreateAlias() OVERRIDE;
+                     const MergeResultCallback& callback) override;
+  virtual bool IsAliasOf(SessionStorageNamespace* other) override;
+  virtual SessionStorageNamespace* CreateAlias() override;
 
  private:
   explicit SessionStorageNamespaceImpl(DOMStorageSession* clone);

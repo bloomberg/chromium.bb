@@ -40,11 +40,11 @@ class DOMStorageMessageFilter
   void UninitializeInSequence();
 
   // BrowserMessageFilter implementation
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual void OnFilterRemoved() OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual void OnFilterRemoved() override;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& message) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message Handlers.
   void OnOpenStorageArea(int connection_id, int64 namespace_id,
@@ -68,16 +68,16 @@ class DOMStorageMessageFilter
       const base::string16& key,
       const base::string16& new_value,
       const base::NullableString16& old_value,
-      const GURL& page_url) OVERRIDE;
+      const GURL& page_url) override;
   virtual void OnDOMStorageItemRemoved(
       const DOMStorageArea* area,
       const base::string16& key,
       const base::string16& old_value,
-      const GURL& page_url) OVERRIDE;
+      const GURL& page_url) override;
   virtual void OnDOMStorageAreaCleared(
       const DOMStorageArea* area,
-      const GURL& page_url) OVERRIDE;
-  virtual void OnDOMSessionStorageReset(int64 namespace_id) OVERRIDE;
+      const GURL& page_url) override;
+  virtual void OnDOMSessionStorageReset(int64 namespace_id) override;
 
   void SendDOMStorageEvent(
       const DOMStorageArea* area,

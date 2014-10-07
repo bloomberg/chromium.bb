@@ -98,7 +98,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   int host_id() const { return host_id_; }
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // Adds a message filter to the GpuProcessHost's channel.
   void AddFilter(IPC::MessageFilter* filter);
@@ -156,10 +156,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void RouteOnUIThread(const IPC::Message& message);
 
   // BrowserChildProcessHostDelegate implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnProcessLaunched() OVERRIDE;
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnProcessLaunched() override;
+  virtual void OnProcessCrashed(int exit_code) override;
 
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);

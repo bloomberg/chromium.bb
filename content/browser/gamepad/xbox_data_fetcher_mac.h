@@ -164,8 +164,8 @@ class XboxDataFetcher : public XboxController::Delegate {
   void RemoveController(XboxController* controller);
   void RemoveControllerByLocationID(uint32 id);
   virtual void XboxControllerGotData(XboxController* controller,
-                                     const XboxController::Data& data) OVERRIDE;
-  virtual void XboxControllerError(XboxController* controller) OVERRIDE;
+                                     const XboxController::Data& data) override;
+  virtual void XboxControllerError(XboxController* controller) override;
 
   Delegate* delegate_;
 

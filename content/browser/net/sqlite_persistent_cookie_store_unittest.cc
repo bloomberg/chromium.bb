@@ -41,9 +41,9 @@ class CookieCryptor : public content::CookieCryptoDelegate {
  public:
   CookieCryptor();
   virtual bool EncryptString(const std::string& plaintext,
-                             std::string* ciphertext) OVERRIDE;
+                             std::string* ciphertext) override;
   virtual bool DecryptString(const std::string& ciphertext,
-                             std::string* plaintext) OVERRIDE;
+                             std::string* plaintext) override;
 
  private:
   scoped_ptr<crypto::SymmetricKey> key_;
@@ -173,11 +173,11 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     return contents;
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     DestroyStore();
     pool_owner_->pool()->Shutdown();
   }

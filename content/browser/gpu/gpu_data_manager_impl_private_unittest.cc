@@ -36,12 +36,12 @@ class TestObserver : public GpuDataManagerObserver {
     return video_memory_usage_stats_updated_;
   }
 
-  virtual void OnGpuInfoUpdate() OVERRIDE {
+  virtual void OnGpuInfoUpdate() override {
     gpu_info_updated_ = true;
   }
 
   virtual void OnVideoMemoryUsageStatsUpdate(
-      const GPUVideoMemoryUsageStats& stats) OVERRIDE {
+      const GPUVideoMemoryUsageStats& stats) override {
     video_memory_usage_stats_updated_ = true;
   }
 

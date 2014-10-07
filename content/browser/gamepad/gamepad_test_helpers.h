@@ -27,7 +27,7 @@ class MockGamepadDataFetcher : public GamepadDataFetcher {
 
   // GamepadDataFetcher.
   virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) OVERRIDE;
+                              bool devices_changed_hint) override;
 
   // Blocks the current thread until the GamepadProvider reads from this
   // fetcher on the background thread.

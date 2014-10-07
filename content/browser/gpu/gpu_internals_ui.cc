@@ -245,11 +245,11 @@ class GpuMessageHandler
   virtual ~GpuMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
   // GpuDataManagerObserver implementation.
-  virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnGpuSwitching() OVERRIDE;
+  virtual void OnGpuInfoUpdate() override;
+  virtual void OnGpuSwitching() override;
 
   // Messages
   void OnBrowserBridgeInitialized(const base::ListValue* list);

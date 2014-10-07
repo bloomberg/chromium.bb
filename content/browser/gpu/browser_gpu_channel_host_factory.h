@@ -24,20 +24,20 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
 
   // GpuChannelHostFactory implementation.
-  virtual bool IsMainThread() OVERRIDE;
-  virtual base::MessageLoop* GetMainLoop() OVERRIDE;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
+  virtual bool IsMainThread() override;
+  virtual base::MessageLoop* GetMainLoop() override;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) OVERRIDE;
+      size_t size) override;
   virtual CreateCommandBufferResult CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
-      int32 route_id) OVERRIDE;
+      int32 route_id) override;
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,
       unsigned internalformat,
-      unsigned usage) OVERRIDE;
+      unsigned usage) override;
 
   // Specify a task runner and callback to be used for a set of messages. The
   // callback will be set up on the current GpuProcessHost, identified by

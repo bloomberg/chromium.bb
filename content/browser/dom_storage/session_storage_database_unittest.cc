@@ -27,7 +27,7 @@ class SessionStorageDatabaseTest : public testing::Test {
  public:
   SessionStorageDatabaseTest();
   virtual ~SessionStorageDatabaseTest();
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   typedef std::map<std::string, std::string> DataMap;

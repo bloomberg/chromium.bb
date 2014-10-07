@@ -33,8 +33,8 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
   GamepadPlatformDataFetcherMac();
   virtual ~GamepadPlatformDataFetcherMac();
   virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) OVERRIDE;
-  virtual void PauseHint(bool paused) OVERRIDE;
+                              bool devices_changed_hint) override;
+  virtual void PauseHint(bool paused) override;
 
  private:
   bool enabled_;
@@ -63,10 +63,10 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
   void DeviceRemove(IOHIDDeviceRef device);
   void ValueChanged(IOHIDValueRef value);
 
-  virtual void XboxDeviceAdd(XboxController* device) OVERRIDE;
-  virtual void XboxDeviceRemove(XboxController* device) OVERRIDE;
+  virtual void XboxDeviceAdd(XboxController* device) override;
+  virtual void XboxDeviceRemove(XboxController* device) override;
   virtual void XboxValueChanged(XboxController* device,
-                                const XboxController::Data& data) OVERRIDE;
+                                const XboxController::Data& data) override;
 
   void RegisterForNotifications();
   void UnregisterFromNotifications();

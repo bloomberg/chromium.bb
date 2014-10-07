@@ -36,7 +36,7 @@ class ShaderDiskCacheTest : public testing::Test {
   }
 
  private:
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
   }
 

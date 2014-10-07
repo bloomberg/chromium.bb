@@ -49,7 +49,7 @@ class CONTENT_EXPORT DOMStorageTaskRunner
 
   // The TaskRunner override returns true if the current thread is running
   // on the primary sequence.
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
   // Returns true if the current thread is running on the given |sequence_id|.
   virtual bool IsRunningOnSequence(SequenceID sequence_id) const = 0;
@@ -79,14 +79,14 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) override;
 
   virtual bool PostShutdownBlockingTask(
       const tracked_objects::Location& from_here,
       SequenceID sequence_id,
-      const base::Closure& task) OVERRIDE;
+      const base::Closure& task) override;
 
-  virtual bool IsRunningOnSequence(SequenceID sequence_id) const OVERRIDE;
+  virtual bool IsRunningOnSequence(SequenceID sequence_id) const override;
 
  protected:
   virtual ~DOMStorageWorkerPoolTaskRunner();
@@ -114,14 +114,14 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) override;
 
   virtual bool PostShutdownBlockingTask(
       const tracked_objects::Location& from_here,
       SequenceID sequence_id,
-      const base::Closure& task) OVERRIDE;
+      const base::Closure& task) override;
 
-  virtual bool IsRunningOnSequence(SequenceID sequence_id) const OVERRIDE;
+  virtual bool IsRunningOnSequence(SequenceID sequence_id) const override;
 
  protected:
   virtual ~MockDOMStorageTaskRunner();

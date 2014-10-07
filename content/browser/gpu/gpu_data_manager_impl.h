@@ -60,31 +60,31 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // GpuDataManager implementation.
   virtual void InitializeForTesting(
       const std::string& gpu_blacklist_json,
-      const gpu::GPUInfo& gpu_info) OVERRIDE;
-  virtual bool IsFeatureBlacklisted(int feature) const OVERRIDE;
-  virtual gpu::GPUInfo GetGPUInfo() const OVERRIDE;
+      const gpu::GPUInfo& gpu_info) override;
+  virtual bool IsFeatureBlacklisted(int feature) const override;
+  virtual gpu::GPUInfo GetGPUInfo() const override;
   virtual void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
-  virtual bool GpuAccessAllowed(std::string* reason) const OVERRIDE;
-  virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
-  virtual bool IsEssentialGpuInfoAvailable() const OVERRIDE;
-  virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
-  virtual void RequestVideoMemoryUsageStatsUpdate() const OVERRIDE;
-  virtual bool ShouldUseSwiftShader() const OVERRIDE;
-  virtual void RegisterSwiftShaderPath(const base::FilePath& path) OVERRIDE;
-  virtual bool ShouldUseWarp() const OVERRIDE;
-  virtual void AddObserver(GpuDataManagerObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
-  virtual void UnblockDomainFrom3DAPIs(const GURL& url) OVERRIDE;
-  virtual void DisableGpuWatchdog() OVERRIDE;
+      const GetGpuProcessHandlesCallback& callback) const override;
+  virtual bool GpuAccessAllowed(std::string* reason) const override;
+  virtual void RequestCompleteGpuInfoIfNeeded() override;
+  virtual bool IsEssentialGpuInfoAvailable() const override;
+  virtual bool IsCompleteGpuInfoAvailable() const override;
+  virtual void RequestVideoMemoryUsageStatsUpdate() const override;
+  virtual bool ShouldUseSwiftShader() const override;
+  virtual void RegisterSwiftShaderPath(const base::FilePath& path) override;
+  virtual bool ShouldUseWarp() const override;
+  virtual void AddObserver(GpuDataManagerObserver* observer) override;
+  virtual void RemoveObserver(GpuDataManagerObserver* observer) override;
+  virtual void UnblockDomainFrom3DAPIs(const GURL& url) override;
+  virtual void DisableGpuWatchdog() override;
   virtual void SetGLStrings(const std::string& gl_vendor,
                             const std::string& gl_renderer,
-                            const std::string& gl_version) OVERRIDE;
+                            const std::string& gl_version) override;
   virtual void GetGLStrings(std::string* gl_vendor,
                             std::string* gl_renderer,
-                            std::string* gl_version) OVERRIDE;
-  virtual void DisableHardwareAcceleration() OVERRIDE;
-  virtual bool CanUseGpuBrowserCompositor() const OVERRIDE;
+                            std::string* gl_version) override;
+  virtual void DisableHardwareAcceleration() override;
+  virtual bool CanUseGpuBrowserCompositor() const override;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser

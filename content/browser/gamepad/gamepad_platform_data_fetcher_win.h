@@ -34,8 +34,8 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   GamepadPlatformDataFetcherWin();
   virtual ~GamepadPlatformDataFetcherWin();
   virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) OVERRIDE;
-  virtual void PauseHint(bool paused) OVERRIDE;
+                              bool devices_changed_hint) override;
+  virtual void PauseHint(bool paused) override;
 
  private:
   // XInput-specific implementation for GetGamepadData.

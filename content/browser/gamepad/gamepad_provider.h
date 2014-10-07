@@ -56,7 +56,7 @@ class CONTENT_EXPORT GamepadProvider :
   void RegisterForUserGesture(const base::Closure& closure);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
-  virtual void OnDevicesChanged(base::SystemMonitor::DeviceType type) OVERRIDE;
+  virtual void OnDevicesChanged(base::SystemMonitor::DeviceType type) override;
 
  private:
   void Initialize(scoped_ptr<GamepadDataFetcher> fetcher);

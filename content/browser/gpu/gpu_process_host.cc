@@ -156,7 +156,7 @@ class GpuSandboxedProcessLauncherDelegate
   virtual ~GpuSandboxedProcessLauncherDelegate() {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldSandbox() OVERRIDE {
+  virtual bool ShouldSandbox() override {
     bool sandbox = !cmd_line_->HasSwitch(switches::kDisableGpuSandbox);
     if(! sandbox) {
       DVLOG(1) << "GPU sandbox is disabled";
@@ -165,7 +165,7 @@ class GpuSandboxedProcessLauncherDelegate
   }
 
   virtual void PreSandbox(bool* disable_default_policy,
-                          base::FilePath* exposed_dir) OVERRIDE {
+                          base::FilePath* exposed_dir) override {
     *disable_default_policy = true;
   }
 
@@ -250,7 +250,7 @@ class GpuSandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
 
-  virtual int GetIpcFd() OVERRIDE {
+  virtual int GetIpcFd() override {
     return ipc_fd_;
   }
 #endif  // OS_WIN

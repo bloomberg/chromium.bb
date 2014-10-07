@@ -24,9 +24,9 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHostImpl
       const gfx::Size& size,
       unsigned internalformat,
       unsigned usage,
-      const CreateGpuMemoryBufferCallback& callback) OVERRIDE;
+      const CreateGpuMemoryBufferCallback& callback) override;
   virtual void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
-                                      int32 sync_point) OVERRIDE;
+                                      int32 sync_point) override;
 
   void set_gpu_host_id(int gpu_host_id) { gpu_host_id_ = gpu_host_id; }
 

@@ -29,7 +29,7 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
 
   // GamepadDataFetcher implementation.
   virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) OVERRIDE;
+                              bool devices_changed_hint) override;
 
  private:
   void RefreshDevice(udev_device* dev);

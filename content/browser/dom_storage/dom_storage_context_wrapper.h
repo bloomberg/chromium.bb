@@ -34,16 +34,16 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   // DOMStorageContext implementation.
   virtual void GetLocalStorageUsage(
-      const GetLocalStorageUsageCallback& callback) OVERRIDE;
+      const GetLocalStorageUsageCallback& callback) override;
   virtual void GetSessionStorageUsage(
-      const GetSessionStorageUsageCallback& callback) OVERRIDE;
-  virtual void DeleteLocalStorage(const GURL& origin) OVERRIDE;
+      const GetSessionStorageUsageCallback& callback) override;
+  virtual void DeleteLocalStorage(const GURL& origin) override;
   virtual void DeleteSessionStorage(
-      const SessionStorageUsageInfo& usage_info) OVERRIDE;
-  virtual void SetSaveSessionStorageOnDisk() OVERRIDE;
+      const SessionStorageUsageInfo& usage_info) override;
+  virtual void SetSaveSessionStorageOnDisk() override;
   virtual scoped_refptr<SessionStorageNamespace>
-      RecreateSessionStorage(const std::string& persistent_id) OVERRIDE;
-  virtual void StartScavengingUnusedSessionStorage() OVERRIDE;
+      RecreateSessionStorage(const std::string& persistent_id) override;
+  virtual void StartScavengingUnusedSessionStorage() override;
 
   // Used by content settings to alter the behavior around
   // what data to keep and what data to discard at shutdown.

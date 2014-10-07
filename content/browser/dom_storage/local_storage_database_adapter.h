@@ -23,11 +23,11 @@ class CONTENT_EXPORT LocalStorageDatabaseAdapter :
  public:
   explicit LocalStorageDatabaseAdapter(const base::FilePath& path);
   virtual ~LocalStorageDatabaseAdapter();
-  virtual void ReadAllValues(DOMStorageValuesMap* result) OVERRIDE;
+  virtual void ReadAllValues(DOMStorageValuesMap* result) override;
   virtual bool CommitChanges(bool clear_all_first,
-                             const DOMStorageValuesMap& changes) OVERRIDE;
-  virtual void DeleteFiles() OVERRIDE;
-  virtual void Reset() OVERRIDE;
+                             const DOMStorageValuesMap& changes) override;
+  virtual void DeleteFiles() override;
+  virtual void Reset() override;
 
  protected:
   // Constructor that uses an in-memory sqlite database, for testing.
