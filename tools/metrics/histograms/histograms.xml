@@ -11878,6 +11878,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.MicrophoneMuted" enum="MicrophoneMuteResult">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Heuristically detects if the user has muted the microphone or not. Measured
+    approximately four times per minute.
+  </summary>
+</histogram>
+
 <histogram name="Media.MicrophoneVolume" units="%">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -46784,6 +46792,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="1" label="Disabled successfully"/>
   <int value="2" label="Enabled successfully"/>
+</enum>
+
+<enum name="MicrophoneMuteResult" type="int">
+  <int value="0" label="Muted"/>
+  <int value="1" label="Not muted"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">
