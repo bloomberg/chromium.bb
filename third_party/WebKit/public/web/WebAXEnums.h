@@ -139,6 +139,8 @@ enum WebAXRole {
     WebAXRoleMenuBar,
     WebAXRoleMenuButton,
     WebAXRoleMenuItem,
+    WebAXRoleMenuItemCheckBox,
+    WebAXRoleMenuItemRadio,
     WebAXRoleMenuListOption,
     WebAXRoleMenuListPopup,
     WebAXRoleMenu,

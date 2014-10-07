@@ -1220,6 +1220,8 @@ String AXNodeObject::title() const
     case ListBoxOptionRole:
     case MenuButtonRole:
     case MenuItemRole:
+    case MenuItemCheckBoxRole:
+    case MenuItemRadioRole:
     case RadioButtonRole:
     case TabRole:
         return textUnderElement();
@@ -1472,6 +1474,8 @@ Element* AXNodeObject::actionElement() const
     case ToggleButtonRole:
     case TabRole:
     case MenuItemRole:
+    case MenuItemCheckBoxRole:
+    case MenuItemRadioRole:
     case ListItemRole:
         return toElement(node);
     default:

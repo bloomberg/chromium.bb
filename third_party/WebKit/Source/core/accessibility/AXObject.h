@@ -120,6 +120,8 @@ enum AccessibilityRole {
     MenuBarRole,
     MenuButtonRole,
     MenuItemRole,
+    MenuItemCheckBoxRole,
+    MenuItemRadioRole,
     MenuListOptionRole,
     MenuListPopupRole,
     MenuRole,

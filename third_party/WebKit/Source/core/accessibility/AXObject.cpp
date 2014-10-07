@@ -91,8 +91,8 @@ static ARIARoleMap* createARIARoleMap()
         { "menu", MenuRole },
         { "menubar", MenuBarRole },
         { "menuitem", MenuItemRole },
-        { "menuitemcheckbox", MenuItemRole },
-        { "menuitemradio", MenuItemRole },
+        { "menuitemcheckbox", MenuItemCheckBoxRole },
+        { "menuitemradio", MenuItemRadioRole },
         { "note", NoteRole },
         { "navigation", NavigationRole },
         { "none", NoneRole },
@@ -202,6 +202,8 @@ bool AXObject::isMenuRelated() const
     case MenuBarRole:
     case MenuButtonRole:
     case MenuItemRole:
+    case MenuItemCheckBoxRole:
+    case MenuItemRadioRole:
         return true;
     default:
         return false;
