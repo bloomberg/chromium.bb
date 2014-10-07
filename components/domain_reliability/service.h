@@ -50,9 +50,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   // called. The caller is responsible for destroying the Monitor on the given
   // task runner when it is no longer needed.
   virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      PrefService* pref_service,
-      const char* reporting_pref_name) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner) = 0;
 
   // Clears browsing data on the associated Monitor. |Init()| must have been
   // called first.

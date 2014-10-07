@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -25,10 +25,7 @@
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
 
-class PrefService;
-
 namespace base {
-class SingleThreadTaskRunner;
 class ThreadChecker;
 class Value;
 }  // namespace base
@@ -51,17 +48,13 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   DomainReliabilityMonitor(
       const std::string& upload_reporter_string,
       scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> network_thread,
-      PrefService* local_state_pref_service,
-      const char* reporting_pref_name);
+      scoped_refptr<base::SingleThreadTaskRunner> network_thread);
 
   // Same, but specifies a mock interface for time functions for testing.
   DomainReliabilityMonitor(
       const std::string& upload_reporter_string,
       scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
       scoped_refptr<base::SingleThreadTaskRunner> network_thread,
-      PrefService* local_state_pref_service,
-      const char* reporting_pref_name,
       scoped_ptr<MockableTime> time);
 
   // Must be called from the pref thread if |MoveToNetworkThread| was not
@@ -73,11 +66,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   // thread passed in the constructor.
   void MoveToNetworkThread();
 
-  // Must be called from the pref thread before the Monitor is destructed if
-  // |MoveToNetworkThread| was called.
-  void DestroyReportingPref();
-
-  // All public methods below this point must be called on the network thread:
+  // All public methods below this point must be called on the network thread
+  // after |MoveToNetworkThread| is called on the pref thread.
 
   // Initializes the Monitor's URLRequestContextGetter.
   //
@@ -91,13 +81,19 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   // Populates the monitor with contexts that were configured at compile time.
   void AddBakedInConfigs();
 
+  // Sets whether the uploader will discard uploads. Must be called after
+  // |InitURLRequestContext|.
+  void SetDiscardUploads(bool discard_uploads);
+
   // Should be called when |request| is about to follow a redirect. Will
-  // examine and possibly log the redirect request.
+  // examine and possibly log the redirect request. Must be called after
+  // |SetDiscardUploads|.
   void OnBeforeRedirect(net::URLRequest* request);
 
   // Should be called when |request| is complete. Will examine and possibly
-  // log the (final) request. (|started| should be true if the request was
-  // actually started before it was terminated.)
+  // log the (final) request. |started| should be true if the request was
+  // actually started before it was terminated. Must be called after
+  // |SetDiscardUploads|.
   void OnCompleted(net::URLRequest* request, bool started);
 
   // Called to remove browsing data. With CLEAR_BEACONS, leaves contexts in
@@ -146,11 +142,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
 
   DomainReliabilityContext* GetContextForHost(const std::string& host) const;
 
-  void InitReportingPref(
-      PrefService* local_state_pref_service,
-      const char* reporting_pref_name);
-  void OnReportingPrefChanged();
-
   bool OnPrefThread() const {
     return pref_task_runner_->BelongsToCurrentThread();
   }
@@ -170,8 +161,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
-  BooleanPrefMember reporting_pref_;
   bool moved_to_network_thread_;
+  bool discard_uploads_set_;
 
   base::WeakPtrFactory<DomainReliabilityMonitor> weak_factory_;
 

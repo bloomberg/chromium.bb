@@ -600,9 +600,8 @@ class MockDomainReliabilityService : public DomainReliabilityService {
   virtual ~MockDomainReliabilityService() {}
 
   virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      PrefService* local_state_pref_service,
-      const char* reporting_pref_name) OVERRIDE {
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+      OVERRIDE {
     NOTREACHED();
     return scoped_ptr<DomainReliabilityMonitor>();
   }

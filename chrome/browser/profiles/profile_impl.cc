@@ -1438,7 +1438,5 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
     return scoped_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      local_state,
-      prefs::kMetricsReportingEnabled);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }

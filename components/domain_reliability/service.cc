@@ -40,17 +40,14 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
   // DomainReliabilityService implementation:
 
   virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      PrefService* local_state_pref_service,
-      const char* reporting_pref_name) override {
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+      override {
     DCHECK(!network_task_runner_.get());
 
     scoped_ptr<DomainReliabilityMonitor> monitor(
         new DomainReliabilityMonitor(upload_reporter_string_,
                                      base::MessageLoopProxy::current(),
-                                     network_task_runner,
-                                     local_state_pref_service,
-                                     reporting_pref_name));
+                                     network_task_runner));
 
     monitor_ = monitor->MakeWeakPtr();
     network_task_runner_ = network_task_runner;

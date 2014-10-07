@@ -114,9 +114,6 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
-  if (io_data_->domain_reliability_monitor_)
-    io_data_->domain_reliability_monitor_->DestroyReportingPref();
-
   io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
@@ -596,6 +593,7 @@ void ProfileImplIOData::InitializeInternal(
         domain_reliability_monitor_.get();
     monitor->InitURLRequestContext(main_context);
     monitor->AddBakedInConfigs();
+    monitor->SetDiscardUploads(!GetMetricsEnabledStateOnIOThread());
     network_delegate()->set_domain_reliability_monitor(monitor);
   }
 
