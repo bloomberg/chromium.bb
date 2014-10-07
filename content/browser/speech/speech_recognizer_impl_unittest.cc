@@ -95,63 +95,63 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
   // Overridden from SpeechRecognitionEventListener:
-  virtual void OnAudioStart(int session_id) OVERRIDE {
+  virtual void OnAudioStart(int session_id) override {
     audio_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnAudioEnd(int session_id) OVERRIDE {
+  virtual void OnAudioEnd(int session_id) override {
     audio_ended_ = true;
     CheckEventsConsistency();
   }
 
   virtual void OnRecognitionResults(
-      int session_id, const SpeechRecognitionResults& results) OVERRIDE {
+      int session_id, const SpeechRecognitionResults& results) override {
     result_received_ = true;
   }
 
   virtual void OnRecognitionError(
-      int session_id, const SpeechRecognitionError& error) OVERRIDE {
+      int session_id, const SpeechRecognitionError& error) override {
     EXPECT_TRUE(recognition_started_);
     EXPECT_FALSE(recognition_ended_);
     error_ = error.code;
   }
 
   virtual void OnAudioLevelsChange(int session_id, float volume,
-                                   float noise_volume) OVERRIDE {
+                                   float noise_volume) override {
     volume_ = volume;
     noise_volume_ = noise_volume;
   }
 
-  virtual void OnRecognitionEnd(int session_id) OVERRIDE {
+  virtual void OnRecognitionEnd(int session_id) override {
     recognition_ended_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnRecognitionStart(int session_id) OVERRIDE {
+  virtual void OnRecognitionStart(int session_id) override {
     recognition_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE {}
+  virtual void OnEnvironmentEstimationComplete(int session_id) override {}
 
-  virtual void OnSoundStart(int session_id) OVERRIDE {
+  virtual void OnSoundStart(int session_id) override {
     sound_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnSoundEnd(int session_id) OVERRIDE {
+  virtual void OnSoundEnd(int session_id) override {
     sound_ended_ = true;
     CheckEventsConsistency();
   }
 
   // testing::Test methods.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AudioInputController::set_factory_for_testing(
         &audio_input_controller_factory_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     AudioInputController::set_factory_for_testing(NULL);
   }
 

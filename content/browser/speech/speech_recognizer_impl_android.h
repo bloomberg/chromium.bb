@@ -24,11 +24,11 @@ class CONTENT_EXPORT SpeechRecognizerImplAndroid : public SpeechRecognizer {
                               int session_id);
 
   // SpeechRecognizer methods.
-  virtual void StartRecognition(const std::string& device_id) OVERRIDE;
-  virtual void AbortRecognition() OVERRIDE;
-  virtual void StopAudioCapture() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsCapturingAudio() const OVERRIDE;
+  virtual void StartRecognition(const std::string& device_id) override;
+  virtual void AbortRecognition() override;
+  virtual void StopAudioCapture() override;
+  virtual bool IsActive() const override;
+  virtual bool IsCapturingAudio() const override;
 
   // Called from Java methods via JNI.
   void OnAudioStart(JNIEnv* env, jobject obj);

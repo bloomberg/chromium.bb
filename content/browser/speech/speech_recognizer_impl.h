@@ -47,11 +47,11 @@ class CONTENT_EXPORT SpeechRecognizerImpl
                        bool provisional_results,
                        SpeechRecognitionEngine* engine);
 
-  virtual void StartRecognition(const std::string& device_id) OVERRIDE;
-  virtual void AbortRecognition() OVERRIDE;
-  virtual void StopAudioCapture() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsCapturingAudio() const OVERRIDE;
+  virtual void StartRecognition(const std::string& device_id) override;
+  virtual void AbortRecognition() override;
+  virtual void StopAudioCapture() override;
+  virtual bool IsActive() const override;
+  virtual bool IsCapturingAudio() const override;
   const SpeechRecognitionEngine& recognition_engine() const;
 
  private:
@@ -129,20 +129,20 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   void OnAudioClosed(media::AudioInputController*);
 
   // AudioInputController::EventHandler methods.
-  virtual void OnCreated(media::AudioInputController* controller) OVERRIDE {}
-  virtual void OnRecording(media::AudioInputController* controller) OVERRIDE {}
+  virtual void OnCreated(media::AudioInputController* controller) override {}
+  virtual void OnRecording(media::AudioInputController* controller) override {}
   virtual void OnError(media::AudioInputController* controller,
-      media::AudioInputController::ErrorCode error_code) OVERRIDE;
+      media::AudioInputController::ErrorCode error_code) override;
   virtual void OnData(media::AudioInputController* controller,
-                      const media::AudioBus* data) OVERRIDE;
+                      const media::AudioBus* data) override;
   virtual void OnLog(media::AudioInputController* controller,
-                     const std::string& message) OVERRIDE {}
+                     const std::string& message) override {}
 
   // SpeechRecognitionEngineDelegate methods.
   virtual void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) OVERRIDE;
+      const SpeechRecognitionResults& results) override;
   virtual void OnSpeechRecognitionEngineError(
-      const SpeechRecognitionError& error) OVERRIDE;
+      const SpeechRecognitionError& error) override;
 
   static media::AudioManager* audio_manager_for_tests_;
 

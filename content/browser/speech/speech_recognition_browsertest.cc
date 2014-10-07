@@ -44,29 +44,29 @@ class SpeechRecognitionBrowserTest :
   };
 
   // MockGoogleStreamingServerDelegate methods.
-  virtual void OnClientConnected() OVERRIDE {
+  virtual void OnClientConnected() override {
     ASSERT_EQ(kTestAudioControllerOpened, streaming_server_state_);
     streaming_server_state_ = kClientConnected;
   }
 
-  virtual void OnClientAudioUpload() OVERRIDE {
+  virtual void OnClientAudioUpload() override {
     if (streaming_server_state_ == kClientConnected)
       streaming_server_state_ = kClientAudioUpload;
   }
 
-  virtual void OnClientAudioUploadComplete() OVERRIDE {
+  virtual void OnClientAudioUploadComplete() override {
     ASSERT_EQ(kTestAudioControllerClosed, streaming_server_state_);
     streaming_server_state_ = kClientAudioUploadComplete;
   }
 
-  virtual void OnClientDisconnected() OVERRIDE {
+  virtual void OnClientDisconnected() override {
     ASSERT_EQ(kClientAudioUploadComplete, streaming_server_state_);
     streaming_server_state_ = kClientDisconnected;
   }
 
   // media::TestAudioInputControllerDelegate methods.
   virtual void TestAudioControllerOpened(
-      media::TestAudioInputController* controller) OVERRIDE {
+      media::TestAudioInputController* controller) override {
     ASSERT_EQ(kIdle, streaming_server_state_);
     streaming_server_state_ = kTestAudioControllerOpened;
     const int capture_packet_interval_ms =
@@ -80,7 +80,7 @@ class SpeechRecognitionBrowserTest :
   }
 
   virtual void TestAudioControllerClosed(
-      media::TestAudioInputController* controller) OVERRIDE {
+      media::TestAudioInputController* controller) override {
     ASSERT_EQ(kClientAudioUpload, streaming_server_state_);
     streaming_server_state_ = kTestAudioControllerClosed;
     mock_streaming_server_->MockGoogleStreamingServer::SimulateResult(
@@ -103,7 +103,7 @@ class SpeechRecognitionBrowserTest :
 
  protected:
   // ContentBrowserTest methods.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     test_audio_input_controller_factory_.set_delegate(this);
     media::AudioInputController::set_factory_for_testing(
         &test_audio_input_controller_factory_);
@@ -111,18 +111,18 @@ class SpeechRecognitionBrowserTest :
     streaming_server_state_ = kIdle;
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ASSERT_TRUE(SpeechRecognitionManagerImpl::GetInstance());
     SpeechRecognizerImpl::SetAudioManagerForTesting(
         new media::MockAudioManager(BrowserThread::GetMessageLoopProxyForThread(
             BrowserThread::IO)));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     SpeechRecognizerImpl::SetAudioManagerForTesting(NULL);
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     test_audio_input_controller_factory_.set_delegate(NULL);
     mock_streaming_server_.reset();
   }

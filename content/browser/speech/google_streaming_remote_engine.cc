@@ -53,7 +53,7 @@ void DumpResponse(const std::string& response) {
     DVLOG(1) << "RESULT #" << i << ":";
     const proto::SpeechRecognitionResult& res = event.result(i);
     if (res.has_final())
-      DVLOG(1) << "  FINAL:\t" << res.final();
+      DVLOG(1) << "  final:\t" << res.final();
     if (res.has_stability())
       DVLOG(1) << "  STABILITY:\t" << res.stability();
     for (int j = 0; j < res.alternative_size(); ++j) {

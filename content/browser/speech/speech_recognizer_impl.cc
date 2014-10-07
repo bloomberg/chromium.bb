@@ -46,7 +46,7 @@ class SpeechRecognizerImpl::OnDataConverter
  private:
   // media::AudioConverter::InputCallback implementation.
   virtual double ProvideInput(AudioBus* dest,
-                              base::TimeDelta buffer_delay) OVERRIDE;
+                              base::TimeDelta buffer_delay) override;
 
   // Handles resampling, buffering, and channel mixing between input and output
   // parameters.

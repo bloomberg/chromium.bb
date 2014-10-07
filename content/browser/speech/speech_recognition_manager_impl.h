@@ -59,38 +59,38 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 
   // SpeechRecognitionManager implementation.
   virtual int CreateSession(
-      const SpeechRecognitionSessionConfig& config) OVERRIDE;
-  virtual void StartSession(int session_id) OVERRIDE;
-  virtual void AbortSession(int session_id) OVERRIDE;
-  virtual void AbortAllSessionsForRenderProcess(int render_process_id) OVERRIDE;
+      const SpeechRecognitionSessionConfig& config) override;
+  virtual void StartSession(int session_id) override;
+  virtual void AbortSession(int session_id) override;
+  virtual void AbortAllSessionsForRenderProcess(int render_process_id) override;
   virtual void AbortAllSessionsForRenderView(int render_process_id,
-                                             int render_view_id) OVERRIDE;
-  virtual void StopAudioCaptureForSession(int session_id) OVERRIDE;
+                                             int render_view_id) override;
+  virtual void StopAudioCaptureForSession(int session_id) override;
   virtual const SpeechRecognitionSessionConfig& GetSessionConfig(
-      int session_id) const OVERRIDE;
+      int session_id) const override;
   virtual SpeechRecognitionSessionContext GetSessionContext(
-      int session_id) const OVERRIDE;
+      int session_id) const override;
   virtual int GetSession(int render_process_id,
                          int render_view_id,
-                         int request_id) const OVERRIDE;
-  virtual bool HasAudioInputDevices() OVERRIDE;
-  virtual base::string16 GetAudioInputDeviceModel() OVERRIDE;
-  virtual void ShowAudioInputSettings() OVERRIDE;
+                         int request_id) const override;
+  virtual bool HasAudioInputDevices() override;
+  virtual base::string16 GetAudioInputDeviceModel() override;
+  virtual void ShowAudioInputSettings() override;
 
   // SpeechRecognitionEventListener methods.
-  virtual void OnRecognitionStart(int session_id) OVERRIDE;
-  virtual void OnAudioStart(int session_id) OVERRIDE;
-  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE;
-  virtual void OnSoundStart(int session_id) OVERRIDE;
-  virtual void OnSoundEnd(int session_id) OVERRIDE;
-  virtual void OnAudioEnd(int session_id) OVERRIDE;
-  virtual void OnRecognitionEnd(int session_id) OVERRIDE;
+  virtual void OnRecognitionStart(int session_id) override;
+  virtual void OnAudioStart(int session_id) override;
+  virtual void OnEnvironmentEstimationComplete(int session_id) override;
+  virtual void OnSoundStart(int session_id) override;
+  virtual void OnSoundEnd(int session_id) override;
+  virtual void OnAudioEnd(int session_id) override;
+  virtual void OnRecognitionEnd(int session_id) override;
   virtual void OnRecognitionResults(
-      int session_id, const SpeechRecognitionResults& result) OVERRIDE;
+      int session_id, const SpeechRecognitionResults& result) override;
   virtual void OnRecognitionError(
-      int session_id, const SpeechRecognitionError& error) OVERRIDE;
+      int session_id, const SpeechRecognitionError& error) override;
   virtual void OnAudioLevelsChange(int session_id, float volume,
-                                   float noise_volume) OVERRIDE;
+                                   float noise_volume) override;
 
   SpeechRecognitionManagerDelegate* delegate() const { return delegate_.get(); }
 

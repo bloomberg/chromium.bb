@@ -34,30 +34,30 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   base::WeakPtr<SpeechRecognitionDispatcherHost> AsWeakPtr();
 
   // SpeechRecognitionEventListener methods.
-  virtual void OnRecognitionStart(int session_id) OVERRIDE;
-  virtual void OnAudioStart(int session_id) OVERRIDE;
-  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE;
-  virtual void OnSoundStart(int session_id) OVERRIDE;
-  virtual void OnSoundEnd(int session_id) OVERRIDE;
-  virtual void OnAudioEnd(int session_id) OVERRIDE;
-  virtual void OnRecognitionEnd(int session_id) OVERRIDE;
+  virtual void OnRecognitionStart(int session_id) override;
+  virtual void OnAudioStart(int session_id) override;
+  virtual void OnEnvironmentEstimationComplete(int session_id) override;
+  virtual void OnSoundStart(int session_id) override;
+  virtual void OnSoundEnd(int session_id) override;
+  virtual void OnAudioEnd(int session_id) override;
+  virtual void OnRecognitionEnd(int session_id) override;
   virtual void OnRecognitionResults(
       int session_id,
-      const SpeechRecognitionResults& results) OVERRIDE;
+      const SpeechRecognitionResults& results) override;
   virtual void OnRecognitionError(
       int session_id,
-      const SpeechRecognitionError& error) OVERRIDE;
+      const SpeechRecognitionError& error) override;
   virtual void OnAudioLevelsChange(int session_id,
                                    float volume,
-                                   float noise_volume) OVERRIDE;
+                                   float noise_volume) override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) override;
 
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnChannelClosing() override;
 
  private:
   virtual ~SpeechRecognitionDispatcherHost();

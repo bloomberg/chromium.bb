@@ -43,17 +43,17 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
 
   // SpeechRecognitionRequestDelegate methods.
   virtual void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) OVERRIDE {
+      const SpeechRecognitionResults& results) override {
     results_.push(results);
   }
   virtual void OnSpeechRecognitionEngineError(
-      const SpeechRecognitionError& error) OVERRIDE {
+      const SpeechRecognitionError& error) override {
     error_ = error.code;
   }
 
   // testing::Test methods.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   enum DownstreamError {

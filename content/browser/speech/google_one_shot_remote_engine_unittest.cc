@@ -27,12 +27,12 @@ class GoogleOneShotRemoteEngineTest : public SpeechRecognitionEngineDelegate,
 
   // SpeechRecognitionRequestDelegate methods.
   virtual void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) OVERRIDE {
+      const SpeechRecognitionResults& results) override {
     results_ = results;
   }
 
   virtual void OnSpeechRecognitionEngineError(
-      const SpeechRecognitionError& error) OVERRIDE {
+      const SpeechRecognitionError& error) override {
     error_ = error.code;
   }
 

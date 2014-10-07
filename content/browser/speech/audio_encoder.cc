@@ -25,8 +25,8 @@ class FLACEncoder : public AudioEncoder {
  public:
   FLACEncoder(int sampling_rate, int bits_per_sample);
   virtual ~FLACEncoder();
-  virtual void Encode(const AudioChunk& raw_audio) OVERRIDE;
-  virtual void Flush() OVERRIDE;
+  virtual void Encode(const AudioChunk& raw_audio) override;
+  virtual void Flush() override;
 
  private:
   static FLAC__StreamEncoderWriteStatus WriteCallback(
@@ -114,8 +114,8 @@ class SpeexEncoder : public AudioEncoder {
  public:
   explicit SpeexEncoder(int sampling_rate, int bits_per_sample);
   virtual ~SpeexEncoder();
-  virtual void Encode(const AudioChunk& raw_audio) OVERRIDE;
-  virtual void Flush() OVERRIDE {}
+  virtual void Encode(const AudioChunk& raw_audio) override;
+  virtual void Flush() override {}
 
  private:
   void* encoder_state_;
