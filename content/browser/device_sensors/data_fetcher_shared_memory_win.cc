@@ -30,15 +30,15 @@ class DataFetcherSharedMemory::SensorEventSink
   virtual ~SensorEventSink() {}
 
   // IUnknown interface
-  virtual ULONG STDMETHODCALLTYPE AddRef() OVERRIDE {
+  virtual ULONG STDMETHODCALLTYPE AddRef() override {
     return IUnknownImpl::AddRef();
   }
 
-  virtual ULONG STDMETHODCALLTYPE Release() OVERRIDE {
+  virtual ULONG STDMETHODCALLTYPE Release() override {
     return IUnknownImpl::Release();
   }
 
-  virtual STDMETHODIMP QueryInterface(REFIID riid, void** ppv) OVERRIDE {
+  virtual STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
     if (riid == __uuidof(ISensorEvents)) {
       *ppv = static_cast<ISensorEvents*>(this);
       AddRef();
@@ -50,20 +50,20 @@ class DataFetcherSharedMemory::SensorEventSink
   // ISensorEvents interface
   STDMETHODIMP OnEvent(ISensor* sensor,
                        REFGUID event_id,
-                       IPortableDeviceValues* event_data) OVERRIDE {
+                       IPortableDeviceValues* event_data) override {
     return S_OK;
   }
 
-  STDMETHODIMP OnLeave(REFSENSOR_ID sensor_id) OVERRIDE {
+  STDMETHODIMP OnLeave(REFSENSOR_ID sensor_id) override {
     return S_OK;
   }
 
-  STDMETHODIMP OnStateChanged(ISensor* sensor, SensorState state) OVERRIDE {
+  STDMETHODIMP OnStateChanged(ISensor* sensor, SensorState state) override {
     return S_OK;
   }
 
   STDMETHODIMP OnDataUpdated(ISensor* sensor,
-                             ISensorDataReport* new_data) OVERRIDE {
+                             ISensorDataReport* new_data) override {
     if (NULL == new_data || NULL == sensor)
       return E_INVALIDARG;
     return UpdateSharedMemoryBuffer(sensor, new_data) ? S_OK : E_FAIL;
@@ -102,7 +102,7 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
 
 protected:
   virtual bool UpdateSharedMemoryBuffer(
-      ISensor* sensor, ISensorDataReport* new_data) OVERRIDE {
+      ISensor* sensor, ISensorDataReport* new_data) override {
     double alpha, beta, gamma;
     bool has_alpha, has_beta, has_gamma;
 
@@ -145,7 +145,7 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
 
  protected:
   virtual bool UpdateSharedMemoryBuffer(
-      ISensor* sensor, ISensorDataReport* new_data) OVERRIDE {
+      ISensor* sensor, ISensorDataReport* new_data) override {
 
     SENSOR_TYPE_ID sensor_type = GUID_NULL;
     if (!SUCCEEDED(sensor->GetType(&sensor_type)))

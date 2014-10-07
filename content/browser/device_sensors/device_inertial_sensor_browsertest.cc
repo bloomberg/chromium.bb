@@ -36,7 +36,7 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
         sensor_data_available_(true) {}
   virtual ~FakeDataFetcher() { }
 
-  virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE {
+  virtual bool Start(ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(buffer);
 
     switch (consumer_type) {
@@ -77,7 +77,7 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     return true;
   }
 
-  virtual bool Stop(ConsumerType consumer_type) OVERRIDE {
+  virtual bool Stop(ConsumerType consumer_type) override {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         stopped_motion_.Signal();
@@ -94,11 +94,11 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     return true;
   }
 
-  virtual void Fetch(unsigned consumer_bitmask) OVERRIDE {
+  virtual void Fetch(unsigned consumer_bitmask) override {
     FAIL() << "fetch should not be called";
   }
 
-  virtual FetcherType GetType() const OVERRIDE {
+  virtual FetcherType GetType() const override {
     return FETCHER_TYPE_DEFAULT;
   }
 
@@ -184,7 +184,7 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
         io_loop_finished_event_(false, false) {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&DeviceInertialSensorBrowserTest::SetUpOnIOThread, this));

@@ -19,7 +19,7 @@ class FakeSensorManagerAndroid : public SensorManagerAndroid {
   FakeSensorManagerAndroid() { }
   virtual ~FakeSensorManagerAndroid() { }
 
-  virtual int GetNumberActiveDeviceMotionSensors() OVERRIDE {
+  virtual int GetNumberActiveDeviceMotionSensors() override {
     return number_active_sensors_;
   }
 
@@ -28,11 +28,11 @@ class FakeSensorManagerAndroid : public SensorManagerAndroid {
   }
 
  protected:
-  virtual bool Start(EventType event_type) OVERRIDE {
+  virtual bool Start(EventType event_type) override {
     return true;
   }
 
-  virtual void Stop(EventType event_type) OVERRIDE {
+  virtual void Stop(EventType event_type) override {
   }
 
  private:

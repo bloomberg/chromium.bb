@@ -14,7 +14,7 @@ class DeviceMotionMessageFilter : public BrowserMessageFilter {
   DeviceMotionMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~DeviceMotionMessageFilter();

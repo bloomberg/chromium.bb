@@ -30,8 +30,8 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   virtual ~DataFetcherSharedMemory();
 
  private:
-  virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE;
-  virtual bool Stop(ConsumerType consumer_type) OVERRIDE;
+  virtual bool Start(ConsumerType consumer_type, void* buffer) override;
+  virtual bool Stop(ConsumerType consumer_type) override;
 
 #if !defined(OS_ANDROID)
   DeviceMotionHardwareBuffer* motion_buffer_;
@@ -39,8 +39,8 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   DeviceLightHardwareBuffer* light_buffer_;
 #endif
 #if defined(OS_MACOSX)
-  virtual void Fetch(unsigned consumer_bitmask) OVERRIDE;
-  virtual FetcherType GetType() const OVERRIDE;
+  virtual void Fetch(unsigned consumer_bitmask) override;
+  virtual FetcherType GetType() const override;
 
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 #elif defined(OS_WIN)
@@ -48,7 +48,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   class SensorEventSinkMotion;
   class SensorEventSinkOrientation;
 
-  virtual FetcherType GetType() const OVERRIDE;
+  virtual FetcherType GetType() const override;
 
   bool RegisterForSensor(REFSENSOR_TYPE_ID sensor_type, ISensor** sensor,
       scoped_refptr<SensorEventSink> event_sink);
