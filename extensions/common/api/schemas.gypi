@@ -18,6 +18,7 @@
       'bluetooth_private.json',
       'bluetooth_socket.idl',
       'cast_channel.idl',
+      'copresence_socket.idl',
       'dns.idl',
       'events.json',
       'extensions_manifest_types.json',

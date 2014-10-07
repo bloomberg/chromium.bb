@@ -20,6 +20,8 @@ per-file copresence.gypi=ckehoe@chromium.org
 per-file copresence.gypi=xiyuan@chromium.org
 per-file copresence.gypi=derat@chromium.org
 
+per-file copresence_sockets.gypi=rkc@chromium.org
+
 per-file crash.gypi=jochen@chromium.org
 per-file crash.gypi=rsesek@chromium.org
 per-file crash.gypi=thestig@chromium.org

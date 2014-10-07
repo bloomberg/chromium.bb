@@ -62,6 +62,7 @@
     ['OS != "ios"', {
       'includes': [
         'cdm.gypi',
+        'copresence_sockets.gypi',
         'navigation_interception.gypi',
         'plugins.gypi',
         'power.gypi',

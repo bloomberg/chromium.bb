@@ -42543,6 +42543,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="898" label="HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED"/>
   <int value="899" label="WEBVIEWINTERNAL_LOADDATAWITHBASEURL"/>
   <int value="900" label="GUESTVIEWINTERNAL_DESTROYGUEST"/>
+  <int value="901" label="COPRESENCESOCKET_CREATEPEER"/>
+  <int value="902" label="COPRESENCESOCKET_DESTROYPEER"/>
+  <int value="903" label="COPRESENCESOCKET_SEND"/>
+  <int value="904" label="COPRESENCESOCKET_DISCONNECT"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

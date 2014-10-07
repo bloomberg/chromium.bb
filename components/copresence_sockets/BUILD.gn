@@ -1,0 +1,19 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("copresence_sockets") {
+  sources = [
+    "copresence_peer.cc",
+    "transports/bluetooth/copresence_socket_bluetooth.cc",
+    "transports/bluetooth/copresence_socket_bluetooth.h",
+    "public/copresence_peer.h",
+    "public/copresence_socket.h",
+  ]
+
+  deps = [
+    "//base",
+    "//device/bluetooth",
+    "//net",
+  ]
+}

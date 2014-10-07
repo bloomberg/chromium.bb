@@ -287,6 +287,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
+        '../components/components.gyp:copresence_sockets',
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:pref_registry',
@@ -382,6 +383,8 @@
         'browser/api/cast_channel/logger.h',
         'browser/api/cast_channel/logger_util.cc',
         'browser/api/cast_channel/logger_util.h',
+        'browser/api/copresence_socket/copresence_socket_api.cc',
+        'browser/api/copresence_socket/copresence_socket_api.h',
         'browser/api/declarative/deduping_factory.h',
         'browser/api/declarative/declarative_api.cc',
         'browser/api/declarative/declarative_api.h',

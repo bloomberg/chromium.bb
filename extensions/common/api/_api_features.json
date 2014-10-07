@@ -89,6 +89,11 @@
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
   },
+  "copresenceSocket": {
+    "channel" : "dev",
+    "dependencies": ["permission:copresence"],
+    "contexts": ["blessed_extension"]
+  },
   "dns": {
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]

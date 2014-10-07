@@ -11,6 +11,7 @@ source_set("browser") {
   ]
 
   deps = [
+    "//components/copresence_sockets",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//components/pref_registry",
@@ -97,6 +98,8 @@ source_set("browser") {
       "api/cast_channel/logger.h",
       "api/cast_channel/logger_util.cc",
       "api/cast_channel/logger_util.h",
+      "api/copresence_socket/copresence_socket_api.cc",
+      "api/copresence_socket/copresence_socket_api.h",
       "api/declarative/declarative_api.cc",
       "api/declarative/declarative_api.h",
       "api/declarative/declarative_rule.h",
