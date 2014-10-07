@@ -11363,6 +11363,37 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Manifest.FetchResult" enum="ManifestFetchResultType">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Tracks whether the Manifest fetch succeed and why it failed if it failed.
+  </summary>
+</histogram>
+
+<histogram name="Manifest.HasProperty" enum="Boolean">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Tracks which properties of a Manifest were present when it was parsed. If a
+    property can't be parsed, it will be recorded as not present. These
+    histograms will only be used if the Manifest was correctly fetched and
+    parsed and the parsed manifest is not empty.
+  </summary>
+</histogram>
+
+<histogram name="Manifest.IsEmpty" enum="Boolean">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>Tracks whether the parsed Manifest is the empty Manifest.</summary>
+</histogram>
+
+<histogram name="Manifest.ParseSuccess" enum="Boolean">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Tracks the Manifest parsing result. A failure will be recorded if the
+    Manifest was incorrectly structured. This doesn't take into account parse
+    failures for each individual properties.
+  </summary>
+</histogram>
+
 <histogram name="Media.AcceleratedCompositingActive" enum="BooleanSuccess">
   <obsolete>
     Deprecated as of July 21, 2014.
@@ -46062,6 +46093,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
 </enum>
 
+<enum name="ManifestFetchResultType" type="int">
+  <int value="0" label="Fetch succeeded"/>
+  <int value="1" label="Fetch failed because of empty URL"/>
+  <int value="2" label="Fetch failed (unspecified reason)"/>
+</enum>
+
 <enum name="MappedCSSProperties" type="int">
 <!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.cpp -->
 
@@ -54412,6 +54449,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="1MBTo5MB" label="DB size between 1MB and 5MB"/>
   <affected-histogram name="LocalStorage.BrowserTimeToPrimeLocalStorage"/>
   <affected-histogram name="LocalStorage.RendererTimeToPrimeLocalStorage"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ManifestProperties" separator=".">
+  <suffix name="name"/>
+  <suffix name="short_name"/>
+  <suffix name="start_url"/>
+  <suffix name="display"/>
+  <suffix name="orientation"/>
+  <suffix name="icons"/>
+  <suffix name="gcm_sender_id"/>
+  <affected-histogram name="Manifest.HasProperty"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaAudioInputControllerTime" separator=".">

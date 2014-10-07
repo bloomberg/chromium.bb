@@ -231,6 +231,11 @@ GURL ShortcutHelper::FindBestMatchingIcon(
 }
 
 void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
+  if (!manifest.IsEmpty()) {
+      content::RecordAction(
+          base::UserMetricsAction("webapps.AddShortcut.Manifest"));
+  }
+
   // Set the title based on the manifest value, if any.
   if (!manifest.short_name.is_null())
     title_ = manifest.short_name.string();

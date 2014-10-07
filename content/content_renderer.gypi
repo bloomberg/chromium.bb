@@ -215,6 +215,8 @@
       'renderer/manifest/manifest_manager.h',
       'renderer/manifest/manifest_parser.cc',
       'renderer/manifest/manifest_parser.h',
+      'renderer/manifest/manifest_uma_util.cc',
+      'renderer/manifest/manifest_uma_util.h',
       'renderer/media/aec_dump_message_filter.cc',
       'renderer/media/aec_dump_message_filter.h',
       'renderer/media/android/audio_decoder_android.cc',

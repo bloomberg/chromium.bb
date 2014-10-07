@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/manifest.h"
+#include "content/renderer/manifest/manifest_uma_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -291,11 +292,13 @@ Manifest ManifestParser::Parse(const base::StringPiece& json,
   if (!value) {
     // TODO(mlamouri): get the JSON parsing error and report it to the developer
     // console.
+    ManifestUmaUtil::ParseFailed();
     return Manifest();
   }
 
   if (value->GetType() != base::Value::TYPE_DICTIONARY) {
     // TODO(mlamouri): provide a custom message to the developer console.
+    ManifestUmaUtil::ParseFailed();
     return Manifest();
   }
 
@@ -303,6 +306,7 @@ Manifest ManifestParser::Parse(const base::StringPiece& json,
   value->GetAsDictionary(&dictionary);
   if (!dictionary) {
     // TODO(mlamouri): provide a custom message to the developer console.
+    ManifestUmaUtil::ParseFailed();
     return Manifest();
   }
 
@@ -315,6 +319,8 @@ Manifest ManifestParser::Parse(const base::StringPiece& json,
   manifest.orientation = ParseOrientation(*dictionary);
   manifest.icons = ParseIcons(*dictionary, manifest_url);
   manifest.gcm_sender_id = ParseGCMSenderID(*dictionary);
+
+  ManifestUmaUtil::ParseSucceeded(manifest);
 
   return manifest;
 }

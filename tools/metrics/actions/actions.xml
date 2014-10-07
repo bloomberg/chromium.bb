@@ -11596,7 +11596,19 @@ should be able to be added at any place in this file.
 
 <action name="webapps.AddShortcut.Bookmark">
   <owner>dfalcantara@chromium.org</owner>
-  <description>Shortcut added to the homescreen for a bookmark.</description>
+  <description>
+    Shortcut added to the homescreen for a page containing neither
+    mobile-webapp-capable nor apple-mobile-webapp-capable meta tags.
+  </description>
+</action>
+
+<action name="webapps.AddShortcut.Manifest">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    Shortcut added to the homescreen with a valid Manifest. This action will be
+    recorded in addition to AppShortcut, AppShortcutApple and Bookmark actions
+    to keep a trend of whether the webapp also add meta tags.
+  </description>
 </action>
 
 </actions>
