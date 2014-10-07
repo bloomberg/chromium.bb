@@ -87,6 +87,10 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
   scoped_ptr<BitmapFetcherRequest> request(
       new BitmapFetcherRequest(request_id, observer));
 
+  // Reject invalid URLs.
+  if (!url.is_valid())
+    return REQUEST_ID_INVALID;
+
   // Check for existing images first.
   base::OwningMRUCache<GURL, CacheEntry*>::iterator iter = cache_.Get(url);
   if (iter != cache_.end()) {
