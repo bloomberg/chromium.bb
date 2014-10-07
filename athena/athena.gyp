@@ -154,6 +154,7 @@
         'content/content_activity_factory.h',
         'content/content_proxy.cc',
         'content/content_proxy.h',
+        'content/media_utils.h',
         'content/public/app_registry.h',
         'content/public/content_activity_factory_creator.h',
         'content/public/dialogs.h',
@@ -189,6 +190,7 @@
       ],
       'sources': [
         'content/chrome/dialogs.cc',
+        'content/chrome/media_utils.cc',
         'content/chrome/scheme_classifier_factory.cc',
         'content/chrome/web_activity_helpers.cc',
         'extensions/chrome/athena_chrome_app_delegate.cc',
@@ -209,6 +211,7 @@
       ],
       'sources': [
         'content/shell/dialogs.cc',
+        'content/shell/media_utils.cc',
         'content/shell/scheme_classifier_factory.cc',
         'content/shell/web_activity_helpers.cc',
         'extensions/shell/extensions_delegate_impl.cc',

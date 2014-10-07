@@ -7,6 +7,7 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/content_proxy.h"
+#include "athena/content/media_utils.h"
 #include "athena/content/public/dialogs.h"
 #include "athena/content/web_activity_helpers.h"
 #include "athena/input/public/accelerator_manager.h"
@@ -505,10 +506,9 @@ bool WebActivity::IsVisible() {
 }
 
 Activity::ActivityMediaState WebActivity::GetMediaState() {
-  // TODO(skuhne): The function GetTabMediaStateForContents(WebContents),
-  // and the AudioStreamMonitor needs to be moved from Chrome into contents to
-  // make it more modular and so that we can use it from here.
-  return Activity::ACTIVITY_MEDIA_STATE_NONE;
+  return current_state_ == ACTIVITY_UNLOADED ?
+      Activity::ACTIVITY_MEDIA_STATE_NONE :
+      GetActivityMediaState(GetWebContents());
 }
 
 aura::Window* WebActivity::GetWindow() {
