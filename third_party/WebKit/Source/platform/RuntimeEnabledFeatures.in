@@ -51,7 +51,6 @@ DeviceLight status=experimental
 DisplayList2dCanvas
 EncodingAPI status=stable
 EncryptedMedia status=test
-EncryptedMediaAnyVersion status=stable
 ExecCommandInJavaScript status=test
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental

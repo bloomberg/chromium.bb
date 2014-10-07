@@ -93,10 +93,6 @@ void WebRuntimeFeatures::enableDisplayList2dCanvas(bool enable)
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
 {
     RuntimeEnabledFeatures::setEncryptedMediaEnabled(enable);
-    // FIXME: Hack to allow MediaKeyError to be enabled for either version.
-    RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
-        RuntimeEnabledFeatures::encryptedMediaEnabled()
-        || RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled());
 }
 
 bool WebRuntimeFeatures::isEncryptedMediaEnabled()
@@ -107,10 +103,6 @@ bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 void WebRuntimeFeatures::enablePrefixedEncryptedMedia(bool enable)
 {
     RuntimeEnabledFeatures::setPrefixedEncryptedMediaEnabled(enable);
-    // FIXME: Hack to allow MediaKeyError to be enabled for either version.
-    RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
-        RuntimeEnabledFeatures::encryptedMediaEnabled()
-        || RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled());
 }
 
 bool WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()

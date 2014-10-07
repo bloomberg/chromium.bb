@@ -24,7 +24,6 @@
  */
 
 [
-    RuntimeEnabled=EncryptedMediaAnyVersion,
     WillBeGarbageCollected,
 ] interface MediaKeyError {
     const unsigned short MEDIA_KEYERR_UNKNOWN = 1;
