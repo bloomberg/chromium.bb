@@ -9,7 +9,12 @@
         }
       },
       "app_shell_unittests",
-      "ash_unittests",
+      {
+        "test": "ash_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "aura_unittests",
       {
         "test": "browser_tests",
