@@ -1,9 +1,12 @@
 avi@chromium.org
 creis@chromium.org
 darin@chromium.org
+davidben@chromium.org
 jam@chromium.org
 jochen@chromium.org
+nasko@chromium.org
 piman@chromium.org
+sievers@chromium.org
 
 # per-file rules:
 # These are for the common case of adding or renaming files. If you're doing
