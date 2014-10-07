@@ -106,7 +106,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   this.remapKeys_ = '';
   /** @private */
   this.hasReceivedFrame_ = false;
-  this.logToServer = new remoting.LogToServer();
+  this.logToServer = new remoting.LogToServer(signalStrategy);
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
