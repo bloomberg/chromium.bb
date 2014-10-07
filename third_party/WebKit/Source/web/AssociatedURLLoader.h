@@ -43,17 +43,17 @@ class DocumentThreadableLoader;
 class WebLocalFrameImpl;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
-class AssociatedURLLoader FINAL : public WebURLLoader {
+class AssociatedURLLoader final : public WebURLLoader {
     WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
 public:
     AssociatedURLLoader(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, const WebURLLoaderOptions&);
     ~AssociatedURLLoader();
 
     // WebURLLoader methods:
-    virtual void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&) OVERRIDE;
-    virtual void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) OVERRIDE;
-    virtual void cancel() OVERRIDE;
-    virtual void setDefersLoading(bool) OVERRIDE;
+    virtual void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&) override;
+    virtual void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override;
+    virtual void cancel() override;
+    virtual void setDefersLoading(bool) override;
 
 private:
 

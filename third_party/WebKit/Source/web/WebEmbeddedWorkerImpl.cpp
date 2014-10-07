@@ -89,7 +89,7 @@ public:
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
-    virtual void notifyFinished() OVERRIDE
+    virtual void notifyFinished() override
     {
         m_callback();
     }
@@ -119,12 +119,12 @@ public:
         return adoptPtr(new LoaderProxy(embeddedWorker));
     }
 
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask> task) OVERRIDE
+    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask> task) override
     {
         toWebLocalFrameImpl(m_embeddedWorker.m_mainFrame)->frame()->document()->postTask(task);
     }
 
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task) OVERRIDE
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task) override
     {
         if (m_embeddedWorker.m_askedToTerminate || !m_embeddedWorker.m_workerThread)
             return false;

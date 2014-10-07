@@ -38,18 +38,18 @@ namespace blink {
 
 class WebViewImpl;
 
-class DragClientImpl FINAL : public DragClient {
+class DragClientImpl final : public DragClient {
 public:
     explicit DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
-    virtual DragDestinationAction actionMaskForDrag(DragData*) OVERRIDE;
+    virtual DragDestinationAction actionMaskForDrag(DragData*) override;
     virtual void startDrag(
         DragImage*,
         const IntPoint& dragImageOrigin,
         const IntPoint& eventPos,
         DataTransfer*,
         LocalFrame*,
-        bool isLinkDrag = false) OVERRIDE;
+        bool isLinkDrag = false) override;
 
 private:
     WebViewImpl* m_webView;

@@ -41,26 +41,26 @@ class ChromeClientImpl;
 class DateTimeChooserClient;
 class PagePopup;
 
-class DateTimeChooserImpl FINAL : public DateTimeChooser, public PagePopupClient {
+class DateTimeChooserImpl final : public DateTimeChooser, public PagePopupClient {
 public:
     static PassRefPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     virtual ~DateTimeChooserImpl();
 
     // DateTimeChooser functions:
-    virtual void endChooser() OVERRIDE;
-    virtual AXObject* rootAXObject() OVERRIDE;
+    virtual void endChooser() override;
+    virtual AXObject* rootAXObject() override;
 
 private:
     DateTimeChooserImpl(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     // PagePopupClient functions:
-    virtual IntSize contentSize() OVERRIDE;
-    virtual void writeDocument(SharedBuffer*) OVERRIDE;
-    virtual Locale& locale() OVERRIDE;
-    virtual void setValueAndClosePopup(int, const String&) OVERRIDE;
-    virtual void setValue(const String&) OVERRIDE;
-    virtual void closePopup() OVERRIDE;
-    virtual Element& ownerElement() OVERRIDE;
-    virtual void didClosePopup() OVERRIDE;
+    virtual IntSize contentSize() override;
+    virtual void writeDocument(SharedBuffer*) override;
+    virtual Locale& locale() override;
+    virtual void setValueAndClosePopup(int, const String&) override;
+    virtual void setValue(const String&) override;
+    virtual void closePopup() override;
+    virtual Element& ownerElement() override;
+    virtual void didClosePopup() override;
 
     ChromeClientImpl* m_chromeClient;
     DateTimeChooserClient* m_client;

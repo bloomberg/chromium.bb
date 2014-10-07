@@ -45,13 +45,13 @@ public:
     virtual void openUI();
 
     // ColorChooser functions:
-    virtual void setSelectedColor(const Color&) OVERRIDE FINAL;
-    virtual void endChooser() OVERRIDE;
-    virtual AXObject* rootAXObject() OVERRIDE;
+    virtual void setSelectedColor(const Color&) override final;
+    virtual void endChooser() override;
+    virtual AXObject* rootAXObject() override;
 
     // WebColorChooserClient functions:
-    virtual void didChooseColor(const WebColor&) OVERRIDE FINAL;
-    virtual void didEndChooser() OVERRIDE FINAL;
+    virtual void didChooseColor(const WebColor&) override final;
+    virtual void didEndChooser() override final;
 
 protected:
     void openColorChooser();

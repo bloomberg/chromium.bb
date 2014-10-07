@@ -191,7 +191,7 @@ public:
     }
 
     // WebViewClient methods
-    virtual bool openDateTimeChooser(const WebDateTimeChooserParams&, WebDateTimeChooserCompletion* chooser_completion) OVERRIDE
+    virtual bool openDateTimeChooser(const WebDateTimeChooserParams&, WebDateTimeChooserCompletion* chooser_completion) override
     {
         m_chooserCompletion = chooser_completion;
         return true;
@@ -967,7 +967,7 @@ public:
     }
 
     // WebViewClient methods
-    virtual void printPage(WebLocalFrame*) OVERRIDE
+    virtual void printPage(WebLocalFrame*) override
     {
         m_printCalled = true;
     }
@@ -996,7 +996,7 @@ public:
     {
     }
 
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         const WebPoint clientPoint(0, 0);
         const WebPoint screenPoint(0, 0);
@@ -1056,18 +1056,18 @@ class ContentDetectorClient : public FrameTestHelpers::TestWebViewClient {
 public:
     ContentDetectorClient() { reset(); }
 
-    virtual WebContentDetectionResult detectContentAround(const WebHitTestResult& hitTest) OVERRIDE
+    virtual WebContentDetectionResult detectContentAround(const WebHitTestResult& hitTest) override
     {
         m_contentDetectionRequested = true;
         return m_contentDetectionResult;
     }
 
-    virtual void scheduleContentIntent(const WebURL& url) OVERRIDE
+    virtual void scheduleContentIntent(const WebURL& url) override
     {
         m_scheduledIntentURL = url;
     }
 
-    virtual void cancelScheduledContentIntents() OVERRIDE
+    virtual void cancelScheduledContentIntents() override
     {
         m_pendingIntentsCancelled = true;
     }
@@ -1310,15 +1310,15 @@ public:
 
     virtual ~MockAutofillClient() { }
 
-    virtual void setIgnoreTextChanges(bool ignore) OVERRIDE { m_ignoreTextChanges = ignore; }
-    virtual void textFieldDidChange(const WebFormControlElement&) OVERRIDE
+    virtual void setIgnoreTextChanges(bool ignore) override { m_ignoreTextChanges = ignore; }
+    virtual void textFieldDidChange(const WebFormControlElement&) override
     {
         if (m_ignoreTextChanges)
             ++m_textChangesWhileIgnored;
         else
             ++m_textChangesWhileNotIgnored;
     }
-    virtual void firstUserGestureObserved() OVERRIDE { ++m_userGestureNotificationsCount; }
+    virtual void firstUserGestureObserved() override { ++m_userGestureNotificationsCount; }
 
     void clearChangeCounts()
     {
@@ -1451,13 +1451,13 @@ public:
     }
 
     // WebViewClient methods
-    virtual WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) OVERRIDE
+    virtual WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) override
     {
         return m_webViewHelper.initialize(true, 0, 0);
     }
 
     // WebWidgetClient methods
-    virtual void didFocus() OVERRIDE
+    virtual void didFocus() override
     {
         m_didFocusCalled = true;
     }
@@ -1678,7 +1678,7 @@ TEST_F(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone)
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CreateChildCounterFrameClient() : m_count(0) { }
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE;
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) override;
 
     int count() const { return m_count; }
 
@@ -1735,7 +1735,7 @@ TEST_F(WebViewTest, AddFrameInChildInNavigateUnload)
 class TouchEventHandlerWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebWidgetClient methods
-    virtual void hasTouchEventHandlers(bool state) OVERRIDE
+    virtual void hasTouchEventHandlers(bool state) override
     {
         m_hasTouchEventHandlerCount[state]++;
     }
@@ -2026,7 +2026,7 @@ public:
     NonUserInputTextUpdateWebViewClient() : m_textIsUpdated(false) { }
 
     // WebWidgetClient methods
-    virtual void didUpdateTextOfFocusedElementByNonUserInput() OVERRIDE
+    virtual void didUpdateTextOfFocusedElementByNonUserInput() override
     {
         m_textIsUpdated = true;
     }

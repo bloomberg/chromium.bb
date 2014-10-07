@@ -118,21 +118,21 @@ const HTTPHeaderSet& HTTPResponseHeaderValidator::blockedHeaders()
 
 // This class bridges the interface differences between WebCore and WebKit loader clients.
 // It forwards its ThreadableLoaderClient notifications to a WebURLLoaderClient.
-class AssociatedURLLoader::ClientAdapter FINAL : public DocumentThreadableLoaderClient {
+class AssociatedURLLoader::ClientAdapter final : public DocumentThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(ClientAdapter);
 public:
     static PassOwnPtr<ClientAdapter> create(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
 
-    virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) OVERRIDE;
-    virtual void willSendRequest(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) OVERRIDE;
+    virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) override;
+    virtual void willSendRequest(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) override;
 
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
-    virtual void didDownloadData(int /*dataLength*/) OVERRIDE;
-    virtual void didReceiveData(const char*, unsigned /*dataLength*/) OVERRIDE;
-    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) OVERRIDE;
-    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) OVERRIDE;
-    virtual void didFail(const ResourceError&) OVERRIDE;
-    virtual void didFailRedirectCheck() OVERRIDE;
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) override;
+    virtual void didDownloadData(int /*dataLength*/) override;
+    virtual void didReceiveData(const char*, unsigned /*dataLength*/) override;
+    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
+    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) override;
+    virtual void didFail(const ResourceError&) override;
+    virtual void didFailRedirectCheck() override;
 
     // Sets an error to be reported back to the client, asychronously.
     void setDelayedError(const ResourceError&);

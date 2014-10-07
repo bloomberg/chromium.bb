@@ -55,7 +55,7 @@ namespace {
 // Please see comment in Heap::collectAllGarbage()
 static const int kNumberOfGCsToClaimChains = 5;
 
-class WebLeakDetectorImpl FINAL : public WebLeakDetector {
+class WebLeakDetectorImpl final : public WebLeakDetector {
 WTF_MAKE_NONCOPYABLE(WebLeakDetectorImpl);
 public:
     explicit WebLeakDetectorImpl(WebLeakDetectorClient* client)
@@ -69,7 +69,7 @@ public:
 
     virtual ~WebLeakDetectorImpl() { }
 
-    virtual void collectGarbageAndGetDOMCounts(WebLocalFrame*) OVERRIDE;
+    virtual void collectGarbageAndGetDOMCounts(WebLocalFrame*) override;
 
 private:
     void delayedGCAndReport(Timer<WebLeakDetectorImpl>*);

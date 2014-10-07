@@ -96,7 +96,7 @@ public:
         webViewHelper.initializeAndLoad(baseURL + fileName, executeScript);
     }
 
-    virtual void TearDown() OVERRIDE
+    virtual void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }

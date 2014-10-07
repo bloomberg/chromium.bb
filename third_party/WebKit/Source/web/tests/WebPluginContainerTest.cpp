@@ -85,7 +85,7 @@ public:
 };
 
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) OVERRIDE
+    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
     {
         if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
             return new TestPlugin(frame, params);

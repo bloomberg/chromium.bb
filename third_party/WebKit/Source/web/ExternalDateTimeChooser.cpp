@@ -45,19 +45,19 @@ public:
     }
 
 private:
-    virtual void didChooseValue(const WebString& value) OVERRIDE
+    virtual void didChooseValue(const WebString& value) override
     {
         m_chooser->didChooseValue(value);
         delete this;
     }
 
-    virtual void didChooseValue(double value) OVERRIDE
+    virtual void didChooseValue(double value) override
     {
         m_chooser->didChooseValue(value);
         delete this;
     }
 
-    virtual void didCancelChooser() OVERRIDE
+    virtual void didCancelChooser() override
     {
         m_chooser->didCancelChooser();
         delete this;

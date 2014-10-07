@@ -35,7 +35,7 @@ namespace blink {
 class GeolocationPosition;
 class WebGeolocationClient;
 
-class GeolocationClientProxy FINAL : public GeolocationClient {
+class GeolocationClientProxy final : public GeolocationClient {
 public:
     static PassOwnPtrWillBeRawPtr<GeolocationClientProxy> create(WebGeolocationClient* client)
     {
@@ -44,15 +44,15 @@ public:
 
     virtual ~GeolocationClientProxy();
     void setController(GeolocationController*);
-    virtual void startUpdating() OVERRIDE;
-    virtual void stopUpdating() OVERRIDE;
-    virtual void setEnableHighAccuracy(bool) OVERRIDE;
-    virtual GeolocationPosition* lastPosition() OVERRIDE;
+    virtual void startUpdating() override;
+    virtual void stopUpdating() override;
+    virtual void setEnableHighAccuracy(bool) override;
+    virtual GeolocationPosition* lastPosition() override;
 
-    virtual void requestPermission(Geolocation*) OVERRIDE;
-    virtual void cancelPermissionRequest(Geolocation*) OVERRIDE;
+    virtual void requestPermission(Geolocation*) override;
+    virtual void cancelPermissionRequest(Geolocation*) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit GeolocationClientProxy(WebGeolocationClient*);

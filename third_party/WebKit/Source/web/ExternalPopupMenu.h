@@ -51,7 +51,7 @@ struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class ExternalPopupMenu FINAL : public PopupMenu, public WebExternalPopupMenuClient {
+class ExternalPopupMenu final : public PopupMenu, public WebExternalPopupMenuClient {
 public:
     ExternalPopupMenu(LocalFrame&, PopupMenuClient*, WebViewImpl&);
     virtual ~ExternalPopupMenu();
@@ -64,20 +64,20 @@ public:
     static int toPopupMenuItemIndex(int index, PopupMenuClient&);
     static int toExternalPopupMenuItemIndex(int index, PopupMenuClient&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     // PopupMenu methods:
-    virtual void show(const FloatQuad& controlPosition, const IntSize&, int index) OVERRIDE;
-    virtual void hide() OVERRIDE;
-    virtual void updateFromElement() OVERRIDE;
-    virtual void disconnectClient() OVERRIDE;
+    virtual void show(const FloatQuad& controlPosition, const IntSize&, int index) override;
+    virtual void hide() override;
+    virtual void updateFromElement() override;
+    virtual void disconnectClient() override;
 
     // WebExternalPopupClient methods:
-    virtual void didChangeSelection(int index) OVERRIDE;
-    virtual void didAcceptIndex(int index) OVERRIDE;
-    virtual void didAcceptIndices(const WebVector<int>& indices) OVERRIDE;
-    virtual void didCancel() OVERRIDE;
+    virtual void didChangeSelection(int index) override;
+    virtual void didAcceptIndex(int index) override;
+    virtual void didAcceptIndices(const WebVector<int>& indices) override;
+    virtual void didCancel() override;
 
     void dispatchEvent(Timer<ExternalPopupMenu>*);
 

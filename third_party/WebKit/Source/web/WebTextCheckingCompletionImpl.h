@@ -40,15 +40,15 @@ namespace blink {
 
 class EditorClientImpl;
 
-class WebTextCheckingCompletionImpl FINAL : public WebTextCheckingCompletion {
+class WebTextCheckingCompletionImpl final : public WebTextCheckingCompletion {
 public:
     explicit WebTextCheckingCompletionImpl(PassRefPtrWillBeRawPtr<TextCheckingRequest> request)
         : m_request(request)
     {
     }
 
-    virtual void didFinishCheckingText(const WebVector<WebTextCheckingResult>&) OVERRIDE;
-    virtual void didCancelCheckingText() OVERRIDE;
+    virtual void didFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
+    virtual void didCancelCheckingText() override;
 
 private:
     virtual ~WebTextCheckingCompletionImpl() { }

@@ -43,10 +43,10 @@ public:
 
     virtual ~StorageQuotaClientImpl();
 
-    virtual void requestQuota(ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*) OVERRIDE;
-    virtual ScriptPromise requestPersistentQuota(ScriptState*, unsigned long long newQuotaInBytes) OVERRIDE;
+    virtual void requestQuota(ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*) override;
+    virtual ScriptPromise requestPersistentQuota(ScriptState*, unsigned long long newQuotaInBytes) override;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { StorageQuotaClient::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { StorageQuotaClient::trace(visitor); }
 
 private:
     StorageQuotaClientImpl();

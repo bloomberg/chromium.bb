@@ -60,34 +60,34 @@ class WebPopupMenuImpl : public WebPopupMenu, public PopupContainerClient, publi
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // WebWidget functions:
-    virtual void close() OVERRIDE FINAL;
-    virtual WebSize size() OVERRIDE FINAL { return m_size; }
-    virtual void willStartLiveResize() OVERRIDE FINAL;
-    virtual void resize(const WebSize&) OVERRIDE FINAL;
-    virtual void willEndLiveResize() OVERRIDE FINAL;
-    virtual void beginFrame(const WebBeginFrameArgs&) OVERRIDE FINAL;
-    virtual void layout() OVERRIDE FINAL;
-    virtual void paint(WebCanvas*, const WebRect&) OVERRIDE FINAL;
-    virtual void themeChanged() OVERRIDE FINAL;
-    virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE FINAL;
-    virtual void mouseCaptureLost() OVERRIDE FINAL;
-    virtual void setFocus(bool enable) OVERRIDE FINAL;
+    virtual void close() override final;
+    virtual WebSize size() override final { return m_size; }
+    virtual void willStartLiveResize() override final;
+    virtual void resize(const WebSize&) override final;
+    virtual void willEndLiveResize() override final;
+    virtual void beginFrame(const WebBeginFrameArgs&) override final;
+    virtual void layout() override final;
+    virtual void paint(WebCanvas*, const WebRect&) override final;
+    virtual void themeChanged() override final;
+    virtual bool handleInputEvent(const WebInputEvent&) override final;
+    virtual void mouseCaptureLost() override final;
+    virtual void setFocus(bool enable) override final;
     virtual bool setComposition(
         const WebString& text,
         const WebVector<WebCompositionUnderline>& underlines,
-        int selectionStart, int selectionEnd) OVERRIDE FINAL;
-    virtual bool confirmComposition() OVERRIDE FINAL;
-    virtual bool confirmComposition(ConfirmCompositionBehavior selectionBehavior) OVERRIDE FINAL;
-    virtual bool confirmComposition(const WebString& text) OVERRIDE FINAL;
-    virtual bool compositionRange(size_t* location, size_t* length) OVERRIDE FINAL;
-    virtual bool caretOrSelectionRange(size_t* location, size_t* length) OVERRIDE FINAL;
-    virtual void setTextDirection(WebTextDirection) OVERRIDE FINAL;
-    virtual bool isAcceleratedCompositingActive() const OVERRIDE FINAL { return false; }
-    virtual bool isPopupMenu() const OVERRIDE FINAL { return true; }
-    virtual void willCloseLayerTreeView() OVERRIDE FINAL;
+        int selectionStart, int selectionEnd) override final;
+    virtual bool confirmComposition() override final;
+    virtual bool confirmComposition(ConfirmCompositionBehavior selectionBehavior) override final;
+    virtual bool confirmComposition(const WebString& text) override final;
+    virtual bool compositionRange(size_t* location, size_t* length) override final;
+    virtual bool caretOrSelectionRange(size_t* location, size_t* length) override final;
+    virtual void setTextDirection(WebTextDirection) override final;
+    virtual bool isAcceleratedCompositingActive() const override final { return false; }
+    virtual bool isPopupMenu() const override final { return true; }
+    virtual void willCloseLayerTreeView() override final;
 
     // WebContentLayerClient
-    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) override final;
 
     // WebPopupMenuImpl
     void initialize(PopupContainer* widget, const WebRect& bounds);
@@ -112,14 +112,14 @@ public:
     ~WebPopupMenuImpl();
 
     // HostWindow methods:
-    virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE FINAL;
-    virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE FINAL;
-    virtual void scheduleAnimation() OVERRIDE FINAL;
-    virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE FINAL;
-    virtual WebScreenInfo screenInfo() const OVERRIDE FINAL;
+    virtual void invalidateContentsAndRootView(const IntRect&) override final;
+    virtual void invalidateContentsForSlowScroll(const IntRect&) override final;
+    virtual void scheduleAnimation() override final;
+    virtual IntRect rootViewToScreen(const IntRect&) const override final;
+    virtual WebScreenInfo screenInfo() const override final;
 
     // PopupContainerClient methods:
-    virtual void popupClosed(PopupContainer*) OVERRIDE FINAL;
+    virtual void popupClosed(PopupContainer*) override final;
 
     WebWidgetClient* m_client;
     WebSize m_size;

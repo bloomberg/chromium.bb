@@ -555,12 +555,12 @@ public:
     }
 
 protected:
-    virtual void SetUp() OVERRIDE
+    virtual void SetUp() override
     {
         m_helper.initialize(false, 0, &m_webviewClient);
     }
 
-    virtual void TearDown() OVERRIDE
+    virtual void TearDown() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }

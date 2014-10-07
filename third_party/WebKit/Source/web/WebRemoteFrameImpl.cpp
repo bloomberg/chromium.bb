@@ -37,9 +37,9 @@ public:
         return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame));
     }
 
-    virtual bool isLocal() const OVERRIDE;
-    virtual SandboxFlags sandboxFlags() const OVERRIDE;
-    virtual void dispatchLoad() OVERRIDE;
+    virtual bool isLocal() const override;
+    virtual SandboxFlags sandboxFlags() const override;
+    virtual void dispatchLoad() override;
 
     virtual void trace(Visitor*);
 
@@ -86,9 +86,9 @@ void RemoteBridgeFrameOwner::dispatchLoad()
 class PlaceholderFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<PlaceholderFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PlaceholderFrameOwner);
 public:
-    virtual bool isLocal() const OVERRIDE;
-    virtual SandboxFlags sandboxFlags() const OVERRIDE;
-    virtual void dispatchLoad() OVERRIDE;
+    virtual bool isLocal() const override;
+    virtual SandboxFlags sandboxFlags() const override;
+    virtual void dispatchLoad() override;
 };
 
 bool PlaceholderFrameOwner::isLocal() const

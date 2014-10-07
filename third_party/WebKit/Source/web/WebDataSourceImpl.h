@@ -45,7 +45,7 @@ namespace blink {
 
 class WebPluginLoadObserver;
 
-class WebDataSourceImpl FINAL : public DocumentLoader, public WebDataSource {
+class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
 public:
     static PassRefPtr<WebDataSourceImpl> create(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
@@ -55,20 +55,20 @@ public:
     }
 
     // WebDataSource methods:
-    virtual const WebURLRequest& originalRequest() const OVERRIDE;
-    virtual const WebURLRequest& request() const OVERRIDE;
-    virtual const WebURLResponse& response() const OVERRIDE;
-    virtual bool hasUnreachableURL() const OVERRIDE;
-    virtual WebURL unreachableURL() const OVERRIDE;
-    virtual void appendRedirect(const WebURL&) OVERRIDE;
-    virtual void redirectChain(WebVector<WebURL>&) const OVERRIDE;
-    virtual bool isClientRedirect() const OVERRIDE;
-    virtual bool replacesCurrentHistoryItem() const OVERRIDE;
-    virtual WebNavigationType navigationType() const OVERRIDE;
-    virtual double triggeringEventTime() const OVERRIDE;
-    virtual ExtraData* extraData() const OVERRIDE;
-    virtual void setExtraData(ExtraData*) OVERRIDE;
-    virtual void setNavigationStartTime(double) OVERRIDE;
+    virtual const WebURLRequest& originalRequest() const override;
+    virtual const WebURLRequest& request() const override;
+    virtual const WebURLResponse& response() const override;
+    virtual bool hasUnreachableURL() const override;
+    virtual WebURL unreachableURL() const override;
+    virtual void appendRedirect(const WebURL&) override;
+    virtual void redirectChain(WebVector<WebURL>&) const override;
+    virtual bool isClientRedirect() const override;
+    virtual bool replacesCurrentHistoryItem() const override;
+    virtual WebNavigationType navigationType() const override;
+    virtual double triggeringEventTime() const override;
+    virtual ExtraData* extraData() const override;
+    virtual void setExtraData(ExtraData*) override;
+    virtual void setNavigationStartTime(double) override;
 
     static WebNavigationType toWebNavigationType(NavigationType);
 

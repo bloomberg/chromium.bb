@@ -43,7 +43,7 @@ class Element;
 class LocalFrame;
 class WebViewImpl;
 
-class FullscreenController FINAL : public NoBaseWillBeGarbageCollected<FullscreenController> {
+class FullscreenController final : public NoBaseWillBeGarbageCollected<FullscreenController> {
 public:
     static PassOwnPtrWillBeRawPtr<FullscreenController> create(WebViewImpl*);
 

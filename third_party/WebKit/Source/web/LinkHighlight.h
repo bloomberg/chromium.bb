@@ -47,7 +47,7 @@ struct WebFloatRect;
 struct WebRect;
 class WebViewImpl;
 
-class LinkHighlight FINAL : public WebContentLayerClient, public WebCompositorAnimationDelegate, blink::LinkHighlightClient {
+class LinkHighlight final : public WebContentLayerClient, public WebCompositorAnimationDelegate, blink::LinkHighlightClient {
 public:
     static PassOwnPtr<LinkHighlight> create(Node*, WebViewImpl*);
     virtual ~LinkHighlight();
@@ -58,16 +58,16 @@ public:
     void updateGeometry();
 
     // WebContentLayerClient implementation.
-    virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus) OVERRIDE;
+    virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus) override;
 
     // WebCompositorAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) OVERRIDE;
-    virtual void notifyAnimationFinished(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationStarted(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) override;
+    virtual void notifyAnimationFinished(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) override;
 
     // LinkHighlightClient inplementation.
-    virtual void invalidate() OVERRIDE;
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void clearCurrentGraphicsLayer() OVERRIDE;
+    virtual void invalidate() override;
+    virtual WebLayer* layer() override;
+    virtual void clearCurrentGraphicsLayer() override;
 
     GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
 

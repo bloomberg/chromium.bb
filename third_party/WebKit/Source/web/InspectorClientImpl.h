@@ -42,48 +42,48 @@ class WebDevToolsAgentClient;
 class WebDevToolsAgentImpl;
 class WebViewImpl;
 
-class InspectorClientImpl FINAL : public InspectorClient, public InspectorFrontendChannel {
+class InspectorClientImpl final : public InspectorClient, public InspectorFrontendChannel {
 public:
     explicit InspectorClientImpl(WebViewImpl*);
     virtual ~InspectorClientImpl();
 
     // InspectorClient methods:
-    virtual void highlight() OVERRIDE;
-    virtual void hideHighlight() OVERRIDE;
+    virtual void highlight() override;
+    virtual void hideHighlight() override;
 
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject>) OVERRIDE;
-    virtual void flush() OVERRIDE;
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject>) override;
+    virtual void flush() override;
 
-    virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
+    virtual void updateInspectorStateCookie(const WTF::String&) override;
 
-    virtual void setDeviceMetricsOverride(int, int, float, bool, bool, float, float, float) OVERRIDE;
-    virtual void clearDeviceMetricsOverride() OVERRIDE;
-    virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
+    virtual void setDeviceMetricsOverride(int, int, float, bool, bool, float, float, float) override;
+    virtual void clearDeviceMetricsOverride() override;
+    virtual void setTouchEventEmulationEnabled(bool) override;
 
-    virtual bool overridesShowPaintRects() OVERRIDE;
-    virtual void setShowPaintRects(bool) OVERRIDE;
-    virtual void setShowDebugBorders(bool) OVERRIDE;
-    virtual void setShowFPSCounter(bool) OVERRIDE;
-    virtual void setContinuousPaintingEnabled(bool) OVERRIDE;
-    virtual void setShowScrollBottleneckRects(bool) OVERRIDE;
-    virtual void resetScrollAndPageScaleFactor() OVERRIDE;
-    virtual float minimumPageScaleFactor() OVERRIDE;
-    virtual float maximumPageScaleFactor() OVERRIDE;
-    virtual void setPageScaleFactor(float) OVERRIDE;
-    virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) OVERRIDE;
+    virtual bool overridesShowPaintRects() override;
+    virtual void setShowPaintRects(bool) override;
+    virtual void setShowDebugBorders(bool) override;
+    virtual void setShowFPSCounter(bool) override;
+    virtual void setContinuousPaintingEnabled(bool) override;
+    virtual void setShowScrollBottleneckRects(bool) override;
+    virtual void resetScrollAndPageScaleFactor() override;
+    virtual float minimumPageScaleFactor() override;
+    virtual float maximumPageScaleFactor() override;
+    virtual void setPageScaleFactor(float) override;
+    virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) override;
 
-    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
-    virtual void dispatchMouseEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
+    virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;
 
-    virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) OVERRIDE;
-    virtual void resetTraceEventCallback() OVERRIDE;
-    virtual void enableTracing(const String& categoryFilter) OVERRIDE;
-    virtual void disableTracing() OVERRIDE;
+    virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) override;
+    virtual void resetTraceEventCallback() override;
+    virtual void enableTracing(const String& categoryFilter) override;
+    virtual void disableTracing() override;
 
-    virtual void startGPUEventsRecording() OVERRIDE;
-    virtual void stopGPUEventsRecording() OVERRIDE;
+    virtual void startGPUEventsRecording() override;
+    virtual void stopGPUEventsRecording() override;
 
-    virtual void resumeStartup() OVERRIDE;
+    virtual void resumeStartup() override;
 
 private:
     WebDevToolsAgentImpl* devToolsAgent();

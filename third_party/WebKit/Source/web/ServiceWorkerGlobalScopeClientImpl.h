@@ -41,24 +41,24 @@ class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
 class WebURL;
 
-class ServiceWorkerGlobalScopeClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
+class ServiceWorkerGlobalScopeClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> create(WebServiceWorkerContextClient&);
     virtual ~ServiceWorkerGlobalScopeClientImpl();
 
     virtual void getClients(WebServiceWorkerClientsCallbacks*);
-    virtual WebURL scope() const OVERRIDE;
-    virtual WebServiceWorkerCacheStorage* cacheStorage() const OVERRIDE;
+    virtual WebURL scope() const override;
+    virtual WebServiceWorkerCacheStorage* cacheStorage() const override;
 
-    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) OVERRIDE;
-    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) OVERRIDE;
-    virtual void didHandleFetchEvent(int fetchEventID) OVERRIDE;
-    virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) OVERRIDE;
-    virtual void didHandleSyncEvent(int syncEventID) OVERRIDE;
-    virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) OVERRIDE;
+    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) override;
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) override;
+    virtual void didHandleFetchEvent(int fetchEventID) override;
+    virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) override;
+    virtual void didHandleSyncEvent(int syncEventID) override;
+    virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { ServiceWorkerGlobalScopeClient::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { ServiceWorkerGlobalScopeClient::trace(visitor); }
 
 private:
     explicit ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient&);

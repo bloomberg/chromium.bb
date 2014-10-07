@@ -85,7 +85,7 @@ struct PopupItem {
 };
 
 // This class manages the scrollable content inside a <select> popup.
-class PopupListBox FINAL : public Widget, public ScrollableArea, public PopupContent {
+class PopupListBox final : public Widget, public ScrollableArea, public PopupContent {
 public:
     static PassRefPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
     {
@@ -93,30 +93,30 @@ public:
     }
 
     // Widget
-    virtual void invalidateRect(const IntRect&) OVERRIDE;
-    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
-    virtual HostWindow* hostWindow() const OVERRIDE;
-    virtual void setFrameRect(const IntRect&) OVERRIDE;
-    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint&) const OVERRIDE;
-    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint&) const OVERRIDE;
+    virtual void invalidateRect(const IntRect&) override;
+    virtual void paint(GraphicsContext*, const IntRect&) override;
+    virtual HostWindow* hostWindow() const override;
+    virtual void setFrameRect(const IntRect&) override;
+    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint&) const override;
+    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint&) const override;
 
     // ScrollableArea
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
-    virtual bool isActive() const OVERRIDE;
-    virtual bool scrollbarsCanBeActive() const OVERRIDE;
-    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
-    virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
-    virtual void setScrollOffset(const IntPoint&) OVERRIDE;
-    virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
-    virtual bool userInputScrollable(ScrollbarOrientation orientation) const OVERRIDE { return orientation == VerticalScrollbar; }
-    virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_verticalScrollbar.get(); }
-    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
-    virtual IntSize contentsSize() const OVERRIDE { return m_contentsSize; }
-    virtual IntPoint scrollPosition() const OVERRIDE { return visibleContentRect().location(); }
-    virtual IntPoint maximumScrollPosition() const OVERRIDE; // The maximum position we can be scrolled to.
-    virtual IntPoint minimumScrollPosition() const OVERRIDE; // The minimum position we can be scrolled to.
-    virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
+    virtual bool isActive() const override;
+    virtual bool scrollbarsCanBeActive() const override;
+    virtual IntRect scrollableAreaBoundingBox() const override;
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
+    virtual int scrollSize(ScrollbarOrientation) const override;
+    virtual void setScrollOffset(const IntPoint&) override;
+    virtual bool isScrollCornerVisible() const override { return false; }
+    virtual bool userInputScrollable(ScrollbarOrientation orientation) const override { return orientation == VerticalScrollbar; }
+    virtual Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
+    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
+    virtual IntSize contentsSize() const override { return m_contentsSize; }
+    virtual IntPoint scrollPosition() const override { return visibleContentRect().location(); }
+    virtual IntPoint maximumScrollPosition() const override; // The maximum position we can be scrolled to.
+    virtual IntPoint minimumScrollPosition() const override; // The minimum position we can be scrolled to.
+    virtual IntRect scrollCornerRect() const override { return IntRect(); }
 
     // PopupListBox methods
 
@@ -156,7 +156,7 @@ public:
     void setBaseWidth(int width) { m_baseWidth = std::min(m_maxWindowWidth, width); }
 
     // Computes the size of widget and children.
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
     // Returns whether the popup wants to process events for the passed key.
     bool isInterestedInEventForKey(int keyCode);
@@ -166,22 +166,22 @@ public:
 
     int getRowBaseWidth(int index);
 
-    virtual void setMaxHeight(int maxHeight) OVERRIDE { m_maxHeight = maxHeight; }
+    virtual void setMaxHeight(int maxHeight) override { m_maxHeight = maxHeight; }
 
     void setMaxWidth(int maxWidth) { m_maxWindowWidth = maxWidth; }
 
-    virtual void setMaxWidthAndLayout(int) OVERRIDE;
+    virtual void setMaxWidthAndLayout(int) override;
 
     void disconnectClient() { m_popupClient = 0; }
 
     const Vector<PopupItem*>& items() const { return m_items; }
 
-    virtual int popupContentHeight() const OVERRIDE;
+    virtual int popupContentHeight() const override;
 
     static const int defaultMaxHeight;
 
 protected:
-    virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }
+    virtual void invalidateScrollCornerRect(const IntRect&) override { }
 
 private:
     friend class PopupContainer;

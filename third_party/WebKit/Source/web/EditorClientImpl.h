@@ -40,16 +40,16 @@ class LocalFrame;
 class HTMLInputElement;
 class WebViewImpl;
 
-class EditorClientImpl FINAL : public EditorClient {
+class EditorClientImpl final : public EditorClient {
 public:
     explicit EditorClientImpl(WebViewImpl*);
     virtual ~EditorClientImpl();
 
-    virtual void respondToChangedContents() OVERRIDE;
-    virtual void respondToChangedSelection(LocalFrame*, SelectionType) OVERRIDE;
-    virtual bool canCopyCut(LocalFrame*, bool defaultValue) const OVERRIDE;
-    virtual bool canPaste(LocalFrame*, bool defaultValue) const OVERRIDE;
-    virtual bool handleKeyboardEvent() OVERRIDE;
+    virtual void respondToChangedContents() override;
+    virtual void respondToChangedSelection(LocalFrame*, SelectionType) override;
+    virtual bool canCopyCut(LocalFrame*, bool defaultValue) const override;
+    virtual bool canPaste(LocalFrame*, bool defaultValue) const override;
+    virtual bool handleKeyboardEvent() override;
 
 private:
     WebViewImpl* m_webView;

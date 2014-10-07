@@ -32,7 +32,7 @@ public:
     }
 
     // WebWidgetClient methods
-    virtual void showImeIfNeeded() OVERRIDE
+    virtual void showImeIfNeeded() override
     {
         ++m_imeRequestCount;
     }

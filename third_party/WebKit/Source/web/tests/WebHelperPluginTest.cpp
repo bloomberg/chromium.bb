@@ -23,7 +23,7 @@ public:
     }
     virtual ~FakePlaceholderWebPlugin() { }
 
-    virtual bool isPlaceholder() OVERRIDE { return true; }
+    virtual bool isPlaceholder() override { return true; }
 };
 
 class WebHelperPluginFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -31,7 +31,7 @@ public:
     WebHelperPluginFrameClient() : m_createPlaceholder(false) { }
     virtual ~WebHelperPluginFrameClient() { }
 
-    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) OVERRIDE
+    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
     {
         return m_createPlaceholder ? new FakePlaceholderWebPlugin(frame, params) : new FakeWebPlugin(frame, params);
     }
@@ -44,7 +44,7 @@ private:
 
 class WebHelperPluginTest : public testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE
+    virtual void SetUp() override
     {
         m_helper.initializeAndLoad("about:blank", false, &m_frameClient);
     }

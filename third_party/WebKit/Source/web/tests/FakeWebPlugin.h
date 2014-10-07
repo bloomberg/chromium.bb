@@ -47,24 +47,24 @@ public:
     FakeWebPlugin(WebFrame*, const WebPluginParams&);
 
     // WebPlugin methods:
-    virtual bool initialize(WebPluginContainer*) OVERRIDE;
-    virtual void destroy() OVERRIDE;
-    virtual NPObject* scriptableObject() OVERRIDE { return 0; }
-    virtual bool canProcessDrag() const OVERRIDE { return false; }
-    virtual void paint(WebCanvas*, const WebRect&) OVERRIDE { }
-    virtual void updateGeometry(const WebRect& frameRect, const WebRect& clipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) OVERRIDE { }
-    virtual void updateFocus(bool) OVERRIDE { }
-    virtual void updateVisibility(bool) OVERRIDE { }
-    virtual bool acceptsInputEvents() OVERRIDE { return true; }
-    virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) OVERRIDE { return false; }
-    virtual bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) OVERRIDE { return false; }
-    virtual void didReceiveResponse(const WebURLResponse&) OVERRIDE { }
-    virtual void didReceiveData(const char* data, int dataLength) OVERRIDE { }
-    virtual void didFinishLoading() OVERRIDE { }
-    virtual void didFailLoading(const WebURLError&) OVERRIDE { }
-    virtual void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) OVERRIDE { }
-    virtual void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) OVERRIDE { }
-    virtual bool isPlaceholder() OVERRIDE { return false; }
+    virtual bool initialize(WebPluginContainer*) override;
+    virtual void destroy() override;
+    virtual NPObject* scriptableObject() override { return 0; }
+    virtual bool canProcessDrag() const override { return false; }
+    virtual void paint(WebCanvas*, const WebRect&) override { }
+    virtual void updateGeometry(const WebRect& frameRect, const WebRect& clipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
+    virtual void updateFocus(bool) override { }
+    virtual void updateVisibility(bool) override { }
+    virtual bool acceptsInputEvents() override { return true; }
+    virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return false; }
+    virtual bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) override { return false; }
+    virtual void didReceiveResponse(const WebURLResponse&) override { }
+    virtual void didReceiveData(const char* data, int dataLength) override { }
+    virtual void didFinishLoading() override { }
+    virtual void didFailLoading(const WebURLError&) override { }
+    virtual void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) override { }
+    virtual void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) override { }
+    virtual bool isPlaceholder() override { return false; }
 
 protected:
     virtual ~FakeWebPlugin();

@@ -97,14 +97,14 @@ public:
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) OVERRIDE
+    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) override
     {
         m_identifier = identifier;
         m_appCacheID = response.appCacheID();
         m_receiveResponseCallback();
     }
 
-    virtual void notifyFinished() OVERRIDE
+    virtual void notifyFinished() override
     {
         m_finishCallback();
     }

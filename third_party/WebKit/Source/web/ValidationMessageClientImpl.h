@@ -37,24 +37,24 @@ namespace blink {
 class FrameView;
 class WebViewImpl;
 
-class ValidationMessageClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ValidationMessageClientImpl>, public ValidationMessageClient {
+class ValidationMessageClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<ValidationMessageClientImpl>, public ValidationMessageClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     virtual ~ValidationMessageClientImpl();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     ValidationMessageClientImpl(WebViewImpl&);
     void checkAnchorStatus(Timer<ValidationMessageClientImpl>*);
     FrameView* currentView();
 
-    virtual void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) OVERRIDE;
-    virtual void hideValidationMessage(const Element& anchor) OVERRIDE;
-    virtual bool isValidationMessageVisible(const Element& anchor) OVERRIDE;
-    virtual void documentDetached(const Document&) OVERRIDE;
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) override;
+    virtual void hideValidationMessage(const Element& anchor) override;
+    virtual bool isValidationMessageVisible(const Element& anchor) override;
+    virtual void documentDetached(const Document&) override;
+    virtual void willBeDestroyed() override;
 
     WebViewImpl& m_webView;
     RawPtrWillBeMember<const Element> m_currentAnchor;

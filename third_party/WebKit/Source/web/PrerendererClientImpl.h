@@ -41,15 +41,15 @@ namespace blink {
 class Prerender;
 class WebPrerendererClient;
 
-class PrerendererClientImpl FINAL : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public PrerendererClient {
+class PrerendererClientImpl final : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public PrerendererClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
     WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);
 
-    void willAddPrerender(Prerender*) OVERRIDE;
+    void willAddPrerender(Prerender*) override;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { PrerendererClient::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { PrerendererClient::trace(visitor); }
 
 private:
     WebPrerendererClient* m_client;

@@ -47,7 +47,7 @@ struct WebPopupMenuInfo;
 // This class wraps a PopupListBox. It positions the popup, paints the border
 // around it, and forwards input events.
 // FIXME(skobes): This class can probably be combined with PopupListBox.
-class PopupContainer FINAL : public Widget {
+class PopupContainer final : public Widget {
 public:
     static PassRefPtr<PopupContainer> create(PopupMenuClient*, bool deviceSupportsTouch);
 
@@ -55,12 +55,12 @@ public:
     bool isInterestedInEventForKey(int keyCode);
 
     // Widget
-    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
-    virtual void hide() OVERRIDE;
-    virtual HostWindow* hostWindow() const OVERRIDE;
-    virtual void invalidateRect(const IntRect&) OVERRIDE;
-    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint&) const OVERRIDE;
-    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint&) const OVERRIDE;
+    virtual void paint(GraphicsContext*, const IntRect&) override;
+    virtual void hide() override;
+    virtual HostWindow* hostWindow() const override;
+    virtual void invalidateRect(const IntRect&) override;
+    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint&) const override;
+    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint&) const override;
 
     // PopupContainer methods
 

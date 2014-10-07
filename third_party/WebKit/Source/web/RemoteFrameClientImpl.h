@@ -15,20 +15,20 @@ public:
     explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
     // FrameClient overrides:
-    virtual Frame* opener() const OVERRIDE;
-    virtual void setOpener(Frame*) OVERRIDE;
+    virtual Frame* opener() const override;
+    virtual void setOpener(Frame*) override;
 
-    virtual Frame* parent() const OVERRIDE;
-    virtual Frame* top() const OVERRIDE;
-    virtual Frame* previousSibling() const OVERRIDE;
-    virtual Frame* nextSibling() const OVERRIDE;
-    virtual Frame* firstChild() const OVERRIDE;
-    virtual Frame* lastChild() const OVERRIDE;
+    virtual Frame* parent() const override;
+    virtual Frame* top() const override;
+    virtual Frame* previousSibling() const override;
+    virtual Frame* nextSibling() const override;
+    virtual Frame* firstChild() const override;
+    virtual Frame* lastChild() const override;
 
-    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const OVERRIDE;
+    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const override;
 
     // RemoteFrameClient overrides:
-    virtual void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) OVERRIDE;
+    virtual void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) override;
 
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 

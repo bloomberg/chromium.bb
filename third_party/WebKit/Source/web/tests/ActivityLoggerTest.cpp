@@ -24,17 +24,17 @@ class TestActivityLogger : public V8DOMActivityLogger {
 public:
     virtual ~TestActivityLogger() { }
 
-    void logGetter(const String& apiName) OVERRIDE
+    void logGetter(const String& apiName) override
     {
         m_loggedActivities.append(apiName);
     }
 
-    void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) OVERRIDE
+    void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) override
     {
         m_loggedActivities.append(apiName + " | " + toCoreStringWithUndefinedOrNullCheck(newValue));
     }
 
-    void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) OVERRIDE
+    void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) override
     {
         String activityString = apiName;
         for (int i = 0; i  < argc; i++)
@@ -42,7 +42,7 @@ public:
         m_loggedActivities.append(activityString);
     }
 
-    void logEvent(const String& eventName, int argc, const String* argv) OVERRIDE
+    void logEvent(const String& eventName, int argc, const String* argv) override
     {
         String activityString = eventName;
         for (int i = 0; i  < argc; i++) {

@@ -36,28 +36,28 @@ class ChromeClientImpl;
 class ColorChooserClient;
 class PagePopup;
 
-class ColorChooserPopupUIController FINAL : public ColorChooserUIController, public PagePopupClient  {
+class ColorChooserPopupUIController final : public ColorChooserUIController, public PagePopupClient  {
 
 public:
     ColorChooserPopupUIController(LocalFrame*, ChromeClientImpl*, ColorChooserClient*);
     virtual ~ColorChooserPopupUIController();
 
     // ColorChooserUIController functions:
-    virtual void openUI() OVERRIDE;
+    virtual void openUI() override;
 
     // ColorChooser functions
-    virtual void endChooser() OVERRIDE;
-    virtual AXObject* rootAXObject() OVERRIDE;
+    virtual void endChooser() override;
+    virtual AXObject* rootAXObject() override;
 
     // PagePopupClient functions:
-    virtual IntSize contentSize() OVERRIDE;
-    virtual void writeDocument(SharedBuffer*) OVERRIDE;
-    virtual Locale& locale() OVERRIDE;
-    virtual void setValueAndClosePopup(int, const String&) OVERRIDE;
-    virtual void setValue(const String&) OVERRIDE;
-    virtual void closePopup() OVERRIDE;
-    virtual Element& ownerElement() OVERRIDE;
-    virtual void didClosePopup() OVERRIDE;
+    virtual IntSize contentSize() override;
+    virtual void writeDocument(SharedBuffer*) override;
+    virtual Locale& locale() override;
+    virtual void setValueAndClosePopup(int, const String&) override;
+    virtual void setValue(const String&) override;
+    virtual void closePopup() override;
+    virtual Element& ownerElement() override;
+    virtual void didClosePopup() override;
 
 private:
     void openPopup();

@@ -32,11 +32,11 @@ using namespace blink;
 
 class MockPopupContent : public PopupContent {
 public:
-    virtual void setMaxHeight(int max) OVERRIDE { maxHeight = max; }
-    virtual int popupContentHeight() const OVERRIDE { return height; }
+    virtual void setMaxHeight(int max) override { maxHeight = max; }
+    virtual int popupContentHeight() const override { return height; }
     virtual ~MockPopupContent() { }
 
-    virtual void layout() OVERRIDE
+    virtual void layout() override
     {
         layoutCount++;
         width = std::min(maxWidth, width);
@@ -44,7 +44,7 @@ public:
         height -= height % 16;
     }
 
-    virtual void setMaxWidthAndLayout(int max) OVERRIDE
+    virtual void setMaxWidthAndLayout(int max) override
     {
         maxWidth = max;
         layout();

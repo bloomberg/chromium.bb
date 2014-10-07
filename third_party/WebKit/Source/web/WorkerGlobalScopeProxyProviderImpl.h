@@ -40,7 +40,7 @@ namespace blink {
 class Worker;
 class WorkerGlobalScopeProxy;
 
-class WorkerGlobalScopeProxyProviderImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WorkerGlobalScopeProxyProvider {
+class WorkerGlobalScopeProxyProviderImpl final : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WorkerGlobalScopeProxyProvider {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
 public:
@@ -50,9 +50,9 @@ public:
     }
 
     virtual ~WorkerGlobalScopeProxyProviderImpl() { }
-    virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) OVERRIDE;
+    virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) override;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WorkerGlobalScopeProxyProvider::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WorkerGlobalScopeProxyProvider::trace(visitor); }
 
 private:
     WorkerGlobalScopeProxyProviderImpl() { }

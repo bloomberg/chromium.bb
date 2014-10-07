@@ -405,7 +405,7 @@ private:
 // Simple class to override some of PrintContext behavior. This is used when
 // the frame hosts a plugin that supports custom printing. In this case, we
 // want to delegate all printing related calls to the plugin.
-class ChromePluginPrintContext FINAL : public ChromePrintContext {
+class ChromePluginPrintContext final : public ChromePrintContext {
 public:
     ChromePluginPrintContext(LocalFrame* frame, WebPluginContainerImpl* plugin, const WebPrintParams& printParams)
         : ChromePrintContext(frame), m_plugin(plugin), m_printParams(printParams)
@@ -414,28 +414,28 @@ public:
 
     virtual ~ChromePluginPrintContext() { }
 
-    virtual void begin(float width, float height) OVERRIDE
+    virtual void begin(float width, float height) override
     {
     }
 
-    virtual void end() OVERRIDE
+    virtual void end() override
     {
         m_plugin->printEnd();
     }
 
-    virtual float getPageShrink(int pageNumber) const OVERRIDE
+    virtual float getPageShrink(int pageNumber) const override
     {
         // We don't shrink the page (maybe we should ask the widget ??)
         return 1.0;
     }
 
-    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight) OVERRIDE
+    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight) override
     {
         m_printParams.printContentArea = IntRect(printRect);
         m_pageRects.fill(IntRect(printRect), m_plugin->printBegin(m_printParams));
     }
 
-    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling) OVERRIDE
+    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling) override
     {
         ASSERT_NOT_REACHED();
     }
@@ -444,7 +444,7 @@ protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
     // NativeTheme doesn't play well with scaling. Scaling is done browser side
     // instead. Returns the scale to be applied.
-    virtual float spoolPage(GraphicsContext& context, int pageNumber) OVERRIDE
+    virtual float spoolPage(GraphicsContext& context, int pageNumber) override
     {
         m_plugin->printPage(pageNumber, &context);
         return 1.0;

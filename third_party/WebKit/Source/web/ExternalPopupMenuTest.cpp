@@ -21,15 +21,15 @@ public:
     TestPopupMenuClient() : m_listSize(0) { }
     virtual ~TestPopupMenuClient() { }
 
-    virtual void valueChanged(unsigned listIndex, bool fireEvents = true) OVERRIDE { }
-    virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) OVERRIDE { }
-    virtual void selectionCleared() OVERRIDE { }
+    virtual void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
+    virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) override { }
+    virtual void selectionCleared() override { }
 
-    virtual String itemText(unsigned listIndex) const OVERRIDE { return emptyString(); }
-    virtual String itemToolTip(unsigned listIndex) const OVERRIDE { return emptyString(); }
-    virtual String itemAccessibilityText(unsigned listIndex) const OVERRIDE { return emptyString(); }
-    virtual bool itemIsEnabled(unsigned listIndex) const OVERRIDE { return true; }
-    virtual PopupMenuStyle itemStyle(unsigned listIndex) const OVERRIDE
+    virtual String itemText(unsigned listIndex) const override { return emptyString(); }
+    virtual String itemToolTip(unsigned listIndex) const override { return emptyString(); }
+    virtual String itemAccessibilityText(unsigned listIndex) const override { return emptyString(); }
+    virtual bool itemIsEnabled(unsigned listIndex) const override { return true; }
+    virtual PopupMenuStyle itemStyle(unsigned listIndex) const override
     {
         FontDescription fontDescription;
         fontDescription.setComputedSize(12.0);
@@ -38,17 +38,17 @@ public:
         bool displayNone = m_displayNoneIndexSet.find(listIndex) != m_displayNoneIndexSet.end();
         return PopupMenuStyle(Color::black, Color::white, font, true, displayNone, Length(), TextDirection(), false);
     }
-    virtual PopupMenuStyle menuStyle() const OVERRIDE { return itemStyle(0); }
-    virtual LayoutUnit clientPaddingLeft() const OVERRIDE { return 0; }
-    virtual LayoutUnit clientPaddingRight() const OVERRIDE { return 0; }
-    virtual int listSize() const OVERRIDE { return m_listSize; }
-    virtual int selectedIndex() const OVERRIDE { return 0; }
-    virtual void popupDidHide() OVERRIDE { }
-    virtual bool itemIsSeparator(unsigned listIndex) const OVERRIDE { return false;}
-    virtual bool itemIsLabel(unsigned listIndex) const OVERRIDE { return false; }
-    virtual bool itemIsSelected(unsigned listIndex) const OVERRIDE { return listIndex == 0;}
-    virtual void setTextFromItem(unsigned listIndex) OVERRIDE { }
-    virtual bool multiple() const OVERRIDE { return false; }
+    virtual PopupMenuStyle menuStyle() const override { return itemStyle(0); }
+    virtual LayoutUnit clientPaddingLeft() const override { return 0; }
+    virtual LayoutUnit clientPaddingRight() const override { return 0; }
+    virtual int listSize() const override { return m_listSize; }
+    virtual int selectedIndex() const override { return 0; }
+    virtual void popupDidHide() override { }
+    virtual bool itemIsSeparator(unsigned listIndex) const override { return false;}
+    virtual bool itemIsLabel(unsigned listIndex) const override { return false; }
+    virtual bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
+    virtual void setTextFromItem(unsigned listIndex) override { }
+    virtual bool multiple() const override { return false; }
 
     void setListSize(size_t size) { m_listSize = size; }
     void setDisplayNoneIndex(unsigned index) { m_displayNoneIndexSet.insert(index); }
@@ -62,7 +62,7 @@ public:
     ExternalPopupMenuDisplayNoneItemsTest() { }
 
 protected:
-    virtual void SetUp() OVERRIDE
+    virtual void SetUp() override
     {
         m_popupMenuClient.setListSize(kListSize);
 

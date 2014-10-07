@@ -50,7 +50,7 @@ namespace {
 
 class TestWebFrameClient : public WebFrameClient {
 public:
-    WebString userAgentOverride(WebLocalFrame* frame, const WebURL& url) OVERRIDE
+    WebString userAgentOverride(WebLocalFrame* frame, const WebURL& url) override
     {
         if (m_userAgentOverride.isEmpty())
             return WebString();

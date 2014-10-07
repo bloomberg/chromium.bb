@@ -42,22 +42,22 @@ namespace blink {
 class InspectorFrontendHost;
 class WebViewImpl;
 
-class WebDevToolsFrontendImpl FINAL : public WebDevToolsFrontend, public InspectorFrontendClient {
+class WebDevToolsFrontendImpl final : public WebDevToolsFrontend, public InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 public:
     WebDevToolsFrontendImpl(WebViewImpl*, WebDevToolsFrontendClient*);
     virtual ~WebDevToolsFrontendImpl();
 
     // InspectorFrontendClient implementation.
-    virtual void windowObjectCleared() OVERRIDE;
+    virtual void windowObjectCleared() override;
 
-    virtual void sendMessageToBackend(const WTF::String&) OVERRIDE;
+    virtual void sendMessageToBackend(const WTF::String&) override;
 
-    virtual void sendMessageToEmbedder(const WTF::String&) OVERRIDE;
+    virtual void sendMessageToEmbedder(const WTF::String&) override;
 
-    virtual bool isUnderTest() OVERRIDE;
+    virtual bool isUnderTest() override;
 
-    virtual void dispose() OVERRIDE;
+    virtual void dispose() override;
 
 private:
     WebViewImpl* m_webViewImpl;

@@ -35,11 +35,11 @@ namespace blink {
 
 class ExecutionContext;
 
-class IndexedDBClientImpl FINAL : public IndexedDBClient {
+class IndexedDBClientImpl final : public IndexedDBClient {
 public:
     static IndexedDBClient* create();
 
-    virtual bool allowIndexedDB(ExecutionContext*, const String& name) OVERRIDE;
+    virtual bool allowIndexedDB(ExecutionContext*, const String& name) override;
 
 private:
     IndexedDBClientImpl() { }

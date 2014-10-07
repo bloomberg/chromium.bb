@@ -94,7 +94,7 @@ public:
 
 private:
     // From WebPrerendererClient:
-    virtual void willAddPrerender(WebPrerender* prerender) OVERRIDE
+    virtual void willAddPrerender(WebPrerender* prerender) override
     {
         prerender->setExtraData(m_extraData.leakPtr());
 
@@ -155,17 +155,17 @@ private:
     };
 
     // From WebPrerenderingSupport:
-    virtual void add(const WebPrerender& prerender) OVERRIDE
+    virtual void add(const WebPrerender& prerender) override
     {
         m_addedPrerenders.push_back(prerender);
     }
 
-    virtual void cancel(const WebPrerender& prerender) OVERRIDE
+    virtual void cancel(const WebPrerender& prerender) override
     {
         m_canceledPrerenders.push_back(prerender);
     }
 
-    virtual void abandon(const WebPrerender& prerender) OVERRIDE
+    virtual void abandon(const WebPrerender& prerender) override
     {
         m_abandonedPrerenders.push_back(prerender);
     }

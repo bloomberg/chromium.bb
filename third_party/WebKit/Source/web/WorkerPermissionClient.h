@@ -42,7 +42,7 @@ class WebPermissionCallbacks;
 class WebString;
 class WebWorkerPermissionClientProxy;
 
-class WorkerPermissionClient FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerPermissionClient>, public WillBeHeapSupplement<WorkerClients> {
+class WorkerPermissionClient final : public NoBaseWillBeGarbageCollectedFinalized<WorkerPermissionClient>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerPermissionClient);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerPermissionClient> create(PassOwnPtr<WebWorkerPermissionClientProxy>);
@@ -54,7 +54,7 @@ public:
     static const char* supplementName();
     static WorkerPermissionClient* from(ExecutionContext&);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<WorkerClients>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<WorkerClients>::trace(visitor); }
 
 private:
     explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);

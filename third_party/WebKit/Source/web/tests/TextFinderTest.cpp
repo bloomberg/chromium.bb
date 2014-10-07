@@ -26,7 +26,7 @@ namespace {
 
 class TextFinderTest : public ::testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     Document& document() const;
     TextFinder& textFinder() const;
@@ -358,8 +358,8 @@ TEST_F(TextFinderTest, SequentialMatches)
 
 class TextFinderFakeTimerTest : public TextFinderTest {
 protected:
-    virtual void SetUp() OVERRIDE;
-    virtual void TearDown() OVERRIDE;
+    virtual void SetUp() override;
+    virtual void TearDown() override;
 
     // A simple platform that mocks out the clock.
     class TimeProxyPlatform : public Platform {
@@ -396,37 +396,37 @@ protected:
         }
 
         // From blink::Platform:
-        virtual double currentTime() OVERRIDE
+        virtual double currentTime() override
         {
             return ++m_timeCounter;
         }
 
         // These blink::Platform methods must be overriden to make a usable object.
-        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) OVERRIDE
+        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
         {
             ensureFallback().cryptographicallyRandomValues(buffer, length);
         }
 
-        virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) OVERRIDE
+        virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
         {
             return ensureFallback().getTraceCategoryEnabledFlag(categoryName);
         }
 
         // These two methods allow timers to work correctly.
-        virtual double monotonicallyIncreasingTime() OVERRIDE
+        virtual double monotonicallyIncreasingTime() override
         {
             return ensureFallback().monotonicallyIncreasingTime();
         }
 
-        virtual void setSharedTimerFireInterval(double interval) OVERRIDE
+        virtual void setSharedTimerFireInterval(double interval) override
         {
             ensureFallback().setSharedTimerFireInterval(interval);
         }
 
-        virtual WebThread* currentThread() OVERRIDE { return ensureFallback().currentThread(); }
-        virtual WebUnitTestSupport* unitTestSupport() OVERRIDE { return ensureFallback().unitTestSupport(); }
-        virtual WebString defaultLocale() OVERRIDE { return ensureFallback().defaultLocale(); }
-        virtual WebCompositorSupport* compositorSupport() OVERRIDE { return ensureFallback().compositorSupport(); }
+        virtual WebThread* currentThread() override { return ensureFallback().currentThread(); }
+        virtual WebUnitTestSupport* unitTestSupport() override { return ensureFallback().unitTestSupport(); }
+        virtual WebString defaultLocale() override { return ensureFallback().defaultLocale(); }
+        virtual WebCompositorSupport* compositorSupport() override { return ensureFallback().compositorSupport(); }
 
         double m_timeCounter;
         Platform* m_fallbackPlatform;

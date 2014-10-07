@@ -39,7 +39,7 @@ namespace blink {
 class MIDIAccessInitializer;
 class WebMIDIClient;
 
-class MIDIClientProxy FINAL : public MIDIClient {
+class MIDIClientProxy final : public MIDIClient {
 public:
     static PassOwnPtr<MIDIClientProxy> create(WebMIDIClient* client)
     {
@@ -47,8 +47,8 @@ public:
     }
 
     // MIDIClient
-    virtual void requestSysexPermission(MIDIAccessInitializer*) OVERRIDE;
-    virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) OVERRIDE;
+    virtual void requestSysexPermission(MIDIAccessInitializer*) override;
+    virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) override;
 
 private:
     explicit MIDIClientProxy(WebMIDIClient*);

@@ -48,13 +48,13 @@ class WebPluginContainerImpl;
 // Utility class to host helper plugins for media. Internally, it creates a detached
 // HTMLPluginElement to host the plugin and uses FrameLoaderClient::createPlugin() to instantiate
 // the requested plugin.
-class WebHelperPluginImpl FINAL : public WebHelperPlugin {
+class WebHelperPluginImpl final : public WebHelperPlugin {
     WTF_MAKE_NONCOPYABLE(WebHelperPluginImpl);
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // WebHelperPlugin methods:
-    virtual WebPlugin* getPlugin() OVERRIDE;
-    virtual void destroy() OVERRIDE;
+    virtual WebPlugin* getPlugin() override;
+    virtual void destroy() override;
 
 private:
     friend class WebHelperPlugin;

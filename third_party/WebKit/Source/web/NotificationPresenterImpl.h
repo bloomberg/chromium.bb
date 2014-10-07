@@ -37,7 +37,7 @@ namespace blink {
 
 class WebNotificationPresenter;
 
-class NotificationPresenterImpl FINAL : public NotificationClient {
+class NotificationPresenterImpl final : public NotificationClient {
 public:
     NotificationPresenterImpl();
 
@@ -45,10 +45,10 @@ public:
     bool isInitialized();
 
     // NotificationClient:
-    virtual bool show(Notification*) OVERRIDE;
-    virtual void close(Notification*) OVERRIDE;
-    virtual void notificationObjectDestroyed(Notification*) OVERRIDE;
-    virtual NotificationClient::Permission checkPermission(ExecutionContext*) OVERRIDE;
+    virtual bool show(Notification*) override;
+    virtual void close(Notification*) override;
+    virtual void notificationObjectDestroyed(Notification*) override;
+    virtual NotificationClient::Permission checkPermission(ExecutionContext*) override;
 
 private:
     // WebNotificationPresenter that this object delegates to.

@@ -64,7 +64,7 @@ struct WebMemoryUsageInfo;
 struct WebURLError;
 struct WebDevToolsMessageData;
 
-class WebDevToolsAgentImpl FINAL
+class WebDevToolsAgentImpl final
     : public WebDevToolsAgentPrivate
     , public InspectorClient
     , public InspectorFrontendChannel
@@ -77,57 +77,57 @@ public:
     WebDevToolsAgentClient* client() { return m_client; }
 
     // WebDevToolsAgentPrivate implementation.
-    virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) OVERRIDE;
-    virtual bool handleInputEvent(Page*, const WebInputEvent&) OVERRIDE;
-    virtual void didLayout() OVERRIDE;
+    virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) override;
+    virtual bool handleInputEvent(Page*, const WebInputEvent&) override;
+    virtual void didLayout() override;
 
     // WebDevToolsAgent implementation.
-    virtual void attach(const WebString& hostId) OVERRIDE;
-    virtual void reattach(const WebString& hostId, const WebString& savedState) OVERRIDE;
-    virtual void detach() OVERRIDE;
-    virtual void continueProgram() OVERRIDE;
-    virtual void didBeginFrame(int frameId) OVERRIDE;
-    virtual void didCancelFrame() OVERRIDE;
-    virtual void willComposite() OVERRIDE;
-    virtual void didComposite() OVERRIDE;
-    virtual void dispatchOnInspectorBackend(const WebString& message) OVERRIDE;
-    virtual void inspectElementAt(const WebPoint&) OVERRIDE;
-    virtual void evaluateInWebInspector(long callId, const WebString& script) OVERRIDE;
-    virtual void setLayerTreeId(int) OVERRIDE;
-    virtual void processGPUEvent(const GPUEvent&) OVERRIDE;
+    virtual void attach(const WebString& hostId) override;
+    virtual void reattach(const WebString& hostId, const WebString& savedState) override;
+    virtual void detach() override;
+    virtual void continueProgram() override;
+    virtual void didBeginFrame(int frameId) override;
+    virtual void didCancelFrame() override;
+    virtual void willComposite() override;
+    virtual void didComposite() override;
+    virtual void dispatchOnInspectorBackend(const WebString& message) override;
+    virtual void inspectElementAt(const WebPoint&) override;
+    virtual void evaluateInWebInspector(long callId, const WebString& script) override;
+    virtual void setLayerTreeId(int) override;
+    virtual void processGPUEvent(const GPUEvent&) override;
 
     // InspectorClient implementation.
-    virtual void highlight() OVERRIDE;
-    virtual void hideHighlight() OVERRIDE;
-    virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE;
-    virtual void flush() OVERRIDE;
-    virtual void resumeStartup() OVERRIDE;
+    virtual void highlight() override;
+    virtual void hideHighlight() override;
+    virtual void updateInspectorStateCookie(const WTF::String&) override;
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) override;
+    virtual void flush() override;
+    virtual void resumeStartup() override;
 
-    virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) OVERRIDE;
-    virtual void clearDeviceMetricsOverride() OVERRIDE;
-    virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
+    virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) override;
+    virtual void clearDeviceMetricsOverride() override;
+    virtual void setTouchEventEmulationEnabled(bool) override;
 
-    virtual void setTraceEventCallback(const WTF::String& categoryFilter, TraceEventCallback) OVERRIDE;
-    virtual void resetTraceEventCallback() OVERRIDE;
-    virtual void enableTracing(const WTF::String& categoryFilter) OVERRIDE;
-    virtual void disableTracing() OVERRIDE;
+    virtual void setTraceEventCallback(const WTF::String& categoryFilter, TraceEventCallback) override;
+    virtual void resetTraceEventCallback() override;
+    virtual void enableTracing(const WTF::String& categoryFilter) override;
+    virtual void disableTracing() override;
 
-    virtual void startGPUEventsRecording() OVERRIDE;
-    virtual void stopGPUEventsRecording() OVERRIDE;
+    virtual void startGPUEventsRecording() override;
+    virtual void stopGPUEventsRecording() override;
 
-    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
-    virtual void dispatchMouseEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
+    virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;
 
     // WebPageOverlay
-    virtual void paintPageOverlay(WebCanvas*) OVERRIDE;
+    virtual void paintPageOverlay(WebCanvas*) override;
 
     void flushPendingFrontendMessages();
 
 private:
     // WebThread::TaskObserver
-    virtual void willProcessTask() OVERRIDE;
-    virtual void didProcessTask() OVERRIDE;
+    virtual void willProcessTask() override;
+    virtual void didProcessTask() override;
 
     void enableMobileEmulation();
     void disableMobileEmulation();

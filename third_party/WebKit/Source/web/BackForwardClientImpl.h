@@ -37,16 +37,16 @@ namespace blink {
 
 class WebViewImpl;
 
-class BackForwardClientImpl FINAL : public BackForwardClient {
+class BackForwardClientImpl final : public BackForwardClient {
 public:
     explicit BackForwardClientImpl(WebViewImpl*);
     virtual ~BackForwardClientImpl();
 
 private:
     // BackForwardList methods:
-    virtual int backListCount() OVERRIDE;
-    virtual int forwardListCount() OVERRIDE;
-    virtual int backForwardListCount() OVERRIDE;
+    virtual int backListCount() override;
+    virtual int forwardListCount() override;
+    virtual int backForwardListCount() override;
 
     WebViewImpl* m_webView;
 };

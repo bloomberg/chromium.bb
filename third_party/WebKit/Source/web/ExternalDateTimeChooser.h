@@ -36,7 +36,7 @@ class DateTimeChooserClient;
 class WebString;
 class WebViewClient;
 
-class ExternalDateTimeChooser FINAL : public DateTimeChooser {
+class ExternalDateTimeChooser final : public DateTimeChooser {
 public:
     static PassRefPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     virtual ~ExternalDateTimeChooser();
@@ -51,8 +51,8 @@ private:
     bool openDateTimeChooser(ChromeClientImpl*, WebViewClient*, const DateTimeChooserParameters&);
 
     // DateTimeChooser function:
-    virtual void endChooser() OVERRIDE;
-    virtual AXObject* rootAXObject() OVERRIDE;
+    virtual void endChooser() override;
+    virtual AXObject* rootAXObject() override;
 
     DateTimeChooserClient* m_client;
 };

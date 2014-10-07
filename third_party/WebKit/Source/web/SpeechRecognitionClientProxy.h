@@ -38,7 +38,7 @@ class MediaStreamTrack;
 class WebSpeechRecognizer;
 class WebString;
 
-class SpeechRecognitionClientProxy FINAL : public SpeechRecognitionClient, public WebSpeechRecognizerClient {
+class SpeechRecognitionClientProxy final : public SpeechRecognitionClient, public WebSpeechRecognizerClient {
 public:
     virtual ~SpeechRecognitionClientProxy();
 
@@ -47,20 +47,20 @@ public:
     static PassOwnPtr<SpeechRecognitionClientProxy> create(WebSpeechRecognizer*);
 
     // SpeechRecognitionClient:
-    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack*) OVERRIDE;
-    virtual void stop(SpeechRecognition*) OVERRIDE;
-    virtual void abort(SpeechRecognition*) OVERRIDE;
+    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack*) override;
+    virtual void stop(SpeechRecognition*) override;
+    virtual void abort(SpeechRecognition*) override;
 
     // WebSpeechRecognizerClient:
-    virtual void didStartAudio(const WebSpeechRecognitionHandle&) OVERRIDE;
-    virtual void didStartSound(const WebSpeechRecognitionHandle&) OVERRIDE;
-    virtual void didEndSound(const WebSpeechRecognitionHandle&) OVERRIDE;
-    virtual void didEndAudio(const WebSpeechRecognitionHandle&) OVERRIDE;
-    virtual void didReceiveResults(const WebSpeechRecognitionHandle&, const WebVector<WebSpeechRecognitionResult>& newFinalResults, const WebVector<WebSpeechRecognitionResult>& currentInterimResults) OVERRIDE;
-    virtual void didReceiveNoMatch(const WebSpeechRecognitionHandle&, const WebSpeechRecognitionResult&) OVERRIDE;
-    virtual void didReceiveError(const WebSpeechRecognitionHandle&, const WebString& message, WebSpeechRecognizerClient::ErrorCode) OVERRIDE;
-    virtual void didStart(const WebSpeechRecognitionHandle&) OVERRIDE;
-    virtual void didEnd(const WebSpeechRecognitionHandle&) OVERRIDE;
+    virtual void didStartAudio(const WebSpeechRecognitionHandle&) override;
+    virtual void didStartSound(const WebSpeechRecognitionHandle&) override;
+    virtual void didEndSound(const WebSpeechRecognitionHandle&) override;
+    virtual void didEndAudio(const WebSpeechRecognitionHandle&) override;
+    virtual void didReceiveResults(const WebSpeechRecognitionHandle&, const WebVector<WebSpeechRecognitionResult>& newFinalResults, const WebVector<WebSpeechRecognitionResult>& currentInterimResults) override;
+    virtual void didReceiveNoMatch(const WebSpeechRecognitionHandle&, const WebSpeechRecognitionResult&) override;
+    virtual void didReceiveError(const WebSpeechRecognitionHandle&, const WebString& message, WebSpeechRecognizerClient::ErrorCode) override;
+    virtual void didStart(const WebSpeechRecognitionHandle&) override;
+    virtual void didEnd(const WebSpeechRecognitionHandle&) override;
 
 private:
     SpeechRecognitionClientProxy(WebSpeechRecognizer*);
