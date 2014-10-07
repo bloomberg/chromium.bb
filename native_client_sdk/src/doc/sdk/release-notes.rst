@@ -4,6 +4,22 @@
 Release Notes
 #############
 
+Chrome/Pepper 39 (26 September 2014)
+====================================
+
+Pepper
+------
+
+.. TODO(jfb): Change to VideoDecoder to pepper_stable when it hits stable.
+
+* Support for ``DEBUG_ONLY:dev://postmessage`` has been removed in favor of
+  :ref:`other more useful debugging approaches <devcycle-debugging>`.
+* `VideoDecoder
+  </native-client/pepper_beta/cpp/classpp_1_1_video_decoder.html>`_ is now
+  stable, see the SDK example in ``pepper_canary/examples/api/video_decode``.
+* ``postMessageAndAwaitResponse`` is now stable and allows JavaScript to
+  communicate synchronously with PNaCl embeds.
+
 Chrome/Pepper 38 (15 August 2014)
 =================================
 
