@@ -49,6 +49,7 @@ public:
     BLINK_EXPORT static void setSubpixelPositioning(bool);
     BLINK_EXPORT static void setLCDOrder(SkFontHost::LCDOrder);
     BLINK_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
+    BLINK_EXPORT static void setDefaultFontSize(int);
 };
 
 } // namespace blink
