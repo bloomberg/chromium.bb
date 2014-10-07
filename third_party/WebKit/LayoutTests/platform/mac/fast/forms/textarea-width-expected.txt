@@ -1,8 +1,8 @@
-layer at (0,0) size 1701x585
-  RenderView at (0,0) size 800x585
-layer at (0,0) size 800x585
-  RenderBlock {HTML} at (0,0) size 800x585
-    RenderBody {BODY} at (8,8) size 784x569
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {DIV} at (0,0) size 784x32
         RenderText {#text} at (0,0) size 753x32
           text run at (0,0) width 753: "This text area should be drawn with a reasonable width. To match IE, using GDI fonts it should wrap at 66 characters"
@@ -10,10 +10,11 @@ layer at (0,0) size 800x585
       RenderBlock (anonymous) at (0,32) size 784x262
         RenderBR {BR} at (0,0) size 0x16
         RenderText {#text} at (0,0) size 0x0
-layer at (8,56) size 1693x246 clip at (9,57) size 1691x244
-  RenderTextControl {TEXTAREA} at (0,16) size 1693x246 [color=#333333] [bgcolor=#FFFFFF] [border: (1px solid #333333)]
-    RenderBlock {DIV} at (3,3) size 1687x24
-      RenderText {#text} at (0,0) size 720x12
-        text run at (0,0) width 720: "1234567890abcdefghijABCDEFGHIJ1234567890abcdefghijABCDEFGHIJ12345X7890abcdefghijABCDEFGXIJ1234567890abcdefghijABCDEFGHIJ"
-      RenderBR {BR} at (719,10) size 1x0
-      RenderBR {BR} at (0,12) size 0x12
+layer at (8,56) size 549x246 clip at (9,57) size 547x244
+  RenderTextControl {TEXTAREA} at (0,16) size 549x246 [color=#333333] [bgcolor=#FFFFFF] [border: (1px solid #333333)]
+    RenderBlock {DIV} at (3,3) size 543x36
+      RenderText {#text} at (0,0) size 540x24
+        text run at (0,0) width 540: "1234567890abcdefghijABCDEFGHIJ1234567890abcdefghijABCDEFGHIJ12345X7890abcdefghijABCDEFGXIJ"
+        text run at (0,12) width 180: "1234567890abcdefghijABCDEFGHIJ"
+      RenderBR {BR} at (179,22) size 1x0
+      RenderBR {BR} at (0,24) size 0x12
