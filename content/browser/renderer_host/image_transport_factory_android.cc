@@ -55,7 +55,7 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
       BrowserGpuChannelHostFactory::instance();
   scoped_refptr<GpuChannelHost> gpu_channel_host(factory->EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-  DCHECK(gpu_channel_host);
+  DCHECK(gpu_channel_host.get());
 
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;

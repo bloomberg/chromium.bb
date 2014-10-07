@@ -150,7 +150,7 @@ bool SynchronousCompositorOutputSurface::InitializeHwDraw(
     scoped_refptr<cc::ContextProvider> onscreen_context_provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
-  DCHECK(!context_provider_);
+  DCHECK(!context_provider_.get());
 
   return InitializeAndSetContext3d(onscreen_context_provider);
 }
@@ -170,7 +170,7 @@ SynchronousCompositorOutputSurface::DemandDrawHw(
     const gfx::Transform& transform_for_tile_priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
-  DCHECK(context_provider_);
+  DCHECK(context_provider_.get());
 
   surface_size_ = surface_size;
   InvokeComposite(transform,

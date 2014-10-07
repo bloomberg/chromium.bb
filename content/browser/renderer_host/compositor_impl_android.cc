@@ -364,11 +364,11 @@ ui::SystemUIResourceManager& CompositorImpl::GetSystemUIResourceManager() {
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
-  if (subroot_layer_) {
+  if (subroot_layer_.get()) {
     subroot_layer_->RemoveFromParent();
     subroot_layer_ = NULL;
   }
-  if (root_layer) {
+  if (root_layer.get()) {
     subroot_layer_ = root_layer;
     root_layer_->AddChild(root_layer);
   }
@@ -515,7 +515,7 @@ CreateGpuProcessViewContext(
     const scoped_refptr<GpuChannelHost>& gpu_channel_host,
     const blink::WebGraphicsContext3D::Attributes attributes,
     int surface_id) {
-  DCHECK(gpu_channel_host);
+  DCHECK(gpu_channel_host.get());
 
   GURL url("chrome://gpu/Compositor::createContext3D");
   static const size_t kBytesPerPixel = 4;
@@ -578,7 +578,7 @@ void CompositorImpl::CreateOutputSurface(bool fallback) {
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
   scoped_refptr<GpuChannelHost> gpu_channel_host = factory->GetGpuChannel();
-  if (gpu_channel_host && !gpu_channel_host->IsLost()) {
+  if (gpu_channel_host.get() && !gpu_channel_host->IsLost()) {
     context_provider = ContextProviderCommandBuffer::Create(
         CreateGpuProcessViewContext(gpu_channel_host, attrs, surface_id_),
         "BrowserCompositor");

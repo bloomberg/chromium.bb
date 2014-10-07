@@ -62,7 +62,7 @@ PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
 }
 
 PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
-  if (delegate_) {
+  if (delegate_.get()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Delegate::RemoveBlock, delegate_));

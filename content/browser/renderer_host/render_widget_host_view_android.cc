@@ -418,7 +418,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
 
 scoped_refptr<cc::DelegatedRendererLayer>
 RenderWidgetHostViewAndroid::CreateDelegatedLayerForFrameProvider() const {
-  DCHECK(frame_provider_);
+  DCHECK(frame_provider_.get());
 
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
       cc::DelegatedRendererLayer::Create(frame_provider_);
@@ -432,7 +432,7 @@ RenderWidgetHostViewAndroid::CreateDelegatedLayerForFrameProvider() const {
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (!content_view_core_)
     return false;
-  if (!layer_)
+  if (!layer_.get())
     return false;
 
   if (texture_size_in_layer_.IsEmpty())
@@ -504,7 +504,7 @@ void RenderWidgetHostViewAndroid::Show() {
     return;
 
   is_showing_ = true;
-  if (layer_)
+  if (layer_.get())
     layer_->SetHideLayerAndSubtree(false);
 
   frame_evictor_->SetVisible(true);
@@ -516,7 +516,7 @@ void RenderWidgetHostViewAndroid::Hide() {
     return;
 
   is_showing_ = false;
-  if (layer_ && locks_on_frame_count_ == 0)
+  if (layer_.get() && locks_on_frame_count_ == 0)
     layer_->SetHideLayerAndSubtree(true);
 
   frame_evictor_->SetVisible(false);
@@ -556,7 +556,7 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
       last_frame_info_.reset();
     }
 
-    if (!is_showing_ && layer_)
+    if (!is_showing_ && layer_.get())
       layer_->SetHideLayerAndSubtree(true);
   }
 }
@@ -855,7 +855,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   ui::WindowAndroidCompositor* compositor =
       content_view_core_->GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
-  DCHECK(frame_provider_);
+  DCHECK(frame_provider_.get());
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
       CreateDelegatedLayerForFrameProvider();
   delegated_layer->SetHideLayerAndSubtree(true);
@@ -914,7 +914,7 @@ void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
 
 void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
     uint32 output_surface_id) {
-  DCHECK(resource_collection_);
+  DCHECK(resource_collection_.get());
 
   cc::CompositorFrameAck ack;
   resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
@@ -976,7 +976,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
       resource_collection_ = new cc::DelegatedFrameResourceCollection;
       resource_collection_->SetClient(this);
     }
-    if (!frame_provider_ ||
+    if (!frame_provider_.get() ||
         texture_size_in_layer_ != frame_provider_->frame_size()) {
       RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
@@ -1036,7 +1036,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     return;
   }
 
-  if (layer_ && layer_->layer_tree_host()) {
+  if (layer_.get() && layer_->layer_tree_host()) {
     for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
       scoped_ptr<cc::SwapPromise> swap_promise(
           new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
@@ -1120,7 +1120,7 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
 }
 
 void RenderWidgetHostViewAndroid::SetOverlayVideoMode(bool enabled) {
-  if (layer_)
+  if (layer_.get())
     layer_->SetContentsOpaque(!enabled);
 }
 
@@ -1511,7 +1511,7 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 
 void RenderWidgetHostViewAndroid::DidOverscroll(
     const DidOverscrollParams& params) {
-  if (!content_view_core_ || !layer_ || !is_showing_)
+  if (!content_view_core_ || !layer_.get() || !is_showing_)
     return;
 
   const float device_scale_factor = content_view_core_->GetDpiScale();

@@ -291,7 +291,7 @@ void WebContentsAndroid::DidDeferAfterResponseStarted(
   JNIEnv* env = AttachCurrentThread();
   std::vector<GURL> entering_stylesheets;
   std::string transition_color;
-  if (transition_data.response_headers) {
+  if (transition_data.response_headers.get()) {
     TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
         transition_data.response_headers,
         entering_stylesheets,

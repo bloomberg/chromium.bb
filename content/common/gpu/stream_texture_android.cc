@@ -53,7 +53,7 @@ bool StreamTexture::Create(
                                   GL_UNSIGNED_BYTE,
                                   true);
     texture_manager->SetLevelImage(
-        texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image);
+        texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get());
     return true;
   }
 
@@ -131,7 +131,7 @@ void StreamTexture::WillUseTexImage() {
       const gpu::gles2::TextureUnit& active_unit =
           state->texture_units[state->active_texture_unit];
       glBindTexture(GL_TEXTURE_EXTERNAL_OES,
-                    active_unit.bound_texture_external_oes
+                    active_unit.bound_texture_external_oes.get()
                         ? active_unit.bound_texture_external_oes->service_id()
                         : 0);
     }

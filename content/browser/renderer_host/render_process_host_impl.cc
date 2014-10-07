@@ -810,11 +810,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new FontCacheDispatcher());
 #elif defined(OS_ANDROID)
   browser_demuxer_android_ = new BrowserDemuxerAndroid();
-  AddFilter(browser_demuxer_android_);
+  AddFilter(browser_demuxer_android_.get());
 #endif
 #if defined(ENABLE_BROWSER_CDMS)
   browser_cdm_manager_ = new BrowserCdmManager(GetID(), NULL);
-  AddFilter(browser_cdm_manager_);
+  AddFilter(browser_cdm_manager_.get());
 #endif
 
   SocketStreamDispatcherHost::GetRequestContextCallback

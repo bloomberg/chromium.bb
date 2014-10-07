@@ -186,7 +186,7 @@ bool OverscrollGlow::NeedsAnimate() const {
 
 void OverscrollGlow::UpdateLayerAttachment(cc::Layer* parent) {
   DCHECK(parent);
-  if (!root_layer_)
+  if (!root_layer_.get())
     return;
 
   if (!NeedsAnimate()) {
@@ -198,11 +198,11 @@ void OverscrollGlow::UpdateLayerAttachment(cc::Layer* parent) {
     parent->AddChild(root_layer_);
 
   for (size_t i = 0; i < EDGE_COUNT; ++i)
-    edge_effects_[i]->SetParent(root_layer_);
+    edge_effects_[i]->SetParent(root_layer_.get());
 }
 
 void OverscrollGlow::Detach() {
-  if (root_layer_)
+  if (root_layer_.get())
     root_layer_->RemoveFromParent();
 }
 
@@ -211,7 +211,7 @@ bool OverscrollGlow::InitializeIfNecessary() {
   if (initialized_)
     return true;
 
-  DCHECK(!root_layer_);
+  DCHECK(!root_layer_.get());
   root_layer_ = cc::Layer::Create();
   for (size_t i = 0; i < EDGE_COUNT; ++i) {
     edge_effects_[i] = edge_effect_provider_.Run();

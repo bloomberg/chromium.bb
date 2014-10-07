@@ -201,7 +201,7 @@ SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
 
 scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
     CreateOnscreenContextProviderForCompositorThread() {
-  DCHECK(service_);
+  DCHECK(service_.get());
 
   gpu::GLInProcessContextSharedMemoryLimits mem_limits;
   // This is half of what RenderWidget uses because synchronous compositor
@@ -233,7 +233,7 @@ SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   num_hardware_compositors_++;
-  if (num_hardware_compositors_ == 1 && main_thread_proxy_) {
+  if (num_hardware_compositors_ == 1 && main_thread_proxy_.get()) {
     main_thread_proxy_->PostTask(
         FROM_HERE,
         base::Bind(
@@ -249,7 +249,7 @@ void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw() {
 }
 
 void SynchronousCompositorFactoryImpl::RestoreContextOnMainThread() {
-  if (CanCreateMainThreadContext() && video_context_provider_ )
+  if (CanCreateMainThreadContext() && video_context_provider_.get())
     video_context_provider_->RestoreContext();
 }
 
@@ -274,8 +274,8 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
         scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>();
   }
 
-  if (!video_context_provider_) {
-    DCHECK(service_);
+  if (!video_context_provider_.get()) {
+    DCHECK(service_.get());
 
     video_context_provider_ = new VideoContextProvider(
         CreateContext(service_,
@@ -286,7 +286,7 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
 
 void SynchronousCompositorFactoryImpl::SetDeferredGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
-  DCHECK(!service_);
+  DCHECK(!service_.get());
   service_ = service;
 }
 

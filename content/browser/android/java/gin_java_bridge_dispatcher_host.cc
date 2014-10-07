@@ -374,7 +374,7 @@ void GinJavaBridgeDispatcherHost::OnGetMethods(
     return;
   }
   scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(object_id));
-  if (!object) {
+  if (!object.get()) {
     LOG(ERROR) << "WebView: Unknown object: " << object_id;
     IPC::WriteParam(reply_msg, std::set<std::string>());
     render_frame_host->Send(reply_msg);
@@ -410,7 +410,7 @@ void GinJavaBridgeDispatcherHost::OnHasMethod(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(render_frame_host);
   scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(object_id));
-  if (!object) {
+  if (!object.get()) {
     LOG(ERROR) << "WebView: Unknown object: " << object_id;
     IPC::WriteParam(reply_msg, false);
     render_frame_host->Send(reply_msg);
@@ -447,7 +447,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(render_frame_host);
   scoped_refptr<GinJavaBoundObject> object(*objects_.Lookup(object_id));
-  if (!object) {
+  if (!object.get()) {
     LOG(ERROR) << "WebView: Unknown object: " << object_id;
     base::ListValue result;
     result.Append(base::Value::CreateNullValue());
