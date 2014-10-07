@@ -44,7 +44,7 @@ struct SecurityPolicyViolationEventInit : public EventInit {
     int statusCode;
 };
 
-class SecurityPolicyViolationEvent FINAL : public Event {
+class SecurityPolicyViolationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create()
@@ -68,9 +68,9 @@ public:
     int columnNumber() const { return m_columnNumber; }
     int statusCode() const { return m_statusCode; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::SecurityPolicyViolationEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::SecurityPolicyViolationEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { Event::trace(visitor); }
 
 private:
     SecurityPolicyViolationEvent() { }

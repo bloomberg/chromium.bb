@@ -39,7 +39,7 @@ struct TransitionEventInit : public EventInit {
     String pseudoElement;
 };
 
-class TransitionEvent FINAL : public Event {
+class TransitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TransitionEvent> create()
@@ -61,9 +61,9 @@ public:
     double elapsedTime() const;
     const String& pseudoElement() const;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     TransitionEvent();

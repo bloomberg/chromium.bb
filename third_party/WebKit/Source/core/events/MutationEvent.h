@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class MutationEvent FINAL : public Event {
+class MutationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MutationEvent();
@@ -60,9 +60,9 @@ public:
     String attrName() const { return m_attrName; }
     unsigned short attrChange() const { return m_attrChange; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MutationEvent();

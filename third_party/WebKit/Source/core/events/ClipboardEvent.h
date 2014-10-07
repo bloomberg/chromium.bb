@@ -30,7 +30,7 @@ namespace blink {
 
 class DataTransfer;
 
-class ClipboardEvent FINAL : public Event {
+class ClipboardEvent final : public Event {
 public:
     virtual ~ClipboardEvent();
 
@@ -41,14 +41,14 @@ public:
 
     DataTransfer* clipboardData() const { return m_clipboardData.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     ClipboardEvent();
     ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> clipboardData);
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual bool isClipboardEvent() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual bool isClipboardEvent() const override;
 
     RefPtrWillBeMember<DataTransfer> m_clipboardData;
 };

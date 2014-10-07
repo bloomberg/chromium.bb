@@ -40,7 +40,7 @@ struct WebKitAnimationEventInit : public EventInit {
     double elapsedTime;
 };
 
-class WebKitAnimationEvent FINAL : public Event {
+class WebKitAnimationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create()
@@ -61,9 +61,9 @@ public:
     const String& animationName() const;
     double elapsedTime() const;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     WebKitAnimationEvent();

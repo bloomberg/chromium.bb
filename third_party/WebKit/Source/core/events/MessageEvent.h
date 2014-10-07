@@ -47,7 +47,7 @@ struct MessageEventInit : public EventInit {
     MessagePortArray ports;
 };
 
-class MessageEvent FINAL : public Event {
+class MessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MessageEvent> create()
@@ -90,7 +90,7 @@ public:
     MessagePortArray ports() const { return m_ports ? *m_ports : MessagePortArray(); }
     MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     enum DataType {
         DataTypeScriptValue,
@@ -113,9 +113,9 @@ public:
 
     void entangleMessagePorts(ExecutionContext*);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual v8::Handle<v8::Object> associateWithWrapper(const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper, v8::Isolate*) OVERRIDE;
+    virtual v8::Handle<v8::Object> associateWithWrapper(const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper, v8::Isolate*) override;
 
 private:
     MessageEvent();

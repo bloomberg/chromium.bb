@@ -33,7 +33,7 @@ struct AutocompleteErrorEventInit : public EventInit {
     String reason;
 };
 
-class AutocompleteErrorEvent FINAL : public Event {
+class AutocompleteErrorEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AutocompleteErrorEvent> create()
@@ -53,9 +53,9 @@ public:
 
     const String& reason() const { return m_reason; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::AutocompleteErrorEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::AutocompleteErrorEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { Event::trace(visitor); }
 
 private:
     AutocompleteErrorEvent() { }
