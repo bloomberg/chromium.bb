@@ -22,6 +22,7 @@
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "media/base/media_switches.h"
 #include "net/cookies/cookie_monster.h"
@@ -307,7 +308,10 @@ ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(new ShellContentRendererClient);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    renderer_client_.reset(new LayoutTestContentRendererClient);
+  else
+    renderer_client_.reset(new ShellContentRendererClient);
   return renderer_client_.get();
 }
 
