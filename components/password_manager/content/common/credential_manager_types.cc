@@ -6,19 +6,30 @@
 
 #include "base/logging.h"
 #include "components/autofill/core/common/password_form.h"
+#include "third_party/WebKit/public/platform/WebCredential.h"
+#include "third_party/WebKit/public/platform/WebFederatedCredential.h"
+#include "third_party/WebKit/public/platform/WebLocalCredential.h"
 
 namespace password_manager {
 
 CredentialInfo::CredentialInfo() : type(CREDENTIAL_TYPE_UNKNOWN) {
 }
 
-CredentialInfo::CredentialInfo(const base::string16& id,
-                               const base::string16& name,
-                               const GURL& avatar)
-    : type(CREDENTIAL_TYPE_UNKNOWN),
-      id(id),
-      name(name),
-      avatar(avatar) {
+CredentialInfo::CredentialInfo(const blink::WebCredential& credential)
+    : id(credential.id()),
+      name(credential.name()),
+      avatar(credential.avatarURL()) {
+  type = credential.isLocalCredential() ? CREDENTIAL_TYPE_LOCAL
+                                        : CREDENTIAL_TYPE_FEDERATED;
+  if (type == CREDENTIAL_TYPE_LOCAL) {
+    DCHECK(credential.isLocalCredential());
+    password = static_cast<const blink::WebLocalCredential&>(
+        credential).password();
+  } else {
+    DCHECK(credential.isFederatedCredential());
+    federation = static_cast<const blink::WebFederatedCredential&>(
+        credential).federation();
+  }
 }
 
 CredentialInfo::CredentialInfo(const autofill::PasswordForm& form)

@@ -114,8 +114,7 @@ void CredentialManagerClient::dispatchFailedSignIn(
     const blink::WebCredential& credential,
     blink::WebCredentialManagerClient::NotificationCallbacks* callbacks) {
   int request_id = failed_sign_in_callbacks_.Add(callbacks);
-  CredentialInfo info(
-      credential.id(), credential.name(), credential.avatarURL());
+  CredentialInfo info(credential);
   Send(new CredentialManagerHostMsg_NotifyFailedSignIn(
       routing_id(), request_id, info));
 }
@@ -124,8 +123,7 @@ void CredentialManagerClient::dispatchSignedIn(
     const blink::WebCredential& credential,
     blink::WebCredentialManagerClient::NotificationCallbacks* callbacks) {
   int request_id = signed_in_callbacks_.Add(callbacks);
-  CredentialInfo info(
-      credential.id(), credential.name(), credential.avatarURL());
+  CredentialInfo info(credential);
   Send(new CredentialManagerHostMsg_NotifySignedIn(
       routing_id(), request_id, info));
 }

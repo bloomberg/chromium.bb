@@ -16,6 +16,10 @@ namespace autofill {
 struct PasswordForm;
 }
 
+namespace blink {
+class WebCredential;
+};
+
 namespace password_manager {
 
 // Limit the size of the federations array that we pass to the browser to
@@ -31,10 +35,8 @@ enum CredentialType {
 
 struct CredentialInfo {
   CredentialInfo();
-  CredentialInfo(const base::string16& id,
-                 const base::string16& name,
-                 const GURL& avatar);
-  CredentialInfo(const autofill::PasswordForm& form);
+  explicit CredentialInfo(const blink::WebCredential& credential);
+  explicit CredentialInfo(const autofill::PasswordForm& form);
   ~CredentialInfo();
 
   CredentialType type;

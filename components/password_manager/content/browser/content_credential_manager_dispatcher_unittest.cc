@@ -93,9 +93,8 @@ class ContentCredentialManagerDispatcherTest
 
 TEST_F(ContentCredentialManagerDispatcherTest,
        CredentialManagerOnNotifyFailedSignIn) {
-  CredentialInfo info(base::ASCIIToUTF16("id"),
-                      base::ASCIIToUTF16("name"),
-                      GURL("https://example.com/image.png"));
+  CredentialInfo info;
+  info.type = CREDENTIAL_TYPE_LOCAL;
   dispatcher()->OnNotifyFailedSignIn(kRequestId, info);
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeFailedSignIn::ID;

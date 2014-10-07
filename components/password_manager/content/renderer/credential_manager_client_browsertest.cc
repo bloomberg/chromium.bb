@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
+#include "third_party/WebKit/public/platform/WebLocalCredential.h"
 
 namespace password_manager {
 
@@ -23,7 +24,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
 
   virtual void SetUp() override {
     content::RenderViewTest::SetUp();
-    credential_.reset(new blink::WebCredential("", "", GURL()));
+    credential_.reset(new blink::WebLocalCredential("", "", GURL(), ""));
     client_.reset(new CredentialManagerClient(view_));
   }
 
@@ -101,7 +102,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
   bool callback_errored_;
   bool callback_succeeded_;
 
-  scoped_ptr<blink::WebCredential> credential_;
+  scoped_ptr<blink::WebLocalCredential> credential_;
 };
 
 class TestNotificationCallbacks
