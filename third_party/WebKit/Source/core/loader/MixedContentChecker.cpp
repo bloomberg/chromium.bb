@@ -300,6 +300,34 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
     return !allowed;
 }
 
+// static
+bool MixedContentChecker::checkFormAction(LocalFrame* frame, const KURL& url)
+{
+    // For whatever reason, some folks handle forms via JavaScript, and submit to `javascript:void(0)`
+    // rather than calling `preventDefault()`. We special-case `javascript:` URLs here, as they don't
+    // introduce MixedContent for form submissions.
+    if (url.protocolIs("javascript"))
+        return false;
+
+    // If lax mixed content checking is enabled (noooo!), skip this check entirely.
+    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
+        return false;
+
+    LocalFrame* effectiveFrame = inWhichFrameIsThisContentMixed(frame, WebURLRequest::RequestContextForm, WebURLRequest::FrameTypeNone, url);
+    if (!effectiveFrame)
+        return false;
+
+    // No "allowed" check here; we're not yet exposing anything which would block form submission.
+    FrameLoaderClient* client = effectiveFrame->loader().client();
+    client->didDisplayInsecureContent();
+
+    String message = String::format(
+        "Mixed Content: The page at '%s' was loaded over HTTPS, but contains a form whose 'action' attribute is '%s'. This form should not submit data to insecure endpoints.",
+        effectiveFrame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data());
+    effectiveFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, WarningMessageLevel, message));
+    return true;
+}
+
 bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
     // Check the top frame if it differs from MixedContentChecker's m_frame.
@@ -380,20 +408,6 @@ bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOr
     if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
         return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
     return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
-}
-
-bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const
-{
-    // For whatever reason, some folks handle forms via JavaScript, and submit to `javascript:void(0)`
-    // rather than calling `preventDefault()`. We special-case `javascript:` URLs here, as they don't
-    // introduce MixedContent for form submissions.
-    if (url.protocolIs("javascript"))
-        return true;
-
-    // If lax mixed content checking is enabled (noooo!), skip this check entirely.
-    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
-        return true;
-    return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Submission);
 }
 
 void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const

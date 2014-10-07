@@ -54,6 +54,7 @@ public:
         return shouldBlockFetch(frame, request.requestContext(), request.frameType(), url);
     }
     static bool shouldBlockFetch(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, const KURL&);
+    static bool checkFormAction(LocalFrame*, const KURL&);
 
     bool canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
     {
@@ -65,7 +66,6 @@ public:
         return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::Execution);
     }
 
-    bool canSubmitToInsecureForm(SecurityOrigin*, const KURL&) const;
     bool canConnectInsecureWebSocket(SecurityOrigin*, const KURL&) const;
     bool canFrameInsecureContent(SecurityOrigin*, const KURL&) const;
     static bool isMixedContent(SecurityOrigin*, const KURL&);
