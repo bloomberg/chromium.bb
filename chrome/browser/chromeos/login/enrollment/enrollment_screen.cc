@@ -403,12 +403,23 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
 }
 
 void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
-  if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
-    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollmentRecovery, sample,
-                              policy::kMetricEnrollmentSize);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment, sample,
-                              policy::kMetricEnrollmentSize);
+  switch (enrollment_mode_) {
+    case EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL:
+    case EnrollmentScreenActor::ENROLLMENT_MODE_AUTO:
+      UMA_HISTOGRAM_ENUMERATION("Enterprise.Enrollment", sample,
+                                policy::kMetricEnrollmentSize);
+      break;
+    case EnrollmentScreenActor::ENROLLMENT_MODE_FORCED:
+      UMA_HISTOGRAM_ENUMERATION("Enterprise.EnrollmentForced", sample,
+                                policy::kMetricEnrollmentSize);
+      break;
+    case EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY:
+      UMA_HISTOGRAM_ENUMERATION("Enterprise.EnrollmentRecovery", sample,
+                                policy::kMetricEnrollmentSize);
+      break;
+    case EnrollmentScreenActor::ENROLLMENT_MODE_COUNT:
+      NOTREACHED();
+      break;
   }
 }
 

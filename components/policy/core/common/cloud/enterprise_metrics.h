@@ -245,8 +245,6 @@ enum PolicyInvalidationType {
 // the same UMA histogram name.
 POLICY_EXPORT extern const char kMetricToken[];
 POLICY_EXPORT extern const char kMetricPolicy[];
-POLICY_EXPORT extern const char kMetricEnrollment[];
-POLICY_EXPORT extern const char kMetricEnrollmentRecovery[];
 POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
 POLICY_EXPORT extern const char kMetricDevicePolicyRefresh[];

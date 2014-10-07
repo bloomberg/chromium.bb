@@ -6151,6 +6151,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.EnrollmentForced" enum="EnterpriseEnrollmentType">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Events related to forced re-enrollment (FRE) of Chrome OS devices.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.EnrollmentRecovery" enum="EnterpriseEnrollmentType">
   <owner>tnagel@chromium.org</owner>
   <summary>
