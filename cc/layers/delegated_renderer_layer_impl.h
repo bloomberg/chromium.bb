@@ -35,7 +35,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) override;
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override;
   virtual void PushPropertiesTo(LayerImpl* layer) override;
 
@@ -78,12 +78,11 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   bool ConvertDelegatedRenderPassId(RenderPassId delegated_render_pass_id,
                                     RenderPassId* output_render_pass_id) const;
 
-  void AppendRenderPassQuads(
-      RenderPass* render_pass,
-      const OcclusionTracker<LayerImpl>& occlusion_tracker,
-      AppendQuadsData* append_quads_data,
-      const RenderPass* delegated_render_pass,
-      const gfx::Size& frame_size) const;
+  void AppendRenderPassQuads(RenderPass* render_pass,
+                             const Occlusion& occlusion_in_content_space,
+                             AppendQuadsData* append_quads_data,
+                             const RenderPass* delegated_render_pass,
+                             const gfx::Size& frame_size) const;
 
   // LayerImpl overrides.
   virtual const char* LayerTypeAsString() const override;

@@ -16,7 +16,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/quad_f.h"
@@ -155,10 +155,9 @@ bool TiledLayerImpl::WillDraw(DrawMode draw_mode,
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void TiledLayerImpl::AppendQuads(
-    RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
-    AppendQuadsData* append_quads_data) {
+void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
+                                 const Occlusion& occlusion_in_content_space,
+                                 AppendQuadsData* append_quads_data) {
   DCHECK(tiler_);
   DCHECK(!tiler_->has_empty_bounds());
   DCHECK(!visible_content_rect().IsEmpty());
@@ -204,8 +203,6 @@ void TiledLayerImpl::AppendQuads(
   if (skips_draw_)
     return;
 
-  Occlusion occlusion =
-      occlusion_tracker.GetCurrentOcclusionForLayer(draw_transform());
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
       DrawableTile* tile = TileAt(i, j);
@@ -218,7 +215,7 @@ void TiledLayerImpl::AppendQuads(
         continue;
 
       gfx::Rect visible_tile_rect =
-          occlusion.GetUnoccludedContentRect(tile_rect);
+          occlusion_in_content_space.GetUnoccludedContentRect(tile_rect);
       if (visible_tile_rect.IsEmpty())
         continue;
 

@@ -12,7 +12,6 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/impl_side_painting_settings.h"
-#include "cc/test/mock_occlusion_tracker.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,11 +148,10 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   // Draw.
   active_layer->draw_properties().visible_content_rect =
       gfx::Rect(gfx::ToCeiledSize(active_layer->bounds()));
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer->WillDraw(DRAW_MODE_SOFTWARE, NULL);
-  active_layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer->DidDraw(NULL);
 
   EXPECT_EQ(DrawQuad::TILED_CONTENT, render_pass->quad_list.front()->material);

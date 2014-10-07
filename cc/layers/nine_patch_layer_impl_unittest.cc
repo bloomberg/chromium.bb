@@ -35,7 +35,6 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                               const gfx::Rect& border,
                               bool fill_center,
                               size_t expected_quad_size) {
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   gfx::Rect visible_content_rect(layer_size);
   gfx::Rect expected_remaining(border.x(),
@@ -63,7 +62,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   layer->SetImageBounds(bitmap_size);
   layer->SetLayout(aperture_rect, border, fill_center);
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;

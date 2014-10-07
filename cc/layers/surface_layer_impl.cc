@@ -7,7 +7,7 @@
 #include "base/debug/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 
 namespace cc {
 
@@ -37,10 +37,9 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetSurfaceId(surface_id_);
 }
 
-void SurfaceLayerImpl::AppendQuads(
-    RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
-    AppendQuadsData* append_quads_data) {
+void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
+                                   const Occlusion& occlusion_in_content_space,
+                                   AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
@@ -53,9 +52,7 @@ void SurfaceLayerImpl::AppendQuads(
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect visible_quad_rect =
-      occlusion_tracker.GetCurrentOcclusionForLayer(
-                            draw_properties().target_space_transform)
-          .GetUnoccludedContentRect(quad_rect);
+      occlusion_in_content_space.GetUnoccludedContentRect(quad_rect);
   if (visible_quad_rect.IsEmpty())
     return;
   SurfaceDrawQuad* quad =

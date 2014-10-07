@@ -28,7 +28,7 @@ class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
   virtual void PushPropertiesTo(LayerImpl* layer_tree_impl) override;
 
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override;
 
   virtual bool WillDraw(DrawMode draw_mode,

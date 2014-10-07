@@ -21,7 +21,6 @@ namespace cc {
 namespace {
 
 TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(800, 600);
@@ -39,7 +38,7 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   layer->draw_properties().render_target = layer.get();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
 
   LayerTestCommon::VerifyQuadsExactlyCoverRect(render_pass->quad_list,
                                                visible_content_rect);
@@ -48,7 +47,6 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
 TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   SkColor test_color = 0xFFA55AFF;
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(100, 100);
@@ -67,7 +65,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   layer->draw_properties().render_target = layer.get();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
 
   ASSERT_EQ(render_pass->quad_list.size(), 1U);
   EXPECT_EQ(
@@ -78,7 +76,6 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
 TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   const float opacity = 0.5f;
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(100, 100);
@@ -97,7 +94,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   layer->draw_properties().render_target = layer.get();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
 
   ASSERT_EQ(render_pass->quad_list.size(), 1U);
   EXPECT_EQ(opacity,
@@ -141,11 +138,10 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     // should be the full tile.
     layer_impl->draw_properties().opacity = 1;
 
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    layer_impl->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+    layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_EQ(visible_content_rect.ToString(),
@@ -168,11 +164,10 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     // should be empty.
     layer_impl->draw_properties().opacity = 1;
 
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    layer_impl->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+    layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_EQ(gfx::Rect().ToString(),

@@ -25,7 +25,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/tile_manager.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -150,10 +150,9 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   needs_push_properties_ = true;
 }
 
-void PictureLayerImpl::AppendQuads(
-    RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
-    AppendQuadsData* append_quads_data) {
+void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
+                                   const Occlusion& occlusion_in_content_space,
+                                   AppendQuadsData* append_quads_data) {
   DCHECK(!needs_post_commit_initialization_);
 
   SharedQuadState* shared_quad_state =
@@ -166,17 +165,13 @@ void PictureLayerImpl::AppendQuads(
         render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
     SolidColorLayerImpl::AppendSolidQuads(render_pass,
-                                          occlusion_tracker,
+                                          occlusion_in_content_space,
                                           shared_quad_state,
                                           content_bounds(),
-                                          draw_transform(),
                                           pile_->solid_color(),
                                           append_quads_data);
     return;
   }
-
-  Occlusion occlusion =
-      occlusion_tracker.GetCurrentOcclusionForLayer(draw_transform());
 
   float max_contents_scale = MaximumTilingContentsScale();
   gfx::Transform scaled_draw_transform = draw_transform();
@@ -188,7 +183,8 @@ void PictureLayerImpl::AppendQuads(
       gfx::ScaleToEnclosingRect(visible_content_rect(), max_contents_scale);
   scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
   Occlusion scaled_occlusion =
-      occlusion.GetOcclusionWithGivenDrawTransform(scaled_draw_transform);
+      occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+          scaled_draw_transform);
 
   shared_quad_state->SetAll(scaled_draw_transform,
                             scaled_content_bounds,

@@ -345,11 +345,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   // Thickness should be overridden to 3.
   {
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(
-        render_pass.get(), occlusion_tracker, &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -361,11 +359,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->draw_properties().contents_scale_x = 2.f;
   scrollbar_layer_impl->draw_properties().contents_scale_y = 2.f;
   {
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(
-        render_pass.get(), occlusion_tracker, &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -379,11 +375,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   // current viewport state.
   scrollbar_layer_impl->SetVisibleToTotalLengthRatio(0.2f);
   {
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(
-        render_pass.get(), occlusion_tracker, &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -395,11 +389,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->SetCurrentPos(0.f);
   scrollbar_layer_impl->SetMaximum(0);
   {
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(
-        render_pass.get(), occlusion_tracker, &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -455,12 +447,10 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   scrollbar_layer_impl->SetMaximum(8);
 
   {
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(
-        render_pass.get(), occlusion_tracker, &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());

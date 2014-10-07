@@ -1716,10 +1716,11 @@ class DidDrawCheckLayer : public LayerImpl {
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override {
     append_quads_called_ = true;
-    LayerImpl::AppendQuads(render_pass, occlusion_tracker, append_quads_data);
+    LayerImpl::AppendQuads(
+        render_pass, occlusion_in_content_space, append_quads_data);
   }
 
   virtual void DidDraw(ResourceProvider* provider) override {
@@ -1939,9 +1940,10 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override {
-    LayerImpl::AppendQuads(render_pass, occlusion_tracker, append_quads_data);
+    LayerImpl::AppendQuads(
+        render_pass, occlusion_in_content_space, append_quads_data);
     if (had_incomplete_tile_)
       append_quads_data->num_incomplete_tiles++;
     if (tile_missing_)
@@ -3738,7 +3740,7 @@ class BlendStateCheckLayer : public LayerImpl {
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override {
     quads_appended_ = true;
 
@@ -4501,7 +4503,7 @@ class FakeLayerWithQuads : public LayerImpl {
   }
 
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override {
     SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();

@@ -124,9 +124,13 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
 
   render_pass_->quad_list.clear();
   render_pass_->shared_quad_state_list.clear();
-  occlusion_tracker_.set_occluded_target_rect(occluded);
+
+  Occlusion occlusion(layer_impl->draw_transform(),
+                      SimpleEnclosedRegion(occluded),
+                      SimpleEnclosedRegion());
+
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(render_pass_.get(), occlusion_tracker_, &data);
+  layer_impl->AppendQuads(render_pass_.get(), occlusion, &data);
   layer_impl->DidDraw(resource_provider());
 }
 
@@ -138,9 +142,13 @@ void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
 
   render_pass_->quad_list.clear();
   render_pass_->shared_quad_state_list.clear();
-  occlusion_tracker_.set_occluded_target_rect(occluded);
+
+  Occlusion occlusion(layer_impl->draw_transform(),
+                      SimpleEnclosedRegion(occluded),
+                      SimpleEnclosedRegion());
+
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(render_pass_.get(), occlusion_tracker_, &data);
+  layer_impl->AppendQuads(render_pass_.get(), occlusion, &data);
   layer_impl->DidDraw(resource_provider());
 }
 

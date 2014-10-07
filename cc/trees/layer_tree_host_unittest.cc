@@ -1628,7 +1628,7 @@ class EvictionTestLayerImpl : public LayerImpl {
   virtual ~EvictionTestLayerImpl() {}
 
   virtual void AppendQuads(RenderPass* render_pass,
-                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
+                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override {
     ASSERT_TRUE(has_texture_);
     ASSERT_NE(0u, layer_tree_impl()->resource_provider()->num_resources());

@@ -16,7 +16,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 
 namespace cc {
 
@@ -254,7 +254,7 @@ bool DelegatedRendererLayerImpl::WillDraw(DrawMode draw_mode,
 
 void DelegatedRendererLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass, append_quads_data);
 
@@ -281,7 +281,7 @@ void DelegatedRendererLayerImpl::AppendQuads(
     DCHECK(target_render_pass_id.layer_id == render_target()->id());
 
     AppendRenderPassQuads(render_pass,
-                          occlusion_tracker,
+                          occlusion_in_content_space,
                           append_quads_data,
                           root_delegated_render_pass,
                           frame_size);
@@ -293,7 +293,7 @@ void DelegatedRendererLayerImpl::AppendQuads(
     const RenderPass* delegated_render_pass =
         render_passes_in_draw_order_[render_pass_index];
     AppendRenderPassQuads(render_pass,
-                          occlusion_tracker,
+                          occlusion_in_content_space,
                           append_quads_data,
                           delegated_render_pass,
                           frame_size);
@@ -383,7 +383,7 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
 
 void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data,
     const RenderPass* delegated_render_pass,
     const gfx::Size& frame_size) const {
@@ -439,10 +439,13 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       quad_content_to_delegated_target_space.ConcatTransform(draw_transform());
     }
 
+    Occlusion occlusion_in_quad_space =
+        occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+            quad_content_to_delegated_target_space);
+
     gfx::Rect quad_visible_rect =
-        occlusion_tracker.GetCurrentOcclusionForLayer(
-                              quad_content_to_delegated_target_space)
-            .GetUnoccludedContentRect(delegated_quad.visible_rect);
+        occlusion_in_quad_space.GetUnoccludedContentRect(
+            delegated_quad.visible_rect);
 
     if (quad_visible_rect.IsEmpty())
       continue;

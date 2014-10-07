@@ -1361,7 +1361,6 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 }
 
 TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size tile_size(400, 400);
@@ -1383,7 +1382,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   ASSERT_EQ(1U, render_pass->quad_list.size());
@@ -1564,11 +1563,10 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
   host_impl_.active_tree()->UpdateDrawProperties();
   active_layer_->draw_properties().visible_content_rect = visible_content_rect;
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   // All tiles in activation rect is ready to draw.
@@ -1599,11 +1597,10 @@ TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
       active_layer_->tilings()->tiling_at(0)->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   // All high res tiles drew, nothing was incomplete.
@@ -1641,11 +1638,10 @@ TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
       active_layer_->tilings()->tiling_at(1)->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(low_tiles);
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   // The missing high res tile was replaced by a low res tile.
@@ -1703,11 +1699,10 @@ TEST_F(PictureLayerImplTest,
       active_layer_->HighResTiling()->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(high_tiles);
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   // All high res tiles drew, and the one ideal res tile drew.
@@ -3444,7 +3439,6 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
 }
 
 TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size tile_size(400, 400);
@@ -3470,7 +3464,7 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
                               SK_MScalar1 / max_contents_scale);
 
   AppendQuadsData data;
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
 
   // SharedQuadState should have be of size 1, as we are doing AppenQuad once.
   EXPECT_EQ(1u, render_pass->shared_quad_state_list.size());
@@ -3579,11 +3573,10 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
   host_impl_.SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   host_impl_.ManageTiles();
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_HARDWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   // Even when OOM, quads should be produced, and should be different material
@@ -4290,11 +4283,10 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
     host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
   }
 
-  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
-  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
   active_layer_->DidDraw(NULL);
 
   DrawQuad::Material expected = test_for_solid

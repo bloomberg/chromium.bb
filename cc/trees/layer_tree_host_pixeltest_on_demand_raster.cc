@@ -8,7 +8,6 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/test/layer_tree_pixel_test.h"
-#include "cc/test/mock_occlusion_tracker.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -41,11 +40,10 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
     PictureLayerImpl* picture_layer = static_cast<PictureLayerImpl*>(
         host_impl->active_tree()->root_layer()->child_at(0));
 
-    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    picture_layer->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+    picture_layer->AppendQuads(render_pass.get(), Occlusion(), &data);
 
     for (const auto& quad : render_pass->quad_list)
       EXPECT_EQ(quad.material, DrawQuad::PICTURE_CONTENT);

@@ -6,7 +6,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 
 namespace cc {
 
@@ -95,7 +95,7 @@ bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
 
 void SolidColorScrollbarLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
@@ -106,9 +106,7 @@ void SolidColorScrollbarLayerImpl::AppendQuads(
 
   gfx::Rect thumb_quad_rect(ComputeThumbQuadRect());
   gfx::Rect visible_quad_rect =
-      occlusion_tracker.GetCurrentOcclusionForLayer(
-                            draw_properties().target_space_transform)
-          .GetUnoccludedContentRect(thumb_quad_rect);
+      occlusion_in_content_space.GetUnoccludedContentRect(thumb_quad_rect);
   if (visible_quad_rect.IsEmpty())
     return;
 

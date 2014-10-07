@@ -55,10 +55,10 @@ scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
 
 void FakePictureLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   PictureLayerImpl::AppendQuads(
-      render_pass, occlusion_tracker, append_quads_data);
+      render_pass, occlusion_in_content_space, append_quads_data);
   ++append_quads_count_;
 }
 

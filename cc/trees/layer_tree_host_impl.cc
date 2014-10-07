@@ -550,7 +550,10 @@ static void AppendQuadsForLayer(
     LayerImpl* layer,
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
-  layer->AppendQuads(target_render_pass, occlusion_tracker, append_quads_data);
+  layer->AppendQuads(
+      target_render_pass,
+      occlusion_tracker.GetCurrentOcclusionForLayer(layer->draw_transform()),
+      append_quads_data);
 }
 
 static void AppendQuadsForRenderSurfaceLayer(

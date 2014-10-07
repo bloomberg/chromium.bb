@@ -9,7 +9,7 @@
 #include "cc/base/math_util.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 #include "ui/gfx/rect_f.h"
 
 namespace cc {
@@ -82,7 +82,7 @@ void NinePatchLayerImpl::CheckGeometryLimitations() {
 
 void NinePatchLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   CheckGeometryLimitations();
   SharedQuadState* shared_quad_state =
@@ -213,10 +213,8 @@ void NinePatchLayerImpl::AppendQuads(
   gfx::Rect visible_rect;
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  Occlusion occlusion =
-      occlusion_tracker.GetCurrentOcclusionForLayer(draw_transform());
-
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_top_left);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_top_left);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -233,7 +231,8 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_top_right);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_top_right);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -250,7 +249,8 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_bottom_left);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_bottom_left);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -267,7 +267,8 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_bottom_right);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_bottom_right);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -284,7 +285,7 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_top);
+  visible_rect = occlusion_in_content_space.GetUnoccludedContentRect(layer_top);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -301,7 +302,8 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_left);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_left);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -318,7 +320,8 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_right);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_right);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -335,7 +338,8 @@ void NinePatchLayerImpl::AppendQuads(
                  flipped);
   }
 
-  visible_rect = occlusion.GetUnoccludedContentRect(layer_bottom);
+  visible_rect =
+      occlusion_in_content_space.GetUnoccludedContentRect(layer_bottom);
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -353,7 +357,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   if (fill_center_) {
-    visible_rect = occlusion.GetUnoccludedContentRect(layer_center);
+    visible_rect =
+        occlusion_in_content_space.GetUnoccludedContentRect(layer_center);
     if (!visible_rect.IsEmpty()) {
       TextureDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();

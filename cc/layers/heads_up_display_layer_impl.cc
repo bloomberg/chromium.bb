@@ -131,7 +131,7 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
 
 void HeadsUpDisplayLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   if (!resources_.back()->id())
     return;

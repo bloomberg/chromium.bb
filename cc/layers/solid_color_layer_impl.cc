@@ -8,7 +8,7 @@
 
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/solid_color_draw_quad.h"
-#include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/occlusion.h"
 
 namespace cc {
 
@@ -29,15 +29,11 @@ scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
 
 void SolidColorLayerImpl::AppendSolidQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     SharedQuadState* shared_quad_state,
     const gfx::Size& content_bounds,
-    const gfx::Transform& target_space_transform,
     SkColor color,
     AppendQuadsData* append_quads_data) {
-  Occlusion occlusion =
-      occlusion_tracker.GetCurrentOcclusionForLayer(target_space_transform);
-
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.
   int width = content_bounds.width();
@@ -49,7 +45,7 @@ void SolidColorLayerImpl::AppendSolidQuads(
                           std::min(width - x, kSolidQuadTileSize),
                           std::min(height - y, kSolidQuadTileSize));
       gfx::Rect visible_quad_rect =
-          occlusion.GetUnoccludedContentRect(quad_rect);
+          occlusion_in_content_space.GetUnoccludedContentRect(quad_rect);
       if (visible_quad_rect.IsEmpty())
         continue;
 
@@ -66,7 +62,7 @@ void SolidColorLayerImpl::AppendSolidQuads(
 
 void SolidColorLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
@@ -76,10 +72,9 @@ void SolidColorLayerImpl::AppendQuads(
       render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   AppendSolidQuads(render_pass,
-                   occlusion_tracker,
+                   occlusion_in_content_space,
                    shared_quad_state,
                    content_bounds(),
-                   draw_properties().target_space_transform,
                    background_color(),
                    append_quads_data);
 }
