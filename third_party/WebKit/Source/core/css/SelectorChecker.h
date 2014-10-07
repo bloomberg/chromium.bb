@@ -47,12 +47,6 @@ public:
     enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
     enum Mode { ResolvingStyle = 0, CollectingStyleRules, CollectingCSSRules, QueryingRules, SharingRules };
     explicit SelectorChecker(Document&, Mode);
-    enum ContextFlags {
-        // FIXME: Revmoe DefaultBehavior.
-        DefaultBehavior = 0,
-        ScopeContainsLastMatchedElement = 1,
-        TreatShadowHostAsNormalScope = 2,
-    };
 
     struct SelectorCheckingContext {
         STACK_ALLOCATED();
@@ -72,7 +66,8 @@ public:
             , hasScrollbarPseudo(false)
             , hasSelectionPseudo(false)
             , isUARule(false)
-            , contextFlags(DefaultBehavior)
+            , scopeContainsLastMatchedElement(false)
+            , treatShadowHostAsNormalScope(false)
         {
         }
 
@@ -85,11 +80,12 @@ public:
         RenderStyle* elementStyle;
         RenderScrollbar* scrollbar;
         ScrollbarPart scrollbarPart;
-        bool isSubSelector;
-        bool hasScrollbarPseudo;
-        bool hasSelectionPseudo;
-        bool isUARule;
-        ContextFlags contextFlags;
+        unsigned isSubSelector : 1;
+        unsigned hasScrollbarPseudo : 1;
+        unsigned hasSelectionPseudo : 1;
+        unsigned isUARule : 1;
+        unsigned scopeContainsLastMatchedElement : 1;
+        unsigned treatShadowHostAsNormalScope : 1;
     };
 
     struct MatchResult {

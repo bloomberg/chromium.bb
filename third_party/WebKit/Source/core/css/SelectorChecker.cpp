@@ -93,7 +93,7 @@ static Element* parentElement(const SelectorChecker::SelectorCheckingContext& co
 
 static bool scopeContainsLastMatchedElement(const SelectorChecker::SelectorCheckingContext& context)
 {
-    if (!(context.contextFlags & SelectorChecker::ScopeContainsLastMatchedElement))
+    if (!context.scopeContainsLastMatchedElement)
         return true;
 
     ASSERT(context.scope);
@@ -508,7 +508,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
     // Only :host and :host-context() should match the host: http://drafts.csswg.org/css-scoping/#host-element
     if (elementIsHostInItsShadowTree && (!selector.isHostPseudoClass()
-        && !(context.contextFlags & TreatShadowHostAsNormalScope)
+        && !context.treatShadowHostAsNormalScope
         && selector.match() != CSSSelector::PseudoElement))
             return false;
 
@@ -959,7 +959,8 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
     if (selector.pseudoType() == CSSSelector::PseudoCue) {
         SelectorCheckingContext subContext(context);
         subContext.isSubSelector = true;
-        subContext.contextFlags = DefaultBehavior;
+        subContext.scopeContainsLastMatchedElement = false;
+        subContext.treatShadowHostAsNormalScope = false;
 
         const CSSSelector* contextSelector = context.selector;
         ASSERT(contextSelector);
@@ -1002,7 +1003,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
 
     // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
     for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-        subContext.contextFlags = TreatShadowHostAsNormalScope;
+        subContext.treatShadowHostAsNormalScope = true;
         subContext.scope = context.scope;
         // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
         Element* nextElement = &element;
@@ -1016,7 +1017,8 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
                 maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
                 break;
             }
-            hostContext.contextFlags = DefaultBehavior;
+            hostContext.scopeContainsLastMatchedElement = false;
+            hostContext.treatShadowHostAsNormalScope = false;
             hostContext.scope = nullptr;
 
             if (selector.pseudoType() == CSSSelector::PseudoHost)

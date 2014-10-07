@@ -125,25 +125,25 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
-    void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::ContextFlags = SelectorChecker::DefaultBehavior, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
+    void collectMatchingRules(const MatchRequest&, RuleRange&, bool scopeContainsLastMatchedElement = false, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
 private:
-    void collectRuleIfMatches(const RuleData&, SelectorChecker::ContextFlags, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
+    void collectRuleIfMatches(const RuleData&, bool scopeContainsLastMatchedElement, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
 
     template<typename RuleDataListType>
-    void collectMatchingRulesForList(const RuleDataListType* rules, SelectorChecker::ContextFlags contextFlags, CascadeScope cascadeScope, CascadeOrder cascadeOrder, const MatchRequest& matchRequest, RuleRange& ruleRange)
+    void collectMatchingRulesForList(const RuleDataListType* rules, bool scopeContainsLastMatchedElement, CascadeScope cascadeScope, CascadeOrder cascadeOrder, const MatchRequest& matchRequest, RuleRange& ruleRange)
     {
         if (!rules)
             return;
 
         for (typename RuleDataListType::const_iterator it = rules->begin(), end = rules->end(); it != end; ++it)
-            collectRuleIfMatches(*it, contextFlags, cascadeScope, cascadeOrder, matchRequest, ruleRange);
+            collectRuleIfMatches(*it, scopeContainsLastMatchedElement, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     }
 
-    bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::ContextFlags, SelectorChecker::MatchResult*);
+    bool ruleMatches(const RuleData&, const ContainerNode* scope, bool scopeContainsLastMatchedElement, SelectorChecker::MatchResult*);
 
     CSSRuleList* nestedRuleList(CSSRule*);
     template<class CSSRuleCollection>

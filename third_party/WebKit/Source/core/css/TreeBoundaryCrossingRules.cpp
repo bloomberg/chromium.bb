@@ -81,7 +81,7 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
         for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it) {
             MatchRequest request((*it)->ruleSet.get(), includeEmptyRules, scopingNode, (*it)->parentStyleSheet, (*it)->parentIndex);
-            collector.collectMatchingRules(request, ruleRange, SelectorChecker::ScopeContainsLastMatchedElement, ignoreCascadeScope, cascadeOrder, true);
+            collector.collectMatchingRules(request, ruleRange, true, ignoreCascadeScope, cascadeOrder, true);
         }
         ++innerCascadeOrder;
         --outerCascadeOrder;
