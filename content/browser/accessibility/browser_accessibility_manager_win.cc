@@ -32,10 +32,11 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(initial_tree, delegate, factory),
+    : BrowserAccessibilityManager(delegate, factory),
       tracked_scroll_object_(NULL),
       focus_event_on_root_needed_(false) {
   ui::win::CreateATLModuleIfNeeded();
+  Initialize(initial_tree);
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {

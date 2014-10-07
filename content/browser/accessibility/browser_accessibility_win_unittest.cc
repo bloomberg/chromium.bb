@@ -679,4 +679,29 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
+// This is a regression test for a bug where the initial empty document
+// loaded by a BrowserAccessibilityManagerWin couldn't be looked up by
+// its UniqueIDWin, because the AX Tree was loaded in
+// BrowserAccessibilityManager code before BrowserAccessibilityManagerWin
+// was initialized.
+TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
+  scoped_ptr<BrowserAccessibilityManagerWin> manager(
+      new BrowserAccessibilityManagerWin(
+          BrowserAccessibilityManagerWin::GetEmptyDocument(),
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
+
+  // Verify the root is as we expect by default.
+  BrowserAccessibility* root = manager->GetRoot();
+  EXPECT_EQ(0, root->GetId());
+  EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
+  EXPECT_EQ(1 << ui::AX_STATE_BUSY |
+            1 << ui::AX_STATE_READ_ONLY |
+            1 << ui::AX_STATE_ENABLED,
+            root->GetState());
+
+  LONG unique_id_win = root->ToBrowserAccessibilityWin()->unique_id_win();
+  ASSERT_EQ(root, manager->GetFromUniqueIdWin(unique_id_win));
+}
+
 }  // namespace content

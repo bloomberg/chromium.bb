@@ -74,8 +74,9 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(initial_tree, delegate, factory) {
+    : BrowserAccessibilityManager(delegate, factory) {
   SetContentViewCore(content_view_core);
+  Initialize(initial_tree);
 }
 
 BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
