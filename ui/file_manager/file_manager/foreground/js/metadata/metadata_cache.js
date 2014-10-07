@@ -495,13 +495,20 @@ MetadataCache.prototype.clearRecursively = function(entry, type) {
 MetadataCache.prototype.addObserver = function(
     entry, relation, type, observer) {
   var entryURL = entry.toURL();
+
+  // Escape following regexp special characters:
+  // \^$.*+?|&{}[]()<>
+  var escapedEntryURL = entryURL.replace(
+      /([\\\^\$\.\*\+\?\|\&\{\}\[\]\(\)\<\>])/g,
+      '\\$1');
+
   var re;
   if (relation === MetadataCache.CHILDREN)
-    re = entryURL + '(/[^/]*)?';
+    re = escapedEntryURL + '(/[^/]*)?';
   else if (relation === MetadataCache.DESCENDANTS)
-    re = entryURL + '(/.*)?';
+    re = escapedEntryURL + '(/.*)?';
   else
-    re = entryURL;
+    re = escapedEntryURL;
 
   var id = ++this.observerId_;
   this.observers_.push({

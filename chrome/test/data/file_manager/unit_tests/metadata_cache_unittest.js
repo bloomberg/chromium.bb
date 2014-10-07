@@ -389,3 +389,53 @@ function testClear(callback) {
         assertDeepEquals([{name: 'fiddle'}], metadata[2]);
       }), callback);
 }
+
+/**
+ * Tests the MetadataCache#addObserver method.
+ */
+function testAddObserver() {
+  var providers = [
+    new MockProvider('instrument'),
+    new MockProvider('beat')
+  ];
+  var metadataCache = new MetadataCache(providers);
+
+  var directoryEntry = new MockFileEntry(
+      'volumeId',
+      '/mu\\^$.*.+?|&{}[si]()<>cs');
+  var observerCalls = [];
+  var observerCallback = function(entries, properties) {
+    observerCalls.push({entries: entries, properties: properties});
+  };
+
+  metadataCache.addObserver(directoryEntry, MetadataCache.CHILDREN,
+      'filesystem', observerCallback);
+
+  var fileEntry1 = new MockFileEntry('volumeId',
+      '/mu\\^$.*.+?|&{}[si]()<>cs/foo.mp3');
+  var fileEntry1URL = fileEntry1.toURL();
+  metadataCache.set(fileEntry1, 'filesystem', 'test1');
+  assertEquals(1, observerCalls.length);
+  assertArrayEquals([fileEntry1], observerCalls[0].entries);
+  assertEquals('test1', observerCalls[0].properties[fileEntry1URL]);
+
+  var fileEntry2 = new MockFileEntry('volumeId',
+      '/mu\\^$.*.+?|&{}[si]()<>cs/f.[o]o.mp3');
+  var fileEntry2URL = fileEntry2.toURL();
+  metadataCache.set(fileEntry2, 'filesystem', 'test2');
+  assertEquals(2, observerCalls.length);
+  assertArrayEquals([fileEntry2], observerCalls[1].entries);
+  assertEquals('test2', observerCalls[1].properties[fileEntry2URL]);
+
+  // Descendant case does not invoke the observer.
+  var fileEntry3 = new MockFileEntry('volumeId',
+      '/mu\\^$.*.+?|&{}[si]()<>cs/foo/bar.mp3');
+  metadataCache.set(fileEntry3, 'filesystem', 'test3');
+  assertEquals(2, observerCalls.length);
+
+  // This case does not invoke the observer.
+  // (This is a case which matches when regexp special chars are not escaped).
+  var fileEntry4 = new MockFileEntry('volumeId', '/&{}i<>cs/foo.mp3');
+  metadataCache.set(fileEntry4);
+  assertEquals(2, observerCalls.length);
+}
