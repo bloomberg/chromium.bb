@@ -57,12 +57,14 @@ CREATE TABLE `buildStageTable` (
   `build_id` int(11) NOT NULL,
   `name` varchar(80) NOT NULL,
   `board` varchar(80) DEFAULT NULL,
-  `status` enum('fail','pass') NOT NULL,
-  `log_url` varchar(240) DEFAULT NULL,
-  `duration_seconds` int(11) NOT NULL,
-  `summary` blob,
+  `status` enum('fail','pass','inflight','missing','aborted','planned','skipped') DEFAULT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `start_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `finish_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `final` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `build_id` (`build_id`),
+  KEY `last_updated` (`last_updated`),
   CONSTRAINT `buildStageTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

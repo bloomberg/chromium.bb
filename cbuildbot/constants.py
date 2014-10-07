@@ -63,14 +63,21 @@ BUILDER_STATUS_PASSED = 'pass'
 BUILDER_STATUS_INFLIGHT = 'inflight'
 BUILDER_STATUS_MISSING = 'missing'
 BUILDER_STATUS_ABORTED = 'aborted'
+# The 'planned' and 'skipped' statuses are currently only used for
+# build stages.
+BUILDER_STATUS_PLANNED = 'planned'
+BUILDER_STATUS_SKIPPED = 'skipped'
 BUILDER_COMPLETED_STATUSES = (BUILDER_STATUS_PASSED,
                               BUILDER_STATUS_FAILED,
-                              BUILDER_STATUS_ABORTED)
+                              BUILDER_STATUS_ABORTED,
+                              BUILDER_STATUS_SKIPPED)
 BUILDER_ALL_STATUSES = (BUILDER_STATUS_FAILED,
                         BUILDER_STATUS_PASSED,
                         BUILDER_STATUS_INFLIGHT,
                         BUILDER_STATUS_MISSING,
-                        BUILDER_STATUS_ABORTED)
+                        BUILDER_STATUS_ABORTED,
+                        BUILDER_STATUS_PLANNED,
+                        BUILDER_STATUS_SKIPPED)
 
 # CL status strings
 CL_STATUS_FAILED = BUILDER_STATUS_FAILED

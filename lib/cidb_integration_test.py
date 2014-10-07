@@ -137,14 +137,14 @@ class CIDBAPITest(CIDBIntegrationTest):
 
   def testSchemaVersionTooLow(self):
     """Tests that the minimum_schema decorator works as expected."""
-    db = self._PrepareFreshDatabase(3)
-    self.assertRaises2(cidb.UnsupportedMethodException,
-                       db.InsertBuildStages, [])
+    db = self._PrepareFreshDatabase(2)
+    with self.assertRaises(cidb.UnsupportedMethodException):
+      db.InsertCLActions(0, [])
 
   def testSchemaVersionOK(self):
     """Tests that the minimum_schema decorator works as expected."""
     db = self._PrepareFreshDatabase(4)
-    db.InsertBuildStages([])
+    db.InsertCLActions(0, [])
 
   def testGetTime(self):
     db = self._PrepareFreshDatabase(1)
@@ -176,10 +176,10 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema25(self):
-    """Run the CQ test with schema version 25."""
-    # Run the CQ test at schema version 25
-    self._PrepareFreshDatabase(25)
+  def testCQWithSchema28(self):
+    """Run the CQ test with schema version 28."""
+    # Run the CQ test at schema version 28
+    self._PrepareFreshDatabase(28)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -382,11 +382,47 @@ class DataSeries0Test(CIDBIntegrationTest):
       logging.debug('Simulated master build %s', master_build_id)
 
 
+class BuildStagesTest(CIDBIntegrationTest):
+  """Test buildStageTable functionality."""
+
+  def runTest(self):
+    """Test basic buildStageTable functionality at schema v28."""
+    self._PrepareFreshDatabase(28)
+
+    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+
+    build_id = bot_db.InsertBuild('builder name',
+                                  constants.WATERFALL_INTERNAL,
+                                  1,
+                                  'build_config',
+                                  'bot_hostname')
+
+    build_stage_id = bot_db.InsertBuildStage(build_id,
+                                             'My Stage',
+                                             board='bunny')
+
+    values = bot_db._Select('buildStageTable', build_stage_id, ['start_time'])
+    self.assertEqual(None, values['start_time'])
+
+    bot_db.StartBuildStage(build_stage_id)
+    values = bot_db._Select('buildStageTable', build_stage_id,
+                            ['start_time', 'status'])
+    self.assertNotEqual(None, values['start_time'])
+    self.assertEqual(constants.BUILDER_STATUS_INFLIGHT, values['status'])
+
+    bot_db.FinishBuildStage(build_stage_id, constants.BUILDER_STATUS_PASSED)
+    values = bot_db._Select('buildStageTable', build_stage_id,
+                            ['finish_time', 'status', 'final'])
+    self.assertNotEqual(None, values['finish_time'])
+    self.assertEqual(True, values['final'])
+    self.assertEqual(constants.BUILDER_STATUS_PASSED, values['status'])
+
+
 class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""
 
   def runTest(self):
-    """Simulate a single set of canary builds with database schema v25."""
+    """Simulate a single set of canary builds with database schema v28."""
     metadatas = GetTestDataSeries(SERIES_1_TEST_DATA_PATH)
     self.assertEqual(len(metadatas), 18, 'Did not load expected amount of '
                                          'test data')
@@ -394,7 +430,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(25)
+    self._PrepareFreshDatabase(28)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -503,28 +539,6 @@ def _SimulateBuildStart(db, metadata, master_build_id=None):
 def _SimulateCQBuildFinish(db, metadata, build_id):
 
   metadata_dict = metadata.GetDict()
-
-  # Insert the first build stage using InsertBuildStage, then batch-insert
-  # the rest with InsertBuildStages. This allows us to test InsertBuildStage
-  # without taking too much performance loss in the test.
-  stage_results = metadata_dict['results']
-  if len(stage_results) > 0:
-    r = stage_results[0]
-    db.InsertBuildStage(build_id, r['name'], r['board'],
-                        _TranslateStatus(r['status']), r['log'],
-                        cros_build_lib.ParseDurationToSeconds(r['duration']),
-                        r['summary'])
-  if len(stage_results) > 1:
-    stages = [{'build_id': build_id,
-               'name': r['name'],
-               'board': r['board'],
-               'status': _TranslateStatus(r['status']),
-               'log_url': r['log'],
-               'duration_seconds':
-                 cros_build_lib.ParseDurationToSeconds(r['duration']),
-               'summary': r['summary']}
-              for r in stage_results[1:]]
-    db.InsertBuildStages(stages)
 
   db.InsertCLActions(
       build_id,

@@ -564,53 +564,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     return self._InsertMany('clActionTable', values)
 
-  @minimum_schema(4)
-  def InsertBuildStage(self, build_id, stage_name, board, status,
-                       log_url, duration_seconds, summary):
-    """Insert a build stage into buildStageTable.
-
-    Args:
-      build_id: id of responsible build
-      stage_name: name of stage
-      board: board that stage ran for
-      status: 'pass' or 'fail'
-      log_url: URL of stage log
-      duration_seconds: run time of stage, in seconds
-      summary: summary message of stage
-
-    Returns:
-      Primary key of inserted stage.
-    """
-    return self._Insert('buildStageTable',
-                        {'build_id': build_id,
-                         'name': stage_name,
-                         'board': board,
-                         'status': status,
-                         'log_url': log_url,
-                         'duration_seconds': duration_seconds,
-                         'summary': summary})
-
-  @minimum_schema(4)
-  def InsertBuildStages(self, stages):
-    """For testing only. Insert multiple build stages into buildStageTable.
-
-    This method allows integration tests to more quickly populate build
-    stages into the database, from test data. Normal builder operations are
-    expected to insert build stage rows one at a time, using InsertBuildStage.
-
-    Args:
-      stages: A list of dictionaries, each dictionary containing keys
-              build_id, name, board, status, log_url, duration_seconds, and
-              summary.
-
-    Returns:
-      The number of build stage rows inserted.
-    """
-    if not stages:
-      return 0
-    return self._InsertMany('buildStageTable',
-                            stages)
-
   @minimum_schema(6)
   def InsertBoardPerBuild(self, build_id, board):
     """Inserts a board-per-build entry into database.
@@ -632,6 +585,26 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     self._Insert('childConfigPerBuildTable', {'build_id': build_id,
                                               'child_config': child_config})
+
+  @minimum_schema(28)
+  def InsertBuildStage(self, build_id, name, board=None,
+                       status=constants.BUILDER_STATUS_PLANNED):
+    """Insert a build stage entry into database.
+
+    Args:
+      build_id: primary key of the build in buildTable
+      name: Full name of build stage.
+      board: (Optional) board name, if this is a board-specific stage.
+      status: (Optional) stage status, one of constants.BUILDER_ALL_STATUSES.
+              Default constants.BUILDER_STATUS_PLANNED.
+
+    Returns:
+      Integer primary key of inserted stage, i.e. build_stage_id
+    """
+    return self._Insert('buildStageTable', {'build_id': build_id,
+                                            'name': name,
+                                            'board': board,
+                                            'status': status})
 
   @minimum_schema(2)
   def UpdateMetadata(self, build_id, metadata):
@@ -673,6 +646,35 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'build_id = %s and board = "%s"' % (build_id, board),
         update_dict)
 
+  @minimum_schema(28)
+  def StartBuildStage(self, build_stage_id):
+    """Marks a build stage as inflight, in the database.
+
+    Args:
+      build_stage_id: primary key of the build stage in buildStageTable.
+    """
+    current_timestamp = sqlalchemy.func.current_timestamp()
+    return self._Update(
+        'buildStageTable',
+        build_stage_id,
+        {'status': constants.BUILDER_STATUS_INFLIGHT,
+         'start_time': current_timestamp})
+
+  @minimum_schema(28)
+  def FinishBuildStage(self, build_stage_id, status):
+    """Marks a build stage as finished, in the database.
+
+    Args:
+      build_stage_id: primary key of the build stage in buildStageTable.
+      status: one of constants.BUILDER_COMPLETED_STATUSES
+    """
+    current_timestamp = sqlalchemy.func.current_timestamp()
+    return self._Update(
+        'buildStageTable',
+        build_stage_id,
+        {'status': status,
+         'finish_time': current_timestamp,
+         'final': True})
 
   @minimum_schema(25)
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None):
