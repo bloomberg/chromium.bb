@@ -208,6 +208,7 @@ void EasyUnlockServiceSignin::OnScreenDidLock() {
 }
 
 void EasyUnlockServiceSignin::OnScreenDidUnlock() {
+  Shutdown();
 }
 
 void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
@@ -236,7 +237,6 @@ void EasyUnlockServiceSignin::LoggedInStateChanged() {
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
   UnloadApp();
-  Shutdown();
 }
 
 void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
