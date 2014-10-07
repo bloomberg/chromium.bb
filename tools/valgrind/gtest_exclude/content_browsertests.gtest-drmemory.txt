@@ -9,3 +9,8 @@ PluginTest.ScheduleTimer
 
 # crbug.com/419396
 WebRtcBrowserTest.CallWithDataAndMedia
+
+# crbug.com/420827
+ServiceWorkerVersionBrowserTest.Activate_NoEventListener
+ServiceWorkerBrowserTest.ImportsBustMemcache
+
