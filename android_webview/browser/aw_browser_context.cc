@@ -148,10 +148,10 @@ net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
   // content::StoragePartitionImplMap::Create(). This is not fixable
   // until http://crbug.com/159193. Until then, assert that the context
   // has already been allocated and just handle setting the protocol_handlers.
-  DCHECK(url_request_context_getter_);
+  DCHECK(url_request_context_getter_.get());
   url_request_context_getter_->SetHandlersAndInterceptors(
       protocol_handlers, request_interceptors.Pass());
-  return url_request_context_getter_;
+  return url_request_context_getter_.get();
 }
 
 net::URLRequestContextGetter*

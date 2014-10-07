@@ -247,7 +247,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
-  url_request_context_->set_cookie_store(cookie_store_);
+  url_request_context_->set_cookie_store(cookie_store_.get());
 
   job_factory_ = CreateJobFactory(&protocol_handlers_,
                                   request_interceptors_.Pass());

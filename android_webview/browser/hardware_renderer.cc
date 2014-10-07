@@ -175,8 +175,8 @@ void HardwareRenderer::SetFrameData() {
   bool size_changed = frame_size != frame_size_;
   frame_size_ = frame_size;
 
-  if (!frame_provider_ || size_changed) {
-    if (delegated_layer_) {
+  if (!frame_provider_.get() || size_changed) {
+    if (delegated_layer_.get()) {
       delegated_layer_->RemoveFromParent();
     }
 

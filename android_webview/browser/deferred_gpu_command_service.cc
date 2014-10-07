@@ -30,14 +30,14 @@ ScopedAllowGL::ScopedAllowGL() {
   DCHECK(!allow_gl.Get().Get());
   allow_gl.Get().Set(true);
 
-  if (g_service.Get())
+  if (g_service.Get().get())
     g_service.Get()->RunTasks();
 }
 
 ScopedAllowGL::~ScopedAllowGL() {
   allow_gl.Get().Set(false);
 
-  DeferredGpuCommandService* service = g_service.Get();
+  DeferredGpuCommandService* service = g_service.Get().get();
   if (service) {
     service->RunTasks();
     if (service->IdleQueueSize()) {
@@ -48,7 +48,7 @@ ScopedAllowGL::~ScopedAllowGL() {
 
 // static
 void DeferredGpuCommandService::SetInstance() {
-  if (!g_service.Get()) {
+  if (!g_service.Get().get()) {
     g_service.Get() = new DeferredGpuCommandService;
     content::SynchronousCompositor::SetGpuService(g_service.Get());
   }
