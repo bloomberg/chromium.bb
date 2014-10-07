@@ -59,7 +59,7 @@ public:
     void clearMediaQueryRuleSetStyleSheets();
     void enableExitTransitionStylesheets();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     explicit TreeScopeStyleSheetCollection(TreeScope&);

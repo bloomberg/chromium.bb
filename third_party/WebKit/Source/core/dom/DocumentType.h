@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class DocumentType FINAL : public Node {
+class DocumentType final : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
@@ -43,13 +43,13 @@ public:
 private:
     DocumentType(Document*, const String& name, const String& publicId, const String& systemId);
 
-    virtual KURL baseURI() const OVERRIDE;
-    virtual String nodeName() const OVERRIDE;
-    virtual NodeType nodeType() const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) OVERRIDE;
+    virtual KURL baseURI() const override;
+    virtual String nodeName() const override;
+    virtual NodeType nodeType() const override;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
     String m_name;
     String m_publicId;

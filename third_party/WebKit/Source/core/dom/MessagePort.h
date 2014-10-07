@@ -53,7 +53,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
-class MessagePort FINAL : public RefCountedWillBeGarbageCollectedFinalized<MessagePort>
+class MessagePort final : public RefCountedWillBeGarbageCollectedFinalized<MessagePort>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public WebMessagePortChannelClient {
@@ -83,13 +83,13 @@ public:
 
     bool started() const { return m_started; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
-    virtual MessagePort* toMessagePort() OVERRIDE { return this; }
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    virtual MessagePort* toMessagePort() override { return this; }
 
     // ActiveDOMObject implementation.
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE { close(); }
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override { close(); }
 
     void setOnmessage(PassRefPtr<EventListener> listener)
     {
@@ -108,7 +108,7 @@ private:
     explicit MessagePort(ExecutionContext&);
 
     // WebMessagePortChannelClient implementation.
-    virtual void messageAvailable() OVERRIDE;
+    virtual void messageAvailable() override;
     void dispatchMessages();
 
     OwnPtr<WebMessagePortChannel> m_entangledChannel;

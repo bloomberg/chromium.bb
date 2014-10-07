@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class NodeFilter FINAL : public RefCountedWillBeGarbageCollected<NodeFilter>, public ScriptWrappable {
+class NodeFilter final : public RefCountedWillBeGarbageCollected<NodeFilter>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     /**

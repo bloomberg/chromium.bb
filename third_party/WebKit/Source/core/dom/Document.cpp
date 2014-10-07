@@ -377,7 +377,7 @@ static WeakDocumentSet& liveDocumentSet()
 #endif
 
 // This class doesn't work with non-Document ExecutionContext.
-class AutofocusTask FINAL : public ExecutionContextTask {
+class AutofocusTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<AutofocusTask> create()
     {
@@ -387,7 +387,7 @@ public:
 
 private:
     AutofocusTask() { }
-    virtual void performTask(ExecutionContext* context) OVERRIDE
+    virtual void performTask(ExecutionContext* context) override
     {
         Document* document = toDocument(context);
         if (RefPtrWillBeRawPtr<Element> element = document->autofocusElement()) {

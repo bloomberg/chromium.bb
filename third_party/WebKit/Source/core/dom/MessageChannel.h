@@ -38,7 +38,7 @@ namespace blink {
 class MessagePort;
 class ExecutionContext;
 
-class MessageChannel FINAL : public RefCountedWillBeGarbageCollected<MessageChannel>, public ScriptWrappable {
+class MessageChannel final : public RefCountedWillBeGarbageCollected<MessageChannel>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
     DEFINE_WRAPPERTYPEINFO();
 public:

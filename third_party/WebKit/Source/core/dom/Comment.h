@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class Comment FINAL : public CharacterData {
+class Comment final : public CharacterData {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Comment> create(Document&, const String&);
@@ -35,9 +35,9 @@ public:
 private:
     Comment(Document&, const String&);
 
-    virtual String nodeName() const OVERRIDE;
-    virtual NodeType nodeType() const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE;
+    virtual String nodeName() const override;
+    virtual NodeType nodeType() const override;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, nodeType() == Node::COMMENT_NODE);

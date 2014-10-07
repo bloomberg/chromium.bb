@@ -25,7 +25,7 @@ namespace {
 
 class RangeTest : public ::testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     HTMLDocument& document() const;
 

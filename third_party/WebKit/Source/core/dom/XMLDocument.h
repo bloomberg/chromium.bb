@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class XMLDocument FINAL : public Document {
+class XMLDocument final : public Document {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<XMLDocument> create(const DocumentInit& initializer = DocumentInit())

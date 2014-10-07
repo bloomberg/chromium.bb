@@ -32,12 +32,12 @@ namespace blink {
 class StyleSheet;
 class CSSStyleSheet;
 
-class ProcessingInstruction FINAL : public CharacterData, private ResourceOwner<StyleSheetResource> {
+class ProcessingInstruction final : public CharacterData, private ResourceOwner<StyleSheetResource> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
     virtual ~ProcessingInstruction();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     const String& target() const { return m_target; }
 
@@ -56,20 +56,20 @@ public:
 private:
     ProcessingInstruction(Document&, const String& target, const String& data);
 
-    virtual String nodeName() const OVERRIDE;
-    virtual NodeType nodeType() const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE;
+    virtual String nodeName() const override;
+    virtual NodeType nodeType() const override;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
     bool checkStyleSheet(String& href, String& charset);
     void process(const String& href, const String& charset);
 
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) OVERRIDE;
-    virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) OVERRIDE;
+    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
+    virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) override;
 
-    virtual bool sheetLoaded() OVERRIDE;
+    virtual bool sheetLoaded() override;
 
     void parseStyleSheet(const String& sheet);
     void clearSheet();

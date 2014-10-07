@@ -49,7 +49,7 @@ public:
     virtual String taskNameForInstrumentation() const { return String(); }
 };
 
-class CallClosureTask FINAL : public ExecutionContextTask {
+class CallClosureTask final : public ExecutionContextTask {
 public:
     // Do not use |create| other than in createCrossThreadTask and
     // createSameThreadTask.
@@ -58,7 +58,7 @@ public:
     {
         return adoptPtr(new CallClosureTask(closure));
     }
-    virtual void performTask(ExecutionContext*) OVERRIDE { m_closure(); }
+    virtual void performTask(ExecutionContext*) override { m_closure(); }
 
 private:
     explicit CallClosureTask(const Closure& closure) : m_closure(closure) { }

@@ -35,7 +35,7 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader FINAL : private ScriptResourceClient {
+class ScriptLoader final : private ScriptResourceClient {
 public:
     static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptLoader();
@@ -84,7 +84,7 @@ private:
     ScriptLoaderClient* client() const;
 
     // ResourceClient
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void notifyFinished(Resource*) override;
 
     // FIXME: Oilpan: This should become a Member once ResourceClient is moved to the heap.
     Element* m_element;

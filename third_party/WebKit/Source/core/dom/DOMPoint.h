@@ -11,7 +11,7 @@ namespace blink {
 
 class DOMPointInit;
 
-class DOMPoint FINAL : public DOMPointReadOnly {
+class DOMPoint final : public DOMPointReadOnly {
 public:
     static DOMPoint* create(const DOMPointInit&);
     static DOMPoint* create(double x, double y, double z = 0, double w = 1);

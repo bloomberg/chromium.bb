@@ -39,19 +39,19 @@ namespace blink {
 
 namespace {
 
-class DispatchCallbackTask FINAL : public ExecutionContextTask {
+class DispatchCallbackTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<DispatchCallbackTask> create(StringCallback* callback, const String& data, const String& taskName)
     {
         return adoptPtr(new DispatchCallbackTask(callback, data, taskName));
     }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE
+    virtual void performTask(ExecutionContext*) override
     {
         m_callback->handleEvent(m_data);
     }
 
-    virtual String taskNameForInstrumentation() const OVERRIDE
+    virtual String taskNameForInstrumentation() const override
     {
         return m_taskName;
     }

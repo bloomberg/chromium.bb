@@ -41,7 +41,7 @@ using namespace blink;
 
 namespace {
 
-class MarkingBooleanTask FINAL : public ExecutionContextTask {
+class MarkingBooleanTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<MarkingBooleanTask> create(bool* toBeMarked)
     {
@@ -54,7 +54,7 @@ public:
 private:
     MarkingBooleanTask(bool* toBeMarked) : m_toBeMarked(toBeMarked) { }
 
-    virtual void performTask(ExecutionContext* context) OVERRIDE
+    virtual void performTask(ExecutionContext* context) override
     {
         *m_toBeMarked = true;
     }

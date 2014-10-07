@@ -32,20 +32,20 @@
 
 namespace blink {
 
-class PseudoElement FINAL : public Element {
+class PseudoElement final : public Element {
 public:
     static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId pseudoId)
     {
         return adoptRefWillBeNoop(new PseudoElement(parent, pseudoId));
     }
 
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
+    virtual void attach(const AttachContext& = AttachContext()) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 
-    virtual bool canStartSelection() const OVERRIDE { return false; }
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
-    virtual PseudoId pseudoId() const OVERRIDE { return m_pseudoId; }
+    virtual bool canStartSelection() const override { return false; }
+    virtual bool canContainRangeEndPoint() const override { return false; }
+    virtual PseudoId pseudoId() const override { return m_pseudoId; }
 
     static String pseudoElementNameForEvents(PseudoId);
 
@@ -54,7 +54,7 @@ public:
 private:
     PseudoElement(Element*, PseudoId);
 
-    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
+    virtual void didRecalcStyle(StyleRecalcChange) override;
 
     PseudoId m_pseudoId;
 };

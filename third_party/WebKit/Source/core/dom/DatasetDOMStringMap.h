@@ -34,7 +34,7 @@ namespace blink {
 class Element;
 class ExceptionState;
 
-class DatasetDOMStringMap FINAL : public DOMStringMap {
+class DatasetDOMStringMap final : public DOMStringMap {
 public:
     static PassOwnPtrWillBeRawPtr<DatasetDOMStringMap> create(Element* element)
     {
@@ -42,19 +42,19 @@ public:
     }
 
 #if !ENABLE(OILPAN)
-    virtual void ref() OVERRIDE;
-    virtual void deref() OVERRIDE;
+    virtual void ref() override;
+    virtual void deref() override;
 #endif
 
-    virtual void getNames(Vector<String>&) OVERRIDE;
-    virtual String item(const String& name) OVERRIDE;
-    virtual bool contains(const String& name) OVERRIDE;
-    virtual void setItem(const String& name, const String& value, ExceptionState&) OVERRIDE;
-    virtual bool deleteItem(const String& name) OVERRIDE;
+    virtual void getNames(Vector<String>&) override;
+    virtual String item(const String& name) override;
+    virtual bool contains(const String& name) override;
+    virtual void setItem(const String& name, const String& value, ExceptionState&) override;
+    virtual bool deleteItem(const String& name) override;
 
-    virtual Element* element() OVERRIDE { return m_element; }
+    virtual Element* element() override { return m_element; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit DatasetDOMStringMap(Element* element)

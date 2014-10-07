@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class DOMRect FINAL : public DOMRectReadOnly {
+class DOMRect final : public DOMRectReadOnly {
 public:
     static DOMRect* create(double x = 0, double y = 0, double width = 0, double height = 0);
 

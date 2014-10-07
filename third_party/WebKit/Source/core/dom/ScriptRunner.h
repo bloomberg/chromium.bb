@@ -41,7 +41,7 @@ class Document;
 class PendingScript;
 class ScriptLoader;
 
-class ScriptRunner FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
+class ScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
     WTF_MAKE_NONCOPYABLE(ScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<ScriptRunner> create(Document* document)

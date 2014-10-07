@@ -59,7 +59,7 @@ class ExecutionContext
     : public LifecycleContext<ExecutionContext>
     , public WillBeHeapSupplementable<ExecutionContext> {
 public:
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class ChildNodeList FINAL : public NodeList {
+class ChildNodeList final : public NodeList {
 public:
     static PassRefPtrWillBeRawPtr<ChildNodeList> create(ContainerNode& rootNode)
     {
@@ -42,8 +42,8 @@ public:
     virtual ~ChildNodeList();
 
     // DOM API.
-    virtual unsigned length() const OVERRIDE { return m_collectionIndexCache.nodeCount(*this); }
-    virtual Node* item(unsigned index) const OVERRIDE { return m_collectionIndexCache.nodeAt(*this, index); }
+    virtual unsigned length() const override { return m_collectionIndexCache.nodeCount(*this); }
+    virtual Node* item(unsigned index) const override { return m_collectionIndexCache.nodeAt(*this, index); }
 
     // Non-DOM API.
     void invalidateCache() { m_collectionIndexCache.invalidate(); }
@@ -58,13 +58,13 @@ public:
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
     Node* traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit ChildNodeList(ContainerNode& rootNode);
 
-    virtual bool isChildNodeList() const OVERRIDE { return true; }
-    virtual Node* virtualOwnerNode() const OVERRIDE;
+    virtual bool isChildNodeList() const override { return true; }
+    virtual Node* virtualOwnerNode() const override;
 
     RefPtrWillBeMember<ContainerNode> m_parent;
     mutable CollectionIndexCache<ChildNodeList, Node> m_collectionIndexCache;

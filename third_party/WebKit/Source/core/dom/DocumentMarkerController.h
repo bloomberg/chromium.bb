@@ -44,7 +44,7 @@ class RenderedDocumentMarker;
 class Text;
 class TextIterator;
 
-class MarkerRemoverPredicate FINAL {
+class MarkerRemoverPredicate final {
 public:
     explicit MarkerRemoverPredicate(const Vector<String>& words);
     bool operator()(const DocumentMarker&, const Text&) const;
@@ -53,7 +53,7 @@ private:
     Vector<String> m_words;
 };
 
-class DocumentMarkerController FINAL : public NoBaseWillBeGarbageCollected<DocumentMarkerController> {
+class DocumentMarkerController final : public NoBaseWillBeGarbageCollected<DocumentMarkerController> {
     WTF_MAKE_NONCOPYABLE(DocumentMarkerController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentMarkerController);
 public:

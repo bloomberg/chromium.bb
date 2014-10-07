@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class EmptyNodeList FINAL : public NodeList {
+class EmptyNodeList final : public NodeList {
 public:
     static PassRefPtrWillBeRawPtr<EmptyNodeList> create(Node& rootNode)
     {
@@ -47,16 +47,16 @@ public:
 
     Node& ownerNode() const { return *m_owner; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) { }
 
-    virtual unsigned length() const OVERRIDE { return 0; }
-    virtual Node* item(unsigned) const OVERRIDE { return 0; }
+    virtual unsigned length() const override { return 0; }
+    virtual Node* item(unsigned) const override { return 0; }
 
-    virtual bool isEmptyNodeList() const OVERRIDE { return true; }
-    virtual Node* virtualOwnerNode() const OVERRIDE;
+    virtual bool isEmptyNodeList() const override { return true; }
+    virtual Node* virtualOwnerNode() const override;
 
     RefPtrWillBeMember<Node> m_owner;
 };

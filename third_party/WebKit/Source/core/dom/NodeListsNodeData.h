@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class NodeListsNodeData FINAL : public NoBaseWillBeGarbageCollectedFinalized<NodeListsNodeData> {
+class NodeListsNodeData final : public NoBaseWillBeGarbageCollectedFinalized<NodeListsNodeData> {
     WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

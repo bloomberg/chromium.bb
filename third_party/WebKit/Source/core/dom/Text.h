@@ -55,18 +55,18 @@ public:
     RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
+    virtual void attach(const AttachContext& = AttachContext()) override final;
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE FINAL { return true; }
-    virtual NodeType nodeType() const OVERRIDE;
+    virtual bool canContainRangeEndPoint() const override final { return true; }
+    virtual NodeType nodeType() const override;
 
 protected:
     Text(TreeScope& treeScope, const String& data, ConstructionType type)
         : CharacterData(treeScope, data, type) { }
 
 private:
-    virtual String nodeName() const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
+    virtual String nodeName() const override;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override final;
 
     bool isTextNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
@@ -75,7 +75,7 @@ private:
     virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG
-    virtual void formatForDebugger(char* buffer, unsigned length) const OVERRIDE;
+    virtual void formatForDebugger(char* buffer, unsigned length) const override;
 #endif
 };
 

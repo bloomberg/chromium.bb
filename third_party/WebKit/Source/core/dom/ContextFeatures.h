@@ -36,7 +36,7 @@ class Document;
 class Page;
 
 #if ENABLE(OILPAN)
-class ContextFeatures FINAL : public GarbageCollectedFinalized<ContextFeatures>, public HeapSupplement<Page> {
+class ContextFeatures final : public GarbageCollectedFinalized<ContextFeatures>, public HeapSupplement<Page> {
     USING_GARBAGE_COLLECTED_MIXIN(ContextFeatures);
 public:
     typedef HeapSupplement<Page> SupplementType;
@@ -64,7 +64,7 @@ public:
     void urlDidChange(Document*);
 
 #if ENABLE(OILPAN)
-    virtual void trace(Visitor* visitor) OVERRIDE { HeapSupplement<Page>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { HeapSupplement<Page>::trace(visitor); }
 #endif
 
 private:
