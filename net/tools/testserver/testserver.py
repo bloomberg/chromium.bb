@@ -1536,9 +1536,8 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.send_header('Content-Type', 'text/plain')
     self.end_headers()
 
-    for cipher_suite in self.server.tlsConnection.clientHello.cipher_suites:
-      self.wfile.write(str(cipher_suite))
-      self.wfile.write('\n')
+    cipher_suites = self.server.tlsConnection.clientHello.cipher_suites
+    self.wfile.write('\n'.join(str(c) for c in cipher_suites))
     return True
 
   def CloseSocketHandler(self):
