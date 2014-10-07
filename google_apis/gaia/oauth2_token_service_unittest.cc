@@ -30,7 +30,7 @@ class RetryingTestingOAuth2TokenServiceConsumer
   virtual ~RetryingTestingOAuth2TokenServiceConsumer() {}
 
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE {
+                                 const GoogleServiceAuthError& error) override {
     TestingOAuth2TokenServiceConsumer::OnGetTokenFailure(request, error);
     request_.reset(oauth2_service_->StartRequest(
         account_id_, OAuth2TokenService::ScopeSet(), this).release());
@@ -63,7 +63,7 @@ class TestOAuth2TokenService : public OAuth2TokenService {
   }
 
   virtual bool RefreshTokenIsAvailable(const std::string& account_id) const
-      OVERRIDE {
+      override {
     std::map<std::string, std::string>::const_iterator it =
         refresh_tokens_.find(account_id);
 
@@ -72,14 +72,14 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 
  private:
   // OAuth2TokenService implementation.
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE {
+  virtual net::URLRequestContextGetter* GetRequestContext() override {
     return request_context_getter_.get();
   }
 
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) OVERRIDE {
+      OAuth2AccessTokenConsumer* consumer) override {
     std::map<std::string, std::string>::const_iterator it =
         refresh_tokens_.find(account_id);
     DCHECK(it != refresh_tokens_.end());
@@ -93,14 +93,14 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 
 class OAuth2TokenServiceTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     oauth2_service_.reset(
         new TestOAuth2TokenService(new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())));
     account_id_ = "test_user@gmail.com";
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Makes sure that all the clean up tasks are run.
     base::RunLoop().RunUntilIdle();
   }

@@ -23,11 +23,11 @@ class FakeConnectionHandler : public ConnectionHandler {
 
   // ConnectionHandler implementation.
   virtual void Init(const mcs_proto::LoginRequest& login_request,
-                    net::StreamSocket* socket) OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual bool CanSendMessage() const OVERRIDE;
+                    net::StreamSocket* socket) override;
+  virtual void Reset() override;
+  virtual bool CanSendMessage() const override;
   virtual void SendMessage(const google::protobuf::MessageLite& message)
-      OVERRIDE;
+      override;
 
   // EXPECT's receipt of |message| via SendMessage(..).
   void ExpectOutgoingMessage(const MCSMessage& message);

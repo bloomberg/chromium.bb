@@ -34,11 +34,11 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
 
   // ConnectionHandler implementation.
   virtual void Init(const mcs_proto::LoginRequest& login_request,
-                    net::StreamSocket* socket) OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual bool CanSendMessage() const OVERRIDE;
+                    net::StreamSocket* socket) override;
+  virtual void Reset() override;
+  virtual bool CanSendMessage() const override;
   virtual void SendMessage(const google::protobuf::MessageLite& message)
-      OVERRIDE;
+      override;
 
  private:
   // State machine for handling incoming data. See WaitForData(..) for usage.

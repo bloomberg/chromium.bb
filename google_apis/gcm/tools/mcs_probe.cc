@@ -148,7 +148,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
       : TestURLRequestContextGetter(io_message_loop_proxy) {}
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::TestURLRequestContext* GetURLRequestContext() override {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)
@@ -175,11 +175,11 @@ class MyTestCertVerifier : public net::CertVerifier {
                      net::CertVerifyResult* verify_result,
                      const net::CompletionCallback& callback,
                      RequestHandle* out_req,
-                     const net::BoundNetLog& net_log) OVERRIDE {
+                     const net::BoundNetLog& net_log) override {
     return net::OK;
   }
 
-  virtual void CancelRequest(RequestHandle req) OVERRIDE {
+  virtual void CancelRequest(RequestHandle req) override {
     // Do nothing.
   }
 };

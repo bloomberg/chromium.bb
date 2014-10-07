@@ -15,52 +15,52 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
   FakeGCMStatsRecorder();
   virtual ~FakeGCMStatsRecorder();
 
-  virtual void RecordCheckinInitiated(uint64 android_id) OVERRIDE;
-  virtual void RecordCheckinDelayedDueToBackoff(int64 delay_msec) OVERRIDE;
-  virtual void RecordCheckinSuccess() OVERRIDE;
+  virtual void RecordCheckinInitiated(uint64 android_id) override;
+  virtual void RecordCheckinDelayedDueToBackoff(int64 delay_msec) override;
+  virtual void RecordCheckinSuccess() override;
   virtual void RecordCheckinFailure(std::string status,
-                                    bool will_retry) OVERRIDE;
-  virtual void RecordConnectionInitiated(const std::string& host) OVERRIDE;
-  virtual void RecordConnectionDelayedDueToBackoff(int64 delay_msec) OVERRIDE;
-  virtual void RecordConnectionSuccess() OVERRIDE;
-  virtual void RecordConnectionFailure(int network_error) OVERRIDE;
+                                    bool will_retry) override;
+  virtual void RecordConnectionInitiated(const std::string& host) override;
+  virtual void RecordConnectionDelayedDueToBackoff(int64 delay_msec) override;
+  virtual void RecordConnectionSuccess() override;
+  virtual void RecordConnectionFailure(int network_error) override;
   virtual void RecordConnectionResetSignaled(
-      ConnectionFactory::ConnectionResetReason reason) OVERRIDE;
+      ConnectionFactory::ConnectionResetReason reason) override;
   virtual void RecordRegistrationSent(const std::string& app_id,
-                                      const std::string& sender_ids) OVERRIDE;
+                                      const std::string& sender_ids) override;
   virtual void RecordRegistrationResponse(
       const std::string& app_id,
       const std::vector<std::string>& sender_ids,
-      RegistrationRequest::Status status) OVERRIDE;
+      RegistrationRequest::Status status) override;
   virtual void RecordRegistrationRetryRequested(
       const std::string& app_id,
       const std::vector<std::string>& sender_ids,
-      int retries_left) OVERRIDE;
-  virtual void RecordUnregistrationSent(const std::string& app_id) OVERRIDE;
+      int retries_left) override;
+  virtual void RecordUnregistrationSent(const std::string& app_id) override;
   virtual void RecordUnregistrationResponse(
       const std::string& app_id,
-      UnregistrationRequest::Status status) OVERRIDE;
+      UnregistrationRequest::Status status) override;
   virtual void RecordUnregistrationRetryDelayed(const std::string& app_id,
-                                                int64 delay_msec) OVERRIDE;
+                                                int64 delay_msec) override;
   virtual void RecordDataMessageReceived(
       const std::string& app_id,
       const std::string& from,
       int message_byte_size,
       bool to_registered_app,
-      ReceivedMessageType message_type) OVERRIDE;
+      ReceivedMessageType message_type) override;
   virtual void RecordDataSentToWire(const std::string& app_id,
                                     const std::string& receiver_id,
                                     const std::string& message_id,
-                                    int queued) OVERRIDE;
+                                    int queued) override;
   virtual void RecordNotifySendStatus(const std::string& app_id,
                                       const std::string& receiver_id,
                                       const std::string& message_id,
                                       MCSClient::MessageSendStatus status,
                                       int byte_size,
-                                      int ttl) OVERRIDE;
+                                      int ttl) override;
   virtual void RecordIncomingSendError(const std::string& app_id,
                                        const std::string& receiver_id,
-                                       const std::string& message_id) OVERRIDE;
+                                       const std::string& message_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeGCMStatsRecorder);

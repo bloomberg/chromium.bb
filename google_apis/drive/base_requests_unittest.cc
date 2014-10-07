@@ -39,11 +39,11 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
   }
 
  protected:
-  virtual GURL GetURL() const OVERRIDE { return url_; }
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE {
+  virtual GURL GetURL() const override { return url_; }
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override {
     callback_.Run(GetErrorCode());
   }
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE {
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) override {
     callback_.Run(code);
   }
 
@@ -57,7 +57,7 @@ class BaseRequestsTest : public testing::Test {
  public:
   BaseRequestsTest() : response_code_(net::HTTP_OK) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.message_loop_proxy());
 

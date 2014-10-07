@@ -67,16 +67,16 @@ class AccountTracker : public OAuth2TokenService::Observer,
   AccountIds FindAccountIdsByGaiaId(const std::string& gaia_id);
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_key) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_key) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_key) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_key) override;
 
   void OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
                               const std::string& gaia_id);
   void OnUserInfoFetchFailure(AccountIdFetcher* fetcher);
 
   // IdentityProvider::Observer implementation.
-  virtual void OnActiveAccountLogin() OVERRIDE;
-  virtual void OnActiveAccountLogout() OVERRIDE;
+  virtual void OnActiveAccountLogin() override;
+  virtual void OnActiveAccountLogout() override;
 
   // Sets the state of an account. Does not fire notifications.
   void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
@@ -129,14 +129,14 @@ class AccountIdFetcher : public OAuth2TokenService::Consumer,
   // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetUserIdResponse(const std::string& gaia_id) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+  virtual void OnGetUserIdResponse(const std::string& gaia_id) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
  private:
   OAuth2TokenService* token_service_;

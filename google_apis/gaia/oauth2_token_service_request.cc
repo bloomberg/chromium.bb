@@ -165,9 +165,9 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
   // OAuth2TokenService::Consumer.  Must be called on the token service thread.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
  private:
   friend class base::RefCountedThreadSafe<RequestCore>;
@@ -176,8 +176,8 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
   virtual ~RequestCore();
 
   // Core implementation.
-  virtual void StartOnTokenServiceThread() OVERRIDE;
-  virtual void StopOnTokenServiceThread() OVERRIDE;
+  virtual void StartOnTokenServiceThread() override;
+  virtual void StopOnTokenServiceThread() override;
 
   void InformOwnerOnGetTokenSuccess(std::string access_token,
                                     base::Time expiration_time);
@@ -282,8 +282,8 @@ class InvalidateCore : public OAuth2TokenServiceRequest::Core {
   virtual ~InvalidateCore();
 
   // Core implementation.
-  virtual void StartOnTokenServiceThread() OVERRIDE;
-  virtual void StopOnTokenServiceThread() OVERRIDE;
+  virtual void StartOnTokenServiceThread() override;
+  virtual void StopOnTokenServiceThread() override;
 
   std::string access_token_;
   std::string account_id_;

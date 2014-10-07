@@ -32,9 +32,9 @@ class GetResourceEntryRequest : public UrlFetchRequestBase {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) override;
+  virtual GURL GetURL() const override;
 
  private:
   void OnDataParsed(GDataErrorCode error, scoped_ptr<ResourceEntry> entry);

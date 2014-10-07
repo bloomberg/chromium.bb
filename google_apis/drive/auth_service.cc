@@ -47,9 +47,9 @@ class AuthRequest : public OAuth2TokenService::Consumer {
   // Overridden from OAuth2TokenService::Consumer:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   AuthStatusCallback callback_;
   scoped_ptr<OAuth2TokenService::Request> request_;

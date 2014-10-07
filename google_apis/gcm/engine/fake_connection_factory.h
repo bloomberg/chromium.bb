@@ -23,14 +23,14 @@ class FakeConnectionFactory : public ConnectionFactory {
   virtual void Initialize(
       const BuildLoginRequestCallback& request_builder,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
-      const ConnectionHandler::ProtoSentCallback& write_callback) OVERRIDE;
-  virtual ConnectionHandler* GetConnectionHandler() const OVERRIDE;
-  virtual void Connect() OVERRIDE;
-  virtual bool IsEndpointReachable() const OVERRIDE;
-  virtual std::string GetConnectionStateString() const OVERRIDE;
-  virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
-  virtual void SignalConnectionReset(ConnectionResetReason reason) OVERRIDE;
-  virtual void SetConnectionListener(ConnectionListener* listener) OVERRIDE;
+      const ConnectionHandler::ProtoSentCallback& write_callback) override;
+  virtual ConnectionHandler* GetConnectionHandler() const override;
+  virtual void Connect() override;
+  virtual bool IsEndpointReachable() const override;
+  virtual std::string GetConnectionStateString() const override;
+  virtual base::TimeTicks NextRetryAttempt() const override;
+  virtual void SignalConnectionReset(ConnectionResetReason reason) override;
+  virtual void SetConnectionListener(ConnectionListener* listener) override;
 
   // Whether a connection reset has been triggered and is yet to run.
   bool reconnect_pending() const { return reconnect_pending_; }

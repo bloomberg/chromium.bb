@@ -218,7 +218,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
     virtual ~RequestImpl();
 
     // Overridden from Request:
-    virtual std::string GetAccountId() const OVERRIDE;
+    virtual std::string GetAccountId() const override;
 
     std::string GetConsumerId() const;
 

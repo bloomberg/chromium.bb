@@ -90,7 +90,7 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
   virtual ~OAuth2TokenServiceRequest();
 
   // OAuth2TokenService::Request.
-  virtual std::string GetAccountId() const OVERRIDE;
+  virtual std::string GetAccountId() const override;
 
  private:
   OAuth2TokenServiceRequest(const std::string& account_id);

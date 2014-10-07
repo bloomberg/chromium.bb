@@ -151,9 +151,9 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
  protected:
    // OAuth2AccessTokenConsumer
   virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_date) OVERRIDE;
+                                 const base::Time& expiration_date) override;
   virtual void OnGetTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
  private:
   Fetcher(OAuth2TokenService* oauth2_token_service,

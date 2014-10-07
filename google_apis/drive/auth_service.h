@@ -40,18 +40,18 @@ class AuthService : public AuthServiceInterface,
   virtual ~AuthService();
 
   // Overriden from AuthServiceInterface:
-  virtual void AddObserver(AuthServiceObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(AuthServiceObserver* observer) OVERRIDE;
-  virtual void StartAuthentication(const AuthStatusCallback& callback) OVERRIDE;
-  virtual bool HasAccessToken() const OVERRIDE;
-  virtual bool HasRefreshToken() const OVERRIDE;
-  virtual const std::string& access_token() const OVERRIDE;
-  virtual void ClearAccessToken() OVERRIDE;
-  virtual void ClearRefreshToken() OVERRIDE;
+  virtual void AddObserver(AuthServiceObserver* observer) override;
+  virtual void RemoveObserver(AuthServiceObserver* observer) override;
+  virtual void StartAuthentication(const AuthStatusCallback& callback) override;
+  virtual bool HasAccessToken() const override;
+  virtual bool HasRefreshToken() const override;
+  virtual const std::string& access_token() const override;
+  virtual void ClearAccessToken() override;
+  virtual void ClearRefreshToken() override;
 
   // Overridden from OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
 
  private:
   // Called when the state of the refresh token changes.

@@ -80,13 +80,13 @@ class MergeSessionHelper : public GaiaAuthConsumer,
    private:
     // Overridden from GaiaAuthConsumer.
     virtual void OnGetCheckConnectionInfoSuccess(
-        const std::string& data) OVERRIDE;
+        const std::string& data) override;
 
     // Creates and initializes a URL fetcher for doing a connection check.
     net::URLFetcher* CreateFetcher(const GURL& url);
 
     // Overridden from URLFetcherDelgate.
-    virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+    virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
     // Any fetches still ongoing after this call are considered timed out.
     void Timeout();
@@ -148,13 +148,13 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   net::URLRequestContextGetter* request_context() { return request_context_; }
 
   // Overridden from UbertokenConsumer.
-  virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnUbertokenSuccess(const std::string& token) override;
+  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
 
   // Overridden from GaiaAuthConsumer.
-  virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;
+  virtual void OnMergeSessionSuccess(const std::string& data) override;
   virtual void OnMergeSessionFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+      override;
 
   void LogOutInternal(const std::string& account_id,
                       const std::vector<std::string>& accounts);
@@ -170,7 +170,7 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   void HandleNextAccount();
 
   // Overridden from URLFetcherDelgate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   OAuth2TokenService* token_service_;
   net::URLRequestContextGetter* request_context_;

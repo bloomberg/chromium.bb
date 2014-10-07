@@ -23,10 +23,10 @@ class FakeIdentityProvider : public IdentityProvider {
   void LogOut();
 
   // IdentityProvider:
-  virtual std::string GetActiveUsername() OVERRIDE;
-  virtual std::string GetActiveAccountId() OVERRIDE;
-  virtual OAuth2TokenService* GetTokenService() OVERRIDE;
-  virtual bool RequestLogin() OVERRIDE;
+  virtual std::string GetActiveUsername() override;
+  virtual std::string GetActiveAccountId() override;
+  virtual OAuth2TokenService* GetTokenService() override;
+  virtual bool RequestLogin() override;
 
  private:
   std::string account_id_;

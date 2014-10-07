@@ -97,11 +97,11 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   void DisownFile();
 
   // URLFetcherResponseWriter overrides:
-  virtual int Initialize(const net::CompletionCallback& callback) OVERRIDE;
+  virtual int Initialize(const net::CompletionCallback& callback) override;
   virtual int Write(net::IOBuffer* buffer,
                     int num_bytes,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int Finish(const net::CompletionCallback& callback) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual int Finish(const net::CompletionCallback& callback) override;
 
  private:
   void DidWrite(scoped_refptr<net::IOBuffer> buffer,
@@ -125,9 +125,9 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // AuthenticatedRequestInterface overrides.
   virtual void Start(const std::string& access_token,
                      const std::string& custom_user_agent,
-                     const ReAuthenticateCallback& callback) OVERRIDE;
-  virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
+                     const ReAuthenticateCallback& callback) override;
+  virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() override;
+  virtual void Cancel() override;
 
  protected:
   explicit UrlFetchRequestBase(RequestSender* sender);
@@ -194,10 +194,10 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
  private:
   // URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // AuthenticatedRequestInterface overrides.
-  virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual void OnAuthFailed(GDataErrorCode code) override;
 
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
@@ -232,8 +232,8 @@ class EntryActionRequest : public UrlFetchRequestBase {
 
  protected:
   // Overridden from UrlFetchRequestBase.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) override;
 
  private:
   const EntryActionCallback callback_;
@@ -271,9 +271,9 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
   virtual ~InitiateUploadRequestBase();
 
   // UrlFetchRequestBase overrides.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) override;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const override;
 
  private:
   const InitiateUploadCallback callback_;
@@ -314,10 +314,10 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   virtual ~UploadRangeRequestBase();
 
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+  virtual GURL GetURL() const override;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) override;
 
   // This method will be called when the request is done, regardless of
   // whether it is succeeded or failed.
@@ -381,11 +381,11 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
   virtual ~ResumeUploadRequestBase();
 
   // UrlFetchRequestBase overrides.
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const override;
   virtual bool GetContentFile(base::FilePath* local_file_path,
                               int64* range_offset,
                               int64* range_length,
-                              std::string* upload_content_type) OVERRIDE;
+                              std::string* upload_content_type) override;
 
  private:
   // The parameters for the request. See ResumeUploadParams for the details.
@@ -420,7 +420,7 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const override;
 
  private:
   const int64 content_length_;
@@ -466,16 +466,16 @@ class DownloadFileRequestBase : public UrlFetchRequestBase {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
+  virtual GURL GetURL() const override;
   virtual void GetOutputFilePath(
       base::FilePath* local_file_path,
-      GetContentCallback* get_content_callback) OVERRIDE;
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+      GetContentCallback* get_content_callback) override;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) override;
 
   // net::URLFetcherDelegate overrides.
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current, int64 total) OVERRIDE;
+                                          int64 current, int64 total) override;
 
  private:
   const DownloadActionCallback download_action_callback_;

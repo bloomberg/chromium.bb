@@ -188,7 +188,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void StartGetCheckConnectionInfo();
 
   // Implementation of net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();

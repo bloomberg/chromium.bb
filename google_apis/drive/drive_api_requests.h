@@ -55,7 +55,7 @@ class DriveApiPartialFieldRequest : public UrlFetchRequestBase {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
+  virtual GURL GetURL() const override;
 
   // Derived classes should override GetURLInternal instead of GetURL()
   // directly.
@@ -89,7 +89,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE {
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override {
     GDataErrorCode error = GetErrorCode();
     switch (error) {
       case HTTP_SUCCESS:
@@ -108,7 +108,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
     }
   }
 
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) OVERRIDE {
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) override {
     callback_.Run(error, scoped_ptr<DataType>());
   }
 
@@ -154,7 +154,7 @@ class FilesGetRequest : public DriveApiDataRequest<FileResource> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -182,10 +182,10 @@ class FilesAuthorizeRequest : public DriveApiDataRequest<FileResource> {
 
  protected:
   // Overridden from GetDataRequest.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
 
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -235,12 +235,12 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
 
  protected:
   // Overridden from GetDataRequest.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -305,13 +305,13 @@ class FilesPatchRequest : public DriveApiDataRequest<FileResource> {
 
  protected:
   // Overridden from URLFetchRequestBase.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -359,12 +359,12 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
 
  protected:
   // Overridden from URLFetchRequestBase.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -406,7 +406,7 @@ class FilesListRequest : public DriveApiDataRequest<FileList> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -434,7 +434,7 @@ class FilesListNextPageRequest : public DriveApiDataRequest<FileList> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   GURL next_link_;
@@ -461,9 +461,9 @@ class FilesDeleteRequest : public EntryActionRequest {
 
  protected:
   // Overridden from UrlFetchRequestBase.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual GURL GetURL() const override;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -491,10 +491,10 @@ class FilesTrashRequest : public DriveApiDataRequest<FileResource> {
 
  protected:
   // Overridden from UrlFetchRequestBase.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
 
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -517,7 +517,7 @@ class AboutGetRequest : public DriveApiDataRequest<AboutResource> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -561,7 +561,7 @@ class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -590,7 +590,7 @@ class ChangesListNextPageRequest : public DriveApiDataRequest<ChangeList> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   GURL next_link_;
@@ -613,7 +613,7 @@ class AppsListRequest : public DriveApiDataRequest<AppList> {
 
  protected:
   // Overridden from DriveApiDataRequest.
-  virtual GURL GetURLInternal() const OVERRIDE;
+  virtual GURL GetURLInternal() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -640,8 +640,8 @@ class AppsDeleteRequest : public EntryActionRequest {
 
  protected:
   // Overridden from UrlFetchRequestBase.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual GURL GetURL() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -674,10 +674,10 @@ class ChildrenInsertRequest : public EntryActionRequest {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual GURL GetURL() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -713,8 +713,8 @@ class ChildrenDeleteRequest : public EntryActionRequest {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual GURL GetURL() const override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -756,10 +756,10 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const override;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -813,11 +813,11 @@ class InitiateUploadExistingFileRequest : public InitiateUploadRequestBase {
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual GURL GetURL() const override;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
  private:
   const DriveApiUrlGenerator url_generator_;
@@ -859,10 +859,10 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
   // UploadRangeRequestBase overrides.
   virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response,
-      scoped_ptr<base::Value> value) OVERRIDE;
+      scoped_ptr<base::Value> value) override;
   // content::UrlFetcherDelegate overrides.
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE;
+                                        int64 current, int64 total) override;
 
  private:
   const UploadRangeCallback callback_;
@@ -888,7 +888,7 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
   // UploadRangeRequestBase overrides.
   virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response,
-      scoped_ptr<base::Value> value) OVERRIDE;
+      scoped_ptr<base::Value> value) override;
 
  private:
   const UploadRangeCallback callback_;
@@ -947,10 +947,10 @@ class PermissionsInsertRequest : public EntryActionRequest {
   void set_value(const std::string& value) { value_ = value; }
 
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const override;
+  virtual net::URLFetcher::RequestType GetRequestType() const override;
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
+                              std::string* upload_content) override;
 
  private:
   const DriveApiUrlGenerator url_generator_;

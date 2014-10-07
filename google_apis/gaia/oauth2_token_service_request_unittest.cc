@@ -26,9 +26,9 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
 
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   int num_get_token_success_;
   int num_get_token_failure_;
@@ -85,12 +85,12 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
-                                const ScopeSet& scopes) OVERRIDE;
+                                const ScopeSet& scopes) override;
 
   virtual void InvalidateOAuth2Token(const std::string& account_id,
                                      const std::string& client_id,
                                      const ScopeSet& scopes,
-                                     const std::string& access_token) OVERRIDE;
+                                     const std::string& access_token) override;
 
  private:
   GoogleServiceAuthError response_error_;
@@ -145,8 +145,8 @@ void MockOAuth2TokenService::InvalidateOAuth2Token(
 
 class OAuth2TokenServiceRequestTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   class Provider : public OAuth2TokenServiceRequest::TokenServiceProvider {
@@ -155,8 +155,8 @@ class OAuth2TokenServiceRequestTest : public testing::Test {
              OAuth2TokenService* token_service);
 
     virtual scoped_refptr<base::SingleThreadTaskRunner>
-        GetTokenServiceTaskRunner() OVERRIDE;
-    virtual OAuth2TokenService* GetTokenService() OVERRIDE;
+        GetTokenServiceTaskRunner() override;
+    virtual OAuth2TokenService* GetTokenService() override;
 
    private:
     virtual ~Provider();

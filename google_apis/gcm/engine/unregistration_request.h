@@ -86,7 +86,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   void Start();
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // Schedules a retry attempt and informs the backoff of previous request's

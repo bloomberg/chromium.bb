@@ -85,7 +85,7 @@ class TestBackoffEntry : public net::BackoffEntry {
   explicit TestBackoffEntry(base::SimpleTestTickClock* tick_clock);
   virtual ~TestBackoffEntry();
 
-  virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE;
+  virtual base::TimeTicks ImplGetTimeNow() const override;
 
  private:
   base::SimpleTestTickClock* tick_clock_;
@@ -112,17 +112,17 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   void InitializeFactory();
 
   // Overridden stubs.
-  virtual void ConnectImpl() OVERRIDE;
-  virtual void InitHandler() OVERRIDE;
+  virtual void ConnectImpl() override;
+  virtual void InitHandler() override;
   virtual scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
-      const net::BackoffEntry::Policy* const policy) OVERRIDE;
+      const net::BackoffEntry::Policy* const policy) override;
   virtual scoped_ptr<ConnectionHandler> CreateConnectionHandler(
       base::TimeDelta read_timeout,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback,
       const ConnectionHandler::ConnectionChangedCallback& connection_callback)
-          OVERRIDE;
-  virtual base::TimeTicks NowTicks() OVERRIDE;
+          override;
+  virtual base::TimeTicks NowTicks() override;
 
   // Helpers for verifying connection attempts are made. Connection results
   // must be consumed.
@@ -271,8 +271,8 @@ class ConnectionFactoryImplTest
 
   // ConnectionFactory::ConnectionListener
   virtual void OnConnected(const GURL& current_server,
-                           const net::IPEndPoint& ip_endpoint) OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+                           const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
 
  private:
   void ConnectionsComplete();

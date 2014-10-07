@@ -69,9 +69,9 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   void RemoveObserver(Observer* observer);
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokensLoaded() OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
+  virtual void OnRefreshTokensLoaded() override;
 
  protected:
   IdentityProvider();

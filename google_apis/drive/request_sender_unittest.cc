@@ -32,7 +32,7 @@ class TestAuthService : public DummyAuthService {
   TestAuthService() : auth_try_count_(0) {}
 
   virtual void StartAuthentication(
-      const AuthStatusCallback& callback) OVERRIDE {
+      const AuthStatusCallback& callback) override {
     // RequestSender should clear the rejected access token before starting
     // to request another one.
     EXPECT_FALSE(HasAccessToken());
@@ -97,7 +97,7 @@ class TestRequest : public AuthenticatedRequestInterface {
 
   virtual void Start(const std::string& access_token,
                      const std::string& custom_user_agent,
-                     const ReAuthenticateCallback& callback) OVERRIDE {
+                     const ReAuthenticateCallback& callback) override {
     *start_called_ = true;
     passed_access_token_ = access_token;
     passed_reauth_callback_ = callback;
@@ -106,18 +106,18 @@ class TestRequest : public AuthenticatedRequestInterface {
     // Each test case should respond properly by using the above methods.
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     EXPECT_TRUE(*start_called_);
     *finish_reason_ = CANCEL;
     sender_->RequestFinished(this);
   }
 
-  virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE {
+  virtual void OnAuthFailed(GDataErrorCode code) override {
     *finish_reason_ = AUTH_FAILURE;
     sender_->RequestFinished(this);
   }
 
-  virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() OVERRIDE {
+  virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
   }
 

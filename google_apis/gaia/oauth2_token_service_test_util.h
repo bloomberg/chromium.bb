@@ -21,9 +21,9 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
   // OAuth2TokenService::Consumer overrides.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& token,
-                                 const base::Time& expiration_date) OVERRIDE;
+                                 const base::Time& expiration_date) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   std::string last_token_;
   int number_of_successful_tokens_;
