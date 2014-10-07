@@ -56,15 +56,6 @@ public:
 
     virtual RenderSVGResourceType resourceType() const = 0;
 
-    template<class Renderer>
-    Renderer* cast()
-    {
-        if (Renderer::s_resourceType == resourceType())
-            return static_cast<Renderer*>(this);
-
-        return 0;
-    }
-
     // Helper utilities used in the render tree to access resources used for painting shapes/text (gradients & patterns & solid colors only)
     // If hasFallback gets set to true, the sharedSolidPaintingResource is set to a fallback color.
     static RenderSVGResource* requestPaintingResource(RenderSVGResourceMode, RenderObject*, const RenderStyle*, bool& hasFallback);

@@ -42,6 +42,15 @@ public:
 
     virtual bool isSVGResourceContainer() const OVERRIDE FINAL { return true; }
 
+    template<class Renderer>
+    Renderer* cast()
+    {
+        if (Renderer::s_resourceType == resourceType())
+            return static_cast<Renderer*>(this);
+
+        return 0;
+    }
+
     static AffineTransform transformOnNonScalingStroke(RenderObject*, const AffineTransform& resourceTransform);
 
     void idChanged();
