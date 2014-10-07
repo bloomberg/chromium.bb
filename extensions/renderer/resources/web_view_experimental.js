@@ -11,16 +11,22 @@
 var WebViewInternal = require('webView').WebViewInternal;
 var WebView = require('webViewInternal').WebView;
 
+// Returns a map of experimental <webview> DOM event names to their associated
+// extension event descriptor objects. See |WEB_VIEW_EVENTS| in
+// web_view_events.js for more information and details on how this map should
+// be formatted.
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
   return {};
 };
 
-/** @private */
+// Captures the visible content within the webview.
 WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.guestInstanceId, spec, callback);
 };
 
-/** @private */
+// Loads a data URL with a specified base URL used for relative links.
+// Optionally, a virtual URL can be provided to be shown to the user instead
+// of the data URL.
 WebViewInternal.prototype.loadDataWithBaseUrl = function(
     dataUrl, baseUrl, virtualUrl) {
   if (!this.guestInstanceId) {
@@ -37,6 +43,7 @@ WebViewInternal.prototype.loadDataWithBaseUrl = function(
       });
 };
 
+// Registers the experimantal WebVIew API when available.
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.captureVisibleRegion = function(spec, callback) {
     privates(this).internal.captureVisibleRegion(spec, callback);

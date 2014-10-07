@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This module implements Webview (<webview>) as a custom element that wraps a
+// This module implements WebView (<webview>) as a custom element that wraps a
 // BrowserPlugin object element. The object element is hidden within
-// the shadow DOM of the Webview element.
+// the shadow DOM of the WebView element.
 
 var DocumentNatives = requireNative('document_natives');
 var GuestViewInternal =
@@ -16,11 +16,14 @@ var WebView = require('webViewInternal').WebView;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 var guestViewInternalNatives = requireNative('guest_view_internal');
 
+// Attributes.
+var WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY = 'allowtransparency';
 var WEB_VIEW_ATTRIBUTE_AUTOSIZE = 'autosize';
 var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
 var WEB_VIEW_ATTRIBUTE_MAXWIDTH = 'maxwidth';
 var WEB_VIEW_ATTRIBUTE_MINHEIGHT = 'minheight';
 var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
+var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
 var AUTO_SIZE_ATTRIBUTES = [
   WEB_VIEW_ATTRIBUTE_AUTOSIZE,
   WEB_VIEW_ATTRIBUTE_MAXHEIGHT,
@@ -29,14 +32,17 @@ var AUTO_SIZE_ATTRIBUTES = [
   WEB_VIEW_ATTRIBUTE_MINWIDTH
 ];
 
-var WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY = 'allowtransparency';
-var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
-
+// Error messages.
 var ERROR_MSG_ALREADY_NAVIGATED =
     'The object has already navigated, so its partition cannot be changed.';
+var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
+    'Script cannot be injected into content until the page has loaded.';
+var ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE = '<webview>: ' +
+    'contentWindow is not available at this time. It will become available ' +
+    'when the page has finished loading.';
 var ERROR_MSG_INVALID_PARTITION_ATTRIBUTE = 'Invalid partition attribute.';
 
-/** @class representing state of storage partition. */
+// Represents the state of the storage partition.
 function Partition() {
   this.validPartitionId = true;
   this.persistStorage = false;
@@ -77,12 +83,7 @@ Partition.prototype.fromAttribute = function(value, hasNavigated) {
   return result;
 };
 
-// Implemented when the experimental API is available.
-WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {};
-
-/**
- * @constructor
- */
+// Represents the internal state of the WebView node.
 function WebViewInternal(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
@@ -117,9 +118,6 @@ function WebViewInternal(webviewNode) {
   shadowRoot.appendChild(this.browserPluginNode);
 }
 
-/**
- * @private
- */
 WebViewInternal.prototype.createBrowserPluginNode = function() {
   // We create BrowserPlugin as a custom element in order to observe changes
   // to attributes synchronously.
@@ -132,9 +130,7 @@ WebViewInternal.prototype.getGuestInstanceId = function() {
   return this.guestInstanceId;
 };
 
-/**
- * Resets some state upon reattaching <webview> element to the DOM.
- */
+// Resets some state upon reattaching <webview> element to the DOM.
 WebViewInternal.prototype.reset = function() {
   // If guestInstanceId is defined then the <webview> has navigated and has
   // already picked up a partition ID. Thus, we need to reset the initialization
@@ -153,7 +149,7 @@ WebViewInternal.prototype.reset = function() {
   this.internalInstanceId = 0;
 };
 
-// Sets <webview>.request property.
+// Sets the <webview>.request property.
 WebViewInternal.prototype.setRequestPropertyOnWebViewNode = function(request) {
   Object.defineProperty(
       this.webviewNode,
@@ -184,38 +180,28 @@ WebViewInternal.prototype.setupFocusPropagation = function() {
   }.bind(this));
 };
 
-/**
- * @private
- */
+// Navigates to the previous history entry.
 WebViewInternal.prototype.back = function() {
   return this.go(-1);
 };
 
-/**
- * @private
- */
+// Navigates to the subsequent history entry.
 WebViewInternal.prototype.forward = function() {
   return this.go(1);
 };
 
-/**
- * @private
- */
+// Returns whether there is a previous history entry to navigate to.
 WebViewInternal.prototype.canGoBack = function() {
   return this.entryCount > 1 && this.currentEntryIndex > 0;
 };
 
-/**
- * @private
- */
+// Returns whether there is a subsequent history entry to navigate to.
 WebViewInternal.prototype.canGoForward = function() {
   return this.currentEntryIndex >= 0 &&
       this.currentEntryIndex < (this.entryCount - 1);
 };
 
-/**
- * @private
- */
+// Clears browsing data for the WebView partition.
 WebViewInternal.prototype.clearData = function() {
   if (!this.guestInstanceId) {
     return;
@@ -224,16 +210,14 @@ WebViewInternal.prototype.clearData = function() {
   $Function.apply(WebView.clearData, null, args);
 };
 
-/**
- * @private
- */
+// Returns Chrome's internal process ID for the guest web page's current
+// process.
 WebViewInternal.prototype.getProcessId = function() {
   return this.processId;
 };
 
-/**
- * @private
- */
+// Navigates to a history entry using a history index relative to the current
+// navigation.
 WebViewInternal.prototype.go = function(relativeIndex) {
   if (!this.guestInstanceId) {
     return;
@@ -241,16 +225,12 @@ WebViewInternal.prototype.go = function(relativeIndex) {
   WebView.go(this.guestInstanceId, relativeIndex);
 };
 
-/**
- * @private
- */
+// Prints the contents of the webview.
 WebViewInternal.prototype.print = function() {
   this.executeScript({code: 'window.print();'});
 };
 
-/**
- * @private
- */
+// Reloads the current top-level page.
 WebViewInternal.prototype.reload = function() {
   if (!this.guestInstanceId) {
     return;
@@ -258,9 +238,7 @@ WebViewInternal.prototype.reload = function() {
   WebView.reload(this.guestInstanceId);
 };
 
-/**
- * @private
- */
+// Stops loading the current navigation if one is in progress.
 WebViewInternal.prototype.stop = function() {
   if (!this.guestInstanceId) {
     return;
@@ -268,9 +246,7 @@ WebViewInternal.prototype.stop = function() {
   WebView.stop(this.guestInstanceId);
 };
 
-/**
- * @private
- */
+// Forcibly kills the guest web page's renderer process.
 WebViewInternal.prototype.terminate = function() {
   if (!this.guestInstanceId) {
     return;
@@ -278,20 +254,13 @@ WebViewInternal.prototype.terminate = function() {
   WebView.terminate(this.guestInstanceId);
 };
 
-/**
- * @private
- */
 WebViewInternal.prototype.validateExecuteCodeCall  = function() {
-  var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
-      'Script cannot be injected into content until the page has loaded.';
   if (!this.guestInstanceId) {
     throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
   }
 };
 
-/**
- * @private
- */
+// Injects JavaScript code into the guest page.
 WebViewInternal.prototype.executeScript = function(var_args) {
   this.validateExecuteCodeCall();
   var webview_src = this.src;
@@ -303,9 +272,7 @@ WebViewInternal.prototype.executeScript = function(var_args) {
   $Function.apply(WebView.executeScript, null, args);
 };
 
-/**
- * @private
- */
+// Injects CSS into the guest page.
 WebViewInternal.prototype.insertCSS = function(var_args) {
   this.validateExecuteCodeCall();
   var webview_src = this.src;
@@ -332,14 +299,7 @@ WebViewInternal.prototype.setupAutoSizeProperties = function() {
   }.bind(this), this);
 };
 
-/**
- * @private
- */
 WebViewInternal.prototype.setupWebviewNodeProperties = function() {
-  var ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE = '<webview>: ' +
-    'contentWindow is not available at this time. It will become available ' +
-        'when the page has finished loading.';
-
   this.setupAutoSizeProperties();
 
   Object.defineProperty(this.webviewNode,
@@ -404,22 +364,16 @@ WebViewInternal.prototype.setupWebviewNodeProperties = function() {
   });
 };
 
-/**
- * @private
- */
 WebViewInternal.prototype.setupWebviewNodeAttributes = function() {
   this.setupWebViewSrcAttributeMutationObserver();
 };
 
-/**
- * @private
- */
+// The purpose of this mutation observer is to catch assignment to the src
+// attribute without any changes to its value. This is useful in the case
+// where the webview guest has crashed and navigating to the same address
+// spawns off a new process.
 WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver =
     function() {
-  // The purpose of this mutation observer is to catch assignment to the src
-  // attribute without any changes to its value. This is useful in the case
-  // where the webview guest has crashed and navigating to the same address
-  // spawns off a new process.
   this.srcAndPartitionObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, function(mutation) {
       var oldValue = mutation.oldValue;
@@ -439,16 +393,13 @@ WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver =
   this.srcAndPartitionObserver.observe(this.webviewNode, params);
 };
 
-/**
- * @private
- */
+// This observer monitors mutations to attributes of the <webview> and
+// updates the BrowserPlugin properties accordingly. In turn, updating
+// a BrowserPlugin property will update the corresponding BrowserPlugin
+// attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
+// details.
 WebViewInternal.prototype.handleWebviewAttributeMutation =
       function(name, oldValue, newValue) {
-  // This observer monitors mutations to attributes of the <webview> and
-  // updates the BrowserPlugin properties accordingly. In turn, updating
-  // a BrowserPlugin property will update the corresponding BrowserPlugin
-  // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
-  // details.
   if (AUTO_SIZE_ATTRIBUTES.indexOf(name) > -1) {
     this[name] = newValue;
     if (!this.guestInstanceId) {
@@ -535,9 +486,6 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
   }
 };
 
-/**
- * @private
- */
 WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
@@ -599,6 +547,7 @@ WebViewInternal.prototype.onSizeChanged = function(webViewEvent) {
   } else {
     maxHeight = height;
   }
+
   var minHeight;
   if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MINHEIGHT) &&
       node[WEB_VIEW_ATTRIBUTE_MINHEIGHT]) {
@@ -632,7 +581,6 @@ WebViewInternal.prototype.hasNavigated = function() {
   return !this.beforeFirstNavigation;
 };
 
-/** @return {boolean} */
 WebViewInternal.prototype.parseSrcAttribute = function(result) {
   if (!this.partition.validPartitionId) {
     result.error = ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
@@ -652,12 +600,11 @@ WebViewInternal.prototype.parseSrcAttribute = function(result) {
     return;
   }
 
-  // Navigate to this.src.
+  // Navigate to |this.src|.
   WebView.navigate(this.guestInstanceId, this.src);
   return true;
 };
 
-/** @return {boolean} */
 WebViewInternal.prototype.parseAttributes = function() {
   if (!this.elementAttached) {
     return;
@@ -710,10 +657,8 @@ WebViewInternal.prototype.dispatchEvent = function(webViewEvent) {
   return this.webviewNode.dispatchEvent(webViewEvent);
 };
 
-/**
- * Adds an 'on<event>' property on the webview, which can be used to set/unset
- * an event handler.
- */
+// Adds an 'on<event>' property on the webview, which can be used to set/unset
+// an event handler.
 WebViewInternal.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
   Object.defineProperty(this.webviewNode, propertyName, {
@@ -755,18 +700,18 @@ WebViewInternal.prototype.onAttach = function(storagePartitionId) {
   this.partition.fromAttribute(storagePartitionId, this.hasNavigated());
 };
 
-/** @private */
+// Returns the user agent string used by the webview for guest page requests.
 WebViewInternal.prototype.getUserAgent = function() {
   return this.userAgentOverride || navigator.userAgent;
 };
 
-/** @private */
+// Indicates whether or not the webview's user agent string has been overridden.
 WebViewInternal.prototype.isUserAgentOverridden = function() {
   return !!this.userAgentOverride &&
       this.userAgentOverride != navigator.userAgent;
 };
 
-/** @private */
+// Override the user agent string used by the webview for guest page requests.
 WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
   this.userAgentOverride = userAgentOverride;
   if (!this.guestInstanceId) {
@@ -777,7 +722,7 @@ WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
   WebView.overrideUserAgent(this.guestInstanceId, userAgentOverride);
 };
 
-/** @private */
+// Initiates a find-in-page request.
 WebViewInternal.prototype.find = function(search_text, options, callback) {
   if (!this.guestInstanceId) {
     return;
@@ -785,7 +730,7 @@ WebViewInternal.prototype.find = function(search_text, options, callback) {
   WebView.find(this.guestInstanceId, search_text, options, callback);
 };
 
-/** @private */
+// Ends the current find session.
 WebViewInternal.prototype.stopFinding = function(action) {
   if (!this.guestInstanceId) {
     return;
@@ -793,7 +738,7 @@ WebViewInternal.prototype.stopFinding = function(action) {
   WebView.stopFinding(this.guestInstanceId, action);
 };
 
-/** @private */
+// Changes the zoom factor of the page.
 WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
   if (!this.guestInstanceId) {
     return;
@@ -801,6 +746,7 @@ WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
   WebView.setZoom(this.guestInstanceId, zoomFactor, callback);
 };
 
+// Gets the current zoom factor.
 WebViewInternal.prototype.getZoom = function(callback) {
   if (!this.guestInstanceId) {
     return;
@@ -976,23 +922,14 @@ window.addEventListener('readystatechange', function listener(event) {
   window.removeEventListener(event.type, listener, useCapture);
 }, useCapture);
 
-/**
- * Implemented when the ChromeWebView API is available.
- * @private
- */
+// Implemented when the ChromeWebView API is available.
 WebViewInternal.prototype.maybeGetChromeWebViewEvents = function() {};
 
-/**
- * Implemented when the experimental API is available.
- * @private
- */
+// Implemented when the experimental WebView API is available.
+WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {};
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {};
-
-/**
- * Implemented when the experimental API is available.
- * @private
- */
 WebViewInternal.prototype.setupExperimentalContextMenus = function() {};
 
+// Exports.
 exports.WebView = WebView;
 exports.WebViewInternal = WebViewInternal;

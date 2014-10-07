@@ -478,7 +478,7 @@
       {
         "name": "print",
         "type": "function",
-        "description": "Prints the contents of the webview, this is equivalent to calling scripted print function from the webview itself."
+        "description": "Prints the contents of the webview. This is equivalent to calling scripted print function from the webview itself."
       },
       {
         "name": "reload",
