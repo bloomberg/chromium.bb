@@ -215,7 +215,8 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
     return extension_file_util::GetBrowserImagePaths(extension);
   }
 
-  virtual void VerifyFailed(const std::string& extension_id) override {
+  virtual void VerifyFailed(const std::string& extension_id,
+                            ContentVerifyJob::FailureReason reason) override {
     if (!service_)
       return;
     ExtensionRegistry* registry = ExtensionRegistry::Get(service_->profile());
@@ -229,6 +230,8 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
       ExtensionPrefs::Get(service_->profile())
           ->IncrementCorruptedDisableCount();
       UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
+      UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptExtensionDisabledReason",
+          reason, ContentVerifyJob::FAILURE_REASON_MAX);
     } else if (!ContainsKey(would_be_disabled_ids_, extension_id)) {
       UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionWouldBeDisabled", true);
       would_be_disabled_ids_.insert(extension_id);

@@ -7484,6 +7484,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.CorruptExtensionDisabledReason"
+    enum="CorruptExtensionDisabledReason">
+  <owner>rockot@chromium.org</owner>
+  <summary>
+    The reason why an extension was detected to be corrupted. Recorded each time
+    an extension is disabled due to corruption detection.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CorruptExtensionTotalDisables">
   <owner>asargent@chromium.org</owner>
   <summary>
@@ -39886,6 +39895,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The cookie deletion occurred because the server overwrote it with an already
     expired cookie (this is a common idiom for server deletions of cookies).
   </int>
+</enum>
+
+<enum name="CorruptExtensionDisabledReason" type="int">
+  <summary>
+    The reason why content verification flagged an extension as corrupted. See
+    ContentVerifyJob::FailureReason in
+    src/extensions/browser/content_verify_job.h.
+  </summary>
+  <int value="0" label="Unknown Reason"/>
+  <int value="1" label="Missing All Hashes"/>
+  <int value="2" label="Missing File Hash"/>
+  <int value="3" label="Hash Mismatch"/>
 </enum>
 
 <enum name="CrosDisksArchiveType" type="int">

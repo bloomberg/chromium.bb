@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "extensions/browser/content_verify_job.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -77,7 +78,8 @@ class ContentVerifierDelegate {
 
   // Called when the content verifier detects that a read of a file inside
   // an extension did not match its expected hash.
-  virtual void VerifyFailed(const std::string& extension_id) = 0;
+  virtual void VerifyFailed(const std::string& extension_id,
+                            ContentVerifyJob::FailureReason reason) = 0;
 };
 
 }  // namespace extensions

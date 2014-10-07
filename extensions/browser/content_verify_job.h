@@ -42,7 +42,9 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
     NO_HASHES_FOR_FILE,
 
     // Some of the content read did not match the expected hash.
-    HASH_MISMATCH
+    HASH_MISMATCH,
+
+    FAILURE_REASON_MAX
   };
   typedef base::Callback<void(FailureReason)> FailureCallback;
 
