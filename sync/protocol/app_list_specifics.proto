@@ -41,8 +41,9 @@ message AppListSpecifics {
   // Id of the parent (folder) item.
   optional string parent_id = 4;
 
+  // Marked OBSOLETE because this is unused for the app list.
   // Which page this item will appear on in the app list.
-  optional string page_ordinal = 5;
+  optional string OBSOLETE_page_ordinal = 5 [deprecated = true];
 
   // Where on a page this item will appear.
   optional string item_ordinal = 6;

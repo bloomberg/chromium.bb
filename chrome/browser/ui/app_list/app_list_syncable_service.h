@@ -51,7 +51,6 @@ class AppListSyncableService : public syncer::SyncableService,
     sync_pb::AppListSpecifics::AppListItemType item_type;
     std::string item_name;
     std::string parent_id;
-    syncer::StringOrdinal page_ordinal;
     syncer::StringOrdinal item_ordinal;
 
     std::string ToString() const;

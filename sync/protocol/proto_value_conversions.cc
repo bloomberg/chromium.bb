@@ -394,7 +394,6 @@ base::DictionaryValue* AppListSpecificsToValue(
   SET_ENUM(item_type, GetAppListItemTypeString);
   SET_STR(item_name);
   SET_STR(parent_id);
-  SET_STR(page_ordinal);
   SET_STR(item_ordinal);
 
   return value;

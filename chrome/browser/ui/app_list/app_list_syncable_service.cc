@@ -53,8 +53,6 @@ void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
   item->item_type = specifics.item_type();
   item->item_name = specifics.item_name();
   item->parent_id = specifics.parent_id();
-  if (!specifics.page_ordinal().empty())
-    item->page_ordinal = syncer::StringOrdinal(specifics.page_ordinal());
   if (!specifics.item_ordinal().empty())
     item->item_ordinal = syncer::StringOrdinal(specifics.item_ordinal());
 }
@@ -77,7 +75,6 @@ bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
     sync_item->item_ordinal = app_item->position();
     changed = true;
   }
-  // TODO(stevenjb): Set page_ordinal.
   return changed;
 }
 
@@ -88,8 +85,6 @@ void GetSyncSpecificsFromSyncItem(const AppListSyncableService::SyncItem* item,
   specifics->set_item_type(item->item_type);
   specifics->set_item_name(item->item_name);
   specifics->set_parent_id(item->parent_id);
-  if (item->page_ordinal.IsValid())
-    specifics->set_page_ordinal(item->page_ordinal.ToInternalValue());
   if (item->item_ordinal.IsValid())
     specifics->set_item_ordinal(item->item_ordinal.ToInternalValue());
 }
