@@ -17,7 +17,7 @@ class RepaintKeyMobileSites(benchmark.Benchmark):
   page_set = page_sets.KeyMobileSitesPageSet
 
 
-@benchmark.Disabled  # crbug.com/412001
+@benchmark.Enabled('android')
 class RepaintGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """Measures repaint performance on the key mobile sites with forced GPU
   rasterization.
