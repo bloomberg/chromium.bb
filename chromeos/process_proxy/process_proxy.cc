@@ -160,10 +160,8 @@ bool ProcessProxy::Write(const std::string& text) {
 
   // We don't want to write '\0' to the pipe.
   size_t data_size = text.length() * sizeof(*text.c_str());
-  int bytes_written =
-      base::WriteFileDescriptor(pt_pair_[PT_MASTER_FD],
-                                text.c_str(), data_size);
-  return (bytes_written == static_cast<int>(data_size));
+  return base::WriteFileDescriptor(
+             pt_pair_[PT_MASTER_FD], text.c_str(), data_size);
 }
 
 bool ProcessProxy::OnTerminalResize(int width, int height) {

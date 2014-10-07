@@ -196,17 +196,16 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
 
   // The file containing the metrics samples will only be read by programs on
   // the same device so we do not check endianness.
-  if (base::WriteFileDescriptor(file_descriptor.get(),
-                                reinterpret_cast<char*>(&size),
-                                sizeof(size)) != sizeof(size)) {
-    DLOG(ERROR) << "error writing message length " << errno;
+  if (!base::WriteFileDescriptor(file_descriptor.get(),
+                                 reinterpret_cast<char*>(&size),
+                                 sizeof(size))) {
+    DPLOG(ERROR) << "error writing message length";
     return false;
   }
 
-  if (base::WriteFileDescriptor(
-          file_descriptor.get(), msg.c_str(), msg.length()) !=
-      static_cast<int>(msg.length())) {
-    DLOG(ERROR) << "error writing message" << errno;
+  if (!base::WriteFileDescriptor(
+          file_descriptor.get(), msg.c_str(), msg.size())) {
+    DPLOG(ERROR) << "error writing message";
     return false;
   }
 

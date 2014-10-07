@@ -150,9 +150,8 @@ class ProcessOutputWatcherTest : public testing::Test {
       ssize_t test_size = test_str.length() * sizeof(*test_str.c_str());
       if (test_cases[i].should_send_terminating_null)
         test_size += sizeof(*test_str.c_str());
-      EXPECT_EQ(test_size,
-                base::WriteFileDescriptor(pt_pipe[1], test_str.c_str(),
-                                          test_size));
+      EXPECT_TRUE(base::WriteFileDescriptor(pt_pipe[1], test_str.c_str(),
+                                            test_size));
 
       run_loop.Run();
       EXPECT_TRUE(expectations_.IsDone());
@@ -161,7 +160,7 @@ class ProcessOutputWatcherTest : public testing::Test {
     }
 
     // Send stop signal. It is not important which string we send.
-    EXPECT_EQ(1, base::WriteFileDescriptor(stop_pipe[1], "q", 1));
+    EXPECT_TRUE(base::WriteFileDescriptor(stop_pipe[1], "q", 1));
 
     EXPECT_NE(-1, IGNORE_EINTR(close(stop_pipe[1])));
     EXPECT_NE(-1, IGNORE_EINTR(close(pt_pipe[1])));

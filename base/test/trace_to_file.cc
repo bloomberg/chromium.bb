@@ -67,8 +67,8 @@ void TraceToFile::AppendFileFooter() {
 }
 
 void TraceToFile::TraceOutputCallback(const std::string& data) {
-  int ret = AppendToFile(path_, data.c_str(), static_cast<int>(data.size()));
-  DCHECK_NE(-1, ret);
+  bool ret = AppendToFile(path_, data.c_str(), static_cast<int>(data.size()));
+  DCHECK(ret);
 }
 
 static void OnTraceDataCollected(

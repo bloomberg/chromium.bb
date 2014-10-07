@@ -682,13 +682,13 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
   if (fd < 0)
     return -1;
 
-  int bytes_written = WriteFileDescriptor(fd, data, size);
+  int bytes_written = WriteFileDescriptor(fd, data, size) ? size : -1;
   if (IGNORE_EINTR(close(fd)) < 0)
     return -1;
   return bytes_written;
 }
 
-int WriteFileDescriptor(const int fd, const char* data, int size) {
+bool WriteFileDescriptor(const int fd, const char* data, int size) {
   // Allow for partial writes.
   ssize_t bytes_written_total = 0;
   for (ssize_t bytes_written_partial = 0; bytes_written_total < size;
@@ -697,22 +697,33 @@ int WriteFileDescriptor(const int fd, const char* data, int size) {
         HANDLE_EINTR(write(fd, data + bytes_written_total,
                            size - bytes_written_total));
     if (bytes_written_partial < 0)
-      return -1;
+      return false;
   }
 
-  return bytes_written_total;
+  return true;
 }
 
-int AppendToFile(const FilePath& filename, const char* data, int size) {
+bool AppendToFile(const FilePath& filename, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
+  bool ret = true;
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_WRONLY | O_APPEND));
-  if (fd < 0)
-    return -1;
+  if (fd < 0) {
+    VPLOG(1) << "Unable to create file " << filename.value();
+    return false;
+  }
 
-  int bytes_written = WriteFileDescriptor(fd, data, size);
-  if (IGNORE_EINTR(close(fd)) < 0)
-    return -1;
-  return bytes_written;
+  // This call will either write all of the data or return false.
+  if (!WriteFileDescriptor(fd, data, size)) {
+    VPLOG(1) << "Error while writing to file " << filename.value();
+    ret = false;
+  }
+
+  if (IGNORE_EINTR(close(fd)) < 0) {
+    VPLOG(1) << "Error while closing file " << filename.value();
+    return false;
+  }
+
+  return ret;
 }
 
 // Gets the current working directory for the process.

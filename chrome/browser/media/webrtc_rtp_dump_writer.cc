@@ -7,6 +7,7 @@
 #include "base/big_endian.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
 
@@ -165,10 +166,13 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
     int bytes_written = -1;
 
     if (base::PathExists(dump_path_)) {
-      bytes_written = base::AppendToFile(
-          dump_path_,
-          reinterpret_cast<const char*>(&compressed_buffer[0]),
-          compressed_buffer.size());
+      bytes_written =
+          base::AppendToFile(dump_path_,
+                             reinterpret_cast<const char*>(
+                                 vector_as_array(&compressed_buffer)),
+                             compressed_buffer.size())
+              ? compressed_buffer.size()
+              : -1;
     } else {
       bytes_written = base::WriteFile(
           dump_path_,
@@ -233,12 +237,10 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
     memset(&stream_, 0, sizeof(z_stream));
 
     DCHECK(!output_buffer.empty());
-    int bytes_written =
-        base::AppendToFile(dump_path_,
-                           reinterpret_cast<const char*>(&output_buffer[0]),
-                           output_buffer.size());
-
-    return bytes_written > 0;
+    return base::AppendToFile(dump_path_,
+                              reinterpret_cast<const char*>(
+                                  vector_as_array(&output_buffer)),
+                              output_buffer.size());
   }
 
   const base::FilePath dump_path_;

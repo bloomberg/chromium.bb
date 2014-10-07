@@ -27,11 +27,9 @@ uint32 WriteDataChunkIntoSnapshotFileOnFileThread(
     const base::FilePath& snapshot_file_path,
     const std::string& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  int bytes_written =
-      base::AppendToFile(snapshot_file_path, data.data(),
-                         base::checked_cast<int>(data.size()));
-  return (static_cast<int>(data.size()) == bytes_written) ?
-      base::checked_cast<uint32>(bytes_written) : 0;
+  return base::AppendToFile(snapshot_file_path, data.c_str(), data.size())
+             ? base::checked_cast<uint32>(data.size())
+             : 0;
 }
 
 }  // namespace

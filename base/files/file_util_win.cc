@@ -644,7 +644,7 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
   return -1;
 }
 
-int AppendToFile(const FilePath& filename, const char* data, int size) {
+bool AppendToFile(const FilePath& filename, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   base::win::ScopedHandle file(CreateFile(filename.value().c_str(),
                                           FILE_APPEND_DATA,
@@ -654,26 +654,24 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
                                           0,
                                           NULL));
   if (!file.IsValid()) {
-    DPLOG(WARNING) << "CreateFile failed for path "
-                   << UTF16ToUTF8(filename.value());
-    return -1;
+    VPLOG(1) << "CreateFile failed for path " << UTF16ToUTF8(filename.value());
+    return false;
   }
 
   DWORD written;
   BOOL result = ::WriteFile(file.Get(), data, size, &written, NULL);
   if (result && static_cast<int>(written) == size)
-    return written;
+    return true;
 
   if (!result) {
     // WriteFile failed.
-    DPLOG(WARNING) << "writing file " << UTF16ToUTF8(filename.value())
-                   << " failed";
+    VPLOG(1) << "Writing file " << UTF16ToUTF8(filename.value()) << " failed";
   } else {
     // Didn't write all the bytes.
-    DLOG(WARNING) << "wrote" << written << " bytes to "
-                  << UTF16ToUTF8(filename.value()) << " expected " << size;
+    VPLOG(1) << "Only wrote " << written << " out of " << size << " byte(s) to "
+             << UTF16ToUTF8(filename.value());
   }
-  return -1;
+  return false;
 }
 
 // Gets the current working directory for the process.

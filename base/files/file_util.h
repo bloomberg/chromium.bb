@@ -326,14 +326,16 @@ BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
                           int size);
 
 #if defined(OS_POSIX)
-// Append the data to |fd|. Does not close |fd| when done.
-BASE_EXPORT int WriteFileDescriptor(const int fd, const char* data, int size);
+// Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff
+// |size| bytes of |data| were written to |fd|.
+BASE_EXPORT bool WriteFileDescriptor(const int fd, const char* data, int size);
 #endif
 
-// Append the given buffer into the file. Returns the number of bytes written,
-// or -1 on error.
-BASE_EXPORT int AppendToFile(const FilePath& filename,
-                             const char* data, int size);
+// Appends |data| to |filename|.  Returns true iff |size| bytes of |data| were
+// written to |filename|.
+BASE_EXPORT bool AppendToFile(const FilePath& filename,
+                              const char* data,
+                              int size);
 
 // Gets the current working directory for the process.
 BASE_EXPORT bool GetCurrentDirectory(FilePath* path);

@@ -588,11 +588,10 @@ void PRegTestHarness::AppendRecordToPRegFile(const base::string16& path,
   buffer.insert(buffer.end(), data, data + size);
   AppendChars(&buffer, L"]");
 
-  ASSERT_EQ(buffer.size(),
-            base::AppendToFile(
-                preg_file_path_,
-                reinterpret_cast<const char*>(vector_as_array(&buffer)),
-                buffer.size()));
+  ASSERT_TRUE(base::AppendToFile(
+      preg_file_path_,
+      reinterpret_cast<const char*>(vector_as_array(&buffer)),
+      buffer.size()));
 }
 
 void PRegTestHarness::AppendDWORDToPRegFile(const base::string16& path,

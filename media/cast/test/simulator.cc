@@ -186,7 +186,7 @@ void AppendLogToFile(media::cast::proto::LogMetadata* metadata,
     return;
   }
 
-  if (AppendToFile(output_path, serialized_log.get(), output_bytes) == -1) {
+  if (!AppendToFile(output_path, serialized_log.get(), output_bytes)) {
     LOG(ERROR) << "Failed to append to log.";
   }
 }

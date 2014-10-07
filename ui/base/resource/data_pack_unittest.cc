@@ -102,8 +102,8 @@ TEST(DataPackTest, LoadFromFileRegion) {
   const char kPadding[5678] = {0};
   ASSERT_EQ(static_cast<int>(sizeof(kPadding)),
             base::WriteFile(data_path, kPadding, sizeof(kPadding)));
-  ASSERT_EQ(static_cast<int>(kSamplePakSize),
-            base::AppendToFile(data_path, kSamplePakContents, kSamplePakSize));
+  ASSERT_TRUE(base::AppendToFile(
+      data_path, kSamplePakContents, kSamplePakSize));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
