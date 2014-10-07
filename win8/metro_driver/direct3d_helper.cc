@@ -152,6 +152,11 @@ void Direct3DHelper::CreateWindowSizeDependentResources() {
           nullptr,
           nullptr,
           &swap_chain_));
+      // Prevent DXGI from monitoring an application message queue and thus
+      // attempt mode changes. For e.g. Alt + Enter by default causes
+      // DXGI to attempt to take the window fullscreen.
+      CheckIfFailed(dxgi_factory->MakeWindowAssociation(
+          window, DXGI_MWA_NO_WINDOW_CHANGES));
     }
   }
 }
