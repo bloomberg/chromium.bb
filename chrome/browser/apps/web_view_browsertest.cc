@@ -120,31 +120,6 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
 };
 
-class InterstitialObserver : public content::WebContentsObserver {
- public:
-  InterstitialObserver(content::WebContents* web_contents,
-                       const base::Closure& attach_callback,
-                       const base::Closure& detach_callback)
-      : WebContentsObserver(web_contents),
-        attach_callback_(attach_callback),
-        detach_callback_(detach_callback) {
-  }
-
-  virtual void DidAttachInterstitialPage() OVERRIDE {
-    attach_callback_.Run();
-  }
-
-  virtual void DidDetachInterstitialPage() OVERRIDE {
-    detach_callback_.Run();
-  }
-
- private:
-  base::Closure attach_callback_;
-  base::Closure detach_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
-};
-
 void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
                                const char* script,
                                const char* title) {
@@ -631,16 +606,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
             embedder_web_contents,
             base::StringPrintf("startDenyTest('%s')", test_name.c_str())));
     ASSERT_TRUE(test_run_listener.WaitUntilSatisfied());
-  }
-
-  void WaitForInterstitial(content::WebContents* web_contents) {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-    InterstitialObserver observer(web_contents,
-                                  loop_runner->QuitClosure(),
-                                  base::Closure());
-    if (!content::InterstitialPage::GetInterstitialPage(web_contents))
-      loop_runner->Run();
   }
 
   void LoadAppWithGuest(const std::string& app_path) {
@@ -1255,7 +1220,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
   content::WebContents* guest_web_contents =
       GetGuestViewManager()->WaitForGuestCreated();
   ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
-  WaitForInterstitial(guest_web_contents);
+  content::WaitForInterstitialAttach(guest_web_contents);
 
   // Now close the app while interstitial page being shown in guest.
   extensions::AppWindow* window = GetFirstAppWindow();

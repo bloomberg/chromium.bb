@@ -67,7 +67,7 @@ class DOMOperationObserver : public NotificationObserver,
 
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const NotificationDetails& details) override {
     DCHECK(type == NOTIFICATION_DOM_OPERATION_RESPONSE);
     Details<DomOperationNotificationDetails> dom_op_details(details);
     response_ = dom_op_details->json;
@@ -76,7 +76,7 @@ class DOMOperationObserver : public NotificationObserver,
   }
 
   // Overridden from WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+  virtual void RenderProcessGone(base::TerminationStatus status) override {
     message_loop_runner_->Quit();
   }
 
@@ -93,6 +93,32 @@ class DOMOperationObserver : public NotificationObserver,
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMOperationObserver);
+};
+
+class InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(content::WebContents* web_contents,
+                       const base::Closure& attach_callback,
+                       const base::Closure& detach_callback)
+      : WebContentsObserver(web_contents),
+        attach_callback_(attach_callback),
+        detach_callback_(detach_callback) {
+  }
+  virtual ~InterstitialObserver() {}
+
+  // WebContentsObserver methods:
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    attach_callback_.Run();
+  }
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    detach_callback_.Run();
+  }
+
+ private:
+  base::Closure attach_callback_;
+  base::Closure detach_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
 };
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
@@ -634,6 +660,36 @@ void SetupCrossSiteRedirector(
    embedded_test_server->RegisterRequestHandler(
        base::Bind(&CrossSiteRedirectResponseHandler,
                   embedded_test_server->base_url()));
+}
+
+void WaitForInterstitialAttach(content::WebContents* web_contents) {
+  if (web_contents->ShowingInterstitialPage())
+    return;
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  InterstitialObserver observer(web_contents,
+                                loop_runner->QuitClosure(),
+                                base::Closure());
+  loop_runner->Run();
+}
+
+void WaitForInterstitialDetach(content::WebContents* web_contents) {
+  RunTaskAndWaitForInterstitialDetach(web_contents, base::Closure());
+}
+
+void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
+                                         const base::Closure& task) {
+  if (!web_contents || !web_contents->ShowingInterstitialPage())
+    return;
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  InterstitialObserver observer(web_contents,
+                                base::Closure(),
+                                loop_runner->QuitClosure());
+  if (!task.is_null())
+    task.Run();
+  // At this point, web_contents may have been deleted.
+  loop_runner->Run();
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

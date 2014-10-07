@@ -175,31 +175,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
 
-class InterstitialObserver : public content::WebContentsObserver {
- public:
-  InterstitialObserver(content::WebContents* web_contents,
-                       const base::Closure& attach_callback,
-                       const base::Closure& detach_callback)
-      : WebContentsObserver(web_contents),
-        attach_callback_(attach_callback),
-        detach_callback_(detach_callback) {
-  }
-
-  virtual void DidAttachInterstitialPage() override {
-    attach_callback_.Run();
-  }
-
-  virtual void DidDetachInterstitialPage() override {
-    detach_callback_.Run();
-  }
-
- private:
-  base::Closure attach_callback_;
-  base::Closure detach_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
-};
-
 // Causes the browser to swap processes on a redirect to an HTTPS URL.
 class TransferHttpsRedirectsContentBrowserClient
     : public chrome::ChromeContentBrowserClient {
@@ -1892,17 +1867,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  TestInterstitialPage* interstitial = NULL;
-  {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-
-    InterstitialObserver observer(contents,
-                                  loop_runner->QuitClosure(),
-                                  base::Closure());
-    interstitial = new TestInterstitialPage(contents, false, GURL());
-    loop_runner->Run();
-  }
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents, false, GURL());
+  content::WaitForInterstitialAttach(contents);
 
   EXPECT_TRUE(contents->ShowingInterstitialPage());
 
@@ -1911,17 +1878,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 
-  {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-
-    InterstitialObserver observer(contents,
-                                  base::Closure(),
-                                  loop_runner->QuitClosure());
-    interstitial->Proceed();
-    loop_runner->Run();
-    // interstitial is deleted now.
-  }
+  // Proceed and wait for interstitial to detach. This doesn't destroy
+  // |contents|.
+  interstitial->Proceed();
+  content::WaitForInterstitialDetach(contents);
+  // interstitial is deleted now.
 
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
@@ -1945,33 +1906,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   EXPECT_TRUE(dialog_queue->HasActiveDialog());
 
-  TestInterstitialPage* interstitial = NULL;
-  {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-
-    InterstitialObserver observer(contents,
-                                  loop_runner->QuitClosure(),
-                                  base::Closure());
-    interstitial = new TestInterstitialPage(contents, false, GURL());
-    loop_runner->Run();
-  }
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents, false, GURL());
+  content::WaitForInterstitialAttach(contents);
 
   // The interstitial should have closed the dialog.
   EXPECT_TRUE(contents->ShowingInterstitialPage());
   EXPECT_FALSE(dialog_queue->HasActiveDialog());
 
-  {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-
-    InterstitialObserver observer(contents,
-                                  base::Closure(),
-                                  loop_runner->QuitClosure());
-    interstitial->DontProceed();
-    loop_runner->Run();
-    // interstitial is deleted now.
-  }
+  // Don't proceed and wait for interstitial to detach. This doesn't destroy
+  // |contents|.
+  interstitial->DontProceed();
+  content::WaitForInterstitialDetach(contents);
+  // interstitial is deleted now.
 
   // Make sure input events still work in the renderer process.
   EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
@@ -1981,31 +1928,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCloseTab) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-
-    InterstitialObserver observer(contents,
-                                  loop_runner->QuitClosure(),
-                                  base::Closure());
-    // Interstitial will delete itself when we close the tab.
-    new TestInterstitialPage(contents, false, GURL());
-    loop_runner->Run();
-  }
+  // Interstitial will delete itself when we close the tab.
+  new TestInterstitialPage(contents, false, GURL());
+  content::WaitForInterstitialAttach(contents);
 
   EXPECT_TRUE(contents->ShowingInterstitialPage());
 
-  {
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-
-    InterstitialObserver observer(contents,
-                                  base::Closure(),
-                                  loop_runner->QuitClosure());
-    chrome::CloseTab(browser());
-    loop_runner->Run();
-    // interstitial is deleted now.
-  }
+  // Close the tab and wait for interstitial detach. This destroys |contents|.
+  content::RunTaskAndWaitForInterstitialDetach(
+      contents, base::Bind(&chrome::CloseTab, browser()));
+  // interstitial is deleted now.
 }
 
 class MockWebContentsObserver : public WebContentsObserver {

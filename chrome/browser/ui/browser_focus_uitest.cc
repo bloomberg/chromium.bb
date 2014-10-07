@@ -136,23 +136,6 @@ class BrowserFocusTest : public InProcessBrowserTest {
   }
 };
 
-// A helper class that waits for an interstitial page to attach.
-class WaitForInterstitial : public content::WebContentsObserver {
- public:
-  explicit WaitForInterstitial(content::WebContents* tab)
-      : WebContentsObserver(tab),
-        runner_(new content::MessageLoopRunner) {
-    runner_->Run();
-  }
-
-  virtual void DidAttachInterstitialPage() override { runner_->Quit(); }
-  virtual void DidDetachInterstitialPage() override { NOTREACHED(); }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> runner_;
-  DISALLOW_COPY_AND_ASSIGN(WaitForInterstitial);
-};
-
 // A test interstitial page with typical HTML contents.
 class TestInterstitialPage : public content::InterstitialPageDelegate {
  public:
@@ -168,7 +151,8 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
 
     // Show the interstitial and delay return until it has attached.
     interstitial_page_->Show();
-    WaitForInterstitial wait(tab);
+    content::WaitForInterstitialAttach(tab);
+
     EXPECT_TRUE(tab->ShowingInterstitialPage());
   }
 

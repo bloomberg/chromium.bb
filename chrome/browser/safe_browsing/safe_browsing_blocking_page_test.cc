@@ -34,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 
@@ -47,31 +48,6 @@ namespace {
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
 const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
-
-class InterstitialObserver : public content::WebContentsObserver {
- public:
-  InterstitialObserver(content::WebContents* web_contents,
-                       const base::Closure& attach_callback,
-                       const base::Closure& detach_callback)
-      : WebContentsObserver(web_contents),
-        attach_callback_(attach_callback),
-        detach_callback_(detach_callback) {
-  }
-
-  virtual void DidAttachInterstitialPage() OVERRIDE {
-    attach_callback_.Run();
-  }
-
-  virtual void DidDetachInterstitialPage() OVERRIDE {
-    detach_callback_.Run();
-  }
-
- private:
-  base::Closure attach_callback_;
-  base::Closure detach_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
-};
 
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
 // URLs.
@@ -483,18 +459,6 @@ class SafeBrowsingBlockingPageBrowserTest
     return interstitial_page != NULL;
   }
 
-  void WaitForInterstitial() {
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-    InterstitialObserver observer(contents,
-                                  loop_runner->QuitClosure(),
-                                  base::Closure());
-    if (!InterstitialPage::GetInterstitialPage(contents))
-      loop_runner->Run();
-  }
-
   void SetReportSentCallback(const base::Closure& callback) {
     factory_.most_recent_service()
         ->fake_ui_manager()
@@ -520,7 +484,9 @@ class SafeBrowsingBlockingPageBrowserTest
         GURL("javascript:" + open_function + "()"),
         CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-    WaitForInterstitial();
+    WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::WaitForInterstitialAttach(contents);
     // Cancel the redirect request while interstitial page is open.
     browser()->tab_strip_model()->ActivateTabAt(0, true);
     ui_test_utils::NavigateToURLWithDisposition(
@@ -598,15 +564,10 @@ class SafeBrowsingBlockingPageBrowserTest
     // We wait for interstitial_detached rather than nav_entry_committed, as
     // going back from a main-frame malware interstitial page will not cause a
     // nav entry committed event.
-    scoped_refptr<content::MessageLoopRunner> loop_runner(
-        new content::MessageLoopRunner);
-    InterstitialObserver observer(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Closure(),
-        loop_runner->QuitClosure());
     if (!Click(node_id))
       return false;
-    loop_runner->Run();
+    content::WaitForInterstitialDetach(
+        browser()->tab_strip_model()->GetActiveWebContents());
     return true;
   }
 
