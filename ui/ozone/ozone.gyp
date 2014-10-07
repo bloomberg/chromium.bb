@@ -5,10 +5,14 @@
 {
   'variables': {
     'chromium_code': 1,
-    'external_ozone_platforms': [],
-    'external_ozone_platform_files': [],
-    'external_ozone_platform_deps': [],
-    'external_ozone_platform_unittest_deps': [],
+    # Normally, the external_ozone_platform* variables below can be
+    # overridden by supplement.gypi which must exist exactly one level
+    # below the top-level src directory. They can now also be set in
+    # $GYP_DEFINES
+    'external_ozone_platforms%': [],
+    'external_ozone_platform_files%': [],
+    'external_ozone_platform_deps%': [],
+    'external_ozone_platform_unittest_deps%': [],
     'internal_ozone_platforms': [],
     'internal_ozone_platform_deps': [],
     'internal_ozone_platform_unittest_deps': [],

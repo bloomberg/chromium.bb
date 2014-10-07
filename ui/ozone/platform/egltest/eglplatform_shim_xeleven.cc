@@ -17,8 +17,8 @@ Display* g_display;
 
 const int kDefaultX = 0;
 const int kDefaultY = 0;
-const int kDefaultWidth = 800;
-const int kDefaultHeight = 600;
+const int kDefaultWidth = 1280;
+const int kDefaultHeight = 720;
 const int kDefaultBorderWidth = 0;
 
 const char* ShimQueryString(int name) {
