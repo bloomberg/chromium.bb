@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/enhanced_bookmarks/bookmark_server_service.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -38,8 +37,7 @@ class BookmarkServerSearchService : public BookmarkServerService {
   std::vector<const BookmarkNode*> ResultForQuery(const std::string& query);
 
  protected:
-
-  virtual net::URLFetcher* CreateFetcher() override;
+  virtual scoped_ptr<net::URLFetcher> CreateFetcher() override;
 
   virtual bool ProcessResponse(const std::string& response,
                                bool* should_notify) override;

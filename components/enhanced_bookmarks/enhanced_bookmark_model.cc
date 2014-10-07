@@ -91,15 +91,18 @@ EnhancedBookmarkModel::EnhancedBookmarkModel(BookmarkModel* bookmark_model,
 }
 
 EnhancedBookmarkModel::~EnhancedBookmarkModel() {
+  Shutdown();
 }
 
 void EnhancedBookmarkModel::Shutdown() {
-  FOR_EACH_OBSERVER(EnhancedBookmarkModelObserver,
-                    observers_,
-                    EnhancedBookmarkModelShuttingDown());
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  bookmark_model_->RemoveObserver(this);
-  bookmark_model_ = NULL;
+  if (bookmark_model_) {
+    FOR_EACH_OBSERVER(EnhancedBookmarkModelObserver,
+                      observers_,
+                      EnhancedBookmarkModelShuttingDown());
+    weak_ptr_factory_.InvalidateWeakPtrs();
+    bookmark_model_->RemoveObserver(this);
+    bookmark_model_ = NULL;
+  }
 }
 
 void EnhancedBookmarkModel::AddObserver(
