@@ -20,14 +20,17 @@ bool BlockingWrite(const embedder::PlatformHandle& handle,
                    const void* buffer,
                    size_t bytes_to_write,
                    size_t* bytes_written) {
-  OVERLAPPED overlapped = { 0 };
+  OVERLAPPED overlapped = {0};
   DWORD bytes_written_dword = 0;
 
-  if (!WriteFile(handle.handle, buffer, static_cast<DWORD>(bytes_to_write),
-                 &bytes_written_dword, &overlapped)) {
+  if (!WriteFile(handle.handle,
+                 buffer,
+                 static_cast<DWORD>(bytes_to_write),
+                 &bytes_written_dword,
+                 &overlapped)) {
     if (GetLastError() != ERROR_IO_PENDING ||
-        !GetOverlappedResult(handle.handle, &overlapped, &bytes_written_dword,
-                             TRUE)) {
+        !GetOverlappedResult(
+            handle.handle, &overlapped, &bytes_written_dword, TRUE)) {
       return false;
     }
   }
@@ -40,14 +43,17 @@ bool BlockingRead(const embedder::PlatformHandle& handle,
                   void* buffer,
                   size_t buffer_size,
                   size_t* bytes_read) {
-  OVERLAPPED overlapped = { 0 };
+  OVERLAPPED overlapped = {0};
   DWORD bytes_read_dword = 0;
 
-  if (!ReadFile(handle.handle, buffer, static_cast<DWORD>(buffer_size),
-                &bytes_read_dword, &overlapped)) {
+  if (!ReadFile(handle.handle,
+                buffer,
+                static_cast<DWORD>(buffer_size),
+                &bytes_read_dword,
+                &overlapped)) {
     if (GetLastError() != ERROR_IO_PENDING ||
-        !GetOverlappedResult(handle.handle, &overlapped, &bytes_read_dword,
-                             TRUE)) {
+        !GetOverlappedResult(
+            handle.handle, &overlapped, &bytes_read_dword, TRUE)) {
       return false;
     }
   }
@@ -60,18 +66,21 @@ bool NonBlockingRead(const embedder::PlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read) {
-  OVERLAPPED overlapped = { 0 };
+  OVERLAPPED overlapped = {0};
   DWORD bytes_read_dword = 0;
 
-  if (!ReadFile(handle.handle, buffer, static_cast<DWORD>(buffer_size),
-                &bytes_read_dword, &overlapped)) {
+  if (!ReadFile(handle.handle,
+                buffer,
+                static_cast<DWORD>(buffer_size),
+                &bytes_read_dword,
+                &overlapped)) {
     if (GetLastError() != ERROR_IO_PENDING)
       return false;
 
     CancelIo(handle.handle);
 
-    if (!GetOverlappedResult(handle.handle, &overlapped, &bytes_read_dword,
-                             TRUE)) {
+    if (!GetOverlappedResult(
+            handle.handle, &overlapped, &bytes_read_dword, TRUE)) {
       *bytes_read = 0;
       return true;
     }
@@ -92,7 +101,8 @@ embedder::ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
       &rv,
       0,
       TRUE,
-      DUPLICATE_SAME_ACCESS)) << "DuplicateHandle";
+      DUPLICATE_SAME_ACCESS))
+      << "DuplicateHandle";
   return embedder::ScopedPlatformHandle(embedder::PlatformHandle(rv));
 }
 
@@ -108,10 +118,9 @@ base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
     flags |= _O_RDONLY;
   if (strchr(mode, 't'))
     flags |= _O_TEXT;
-  base::ScopedFILE rv(
-      _fdopen(_open_osfhandle(reinterpret_cast<intptr_t>(h.release().handle),
-                              flags),
-              mode));
+  base::ScopedFILE rv(_fdopen(
+      _open_osfhandle(reinterpret_cast<intptr_t>(h.release().handle), flags),
+      mode));
   PCHECK(rv) << "_fdopen";
   return rv.Pass();
 }

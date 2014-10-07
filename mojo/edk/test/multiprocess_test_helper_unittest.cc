@@ -118,8 +118,8 @@ TEST_F(MultiprocessTestHelperTest, ChildTestPasses) {
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestPasses) {
   ASSERT_TRUE(MultiprocessTestHelper::client_platform_handle.is_valid());
-  EXPECT_TRUE(IsNonBlocking(
-      MultiprocessTestHelper::client_platform_handle.get()));
+  EXPECT_TRUE(
+      IsNonBlocking(MultiprocessTestHelper::client_platform_handle.get()));
 }
 
 TEST_F(MultiprocessTestHelperTest, ChildTestFailsAssert) {
@@ -132,8 +132,9 @@ TEST_F(MultiprocessTestHelperTest, ChildTestFailsAssert) {
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestFailsAssert) {
   ASSERT_FALSE(MultiprocessTestHelper::client_platform_handle.is_valid())
       << "DISREGARD: Expected failure in child process";
-  ASSERT_FALSE(IsNonBlocking(
-      MultiprocessTestHelper::client_platform_handle.get())) << "Not reached";
+  ASSERT_FALSE(
+      IsNonBlocking(MultiprocessTestHelper::client_platform_handle.get()))
+      << "Not reached";
   CHECK(false) << "Not reached";
 }
 
@@ -147,8 +148,8 @@ TEST_F(MultiprocessTestHelperTest, ChildTestFailsExpect) {
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestFailsExpect) {
   EXPECT_FALSE(MultiprocessTestHelper::client_platform_handle.is_valid())
       << "DISREGARD: Expected failure #1 in child process";
-  EXPECT_FALSE(IsNonBlocking(
-      MultiprocessTestHelper::client_platform_handle.get()))
+  EXPECT_FALSE(
+      IsNonBlocking(MultiprocessTestHelper::client_platform_handle.get()))
       << "DISREGARD: Expected failure #2 in child process";
 }
 

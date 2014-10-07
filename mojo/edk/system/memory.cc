@@ -40,7 +40,7 @@ template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<8, 8>(const void*);
 
 template <size_t size, size_t alignment>
 void MOJO_SYSTEM_IMPL_EXPORT
-CheckUserPointerWithCount(const void* pointer, size_t count) {
+    CheckUserPointerWithCount(const void* pointer, size_t count) {
   CHECK_LE(count, std::numeric_limits<size_t>::max() / size);
   CHECK(count == 0 || (pointer && IsAligned<alignment>(pointer)));
 }
@@ -75,7 +75,7 @@ template void MOJO_SYSTEM_IMPL_EXPORT
 #if defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
 template <>
 void MOJO_SYSTEM_IMPL_EXPORT
-CheckUserPointerWithSize<8>(const void* pointer, size_t size) {
+    CheckUserPointerWithSize<8>(const void* pointer, size_t size) {
   CHECK(size == 0 ||
         (!!pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0));
 }

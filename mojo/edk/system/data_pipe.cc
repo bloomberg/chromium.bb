@@ -22,7 +22,8 @@ namespace system {
 // static
 const MojoCreateDataPipeOptions DataPipe::kDefaultCreateOptions = {
     static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1u,
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+    1u,
     static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)};
 
 // static

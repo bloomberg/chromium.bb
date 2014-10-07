@@ -53,8 +53,8 @@ PlatformChannelPair::PlatformChannelPair() {
   const DWORD kFlags =
       SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED;
   // Allow the handle to be inherited by child processes.
-  SECURITY_ATTRIBUTES security_attributes = {sizeof(SECURITY_ATTRIBUTES),
-                                             nullptr, TRUE};
+  SECURITY_ATTRIBUTES security_attributes = {
+      sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
   client_handle_.reset(
       PlatformHandle(CreateFileW(pipe_name.c_str(),
                                  kDesiredAccess,

@@ -68,22 +68,24 @@ class MultiprocessTestHelper {
 // |MultiprocessTestHelper|. It returns an |int|, which will be the process's
 // exit code (but see the comment about |WaitForChildShutdown()|).
 #define MOJO_MULTIPROCESS_TEST_CHILD_MAIN(test_child_name) \
-    MULTIPROCESS_TEST_MAIN_WITH_SETUP( \
-        test_child_name ## TestChildMain, \
-        ::mojo::test::MultiprocessTestHelper::ChildSetup)
+  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                       \
+      test_child_name##TestChildMain,                      \
+      ::mojo::test::MultiprocessTestHelper::ChildSetup)
 
 // Use this (and |WaitForChildTestShutdown()|) for the child process's "main()",
 // if you want to use |EXPECT_...()| or |ASSERT_...()|; it has a |void| return
 // type. (Note that while an |ASSERT_...()| failure will abort the test in the
 // child, it will not abort the test in the parent.)
 #define MOJO_MULTIPROCESS_TEST_CHILD_TEST(test_child_name) \
-    void test_child_name ## TestChildTest(); \
-    MOJO_MULTIPROCESS_TEST_CHILD_MAIN(test_child_name) { \
-      test_child_name ## TestChildTest(); \
-      return (::testing::Test::HasFatalFailure() || \
-              ::testing::Test::HasNonfatalFailure()) ? 1 : 0; \
-    } \
-    void test_child_name ## TestChildTest()
+  void test_child_name##TestChildTest();                   \
+  MOJO_MULTIPROCESS_TEST_CHILD_MAIN(test_child_name) {     \
+    test_child_name##TestChildTest();                      \
+    return (::testing::Test::HasFatalFailure() ||          \
+            ::testing::Test::HasNonfatalFailure())         \
+               ? 1                                         \
+               : 0;                                        \
+  }                                                        \
+  void test_child_name##TestChildTest()
 
 }  // namespace test
 }  // namespace mojo

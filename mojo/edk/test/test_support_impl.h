@@ -20,8 +20,8 @@ class TestSupportImpl : public TestSupport {
                              double value,
                              const char* units) override;
   virtual FILE* OpenSourceRootRelativeFile(const char* relative_path) override;
-  virtual char** EnumerateSourceRootRelativeDirectory(const char* relative_path)
-      override;
+  virtual char** EnumerateSourceRootRelativeDirectory(
+      const char* relative_path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSupportImpl);

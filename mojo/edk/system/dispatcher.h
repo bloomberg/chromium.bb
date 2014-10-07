@@ -226,7 +226,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual void CancelAllWaitersNoLock();
   virtual void CloseImplNoLock();
   virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
+  CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
 
   // These are to be overridden by subclasses (if necessary). They are never
   // called after the dispatcher has been closed. They are called under |lock_|.

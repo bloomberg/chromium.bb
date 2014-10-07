@@ -56,7 +56,8 @@ FILE* TestSupportImpl::OpenSourceRootRelativeFile(const char* relative_path) {
 char** TestSupportImpl::EnumerateSourceRootRelativeDirectory(
     const char* relative_path) {
   std::vector<std::string> names;
-  base::FileEnumerator e(ResolveSourceRootRelativePath(relative_path), false,
+  base::FileEnumerator e(ResolveSourceRootRelativePath(relative_path),
+                         false,
                          base::FileEnumerator::FILES);
   for (base::FilePath name = e.Next(); !name.empty(); name = e.Next())
     names.push_back(name.BaseName().AsUTF8Unsafe());
