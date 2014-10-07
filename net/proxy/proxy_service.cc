@@ -557,15 +557,15 @@ class ProxyService::ProxyScriptDeciderPoller {
                            int init_net_error,
                            ProxyResolverScriptData* init_script_data,
                            NetLog* net_log)
-      : weak_factory_(this),
-        change_callback_(callback),
+      : change_callback_(callback),
         config_(config),
         proxy_resolver_expects_pac_bytes_(proxy_resolver_expects_pac_bytes),
         proxy_script_fetcher_(proxy_script_fetcher),
         dhcp_proxy_script_fetcher_(dhcp_proxy_script_fetcher),
         last_error_(init_net_error),
         last_script_data_(init_script_data),
-        last_poll_time_(TimeTicks::Now()) {
+        last_poll_time_(TimeTicks::Now()),
+        weak_factory_(this) {
     // Set the initial poll delay.
     next_poll_mode_ = poll_policy()->GetNextDelay(
         last_error_, TimeDelta::FromSeconds(-1), &next_poll_delay_);
@@ -694,8 +694,6 @@ class ProxyService::ProxyScriptDeciderPoller {
     change_callback_.Run(result, script_data.get(), effective_config);
   }
 
-  base::WeakPtrFactory<ProxyScriptDeciderPoller> weak_factory_;
-
   ChangeCallback change_callback_;
   ProxyConfig config_;
   bool proxy_resolver_expects_pac_bytes_;
@@ -718,6 +716,8 @@ class ProxyService::ProxyScriptDeciderPoller {
   const DefaultPollPolicy default_poll_policy_;
 
   bool quick_check_enabled_;
+
+  base::WeakPtrFactory<ProxyScriptDeciderPoller> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyScriptDeciderPoller);
 };
