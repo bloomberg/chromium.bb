@@ -12,7 +12,7 @@ import util
 
 CHROME_36_REVISION = '269696'
 CHROME_37_REVISION = '278933'
-CHROME_38_REVISION = '290109'
+CHROME_38_REVISION = '289947'
 
 _SITE = 'http://commondatastorage.googleapis.com'
 
