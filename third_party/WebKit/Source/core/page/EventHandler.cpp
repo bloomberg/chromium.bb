@@ -2424,9 +2424,6 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     if (delta.isZero())
         return false;
 
-    const float scaleFactor = m_frame->pageZoomFactor();
-    delta.scale(1 / scaleFactor, 1 / scaleFactor);
-
     Node* node = m_scrollGestureHandlingNode.get();
     if (!node)
         return sendScrollEventToView(gestureEvent, delta);
@@ -2469,7 +2466,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     return sendScrollEventToView(gestureEvent, delta);
 }
 
-bool EventHandler::sendScrollEventToView(const PlatformGestureEvent& gestureEvent, const FloatSize& scaledDelta)
+bool EventHandler::sendScrollEventToView(const PlatformGestureEvent& gestureEvent, const FloatSize& delta)
 {
     FrameView* view = m_frame->view();
     if (!view)
@@ -2479,8 +2476,8 @@ bool EventHandler::sendScrollEventToView(const PlatformGestureEvent& gestureEven
     IntPoint point(gestureEvent.position().x(), gestureEvent.position().y());
     IntPoint globalPoint(gestureEvent.globalPosition().x(), gestureEvent.globalPosition().y());
     PlatformWheelEvent syntheticWheelEvent(point, globalPoint,
-        scaledDelta.width(), scaledDelta.height(),
-        scaledDelta.width() / tickDivisor, scaledDelta.height() / tickDivisor,
+        delta.width(), delta.height(),
+        delta.width() / tickDivisor, delta.height() / tickDivisor,
         ScrollByPixelWheelEvent,
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey());
     syntheticWheelEvent.setHasPreciseScrollingDeltas(true);
