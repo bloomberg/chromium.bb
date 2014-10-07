@@ -8,7 +8,10 @@
 
 function test()
 {
-    InspectorTest.expandElementsTree(step1);
+    // Warm up highlighter module.
+    runtime.loadModulePromise("source_frame").then(function() {
+        InspectorTest.expandElementsTree(step1);
+    }).done();
 
     function step1()
     {

@@ -52,7 +52,7 @@ function test()
                 ++knownEvents[event.name];
         }
         InspectorTest.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
-        InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 10, "Too few v8.callFunction");
+        InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 1, "Too few v8.callFunction");
         InspectorTest.assertGreaterOrEqual(knownEvents["Document::updateRenderTree"], 1, "Too few Document::recalcStyle");
         InspectorTest.assertGreaterOrEqual(knownEvents["FrameView::layout"], 1, "Too few FrameView::layout");
         InspectorTest.assertGreaterOrEqual(phaseComplete, 50, "Too few begin events");

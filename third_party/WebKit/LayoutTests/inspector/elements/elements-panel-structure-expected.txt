@@ -7,7 +7,7 @@ Tests that elements panel shows DOM tree structure.
           <script src="../../http/tests/inspector/inspector-test.js"></script>
           <script src="../../http/tests/inspector/elements-test.js"></script>
         - <script>
-              \nfunction test()\n{\n    InspectorTest.expandElementsTree(step1);\n\n    function step1()\n    {\n        InspectorTest.dumpElementsTree();\n        InspectorTest.completeTest();\n    }\n}\n\n
+              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        InspectorTest.expandElementsTree(step1)\n    }).done();\n\n    function step1()\n    {\n        InspectorTest.dumpElementsTree();\n        InspectorTest.completeTest();\n    }\n}\n\n
           </script>
       </head>
     - <body onload="runTest()">

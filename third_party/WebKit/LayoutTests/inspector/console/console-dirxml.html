@@ -18,7 +18,10 @@ function logToConsole()
 
 function test()
 {
-    InspectorTest.evaluateInPage("logToConsole()", onLoggedToConsole);
+    runtime.loadModulePromise("elements").then(function() {
+        InspectorTest.evaluateInPage("logToConsole()", onLoggedToConsole);
+    }).done();
+
     function onLoggedToConsole()
     {
         InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded)

@@ -12,7 +12,10 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(callback);
+    // Warm up highlighter module.
+    runtime.loadModulePromise("source_frame").then(function() {
+        InspectorTest.expandConsoleMessages(callback);
+    }).done();
 
     function callback()
     {
