@@ -169,11 +169,11 @@ function FileManager() {
   this.directoryTree_ = null;
 
   /**
-   * Auto-complete list.
-   * @type {cr.ui.AutocompleteList}
+   * Controller for search UI.
+   * @type {SearchController}
    * @private
    */
-  this.autocompleteList_ = null;
+  this.searchController_ = null;
 
   /**
    * Banners in the file list.
@@ -385,13 +385,6 @@ function FileManager() {
    * @private
    */
   this.listContainer_ = null;
-
-  /**
-   * The input element in the search box.
-   * @type {HTMLInputElement}
-   * @private
-   */
-  this.searchBox_ = null;
 
   /**
    * The file type selector.
@@ -1405,29 +1398,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    this.searchBox_ = this.ui_.searchBox.inputElement;
-    this.searchBox_.addEventListener(
-        'input', this.onSearchBoxUpdate_.bind(this));
-    this.ui_.searchBox.clearButton.addEventListener(
-        'click', this.onSearchClearButtonClick_.bind(this));
-
-    this.autocompleteList_ = this.ui_.searchBox.autocompleteList;
-    this.autocompleteList_.requestSuggestions =
-        this.requestAutocompleteSuggestions_.bind(this);
-
-    // Instead, open the suggested item when Enter key is pressed or
-    // mouse-clicked.
-    this.autocompleteList_.handleEnterKeydown = function(event) {
-      this.openAutocompleteSuggestion_();
-      this.lastAutocompleteQuery_ = '';
-      this.autocompleteList_.suggestions = [];
-    }.bind(this);
-    this.autocompleteList_.addEventListener('mousedown', function(event) {
-      this.openAutocompleteSuggestion_();
-      this.lastAutocompleteQuery_ = '';
-      this.autocompleteList_.suggestions = [];
-    }.bind(this));
-
     this.defaultActionMenuItem_ =
         this.dialogDom_.querySelector('#default-action');
 
@@ -1556,6 +1526,31 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.volumeManager_.addEventListener('externally-unmounted',
           this.onExternallyUnmounted_.bind(this));
     }
+
+    // Create search controller.
+    this.searchController_ = new SearchController(
+        this.ui_.searchBox,
+        this.ui_.locationLine,
+        this.directoryModel_,
+        this.volumeManager_,
+        {
+          // TODO (hirono): Make the real task controller and pass it here.
+          doAction: function(entry) {
+            if (this.dialogType == DialogType.FULL_PAGE) {
+              this.metadataCache_.get([entry], 'external', function(props) {
+                var tasks = new FileTasks(this);
+                tasks.init([entry], [props[0].contentMimeType || '']);
+                tasks.executeDefault();
+              }.bind(this));
+            } else {
+              var selection = this.getSelection();
+              if (selection.entries.length === 1 &&
+                  util.isSameEntry(selection.entries[0], entry)) {
+                this.onOk_();
+              }
+            }
+          }.bind(this)
+        });
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
     var today = new Date();
@@ -2748,7 +2743,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.selectionHandler_.onFileSelectionChanged();
-    this.ui_.searchBox.clear();
+    this.searchController_.clear();
     // TODO(mtomasz): Consider remembering the selection.
     util.updateAppState(
         this.getCurrentDirectoryEntry() ?
@@ -2761,9 +2756,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
-    this.ui_.locationLine.show(this.getCurrentDirectoryEntry());
 
     var currentEntry = this.getCurrentDirectoryEntry();
+    this.ui_.locationLine.show(currentEntry);
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
         null : currentEntry;
   };
@@ -3788,243 +3783,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var changeInfo = {};
     changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
     chrome.fileManagerPrivate.setPreferences(changeInfo);
-  };
-
-  /**
-   * Invoked when the search box is changed.
-   *
-   * @param {Event} event The changed event.
-   * @private
-   */
-  FileManager.prototype.onSearchBoxUpdate_ = function(event) {
-    var searchString = this.searchBox_.value;
-
-    if (this.isOnDrive()) {
-      // When the search text is changed, finishes the search and showes back
-      // the last directory by passing an empty string to
-      // {@code DirectoryModel.search()}.
-      if (this.directoryModel_.isSearching() &&
-          this.lastSearchQuery_ != searchString) {
-        this.doSearch('');
-      }
-
-      // On drive, incremental search is not invoked since we have an auto-
-      // complete suggestion instead.
-      return;
-    }
-
-    this.search_(searchString);
-  };
-
-  /**
-   * Handle the search clear button click.
-   * @private
-   */
-  FileManager.prototype.onSearchClearButtonClick_ = function() {
-    this.ui_.searchBox.clear();
-    this.onSearchBoxUpdate_();
-  };
-
-  /**
-   * Search files and update the list with the search result.
-   *
-   * @param {string} searchString String to be searched with.
-   * @private
-   */
-  FileManager.prototype.search_ = function(searchString) {
-    var noResultsDiv = this.document_.getElementById('no-search-results');
-
-    var reportEmptySearchResults = function() {
-      if (this.directoryModel_.getFileList().length === 0) {
-        // The string 'SEARCH_NO_MATCHING_FILES_HTML' may contain HTML tags,
-        // hence we escapes |searchString| here.
-        var html = strf('SEARCH_NO_MATCHING_FILES_HTML',
-                        util.htmlEscape(searchString));
-        noResultsDiv.innerHTML = html;
-        noResultsDiv.setAttribute('show', 'true');
-      } else {
-        noResultsDiv.removeAttribute('show');
-      }
-
-      // If the current location is somewhere in Drive, all files in Drive can
-      // be listed as search results regardless of current location.
-      // In this case, showing current location is confusing, so use the Drive
-      // root "My Drive" as the current location.
-      var entry = this.getCurrentDirectoryEntry();
-      var locationInfo = this.volumeManager_.getLocationInfo(entry);
-      if (locationInfo && locationInfo.isDriveBased) {
-        var rootEntry = locationInfo.volumeInfo.displayRoot;
-        if (rootEntry)
-          this.ui_.locationLine.show(rootEntry);
-      }
-    };
-
-    var hideNoResultsDiv = function() {
-      noResultsDiv.removeAttribute('show');
-      this.ui_.locationLine.show(this.getCurrentDirectoryEntry());
-    };
-
-    this.doSearch(searchString,
-                  reportEmptySearchResults.bind(this),
-                  hideNoResultsDiv.bind(this));
-  };
-
-  /**
-   * Performs search and displays results.
-   *
-   * @param {string} searchString Query that will be searched for.
-   * @param {function()=} opt_onSearchRescan Function that will be called when
-   *     the search directory is rescanned (i.e. search results are displayed).
-   * @param {function()=} opt_onClearSearch Function to be called when search
-   *     state gets cleared.
-   */
-  FileManager.prototype.doSearch = function(
-      searchString, opt_onSearchRescan, opt_onClearSearch) {
-    var onSearchRescan = opt_onSearchRescan || function() {};
-    var onClearSearch = opt_onClearSearch || function() {};
-
-    this.lastSearchQuery_ = searchString;
-    this.directoryModel_.search(searchString, onSearchRescan, onClearSearch);
-  };
-
-  /**
-   * Requests autocomplete suggestions for files on Drive.
-   * Once the suggestions are returned, the autocomplete popup will show up.
-   *
-   * @param {string} query The text to autocomplete from.
-   * @private
-   */
-  FileManager.prototype.requestAutocompleteSuggestions_ = function(query) {
-    query = query.trimLeft();
-
-    // Only Drive supports auto-compelete
-    if (!this.isOnDrive())
-      return;
-
-    // Remember the most recent query. If there is an other request in progress,
-    // then it's result will be discarded and it will call a new request for
-    // this query.
-    this.lastAutocompleteQuery_ = query;
-    if (this.autocompleteSuggestionsBusy_)
-      return;
-
-    if (!query) {
-      this.autocompleteList_.suggestions = [];
-      return;
-    }
-
-    var headerItem = {isHeaderItem: true, searchQuery: query};
-    if (!this.autocompleteList_.dataModel ||
-        this.autocompleteList_.dataModel.length == 0)
-      this.autocompleteList_.suggestions = [headerItem];
-    else
-      // Updates only the head item to prevent a flickering on typing.
-      this.autocompleteList_.dataModel.splice(0, 1, headerItem);
-
-    // The autocomplete list should be resized and repositioned here as the
-    // search box is resized when it's focused.
-    this.autocompleteList_.syncWidthAndPositionToInput();
-
-    this.autocompleteSuggestionsBusy_ = true;
-
-    var searchParams = {
-      'query': query,
-      'types': 'ALL',
-      'maxResults': 4
-    };
-    chrome.fileManagerPrivate.searchDriveMetadata(
-        searchParams,
-        function(suggestions) {
-          this.autocompleteSuggestionsBusy_ = false;
-
-          // Discard results for previous requests and fire a new search
-          // for the most recent query.
-          if (query != this.lastAutocompleteQuery_) {
-            this.requestAutocompleteSuggestions_(this.lastAutocompleteQuery_);
-            return;
-          }
-
-          // Keeps the items in the suggestion list.
-          this.autocompleteList_.suggestions = [headerItem].concat(suggestions);
-        }.bind(this));
-  };
-
-  /**
-   * Opens the currently selected suggestion item.
-   * @private
-   */
-  FileManager.prototype.openAutocompleteSuggestion_ = function() {
-    var selectedItem = this.autocompleteList_.selectedItem;
-
-    // If the entry is the search item or no entry is selected, just change to
-    // the search result.
-    if (!selectedItem || selectedItem.isHeaderItem) {
-      var query = selectedItem ?
-          selectedItem.searchQuery : this.searchBox_.value;
-      this.search_(query);
-      return;
-    }
-
-    var entry = selectedItem.entry;
-    // If the entry is a directory, just change the directory.
-    if (entry.isDirectory) {
-      this.onDirectoryAction_(entry);
-      return;
-    }
-
-    var entries = [entry];
-    var self = this;
-
-    // To open a file, first get the mime type.
-    this.metadataCache_.get(entries, 'external', function(props) {
-      var mimeType = props[0].contentMimeType || '';
-      var mimeTypes = [mimeType];
-      var openIt = function() {
-        if (self.dialogType == DialogType.FULL_PAGE) {
-          var tasks = new FileTasks(self);
-          tasks.init(entries, mimeTypes);
-          tasks.executeDefault();
-        } else {
-          self.onOk_();
-        }
-      };
-
-      // Change the current directory to the directory that contains the
-      // selected file. Note that this is necessary for an image or a video,
-      // which should be opened in the gallery mode, as the gallery mode
-      // requires the entry to be in the current directory model. For
-      // consistency, the current directory is always changed regardless of
-      // the file type.
-      entry.getParent(function(parentEntry) {
-        // Check if the parent entry points /drive/other or not.
-        // If so it just opens the file.
-        var locationInfo = self.volumeManager_.getLocationInfo(parentEntry);
-        if (!locationInfo ||
-            (locationInfo.isRootEntry &&
-             locationInfo.rootType ===
-                 VolumeManagerCommon.RootType.DRIVE_OTHER)) {
-          openIt();
-          return;
-        }
-        var onDirectoryChanged = function(event) {
-          self.directoryModel_.removeEventListener('scan-completed',
-                                                   onDirectoryChanged);
-          self.directoryModel_.selectEntry(entry);
-          openIt();
-        };
-        // changeDirectoryEntry() returns immediately. We should wait until the
-        // directory scan is complete.
-        self.directoryModel_.addEventListener('scan-completed',
-                                              onDirectoryChanged);
-        self.directoryModel_.changeDirectoryEntry(
-            parentEntry,
-            function() {
-              // Remove the listner if the change directory failed.
-              self.directoryModel_.removeEventListener('scan-completed',
-                                                       onDirectoryChanged);
-            });
-      });
-    });
   };
 
   FileManager.prototype.decorateSplitter = function(splitterElement) {

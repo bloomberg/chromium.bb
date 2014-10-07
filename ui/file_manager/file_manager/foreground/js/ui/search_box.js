@@ -8,9 +8,14 @@
  * Search box.
  *
  * @param {HTMLElement} element Root element of the search box.
+ * @param {HTMLElement} searchButton Search button.
+ * @param {HTMLElement} noResultMessage Message element for the empty result.
+ * @extends {cr.EventTarget}
  * @constructor
  */
-function SearchBox(element) {
+function SearchBox(element, searchButton, noResultMessage) {
+  cr.EventTarget.call(this);
+
   /**
    * Autocomplete List.
    * @type {SearchBox.AutocompleteList}
@@ -24,6 +29,18 @@ function SearchBox(element) {
   this.element = element;
 
   /**
+   * Search button.
+   * @type {HTMLElement}
+   */
+  this.searchButton = searchButton;
+
+  /**
+   * No result message.
+   * @type {HTMLElement}
+   */
+  this.noResultMessage = noResultMessage;
+
+  /**
    * Text input of the search box.
    * @type {HTMLElement}
    */
@@ -35,21 +52,47 @@ function SearchBox(element) {
    */
   this.clearButton = element.querySelector('.clear');
 
-  Object.freeze(this);
-
   // Register events.
-  this.inputElement.addEventListener('input', this.updateStyles_.bind(this));
+  this.inputElement.addEventListener('input', this.onInput_.bind(this));
   this.inputElement.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.inputElement.addEventListener('focus', this.onFocus_.bind(this));
   this.inputElement.addEventListener('blur', this.onBlur_.bind(this));
-  this.inputElement.ownerDocument.addEventListener('dragover',
-                                                   this.onDragEnter_.bind(this),
-                                                   true);
-  this.inputElement.ownerDocument.addEventListener('dragend',
-                                                   this.onDragEnd_.bind(this),
-                                                   true);
+  this.inputElement.ownerDocument.addEventListener(
+      'dragover',
+      this.onDragEnter_.bind(this),
+      true);
+  this.inputElement.ownerDocument.addEventListener(
+      'dragend',
+      this.onDragEnd_.bind(this));
+  this.searchButton.addEventListener(
+      'click',
+      this.onSearchButtonClick_.bind(this));
+  this.clearButton.addEventListener(
+      'click',
+      this.onClearButtonClick_.bind(this));
+  var dispatchItemSelect =
+      cr.dispatchSimpleEvent.bind(cr, this, SearchBox.EventType.ITEM_SELECT);
+  this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
+  this.autocompleteList.addEventListener('mouseDown', dispatchItemSelect);
+
+  // Append dynamically created element.
   element.parentNode.appendChild(this.autocompleteList);
 }
+
+SearchBox.prototype = {
+  __proto__: cr.EventTarget.prototype
+};
+
+/**
+ * Event type.
+ * @enum {string}
+ */
+SearchBox.EventType = {
+  // Dispatched when the text in the search box is changed.
+  TEXT_CHANGE: 'textchange',
+  // Dispatched when the item in the auto complete list is selected.
+  ITEM_SELECT: 'itemselect'
+};
 
 /**
  * Autocomplete list for search box.
@@ -138,6 +181,14 @@ SearchBox.prototype.clear = function() {
 };
 
 /**
+ * @private
+ */
+SearchBox.prototype.onInput_ = function() {
+  this.updateStyles_();
+  cr.dispatchSimpleEvent(this, SearchBox.EventType.TEXT_CHANGE);
+};
+
+/**
  * Handles a focus event of the search box.
  * @private
  */
@@ -196,4 +247,19 @@ SearchBox.prototype.onDragEnd_ = function() {
 SearchBox.prototype.updateStyles_ = function() {
   this.element.classList.toggle('has-text',
                                 !!this.inputElement.value);
+};
+
+/**
+ * @private
+ */
+SearchBox.prototype.onSearchButtonClick_ = function() {
+  this.inputElement.focus();
+};
+
+/**
+ * @private
+ */
+SearchBox.prototype.onClearButtonClick_ = function() {
+  this.inputElement.value = '';
+  this.onInput_();
 };

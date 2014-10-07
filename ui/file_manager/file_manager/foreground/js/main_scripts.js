@@ -93,6 +93,7 @@
 //<include src="metadata/metadata_cache.js">
 //<include src="navigation_list_model.js">
 //<include src="progress_center_item_group.js">
+//<include src="search_controller.js">
 //<include src="share_client.js">
 //<include src="thumbnail_loader.js">
 //<include src="ui/conflict_dialog.js">

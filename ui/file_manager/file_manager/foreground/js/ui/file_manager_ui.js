@@ -93,12 +93,6 @@ function FileManagerUI(element, dialogType) {
   this.locationLine = null;
 
   /**
-   * Search button.
-   * @type {HTMLElement}
-   */
-  this.searchButton = null;
-
-  /**
    * Search box.
    * @type {SearchBox}
    */
@@ -218,19 +212,10 @@ FileManagerUI.prototype.initDialogs = function() {
  * or hidden in the beginning.
  */
 FileManagerUI.prototype.initAdditionalUI = function() {
-  this.searchButton = this.element_.querySelector('#search-button');
-  this.searchButton.addEventListener('click',
-      this.onSearchButtonClick_.bind(this));
-  this.searchBox = new SearchBox(this.element_.querySelector('#search-box'));
+  this.searchBox = new SearchBox(
+      this.element_.querySelector('#search-box'),
+      this.element_.querySelector('#search-button'),
+      this.element_.querySelector('#no-search-results'));
 
   this.toggleViewButton = this.element_.querySelector('#view-button');
-};
-
-/**
- * Handles click event on the search button.
- * @param {Event} event Click event.
- * @private
- */
-FileManagerUI.prototype.onSearchButtonClick_ = function(event) {
-  this.searchBox.inputElement.focus();
 };
