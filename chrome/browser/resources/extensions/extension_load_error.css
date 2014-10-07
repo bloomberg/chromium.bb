@@ -3,9 +3,7 @@
  * found in the LICENSE file. */
 
 #extension-load-error {
-  -webkit-margin-before: 10px;
   -webkit-margin-end: 20px;
-  -webkit-padding-after: 10px;
   -webkit-padding-end: 3px;
   -webkit-padding-start: 10px;
   background-color: rgba(255, 249, 221, 1);
@@ -13,6 +11,8 @@
   display: flex;
   flex-direction: column;
   font-size: 1.1em;
+  margin-top: 10px;
+  padding-bottom: 10px;
 }
 
 #extension-load-error h2 {
@@ -21,13 +21,13 @@
 }
 
 #extension-load-error-message {
-  -webkit-margin-before: 5px;
+  margin-top: 5px;
 }
 
 #extension-load-error-manifest {
-  -webkit-margin-after: 10px;
-  -webkit-margin-before: 10px;
   background-color: rgba(255, 250, 240, 1);
+  margin-bottom: 10px;
+  margin-top: 10px;
   max-height: 100px;
 }
 
@@ -45,6 +45,6 @@
 }
 
 #extension-load-error-additional > li {
-  -webkit-margin-after: 0;
-  -webkit-margin-before: 3px;
+  margin-bottom: 0;
+  margin-top: 3px;
 }

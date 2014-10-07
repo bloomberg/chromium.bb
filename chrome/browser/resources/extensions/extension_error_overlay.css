@@ -20,8 +20,8 @@
 }
 
 #extension-error-overlay-code {
-  -webkit-margin-after: 10px;
   font-size: 1.2em;
+  margin-bottom: 10px;
 }
 
 #extension-error-overlay .extension-code-source {
@@ -29,8 +29,8 @@
 }
 
 .extension-error-overlay-context {
-  -webkit-margin-after: 10px;
   font-size: 1.1em;
+  margin-bottom: 10px;
 }
 
 .extension-error-overlay-stack-trace-list {
@@ -49,11 +49,11 @@
 }
 
 .extension-error-overlay-stack-trace-list li {
-  -webkit-padding-after: 6px;
-  -webkit-padding-before: 6px;
   -webkit-padding-start: 10px;
   background-color: white;
   cursor: pointer;
+  padding-bottom: 6px;
+  padding-top: 6px;
 }
 
 .extension-error-overlay-stack-trace-list li:hover {
