@@ -64,8 +64,7 @@ void UserManager::Show(
       tutorial_mode,
       profile_open_action,
       base::Bind(&UserManagerView::OnGuestProfileCreated,
-                 base::Passed(make_scoped_ptr(new UserManagerView)),
-                 profile_path_to_focus));
+                 base::Passed(make_scoped_ptr(new UserManagerView))));
 }
 
 void UserManager::Hide() {
@@ -90,7 +89,6 @@ UserManagerView::~UserManagerView() {
 // static
 void UserManagerView::OnGuestProfileCreated(
     scoped_ptr<UserManagerView> instance,
-    const base::FilePath& profile_path_to_focus,
     Profile* guest_profile,
     const std::string& url) {
   // If we are showing the User Manager after locking a profile, change the
@@ -99,13 +97,10 @@ void UserManagerView::OnGuestProfileCreated(
 
   DCHECK(!instance_);
   instance_ = instance.release();  // |instance_| takes over ownership.
-  instance_->Init(profile_path_to_focus, guest_profile, GURL(url));
+  instance_->Init(guest_profile, GURL(url));
 }
 
-void UserManagerView::Init(
-    const base::FilePath& profile_path_to_focus,
-    Profile* guest_profile,
-    const GURL& url) {
+void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
   web_view_ = new views::WebView(guest_profile);
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
@@ -117,27 +112,23 @@ void UserManagerView::Init(
   // placed.  This is used so that we can center the dialog on the correct
   // monitor in a multiple-monitor setup.
   //
-  // If |profile_path_to_focus| is empty (for example, starting up chrome
+  // If the last active profile is empty (for example, starting up chrome
   // when all existing profiles are locked) or we can't find an active
   // browser, bounds will remain empty and the user manager will be centered on
   // the default monitor by default.
   gfx::Rect bounds;
-  if (!profile_path_to_focus.empty()) {
-    ProfileManager* manager = g_browser_process->profile_manager();
-    if (manager) {
-      Profile* profile = manager->GetProfileByPath(profile_path_to_focus);
-      DCHECK(profile);
-      Browser* browser = chrome::FindLastActiveWithProfile(profile,
-          chrome::GetActiveDesktop());
-      if (browser) {
-        gfx::NativeView native_view =
-            views::Widget::GetWidgetForNativeWindow(
-                browser->window()->GetNativeWindow())->GetNativeView();
-        bounds = gfx::Screen::GetScreenFor(native_view)->
-            GetDisplayNearestWindow(native_view).work_area();
-        bounds.ClampToCenteredSize(gfx::Size(UserManager::kWindowWidth,
-                                             UserManager::kWindowHeight));
-      }
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (profile) {
+    Browser* browser = chrome::FindLastActiveWithProfile(profile,
+        chrome::GetActiveDesktop());
+    if (browser) {
+      gfx::NativeView native_view =
+          views::Widget::GetWidgetForNativeWindow(
+              browser->window()->GetNativeWindow())->GetNativeView();
+      bounds = gfx::Screen::GetScreenFor(native_view)->
+          GetDisplayNearestWindow(native_view).work_area();
+      bounds.ClampToCenteredSize(gfx::Size(UserManager::kWindowWidth,
+                                           UserManager::kWindowHeight));
     }
   }
 

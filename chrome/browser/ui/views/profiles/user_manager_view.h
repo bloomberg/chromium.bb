@@ -25,7 +25,6 @@ class UserManagerView : public views::DialogDelegateView {
   // Creates a new UserManagerView instance for the |guest_profile| and
   // shows the |url|.
   static void OnGuestProfileCreated(scoped_ptr<UserManagerView> instance,
-                                    const base::FilePath& profile_path_to_focus,
                                     Profile* guest_profile,
                                     const std::string& url);
 
@@ -35,9 +34,7 @@ class UserManagerView : public views::DialogDelegateView {
   friend struct base::DefaultDeleter<UserManagerView>;
 
   // Creates dialog and initializes UI.
-  void Init(const base::FilePath& profile_path_to_focus,
-            Profile* guest_profile,
-            const GURL& url);
+  void Init(Profile* guest_profile, const GURL& url);
 
   // views::View:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
