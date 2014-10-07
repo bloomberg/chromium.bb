@@ -51,7 +51,7 @@ class LeakyBucket : public RateLimiter {
 
   virtual ~LeakyBucket() { }
 
-  virtual bool DropNextPacket() OVERRIDE {
+  virtual bool DropNextPacket() override {
     base::TimeTicks now = base::TimeTicks::HighResNow();
     double interval = (now - last_update_).InSecondsF();
     last_update_ = now;
@@ -108,7 +108,7 @@ class FakeSocket : public net::Socket {
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) OVERRIDE {
+                   const net::CompletionCallback& callback) override {
     CHECK(read_callback_.is_null());
     CHECK(buf);
 
@@ -128,7 +128,7 @@ class FakeSocket : public net::Socket {
   }
 
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE {
+                    const net::CompletionCallback& callback) override {
     DCHECK(buf);
     if (peer_socket_) {
       base::MessageLoop::current()->PostDelayedTask(
@@ -142,11 +142,11 @@ class FakeSocket : public net::Socket {
     return buf_len;
   }
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual int SetReceiveBufferSize(int32 size) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual int SetSendBufferSize(int32 size) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
@@ -298,7 +298,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 
 class PseudoTcpAdapterTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
     host_socket_ = new FakeSocket();

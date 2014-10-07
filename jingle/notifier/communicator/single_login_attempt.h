@@ -61,10 +61,10 @@ class SingleLoginAttempt : public XmppConnection::Delegate {
 
   // XmppConnection::Delegate implementation.
   virtual void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> parent) OVERRIDE;
+      base::WeakPtr<buzz::XmppTaskParentInterface> parent) override;
   virtual void OnError(buzz::XmppEngine::Error error,
                        int error_subcode,
-                       const buzz::XmlElement* stream_error) OVERRIDE;
+                       const buzz::XmlElement* stream_error) override;
 
  private:
   void TryConnect(const ConnectionSettings& new_settings);

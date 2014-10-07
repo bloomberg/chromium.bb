@@ -41,7 +41,7 @@ class FakeWeakXmppClient : public notifier::WeakXmppClient {
 
   virtual ~FakeWeakXmppClient() {}
 
-  virtual const buzz::Jid& jid() const OVERRIDE {
+  virtual const buzz::Jid& jid() const override {
     return jid_;
   }
 

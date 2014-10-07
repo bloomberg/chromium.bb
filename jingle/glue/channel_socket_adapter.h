@@ -44,12 +44,12 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual int SetReceiveBufferSize(int32 size) override;
+  virtual int SetSendBufferSize(int32 size) override;
 
  private:
   void OnNewPacket(cricket::TransportChannel* channel,

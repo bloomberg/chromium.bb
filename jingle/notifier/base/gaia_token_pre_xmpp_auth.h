@@ -31,29 +31,29 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
                                 const rtc::SocketAddress& server,
                                 const rtc::CryptString& pass,
                                 const std::string& auth_mechanism,
-                                const std::string& auth_token) OVERRIDE;
+                                const std::string& auth_token) override;
 
-  virtual bool IsAuthDone() const OVERRIDE;
+  virtual bool IsAuthDone() const override;
 
-  virtual bool IsAuthorized() const OVERRIDE;
+  virtual bool IsAuthorized() const override;
 
-  virtual bool HadError() const OVERRIDE;
+  virtual bool HadError() const override;
 
-  virtual int GetError() const OVERRIDE;
+  virtual int GetError() const override;
 
-  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const OVERRIDE;
+  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const override;
 
-  virtual std::string GetAuthToken() const OVERRIDE;
+  virtual std::string GetAuthToken() const override;
 
-  virtual std::string GetAuthMechanism() const OVERRIDE;
+  virtual std::string GetAuthMechanism() const override;
 
   // buzz::SaslHandler implementation.
 
   virtual std::string ChooseBestSaslMechanism(
-      const std::vector<std::string>& mechanisms, bool encrypted) OVERRIDE;
+      const std::vector<std::string>& mechanisms, bool encrypted) override;
 
   virtual buzz::SaslMechanism* CreateSaslMechanism(
-      const std::string& mechanism) OVERRIDE;
+      const std::string& mechanism) override;
 
  private:
   std::string username_;

@@ -40,7 +40,7 @@ class WeakXmppClient : public buzz::XmppClient, public base::NonThreadSafe {
   void Invalidate();
 
  protected:
-  virtual void Stop() OVERRIDE;
+  virtual void Stop() override;
 
  private:
   // We use our own WeakPtrFactory instead of inheriting from

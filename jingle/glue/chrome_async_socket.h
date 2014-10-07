@@ -47,16 +47,16 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
 
   // The current state (see buzz::AsyncSocket::State; all but
   // STATE_CLOSING is used).
-  virtual State state() OVERRIDE;
+  virtual State state() override;
 
   // The last generated error.  Errors are generated when the main
   // functions below return false or when SignalClosed is raised due
   // to an asynchronous error.
-  virtual Error error() OVERRIDE;
+  virtual Error error() override;
 
   // GetError() (which is of type net::Error) != net::OK only when
   // error() == ERROR_WINSOCK.
-  virtual int GetError() OVERRIDE;
+  virtual int GetError() override;
 
   // Tries to connect to the given address.
   //
@@ -72,7 +72,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // Otherwise, starts the connection process and returns true.
   // SignalConnected will be raised when the connection is successful;
   // otherwise, SignalClosed will be raised with a net error set.
-  virtual bool Connect(const rtc::SocketAddress& address) OVERRIDE;
+  virtual bool Connect(const rtc::SocketAddress& address) override;
 
   // Tries to read at most |len| bytes into |data|.
   //
@@ -85,7 +85,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // case because StartTls() is called during a slot connected to
   // SignalRead after parsing the final non-TLS reply from the server
   // [see XmppClient::Private::OnSocketRead()].)
-  virtual bool Read(char* data, size_t len, size_t* len_read) OVERRIDE;
+  virtual bool Read(char* data, size_t len, size_t* len_read) override;
 
   // Queues up |len| bytes of |data| for writing.
   //
@@ -104,11 +104,11 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // Note that there's no guarantee that the data will actually be
   // sent; however, it is guaranteed that the any data sent will be
   // sent in FIFO order.
-  virtual bool Write(const char* data, size_t len) OVERRIDE;
+  virtual bool Write(const char* data, size_t len) override;
 
   // If the socket is not already closed, closes the socket and raises
   // SignalClosed.  Always returns true.
-  virtual bool Close() OVERRIDE;
+  virtual bool Close() override;
 
   // Tries to change to a TLS connection with the given domain name.
   //
@@ -121,7 +121,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // SignalSSLConnected will be raised when the connection is
   // successful; otherwise, SignalClosed will be raised with a net
   // error set.
-  virtual bool StartTls(const std::string& domain_name) OVERRIDE;
+  virtual bool StartTls(const std::string& domain_name) override;
 
   // Signal behavior:
   //

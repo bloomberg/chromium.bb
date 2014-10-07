@@ -40,12 +40,12 @@ class NonBlockingPushClient::Core
   void SendNotification(const Notification& data);
   void SendPing();
 
-  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsEnabled() override;
   virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE;
+      NotificationsDisabledReason reason) override;
   virtual void OnIncomingNotification(
-      const Notification& notification) OVERRIDE;
-  virtual void OnPingResponse() OVERRIDE;
+      const Notification& notification) override;
+  virtual void OnPingResponse() override;
 
  private:
   friend class base::RefCountedThreadSafe<NonBlockingPushClient::Core>;

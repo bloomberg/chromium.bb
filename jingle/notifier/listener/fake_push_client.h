@@ -22,14 +22,14 @@ class FakePushClient : public PushClient {
   virtual ~FakePushClient();
 
   // PushClient implementation.
-  virtual void AddObserver(PushClientObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(PushClientObserver* observer) OVERRIDE;
+  virtual void AddObserver(PushClientObserver* observer) override;
+  virtual void RemoveObserver(PushClientObserver* observer) override;
   virtual void UpdateSubscriptions(
-      const SubscriptionList& subscriptions) OVERRIDE;
+      const SubscriptionList& subscriptions) override;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(const Notification& notification) OVERRIDE;
-  virtual void SendPing() OVERRIDE;
+      const std::string& email, const std::string& token) override;
+  virtual void SendNotification(const Notification& notification) override;
+  virtual void SendPing() override;
 
   // Triggers OnNotificationsEnabled on all observers.
   void EnableNotifications();

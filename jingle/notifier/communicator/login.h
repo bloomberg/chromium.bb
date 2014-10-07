@@ -83,21 +83,21 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   void UpdateXmppSettings(const buzz::XmppClientSettings& user_settings);
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
-  virtual void OnDNSChanged() OVERRIDE;
+  virtual void OnDNSChanged() override;
 
   // SingleLoginAttempt::Delegate implementation.
   virtual void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
-  virtual void OnRedirect(const ServerInformation& redirect_server) OVERRIDE;
-  virtual void OnCredentialsRejected() OVERRIDE;
-  virtual void OnSettingsExhausted() OVERRIDE;
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) override;
+  virtual void OnRedirect(const ServerInformation& redirect_server) override;
+  virtual void OnCredentialsRejected() override;
+  virtual void OnSettingsExhausted() override;
 
  private:
   // Called by the various network notifications.

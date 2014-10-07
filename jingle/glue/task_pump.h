@@ -20,8 +20,8 @@ class TaskPump : public rtc::TaskRunner, public base::NonThreadSafe {
   virtual ~TaskPump();
 
   // rtc::TaskRunner implementation.
-  virtual void WakeTasks() OVERRIDE;
-  virtual int64 CurrentTime() OVERRIDE;
+  virtual void WakeTasks() override;
+  virtual int64 CurrentTime() override;
 
   // No tasks will be processed after this is called, even if
   // WakeTasks() is called.

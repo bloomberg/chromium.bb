@@ -17,11 +17,11 @@ class FakePushClientObserver : public PushClientObserver {
   virtual ~FakePushClientObserver();
 
   // PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsEnabled() override;
   virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE;
+      NotificationsDisabledReason reason) override;
   virtual void OnIncomingNotification(
-      const Notification& notification) OVERRIDE;
+      const Notification& notification) override;
 
   NotificationsDisabledReason last_notifications_disabled_reason() const;
   const Notification& last_incoming_notification() const;
