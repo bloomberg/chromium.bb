@@ -44,18 +44,6 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
       cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
       self.assertEquals(len(cpu_time), 1)
 
-  def testWithSilkResults(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
-    measurement = thread_times.ThreadTimes()
-    self._options.report_silk_results = True
-    results = self.RunMeasurement(measurement, ps, options = self._options)
-    self.assertEquals(0, len(results.failures))
-
-    for category in timeline.ReportSilkResults:
-      cpu_time_name = timeline.ThreadCpuTimeResultName(category)
-      cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
-      self.assertEquals(len(cpu_time), 1)
-
   def testWithSilkDetails(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes()

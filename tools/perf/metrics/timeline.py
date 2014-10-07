@@ -91,9 +91,6 @@ NoThreads = []
 FastPathThreads = ["GPU", "renderer_compositor", "browser", "IO"]
 
 ReportMainThreadOnly = ["renderer_main"]
-ReportFastPathResults = AllThreads
-ReportFastPathDetails = NoThreads
-ReportSilkResults = ["renderer_main", "total_all"]
 ReportSilkDetails = ["renderer_main"]
 
 # TODO(epenner): Thread names above are likely fairly stable but trace names

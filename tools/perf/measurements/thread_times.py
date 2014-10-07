@@ -13,8 +13,6 @@ class ThreadTimes(page_test.PageTest):
 
   @classmethod
   def AddCommandLineArgs(cls, parser):
-    parser.add_option('--report-silk-results', action='store_true',
-                      help='Report results relevant to silk.')
     parser.add_option('--report-silk-details', action='store_true',
                       help='Report details relevant to silk.')
 
@@ -38,8 +36,6 @@ class ThreadTimes(page_test.PageTest):
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \
         self._timeline_controller.model.GetRendererThreadFromTabId(tab.id)
-    if self.options.report_silk_results:
-      metric.results_to_report = timeline.ReportSilkResults
     if self.options.report_silk_details:
       metric.details_to_report = timeline.ReportSilkDetails
     metric.AddResults(self._timeline_controller.model, renderer_thread,

@@ -14,7 +14,6 @@ class ThreadTimesKeySilkCases(benchmark.Benchmark):
   cases."""
   test = thread_times.ThreadTimes
   page_set = page_sets.KeySilkCasesPageSet
-  options = {"report_silk_results": True}
 
 
 @benchmark.Enabled('android')
@@ -24,7 +23,6 @@ class ThreadTimesFastPathKeySilkCases(benchmark.Benchmark):
   tag = 'fast_path'
   test = thread_times.ThreadTimes
   page_set = page_sets.KeySilkCasesPageSet
-  options = {"report_silk_results": True}
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
@@ -71,4 +69,3 @@ class ThreadTimesPolymer(benchmark.Benchmark):
   Polymer cases."""
   test = thread_times.ThreadTimes
   page_set = page_sets.PolymerPageSet
-  options = { 'report_silk_results': True }
