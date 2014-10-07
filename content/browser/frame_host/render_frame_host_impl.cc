@@ -68,9 +68,6 @@ namespace content {
 
 namespace {
 
-// The next value to use for the accessibility reset token.
-int g_next_accessibility_reset_token = 1;
-
 // The (process id, routing id) pair that identifies one RenderFrame.
 typedef std::pair<int32, int32> RenderFrameHostID;
 typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
@@ -190,9 +187,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
       navigations_suspended_(false),
       is_waiting_for_beforeunload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
-      accessibility_reset_token_(0),
-      accessibility_reset_count_(0),
-      disallow_browser_accessibility_manager_for_testing_(false),
       weak_ptr_factory_(this) {
   frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
@@ -479,18 +473,8 @@ void RenderFrameHostImpl::AccessibilityHitTest(const gfx::Point& point) {
 }
 
 void RenderFrameHostImpl::AccessibilityFatalError() {
+  Send(new AccessibilityMsg_FatalError(routing_id_));
   browser_accessibility_manager_.reset(NULL);
-  if (accessibility_reset_token_)
-    return;
-
-  accessibility_reset_count_++;
-  if (accessibility_reset_count_ >= kMaxAccessibilityResets) {
-    Send(new AccessibilityMsg_FatalError(routing_id_));
-  } else {
-    accessibility_reset_token_ = g_next_accessibility_reset_token++;
-    UMA_HISTOGRAM_COUNTS("Accessibility.FrameResetCount", 1);
-    Send(new AccessibilityMsg_Reset(routing_id_, accessibility_reset_token_));
-  }
 }
 
 gfx::AcceleratedWidget
@@ -757,7 +741,6 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     return;
   }
 
-  accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
 }
 
@@ -1081,17 +1064,7 @@ void RenderFrameHostImpl::OnBeginNavigation(
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params,
-    int reset_token) {
-  // Don't process this IPC if either we're waiting on a reset and this
-  // IPC doesn't have the matching token ID, or if we're not waiting on a
-  // reset but this message includes a reset token.
-  if (accessibility_reset_token_ != reset_token) {
-    Send(new AccessibilityMsg_Events_ACK(routing_id_));
-    return;
-  }
-  accessibility_reset_token_ = 0;
-
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetView());
 
@@ -1166,9 +1139,6 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  if (accessibility_reset_token_)
-    return;
-
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetView());
   if (view && RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
@@ -1478,18 +1448,12 @@ const ui::AXTree* RenderFrameHostImpl::GetAXTreeForTesting() {
 
 BrowserAccessibilityManager*
     RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
-  if (disallow_browser_accessibility_manager_for_testing_)
-    return NULL;
-
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetView());
-  if (view && !browser_accessibility_manager_) {
+  if (view &&
+      !browser_accessibility_manager_) {
     browser_accessibility_manager_.reset(
         view->CreateBrowserAccessibilityManager(this));
-    if (browser_accessibility_manager_)
-      UMA_HISTOGRAM_COUNTS("Accessibility.FrameEnabledCount", 1);
-    else
-      UMA_HISTOGRAM_COUNTS("Accessibility.FrameDidNotEnableCount", 1);
   }
   return browser_accessibility_manager_.get();
 }
