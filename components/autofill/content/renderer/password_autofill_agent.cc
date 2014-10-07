@@ -410,6 +410,19 @@ bool FillFormOnPasswordRecieved(
                                  registration_callback);
 }
 
+// Takes a |map| with pointers as keys and linked_ptr as values, and returns
+// true if |key| is not NULL and  |map| contains a non-NULL entry for |key|.
+// Makes sure not to create an entry as a side effect of using the operator [].
+template <class Key, class Value>
+bool ContainsNonNullEntryForNonNullKey(
+    const std::map<Key*, linked_ptr<Value>>& map,
+    Key* key) {
+  if (!key)
+    return false;
+  auto it = map.find(key);
+  return it != map.end() && it->second.get();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -835,6 +848,7 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
 
 void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
                                            const blink::WebFormElement& form) {
+  DCHECK(frame);
   scoped_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
@@ -854,7 +868,8 @@ void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
       logger->LogPasswordForm(Logger::STRING_CREATED_PASSWORD_FORM,
                               *submitted_form);
     }
-    if (provisionally_saved_forms_[frame].get() &&
+    if (ContainsNonNullEntryForNonNullKey(
+            provisionally_saved_forms_, static_cast<blink::WebFrame*>(frame)) &&
         submitted_form->action == provisionally_saved_forms_[frame]->action) {
       if (logger)
         logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
@@ -929,7 +944,8 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
             navigation_state->transition_type()) &&
         !blink::WebUserGestureIndicator::isProcessingUserGesture()) {
       // If onsubmit has been called, try and save that form.
-      if (provisionally_saved_forms_[form_frame].get()) {
+      if (ContainsNonNullEntryForNonNullKey(provisionally_saved_forms_,
+                                            form_frame)) {
         if (logger) {
           logger->LogPasswordForm(
               Logger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME,
