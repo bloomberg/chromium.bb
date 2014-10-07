@@ -49,13 +49,13 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
  public:
   IndexedDBBrowserTest() : disk_usage_(-1) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     GetTestClassFactory()->Reset();
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
     ContentBrowserTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(NULL);
     ContentBrowserTest::TearDown();
   }
@@ -246,7 +246,7 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
  public:
   IndexedDBBrowserTestWithLowQuota() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     const int kInitialQuotaKilobytes = 5000;
     SetQuota(kInitialQuotaKilobytes);
   }
@@ -263,7 +263,7 @@ class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
  public:
   IndexedDBBrowserTestWithGCExposed() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
@@ -297,7 +297,7 @@ static void CopyLevelDBToProfile(Shell* shell,
 class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
  public:
   IndexedDBBrowserTestWithPreexistingLevelDB() {}
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     scoped_refptr<IndexedDBContextImpl> context = GetContext();
     context->TaskRunner()->PostTask(
         FROM_HERE,
@@ -317,7 +317,7 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
 
 class IndexedDBBrowserTestWithVersion0Schema : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
-  virtual std::string EnclosingLevelDBDir() OVERRIDE {
+  virtual std::string EnclosingLevelDBDir() override {
     return "migration_from_0";
   }
 };
@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion0Schema, MigrationTest) {
 
 class IndexedDBBrowserTestWithVersion123456Schema : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
-  virtual std::string EnclosingLevelDBDir() OVERRIDE {
+  virtual std::string EnclosingLevelDBDir() override {
     return "schema_version_123456";
   }
 };
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion123456Schema,
 
 class IndexedDBBrowserTestWithVersion987654SSVData : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
-  virtual std::string EnclosingLevelDBDir() OVERRIDE {
+  virtual std::string EnclosingLevelDBDir() override {
     return "ssv_version_987654";
   }
 };
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion987654SSVData,
 
 class IndexedDBBrowserTestWithCorruptLevelDB : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
-  virtual std::string EnclosingLevelDBDir() OVERRIDE {
+  virtual std::string EnclosingLevelDBDir() override {
     return "corrupt_leveldb";
   }
 };
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
 
 class IndexedDBBrowserTestWithMissingSSTFile : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
-  virtual std::string EnclosingLevelDBDir() OVERRIDE {
+  virtual std::string EnclosingLevelDBDir() override {
     return "missing_sst";
   }
 };
@@ -723,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
 
 class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
   }
 };

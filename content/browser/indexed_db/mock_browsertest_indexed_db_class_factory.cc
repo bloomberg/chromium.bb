@@ -54,7 +54,7 @@ class LevelDBTestTansaction : public LevelDBTransaction {
 
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
-                              bool* found) OVERRIDE {
+                              bool* found) override {
     if (fail_method_ != FAIL_METHOD_GET ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBTransaction::Get(key, value, found);
@@ -63,7 +63,7 @@ class LevelDBTestTansaction : public LevelDBTransaction {
     return leveldb::Status::Corruption("Corrupted for the test");
   }
 
-  virtual leveldb::Status Commit() OVERRIDE {
+  virtual leveldb::Status Commit() override {
     if (fail_method_ != FAIL_METHOD_COMMIT ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBTransaction::Commit();
@@ -88,12 +88,12 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
 
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
-                              bool* found) OVERRIDE {
+                              bool* found) override {
     get_tracer_.log_call();
     return LevelDBTransaction::Get(key, value, found);
   }
 
-  virtual leveldb::Status Commit() OVERRIDE {
+  virtual leveldb::Status Commit() override {
     commit_tracer_.log_call();
     return LevelDBTransaction::Commit();
   }
@@ -125,31 +125,31 @@ class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
  private:
   static const std::string s_class_name;
 
-  virtual bool IsValid() const OVERRIDE {
+  virtual bool IsValid() const override {
     is_valid_tracer_.log_call();
     return LevelDBIteratorImpl::IsValid();
   }
-  virtual leveldb::Status SeekToLast() OVERRIDE {
+  virtual leveldb::Status SeekToLast() override {
     seek_to_last_tracer_.log_call();
     return LevelDBIteratorImpl::SeekToLast();
   }
-  virtual leveldb::Status Seek(const base::StringPiece& target) OVERRIDE {
+  virtual leveldb::Status Seek(const base::StringPiece& target) override {
     seek_tracer_.log_call();
     return LevelDBIteratorImpl::Seek(target);
   }
-  virtual leveldb::Status Next() OVERRIDE {
+  virtual leveldb::Status Next() override {
     next_tracer_.log_call();
     return LevelDBIteratorImpl::Next();
   }
-  virtual leveldb::Status Prev() OVERRIDE {
+  virtual leveldb::Status Prev() override {
     prev_tracer_.log_call();
     return LevelDBIteratorImpl::Prev();
   }
-  virtual base::StringPiece Key() const OVERRIDE {
+  virtual base::StringPiece Key() const override {
     key_tracer_.log_call();
     return LevelDBIteratorImpl::Key();
   }
-  virtual base::StringPiece Value() const OVERRIDE {
+  virtual base::StringPiece Value() const override {
     value_tracer_.log_call();
     return LevelDBIteratorImpl::Value();
   }
@@ -177,7 +177,7 @@ class LevelDBTestIteratorImpl : public content::LevelDBIteratorImpl {
   virtual ~LevelDBTestIteratorImpl() {}
 
  private:
-  virtual leveldb::Status Seek(const base::StringPiece& target) OVERRIDE {
+  virtual leveldb::Status Seek(const base::StringPiece& target) override {
     if (fail_method_ != FAIL_METHOD_SEEK ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBIteratorImpl::Seek(target);

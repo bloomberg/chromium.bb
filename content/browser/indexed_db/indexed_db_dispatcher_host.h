@@ -58,12 +58,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       const content::IndexedDBDatabaseMetadata& metadata);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelClosing() override;
+  virtual void OnDestruct() const override;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& message) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void FinishTransaction(int64 host_transaction_id, bool committed);
 

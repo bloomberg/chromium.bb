@@ -306,10 +306,10 @@ class FileDeleter : public DownloadItem::Observer {
   explicit FileDeleter(const base::FilePath& temp_dir) : temp_dir_(temp_dir) {}
   virtual ~FileDeleter();
 
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* item) OVERRIDE {}
-  virtual void OnDownloadRemoved(DownloadItem* item) OVERRIDE {}
-  virtual void OnDownloadDestroyed(DownloadItem* item) OVERRIDE {}
+  virtual void OnDownloadUpdated(DownloadItem* download) override;
+  virtual void OnDownloadOpened(DownloadItem* item) override {}
+  virtual void OnDownloadRemoved(DownloadItem* item) override {}
+  virtual void OnDownloadDestroyed(DownloadItem* item) override {}
 
  private:
   const base::FilePath temp_dir_;

@@ -59,8 +59,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
   class CONTENT_EXPORT Comparator : public LevelDBComparator {
    public:
     virtual int Compare(const base::StringPiece& a,
-                        const base::StringPiece& b) const OVERRIDE;
-    virtual const char* Name() const OVERRIDE;
+                        const base::StringPiece& b) const override;
+    virtual const char* Name() const override;
   };
 
   class CONTENT_EXPORT RecordIdentifier {

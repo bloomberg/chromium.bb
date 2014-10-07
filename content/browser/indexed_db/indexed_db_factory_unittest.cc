@@ -212,7 +212,7 @@ class DiskFullFactory : public IndexedDBFactoryImpl {
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full,
-      leveldb::Status* s) OVERRIDE {
+      leveldb::Status* s) override {
     *disk_full = true;
     *s = leveldb::Status::IOError("Disk is full");
     return scoped_refptr<IndexedDBBackingStore>();
@@ -225,7 +225,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
  public:
   LookingForQuotaErrorMockCallbacks()
       : IndexedDBCallbacks(NULL, 0, 0), error_called_(false) {}
-  virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {
+  virtual void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
     EXPECT_EQ(blink::WebIDBDatabaseExceptionQuotaError, error.code());
   }
@@ -435,7 +435,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
   UpgradeNeededCallbacks() {}
 
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
-                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
+                         const IndexedDBDatabaseMetadata& metadata) override {
     EXPECT_TRUE(connection_.get());
     EXPECT_FALSE(connection.get());
   }
@@ -443,7 +443,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
   virtual void OnUpgradeNeeded(
       int64 old_version,
       scoped_ptr<IndexedDBConnection> connection,
-      const content::IndexedDBDatabaseMetadata& metadata) OVERRIDE {
+      const content::IndexedDBDatabaseMetadata& metadata) override {
     connection_ = connection.Pass();
   }
 
@@ -458,7 +458,7 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
  public:
   ErrorCallbacks() : MockIndexedDBCallbacks(false), saw_error_(false) {}
 
-  virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {
+  virtual void OnError(const IndexedDBDatabaseError& error) override {
     saw_error_= true;
   }
   bool saw_error() const { return saw_error_; }

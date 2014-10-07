@@ -20,7 +20,7 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
   RegistryTestMockFactory() : duplicate_calls_(false) {}
 
   virtual void ReportOutstandingBlobs(const GURL& origin_url,
-                                      bool blobs_outstanding) OVERRIDE {
+                                      bool blobs_outstanding) override {
     if (blobs_outstanding) {
       if (origins_.count(origin_url)) {
         duplicate_calls_ = true;
@@ -63,7 +63,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
       : IndexedDBFakeBackingStore(factory, task_runner),
         duplicate_calls_(false) {}
 
-  virtual void ReportBlobUnused(int64 database_id, int64 blob_key) OVERRIDE {
+  virtual void ReportBlobUnused(int64 database_id, int64 blob_key) override {
     unused_blobs_.insert(std::make_pair(database_id, blob_key));
   }
 

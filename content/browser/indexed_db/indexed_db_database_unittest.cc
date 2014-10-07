@@ -158,10 +158,10 @@ class MockDeleteCallbacks : public IndexedDBCallbacks {
         blocked_called_(false),
         success_called_(false) {}
 
-  virtual void OnBlocked(int64 existing_version) OVERRIDE {
+  virtual void OnBlocked(int64 existing_version) override {
     blocked_called_ = true;
   }
-  virtual void OnSuccess(int64 result) OVERRIDE { success_called_ = true; }
+  virtual void OnSuccess(int64 result) override { success_called_ = true; }
 
   bool blocked_called() const { return blocked_called_; }
   bool success_called() const { return success_called_; }

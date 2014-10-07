@@ -130,10 +130,10 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
         idb_context_(idb_context),
         origin_url_(origin_url) {}
 
-  virtual void OnSuccess() OVERRIDE {}
-  virtual void OnSuccess(const std::vector<base::string16>&) OVERRIDE {}
+  virtual void OnSuccess() override {}
+  virtual void OnSuccess(const std::vector<base::string16>&) override {}
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
-                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
+                         const IndexedDBDatabaseMetadata& metadata) override {
     connection_ = connection.Pass();
     idb_context_->ConnectionOpened(origin_url_, connection_.get());
   }

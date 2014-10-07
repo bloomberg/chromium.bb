@@ -489,11 +489,11 @@ class DefaultLevelDBFactory : public LevelDBFactory {
   virtual leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
                                       scoped_ptr<LevelDBDatabase>* db,
-                                      bool* is_disk_full) OVERRIDE {
+                                      bool* is_disk_full) override {
     return LevelDBDatabase::Open(file_name, comparator, db, is_disk_full);
   }
   virtual leveldb::Status DestroyLevelDB(const base::FilePath& file_name)
-      OVERRIDE {
+      override {
     return LevelDBDatabase::Destroy(file_name);
   }
 
@@ -2207,12 +2207,12 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
         FROM_HERE, base::Bind(&ChainedBlobWriterImpl::WriteNextFile, this));
   }
 
-  virtual void set_delegate(scoped_ptr<FileWriterDelegate> delegate) OVERRIDE {
+  virtual void set_delegate(scoped_ptr<FileWriterDelegate> delegate) override {
     delegate_.reset(delegate.release());
   }
 
   virtual void ReportWriteCompletion(bool succeeded,
-                                     int64 bytes_written) OVERRIDE {
+                                     int64 bytes_written) override {
     DCHECK(waiting_for_callback_);
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
@@ -2233,7 +2233,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     }
   }
 
-  virtual void Abort() OVERRIDE {
+  virtual void Abort() override {
     if (!waiting_for_callback_)
       return;
     self_ref_ = this;
@@ -3252,24 +3252,24 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  virtual Cursor* Clone() OVERRIDE {
+  virtual Cursor* Clone() override {
     return new ObjectStoreKeyCursorImpl(this);
   }
 
   // IndexedDBBackingStore::Cursor
-  virtual IndexedDBValue* value() OVERRIDE {
+  virtual IndexedDBValue* value() override {
     NOTREACHED();
     return NULL;
   }
-  virtual bool LoadCurrentRow() OVERRIDE;
+  virtual bool LoadCurrentRow() override;
 
  protected:
-  virtual std::string EncodeKey(const IndexedDBKey& key) OVERRIDE {
+  virtual std::string EncodeKey(const IndexedDBKey& key) override {
     return ObjectStoreDataKey::Encode(
         cursor_options_.database_id, cursor_options_.object_store_id, key);
   }
   virtual std::string EncodeKey(const IndexedDBKey& key,
-                                const IndexedDBKey& primary_key) OVERRIDE {
+                                const IndexedDBKey& primary_key) override {
     NOTREACHED();
     return std::string();
   }
@@ -3318,19 +3318,19 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  virtual Cursor* Clone() OVERRIDE { return new ObjectStoreCursorImpl(this); }
+  virtual Cursor* Clone() override { return new ObjectStoreCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual IndexedDBValue* value() OVERRIDE { return &current_value_; }
-  virtual bool LoadCurrentRow() OVERRIDE;
+  virtual IndexedDBValue* value() override { return &current_value_; }
+  virtual bool LoadCurrentRow() override;
 
  protected:
-  virtual std::string EncodeKey(const IndexedDBKey& key) OVERRIDE {
+  virtual std::string EncodeKey(const IndexedDBKey& key) override {
     return ObjectStoreDataKey::Encode(
         cursor_options_.database_id, cursor_options_.object_store_id, key);
   }
   virtual std::string EncodeKey(const IndexedDBKey& key,
-                                const IndexedDBKey& primary_key) OVERRIDE {
+                                const IndexedDBKey& primary_key) override {
     NOTREACHED();
     return std::string();
   }
@@ -3388,32 +3388,32 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  virtual Cursor* Clone() OVERRIDE { return new IndexKeyCursorImpl(this); }
+  virtual Cursor* Clone() override { return new IndexKeyCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual IndexedDBValue* value() OVERRIDE {
+  virtual IndexedDBValue* value() override {
     NOTREACHED();
     return NULL;
   }
-  virtual const IndexedDBKey& primary_key() const OVERRIDE {
+  virtual const IndexedDBKey& primary_key() const override {
     return *primary_key_;
   }
   virtual const IndexedDBBackingStore::RecordIdentifier& record_identifier()
-      const OVERRIDE {
+      const override {
     NOTREACHED();
     return record_identifier_;
   }
-  virtual bool LoadCurrentRow() OVERRIDE;
+  virtual bool LoadCurrentRow() override;
 
  protected:
-  virtual std::string EncodeKey(const IndexedDBKey& key) OVERRIDE {
+  virtual std::string EncodeKey(const IndexedDBKey& key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id,
                                 key);
   }
   virtual std::string EncodeKey(const IndexedDBKey& key,
-                                const IndexedDBKey& primary_key) OVERRIDE {
+                                const IndexedDBKey& primary_key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id,
@@ -3503,29 +3503,29 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  virtual Cursor* Clone() OVERRIDE { return new IndexCursorImpl(this); }
+  virtual Cursor* Clone() override { return new IndexCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual IndexedDBValue* value() OVERRIDE { return &current_value_; }
-  virtual const IndexedDBKey& primary_key() const OVERRIDE {
+  virtual IndexedDBValue* value() override { return &current_value_; }
+  virtual const IndexedDBKey& primary_key() const override {
     return *primary_key_;
   }
   virtual const IndexedDBBackingStore::RecordIdentifier& record_identifier()
-      const OVERRIDE {
+      const override {
     NOTREACHED();
     return record_identifier_;
   }
-  virtual bool LoadCurrentRow() OVERRIDE;
+  virtual bool LoadCurrentRow() override;
 
  protected:
-  virtual std::string EncodeKey(const IndexedDBKey& key) OVERRIDE {
+  virtual std::string EncodeKey(const IndexedDBKey& key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id,
                                 key);
   }
   virtual std::string EncodeKey(const IndexedDBKey& key,
-                                const IndexedDBKey& primary_key) OVERRIDE {
+                                const IndexedDBKey& primary_key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id,
@@ -4107,7 +4107,7 @@ class IndexedDBBackingStore::Transaction::BlobWriteCallbackWrapper
   BlobWriteCallbackWrapper(IndexedDBBackingStore::Transaction* transaction,
                            scoped_refptr<BlobWriteCallback> callback)
       : transaction_(transaction), callback_(callback) {}
-  virtual void Run(bool succeeded) OVERRIDE {
+  virtual void Run(bool succeeded) override {
     callback_->Run(succeeded);
     if (succeeded)  // Else it's already been deleted during rollback.
       transaction_->chained_blob_writer_ = NULL;

@@ -32,9 +32,9 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
   MockBrowserTestIndexedDBClassFactory();
   virtual ~MockBrowserTestIndexedDBClassFactory();
   virtual LevelDBTransaction* CreateLevelDBTransaction(
-      LevelDBDatabase* db) OVERRIDE;
+      LevelDBDatabase* db) override;
   virtual LevelDBIteratorImpl* CreateIteratorImpl(
-      scoped_ptr<leveldb::Iterator> iterator) OVERRIDE;
+      scoped_ptr<leveldb::Iterator> iterator) override;
 
   void FailOperation(FailClass failure_class,
                      FailMethod failure_method,

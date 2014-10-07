@@ -63,14 +63,14 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
   // IndexedDBContext implementation:
-  virtual base::SequencedTaskRunner* TaskRunner() const OVERRIDE;
-  virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() OVERRIDE;
-  virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
-  virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
+  virtual base::SequencedTaskRunner* TaskRunner() const override;
+  virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
+  virtual int64 GetOriginDiskUsage(const GURL& origin_url) override;
+  virtual void DeleteForOrigin(const GURL& origin_url) override;
   virtual base::FilePath GetFilePathForTesting(
-      const std::string& origin_id) const OVERRIDE;
+      const std::string& origin_id) const override;
   virtual void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner)
-      OVERRIDE;
+      override;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url, IndexedDBConnection* db);
