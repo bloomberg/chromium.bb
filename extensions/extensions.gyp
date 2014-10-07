@@ -8,6 +8,20 @@
   },
   'targets': [
     {
+      # GN version: //extensions/common:mojo
+      'target_name': 'extensions_common_mojo',
+      # The type of this target must be none. This is so that resources can
+      # depend upon this target for generating the js bindings files. Any
+      # generated cpp files must be listed explicitly in extensions_common
+      'type': 'none',
+      'includes': [
+        '../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
+      ],
+      'sources': [
+        'common/stash.mojom',
+      ],
+    },
+    {
       # GN version: //extensions/common
       'target_name': 'extensions_common',
       'type': 'static_library',
@@ -26,6 +40,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
+        'extensions_common_mojo',
       ],
       'include_dirs': [
         '..',
@@ -216,6 +231,8 @@
         'common/value_counter.h',
         'common/view_type.cc',
         'common/view_type.h',
+        '<(SHARED_INTERMEDIATE_DIR)/extensions/common/stash.mojom.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/extensions/common/stash.mojom.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -690,6 +707,8 @@
         'browser/script_execution_observer.h',
         'browser/script_executor.cc',
         'browser/script_executor.h',
+        'browser/stash_backend.cc',
+        'browser/stash_backend.h',
         'browser/state_store.cc',
         'browser/state_store.h',
         'browser/suggest_permission_util.cc',
@@ -1111,6 +1130,7 @@
         'browser/process_map_unittest.cc',
         'browser/quota_service_unittest.cc',
         'browser/runtime_data_unittest.cc',
+        'browser/stash_backend_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
         'browser/value_store/value_store_change_unittest.cc',

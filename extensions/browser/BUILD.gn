@@ -419,6 +419,8 @@ source_set("browser") {
       "script_execution_observer.h",
       "script_executor.cc",
       "script_executor.h",
+      "stash_backend.cc",
+      "stash_backend.h",
       "state_store.cc",
       "state_store.h",
       "suggest_permission_util.cc",
