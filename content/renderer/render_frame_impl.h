@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "content/common/accessibility_mode_enums.h"
+#include "content/common/frame_message_enums.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
@@ -36,6 +37,7 @@
 class GURL;
 class TransportDIB;
 struct FrameMsg_Navigate_Params;
+struct FrameMsg_CommitNavigation_Params;
 
 namespace blink {
 class WebGeolocationClient;
@@ -68,6 +70,7 @@ class MediaStreamRendererFactory;
 class MidiDispatcher;
 class NotificationPermissionDispatcher;
 class NotificationProvider;
+class PageState;
 class PepperPluginInstanceImpl;
 class PushMessagingDispatcher;
 class RendererAccessibility;
@@ -619,6 +622,18 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a factory object used for creating audio and video renderers.
   // The method is virtual so that layouttests can override it.
   virtual scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
+
+  // Checks that the RenderView is ready to display the navigation to |url|. If
+  // the return value is false, the navigation should be abandonned.
+  bool PrepareRenderViewForNavigation(
+      const GURL& url,
+      FrameMsg_Navigate_Type::Value navigate_type,
+      const PageState& state,
+      bool check_history,
+      int pending_history_list_offset,
+      int32 page_id,
+      bool* is_reload,
+      blink::WebURLRequest::CachePolicy* cache_policy);
 
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;

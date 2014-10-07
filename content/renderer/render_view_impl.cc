@@ -58,6 +58,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/three_d_api_types.h"
@@ -1399,14 +1400,14 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
   handling_input_event_ = false;
 }
 
-bool RenderViewImpl::IsBackForwardToStaleEntry(
-    const FrameMsg_Navigate_Params& params,
-    bool is_reload) {
+bool RenderViewImpl::IsBackForwardToStaleEntry(const PageState& state,
+                                               int pending_history_list_offset,
+                                               int32 page_id,
+                                               bool is_reload) {
   // Make sure this isn't a back/forward to an entry we have already cropped
   // or replaced from our history, before the browser knew about it.  If so,
   // a new navigation has committed in the mean time, and we can ignore this.
-  bool is_back_forward =
-      !is_reload && params.commit_params.page_state.IsValid();
+  bool is_back_forward = !is_reload && state.IsValid();
 
   // Note: if the history_list_length_ is 0 for a back/forward, we must be
   // restoring from a previous session.  We'll update our state in OnNavigate.
@@ -1417,21 +1418,21 @@ bool RenderViewImpl::IsBackForwardToStaleEntry(
 
   // Check for whether the forward history has been cropped due to a recent
   // navigation the browser didn't know about.
-  if (params.pending_history_list_offset >= history_list_length_)
+  if (pending_history_list_offset >= history_list_length_)
     return true;
 
   // Check for whether this entry has been replaced with a new one.
   int expected_page_id =
-      history_page_ids_[params.pending_history_list_offset];
-  if (expected_page_id > 0 && params.page_id != expected_page_id) {
-    if (params.page_id < expected_page_id)
+      history_page_ids_[pending_history_list_offset];
+  if (expected_page_id > 0 && page_id != expected_page_id) {
+    if (page_id < expected_page_id)
       return true;
 
     // Otherwise we've removed an earlier entry and should have shifted all
     // entries left.  For now, it's ok to lazily update the list.
     // TODO(creis): Notify all live renderers when we remove entries from
     // the front of the list, so that we don't hit this case.
-    history_page_ids_[params.pending_history_list_offset] = params.page_id;
+    history_page_ids_[pending_history_list_offset] = page_id;
   }
 
   return false;

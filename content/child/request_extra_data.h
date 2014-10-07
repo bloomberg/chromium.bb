@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_REQUEST_EXTRA_DATA_H_
 
 #include "base/compiler_specific.h"
+#include "content/child/web_url_loader_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -102,6 +103,17 @@ class CONTENT_EXPORT RequestExtraData
     requested_with_ = requested_with;
   }
 
+  // PlzNavigate: |stream_override| is used to override certain parameters of
+  // navigation requests.
+  scoped_ptr<StreamOverrideParameters> TakeStreamOverrideOwnership() {
+    return stream_override_.Pass();
+  }
+
+  void set_stream_override(
+      scoped_ptr<StreamOverrideParameters> stream_override) {
+    stream_override_ = stream_override.Pass();
+  }
+
  private:
   blink::WebPageVisibilityState visibility_state_;
   int render_frame_id_;
@@ -117,6 +129,7 @@ class CONTENT_EXPORT RequestExtraData
   int service_worker_provider_id_;
   blink::WebString custom_user_agent_;
   blink::WebString requested_with_;
+  scoped_ptr<StreamOverrideParameters> stream_override_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

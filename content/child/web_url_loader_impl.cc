@@ -7,6 +7,7 @@
 #include "content/child/web_url_loader_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -24,6 +25,7 @@
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/request_peer.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -376,6 +378,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
   scoped_ptr<ResourceLoaderBridge> completed_bridge_;
+  scoped_ptr<StreamOverrideParameters> stream_override_;
 };
 
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader,
@@ -430,8 +433,26 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   DCHECK(!bridge_.get());
 
   request_ = request;  // Save the request.
+  if (request.extraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.extraData());
+    stream_override_ = extra_data->TakeStreamOverrideOwnership();
+  }
 
   GURL url = request.url();
+
+  // PlzNavigate: during navigation, the renderer should request a stream which
+  // contains the body of the response. The request has already been made by the
+  // browser.
+  if (stream_override_.get()) {
+    CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserSideNavigation));
+    DCHECK(!sync_load_response);
+    DCHECK_NE(WebURLRequest::FrameTypeNone, request.frameType());
+    DCHECK_EQ("GET", request.httpMethod().latin1());
+    url = stream_override_->stream_url;
+  }
+
   if (CanHandleDataURLRequestLocally()) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
@@ -645,9 +666,19 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(
-    const ResourceResponseInfo& info) {
+    const ResourceResponseInfo& initial_info) {
   if (!client_)
     return;
+
+  ResourceResponseInfo info = initial_info;
+
+  // PlzNavigate: during navigations, the ResourceResponse has already been
+  // received on the browser side, and has been passed down to the renderer.
+  if (stream_override_.get()) {
+    CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserSideNavigation));
+    info = stream_override_->response;
+  }
 
   WebURLResponse response;
   response.initialize();

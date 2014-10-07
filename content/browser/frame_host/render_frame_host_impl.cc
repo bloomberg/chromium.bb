@@ -1393,8 +1393,9 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(clamy): Check if we should start the throbber for non javascript urls
   // here.
 
-  // TODO(davidben): Retain |body| on behalf of the renderer, until the renderer
-  // is done with it.
+  // TODO(clamy): Release the stream handle once the renderer has finished
+  // reading it.
+  stream_handle_ = body.Pass();
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(

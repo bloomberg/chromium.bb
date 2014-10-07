@@ -132,6 +132,7 @@ class HistoryEntry;
 class ImageResourceFetcher;
 class MouseLockDispatcher;
 class NavigationState;
+class PageState;
 class PepperPluginInstanceImpl;
 class RenderViewImplTest;
 class RenderViewObserver;
@@ -753,7 +754,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Returns true if the |params| navigation is to an entry that has been
   // cropped due to a recent navigation the browser did not know about.
-  bool IsBackForwardToStaleEntry(const FrameMsg_Navigate_Params& params,
+  bool IsBackForwardToStaleEntry(const PageState& state,
+                                 int pending_history_list_offset,
+                                 int32 page_id,
                                  bool is_reload);
 
   // Make the given |frame| show an empty, unscriptable page.

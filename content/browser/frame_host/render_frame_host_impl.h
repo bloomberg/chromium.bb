@@ -557,6 +557,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The most recently received accessibility tree - for testing only.
   scoped_ptr<ui::AXTree> ax_tree_for_testing_;
 
+  // PlzNavigate: Owns the stream used in navigations to store the body of the
+  // response once it has started.
+  scoped_ptr<StreamHandle> stream_handle_;
+
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 

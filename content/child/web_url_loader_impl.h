@@ -8,14 +8,23 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_response.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 
 class ResourceDispatcher;
 struct ResourceResponseInfo;
+
+// PlzNavigate: Used to override parameters of the navigation request.
+struct StreamOverrideParameters {
+ public:
+  // TODO(clamy): The browser should be made aware on destruction of this struct
+  // that it can release its associated stream handle.
+  GURL stream_url;
+  ResourceResponseHead response;
+};
 
 class CONTENT_EXPORT WebURLLoaderImpl
     : public NON_EXPORTED_BASE(blink::WebURLLoader) {

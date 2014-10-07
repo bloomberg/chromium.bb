@@ -27,6 +27,7 @@
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
+#include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/child/websocket_bridge.h"
@@ -42,6 +43,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -359,6 +361,53 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
       return true;
   }
   return false;
+}
+
+WebURLRequest CreateURLRequestForNavigation(
+    const CommonNavigationParams& params,
+    scoped_ptr<StreamOverrideParameters> stream_override,
+    bool is_view_source_mode_enabled) {
+  WebURLRequest request(params.url);
+  if (is_view_source_mode_enabled)
+    request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
+
+  if (params.referrer.url.is_valid()) {
+    WebString web_referrer = WebSecurityPolicy::generateReferrerHeader(
+        params.referrer.policy,
+        params.url,
+        WebString::fromUTF8(params.referrer.url.spec()));
+    if (!web_referrer.isEmpty())
+      request.setHTTPReferrer(web_referrer, params.referrer.policy);
+  }
+
+  RequestExtraData* extra_data = new RequestExtraData();
+  extra_data->set_stream_override(stream_override.Pass());
+  request.setExtraData(extra_data);
+  return request;
+}
+
+void UpdateFrameNavigationTiming(WebFrame* frame,
+                                 base::TimeTicks browser_navigation_start,
+                                 base::TimeTicks renderer_navigation_start) {
+  // The browser provides the navigation_start time to bootstrap the
+  // Navigation Timing information for the browser-initiated navigations. In
+  // case of cross-process navigations, this carries over the time of
+  // finishing the onbeforeunload handler of the previous page.
+  DCHECK(!browser_navigation_start.is_null());
+  if (frame->provisionalDataSource()) {
+    // |browser_navigation_start| is likely before this process existed, so we
+    // can't use InterProcessTimeTicksConverter. We need at least to ensure
+    // that the browser-side navigation start we set is not later than the one
+    // on the renderer side.
+    base::TimeTicks navigation_start = std::min(
+        browser_navigation_start, renderer_navigation_start);
+    double navigation_start_seconds =
+        (navigation_start - base::TimeTicks()).InSecondsF();
+    frame->provisionalDataSource()->setNavigationStartTime(
+        navigation_start_seconds);
+    // TODO(clamy): We need to provide additional timing values for the
+    // Navigation Timing API to work with browser-side navigations.
+  }
 }
 
 }  // namespace
@@ -814,46 +863,15 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate",
                "id", routing_id_,
                "url", params.common_params.url.possibly_invalid_spec());
-  MaybeHandleDebugURL(params.common_params.url);
-  if (!render_view_->webview())
-    return;
-
-  FOR_EACH_OBSERVER(RenderViewObserver,
-                    render_view_->observers_,
-                    Navigate(params.common_params.url));
-
   bool is_reload =
       RenderViewImpl::IsReload(params.common_params.navigation_type);
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
-
-  // If this is a stale back/forward (due to a recent navigation the browser
-  // didn't know about), ignore it.
-  if (render_view_->IsBackForwardToStaleEntry(params, is_reload))
+  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
+      params.common_params.url, params.common_params.navigation_type,
+      params.commit_params.page_state, true, params.pending_history_list_offset,
+      params.page_id, &is_reload, &cache_policy)) {
     return;
-
-  // Swap this renderer back in if necessary.
-  if (render_view_->is_swapped_out_ &&
-      GetWebFrame() == render_view_->webview()->mainFrame()) {
-    // We marked the view as hidden when swapping the view out, so be sure to
-    // reset the visibility state before navigating to the new URL.
-    render_view_->webview()->setVisibilityState(
-        render_view_->visibilityState(), false);
-
-    // If this is an attempt to reload while we are swapped out, we should not
-    // reload swappedout://, but the previous page, which is stored in
-    // params.state.  Setting is_reload to false will treat this like a back
-    // navigation to accomplish that.
-    is_reload = false;
-    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
-
-    // We refresh timezone when a view is swapped in since timezone
-    // can get out of sync when the system timezone is updated while
-    // the view is swapped out.
-    RenderThreadImpl::NotifyTimezoneChange();
-
-    render_view_->SetSwappedOut(false);
-    is_swapped_out_ = false;
   }
 
   int pending_history_list_offset = params.pending_history_list_offset;
@@ -940,22 +958,12 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     }
   } else {
     // Navigate to the given URL.
-    WebURLRequest request(params.common_params.url);
+    WebURLRequest request = CreateURLRequestForNavigation(
+        params.common_params, scoped_ptr<StreamOverrideParameters>(),
+        frame->isViewSourceModeEnabled());
 
     // A session history navigation should have been accompanied by state.
     CHECK_EQ(params.page_id, -1);
-
-    if (frame->isViewSourceModeEnabled())
-      request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
-
-    if (params.common_params.referrer.url.is_valid()) {
-      WebString referrer = WebSecurityPolicy::generateReferrerHeader(
-          params.common_params.referrer.policy,
-          params.common_params.url,
-          WebString::fromUTF8(params.common_params.referrer.url.spec()));
-      if (!referrer.isEmpty())
-        request.setHTTPReferrer(referrer, params.common_params.referrer.policy);
-    }
 
     if (!params.request_params.extra_headers.empty()) {
       for (net::HttpUtil::HeadersIterator i(
@@ -989,24 +997,9 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
     frame->loadRequest(request);
 
-    // The browser provides the navigation_start time to bootstrap the
-    // Navigation Timing information for the browser-initiated navigations. In
-    // case of cross-process navigations, this carries over the time of
-    // finishing the onbeforeunload handler of the previous page.
-    DCHECK(!params.commit_params.browser_navigation_start.is_null());
-    if (frame->provisionalDataSource()) {
-      // |browser_navigation_start| is likely before this process existed, so we
-      // can't use InterProcessTimeTicksConverter. We need at least to ensure
-      // that the browser-side navigation start we set is not later than the one
-      // on the renderer side.
-      base::TimeTicks navigation_start =
-          std::min(params.commit_params.browser_navigation_start,
-                   renderer_navigation_start);
-      double navigation_start_seconds =
-          (navigation_start - base::TimeTicks()).InSecondsF();
-      frame->provisionalDataSource()->setNavigationStartTime(
-          navigation_start_seconds);
-    }
+    UpdateFrameNavigationTiming(
+        frame, params.commit_params.browser_navigation_start,
+        renderer_navigation_start);
   }
 
   // In case LoadRequest failed before DidCreateDataSource was called.
@@ -2657,8 +2650,10 @@ void RenderFrameImpl::willSendRequest(
   // user agent on its own. Similarly, it may indicate that we should set an
   // X-Requested-With header. This must be done here to avoid breaking CORS
   // checks.
+  // PlzNavigate: there may also be a stream url associated with the request.
   WebString custom_user_agent;
   WebString requested_with;
+  scoped_ptr<StreamOverrideParameters> stream_override;
   if (request.extraData()) {
     RequestExtraData* old_extra_data =
         static_cast<RequestExtraData*>(request.extraData());
@@ -2678,6 +2673,7 @@ void RenderFrameImpl::willSendRequest(
       else
         request.setHTTPHeaderField("X-Requested-With", requested_with);
     }
+    stream_override = old_extra_data->TakeStreamOverrideOwnership();
   }
 
   // Add the default accept header for frame request if it has not been set
@@ -2755,6 +2751,7 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_transferred_request_request_id(
       navigation_state->transferred_request_request_id());
   extra_data->set_service_worker_provider_id(provider_id);
+  extra_data->set_stream_override(stream_override.Pass());
   request.setExtraData(extra_data);
 
   DocumentState* top_document_state =
@@ -3468,7 +3465,38 @@ void RenderFrameImpl::OnCommitNavigation(
     const GURL& stream_url,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params) {
-  NOTIMPLEMENTED();
+  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  bool is_reload = false;
+  WebURLRequest::CachePolicy cache_policy =
+      WebURLRequest::UseProtocolCachePolicy;
+  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
+      common_params.url, common_params.navigation_type,
+      commit_params.page_state, false, -1, -1, &is_reload, &cache_policy)) {
+    return;
+  }
+
+  GetContentClient()->SetActiveURL(common_params.url);
+
+  // Create a WebURLRequest that blink can use to get access to the body of the
+  // response through a stream in the browser. Blink will then commit the
+  // navigation.
+  // TODO(clamy): Have the navigation commit directly, without going through
+  // loading a WebURLRequest.
+  scoped_ptr<StreamOverrideParameters> stream_override(
+      new StreamOverrideParameters());
+  stream_override->stream_url = stream_url;
+  stream_override->response = response;
+  WebURLRequest request = CreateURLRequestForNavigation(
+      common_params, stream_override.Pass(), frame_->isViewSourceModeEnabled());
+
+  // Record this before starting the load. A lower bound of this time is needed
+  // to sanitize the navigationStart override set below.
+  base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
+  frame_->loadRequest(request);
+  UpdateFrameNavigationTiming(
+      frame_, commit_params.browser_navigation_start,
+      renderer_navigation_start);
 }
 
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
@@ -3846,6 +3874,55 @@ RenderFrameImpl::CreateRendererFactory() {
   return scoped_ptr<MediaStreamRendererFactory>(
       static_cast<MediaStreamRendererFactory*>(NULL));
 #endif
+}
+
+bool RenderFrameImpl::PrepareRenderViewForNavigation(
+    const GURL& url,
+    FrameMsg_Navigate_Type::Value navigate_type,
+    const PageState& state,
+    bool check_history,
+    int pending_history_list_offset,
+    int32 page_id,
+    bool* is_reload,
+    WebURLRequest::CachePolicy* cache_policy) {
+  MaybeHandleDebugURL(url);
+  if (!render_view_->webview())
+    return false;
+
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, render_view_->observers_, Navigate(url));
+
+  // If this is a stale back/forward (due to a recent navigation the browser
+  // didn't know about), ignore it.
+  if (check_history && render_view_->IsBackForwardToStaleEntry(
+      state, pending_history_list_offset, page_id, *is_reload))
+    return false;
+
+  if (!render_view_->is_swapped_out_ ||
+      GetWebFrame() != render_view_->webview()->mainFrame())
+    return true;
+
+  // This is a swapped out main frame, so swap the renderer back in.
+  // We marked the view as hidden when swapping the view out, so be sure to
+  // reset the visibility state before navigating to the new URL.
+  render_view_->webview()->setVisibilityState(
+      render_view_->visibilityState(), false);
+
+  // If this is an attempt to reload while we are swapped out, we should not
+  // reload swappedout://, but the previous page, which is stored in
+  // params.state.  Setting is_reload to false will treat this like a back
+  // navigation to accomplish that.
+  *is_reload = false;
+  *cache_policy = WebURLRequest::ReloadIgnoringCacheData;
+
+  // We refresh timezone when a view is swapped in since timezone
+  // can get out of sync when the system timezone is updated while
+  // the view is swapped out.
+  RenderThreadImpl::NotifyTimezoneChange();
+
+  render_view_->SetSwappedOut(false);
+  is_swapped_out_ = false;
+  return true;
 }
 
 GURL RenderFrameImpl::GetLoadingUrl() const {

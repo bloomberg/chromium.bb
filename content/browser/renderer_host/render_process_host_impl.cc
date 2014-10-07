@@ -1125,6 +1125,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableBeginFrameScheduling,
     switches::kEnableBleedingEdgeRenderingFastPaths,
+    switches::kEnableBrowserSideNavigation,
     switches::kEnablePreferCompositingToLCDText,
     switches::kEnableCompositingForTransition,
     switches::kEnableCredentialManagerAPI,

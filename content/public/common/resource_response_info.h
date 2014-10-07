@@ -15,6 +15,7 @@
 #include "content/public/common/resource_devtools_info.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "url/gurl.h"
 
