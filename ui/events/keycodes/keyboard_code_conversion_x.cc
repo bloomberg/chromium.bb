@@ -545,8 +545,11 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   }
 
   keycode = KeyboardCodeFromXKeysym(keysym);
-  if (keycode == VKEY_UNKNOWN)
+  if (keycode == VKEY_UNKNOWN && !IsModifierKey(keysym)) {
+    // Modifier keys should not fall back to the hardware-keycode-based US
+    // layout.  See crbug.com/402320
     keycode = DefaultKeyboardCodeFromHardwareKeycode(xkey->keycode);
+  }
 
   return keycode;
 }
