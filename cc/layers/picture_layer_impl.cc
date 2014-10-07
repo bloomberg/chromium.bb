@@ -449,17 +449,9 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
 
   DoPostCommitInitializationIfNeeded();
 
-  // Any draw properties derived from |transform|, |viewport|, and |clip|
-  // parameters in LayerTreeHostImpl::SetExternalDrawConstraints are not valid
-  // for prioritizing tiles during resourceless software draws. This is because
-  // resourceless software draws can have wildly different transforms/viewports
-  // from regular draws.
   if (!resourceless_software_draw) {
     visible_rect_for_tile_priority_ = visible_content_rect();
   }
-  viewport_rect_for_tile_priority_ =
-      layer_tree_impl()->ViewportRectForTilePriority();
-  screen_space_transform_for_tile_priority_ = screen_space_transform();
 
   if (!CanHaveTilings()) {
     ideal_page_scale_ = 0.f;
@@ -537,20 +529,21 @@ void PictureLayerImpl::UpdateTilePriorities(
 
 gfx::Rect PictureLayerImpl::GetViewportForTilePriorityInContentSpace() const {
   // If visible_rect_for_tile_priority_ is empty or
-  // viewport_rect_for_tile_priority_ is set to be different from the device
+  // viewport_rect_for_tile_priority is set to be different from the device
   // viewport, try to inverse project the viewport into layer space and use
   // that. Otherwise just use visible_rect_for_tile_priority_
   gfx::Rect visible_rect_in_content_space = visible_rect_for_tile_priority_;
+  gfx::Rect viewport_rect_for_tile_priority =
+      layer_tree_impl()->ViewportRectForTilePriority();
 
   if (visible_rect_in_content_space.IsEmpty() ||
-      layer_tree_impl()->DeviceViewport() != viewport_rect_for_tile_priority_) {
+      layer_tree_impl()->DeviceViewport() != viewport_rect_for_tile_priority) {
     gfx::Transform view_to_layer(gfx::Transform::kSkipInitialization);
-
-    if (screen_space_transform_for_tile_priority_.GetInverse(&view_to_layer)) {
+    if (screen_space_transform().GetInverse(&view_to_layer)) {
       // Transform from view space to content space.
       visible_rect_in_content_space =
           gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-              view_to_layer, viewport_rect_for_tile_priority_));
+              view_to_layer, viewport_rect_for_tile_priority));
     }
   }
   return visible_rect_in_content_space;
