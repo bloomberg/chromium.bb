@@ -46,7 +46,7 @@ class WebMediaStreamCenter {
 public:
     virtual ~WebMediaStreamCenter() { }
 
-    virtual bool getMediaStreamTrackSources(const WebMediaStreamTrackSourcesRequest&)= 0;
+    virtual bool getMediaStreamTrackSources(const WebMediaStreamTrackSourcesRequest&) { return false; }
 
     // Stream functionality.
     virtual void didCreateMediaStream(WebMediaStream&) = 0;
