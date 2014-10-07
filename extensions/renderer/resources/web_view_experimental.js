@@ -44,12 +44,10 @@ WebViewInternal.prototype.loadDataWithBaseUrl = function(
 };
 
 // Registers the experimantal WebVIew API when available.
-WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
-  proto.captureVisibleRegion = function(spec, callback) {
-    privates(this).internal.captureVisibleRegion(spec, callback);
-  };
-
-  proto.loadDataWithBaseUrl = function(dataUrl, baseUrl, virtualUrl) {
-    privates(this).internal.loadDataWithBaseUrl(dataUrl, baseUrl, virtualUrl);
-  };
+WebViewInternal.maybeGetExperimentalAPIs = function() {
+  var experimentalMethods = [
+    'captureVisibleRegion',
+    'loadDataWithBaseUrl'
+  ];
+  return experimentalMethods;
 };

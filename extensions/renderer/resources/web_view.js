@@ -865,6 +865,7 @@ function registerWebViewElement() {
     }
   };
 
+  // Public-facing API methods.
   var methods = [
     'back',
     'find',
@@ -888,6 +889,11 @@ function registerWebViewElement() {
     'setUserAgentOverride'
   ];
 
+  // Add the experimental API methods, if available.
+  var experimentalMethods =
+      WebViewInternal.maybeGetExperimentalAPIs();
+  methods = $Array.concat(methods, experimentalMethods);
+
   // Forward proto.foo* method calls to WebViewInternal.foo*.
   var createHandler = function(m) {
     return function(var_args) {
@@ -898,8 +904,6 @@ function registerWebViewElement() {
   for (var i = 0; methods[i]; ++i) {
     proto[methods[i]] = createHandler(methods[i]);
   }
-
-  WebViewInternal.maybeRegisterExperimentalAPIs(proto);
 
   window.WebView =
       DocumentNatives.RegisterElement('webview', {prototype: proto});
@@ -926,7 +930,7 @@ window.addEventListener('readystatechange', function listener(event) {
 WebViewInternal.prototype.maybeGetChromeWebViewEvents = function() {};
 
 // Implemented when the experimental WebView API is available.
-WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {};
+WebViewInternal.maybeGetExperimentalAPIs = function() {};
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {};
 WebViewInternal.prototype.setupExperimentalContextMenus = function() {};
 
