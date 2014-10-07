@@ -204,12 +204,12 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         HTMLInputElement& input = toHTMLInputElement(*node());
         const AtomicString& type = input.type();
         if (type == InputTypeNames::button) {
-            if (node()->parentNode() && isHTMLMenuElement(node()->parentNode()))
+            if ((node()->parentNode() && isHTMLMenuElement(node()->parentNode())) || (parentObject() && parentObject()->roleValue() == MenuRole))
                 return MenuItemRole;
             return buttonRoleType();
         }
         if (type == InputTypeNames::checkbox) {
-            if (node()->parentNode() && isHTMLMenuElement(node()->parentNode()))
+            if ((node()->parentNode() && isHTMLMenuElement(node()->parentNode())) || (parentObject() && parentObject()->roleValue() == MenuRole))
                 return CheckBoxMenuItemRole;
             return CheckBoxRole;
         }
