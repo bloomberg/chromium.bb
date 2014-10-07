@@ -67,7 +67,7 @@ namespace blink {
     public:
         static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
-        virtual bool isLocalFrame() const OVERRIDE { return true; }
+        virtual bool isLocalFrame() const override { return true; }
 
         void init();
         void setView(PassRefPtr<FrameView>);
@@ -76,10 +76,10 @@ namespace blink {
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 
         virtual ~LocalFrame();
-        virtual void trace(Visitor*) OVERRIDE;
+        virtual void trace(Visitor*) override;
 
-        virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) OVERRIDE;
-        virtual void detach() OVERRIDE;
+        virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) override;
+        virtual void detach() override;
 
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);
@@ -87,9 +87,9 @@ namespace blink {
         void willDetachFrameHost();
         void detachFromFrameHost();
 
-        virtual void disconnectOwnerElement() OVERRIDE;
+        virtual void disconnectOwnerElement() override;
 
-        virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>) OVERRIDE;
+        virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>) override;
         FrameView* view() const;
         Document* document() const;
         void setPagePopupOwner(Element&);

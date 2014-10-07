@@ -117,7 +117,7 @@ using std::max;
 
 namespace blink {
 
-class PostMessageTimer FINAL : public SuspendableTimer {
+class PostMessageTimer final : public SuspendableTimer {
 public:
     PostMessageTimer(LocalDOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
@@ -144,7 +144,7 @@ public:
     LocalDOMWindow* source() const { return m_source.get(); }
 
 private:
-    virtual void fired() OVERRIDE
+    virtual void fired() override
     {
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(executionContext(), m_asyncOperationId);
         m_window->postMessageTimerFired(this);

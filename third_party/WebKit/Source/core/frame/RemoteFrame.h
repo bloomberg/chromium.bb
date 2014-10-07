@@ -15,12 +15,12 @@ class RemoteFrameView;
 class RemoteFrame: public Frame {
 public:
     static PassRefPtrWillBeRawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
-    virtual bool isRemoteFrame() const OVERRIDE { return true; }
+    virtual bool isRemoteFrame() const override { return true; }
 
     virtual ~RemoteFrame();
 
-    virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) OVERRIDE;
-    virtual void detach() OVERRIDE;
+    virtual void navigate(Document& originDocument, const KURL&, const Referrer&, bool lockBackForwardList) override;
+    virtual void detach() override;
 
     void setView(PassRefPtr<RemoteFrameView>);
     void createView();

@@ -41,7 +41,7 @@ class LocalFrame;
 
 typedef int ExceptionCode;
 
-class Navigator FINAL
+class Navigator final
     : public RefCountedWillBeGarbageCollectedFinalized<Navigator>
     , public NavigatorCPU
     , public NavigatorID
@@ -69,15 +69,15 @@ public:
     String vendor() const;
     String vendorSub() const;
 
-    virtual String userAgent() const OVERRIDE;
+    virtual String userAgent() const override;
 
     // Relinquishes the storage lock, if one exists.
     void getStorageUpdates();
 
     // NavigatorLanguage
-    virtual Vector<String> languages() OVERRIDE;
+    virtual Vector<String> languages() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit Navigator(LocalFrame*);

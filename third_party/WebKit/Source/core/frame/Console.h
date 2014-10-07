@@ -41,7 +41,7 @@ namespace blink {
 class LocalFrame;
 class MemoryInfo;
 
-class Console FINAL : public ConsoleBase, public DOMWindowProperty {
+class Console final : public ConsoleBase, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Console);
 public:
@@ -53,11 +53,11 @@ public:
 
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
-    virtual ExecutionContext* context() OVERRIDE;
-    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE;
+    virtual ExecutionContext* context() override;
+    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
 
 private:
     explicit Console(LocalFrame*);

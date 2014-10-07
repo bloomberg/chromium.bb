@@ -19,7 +19,7 @@ public:
 
     virtual ~RemoteFrameView();
 
-    virtual bool isRemoteFrameView() const OVERRIDE { return true; }
+    virtual bool isRemoteFrameView() const override { return true; }
 
     RemoteFrame& frame() const
     {
@@ -28,11 +28,11 @@ public:
     }
 
     // Override to notify remote frame that its viewport size has changed.
-    virtual void frameRectsChanged() OVERRIDE;
+    virtual void frameRectsChanged() override;
 
-    virtual void invalidateRect(const IntRect&) OVERRIDE;
+    virtual void invalidateRect(const IntRect&) override;
 
-    virtual void setFrameRect(const IntRect&) OVERRIDE;
+    virtual void setFrameRect(const IntRect&) override;
 
 private:
     explicit RemoteFrameView(RemoteFrame*);

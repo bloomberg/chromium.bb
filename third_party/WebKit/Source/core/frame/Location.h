@@ -43,7 +43,7 @@ class ExceptionState;
 class LocalFrame;
 class KURL;
 
-class Location FINAL : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable, public DOMWindowProperty {
+class Location final : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Location);
 public:
@@ -77,7 +77,7 @@ public:
 
     PassRefPtrWillBeRawPtr<DOMStringList> ancestorOrigins() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit Location(LocalFrame*);

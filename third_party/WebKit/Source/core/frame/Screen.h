@@ -41,7 +41,7 @@ namespace blink {
 
 class LocalFrame;
 
-class Screen FINAL : public RefCountedWillBeGarbageCollected<Screen>, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Screen> {
+class Screen final : public RefCountedWillBeGarbageCollected<Screen>, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Screen> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Screen);
 public:
@@ -59,7 +59,7 @@ public:
     unsigned availHeight() const;
     unsigned availWidth() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit Screen(LocalFrame*);

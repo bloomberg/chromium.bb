@@ -42,7 +42,7 @@ class KURL;
 class ExecutionContext;
 class ExceptionState;
 
-class History FINAL : public RefCountedWillBeGarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
+class History final : public RefCountedWillBeGarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(History);
 public:
@@ -63,7 +63,7 @@ public:
 
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, FrameLoadType, ExceptionState&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit History(LocalFrame*);
