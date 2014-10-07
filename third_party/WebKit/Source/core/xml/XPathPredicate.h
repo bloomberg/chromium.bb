@@ -34,37 +34,37 @@ namespace blink {
 
 namespace XPath {
 
-class Number FINAL : public Expression {
+class Number final : public Expression {
 public:
     explicit Number(double);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
-    virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
+    virtual Value evaluate(EvaluationContext&) const override;
+    virtual Value::Type resultType() const override { return Value::NumberValue; }
 
     Value m_value;
 };
 
-class StringExpression FINAL : public Expression {
+class StringExpression final : public Expression {
 public:
     explicit StringExpression(const String&);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
-    virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
+    virtual Value evaluate(EvaluationContext&) const override;
+    virtual Value::Type resultType() const override { return Value::StringValue; }
 
     Value m_value;
 };
 
-class Negative FINAL : public Expression {
+class Negative final : public Expression {
 private:
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
-    virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
+    virtual Value evaluate(EvaluationContext&) const override;
+    virtual Value::Type resultType() const override { return Value::NumberValue; }
 };
 
-class NumericOp FINAL : public Expression {
+class NumericOp final : public Expression {
 public:
     enum Opcode {
         OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod
@@ -72,45 +72,45 @@ public:
     NumericOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
 
 private:
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
-    virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
+    virtual Value evaluate(EvaluationContext&) const override;
+    virtual Value::Type resultType() const override { return Value::NumberValue; }
 
     Opcode m_opcode;
 };
 
-class EqTestOp FINAL : public Expression {
+class EqTestOp final : public Expression {
 public:
     enum Opcode { OpcodeEqual, OpcodeNotEqual, OpcodeGreaterThan, OpcodeLessThan, OpcodeGreaterOrEqual, OpcodeLessOrEqual };
     EqTestOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const override;
 
 private:
-    virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
+    virtual Value::Type resultType() const override { return Value::BooleanValue; }
     bool compare(EvaluationContext&, const Value&, const Value&) const;
 
     Opcode m_opcode;
 };
 
-class LogicalOp FINAL : public Expression {
+class LogicalOp final : public Expression {
 public:
     enum Opcode { OP_And, OP_Or };
     LogicalOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
 
 private:
-    virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
+    virtual Value::Type resultType() const override { return Value::BooleanValue; }
     bool shortCircuitOn() const;
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const override;
 
     Opcode m_opcode;
 };
 
-class Union FINAL : public Expression {
+class Union final : public Expression {
 private:
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
-    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+    virtual Value evaluate(EvaluationContext&) const override;
+    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 };
 
-class Predicate FINAL : public NoBaseWillBeGarbageCollected<Predicate> {
+class Predicate final : public NoBaseWillBeGarbageCollected<Predicate> {
     WTF_MAKE_NONCOPYABLE(Predicate); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Predicate);
 public:

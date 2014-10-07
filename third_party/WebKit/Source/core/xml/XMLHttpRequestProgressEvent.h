@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class XMLHttpRequestProgressEvent FINAL : public ProgressEvent {
+class XMLHttpRequestProgressEvent final : public ProgressEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequestProgressEvent> create()
@@ -47,9 +47,9 @@ public:
     unsigned long long position() const { return loaded(); }
     unsigned long long totalSize() const { return total(); }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::XMLHttpRequestProgressEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::XMLHttpRequestProgressEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { ProgressEvent::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { ProgressEvent::trace(visitor); }
 
 private:
     XMLHttpRequestProgressEvent() { }

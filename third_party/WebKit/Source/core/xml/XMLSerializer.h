@@ -31,7 +31,7 @@ namespace blink {
 class ExceptionState;
 class Node;
 
-class XMLSerializer FINAL : public RefCountedWillBeGarbageCollected<XMLSerializer>, public ScriptWrappable {
+class XMLSerializer final : public RefCountedWillBeGarbageCollected<XMLSerializer>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<XMLSerializer> create()

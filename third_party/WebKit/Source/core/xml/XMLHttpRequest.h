@@ -56,7 +56,7 @@ class UnderlyingSource;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest FINAL
+class XMLHttpRequest final
     : public RefCountedWillBeGarbageCollectedFinalized<XMLHttpRequest>
     , public XMLHttpRequestEventTarget
     , private ThreadableLoaderClient
@@ -90,14 +90,14 @@ public:
         ResponseTypeStream,
     };
 
-    virtual void contextDestroyed() OVERRIDE;
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
-    virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void contextDestroyed() override;
+    virtual void suspend() override;
+    virtual void resume() override;
+    virtual void stop() override;
+    virtual bool hasPendingActivity() const override;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     const KURL& url() const { return m_url; }
     String statusText() const;
@@ -151,7 +151,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     class BlobLoader;
@@ -160,15 +160,15 @@ private:
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
 
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(const char* data, unsigned dataLength) OVERRIDE;
+    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) override;
+    virtual void didReceiveData(const char* data, unsigned dataLength) override;
     // When responseType is set to "blob", didDownloadData() is called instead
     // of didReceiveData().
-    virtual void didDownloadData(int dataLength) OVERRIDE;
-    virtual void didFinishLoading(unsigned long identifier, double finishTime) OVERRIDE;
-    virtual void didFail(const ResourceError&) OVERRIDE;
-    virtual void didFailRedirectCheck() OVERRIDE;
+    virtual void didDownloadData(int dataLength) override;
+    virtual void didFinishLoading(unsigned long identifier, double finishTime) override;
+    virtual void didFail(const ResourceError&) override;
+    virtual void didFailRedirectCheck() override;
 
     // BlobLoader notifications.
     void didFinishLoadingInternal();
@@ -178,7 +178,7 @@ private:
     PassRefPtr<BlobDataHandle> createBlobDataHandleFromResponse();
 
     // DocumentParserClient
-    virtual void notifyParserStopped() OVERRIDE;
+    virtual void notifyParserStopped() override;
 
     void endLoading();
 

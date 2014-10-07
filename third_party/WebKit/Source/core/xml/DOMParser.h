@@ -30,7 +30,7 @@ namespace blink {
 class Document;
 class ExceptionState;
 
-class DOMParser FINAL : public RefCountedWillBeGarbageCollected<DOMParser>, public ScriptWrappable {
+class DOMParser final : public RefCountedWillBeGarbageCollected<DOMParser>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMParser> create()

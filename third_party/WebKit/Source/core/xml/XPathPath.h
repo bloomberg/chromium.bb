@@ -37,50 +37,50 @@ namespace XPath {
 class Predicate;
 class Step;
 
-class Filter FINAL : public Expression {
+class Filter final : public Expression {
 public:
     Filter(PassOwnPtrWillBeRawPtr<Expression>, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >&);
     virtual ~Filter();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const override;
 
 private:
-    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 
     OwnPtrWillBeMember<Expression> m_expr;
     WillBeHeapVector<OwnPtrWillBeMember<Predicate> > m_predicates;
 };
 
-class LocationPath FINAL : public Expression {
+class LocationPath final : public Expression {
 public:
     LocationPath();
     virtual ~LocationPath();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const override;
     void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
     void evaluate(EvaluationContext&, NodeSet&) const; // nodes is an input/output parameter
     void appendStep(Step*);
     void insertFirstStep(Step*);
 
 private:
-    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 
     WillBeHeapVector<RawPtrWillBeMember<Step> > m_steps;
     bool m_absolute;
 };
 
-class Path FINAL : public Expression {
+class Path final : public Expression {
 public:
     Path(Expression*, LocationPath*);
     virtual ~Path();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const override;
 
 private:
-    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 
     OwnPtrWillBeMember<Expression> m_filter;
     OwnPtrWillBeMember<LocationPath> m_path;

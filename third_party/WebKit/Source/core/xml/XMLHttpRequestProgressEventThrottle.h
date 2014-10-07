@@ -51,7 +51,7 @@ class XMLHttpRequestProgressEvent;
 // - "progress" event means an event named "progress"
 // - ProgressEvent means an event using the ProgressEvent interface defined in
 //   the spec.
-class XMLHttpRequestProgressEventThrottle FINAL : public TimerBase {
+class XMLHttpRequestProgressEventThrottle final : public TimerBase {
     DISALLOW_ALLOCATION();
 public:
     enum DeferredEventAction {
@@ -88,7 +88,7 @@ private:
     class DeferredEvent;
     static const double minimumProgressEventDispatchingIntervalInSeconds;
 
-    virtual void fired() OVERRIDE;
+    virtual void fired() override;
     void dispatchDeferredEvent();
 
     // Non-Oilpan, keep a weak pointer to our XMLHttpRequest object as it is

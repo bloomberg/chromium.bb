@@ -43,7 +43,7 @@ namespace XPath {
 struct EvaluationContext;
 }
 
-class XPathResult FINAL : public RefCountedWillBeGarbageCollected<XPathResult>, public ScriptWrappable {
+class XPathResult final : public RefCountedWillBeGarbageCollected<XPathResult>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
     DEFINE_WRAPPERTYPEINFO();
 public:

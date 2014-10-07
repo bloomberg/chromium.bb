@@ -61,7 +61,7 @@ class Expression : public ParseNode {
 public:
     Expression();
     virtual ~Expression();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     virtual Value evaluate(EvaluationContext&) const = 0;
 

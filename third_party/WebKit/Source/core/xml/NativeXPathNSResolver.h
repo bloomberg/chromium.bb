@@ -33,16 +33,16 @@ namespace blink {
 
 class Node;
 
-class NativeXPathNSResolver FINAL : public XPathNSResolver {
+class NativeXPathNSResolver final : public XPathNSResolver {
 public:
     static PassRefPtrWillBeRawPtr<NativeXPathNSResolver> create(PassRefPtrWillBeRawPtr<Node> node)
     {
         return adoptRefWillBeNoop(new NativeXPathNSResolver(node));
     }
 
-    virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
+    virtual AtomicString lookupNamespaceURI(const String& prefix) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit NativeXPathNSResolver(PassRefPtrWillBeRawPtr<Node>);

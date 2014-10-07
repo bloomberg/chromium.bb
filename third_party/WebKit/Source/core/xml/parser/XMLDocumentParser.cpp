@@ -117,7 +117,7 @@ static inline bool hasNoStyleInformation(Document* document)
     return true;
 }
 
-class PendingStartElementNSCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingStartElementNSCallback final : public XMLDocumentParser::PendingCallback {
 public:
     PendingStartElementNSCallback(const AtomicString& localName, const AtomicString& prefix, const AtomicString& uri,
         int namespaceCount, const xmlChar** namespaces, int attributeCount, int defaultedCount, const xmlChar** attributes)
@@ -154,7 +154,7 @@ public:
         xmlFree(m_attributes);
     }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->startElementNs(m_localName, m_prefix, m_uri,
             m_namespaceCount, const_cast<const xmlChar**>(m_namespaces),
@@ -172,15 +172,15 @@ private:
     xmlChar** m_attributes;
 };
 
-class PendingEndElementNSCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingEndElementNSCallback final : public XMLDocumentParser::PendingCallback {
 public:
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->endElementNs();
     }
 };
 
-class PendingCharactersCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingCharactersCallback final : public XMLDocumentParser::PendingCallback {
 public:
     PendingCharactersCallback(const xmlChar* chars, int length)
         : m_chars(xmlStrndup(chars, length))
@@ -193,7 +193,7 @@ public:
         xmlFree(m_chars);
     }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->characters(m_chars, m_length);
     }
@@ -203,7 +203,7 @@ private:
     int m_length;
 };
 
-class PendingProcessingInstructionCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingProcessingInstructionCallback final : public XMLDocumentParser::PendingCallback {
 public:
     PendingProcessingInstructionCallback(const String& target, const String& data)
         : m_target(target)
@@ -211,7 +211,7 @@ public:
     {
     }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->processingInstruction(m_target, m_data);
     }
@@ -221,11 +221,11 @@ private:
     String m_data;
 };
 
-class PendingCDATABlockCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingCDATABlockCallback final : public XMLDocumentParser::PendingCallback {
 public:
     explicit PendingCDATABlockCallback(const String& text) : m_text(text) { }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->cdataBlock(m_text);
     }
@@ -234,11 +234,11 @@ private:
     String m_text;
 };
 
-class PendingCommentCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingCommentCallback final : public XMLDocumentParser::PendingCallback {
 public:
     explicit PendingCommentCallback(const String& text) : m_text(text) { }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->comment(m_text);
     }
@@ -247,7 +247,7 @@ private:
     String m_text;
 };
 
-class PendingInternalSubsetCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingInternalSubsetCallback final : public XMLDocumentParser::PendingCallback {
 public:
     PendingInternalSubsetCallback(const String& name, const String& externalID, const String& systemID)
         : m_name(name)
@@ -256,7 +256,7 @@ public:
     {
     }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->internalSubset(m_name, m_externalID, m_systemID);
     }
@@ -267,7 +267,7 @@ private:
     String m_systemID;
 };
 
-class PendingErrorCallback FINAL : public XMLDocumentParser::PendingCallback {
+class PendingErrorCallback final : public XMLDocumentParser::PendingCallback {
 public:
     PendingErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber)
         : m_type(type)
@@ -282,7 +282,7 @@ public:
         xmlFree(m_message);
     }
 
-    virtual void call(XMLDocumentParser* parser) OVERRIDE
+    virtual void call(XMLDocumentParser* parser) override
     {
         parser->handleError(m_type, reinterpret_cast<char*>(m_message), TextPosition(m_lineNumber, m_columnNumber));
     }

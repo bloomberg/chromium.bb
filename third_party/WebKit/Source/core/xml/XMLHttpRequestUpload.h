@@ -41,7 +41,7 @@ namespace blink {
 class ExecutionContext;
 class XMLHttpRequest;
 
-class XMLHttpRequestUpload FINAL : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
+class XMLHttpRequestUpload final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequestUpload);
 public:
@@ -57,22 +57,22 @@ public:
 
     XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
     void dispatchProgressEvent(unsigned long long, unsigned long long);
 
     void handleRequestError(const AtomicString&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
 #if !ENABLE(OILPAN)
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
+    virtual void refEventTarget() override { ref(); }
+    virtual void derefEventTarget() override { deref(); }
 #endif
 
     RawPtrWillBeMember<XMLHttpRequest> m_xmlHttpRequest;

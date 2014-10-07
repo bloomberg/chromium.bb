@@ -114,13 +114,13 @@ class ReadableStreamSource : public GarbageCollectedFinalized<ReadableStreamSour
 public:
     ReadableStreamSource(XMLHttpRequest* owner) : m_owner(owner) { }
     virtual ~ReadableStreamSource() { }
-    virtual void pullSource() OVERRIDE { }
-    virtual ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) OVERRIDE
+    virtual void pullSource() override { }
+    virtual ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) override
     {
         m_owner->abort();
         return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
     }
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_owner);
         UnderlyingSource::trace(visitor);
