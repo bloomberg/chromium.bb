@@ -72,7 +72,7 @@ class WebContentsPaintObserver : public content::WebContentsObserver {
                            OverscrollAnimatorSliderView* slider_view)
       : WebContentsObserver(web_contents), slider_view_(slider_view) {}
 
-  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE {
+  virtual void DidFirstVisuallyNonEmptyPaint() override {
     [slider_view_ webContentsFinishedNonEmptyPaint];
   }
 
