@@ -1,0 +1,21 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x249
+  RenderBlock {HTML} at (0,0) size 800x249
+    RenderBody {BODY} at (8,30) size 784x211
+      RenderBlock {P} at (0,0) size 784x71
+        RenderText {#text} at (0,1) size 755x69
+          text run at (0,1) width 755: "The selection should be painted correctly from and including \x{732B}"
+          text run at (0,36) width 570: "until and including C, then from right to left for "
+          text run at (570,36) width 39 RTL: "\x{627}\x{644}\x{639}\x{631}"
+          text run at (609,36) width 8: "."
+      RenderBlock {DIV} at (0,101) size 784x55
+        RenderText {#text} at (0,13) size 427x34
+          text run at (0,13) width 363: "\x{543E}\x{8F29}\x{306F}\x{732B}\x{3067} \x{92E}\x{93E}\x{928}\x{915} \x{939}\x{93F}\x{928}\x{94D}\x{926}\x{940}ABC"
+          text run at (363,13) width 64 RTL: "\x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629}"
+      RenderBlock {DIV} at (0,156) size 784x55
+        RenderText {#text} at (0,13) size 427x34
+          text run at (0,13) width 363: "\x{543E}\x{8F29}\x{306F}\x{732B}\x{3067} \x{92E}\x{93E}\x{928}\x{915} \x{939}\x{93F}\x{928}\x{94D}\x{926}\x{940}ABC"
+          text run at (363,13) width 64 RTL: "\x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629}"
+selection start: position 3 of child 0 {#text} of child 5 {DIV} of body
+selection end:   position 24 of child 0 {#text} of child 5 {DIV} of body

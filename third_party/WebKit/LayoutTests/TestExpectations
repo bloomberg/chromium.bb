@@ -1414,10 +1414,6 @@ crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hy
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
 
-crbug.com/420614 fast/text/selection-multiple-runs.html [ NeedsRebaseline ]
-crbug.com/420614 [ Mac Win ] virtual/antialiasedtext/fast/text/selection-multiple-runs.html [ NeedsRebaseline ]
-crbug.com/420614 [ Mac ] virtual/antialiasedtext/fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
-
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/012.html [ NeedsManualRebaseline ]
