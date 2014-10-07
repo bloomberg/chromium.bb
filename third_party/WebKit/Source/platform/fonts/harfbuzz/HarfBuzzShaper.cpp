@@ -949,29 +949,35 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
     m_totalWidth += currentRun->width();
 }
 
-void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBufferWithOffsets* glyphBuffer, HarfBuzzRun* currentRun)
+void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBufferWithOffsets* glyphBuffer, HarfBuzzRun* currentRun, float& carryAdvance)
 {
     FloatSize* offsets = currentRun->offsets();
     uint16_t* glyphs = currentRun->glyphs();
     float* advances = currentRun->advances();
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
-    float advanceSoFar = 0;
+    FloatSize runStartOffset = FloatSize();
     if (m_run.rtl()) {
         for (unsigned i = 0; i < numGlyphs; ++i) {
             uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
-            if (currentCharacterIndex >= m_toIndex)
-                advanceSoFar += advances[i];
-            else if (currentCharacterIndex >= m_fromIndex)
-                glyphBuffer->add(glyphs[i], currentRun->fontData(), offsets[i] + FloatSize(advanceSoFar, 0), advances[i]);
+            if (currentCharacterIndex >= m_toIndex) {
+                carryAdvance += advances[i];
+            } else if (currentCharacterIndex >= m_fromIndex) {
+                runStartOffset = HB_DIRECTION_IS_HORIZONTAL(currentRun->direction()) ? FloatSize(carryAdvance, 0) : FloatSize(0, carryAdvance);
+                glyphBuffer->add(glyphs[i], currentRun->fontData(), runStartOffset + offsets[i], carryAdvance + advances[i]);
+                carryAdvance = 0;
+            }
         }
     } else {
         for (unsigned i = 0; i < numGlyphs; ++i) {
             uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
-            if (currentCharacterIndex < m_fromIndex)
-                advanceSoFar += advances[i];
-            else if (currentCharacterIndex < m_toIndex)
-                glyphBuffer->add(glyphs[i], currentRun->fontData(), offsets[i] + FloatSize(advanceSoFar, 0), advances[i]);
+            if (currentCharacterIndex < m_fromIndex) {
+                carryAdvance += advances[i];
+            } else if (currentCharacterIndex < m_toIndex) {
+                runStartOffset = HB_DIRECTION_IS_HORIZONTAL(currentRun->direction()) ? FloatSize(carryAdvance, 0) : FloatSize(0, carryAdvance);
+                glyphBuffer->add(glyphs[i], currentRun->fontData(), runStartOffset + offsets[i], carryAdvance + advances[i]);
+                carryAdvance = 0;
+            }
         }
     }
 }
@@ -1033,6 +1039,7 @@ void HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, Ha
 bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
 {
     unsigned numRuns = m_harfBuzzRuns.size();
+    float carryAdvance = 0;
     if (m_run.rtl()) {
         for (int runIndex = numRuns - 1; runIndex >= 0; --runIndex) {
             HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
@@ -1046,7 +1053,7 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
             } else {
                 ASSERT(glyphBuffer->hasOffsets());
                 fillGlyphBufferFromHarfBuzzRun(
-                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun);
+                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun, carryAdvance);
             }
         }
     } else {
@@ -1062,7 +1069,7 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
             } else {
                 ASSERT(glyphBuffer->hasOffsets());
                 fillGlyphBufferFromHarfBuzzRun(
-                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun);
+                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun, carryAdvance);
             }
         }
     }
