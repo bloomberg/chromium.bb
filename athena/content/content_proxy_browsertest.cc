@@ -28,13 +28,10 @@ class ContentProxyBrowserTest : public AthenaBrowserTest {
   virtual ~ContentProxyBrowserTest() {}
 
   // AthenaBrowserTest:
-  virtual void SetUp() OVERRIDE {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Make sure that we draw the output - it's required for this test.
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-
-    AthenaBrowserTest::SetUp();
+    AthenaBrowserTest::SetUpCommandLine(command_line);
   }
 
  private:
