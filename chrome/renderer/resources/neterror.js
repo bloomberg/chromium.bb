@@ -134,7 +134,7 @@ function onDocumentLoad() {
   // Hide the details button if there are no details to show.
   if (loadTimeData.valueExists('summary') &&
           !loadTimeData.getValue('summary').msg) {
-    detailsButton.hidden = true;
+    detailsButton.style.display = 'none';
     document.getElementById('help-box-outer').style.display = 'block';
   }
 
@@ -149,7 +149,7 @@ function onDocumentLoad() {
   // Add a main message paragraph.
   if (loadTimeData.valueExists('primaryParagraph')) {
     var p = document.querySelector('#main-message p');
-    p.textContent = loadTimeData.getString('primaryParagraph');
+    p.innerHTML = loadTimeData.getString('primaryParagraph');
     p.hidden = false;
   }
 }
