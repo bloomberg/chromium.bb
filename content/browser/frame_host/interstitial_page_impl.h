@@ -58,15 +58,15 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual ~InterstitialPageImpl();
 
   // InterstitialPage implementation:
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void DontProceed() OVERRIDE;
-  virtual void Proceed() OVERRIDE;
-  virtual RenderViewHost* GetRenderViewHostForTesting() const OVERRIDE;
-  virtual InterstitialPageDelegate* GetDelegateForTesting() OVERRIDE;
-  virtual void DontCreateViewForTesting() OVERRIDE;
-  virtual void SetSize(const gfx::Size& size) OVERRIDE;
-  virtual void Focus() OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void DontProceed() override;
+  virtual void Proceed() override;
+  virtual RenderViewHost* GetRenderViewHostForTesting() const override;
+  virtual InterstitialPageDelegate* GetDelegateForTesting() override;
+  virtual void DontCreateViewForTesting() override;
+  virtual void SetSize(const gfx::Size& size) override;
+  virtual void Focus() override;
 
   // Allows the user to navigate away by disabling the interstitial, canceling
   // the pending request, and unblocking the hidden renderer.  The interstitial
@@ -101,72 +101,72 @@ class CONTENT_EXPORT InterstitialPageImpl
   // NotificationObserver method:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
   // WebContentsObserver implementation:
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+                                 RenderFrameHost* render_frame_host) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void WebContentsDestroyed() override;
   virtual void NavigationEntryCommitted(
-      const LoadCommittedDetails& load_details) OVERRIDE;
+      const LoadCommittedDetails& load_details) override;
 
   // RenderFrameHostDelegate implementation:
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
-                                 const IPC::Message& message) OVERRIDE;
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
+                                 const IPC::Message& message) override;
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   virtual void UpdateTitle(RenderFrameHost* render_frame_host,
                            int32 page_id,
                            const base::string16& title,
-                           base::i18n::TextDirection title_direction) OVERRIDE;
-  virtual AccessibilityMode GetAccessibilityMode() const OVERRIDE;
+                           base::i18n::TextDirection title_direction) override;
+  virtual AccessibilityMode GetAccessibilityMode() const override;
 
   // RenderViewHostDelegate implementation:
-  virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
+  virtual RenderViewHostDelegateView* GetDelegateView() override;
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,
-                                 const IPC::Message& message) OVERRIDE;
-  virtual const GURL& GetMainFrameLastCommittedURL() const OVERRIDE;
+                                 const IPC::Message& message) override;
+  virtual const GURL& GetMainFrameLastCommittedURL() const override;
   virtual void RenderViewTerminated(RenderViewHost* render_view_host,
                                     base::TerminationStatus status,
-                                    int error_code) OVERRIDE;
+                                    int error_code) override;
   virtual RendererPreferences GetRendererPrefs(
-      BrowserContext* browser_context) const OVERRIDE;
-  virtual WebPreferences ComputeWebkitPrefs() OVERRIDE;
-  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
+      BrowserContext* browser_context) const override;
+  virtual WebPreferences ComputeWebkitPrefs() override;
+  virtual gfx::Rect GetRootWindowResizerRect() const override;
   virtual void CreateNewWindow(
       int render_process_id,
       int route_id,
       int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
-      SessionStorageNamespace* session_storage_namespace) OVERRIDE;
+      SessionStorageNamespace* session_storage_namespace) override;
   virtual void CreateNewWidget(int render_process_id,
                                int route_id,
-                               blink::WebPopupType popup_type) OVERRIDE;
+                               blink::WebPopupType popup_type) override;
   virtual void CreateNewFullscreenWidget(int render_process_id,
-                                         int route_id) OVERRIDE;
+                                         int route_id) override;
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture) OVERRIDE;
+                                 bool user_gesture) override;
   virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) OVERRIDE;
-  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
+                                 const gfx::Rect& initial_pos) override;
+  virtual void ShowCreatedFullscreenWidget(int route_id) override;
 
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
-      SiteInstance* instance) OVERRIDE;
+      SiteInstance* instance) override;
 
-  virtual FrameTree* GetFrameTree() OVERRIDE;
+  virtual FrameTree* GetFrameTree() override;
 
   // RenderWidgetHostDelegate implementation:
   virtual void RenderWidgetDeleted(
-      RenderWidgetHostImpl* render_widget_host) OVERRIDE;
+      RenderWidgetHostImpl* render_widget_host) override;
   virtual bool PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
+      bool* is_keyboard_shortcut) override;
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const NativeWebKeyboardEvent& event) override;
 #if defined(OS_WIN)
-  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
+  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() override;
 #endif
 
   bool enabled() const { return enabled_; }

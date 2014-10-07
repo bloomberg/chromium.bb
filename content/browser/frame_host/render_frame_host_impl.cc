@@ -85,7 +85,7 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
 
   virtual ~DesktopNotificationDelegateImpl() {}
 
-  virtual void NotificationDisplayed() OVERRIDE {
+  virtual void NotificationDisplayed() override {
     RenderFrameHost* rfh =
         RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (!rfh)
@@ -95,7 +95,7 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
         rfh->GetRoutingID(), notification_id_));
   }
 
-  virtual void NotificationError() OVERRIDE {
+  virtual void NotificationError() override {
     RenderFrameHost* rfh =
         RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (!rfh)
@@ -105,7 +105,7 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
         rfh->GetRoutingID(), notification_id_));
   }
 
-  virtual void NotificationClosed(bool by_user) OVERRIDE {
+  virtual void NotificationClosed(bool by_user) override {
     RenderFrameHost* rfh =
         RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (!rfh)
@@ -117,7 +117,7 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
         notification_id_);
   }
 
-  virtual void NotificationClick() OVERRIDE {
+  virtual void NotificationClick() override {
     RenderFrameHost* rfh =
         RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (!rfh)

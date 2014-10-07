@@ -59,24 +59,24 @@ class RenderFrameHostManagerTestWebUIControllerFactory
 
   // WebUIFactory implementation.
   virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE {
+      WebUI* web_ui, const GURL& url) const override {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;
     return new WebUIController(web_ui);
   }
 
    virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE {
+      const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE {
+                              const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE {
+                                      const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 
@@ -93,7 +93,7 @@ class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
 
   virtual void BeforeUnloadFired(WebContents* web_contents,
                                  bool proceed,
-                                 bool* proceed_to_fire_unload) OVERRIDE {
+                                 bool* proceed_to_fire_unload) override {
     *proceed_to_fire_unload = proceed;
   }
 
@@ -112,7 +112,7 @@ class RenderViewHostDeletedObserver : public WebContentsObserver {
         deleted_(false) {
   }
 
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE {
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host) override {
     if (render_view_host->GetProcess()->GetID() == process_id_ &&
         render_view_host->GetRoutingID() == routing_id_) {
       deleted_ = true;
@@ -142,7 +142,7 @@ class RenderFrameHostDeletedObserver : public WebContentsObserver {
         deleted_(false) {
   }
 
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     if (render_frame_host->GetProcess()->GetID() == process_id_ &&
         render_frame_host->GetRoutingID() == routing_id_) {
       deleted_ = true;
@@ -175,12 +175,12 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
         favicon_received_(false) { }
 
   virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) OVERRIDE {
+                             base::ProcessId plugin_pid) override {
     plugin_crashed_ = true;
   }
 
   virtual void DidUpdateFaviconURL(
-      const std::vector<FaviconURL>& candidates) OVERRIDE {
+      const std::vector<FaviconURL>& candidates) override {
     favicon_received_ = true;
   }
 
@@ -209,7 +209,7 @@ class FrameLifetimeConsistencyChecker : public WebContentsObserver {
     RenderFrameCreated(web_contents->GetMainFrame());
   }
 
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     std::pair<int, int> routing_pair =
         std::make_pair(render_frame_host->GetProcess()->GetID(),
                        render_frame_host->GetRoutingID());
@@ -225,7 +225,7 @@ class FrameLifetimeConsistencyChecker : public WebContentsObserver {
     }
   }
 
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     std::pair<int, int> routing_pair =
         std::make_pair(render_frame_host->GetProcess()->GetID(),
                        render_frame_host->GetRoutingID());
@@ -259,13 +259,13 @@ class FrameLifetimeConsistencyChecker : public WebContentsObserver {
 class RenderFrameHostManagerTest
     : public RenderViewHostImplTestHarness {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
     lifetime_checker_.reset(new FrameLifetimeConsistencyChecker(contents()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     lifetime_checker_.reset();
     RenderViewHostImplTestHarness::TearDown();
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
@@ -670,7 +670,7 @@ class RenderViewHostDestroyer : public WebContentsObserver {
         web_contents_(web_contents) {}
 
   virtual void RenderViewDeleted(
-      RenderViewHost* render_view_host) OVERRIDE {
+      RenderViewHost* render_view_host) override {
     if (render_view_host == render_view_host_)
       delete web_contents_;
   }

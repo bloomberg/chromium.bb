@@ -52,7 +52,7 @@ class PopupMenuHelper : public NotificationObserver {
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
   NotificationRegistrar notification_registrar_;
   RenderFrameHostImpl* render_frame_host_;

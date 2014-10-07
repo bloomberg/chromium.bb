@@ -102,10 +102,10 @@ class MockScreenshotManager : public content::NavigationEntryScreenshotManager {
   // Overridden from content::NavigationEntryScreenshotManager:
   virtual void TakeScreenshotImpl(
       content::RenderViewHost* host,
-      content::NavigationEntryImpl* entry) OVERRIDE {
+      content::NavigationEntryImpl* entry) override {
   }
 
-  virtual void OnScreenshotSet(content::NavigationEntryImpl* entry) OVERRIDE {
+  virtual void OnScreenshotSet(content::NavigationEntryImpl* entry) override {
     encoding_screenshot_in_progress_ = false;
     NavigationEntryScreenshotManager::OnScreenshotSet(entry);
     if (message_loop_runner_.get())
@@ -188,7 +188,7 @@ class NavigationControllerTest
   NavigationControllerTest() : navigation_entry_committed_counter_(0) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebContents* web_contents = RenderViewHostImplTestHarness::web_contents();
     ASSERT_TRUE(web_contents);  // The WebContents should be created by now.
@@ -198,12 +198,12 @@ class NavigationControllerTest
   // WebContentsObserver:
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      NavigationController::ReloadType reload_type) OVERRIDE {
+      NavigationController::ReloadType reload_type) override {
     navigated_url_ = url;
   }
 
   virtual void NavigationEntryCommitted(
-      const LoadCommittedDetails& load_details) OVERRIDE {
+      const LoadCommittedDetails& load_details) override {
     navigation_entry_committed_counter_++;
   }
 
@@ -248,11 +248,11 @@ class TestWebContentsDelegate : public WebContentsDelegate {
 
   // Keep track of whether the tab has notified us of a navigation state change.
   virtual void NavigationStateChanged(const WebContents* source,
-                                      InvalidateTypes changed_flags) OVERRIDE {
+                                      InvalidateTypes changed_flags) override {
     navigation_state_change_count_++;
   }
 
-  virtual void ShowRepostFormWarningDialog(WebContents* source) OVERRIDE {
+  virtual void ShowRepostFormWarningDialog(WebContents* source) override {
     repost_form_warning_count_++;
   }
 
@@ -2294,7 +2294,7 @@ class PrunedListener : public NotificationObserver {
 
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const NotificationDetails& details) override {
     if (type == NOTIFICATION_NAV_LIST_PRUNED) {
       notification_count_++;
       details_ = *(Details<PrunedDetails>(details).ptr());

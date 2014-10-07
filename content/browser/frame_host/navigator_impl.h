@@ -36,32 +36,32 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                 NavigatorDelegate* delegate);
 
   // Navigator implementation.
-  virtual NavigationController* GetController() OVERRIDE;
+  virtual NavigationController* GetController() override;
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                        const GURL& url,
-                                       bool is_transition_navigation) OVERRIDE;
+                                       bool is_transition_navigation) override;
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
-      OVERRIDE;
+      override;
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       int error_code,
-      const base::string16& error_description) OVERRIDE;
+      const base::string16& error_description) override;
   virtual void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params&
-          input_params) OVERRIDE;
+          input_params) override;
   virtual bool NavigateToPendingEntry(
       RenderFrameHostImpl* render_frame_host,
-      NavigationController::ReloadType reload_type) OVERRIDE;
+      NavigationController::ReloadType reload_type) override;
   virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                               const GURL& url,
                               const Referrer& referrer,
                               WindowOpenDisposition disposition,
                               bool should_replace_current_entry,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture) override;
   virtual void RequestTransferURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -71,17 +71,17 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       WindowOpenDisposition disposition,
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
-      bool user_gesture) OVERRIDE;
+      bool user_gesture) override;
   virtual void OnBeginNavigation(
       FrameTreeNode* frame_tree_node,
       const FrameHostMsg_BeginNavigation_Params& params,
-      const CommonNavigationParams& common_params) OVERRIDE;
+      const CommonNavigationParams& common_params) override;
   virtual void CommitNavigation(
       FrameTreeNode* frame_tree_node,
-      const NavigationBeforeCommitInfo& info) OVERRIDE;
+      const NavigationBeforeCommitInfo& info) override;
   virtual void LogResourceRequestTime(
-      base::TimeTicks timestamp, const GURL& url) OVERRIDE;
-  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) OVERRIDE;
+      base::TimeTicks timestamp, const GURL& url) override;
+  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) override;
 
  private:
   friend class NavigatorTest;

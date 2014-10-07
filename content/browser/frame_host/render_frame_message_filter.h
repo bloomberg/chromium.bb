@@ -21,7 +21,7 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
   RenderFrameMessageFilter(int render_process_id,
                            RenderWidgetHelper* render_widget_helper);
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~RenderFrameMessageFilter();

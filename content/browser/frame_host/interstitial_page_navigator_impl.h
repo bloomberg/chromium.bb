@@ -22,11 +22,11 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
       InterstitialPageImpl* interstitial,
       NavigationControllerImpl* navigation_controller);
 
-  virtual NavigationController* GetController() OVERRIDE;
+  virtual NavigationController* GetController() override;
   virtual void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params&
-          input_params) OVERRIDE;
+          input_params) override;
 
  private:
   virtual ~InterstitialPageNavigatorImpl() {}

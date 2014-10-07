@@ -85,17 +85,17 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
                              int selected_item,
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
-                             bool allow_multiple_selection) OVERRIDE;
-  virtual void HidePopupMenu() OVERRIDE;
+                             bool allow_multiple_selection) override;
+  virtual void HidePopupMenu() override;
 #endif
   virtual void StartDragging(const DropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
-                             const DragEventSourceInfo& event_info) OVERRIDE;
-  virtual void UpdateDragCursor(WebDragOperation operation) OVERRIDE;
-  virtual void GotFocus() OVERRIDE;
-  virtual void TakeFocus(bool reverse) OVERRIDE;
+                             const DragEventSourceInfo& event_info) override;
+  virtual void UpdateDragCursor(WebDragOperation operation) override;
+  virtual void GotFocus() override;
+  virtual void TakeFocus(bool reverse) override;
   virtual void OnFindReply(int request_id,
                            int number_of_matches,
                            const gfx::Rect& selection_rect,

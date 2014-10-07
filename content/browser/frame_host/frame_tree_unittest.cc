@@ -62,22 +62,22 @@ class TreeWalkingWebContentsLogger : public WebContentsObserver {
   }
 
   // content::WebContentsObserver implementation.
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     LogWhatHappened("RenderFrameCreated", render_frame_host);
   }
 
   virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
-                                      RenderFrameHost* new_host) OVERRIDE {
+                                      RenderFrameHost* new_host) override {
     if (old_host)
       LogWhatHappened("RenderFrameChanged(old)", old_host);
     LogWhatHappened("RenderFrameChanged(new)", new_host);
   }
 
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     LogWhatHappened("RenderFrameDeleted", render_frame_host);
   }
 
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+  virtual void RenderProcessGone(base::TerminationStatus status) override {
     LogWhatHappened("RenderProcessGone");
   }
 

@@ -35,60 +35,60 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual ~NavigationEntryImpl();
 
   // NavigationEntry implementation:
-  virtual int GetUniqueID() const OVERRIDE;
-  virtual PageType GetPageType() const OVERRIDE;
-  virtual void SetURL(const GURL& url) OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
-  virtual void SetBaseURLForDataURL(const GURL& url) OVERRIDE;
-  virtual const GURL& GetBaseURLForDataURL() const OVERRIDE;
-  virtual void SetReferrer(const Referrer& referrer) OVERRIDE;
-  virtual const Referrer& GetReferrer() const OVERRIDE;
-  virtual void SetVirtualURL(const GURL& url) OVERRIDE;
-  virtual const GURL& GetVirtualURL() const OVERRIDE;
-  virtual void SetTitle(const base::string16& title) OVERRIDE;
-  virtual const base::string16& GetTitle() const OVERRIDE;
-  virtual void SetPageState(const PageState& state) OVERRIDE;
-  virtual const PageState& GetPageState() const OVERRIDE;
-  virtual void SetPageID(int page_id) OVERRIDE;
-  virtual int32 GetPageID() const OVERRIDE;
+  virtual int GetUniqueID() const override;
+  virtual PageType GetPageType() const override;
+  virtual void SetURL(const GURL& url) override;
+  virtual const GURL& GetURL() const override;
+  virtual void SetBaseURLForDataURL(const GURL& url) override;
+  virtual const GURL& GetBaseURLForDataURL() const override;
+  virtual void SetReferrer(const Referrer& referrer) override;
+  virtual const Referrer& GetReferrer() const override;
+  virtual void SetVirtualURL(const GURL& url) override;
+  virtual const GURL& GetVirtualURL() const override;
+  virtual void SetTitle(const base::string16& title) override;
+  virtual const base::string16& GetTitle() const override;
+  virtual void SetPageState(const PageState& state) override;
+  virtual const PageState& GetPageState() const override;
+  virtual void SetPageID(int page_id) override;
+  virtual int32 GetPageID() const override;
   virtual const base::string16& GetTitleForDisplay(
-      const std::string& languages) const OVERRIDE;
-  virtual bool IsViewSourceMode() const OVERRIDE;
-  virtual void SetTransitionType(ui::PageTransition transition_type) OVERRIDE;
-  virtual ui::PageTransition GetTransitionType() const OVERRIDE;
-  virtual const GURL& GetUserTypedURL() const OVERRIDE;
-  virtual void SetHasPostData(bool has_post_data) OVERRIDE;
-  virtual bool GetHasPostData() const OVERRIDE;
-  virtual void SetPostID(int64 post_id) OVERRIDE;
-  virtual int64 GetPostID() const OVERRIDE;
+      const std::string& languages) const override;
+  virtual bool IsViewSourceMode() const override;
+  virtual void SetTransitionType(ui::PageTransition transition_type) override;
+  virtual ui::PageTransition GetTransitionType() const override;
+  virtual const GURL& GetUserTypedURL() const override;
+  virtual void SetHasPostData(bool has_post_data) override;
+  virtual bool GetHasPostData() const override;
+  virtual void SetPostID(int64 post_id) override;
+  virtual int64 GetPostID() const override;
   virtual void SetBrowserInitiatedPostData(
-      const base::RefCountedMemory* data) OVERRIDE;
+      const base::RefCountedMemory* data) override;
   virtual const base::RefCountedMemory*
-      GetBrowserInitiatedPostData() const OVERRIDE;
-  virtual const FaviconStatus& GetFavicon() const OVERRIDE;
-  virtual FaviconStatus& GetFavicon() OVERRIDE;
-  virtual const SSLStatus& GetSSL() const OVERRIDE;
-  virtual SSLStatus& GetSSL() OVERRIDE;
-  virtual void SetOriginalRequestURL(const GURL& original_url) OVERRIDE;
-  virtual const GURL& GetOriginalRequestURL() const OVERRIDE;
-  virtual void SetIsOverridingUserAgent(bool override) OVERRIDE;
-  virtual bool GetIsOverridingUserAgent() const OVERRIDE;
-  virtual void SetTimestamp(base::Time timestamp) OVERRIDE;
-  virtual base::Time GetTimestamp() const OVERRIDE;
-  virtual void SetCanLoadLocalResources(bool allow) OVERRIDE;
-  virtual bool GetCanLoadLocalResources() const OVERRIDE;
-  virtual void SetFrameToNavigate(const std::string& frame_name) OVERRIDE;
-  virtual const std::string& GetFrameToNavigate() const OVERRIDE;
+      GetBrowserInitiatedPostData() const override;
+  virtual const FaviconStatus& GetFavicon() const override;
+  virtual FaviconStatus& GetFavicon() override;
+  virtual const SSLStatus& GetSSL() const override;
+  virtual SSLStatus& GetSSL() override;
+  virtual void SetOriginalRequestURL(const GURL& original_url) override;
+  virtual const GURL& GetOriginalRequestURL() const override;
+  virtual void SetIsOverridingUserAgent(bool override) override;
+  virtual bool GetIsOverridingUserAgent() const override;
+  virtual void SetTimestamp(base::Time timestamp) override;
+  virtual base::Time GetTimestamp() const override;
+  virtual void SetCanLoadLocalResources(bool allow) override;
+  virtual bool GetCanLoadLocalResources() const override;
+  virtual void SetFrameToNavigate(const std::string& frame_name) override;
+  virtual const std::string& GetFrameToNavigate() const override;
   virtual void SetExtraData(const std::string& key,
-                            const base::string16& data) OVERRIDE;
+                            const base::string16& data) override;
   virtual bool GetExtraData(const std::string& key,
-                            base::string16* data) const OVERRIDE;
-  virtual void ClearExtraData(const std::string& key) OVERRIDE;
-  virtual void SetHttpStatusCode(int http_status_code) OVERRIDE;
-  virtual int GetHttpStatusCode() const OVERRIDE;
-  virtual void SetRedirectChain(const std::vector<GURL>& redirects) OVERRIDE;
-  virtual const std::vector<GURL>& GetRedirectChain() const OVERRIDE;
-  virtual bool IsRestored() const OVERRIDE;
+                            base::string16* data) const override;
+  virtual void ClearExtraData(const std::string& key) override;
+  virtual void SetHttpStatusCode(int http_status_code) override;
+  virtual int GetHttpStatusCode() const override;
+  virtual void SetRedirectChain(const std::vector<GURL>& redirects) override;
+  virtual const std::vector<GURL>& GetRedirectChain() const override;
+  virtual bool IsRestored() const override;
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
