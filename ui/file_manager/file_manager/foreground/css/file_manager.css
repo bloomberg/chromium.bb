@@ -1683,6 +1683,7 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 
 #progress-center-close-view {
   opacity: 1;
+  padding-top: 10px;
   transition: opacity 300ms linear;
 }
 
