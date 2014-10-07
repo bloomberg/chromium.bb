@@ -724,6 +724,7 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
   return cwd
 
 
+@tools.profile
 def prepare_for_archival(options, cwd):
   """Loads the isolated file and create 'infiles' for archival."""
   complete_state = load_complete_state(

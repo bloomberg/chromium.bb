@@ -4,7 +4,9 @@
 
 """Various utility functions and classes not specific to any single area."""
 
+import atexit
 import cStringIO
+import functools
 import json
 import logging
 import logging.handlers
@@ -96,6 +98,100 @@ class Profiler(object):
     time_taken = time.time() - self.start_time
     logging.info('Profiling: Section %s took %3.3f seconds',
                  self.name, time_taken)
+
+
+class ProfileCounter(object):
+  """Records total time spent in a chunk of code during lifetime of a process.
+
+  Recursive calls count as a single call (i.e. only the time spent in the outer
+  call is recorded).
+
+  Autoregisters itself in a global list when instantiated. All counters will be
+  reported at the process exit time (in atexit hook). Best to be used as with
+  @profile decorator.
+  """
+
+  _instances_lock = threading.Lock()
+  _instances = []
+
+  @staticmethod
+  def summarize_all():
+    print('\nProfiling report:')
+    print('-' * 80)
+    print(
+        '{:<38}{:<10}{:<16}{:<16}'.format(
+            'Name', 'Count', 'Total ms', 'Average ms'))
+    print('-' * 80)
+    with ProfileCounter._instances_lock:
+      for i in sorted(ProfileCounter._instances, key=lambda x: -x.total_time):
+        print(
+            '{:<38}{:<10}{:<16.1f}{:<16.1f}'.format(
+                i.name,
+                i.call_count,
+                i.total_time * 1000,
+                i.average_time * 1000))
+    print('-' * 80)
+
+  def __init__(self, name):
+    self._lock = threading.Lock()
+    self._call_count = 0
+    self._name = name
+    self._total_time = 0
+    self._active = threading.local()
+    with self._instances_lock:
+      self._instances.append(self)
+      if len(self._instances) == 1:
+        atexit.register(ProfileCounter.summarize_all)
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def call_count(self):
+    return self._call_count
+
+  @property
+  def total_time(self):
+    return self._total_time
+
+  @property
+  def average_time(self):
+    with self._lock:
+      if self._call_count:
+        return self._total_time / self._call_count
+      return 0
+
+  def __enter__(self):
+    recursion = getattr(self._active, 'recursion', 0)
+    if not recursion:
+      self._active.started = time.time()
+    self._active.recursion = recursion + 1
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    self._active.recursion -= 1
+    if not self._active.recursion:
+      time_inside = time.time() - self._active.started
+      with self._lock:
+        self._total_time += time_inside
+        self._call_count += 1
+
+
+def profile(func):
+  """Decorator that profiles a function if SWARMING_PROFILE env var is set.
+
+  Will gather a number of calls to that function and total time spent inside.
+  The final report is emitted to stdout at the process exit time.
+  """
+  # No performance impact whatsoever if SWARMING_PROFILE is not set.
+  if os.environ.get('SWARMING_PROFILE') != '1':
+    return func
+  timer = ProfileCounter(func.__name__)
+  @functools.wraps(func)
+  def wrapper(*args, **kwargs):
+    with timer:
+      return func(*args, **kwargs)
+  return wrapper
 
 
 class Unbuffered(object):

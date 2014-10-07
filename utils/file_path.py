@@ -11,6 +11,8 @@ import re
 import sys
 import unicodedata
 
+from utils import tools
+
 ## OS-specific imports
 
 if sys.platform == 'win32':
@@ -143,6 +145,7 @@ if sys.platform == 'win32':
     return os.path.basename(get_native_path_case(os.path.join(root, item)))
 
 
+  @tools.profile
   def get_native_path_case(p):
     """Returns the native path case for an existing file.
 
@@ -248,6 +251,7 @@ elif sys.platform == 'darwin':
         return element
 
 
+  @tools.profile
   def get_native_path_case(path):
     """Returns the native path case for an existing file.
 
@@ -310,6 +314,7 @@ else:  # OSes other than Windows and OSX.
     return os.path.basename(get_native_path_case(os.path.join(root, item)))
 
 
+  @tools.profile
   def get_native_path_case(path):
     """Returns the native path case for an existing file.
 
@@ -357,6 +362,7 @@ if sys.platform != 'win32':  # All non-Windows OSes.
     return out
 
 
+  @tools.profile
   def split_at_symlink(base_dir, relfile):
     """Scans each component of relfile and cut the string at the symlink if
     there is any.
@@ -470,6 +476,7 @@ def path_starts_with(prefix, path):
   return path.startswith(prefix)
 
 
+@tools.profile
 def fix_native_path_case(root, path):
   """Ensures that each component of |path| has the proper native case.
 
