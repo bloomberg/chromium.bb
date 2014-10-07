@@ -42,26 +42,26 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   // Java object.
   AwContentsIoThreadClientImpl(bool pending_associate,
                                const base::android::JavaRef<jobject>& jclient);
-  virtual ~AwContentsIoThreadClientImpl() OVERRIDE;
+  virtual ~AwContentsIoThreadClientImpl() override;
 
   // Implementation of AwContentsIoThreadClient.
-  virtual bool PendingAssociation() const OVERRIDE;
-  virtual CacheMode GetCacheMode() const OVERRIDE;
+  virtual bool PendingAssociation() const override;
+  virtual CacheMode GetCacheMode() const override;
   virtual scoped_ptr<AwWebResourceResponse> ShouldInterceptRequest(
       const GURL& location,
-      const net::URLRequest* request) OVERRIDE;
-  virtual bool ShouldBlockContentUrls() const OVERRIDE;
-  virtual bool ShouldBlockFileUrls() const OVERRIDE;
-  virtual bool ShouldAcceptThirdPartyCookies() const OVERRIDE;
-  virtual bool ShouldBlockNetworkLoads() const OVERRIDE;
+      const net::URLRequest* request) override;
+  virtual bool ShouldBlockContentUrls() const override;
+  virtual bool ShouldBlockFileUrls() const override;
+  virtual bool ShouldAcceptThirdPartyCookies() const override;
+  virtual bool ShouldBlockNetworkLoads() const override;
   virtual void NewDownload(const GURL& url,
                            const std::string& user_agent,
                            const std::string& content_disposition,
                            const std::string& mime_type,
-                           int64 content_length) OVERRIDE;
+                           int64 content_length) override;
   virtual void NewLoginRequest(const std::string& realm,
                                const std::string& account,
-                               const std::string& args) OVERRIDE;
+                               const std::string& args) override;
 
  private:
   bool pending_association_;

@@ -25,15 +25,15 @@ class AwWebResourceResponseImpl : public AwWebResourceResponse {
   AwWebResourceResponseImpl(const base::android::JavaRef<jobject>& obj);
   virtual ~AwWebResourceResponseImpl();
 
-  virtual scoped_ptr<InputStream> GetInputStream(JNIEnv* env) const OVERRIDE;
-  virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const OVERRIDE;
-  virtual bool GetCharset(JNIEnv* env, std::string* charset) const OVERRIDE;
+  virtual scoped_ptr<InputStream> GetInputStream(JNIEnv* env) const override;
+  virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const override;
+  virtual bool GetCharset(JNIEnv* env, std::string* charset) const override;
   virtual bool GetStatusInfo(JNIEnv* env,
                              int* status_code,
-                             std::string* reason_phrase) const OVERRIDE;
+                             std::string* reason_phrase) const override;
   virtual bool GetResponseHeaders(
       JNIEnv* env,
-      net::HttpResponseHeaders* headers) const OVERRIDE;
+      net::HttpResponseHeaders* headers) const override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

@@ -55,19 +55,19 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool GetSaveFormData();
 
   // AutofillClient:
-  virtual autofill::PersonalDataManager* GetPersonalDataManager() OVERRIDE;
+  virtual autofill::PersonalDataManager* GetPersonalDataManager() override;
   virtual scoped_refptr<autofill::AutofillWebDataService> GetDatabase()
-      OVERRIDE;
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual void HideRequestAutocompleteDialog() OVERRIDE;
-  virtual void ShowAutofillSettings() OVERRIDE;
+      override;
+  virtual PrefService* GetPrefs() override;
+  virtual void HideRequestAutocompleteDialog() override;
+  virtual void ShowAutofillSettings() override;
   virtual void ConfirmSaveCreditCard(
       const autofill::AutofillMetrics& metric_logger,
-      const base::Closure& save_card_callback) OVERRIDE;
+      const base::Closure& save_card_callback) override;
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,
       const GURL& source_url,
-      const ResultCallback& callback) OVERRIDE;
+      const ResultCallback& callback) override;
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -75,17 +75,17 @@ class AwAutofillClient : public autofill::AutofillClient,
       const std::vector<base::string16>& labels,
       const std::vector<base::string16>& icons,
       const std::vector<int>& identifiers,
-      base::WeakPtr<autofill::AutofillPopupDelegate> delegate) OVERRIDE;
+      base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override;
   virtual void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
-      const std::vector<base::string16>& labels) OVERRIDE;
-  virtual void HideAutofillPopup() OVERRIDE;
-  virtual bool IsAutocompleteEnabled() OVERRIDE;
+      const std::vector<base::string16>& labels) override;
+  virtual void HideAutofillPopup() override;
+  virtual bool IsAutocompleteEnabled() override;
   virtual void DetectAccountCreationForms(
-      const std::vector<autofill::FormStructure*>& forms) OVERRIDE;
+      const std::vector<autofill::FormStructure*>& forms) override;
   virtual void DidFillOrPreviewField(
       const base::string16& autofilled_value,
-      const base::string16& profile_full_name) OVERRIDE;
+      const base::string16& profile_full_name) override;
 
   void SuggestionSelected(JNIEnv* env, jobject obj, jint position);
 

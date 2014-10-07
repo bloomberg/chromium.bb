@@ -22,24 +22,24 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual ~AwContentRendererClient();
 
   // ContentRendererClient implementation.
-  virtual void RenderThreadStarted() OVERRIDE;
-  virtual void RenderFrameCreated(content::RenderFrame* render_frame) OVERRIDE;
-  virtual void RenderViewCreated(content::RenderView* render_view) OVERRIDE;
-  virtual std::string GetDefaultEncoding() OVERRIDE;
+  virtual void RenderThreadStarted() override;
+  virtual void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  virtual void RenderViewCreated(content::RenderView* render_view) override;
+  virtual std::string GetDefaultEncoding() override;
   virtual bool HasErrorPage(int http_status_code,
-                            std::string* error_domain) OVERRIDE;
+                            std::string* error_domain) override;
   virtual void GetNavigationErrorStrings(
       content::RenderView* render_view,
       blink::WebFrame* frame,
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
       std::string* error_html,
-      base::string16* error_description) OVERRIDE;
+      base::string16* error_description) override;
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
-                                             size_t length) OVERRIDE;
-  virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
+                                             size_t length) override;
+  virtual bool IsLinkVisited(unsigned long long link_hash) override;
   virtual void AddKeySystems(
-      std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
+      std::vector<content::KeySystemInfo>* key_systems) override;
 
   virtual bool HandleNavigation(content::RenderFrame* render_frame,
                                 content::DocumentState* document_state,
@@ -48,10 +48,10 @@ class AwContentRendererClient : public content::ContentRendererClient {
                                 const blink::WebURLRequest& request,
                                 blink::WebNavigationType type,
                                 blink::WebNavigationPolicy default_policy,
-                                bool is_redirect) OVERRIDE;
+                                bool is_redirect) override;
   virtual bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
-      blink::WebPageVisibilityState* override_state) OVERRIDE;
+      blink::WebPageVisibilityState* override_state) override;
 
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;

@@ -27,7 +27,7 @@ class JavaBrowserViewRendererHelper : public BrowserViewRendererJavaHelper {
       jobject java_canvas,
       const gfx::Vector2d& scroll_correction,
       const gfx::Size& auxiliary_bitmap_size,
-      RenderMethod render_source) OVERRIDE;
+      RenderMethod render_source) override;
 
  private:
   bool RenderViaAuxilaryBitmap(JNIEnv* env,

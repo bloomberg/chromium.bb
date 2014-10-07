@@ -33,11 +33,11 @@ class AwRenderViewExt : public content::RenderViewObserver {
   virtual ~AwRenderViewExt();
 
   // RenderView::Observer:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
-  virtual void DidCommitCompositorFrame() OVERRIDE;
-  virtual void DidUpdateLayout() OVERRIDE;
-  virtual void Navigate(const GURL& url) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
+  virtual void DidCommitCompositorFrame() override;
+  virtual void DidUpdateLayout() override;
+  virtual void Navigate(const GURL& url) override;
 
   void OnDocumentHasImagesRequest(int id);
 

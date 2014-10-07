@@ -21,12 +21,12 @@ using testing::Test;
 
 class MockGlobalTileManagerClient : public GlobalTileManagerClient {
  public:
-  virtual SynchronousCompositorMemoryPolicy GetMemoryPolicy() const OVERRIDE {
+  virtual SynchronousCompositorMemoryPolicy GetMemoryPolicy() const override {
     return memory_policy_;
   }
 
   virtual void SetMemoryPolicy(SynchronousCompositorMemoryPolicy new_policy,
-                               bool effective_immediately) OVERRIDE {
+                               bool effective_immediately) override {
     memory_policy_ = new_policy;
   }
 

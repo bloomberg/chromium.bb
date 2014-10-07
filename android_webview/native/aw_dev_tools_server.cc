@@ -39,19 +39,19 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   virtual ~AwDevToolsServerDelegate() {}
 
   // DevToolsHttpProtocolHandler::Delegate overrides.
-  virtual std::string GetDiscoveryPageHTML() OVERRIDE;
+  virtual std::string GetDiscoveryPageHTML() override;
 
-  virtual bool BundlesFrontendResources() OVERRIDE {
+  virtual bool BundlesFrontendResources() override {
     return false;
   }
 
-  virtual base::FilePath GetDebugFrontendDir() OVERRIDE {
+  virtual base::FilePath GetDebugFrontendDir() override {
     return base::FilePath();
   }
 
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
-      std::string* name) OVERRIDE {
+      std::string* name) override {
     return scoped_ptr<net::StreamListenSocket>();
   }
 
@@ -79,7 +79,7 @@ class UnixDomainServerSocketFactory
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
+  virtual scoped_ptr<net::ServerSocket> Create() const override {
     return scoped_ptr<net::ServerSocket>(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),

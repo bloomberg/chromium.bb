@@ -18,14 +18,14 @@ class AwDownloadManagerDelegate : public content::DownloadManagerDelegate {
   // content::DownloadManagerDelegate implementation.
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) OVERRIDE;
+      const content::DownloadTargetCallback& callback) override;
   virtual bool ShouldCompleteDownload(
       content::DownloadItem* item,
-      const base::Closure& complete_callback) OVERRIDE;
+      const base::Closure& complete_callback) override;
   virtual bool ShouldOpenDownload(
       content::DownloadItem* item,
-      const content::DownloadOpenDelayedCallback& callback) OVERRIDE;
-  virtual void GetNextId(const content::DownloadIdCallback& callback) OVERRIDE;
+      const content::DownloadOpenDelayedCallback& callback) override;
+  virtual void GetNextId(const content::DownloadIdCallback& callback) override;
 };
 
 }  // namespace android_webview

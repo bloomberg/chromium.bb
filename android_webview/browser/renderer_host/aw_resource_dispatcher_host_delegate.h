@@ -34,7 +34,7 @@ class AwResourceDispatcherHostDelegate
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       content::ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
+      ScopedVector<content::ResourceThrottle>* throttles) override;
   virtual void DownloadStarting(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
@@ -43,24 +43,24 @@ class AwResourceDispatcherHostDelegate
       int request_id,
       bool is_content_initiated,
       bool must_download,
-      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
+      ScopedVector<content::ResourceThrottle>* throttles) override;
   virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
-      net::URLRequest* request) OVERRIDE;
+      net::URLRequest* request) override;
   virtual bool HandleExternalProtocol(const GURL& url,
                                       int child_id,
-                                      int route_id) OVERRIDE;
+                                      int route_id) override;
   virtual void OnResponseStarted(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::ResourceResponse* response,
-      IPC::Sender* sender) OVERRIDE;
+      IPC::Sender* sender) override;
 
   virtual void OnRequestRedirected(
       const GURL& redirect_url,
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      content::ResourceResponse* response) OVERRIDE;
+      content::ResourceResponse* response) override;
 
   void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
 

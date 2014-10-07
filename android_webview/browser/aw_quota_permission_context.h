@@ -17,7 +17,7 @@ class AwQuotaPermissionContext : public content::QuotaPermissionContext {
   virtual void RequestQuotaPermission(
       const content::StorageQuotaParams& params,
       int render_process_id,
-      const PermissionCallback& callback) OVERRIDE;
+      const PermissionCallback& callback) override;
 
  private:
   virtual ~AwQuotaPermissionContext();

@@ -38,8 +38,8 @@ class AwPdfExporter : public PrintManagerDelegate {
                    jobject cancel_signal);
 
   // Implement PrintManagerDelegate methods
-  virtual void DidExportPdf(bool success) OVERRIDE;
-  virtual bool IsCancelled() OVERRIDE;
+  virtual void DidExportPdf(bool success) override;
+  virtual bool IsCancelled() override;
 
  private:
   void CreatePdfSettings(JNIEnv* env, jobject obj);

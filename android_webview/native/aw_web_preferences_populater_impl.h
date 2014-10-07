@@ -19,7 +19,7 @@ class AwWebPreferencesPopulaterImpl : public AwWebPreferencesPopulater {
 
   // AwWebPreferencesPopulater
   virtual void PopulateFor(content::WebContents* web_contents,
-                           content::WebPreferences* web_prefs) OVERRIDE;
+                           content::WebPreferences* web_prefs) override;
 };
 
 }  // namespace android_webview

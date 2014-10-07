@@ -17,13 +17,13 @@ class GL_EXPORT AwGLSurface : public gfx::GLSurface {
   AwGLSurface();
 
   // Implement GLSurface.
-  virtual void Destroy() OVERRIDE;
-  virtual bool IsOffscreen() OVERRIDE;
-  virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual void* GetHandle() OVERRIDE;
-  virtual void* GetDisplay() OVERRIDE;
+  virtual void Destroy() override;
+  virtual bool IsOffscreen() override;
+  virtual unsigned int GetBackingFrameBufferObject() override;
+  virtual bool SwapBuffers() override;
+  virtual gfx::Size GetSize() override;
+  virtual void* GetHandle() override;
+  virtual void* GetDisplay() override;
 
   void SetBackingFrameBufferObject(unsigned int fbo);
   void ResetBackingFrameBufferObject();

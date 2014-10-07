@@ -29,7 +29,7 @@ class AwLoginDelegate :
   virtual void Cancel();
 
   // from ResourceDispatcherHostLoginDelegate
-  virtual void OnRequestCancelled() OVERRIDE;
+  virtual void OnRequestCancelled() override;
 
  private:
   virtual ~AwLoginDelegate();

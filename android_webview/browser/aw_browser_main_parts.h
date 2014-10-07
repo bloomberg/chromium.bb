@@ -23,10 +23,10 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   virtual ~AwBrowserMainParts();
 
   // Overriding methods from content::BrowserMainParts.
-  virtual void PreEarlyInitialization() OVERRIDE;
-  virtual int PreCreateThreads() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE;
-  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
+  virtual void PreEarlyInitialization() override;
+  virtual int PreCreateThreads() override;
+  virtual void PreMainMessageLoopRun() override;
+  virtual bool MainMessageLoopRun(int* result_code) override;
 
  private:
   // Android specific UI MessageLoop.

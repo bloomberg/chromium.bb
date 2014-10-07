@@ -41,9 +41,9 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
           config_service);
 
   // net::URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
   data_reduction_proxy::DataReductionProxyAuthRequestHandler*
       GetDataReductionProxyAuthRequestHandler() const;

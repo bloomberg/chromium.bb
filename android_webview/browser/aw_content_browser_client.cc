@@ -54,9 +54,9 @@ public:
   // BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) override;
   virtual bool OnMessageReceived(
-      const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
 
   void OnShouldOverrideUrlLoading(int routing_id,
                                   const base::string16& url,
@@ -125,14 +125,14 @@ class AwAccessTokenStore : public content::AccessTokenStore {
 
   // content::AccessTokenStore implementation
   virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& request) OVERRIDE {
+      const LoadAccessTokensCallbackType& request) override {
     AccessTokenStore::AccessTokenSet access_token_set;
     // AccessTokenSet and net::URLRequestContextGetter not used on Android,
     // but Run needs to be called to finish the geolocation setup.
     request.Run(access_token_set, NULL);
   }
   virtual void SaveAccessToken(const GURL& server_url,
-                               const base::string16& access_token) OVERRIDE { }
+                               const base::string16& access_token) override { }
 
  private:
   virtual ~AwAccessTokenStore() { }

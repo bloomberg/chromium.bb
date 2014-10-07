@@ -57,7 +57,7 @@ class PrintManager : public content::WebContentsObserver,
   bool PrintNow();
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidGetDocumentCookie(int cookie);
   void OnPrintingFailed(int cookie);

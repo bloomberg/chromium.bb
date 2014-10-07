@@ -79,17 +79,17 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
       scoped_ptr<Delegate> delegate);
 
   // URLRequestJob:
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
+                           int* bytes_read) override;
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual bool GetCharset(std::string* charset) OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+      const net::HttpRequestHeaders& headers) override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual bool GetCharset(std::string* charset) override;
+  virtual int GetResponseCode() const override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
 
  protected:
   virtual ~AndroidStreamReaderURLRequestJob();

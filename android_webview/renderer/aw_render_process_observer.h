@@ -19,8 +19,8 @@ class AwRenderProcessObserver : public content::RenderProcessObserver {
   virtual ~AwRenderProcessObserver();
 
   // content::RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebKitInitialized() OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void WebKitInitialized() override;
 
  private:
   void OnClearCache();

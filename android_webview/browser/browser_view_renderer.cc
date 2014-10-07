@@ -60,7 +60,7 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
     return scoped_refptr<base::debug::ConvertableToTraceFormat>(
         new TracedValue(value));
   }
-  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+  virtual void AppendAsTraceFormat(std::string* out) const override {
     std::string tmp;
     base::JSONWriter::Write(value_.get(), &tmp);
     *out += tmp;

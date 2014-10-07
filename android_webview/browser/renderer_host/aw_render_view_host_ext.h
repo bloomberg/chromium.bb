@@ -79,12 +79,12 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver implementation.
-  virtual void RenderViewCreated(content::RenderViewHost* view_host) OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderViewCreated(content::RenderViewHost* view_host) override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
   void OnUpdateHitTestData(const AwHitTestData& hit_test_data);

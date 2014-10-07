@@ -114,11 +114,11 @@ class PrintWebViewHelper
   };
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void PrintPage(blink::WebLocalFrame* frame,
-                         bool user_initiated) OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+                         bool user_initiated) override;
+  virtual void DidStartLoading() override;
+  virtual void DidStopLoading() override;
 
   // Message handlers ---------------------------------------------------------
   void OnPrintPages();

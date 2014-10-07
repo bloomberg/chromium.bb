@@ -37,10 +37,10 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                                      net::X509Certificate* cert,
                                      const GURL& request_url,
                                      const base::Callback<void(bool)>& callback,
-                                     bool* cancel_request) OVERRIDE;
+                                     bool* cancel_request) override;
   virtual void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
-      const SelectCertificateCallback& callback) OVERRIDE;
+      const SelectCertificateCallback& callback) override;
 
   virtual void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,
@@ -48,13 +48,13 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
-      OVERRIDE;
+      override;
   virtual void RunBeforeUnloadDialog(
       const GURL& origin_url,
       const base::string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
-      OVERRIDE;
-  virtual bool ShouldOverrideUrlLoading(const base::string16& url) OVERRIDE;
+      override;
+  virtual bool ShouldOverrideUrlLoading(const base::string16& url) override;
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);

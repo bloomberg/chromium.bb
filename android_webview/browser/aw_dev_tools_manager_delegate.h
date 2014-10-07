@@ -18,17 +18,17 @@ class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // content::DevToolsManagerDelegate implementation.
   virtual void Inspect(
       content::BrowserContext* browser_context,
-      content::DevToolsAgentHost* agent_host) OVERRIDE {}
+      content::DevToolsAgentHost* agent_host) override {}
   virtual void DevToolsAgentStateChanged(
       content::DevToolsAgentHost* agent_host,
-      bool attached) OVERRIDE {}
+      bool attached) override {}
   virtual base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command_dict) OVERRIDE;
+      base::DictionaryValue* command_dict) override;
   virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL& url) OVERRIDE;
-  virtual void EnumerateTargets(TargetCallback callback) OVERRIDE;
-  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
+      const GURL& url) override;
+  virtual void EnumerateTargets(TargetCallback callback) override;
+  virtual std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsManagerDelegate);

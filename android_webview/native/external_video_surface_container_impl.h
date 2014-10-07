@@ -26,11 +26,11 @@ class ExternalVideoSurfaceContainerImpl
   virtual void RequestExternalVideoSurface(
       int player_id,
       const SurfaceCreatedCB& surface_created_cb,
-      const SurfaceDestroyedCB& surface_destroyed_cb) OVERRIDE;
-  virtual void ReleaseExternalVideoSurface(int player_id) OVERRIDE;
-  virtual void OnFrameInfoUpdated() OVERRIDE;
+      const SurfaceDestroyedCB& surface_destroyed_cb) override;
+  virtual void ReleaseExternalVideoSurface(int player_id) override;
+  virtual void OnFrameInfoUpdated() override;
   virtual void OnExternalVideoSurfacePositionChanged(
-      int player_id, const gfx::RectF& rect) OVERRIDE;
+      int player_id, const gfx::RectF& rect) override;
 
   // Methods called from Java.
   void SurfaceCreated(

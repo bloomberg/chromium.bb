@@ -18,7 +18,7 @@ class AwMediaUrlInterceptor : public media::MediaUrlInterceptor {
   virtual bool Intercept(const std::string& url,
                          int* fd,
                          int64* offset,
-                         int64* size) const OVERRIDE;
+                         int64* size) const override;
 };
 
 }  // namespace android_webview

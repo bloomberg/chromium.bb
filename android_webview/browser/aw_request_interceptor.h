@@ -32,7 +32,7 @@ class AwRequestInterceptor : public net::URLRequestInterceptor {
   // net::URLRequestInterceptor override --------------------------------------
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
   scoped_ptr<AwWebResourceResponse> QueryForAwWebResourceResponse(

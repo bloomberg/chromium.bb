@@ -20,7 +20,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
   virtual ~AwRenderFrameExt();
 
   // RenderFrame::Observer:
-  virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation) override;
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };
 

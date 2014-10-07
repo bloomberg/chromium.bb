@@ -40,7 +40,7 @@ class PermissionRequestHandler : public content::WebContentsObserver {
 
   // WebContentsObserver
   virtual void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) OVERRIDE;
+      const content::LoadCommittedDetails& load_details) override;
 
  private:
   friend class TestPermissionRequestHandler;

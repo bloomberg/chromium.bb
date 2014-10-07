@@ -52,15 +52,15 @@ class NotImplInputStream : public InputStream {
  public:
   NotImplInputStream() {}
   virtual ~NotImplInputStream() {}
-  virtual bool BytesAvailable(int* bytes_available) const OVERRIDE {
+  virtual bool BytesAvailable(int* bytes_available) const override {
     NOTIMPLEMENTED();
     return false;
   }
-  virtual bool Skip(int64_t n, int64_t* bytes_skipped) OVERRIDE {
+  virtual bool Skip(int64_t n, int64_t* bytes_skipped) override {
     NOTIMPLEMENTED();
     return false;
   }
-  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read) OVERRIDE {
+  virtual bool Read(net::IOBuffer* dest, int length, int* bytes_read) override {
     NOTIMPLEMENTED();
     return false;
   }
@@ -74,32 +74,32 @@ class StreamReaderDelegate :
 
   virtual scoped_ptr<InputStream> OpenInputStream(
       JNIEnv* env,
-      const GURL& url) OVERRIDE {
+      const GURL& url) override {
     return make_scoped_ptr<InputStream>(new NotImplInputStream());
   }
 
   virtual void OnInputStreamOpenFailed(net::URLRequest* request,
-                                       bool* restart) OVERRIDE {
+                                       bool* restart) override {
     *restart = false;
   }
 
   virtual bool GetMimeType(JNIEnv* env,
                            net::URLRequest* request,
                            android_webview::InputStream* stream,
-                           std::string* mime_type) OVERRIDE {
+                           std::string* mime_type) override {
     return false;
   }
 
   virtual bool GetCharset(JNIEnv* env,
                           net::URLRequest* request,
                           android_webview::InputStream* stream,
-                          std::string* charset) OVERRIDE {
+                          std::string* charset) override {
     return false;
   }
 
   virtual void AppendResponseHeaders(
       JNIEnv* env,
-      net::HttpResponseHeaders* headers) OVERRIDE {
+      net::HttpResponseHeaders* headers) override {
     // no-op
   }
 };
@@ -110,7 +110,7 @@ class NullStreamReaderDelegate : public StreamReaderDelegate {
 
   virtual scoped_ptr<InputStream> OpenInputStream(
       JNIEnv* env,
-      const GURL& url) OVERRIDE {
+      const GURL& url) override {
     return make_scoped_ptr<InputStream>(NULL);
   }
 };
@@ -121,7 +121,7 @@ class HeaderAlteringStreamReaderDelegate : public NullStreamReaderDelegate {
 
   virtual void AppendResponseHeaders(
       JNIEnv* env,
-      net::HttpResponseHeaders* headers) OVERRIDE {
+      net::HttpResponseHeaders* headers) override {
     headers->ReplaceStatusLine(kStatusLine);
     std::string headerLine(kCustomHeaderName);
     headerLine.append(": ");
@@ -168,13 +168,13 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
   }
 
   virtual scoped_ptr<InputStreamReader> CreateStreamReader(
-      InputStream* stream) OVERRIDE {
+      InputStream* stream) override {
     return stream_reader_.Pass();
   }
  protected:
   virtual ~TestStreamReaderJob() {}
 
-  virtual base::TaskRunner* GetWorkerThreadRunner() OVERRIDE {
+  virtual base::TaskRunner* GetWorkerThreadRunner() override {
     return message_loop_proxy_.get();
   }
 
