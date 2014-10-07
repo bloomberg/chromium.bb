@@ -7,7 +7,7 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Disabled
+@benchmark.Enabled('android', 'has tabs')
 class StartWithUrlCold(benchmark.Benchmark):
   """Measure time to start Chrome cold with startup URLs"""
   tag = 'cold'
