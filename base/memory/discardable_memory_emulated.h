@@ -31,14 +31,14 @@ class DiscardableMemoryEmulated
   bool Initialize();
 
   // Overridden from DiscardableMemory:
-  virtual DiscardableMemoryLockStatus Lock() OVERRIDE;
-  virtual void Unlock() OVERRIDE;
-  virtual void* Memory() const OVERRIDE;
+  virtual DiscardableMemoryLockStatus Lock() override;
+  virtual void Unlock() override;
+  virtual void* Memory() const override;
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() OVERRIDE;
-  virtual void ReleaseLock() OVERRIDE {}
-  virtual void Purge() OVERRIDE;
+  virtual bool AllocateAndAcquireLock() override;
+  virtual void ReleaseLock() override {}
+  virtual void Purge() override;
 
  private:
   const size_t bytes_;

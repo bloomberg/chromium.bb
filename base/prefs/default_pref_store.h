@@ -22,10 +22,10 @@ class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {
 
   // PrefStore implementation:
   virtual bool GetValue(const std::string& key,
-                        const base::Value** result) const OVERRIDE;
-  virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual bool HasObservers() const OVERRIDE;
+                        const base::Value** result) const override;
+  virtual void AddObserver(PrefStore::Observer* observer) override;
+  virtual void RemoveObserver(PrefStore::Observer* observer) override;
+  virtual bool HasObservers() const override;
 
   // Sets a |value| for |key|. Should only be called if a value has not been
   // set yet; otherwise call ReplaceDefaultValue().

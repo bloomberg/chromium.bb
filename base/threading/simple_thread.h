@@ -102,7 +102,7 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   bool HasBeenJoined() { return joined_; }
 
   // Overridden from PlatformThread::Delegate:
-  virtual void ThreadMain() OVERRIDE;
+  virtual void ThreadMain() override;
 
   // Only set priorities with a careful understanding of the consequences.
   // This is meant for very limited use cases.
@@ -136,7 +136,7 @@ class BASE_EXPORT DelegateSimpleThread : public SimpleThread {
                        const Options& options);
 
   virtual ~DelegateSimpleThread();
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
  private:
   Delegate* delegate_;
 };
@@ -174,7 +174,7 @@ class BASE_EXPORT DelegateSimpleThreadPool
   }
 
   // We implement the Delegate interface, for running our internal threads.
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   const std::string name_prefix_;

@@ -29,14 +29,14 @@ class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
   // TaskRunner implementation
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const Closure& task,
-                               TimeDelta delay) OVERRIDE;
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+                               TimeDelta delay) override;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
   // SequencedTaskRunner implementation
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const Closure& task,
-      TimeDelta delay) OVERRIDE;
+      TimeDelta delay) override;
 
   // Start the execution - posts all queued tasks to the target executor. The
   // deferred tasks are posted with their initial delay, meaning that the task

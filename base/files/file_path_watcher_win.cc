@@ -30,13 +30,13 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // FilePathWatcher::PlatformDelegate overrides.
   virtual bool Watch(const FilePath& path,
                      bool recursive,
-                     const FilePathWatcher::Callback& callback) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
+                     const FilePathWatcher::Callback& callback) override;
+  virtual void Cancel() override;
 
   // Deletion of the FilePathWatcher will call Cancel() to dispose of this
   // object in the right thread. This also observes destruction of the required
   // cleanup thread, in case it quits before Cancel() is called.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
   // Callback from MessageLoopForIO.
   virtual void OnObjectSignaled(HANDLE object);
@@ -59,7 +59,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   void DestroyWatch();
 
   // Cleans up and stops observing the |message_loop_| thread.
-  void CancelOnMessageLoopThread() OVERRIDE;
+  void CancelOnMessageLoopThread() override;
 
   // Callback to notify upon changes.
   FilePathWatcher::Callback callback_;

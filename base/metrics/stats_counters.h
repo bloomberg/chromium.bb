@@ -164,7 +164,7 @@ class BASE_EXPORT StatsRate : public StatsCounterTimer {
   explicit StatsRate(const std::string& name);
   virtual ~StatsRate();
 
-  virtual void Add(int value) OVERRIDE;
+  virtual void Add(int value) override;
 
  private:
   StatsCounter counter_;

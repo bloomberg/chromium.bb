@@ -26,9 +26,9 @@ class BASE_EXPORT EnumVariant
   VARIANT* ItemAt(unsigned long index);
 
   // IUnknown.
-  ULONG STDMETHODCALLTYPE AddRef() OVERRIDE;
-  ULONG STDMETHODCALLTYPE Release() OVERRIDE;
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) OVERRIDE;
+  ULONG STDMETHODCALLTYPE AddRef() override;
+  ULONG STDMETHODCALLTYPE Release() override;
+  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
   // IEnumVARIANT.
   STDMETHODIMP Next(ULONG requested_count,

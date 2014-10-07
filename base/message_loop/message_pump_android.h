@@ -24,10 +24,10 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
   MessagePumpForUI();
   virtual ~MessagePumpForUI();
 
-  virtual void Run(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
-  virtual void ScheduleWork() OVERRIDE;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
+  virtual void Run(Delegate* delegate) override;
+  virtual void Quit() override;
+  virtual void ScheduleWork() override;
+  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
   virtual void Start(Delegate* delegate);
 

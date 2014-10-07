@@ -23,7 +23,7 @@ namespace {
 class EnvironmentImpl : public base::Environment {
  public:
   virtual bool GetVar(const char* variable_name,
-                      std::string* result) OVERRIDE {
+                      std::string* result) override {
     if (GetVarImpl(variable_name, result))
       return true;
 
@@ -43,11 +43,11 @@ class EnvironmentImpl : public base::Environment {
   }
 
   virtual bool SetVar(const char* variable_name,
-                      const std::string& new_value) OVERRIDE {
+                      const std::string& new_value) override {
     return SetVarImpl(variable_name, new_value);
   }
 
-  virtual bool UnSetVar(const char* variable_name) OVERRIDE {
+  virtual bool UnSetVar(const char* variable_name) override {
     return UnSetVarImpl(variable_name);
   }
 

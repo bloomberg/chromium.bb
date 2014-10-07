@@ -182,11 +182,11 @@ class OutOfMemoryTest : public testing::Test {
   }
 
 #if defined(USE_TCMALLOC)
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     tc_set_new_mode(1);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     tc_set_new_mode(0);
   }
 #endif  // defined(USE_TCMALLOC)

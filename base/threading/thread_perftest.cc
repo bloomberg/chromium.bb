@@ -123,7 +123,7 @@ class TaskPerfTest : public ThreadPerfTest {
     return threads_[count % threads_.size()];
   }
 
-  virtual void PingPong(int hops) OVERRIDE {
+  virtual void PingPong(int hops) override {
     if (!hops) {
       FinishMeasurement();
       return;
@@ -149,16 +149,16 @@ TEST_F(TaskPerfTest, TaskPingPong) {
 // Same as above, but add observers to test their perf impact.
 class MessageLoopObserver : public base::MessageLoop::TaskObserver {
  public:
-  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
   }
-  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
   }
 };
 MessageLoopObserver message_loop_observer;
 
 class TaskObserverPerfTest : public TaskPerfTest {
  public:
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     TaskPerfTest::Init();
     for (size_t i = 0; i < threads_.size(); i++) {
       threads_[i]->message_loop()->AddTaskObserver(&message_loop_observer);
@@ -176,12 +176,12 @@ TEST_F(TaskObserverPerfTest, TaskPingPong) {
 template <typename WaitableEventType>
 class EventPerfTest : public ThreadPerfTest {
  public:
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     for (size_t i = 0; i < threads_.size(); i++)
       events_.push_back(new WaitableEventType(false, false));
   }
 
-  virtual void Reset() OVERRIDE { events_.clear(); }
+  virtual void Reset() override { events_.clear(); }
 
   void WaitAndSignalOnThread(size_t event) {
     size_t next_event = (event + 1) % events_.size();
@@ -197,7 +197,7 @@ class EventPerfTest : public ThreadPerfTest {
       FinishMeasurement();
   }
 
-  virtual void PingPong(int hops) OVERRIDE {
+  virtual void PingPong(int hops) override {
     remaining_hops_ = hops;
     for (size_t i = 0; i < threads_.size(); i++) {
       threads_[i]->message_loop_proxy()->PostTask(

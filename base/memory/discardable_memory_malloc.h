@@ -18,9 +18,9 @@ class DiscardableMemoryMalloc : public DiscardableMemory {
   bool Initialize();
 
   // Overridden from DiscardableMemory:
-  virtual DiscardableMemoryLockStatus Lock() OVERRIDE;
-  virtual void Unlock() OVERRIDE;
-  virtual void* Memory() const OVERRIDE;
+  virtual DiscardableMemoryLockStatus Lock() override;
+  virtual void Unlock() override;
+  virtual void* Memory() const override;
 
  private:
   scoped_ptr<uint8, FreeDeleter> memory_;

@@ -22,7 +22,7 @@ class HangingReceiveThread : public base::DelegateSimpleThread::Delegate {
 
   virtual ~HangingReceiveThread() {}
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     int data = 0;
     ASSERT_EQ(socket_->Peek(), 0u);
 

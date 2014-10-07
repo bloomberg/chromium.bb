@@ -21,7 +21,7 @@ class SimpleTestTickClock : public TickClock {
   SimpleTestTickClock();
   virtual ~SimpleTestTickClock();
 
-  virtual TimeTicks NowTicks() OVERRIDE;
+  virtual TimeTicks NowTicks() override;
 
   // Advances the clock by |delta|, which must not be negative.
   void Advance(TimeDelta delta);

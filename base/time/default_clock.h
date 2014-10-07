@@ -17,7 +17,7 @@ class BASE_EXPORT DefaultClock : public Clock {
   virtual ~DefaultClock();
 
   // Simply returns Time::Now().
-  virtual Time Now() OVERRIDE;
+  virtual Time Now() override;
 };
 
 }  // namespace base

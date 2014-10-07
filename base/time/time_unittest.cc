@@ -22,7 +22,7 @@ using base::TimeTicks;
 // See also pr_time_unittests.cc
 class TimeTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Use mktime to get a time_t, and turn it into a PRTime by converting
     // seconds to microseconds.  Use 15th Oct 2007 12:45:00 local.  This
     // must be a time guaranteed to be outside of a DST fallback hour in

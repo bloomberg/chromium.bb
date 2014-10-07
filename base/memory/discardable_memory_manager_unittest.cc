@@ -18,18 +18,18 @@ class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
   virtual ~TestAllocationImpl() { DCHECK(!is_locked_); }
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() OVERRIDE {
+  virtual bool AllocateAndAcquireLock() override {
     bool was_allocated = is_allocated_;
     is_allocated_ = true;
     DCHECK(!is_locked_);
     is_locked_ = true;
     return was_allocated;
   }
-  virtual void ReleaseLock() OVERRIDE {
+  virtual void ReleaseLock() override {
     DCHECK(is_locked_);
     is_locked_ = false;
   }
-  virtual void Purge() OVERRIDE {
+  virtual void Purge() override {
     DCHECK(is_allocated_);
     is_allocated_ = false;
   }
@@ -58,7 +58,7 @@ class TestDiscardableMemoryManagerImpl
 
  private:
   // Overriden from internal::DiscardableMemoryManager:
-  virtual TimeTicks Now() const OVERRIDE { return now_; }
+  virtual TimeTicks Now() const override { return now_; }
 
   TimeTicks now_;
 };
@@ -456,9 +456,9 @@ class ThreadedDiscardableMemoryManagerTest
       : memory_usage_thread_("memory_usage_thread"),
         thread_sync_(true, false) {}
 
-  virtual void SetUp() OVERRIDE { memory_usage_thread_.Start(); }
+  virtual void SetUp() override { memory_usage_thread_.Start(); }
 
-  virtual void TearDown() OVERRIDE { memory_usage_thread_.Stop(); }
+  virtual void TearDown() override { memory_usage_thread_.Stop(); }
 
   void UseMemoryHelper() {
     size_t size = 1024;

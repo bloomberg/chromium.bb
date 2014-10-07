@@ -90,7 +90,7 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   // Platform-specific method to check whether the system is currently
   // running on battery power.  Returns true if running on batteries,
   // false otherwise.
-  virtual bool IsOnBatteryPowerImpl() OVERRIDE;
+  virtual bool IsOnBatteryPowerImpl() override;
 
   // Checks the battery status and notifies observers if the battery
   // status has changed.

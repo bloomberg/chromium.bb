@@ -38,8 +38,8 @@ class FilePathWatcherFSEvents : public FilePathWatcher::PlatformDelegate {
   // FilePathWatcher::PlatformDelegate overrides.
   virtual bool Watch(const FilePath& path,
                      bool recursive,
-                     const FilePathWatcher::Callback& callback) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
+                     const FilePathWatcher::Callback& callback) override;
+  virtual void Cancel() override;
 
  private:
   virtual ~FilePathWatcherFSEvents();
@@ -51,7 +51,7 @@ class FilePathWatcherFSEvents : public FilePathWatcher::PlatformDelegate {
   void StartEventStream(FSEventStreamEventId start_event);
 
   // Cleans up and stops the event stream.
-  virtual void CancelOnMessageLoopThread() OVERRIDE;
+  virtual void CancelOnMessageLoopThread() override;
 
   // Callback to notify upon changes.
   FilePathWatcher::Callback callback_;

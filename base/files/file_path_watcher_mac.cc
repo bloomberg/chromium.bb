@@ -17,7 +17,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:
   virtual bool Watch(const FilePath& path,
                      bool recursive,
-                     const FilePathWatcher::Callback& callback) OVERRIDE {
+                     const FilePathWatcher::Callback& callback) override {
     // Use kqueue for non-recursive watches and FSEvents for recursive ones.
     DCHECK(!impl_.get());
     if (recursive) {
@@ -33,13 +33,13 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
     return impl_->Watch(path, recursive, callback);
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     if (impl_.get())
       impl_->Cancel();
     set_cancelled();
   }
 
-  virtual void CancelOnMessageLoopThread() OVERRIDE {
+  virtual void CancelOnMessageLoopThread() override {
     if (impl_.get())
       impl_->Cancel();
     set_cancelled();

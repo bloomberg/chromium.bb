@@ -125,7 +125,7 @@ class TraceEventTestFixture : public testing::Test {
                    base::Unretained(flush_complete_event)));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : NULL;
 
@@ -136,7 +136,7 @@ class TraceEventTestFixture : public testing::Test {
     trace_buffer_.SetOutputCallback(json_output_.GetCallback());
     event_watch_notification_ = 0;
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (TraceLog::GetInstance())
       EXPECT_FALSE(TraceLog::GetInstance()->IsEnabled());
     PlatformThread::SetName(old_thread_name_ ? old_thread_name_ : "");
@@ -996,11 +996,11 @@ class AfterStateChangeEnabledStateObserver
   virtual ~AfterStateChangeEnabledStateObserver() {}
 
   // TraceLog::EnabledStateObserver overrides:
-  virtual void OnTraceLogEnabled() OVERRIDE {
+  virtual void OnTraceLogEnabled() override {
     EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
   }
 
-  virtual void OnTraceLogDisabled() OVERRIDE {
+  virtual void OnTraceLogDisabled() override {
     EXPECT_FALSE(TraceLog::GetInstance()->IsEnabled());
   }
 };
@@ -1029,9 +1029,9 @@ class SelfRemovingEnabledStateObserver
   virtual ~SelfRemovingEnabledStateObserver() {}
 
   // TraceLog::EnabledStateObserver overrides:
-  virtual void OnTraceLogEnabled() OVERRIDE {}
+  virtual void OnTraceLogEnabled() override {}
 
-  virtual void OnTraceLogDisabled() OVERRIDE {
+  virtual void OnTraceLogDisabled() override {
     TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
   }
 };
@@ -1919,7 +1919,7 @@ class MyData : public ConvertableToTraceFormat {
  public:
   MyData() {}
 
-  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+  virtual void AppendAsTraceFormat(std::string* out) const override {
     out->append("{\"foo\":1}");
   }
 
@@ -2203,12 +2203,12 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
 
 class TraceEventCallbackTest : public TraceEventTestFixture {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TraceEventTestFixture::SetUp();
     ASSERT_EQ(NULL, s_instance);
     s_instance = this;
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     TraceLog::GetInstance()->SetDisabled();
     ASSERT_TRUE(!!s_instance);
     s_instance = NULL;

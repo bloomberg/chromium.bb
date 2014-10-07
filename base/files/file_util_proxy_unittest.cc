@@ -23,7 +23,7 @@ class FileUtilProxyTest : public testing::Test {
         bytes_written_(-1),
         weak_factory_(this) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     ASSERT_TRUE(file_thread_.Start());
   }

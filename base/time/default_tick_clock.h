@@ -17,7 +17,7 @@ class BASE_EXPORT DefaultTickClock : public TickClock {
   virtual ~DefaultTickClock();
 
   // Simply returns TimeTicks::Now().
-  virtual TimeTicks NowTicks() OVERRIDE;
+  virtual TimeTicks NowTicks() override;
 };
 
 }  // namespace base

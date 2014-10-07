@@ -41,7 +41,7 @@ class PrefChangeRegistrarTest : public testing::Test {
   virtual ~PrefChangeRegistrarTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   base::Closure observer() const {
     return base::Bind(&base::DoNothing);

@@ -122,10 +122,10 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
   void RemoveIOObserver(IOObserver* obs);
 
   // MessagePump methods:
-  virtual void Run(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
-  virtual void ScheduleWork() OVERRIDE;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
+  virtual void Run(Delegate* delegate) override;
+  virtual void Quit() override;
+  virtual void ScheduleWork() override;
+  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
   friend class MessagePumpLibeventTest;

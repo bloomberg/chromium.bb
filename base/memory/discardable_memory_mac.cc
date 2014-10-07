@@ -56,7 +56,7 @@ class DiscardableMemoryMac
   }
 
   // Overridden from DiscardableMemory:
-  virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
+  virtual DiscardableMemoryLockStatus Lock() override {
     DCHECK(!is_locked_);
 
     bool purged = false;
@@ -68,19 +68,19 @@ class DiscardableMemoryMac
                   : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
   }
 
-  virtual void Unlock() OVERRIDE {
+  virtual void Unlock() override {
     DCHECK(is_locked_);
     g_shared_state.Pointer()->manager.ReleaseLock(this);
     is_locked_ = false;
   }
 
-  virtual void* Memory() const OVERRIDE {
+  virtual void* Memory() const override {
     DCHECK(is_locked_);
     return reinterpret_cast<void*>(memory_.address());
   }
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() OVERRIDE {
+  virtual bool AllocateAndAcquireLock() override {
     kern_return_t ret;
     bool persistent;
     if (!memory_.size()) {
@@ -123,7 +123,7 @@ class DiscardableMemoryMac
     return persistent;
   }
 
-  virtual void ReleaseLock() OVERRIDE {
+  virtual void ReleaseLock() override {
     int state = VM_PURGABLE_VOLATILE | VM_VOLATILE_GROUP_DEFAULT;
     kern_return_t ret = vm_purgable_control(mach_task_self(),
                                             memory_.address(),
@@ -141,7 +141,7 @@ class DiscardableMemoryMac
 #endif
   }
 
-  virtual void Purge() OVERRIDE {
+  virtual void Purge() override {
     memory_.reset();
   }
 

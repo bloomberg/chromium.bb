@@ -88,12 +88,12 @@ class MessagePumpCFRunLoopBase : public MessagePump {
   // in the DoRun method.  MessagePumpCFRunLoopBase::Run calls DoRun directly.
   // This arrangement is used because MessagePumpCFRunLoopBase needs to set
   // up and tear down things before and after the "meat" of DoRun.
-  virtual void Run(Delegate* delegate) OVERRIDE;
+  virtual void Run(Delegate* delegate) override;
   virtual void DoRun(Delegate* delegate) = 0;
 
-  virtual void ScheduleWork() OVERRIDE;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
-  virtual void SetTimerSlack(TimerSlack timer_slack) OVERRIDE;
+  virtual void ScheduleWork() override;
+  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
+  virtual void SetTimerSlack(TimerSlack timer_slack) override;
 
  protected:
   // Accessors for private data members to be used by subclasses.
@@ -222,11 +222,11 @@ class BASE_EXPORT MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
   MessagePumpCFRunLoop();
   virtual ~MessagePumpCFRunLoop();
 
-  virtual void DoRun(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
+  virtual void DoRun(Delegate* delegate) override;
+  virtual void Quit() override;
 
  private:
-  virtual void EnterExitRunLoop(CFRunLoopActivity activity) OVERRIDE;
+  virtual void EnterExitRunLoop(CFRunLoopActivity activity) override;
 
   // True if Quit is called to stop the innermost MessagePump
   // (innermost_quittable_) but some other CFRunLoopRun loop (nesting_level_)
@@ -241,8 +241,8 @@ class BASE_EXPORT MessagePumpNSRunLoop : public MessagePumpCFRunLoopBase {
   MessagePumpNSRunLoop();
   virtual ~MessagePumpNSRunLoop();
 
-  virtual void DoRun(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
+  virtual void DoRun(Delegate* delegate) override;
+  virtual void Quit() override;
 
  private:
   // A source that doesn't do anything but provide something signalable
@@ -264,8 +264,8 @@ class MessagePumpUIApplication : public MessagePumpCFRunLoopBase {
  public:
   MessagePumpUIApplication();
   virtual ~MessagePumpUIApplication();
-  virtual void DoRun(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
+  virtual void DoRun(Delegate* delegate) override;
+  virtual void Quit() override;
 
   // This message pump can not spin the main message loop directly.  Instead,
   // call |Attach()| to set up a delegate.  It is an error to call |Run()|.
@@ -284,8 +284,8 @@ class MessagePumpNSApplication : public MessagePumpCFRunLoopBase {
   MessagePumpNSApplication();
   virtual ~MessagePumpNSApplication();
 
-  virtual void DoRun(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
+  virtual void DoRun(Delegate* delegate) override;
+  virtual void Quit() override;
 
  private:
   // False after Quit is called.
@@ -308,7 +308,7 @@ class MessagePumpCrApplication : public MessagePumpNSApplication {
  protected:
   // Returns nil if NSApp is currently in the middle of calling
   // -sendEvent.  Requires NSApp implementing CrAppProtocol.
-  virtual AutoreleasePoolType* CreateAutoreleasePool() OVERRIDE;
+  virtual AutoreleasePoolType* CreateAutoreleasePool() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCrApplication);

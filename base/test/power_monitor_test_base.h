@@ -21,7 +21,7 @@ class PowerMonitorTestSource : public PowerMonitorSource {
   void GenerateResumeEvent();
 
  protected:
-  virtual bool IsOnBatteryPowerImpl() OVERRIDE;
+  virtual bool IsOnBatteryPowerImpl() override;
 
   bool test_on_battery_power_;
   MessageLoop message_loop_;
@@ -33,9 +33,9 @@ class PowerMonitorTestObserver : public PowerObserver {
   virtual ~PowerMonitorTestObserver();
 
   // PowerObserver callbacks.
-  virtual void OnPowerStateChange(bool on_battery_power) OVERRIDE;
-  virtual void OnSuspend() OVERRIDE;
-  virtual void OnResume() OVERRIDE;
+  virtual void OnPowerStateChange(bool on_battery_power) override;
+  virtual void OnSuspend() override;
+  virtual void OnResume() override;
 
   // Test status counts.
   bool last_power_state() { return last_power_state_; }

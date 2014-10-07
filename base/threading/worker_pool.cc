@@ -24,7 +24,7 @@ class PostTaskAndReplyWorkerPool : public internal::PostTaskAndReplyImpl {
 
  private:
   virtual bool PostTask(const tracked_objects::Location& from_here,
-                        const Closure& task) OVERRIDE {
+                        const Closure& task) override {
     return WorkerPool::PostTask(from_here, task, task_is_slow_);
   }
 
@@ -43,8 +43,8 @@ class WorkerPoolTaskRunner : public TaskRunner {
   // TaskRunner implementation
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const Closure& task,
-                               TimeDelta delay) OVERRIDE;
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+                               TimeDelta delay) override;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
  private:
   virtual ~WorkerPoolTaskRunner();

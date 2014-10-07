@@ -78,11 +78,11 @@ class BASE_EXPORT AsyncSocketIoHandler
   // Implementation of IOHandler on Windows.
   virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                              DWORD bytes_transfered,
-                             DWORD error) OVERRIDE;
+                             DWORD error) override;
 #elif defined(OS_POSIX)
   // Implementation of base::MessageLoopForIO::Watcher.
-  virtual void OnFileCanWriteWithoutBlocking(int socket) OVERRIDE {}
-  virtual void OnFileCanReadWithoutBlocking(int socket) OVERRIDE;
+  virtual void OnFileCanWriteWithoutBlocking(int socket) override {}
+  virtual void OnFileCanReadWithoutBlocking(int socket) override;
 
   void EnsureWatchingSocket();
 #endif

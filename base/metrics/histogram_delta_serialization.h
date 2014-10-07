@@ -39,12 +39,12 @@ class BASE_EXPORT HistogramDeltaSerialization : public HistogramFlattener {
  private:
   // HistogramFlattener implementation.
   virtual void RecordDelta(const HistogramBase& histogram,
-                           const HistogramSamples& snapshot) OVERRIDE;
+                           const HistogramSamples& snapshot) override;
   virtual void InconsistencyDetected(
-      HistogramBase::Inconsistency problem) OVERRIDE;
+      HistogramBase::Inconsistency problem) override;
   virtual void UniqueInconsistencyDetected(
-      HistogramBase::Inconsistency problem) OVERRIDE;
-  virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
+      HistogramBase::Inconsistency problem) override;
+  virtual void InconsistencyDetectedInLoggedCount(int amount) override;
 
   // Calculates deltas in histogram counters.
   HistogramSnapshotManager histogram_snapshot_manager_;

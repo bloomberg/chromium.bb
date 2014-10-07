@@ -18,10 +18,10 @@ class BASE_EXPORT MessagePumpDefault : public MessagePump {
   virtual ~MessagePumpDefault();
 
   // MessagePump methods:
-  virtual void Run(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
-  virtual void ScheduleWork() OVERRIDE;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
+  virtual void Run(Delegate* delegate) override;
+  virtual void Quit() override;
+  virtual void ScheduleWork() override;
+  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
   // This flag is set to false when Run should return.

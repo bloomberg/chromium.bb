@@ -17,13 +17,13 @@ class NullTaskRunner : public base::SingleThreadTaskRunner {
 
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE;
+                               base::TimeDelta delay) override;
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) override;
   // Always returns true to avoid triggering DCHECKs.
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
  protected:
   virtual ~NullTaskRunner();

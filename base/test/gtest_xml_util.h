@@ -28,10 +28,10 @@ class XmlUnitTestResultPrinter : public testing::EmptyTestEventListener {
 
  private:
   // testing::EmptyTestEventListener:
-  virtual void OnTestCaseStart(const testing::TestCase& test_case) OVERRIDE;
-  virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE;
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE;
-  virtual void OnTestCaseEnd(const testing::TestCase& test_case) OVERRIDE;
+  virtual void OnTestCaseStart(const testing::TestCase& test_case) override;
+  virtual void OnTestStart(const testing::TestInfo& test_info) override;
+  virtual void OnTestEnd(const testing::TestInfo& test_info) override;
+  virtual void OnTestCaseEnd(const testing::TestCase& test_case) override;
 
   FILE* output_file_;
 

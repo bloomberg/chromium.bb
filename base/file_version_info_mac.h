@@ -23,22 +23,22 @@ class FileVersionInfoMac : public FileVersionInfo {
 
   // Accessors to the different version properties.
   // Returns an empty string if the property is not found.
-  virtual base::string16 company_name() OVERRIDE;
-  virtual base::string16 company_short_name() OVERRIDE;
-  virtual base::string16 product_name() OVERRIDE;
-  virtual base::string16 product_short_name() OVERRIDE;
-  virtual base::string16 internal_name() OVERRIDE;
-  virtual base::string16 product_version() OVERRIDE;
-  virtual base::string16 private_build() OVERRIDE;
-  virtual base::string16 special_build() OVERRIDE;
-  virtual base::string16 comments() OVERRIDE;
-  virtual base::string16 original_filename() OVERRIDE;
-  virtual base::string16 file_description() OVERRIDE;
-  virtual base::string16 file_version() OVERRIDE;
-  virtual base::string16 legal_copyright() OVERRIDE;
-  virtual base::string16 legal_trademarks() OVERRIDE;
-  virtual base::string16 last_change() OVERRIDE;
-  virtual bool is_official_build() OVERRIDE;
+  virtual base::string16 company_name() override;
+  virtual base::string16 company_short_name() override;
+  virtual base::string16 product_name() override;
+  virtual base::string16 product_short_name() override;
+  virtual base::string16 internal_name() override;
+  virtual base::string16 product_version() override;
+  virtual base::string16 private_build() override;
+  virtual base::string16 special_build() override;
+  virtual base::string16 comments() override;
+  virtual base::string16 original_filename() override;
+  virtual base::string16 file_description() override;
+  virtual base::string16 file_version() override;
+  virtual base::string16 legal_copyright() override;
+  virtual base::string16 legal_trademarks() override;
+  virtual base::string16 last_change() override;
+  virtual bool is_official_build() override;
 
  private:
   // Returns a base::string16 value for a property name.

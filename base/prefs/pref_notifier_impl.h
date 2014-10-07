@@ -41,8 +41,8 @@ class BASE_PREFS_EXPORT PrefNotifierImpl
 
  protected:
   // PrefNotifier overrides.
-  virtual void OnPreferenceChanged(const std::string& pref_name) OVERRIDE;
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+  virtual void OnPreferenceChanged(const std::string& pref_name) override;
+  virtual void OnInitializationCompleted(bool succeeded) override;
 
   // A map from pref names to a list of observers. Observers get fired in the
   // order they are added. These should only be accessed externally for unit

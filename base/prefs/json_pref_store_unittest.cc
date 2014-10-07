@@ -37,10 +37,10 @@ class InterceptingPrefFilter : public PrefFilter {
   // PrefFilter implementation:
   virtual void FilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
-      scoped_ptr<base::DictionaryValue> pref_store_contents) OVERRIDE;
-  virtual void FilterUpdate(const std::string& path) OVERRIDE {}
+      scoped_ptr<base::DictionaryValue> pref_store_contents) override;
+  virtual void FilterUpdate(const std::string& path) override {}
   virtual void FilterSerializeData(
-      base::DictionaryValue* pref_store_contents) OVERRIDE {}
+      base::DictionaryValue* pref_store_contents) override {}
 
   bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }
 
@@ -86,7 +86,7 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
 
 class JsonPrefStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir_));
@@ -94,7 +94,7 @@ class JsonPrefStoreTest : public testing::Test {
     ASSERT_TRUE(PathExists(data_dir_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Make sure all pending tasks have been processed (e.g., deleting the
     // JsonPrefStore may post write tasks).
     message_loop_.PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());

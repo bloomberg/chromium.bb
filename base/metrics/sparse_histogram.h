@@ -37,21 +37,21 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
   virtual ~SparseHistogram();
 
   // HistogramBase implementation:
-  virtual HistogramType GetHistogramType() const OVERRIDE;
+  virtual HistogramType GetHistogramType() const override;
   virtual bool HasConstructionArguments(
       Sample expected_minimum,
       Sample expected_maximum,
-      size_t expected_bucket_count) const OVERRIDE;
-  virtual void Add(Sample value) OVERRIDE;
-  virtual void AddSamples(const HistogramSamples& samples) OVERRIDE;
-  virtual bool AddSamplesFromPickle(PickleIterator* iter) OVERRIDE;
-  virtual scoped_ptr<HistogramSamples> SnapshotSamples() const OVERRIDE;
-  virtual void WriteHTMLGraph(std::string* output) const OVERRIDE;
-  virtual void WriteAscii(std::string* output) const OVERRIDE;
+      size_t expected_bucket_count) const override;
+  virtual void Add(Sample value) override;
+  virtual void AddSamples(const HistogramSamples& samples) override;
+  virtual bool AddSamplesFromPickle(PickleIterator* iter) override;
+  virtual scoped_ptr<HistogramSamples> SnapshotSamples() const override;
+  virtual void WriteHTMLGraph(std::string* output) const override;
+  virtual void WriteAscii(std::string* output) const override;
 
  protected:
   // HistogramBase implementation:
-  virtual bool SerializeInfoImpl(Pickle* pickle) const OVERRIDE;
+  virtual bool SerializeInfoImpl(Pickle* pickle) const override;
 
  private:
   // Clients should always use FactoryGet to create SparseHistogram.
@@ -61,10 +61,10 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
       PickleIterator* iter);
   static HistogramBase* DeserializeInfoImpl(PickleIterator* iter);
 
-  virtual void GetParameters(DictionaryValue* params) const OVERRIDE;
+  virtual void GetParameters(DictionaryValue* params) const override;
   virtual void GetCountAndBucketData(Count* count,
                                      int64* sum,
-                                     ListValue* buckets) const OVERRIDE;
+                                     ListValue* buckets) const override;
 
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
   void WriteAsciiImpl(bool graph_it,

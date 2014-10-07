@@ -29,7 +29,7 @@ bool CheckBufferContents(const uint8* data, size_t size, size_t offset) {
 
 class MemoryMappedFileTest : public PlatformTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     PlatformTest::SetUp();
     CreateTemporaryFile(&temp_file_path_);
   }

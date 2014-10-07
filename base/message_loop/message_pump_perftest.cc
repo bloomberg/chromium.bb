@@ -232,12 +232,12 @@ class FakeMessagePump : public MessagePump {
   FakeMessagePump() {}
   virtual ~FakeMessagePump() {}
 
-  virtual void Run(Delegate* delegate) OVERRIDE {}
+  virtual void Run(Delegate* delegate) override {}
 
-  virtual void Quit() OVERRIDE {}
-  virtual void ScheduleWork() OVERRIDE {}
+  virtual void Quit() override {}
+  virtual void ScheduleWork() override {}
   virtual void ScheduleDelayedWork(
-      const TimeTicks& delayed_work_time) OVERRIDE {}
+      const TimeTicks& delayed_work_time) override {}
 };
 
 class PostTaskTest : public testing::Test {

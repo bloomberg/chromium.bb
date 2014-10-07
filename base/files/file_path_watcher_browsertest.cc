@@ -113,7 +113,7 @@ class TestDelegate : public TestDelegateBase {
   }
   virtual ~TestDelegate() {}
 
-  virtual void OnFileChanged(const FilePath& path, bool error) OVERRIDE {
+  virtual void OnFileChanged(const FilePath& path, bool error) override {
     if (error)
       ADD_FAILURE() << "Error " << path.value();
     else
@@ -146,7 +146,7 @@ class FilePathWatcherTest : public testing::Test {
   virtual ~FilePathWatcherTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a separate file thread in order to test proper thread usage.
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(file_thread_.StartWithOptions(options));
@@ -154,7 +154,7 @@ class FilePathWatcherTest : public testing::Test {
     collector_ = new NotificationCollector();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     RunLoop().RunUntilIdle();
   }
 
@@ -274,7 +274,7 @@ class Deleter : public TestDelegateBase {
   }
   virtual ~Deleter() {}
 
-  virtual void OnFileChanged(const FilePath&, bool) OVERRIDE {
+  virtual void OnFileChanged(const FilePath&, bool) override {
     watcher_.reset();
     loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
   }

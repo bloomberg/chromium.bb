@@ -20,8 +20,8 @@ class MockPrefStoreObserver : public PrefStore::Observer {
   }
 
   // PrefStore::Observer implementation:
-  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE {}
+  virtual void OnPrefValueChanged(const std::string& key) override;
+  virtual void OnInitializationCompleted(bool succeeded) override {}
 
  private:
   DefaultPrefStore* pref_store_;

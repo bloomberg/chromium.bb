@@ -185,9 +185,9 @@ class SequencedWorkerPoolTest : public testing::Test {
 
   virtual ~SequencedWorkerPoolTest() {}
 
-  virtual void SetUp() OVERRIDE {}
+  virtual void SetUp() override {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     pool()->Shutdown();
   }
 

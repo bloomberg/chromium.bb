@@ -19,13 +19,13 @@ class BASE_EXPORT MockTimer : public Timer {
   virtual ~MockTimer();
 
   // base::Timer implementation.
-  virtual bool IsRunning() const OVERRIDE;
-  virtual base::TimeDelta GetCurrentDelay() const OVERRIDE;
+  virtual bool IsRunning() const override;
+  virtual base::TimeDelta GetCurrentDelay() const override;
   virtual void Start(const tracked_objects::Location& posted_from,
                      base::TimeDelta delay,
-                     const base::Closure& user_task) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Reset() OVERRIDE;
+                     const base::Closure& user_task) override;
+  virtual void Stop() override;
+  virtual void Reset() override;
 
   // Testing methods.
   void Fire();

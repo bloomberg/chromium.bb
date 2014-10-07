@@ -292,8 +292,8 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // TaskRunner implementation. Forwards to PostDelayedWorkerTask().
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const Closure& task,
-                               TimeDelta delay) OVERRIDE;
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+                               TimeDelta delay) override;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
   // Returns true if the current thread is processing a task with the given
   // sequence_token.
@@ -338,7 +338,7 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
  protected:
   virtual ~SequencedWorkerPool();
 
-  virtual void OnDestruct() const OVERRIDE;
+  virtual void OnDestruct() const override;
 
  private:
   friend class RefCountedThreadSafe<SequencedWorkerPool>;

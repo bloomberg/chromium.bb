@@ -28,7 +28,7 @@ class RegistryTest : public testing::Test {
 #endif  //  _WIN64
 
   RegistryTest() {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a temporary key.
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(kRootKey);
@@ -39,7 +39,7 @@ class RegistryTest : public testing::Test {
     foo_software_key_ += L"\\Foo";
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Clean up the temporary key.
     RegKey key(HKEY_CURRENT_USER, L"", KEY_SET_VALUE);
     ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));

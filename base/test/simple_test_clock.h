@@ -21,7 +21,7 @@ class SimpleTestClock : public Clock {
   SimpleTestClock();
   virtual ~SimpleTestClock();
 
-  virtual Time Now() OVERRIDE;
+  virtual Time Now() override;
 
   // Advances the clock by |delta|.
   void Advance(TimeDelta delta);

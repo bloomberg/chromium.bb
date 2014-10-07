@@ -425,7 +425,7 @@ class DispatcherImpl : public MessagePumpDispatcher {
  public:
   DispatcherImpl() : dispatch_count_(0) {}
 
-  virtual uint32_t Dispatch(const NativeEvent& msg) OVERRIDE {
+  virtual uint32_t Dispatch(const NativeEvent& msg) override {
     ::TranslateMessage(&msg);
     ::DispatchMessage(&msg);
     // Do not count WM_TIMER since it is not what we post and it will cause
@@ -666,14 +666,14 @@ class DummyTaskObserver : public MessageLoop::TaskObserver {
 
   virtual ~DummyTaskObserver() {}
 
-  virtual void WillProcessTask(const PendingTask& pending_task) OVERRIDE {
+  virtual void WillProcessTask(const PendingTask& pending_task) override {
     num_tasks_started_++;
     EXPECT_TRUE(pending_task.time_posted != TimeTicks());
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);
   }
 
-  virtual void DidProcessTask(const PendingTask& pending_task) OVERRIDE {
+  virtual void DidProcessTask(const PendingTask& pending_task) override {
     num_tasks_processed_++;
     EXPECT_TRUE(pending_task.time_posted != TimeTicks());
     EXPECT_LE(num_tasks_started_, num_tasks_);
@@ -756,10 +756,10 @@ namespace {
 
 class QuitDelegate : public MessageLoopForIO::Watcher {
  public:
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {
     MessageLoop::current()->QuitWhenIdle();
   }
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanReadWithoutBlocking(int fd) override {
     MessageLoop::current()->QuitWhenIdle();
   }
 };
@@ -857,7 +857,7 @@ class MLDestructionObserver : public MessageLoop::DestructionObserver {
         destruction_observer_called_(destruction_observer_called),
         task_destroyed_before_message_loop_(false) {
   }
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE {
+  virtual void WillDestroyCurrentMessageLoop() override {
     task_destroyed_before_message_loop_ = *task_destroyed_;
     *destruction_observer_called_ = true;
   }
