@@ -123,6 +123,16 @@ class SmoothnessFastPathGpuRasterizationKeySilkCases(
         CustomizeBrowserOptions(options)
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
+@benchmark.Enabled('android')
+class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
+  """Measures rendering statistics for the key mobile sites with synchronous
+  (main thread) scrolling.
+  """
+  tag = 'sync_scroll'
+  test = smoothness.Smoothness
+  page_set = page_sets.KeyMobileSitesPageSet
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
 
 @benchmark.Disabled  # crbug.com/402885
 class SmoothnessSimpleMobilePages(benchmark.Benchmark):

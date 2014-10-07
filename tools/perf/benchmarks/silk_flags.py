@@ -15,3 +15,7 @@ def CustomizeBrowserOptionsForGpuRasterization(options):
   options.AppendExtraBrowserArgs('--enable-threaded-compositing')
   options.AppendExtraBrowserArgs('--enable-impl-side-painting')
   options.AppendExtraBrowserArgs('--force-gpu-rasterization')
+
+def CustomizeBrowserOptionsForSyncScrolling(options):
+  """Enables flags needed for synchronous (main thread) scrolling."""
+  options.AppendExtraBrowserArgs('--disable-threaded-scrolling')
