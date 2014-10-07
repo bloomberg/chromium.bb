@@ -28,21 +28,21 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
                                   bool debug_service_worker_on_start);
 
   // DevToolsAgentHost override.
-  virtual bool IsWorker() const OVERRIDE;
-  virtual Type GetType() OVERRIDE;
-  virtual std::string GetTitle() OVERRIDE;
-  virtual GURL GetURL() OVERRIDE;
-  virtual bool Activate() OVERRIDE;
-  virtual bool Close() OVERRIDE;
+  virtual bool IsWorker() const override;
+  virtual Type GetType() override;
+  virtual std::string GetTitle() override;
+  virtual GURL GetURL() override;
+  virtual bool Activate() override;
+  virtual bool Close() override;
 
   // IPCDevToolsAgentHost implementation.
-  virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE;
-  virtual void Attach() OVERRIDE;
-  virtual void OnClientAttached() OVERRIDE {}
-  virtual void OnClientDetached() OVERRIDE;
+  virtual void SendMessageToAgent(IPC::Message* message) override;
+  virtual void Attach() override;
+  virtual void OnClientAttached() override {}
+  virtual void OnClientDetached() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   void WorkerReadyForInspection();
   void WorkerContextStarted();

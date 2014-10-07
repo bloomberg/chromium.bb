@@ -54,7 +54,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
 
  private:
   virtual void DidAccept(net::StreamListenSocket* server,
-                         scoped_ptr<net::StreamListenSocket> socket) OVERRIDE {
+                         scoped_ptr<net::StreamListenSocket> socket) override {
     if (accepted_socket_.get())
       return;
 
@@ -73,7 +73,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
 
   virtual void DidRead(net::StreamListenSocket* socket,
                        const char* data,
-                       int len) OVERRIDE {
+                       int len) override {
     int old_size = wire_buffer_size_;
     wire_buffer_size_ += len;
     while (wire_buffer_->capacity() < wire_buffer_size_)
@@ -84,7 +84,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     OnClientWrite(0);
   }
 
-  virtual void DidClose(net::StreamListenSocket* socket) OVERRIDE {
+  virtual void DidClose(net::StreamListenSocket* socket) override {
     SelfDestruct();
   }
 

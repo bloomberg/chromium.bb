@@ -32,11 +32,11 @@ class DevToolsTraceSinkProxy : public TracingController::TraceDataSink {
   explicit DevToolsTraceSinkProxy(base::WeakPtr<DevToolsTracingHandler> handler)
       : tracing_handler_(handler) {}
 
-  virtual void AddTraceChunk(const std::string& chunk) OVERRIDE {
+  virtual void AddTraceChunk(const std::string& chunk) override {
     if (DevToolsTracingHandler* h = tracing_handler_.get())
       h->OnTraceDataCollected(chunk);
   }
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     if (DevToolsTracingHandler* h = tracing_handler_.get())
       h->OnTraceComplete();
   }

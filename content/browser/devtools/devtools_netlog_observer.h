@@ -29,7 +29,7 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
 
  public:
   // net::NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   void OnAddURLRequestEntry(const net::NetLog::Entry& entry);
 

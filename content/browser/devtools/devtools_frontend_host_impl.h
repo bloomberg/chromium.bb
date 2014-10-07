@@ -19,7 +19,7 @@ class DevToolsFrontendHostImpl : public DevToolsFrontendHost,
 
  private:
   // WebContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnDispatchOnEmbedder(const std::string& message);

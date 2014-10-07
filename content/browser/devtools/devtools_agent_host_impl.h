@@ -38,15 +38,15 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   void Inspect(BrowserContext* browser_context);
 
   // DevToolsAgentHost implementation.
-  virtual void AttachClient(DevToolsAgentHostClient* client) OVERRIDE;
-  virtual void DetachClient() OVERRIDE;
-  virtual bool IsAttached() OVERRIDE;
-  virtual void InspectElement(int x, int y) OVERRIDE;
-  virtual std::string GetId() OVERRIDE;
-  virtual WebContents* GetWebContents() OVERRIDE;
-  virtual void DisconnectWebContents() OVERRIDE;
-  virtual void ConnectWebContents(WebContents* wc) OVERRIDE;
-  virtual bool IsWorker() const OVERRIDE;
+  virtual void AttachClient(DevToolsAgentHostClient* client) override;
+  virtual void DetachClient() override;
+  virtual bool IsAttached() override;
+  virtual void InspectElement(int x, int y) override;
+  virtual std::string GetId() override;
+  virtual WebContents* GetWebContents() override;
+  virtual void DisconnectWebContents() override;
+  virtual void ConnectWebContents(WebContents* wc) override;
+  virtual bool IsWorker() const override;
 
  protected:
   DevToolsAgentHostImpl();

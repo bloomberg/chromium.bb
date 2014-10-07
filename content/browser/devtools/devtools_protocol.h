@@ -50,7 +50,7 @@ class DevToolsProtocol {
    public:
     int id() { return id_; }
 
-    virtual std::string Serialize() OVERRIDE;
+    virtual std::string Serialize() override;
 
     // Creates success response. Takes ownership of |result|.
     scoped_refptr<Response> SuccessResponse(base::DictionaryValue* result);
@@ -110,7 +110,7 @@ class DevToolsProtocol {
   class Notification : public Message {
    public:
 
-    virtual std::string Serialize() OVERRIDE;
+    virtual std::string Serialize() override;
 
    private:
     friend class DevToolsProtocol;

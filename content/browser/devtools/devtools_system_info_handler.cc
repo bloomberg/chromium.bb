@@ -34,47 +34,47 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
       : dictionary_(dictionary),
         in_aux_attributes_(false) { }
 
-  virtual void AddInt64(const char* name, int64 value) OVERRIDE {
+  virtual void AddInt64(const char* name, int64 value) override {
     if (in_aux_attributes_)
       dictionary_->SetDouble(name, value);
   }
 
-  virtual void AddInt(const char* name, int value) OVERRIDE {
+  virtual void AddInt(const char* name, int value) override {
     if (in_aux_attributes_)
       dictionary_->SetInteger(name, value);
   }
 
-  virtual void AddString(const char* name, const std::string& value) OVERRIDE {
+  virtual void AddString(const char* name, const std::string& value) override {
     if (in_aux_attributes_)
       dictionary_->SetString(name, value);
   }
 
-  virtual void AddBool(const char* name, bool value) OVERRIDE {
+  virtual void AddBool(const char* name, bool value) override {
     if (in_aux_attributes_)
       dictionary_->SetBoolean(name, value);
   }
 
   virtual void AddTimeDeltaInSecondsF(const char* name,
-                                      const base::TimeDelta& value) OVERRIDE {
+                                      const base::TimeDelta& value) override {
     if (in_aux_attributes_)
       dictionary_->SetDouble(name, value.InSecondsF());
   }
 
-  virtual void BeginGPUDevice() OVERRIDE {
+  virtual void BeginGPUDevice() override {
   }
 
-  virtual void EndGPUDevice() OVERRIDE {
+  virtual void EndGPUDevice() override {
   }
 
-  virtual void BeginVideoEncodeAcceleratorSupportedProfile() OVERRIDE {}
+  virtual void BeginVideoEncodeAcceleratorSupportedProfile() override {}
 
-  virtual void EndVideoEncodeAcceleratorSupportedProfile() OVERRIDE {}
+  virtual void EndVideoEncodeAcceleratorSupportedProfile() override {}
 
-  virtual void BeginAuxAttributes() OVERRIDE {
+  virtual void BeginAuxAttributes() override {
     in_aux_attributes_ = true;
   }
 
-  virtual void EndAuxAttributes() OVERRIDE {
+  virtual void EndAuxAttributes() override {
     in_aux_attributes_ = false;
   }
 

@@ -16,10 +16,10 @@ namespace content {
 class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
  public:
   // DevToolsAgentHostImpl implementation.
-  virtual void Attach() OVERRIDE;
-  virtual void Detach() OVERRIDE;
-  virtual void DispatchProtocolMessage(const std::string& message) OVERRIDE;
-  virtual void InspectElement(int x, int y) OVERRIDE;
+  virtual void Attach() override;
+  virtual void Detach() override;
+  virtual void DispatchProtocolMessage(const std::string& message) override;
+  virtual void InspectElement(int x, int y) override;
 
  protected:
   virtual ~IPCDevToolsAgentHost();

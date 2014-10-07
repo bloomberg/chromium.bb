@@ -28,17 +28,17 @@ class DummyServerSocket : public net::ServerSocket {
   DummyServerSocket() {}
 
   // net::ServerSocket "implementation"
-  virtual int Listen(const net::IPEndPoint& address, int backlog) OVERRIDE {
+  virtual int Listen(const net::IPEndPoint& address, int backlog) override {
     return net::OK;
   }
 
   virtual int ListenWithAddressAndPort(const std::string& ip_address,
                                        int port,
-                                       int backlog) OVERRIDE {
+                                       int backlog) override {
     return net::OK;
   }
 
-  virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE {
+  virtual int GetLocalAddress(net::IPEndPoint* address) const override {
     net::IPAddressNumber number;
     EXPECT_TRUE(net::ParseIPLiteralToNumber("127.0.0.1", &number));
     *address = net::IPEndPoint(number, kDummyPort);
@@ -46,7 +46,7 @@ class DummyServerSocket : public net::ServerSocket {
   }
 
   virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
-                     const net::CompletionCallback& callback) OVERRIDE {
+                     const net::CompletionCallback& callback) override {
     return net::ERR_IO_PENDING;
   }
 };
@@ -66,7 +66,7 @@ class DummyServerSocketFactory
   }
 
  private:
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
+  virtual scoped_ptr<net::ServerSocket> Create() const override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, quit_closure_1_);
     return scoped_ptr<net::ServerSocket>(new DummyServerSocket());
@@ -78,17 +78,17 @@ class DummyServerSocketFactory
 
 class DummyDelegate : public DevToolsHttpHandlerDelegate {
  public:
-  virtual std::string GetDiscoveryPageHTML() OVERRIDE { return std::string(); }
+  virtual std::string GetDiscoveryPageHTML() override { return std::string(); }
 
-  virtual bool BundlesFrontendResources() OVERRIDE { return true; }
+  virtual bool BundlesFrontendResources() override { return true; }
 
-  virtual base::FilePath GetDebugFrontendDir() OVERRIDE {
+  virtual base::FilePath GetDebugFrontendDir() override {
     return base::FilePath();
   }
 
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
-      std::string* name) OVERRIDE {
+      std::string* name) override {
     return scoped_ptr<net::StreamListenSocket>();
   }
 };

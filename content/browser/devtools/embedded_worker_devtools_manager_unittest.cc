@@ -23,9 +23,9 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   TestDevToolsClientHost() {}
   virtual ~TestDevToolsClientHost() {}
   virtual void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host, const std::string& message) OVERRIDE {}
+      DevToolsAgentHost* agent_host, const std::string& message) override {}
   virtual void AgentHostClosed(
-      DevToolsAgentHost* agent_host, bool replaced) OVERRIDE {}
+      DevToolsAgentHost* agent_host, bool replaced) override {}
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
     if (agent_host_.get())
@@ -59,10 +59,10 @@ class EmbeddedWorkerDevToolsManagerTest : public testing::Test {
         partition_id_(*partition_.get()) {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     manager_ = EmbeddedWorkerDevToolsManager::GetInstance();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     EmbeddedWorkerDevToolsManager::GetInstance()->ResetForTesting();
   }
 

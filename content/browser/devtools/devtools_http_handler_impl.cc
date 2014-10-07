@@ -94,7 +94,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
 
   virtual void AgentHostClosed(
       DevToolsAgentHost* agent_host,
-      bool replaced_with_another_client) OVERRIDE {
+      bool replaced_with_another_client) override {
     DCHECK(agent_host == agent_host_.get());
     agent_host_ = NULL;
 
@@ -121,7 +121,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
   virtual void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host, const std::string& message) OVERRIDE {
+      DevToolsAgentHost* agent_host, const std::string& message) override {
     DCHECK(agent_host == agent_host_.get());
     message_loop_->PostTask(
         FROM_HERE,

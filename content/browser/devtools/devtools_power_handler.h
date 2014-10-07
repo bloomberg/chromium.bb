@@ -20,7 +20,7 @@ class DevToolsPowerHandler
   virtual ~DevToolsPowerHandler();
 
   // PowerProfilerObserver override.
-  virtual void OnPowerEvent(const PowerEventVector&) OVERRIDE;
+  virtual void OnPowerEvent(const PowerEventVector&) override;
 
   void OnClientDetached();
 
