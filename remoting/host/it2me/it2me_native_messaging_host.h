@@ -8,40 +8,38 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/browser/api/messaging/native_messaging_channel.h"
+#include "extensions/browser/api/messaging/native_message_host.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/it2me/it2me_host.h"
 
 namespace base {
 class DictionaryValue;
+class Value;
 }  // namespace base
 
 namespace remoting {
 
 // Implementation of the native messaging host process.
-class It2MeNativeMessagingHost
-    : public It2MeHost::Observer,
-      public extensions::NativeMessagingChannel::EventHandler {
+class It2MeNativeMessagingHost : public It2MeHost::Observer,
+                                 public extensions::NativeMessageHost {
  public:
-  It2MeNativeMessagingHost(
-      scoped_refptr<AutoThreadTaskRunner> task_runner,
-      scoped_ptr<extensions::NativeMessagingChannel> channel,
-      scoped_ptr<It2MeHostFactory> factory);
+  It2MeNativeMessagingHost(scoped_refptr<AutoThreadTaskRunner> task_runner,
+                           scoped_ptr<It2MeHostFactory> factory);
   virtual ~It2MeNativeMessagingHost();
 
-  void Start(const base::Closure& quit_closure);
-
-  // extensions::NativeMessagingChannel::EventHandler implementation.
-  virtual void OnMessage(scoped_ptr<base::Value> message) OVERRIDE;
-  virtual void OnDisconnect() OVERRIDE;
+  // extensions::NativeMessageHost implementation.
+  virtual void OnMessage(const std::string& message) override;
+  virtual void Start(Client* client) override;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner()
+      const override;
 
   // It2MeHost::Observer implementation.
   virtual void OnClientAuthenticated(const std::string& client_username)
-      OVERRIDE;
+      override;
   virtual void OnStoreAccessCode(const std::string& access_code,
-                                 base::TimeDelta access_code_lifetime) OVERRIDE;
-  virtual void OnNatPolicyChanged(bool nat_traversal_enabled) OVERRIDE;
-  virtual void OnStateChanged(It2MeHostState state) OVERRIDE;
+                                 base::TimeDelta access_code_lifetime) override;
+  virtual void OnNatPolicyChanged(bool nat_traversal_enabled) override;
+  virtual void OnStateChanged(It2MeHostState state) override;
 
   static std::string HostStateToString(It2MeHostState host_state);
 
@@ -57,12 +55,9 @@ class It2MeNativeMessagingHost
                          scoped_ptr<base::DictionaryValue> response);
   void SendErrorAndExit(scoped_ptr<base::DictionaryValue> response,
                         const std::string& description) const;
+  void SendMessageToClient(scoped_ptr<base::DictionaryValue> message) const;
 
-  base::Closure quit_closure_;
-
-  scoped_refptr<AutoThreadTaskRunner> task_runner() const;
-
-  scoped_ptr<extensions::NativeMessagingChannel> channel_;
+  Client* client_;
   scoped_ptr<It2MeHostFactory> factory_;
   scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<It2MeHost> it2me_host_;

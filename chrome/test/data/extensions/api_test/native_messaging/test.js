@@ -87,11 +87,8 @@ chrome.test.getConfig(function(config) {
       function stopHost() {
         port = chrome.extension.connectNative(appName);
 
-        port.onMessage.addListener(function(message) {
-          port.onDisconnect.addListener(chrome.test.callback(
-              function() {},
-              "Native host has exited."));
-        });
+        port.onDisconnect.addListener(
+            chrome.test.callback(function() {}, "Native host has exited."));
 
         // Send first message that should stop the host.
         port.postMessage({ "stopHostTest": true });

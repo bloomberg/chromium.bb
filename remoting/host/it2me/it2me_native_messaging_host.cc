@@ -9,9 +9,8 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
@@ -42,9 +41,8 @@ const remoting::protocol::NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
 
 It2MeNativeMessagingHost::It2MeNativeMessagingHost(
     scoped_refptr<AutoThreadTaskRunner> task_runner,
-    scoped_ptr<extensions::NativeMessagingChannel> channel,
     scoped_ptr<It2MeHostFactory> factory)
-    : channel_(channel.Pass()),
+    : client_(NULL),
       factory_(factory.Pass()),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -75,27 +73,19 @@ It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
   }
 }
 
-void It2MeNativeMessagingHost::Start(const base::Closure& quit_closure) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  DCHECK(!quit_closure.is_null());
-
-  quit_closure_ = quit_closure;
-
-  channel_->Start(this);
-}
-
-void It2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
+void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  if (!message->IsType(base::Value::TYPE_DICTIONARY)) {
+  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  scoped_ptr<base::Value> message_value(base::JSONReader::Read(message));
+  if (!message_value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Received a message that's not a dictionary.";
-    channel_->SendMessage(nullptr);
+    client_->CloseChannel(std::string());
     return;
   }
 
   scoped_ptr<base::DictionaryValue> message_dict(
-      static_cast<base::DictionaryValue*>(message.release()));
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+      static_cast<base::DictionaryValue*>(message_value.release()));
 
   // If the client supplies an ID, it will expect it in the response. This
   // might be a string or a number, so cope with both.
@@ -122,9 +112,17 @@ void It2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
   }
 }
 
-void It2MeNativeMessagingHost::OnDisconnect() {
-  if (!quit_closure_.is_null())
-    base::ResetAndReturn(&quit_closure_).Run();
+void It2MeNativeMessagingHost::Start(Client* client) {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  client_ = client;
+}
+
+void It2MeNativeMessagingHost::SendMessageToClient(
+    scoped_ptr<base::DictionaryValue> message) const {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  std::string message_json;
+  base::JSONWriter::Write(message.get(), &message_json);
+  client_->PostMessageFromNativeHost(message_json);
 }
 
 void It2MeNativeMessagingHost::ProcessHello(
@@ -138,7 +136,7 @@ void It2MeNativeMessagingHost::ProcessHello(
   scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
   response->Set("supportedFeatures", supported_features_list.release());
 
-  channel_->SendMessage(response.Pass());
+  SendMessageToClient(response.Pass());
 }
 
 void It2MeNativeMessagingHost::ProcessConnect(
@@ -212,7 +210,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
                                           directory_bot_jid_);
   it2me_host_->Connect();
 
-  channel_->SendMessage(response.Pass());
+  SendMessageToClient(response.Pass());
 }
 
 void It2MeNativeMessagingHost::ProcessDisconnect(
@@ -224,7 +222,7 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
     it2me_host_->Disconnect();
     it2me_host_ = NULL;
   }
-  channel_->SendMessage(response.Pass());
+  SendMessageToClient(response.Pass());
 }
 
 void It2MeNativeMessagingHost::SendErrorAndExit(
@@ -236,10 +234,10 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
 
   response->SetString("type", "error");
   response->SetString("description", description);
-  channel_->SendMessage(response.Pass());
+  SendMessageToClient(response.Pass());
 
-  // Trigger a host shutdown by sending a NULL message.
-  channel_->SendMessage(nullptr);
+  // Trigger a host shutdown by sending an empty message.
+  client_->CloseChannel(std::string());
 }
 
 void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state) {
@@ -272,7 +270,7 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state) {
       ;
   }
 
-  channel_->SendMessage(message.Pass());
+  SendMessageToClient(message.Pass());
 }
 
 void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
@@ -282,7 +280,7 @@ void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
 
   message->SetString("type", "natPolicyChanged");
   message->SetBoolean("natTraversalEnabled", nat_traversal_enabled);
-  channel_->SendMessage(message.Pass());
+  SendMessageToClient(message.Pass());
 }
 
 // Stores the Access Code for the web-app to query.
@@ -303,7 +301,7 @@ void It2MeNativeMessagingHost::OnClientAuthenticated(
   client_username_ = client_username;
 }
 
-scoped_refptr<AutoThreadTaskRunner>
+scoped_refptr<base::SingleThreadTaskRunner>
 It2MeNativeMessagingHost::task_runner() const {
   return host_context_->ui_task_runner();
 }

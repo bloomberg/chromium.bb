@@ -25,6 +25,7 @@ extern const char kEnableExtensionActionRedesign[];
 extern const char kEnableExtensionInfoDialog[];
 extern const char kEnableMimeHandlerView[];
 extern const char kEnableOverrideBookmarksUI[];
+extern const char kEnableRemoteAssistance[];
 extern const char kErrorConsole[];
 extern const char kExtensionActionRedesign[];
 extern const char kExtensionProcess[];

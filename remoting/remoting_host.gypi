@@ -431,6 +431,8 @@
           'sources': [
             'host/native_messaging/pipe_messaging_channel.cc',
             'host/native_messaging/pipe_messaging_channel.h',
+            'host/native_messaging/native_messaging_pipe.cc',
+            'host/native_messaging/native_messaging_pipe.h',
             'host/native_messaging/native_messaging_reader.cc',
             'host/native_messaging/native_messaging_reader.h',
             'host/native_messaging/native_messaging_writer.cc',

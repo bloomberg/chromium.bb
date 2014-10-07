@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -33,6 +34,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -60,6 +62,44 @@ using content::WebContents;
 #define GET_OPPOSITE_PORT_ID(source_port_id) ((source_port_id) ^ 1)
 
 namespace extensions {
+
+MessageService::PolicyPermission MessageService::IsNativeMessagingHostAllowed(
+    const PrefService* pref_service,
+    const std::string& native_host_name) {
+  PolicyPermission allow_result = ALLOW_ALL;
+  if (pref_service->IsManagedPreference(
+          pref_names::kNativeMessagingUserLevelHosts)) {
+    if (!pref_service->GetBoolean(pref_names::kNativeMessagingUserLevelHosts))
+      allow_result = ALLOW_SYSTEM_ONLY;
+  }
+
+  // All native messaging hosts are allowed if there is no blacklist.
+  if (!pref_service->IsManagedPreference(pref_names::kNativeMessagingBlacklist))
+    return allow_result;
+  const base::ListValue* blacklist =
+      pref_service->GetList(pref_names::kNativeMessagingBlacklist);
+  if (!blacklist)
+    return allow_result;
+
+  // Check if the name or the wildcard is in the blacklist.
+  base::StringValue name_value(native_host_name);
+  base::StringValue wildcard_value("*");
+  if (blacklist->Find(name_value) == blacklist->end() &&
+      blacklist->Find(wildcard_value) == blacklist->end()) {
+    return allow_result;
+  }
+
+  // The native messaging host is blacklisted. Check the whitelist.
+  if (pref_service->IsManagedPreference(
+          pref_names::kNativeMessagingWhitelist)) {
+    const base::ListValue* whitelist =
+        pref_service->GetList(pref_names::kNativeMessagingWhitelist);
+    if (whitelist && whitelist->Find(name_value) != whitelist->end())
+      return allow_result;
+  }
+
+  return DISALLOW;
+}
 
 const char kReceivingEndDoesntExistError[] =
     "Could not establish connection. Receiving end does not exist.";
@@ -371,9 +411,9 @@ void MessageService::OpenChannelToNativeApp(
   PrefService* pref_service = profile->GetPrefs();
 
   // Verify that the host is not blocked by policies.
-  NativeMessageProcessHost::PolicyPermission policy_permission =
-      NativeMessageProcessHost::IsHostAllowed(pref_service, native_app_name);
-  if (policy_permission == NativeMessageProcessHost::DISALLOW) {
+  PolicyPermission policy_permission =
+      IsNativeMessagingHostAllowed(pref_service, native_app_name);
+  if (policy_permission == DISALLOW) {
     DispatchOnDisconnect(source, receiver_port_id, kProhibitedByPoliciesError);
     return;
   }
@@ -387,22 +427,23 @@ void MessageService::OpenChannelToNativeApp(
       content::RenderWidgetHost::FromID(source_process_id, source_routing_id)->
           GetView()->GetNativeView();
 
-  scoped_ptr<NativeMessageProcessHost> native_process =
-      NativeMessageProcessHost::Create(
-          native_view,
-          base::WeakPtr<NativeMessageProcessHost::Client>(
-              weak_factory_.GetWeakPtr()),
-          source_extension_id, native_app_name, receiver_port_id,
-          policy_permission == NativeMessageProcessHost::ALLOW_ALL);
+  std::string error = kReceivingEndDoesntExistError;
+  scoped_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
+      native_view,
+      source_extension_id,
+      native_app_name,
+      policy_permission == ALLOW_ALL,
+      &error);
 
   // Abandon the channel.
-  if (!native_process.get()) {
+  if (!native_host.get()) {
     LOG(ERROR) << "Failed to create native process.";
     DispatchOnDisconnect(
-        source, receiver_port_id, kReceivingEndDoesntExistError);
+        source, receiver_port_id, error);
     return;
   }
-  channel->receiver.reset(new NativeMessagePort(native_process.release()));
+  channel->receiver.reset(new NativeMessagePort(
+      weak_factory_.GetWeakPtr(), receiver_port_id, native_host.Pass()));
 
   // Keep the opener alive until the channel is closed.
   channel->opener->IncrementLazyKeepaliveCount();
@@ -560,11 +601,6 @@ void MessageService::PostMessage(int source_port_id, const Message& message) {
   }
 
   DispatchMessage(source_port_id, iter->second, message);
-}
-
-void MessageService::PostMessageFromNativeProcess(int port_id,
-                                                  const std::string& message) {
-  PostMessage(port_id, Message(message, false /* user_gesture */));
 }
 
 void MessageService::Observe(int type,

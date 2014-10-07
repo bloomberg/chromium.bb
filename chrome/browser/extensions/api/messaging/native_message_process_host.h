@@ -10,13 +10,11 @@
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
+#include "extensions/browser/api/messaging/native_message_host.h"
 #include "ui/gfx/native_widget_types.h"
-
-class PrefService;
 
 namespace net {
 
@@ -35,54 +33,25 @@ namespace extensions {
 // This class must only be created, called, and deleted on the IO thread.
 // Public methods typically accept callbacks which will be invoked on the UI
 // thread.
-class NativeMessageProcessHost
+class NativeMessageProcessHost :
 #if defined(OS_POSIX)
-    : public base::MessageLoopForIO::Watcher
+    public base::MessageLoopForIO::Watcher,
 #endif  // !defined(OS_POSIX)
-{
+    public NativeMessageHost {
  public:
-  // Interface for the object that receives messages from the native process.
-  class Client {
-   public:
-    virtual ~Client() {}
-    // Called on the UI thread.
-    virtual void PostMessageFromNativeProcess(int port_id,
-                                              const std::string& message) = 0;
-    virtual void CloseChannel(int port_id,
-                              const std::string& error_message) = 0;
-  };
-
-  // Result returned from IsHostAllowed().
-  enum PolicyPermission {
-    DISALLOW,           // The host is not allowed.
-    ALLOW_SYSTEM_ONLY,  // Allowed only when installed on system level.
-    ALLOW_ALL,          // Allowed when installed on system or user level.
-  };
-
   virtual ~NativeMessageProcessHost();
 
-  // Returns policy permissions for the host with the specified name.
-  static PolicyPermission IsHostAllowed(const PrefService* pref_service,
-                                        const std::string& native_host_name);
-
-  static scoped_ptr<NativeMessageProcessHost> Create(
-      gfx::NativeView native_view,
-      base::WeakPtr<Client> weak_client_ui,
-      const std::string& source_extension_id,
-      const std::string& native_host_name,
-      int destination_port,
-      bool allow_user_level);
-
   // Create using specified |launcher|. Used in tests.
-  static scoped_ptr<NativeMessageProcessHost> CreateWithLauncher(
-      base::WeakPtr<Client> weak_client_ui,
+  static scoped_ptr<NativeMessageHost> CreateWithLauncher(
       const std::string& source_extension_id,
       const std::string& native_host_name,
-      int destination_port,
       scoped_ptr<NativeProcessLauncher> launcher);
 
-  // Send a message with the specified payload.
-  void Send(const std::string& json);
+  // extensions::NativeMessageHost implementation.
+  virtual void OnMessage(const std::string& message) OVERRIDE;
+  virtual void Start(Client* client) OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner()
+      const OVERRIDE;
 
 #if defined(OS_POSIX)
   // MessageLoopForIO::Watcher interface
@@ -95,10 +64,8 @@ class NativeMessageProcessHost
   void ReadNowForTesting();
 
  private:
-  NativeMessageProcessHost(base::WeakPtr<Client> weak_client_ui,
-                           const std::string& source_extension_id,
+  NativeMessageProcessHost(const std::string& source_extension_id,
                            const std::string& native_host_name,
-                           int destination_port,
                            scoped_ptr<NativeProcessLauncher> launcher);
 
   // Starts the host process.
@@ -127,17 +94,13 @@ class NativeMessageProcessHost
 
   // The Client messages will be posted to. Should only be accessed from the
   // UI thread.
-  base::WeakPtr<Client> weak_client_ui_;
+  Client* client_;
 
   // ID of the calling extension.
   std::string source_extension_id_;
 
   // Name of the native messaging host.
   std::string native_host_name_;
-
-  // The id of the port on the other side of this connection. This is passed to
-  // |weak_client_ui_| when posting messages.
-  int destination_port_;
 
   // Launcher used to launch the native process.
   scoped_ptr<NativeProcessLauncher> launcher_;
@@ -176,6 +139,8 @@ class NativeMessageProcessHost
 
   // Set to true when a write is pending.
   bool write_pending_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMessageProcessHost);
 };

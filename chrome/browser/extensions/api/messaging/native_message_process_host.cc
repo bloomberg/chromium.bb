@@ -7,15 +7,12 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
 #include "net/base/file_stream.h"
@@ -37,69 +34,16 @@ const size_t kMessageHeaderSize = 4;
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
 
-const char kFailedToStartError[] = "Failed to start native messaging host.";
-const char kInvalidNameError[] =
-    "Invalid native messaging host name specified.";
-const char kNativeHostExited[] = "Native host has exited.";
-const char kNotFoundError[] = "Specified native messaging host not found.";
-const char kForbiddenError[] =
-    "Access to the specified native messaging host is forbidden.";
-const char kHostInputOuputError[] =
-    "Error when communicating with the native messaging host.";
-
 }  // namespace
 
 namespace extensions {
 
-// static
-NativeMessageProcessHost::PolicyPermission
-NativeMessageProcessHost::IsHostAllowed(const PrefService* pref_service,
-                                        const std::string& native_host_name) {
-  NativeMessageProcessHost::PolicyPermission allow_result = ALLOW_ALL;
-  if (pref_service->IsManagedPreference(
-          pref_names::kNativeMessagingUserLevelHosts)) {
-    if (!pref_service->GetBoolean(pref_names::kNativeMessagingUserLevelHosts))
-      allow_result = ALLOW_SYSTEM_ONLY;
-  }
-
-  // All native messaging hosts are allowed if there is no blacklist.
-  if (!pref_service->IsManagedPreference(pref_names::kNativeMessagingBlacklist))
-    return allow_result;
-  const base::ListValue* blacklist =
-      pref_service->GetList(pref_names::kNativeMessagingBlacklist);
-  if (!blacklist)
-    return allow_result;
-
-  // Check if the name or the wildcard is in the blacklist.
-  base::StringValue name_value(native_host_name);
-  base::StringValue wildcard_value("*");
-  if (blacklist->Find(name_value) == blacklist->end() &&
-      blacklist->Find(wildcard_value) == blacklist->end()) {
-    return allow_result;
-  }
-
-  // The native messaging host is blacklisted. Check the whitelist.
-  if (pref_service->IsManagedPreference(
-          pref_names::kNativeMessagingWhitelist)) {
-    const base::ListValue* whitelist =
-        pref_service->GetList(pref_names::kNativeMessagingWhitelist);
-    if (whitelist && whitelist->Find(name_value) != whitelist->end())
-      return allow_result;
-  }
-
-  return DISALLOW;
-}
-
 NativeMessageProcessHost::NativeMessageProcessHost(
-    base::WeakPtr<Client> weak_client_ui,
     const std::string& source_extension_id,
     const std::string& native_host_name,
-    int destination_port,
     scoped_ptr<NativeProcessLauncher> launcher)
-    : weak_client_ui_(weak_client_ui),
-      source_extension_id_(source_extension_id),
+    : source_extension_id_(source_extension_id),
       native_host_name_(native_host_name),
-      destination_port_(destination_port),
       launcher_(launcher.Pass()),
       closed_(false),
       process_handle_(base::kNullProcessHandle),
@@ -110,51 +54,50 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       write_pending_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::IO);
   // It's safe to use base::Unretained() here because NativeMessagePort always
   // deletes us on the IO thread.
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+  task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
                  base::Unretained(this)));
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  Close(std::string());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 // static
-scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
+scoped_ptr<NativeMessageHost> NativeMessageHost::Create(
     gfx::NativeView native_view,
-    base::WeakPtr<Client> weak_client_ui,
     const std::string& source_extension_id,
     const std::string& native_host_name,
-    int destination_port,
-    bool allow_user_level) {
-  return CreateWithLauncher(weak_client_ui, source_extension_id,
-                            native_host_name, destination_port,
-                            NativeProcessLauncher::CreateDefault(
-                                allow_user_level, native_view));
+    bool allow_user_level,
+    std::string* error_message) {
+  return NativeMessageProcessHost::CreateWithLauncher(
+      source_extension_id,
+      native_host_name,
+      NativeProcessLauncher::CreateDefault(allow_user_level, native_view));
 }
 
 // static
-scoped_ptr<NativeMessageProcessHost>
-NativeMessageProcessHost::CreateWithLauncher(
-    base::WeakPtr<Client> weak_client_ui,
+scoped_ptr<NativeMessageHost> NativeMessageProcessHost::CreateWithLauncher(
     const std::string& source_extension_id,
     const std::string& native_host_name,
-    int destination_port,
     scoped_ptr<NativeProcessLauncher> launcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<NativeMessageProcessHost> process(new NativeMessageProcessHost(
-      weak_client_ui, source_extension_id, native_host_name,
-      destination_port, launcher.Pass()));
+  scoped_ptr<NativeMessageHost> process(
+      new NativeMessageProcessHost(source_extension_id,
+                                   native_host_name,
+                                   launcher.Pass()));
 
   return process.Pass();
 }
 
 void NativeMessageProcessHost::LaunchHostProcess() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   GURL origin(std::string(kExtensionScheme) + "://" + source_extension_id_);
   launcher_->Launch(origin, native_host_name_,
@@ -167,7 +110,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
     base::ProcessHandle process_handle,
     base::File read_file,
     base::File write_file) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   switch (result) {
     case NativeProcessLauncher::RESULT_INVALID_NAME:
@@ -204,8 +147,8 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
   DoWrite();
 }
 
-void NativeMessageProcessHost::Send(const std::string& json) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+void NativeMessageProcessHost::OnMessage(const std::string& json) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (closed_)
     return;
@@ -227,6 +170,16 @@ void NativeMessageProcessHost::Send(const std::string& json) {
   // already started then write the message now.
   if (write_stream_)
     DoWrite();
+}
+
+void NativeMessageProcessHost::Start(Client* client) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_ = client;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+NativeMessageProcessHost::task_runner() const {
+  return task_runner_;
 }
 
 #if defined(OS_POSIX)
@@ -264,7 +217,7 @@ void NativeMessageProcessHost::WaitRead() {
 }
 
 void NativeMessageProcessHost::DoRead() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   while (!closed_ && !read_pending_) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
@@ -277,7 +230,7 @@ void NativeMessageProcessHost::DoRead() {
 }
 
 void NativeMessageProcessHost::OnRead(int result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(read_pending_);
   read_pending_ = false;
 
@@ -286,7 +239,7 @@ void NativeMessageProcessHost::OnRead(int result) {
 }
 
 void NativeMessageProcessHost::HandleReadResult(int result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (closed_)
     return;
@@ -307,7 +260,7 @@ void NativeMessageProcessHost::HandleReadResult(int result) {
 
 void NativeMessageProcessHost::ProcessIncomingData(
     const char* data, int data_size) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   incoming_data_.append(data, data_size);
 
@@ -328,17 +281,15 @@ void NativeMessageProcessHost::ProcessIncomingData(
     if (incoming_data_.size() < message_size + kMessageHeaderSize)
       return;
 
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&Client::PostMessageFromNativeProcess, weak_client_ui_,
-            destination_port_,
-            incoming_data_.substr(kMessageHeaderSize, message_size)));
+    client_->PostMessageFromNativeHost(
+        incoming_data_.substr(kMessageHeaderSize, message_size));
 
     incoming_data_.erase(0, kMessageHeaderSize + message_size);
   }
 }
 
 void NativeMessageProcessHost::DoWrite() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   while (!write_pending_ && !closed_) {
     if (!current_write_buffer_.get() ||
@@ -360,7 +311,7 @@ void NativeMessageProcessHost::DoWrite() {
 }
 
 void NativeMessageProcessHost::HandleWriteResult(int result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (result <= 0) {
     if (result == net::ERR_IO_PENDING) {
@@ -376,7 +327,7 @@ void NativeMessageProcessHost::HandleWriteResult(int result) {
 }
 
 void NativeMessageProcessHost::OnWritten(int result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   DCHECK(write_pending_);
   write_pending_ = false;
@@ -386,15 +337,13 @@ void NativeMessageProcessHost::OnWritten(int result) {
 }
 
 void NativeMessageProcessHost::Close(const std::string& error_message) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!closed_) {
     closed_ = true;
     read_stream_.reset();
     write_stream_.reset();
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&Client::CloseChannel, weak_client_ui_,
-                   destination_port_, error_message));
+    client_->CloseChannel(error_message);
   }
 
   if (process_handle_ != base::kNullProcessHandle) {

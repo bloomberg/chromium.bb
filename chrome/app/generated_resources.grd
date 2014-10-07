@@ -13863,6 +13863,12 @@ Do you accept?
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION" desc="Description of about::flags option to enable experimental features for IME input-views">
         Enable experimental features for IME input views.
       </message>
+      <message name="IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_NAME" desc="Name of about::flags option to enable remote assistance on Chrome OS">
+        Enable Remote Assistance
+      </message>
+      <message name="IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_DESCRIPTION" desc="Description of about::flags option to enable remote assistance on Chrome OS.">
+        Accepts remote assistance connections to this machine via the Chrome Remote Desktop app.
+      </message>
     </if>
 
     <!-- Simple Cache Backend experiment. -->

@@ -1961,7 +1961,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePluginPowerSaver)
   },
 #endif
-
+#if defined(OS_CHROMEOS)
+  {
+    "enable-remote-assistance",
+    IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_NAME,
+    IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableRemoteAssistance)
+  },
+#endif  // defined(OS_CHROMEOS)
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

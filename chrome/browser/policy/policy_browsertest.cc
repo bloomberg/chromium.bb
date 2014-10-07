@@ -34,7 +34,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
+#include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -3171,9 +3171,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistSelective) {
   UpdateProviderPolicy(policies);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
       prefs, "host.name"));
-  EXPECT_TRUE(extensions::NativeMessageProcessHost::IsHostAllowed(
+  EXPECT_TRUE(extensions::MessageService::IsNativeMessagingHostAllowed(
       prefs, "other.host.name"));
 }
 
@@ -3186,9 +3186,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
   UpdateProviderPolicy(policies);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
       prefs, "host.name"));
-  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
       prefs, "other.host.name"));
 }
 
@@ -3205,9 +3205,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
   UpdateProviderPolicy(policies);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_TRUE(extensions::NativeMessageProcessHost::IsHostAllowed(
+  EXPECT_TRUE(extensions::MessageService::IsNativeMessagingHostAllowed(
       prefs, "host.name"));
-  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
       prefs, "other.host.name"));
 }
 
