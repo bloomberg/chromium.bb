@@ -40,14 +40,22 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 // Fails on Win, see http://crbug.com/232313
 #if defined(OS_WIN)
 #define MAYBE_SingleClientChanged DISABLED_SingleClientChanged
-#define MAYBE_SingleClientEnabledEncryptionAndChanged DISABLED_SingleClientEnabledEncryptionAndChanged
 #define MAYBE_BothChanged DISABLED_BothChanged
 #define MAYBE_DeleteIdleSession DISABLED_DeleteIdleSession
 #else
 #define MAYBE_SingleClientChanged SingleClientChanged
-#define MAYBE_SingleClientEnabledEncryptionAndChanged SingleClientEnabledEncryptionAndChanged
 #define MAYBE_BothChanged BothChanged
 #define MAYBE_DeleteIdleSession DeleteIdleSession
+#endif
+
+// In addition to failure on Windows above, this test is flaky on Linux.
+// See http://crbug.com/420979.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_SingleClientEnabledEncryptionAndChanged \
+        DISABLED_SingleClientEnabledEncryptionAndChanged
+#else
+#define MAYBE_SingleClientEnabledEncryptionAndChanged \
+        SingleClientEnabledEncryptionAndChanged
 #endif
 
 
