@@ -48,8 +48,8 @@ public:
     BLINK_EXPORT void resetMock();
 
     // WebMIDIClient
-    virtual void requestSysexPermission(const WebMIDIPermissionRequest&) OVERRIDE;
-    virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest&) OVERRIDE;
+    virtual void requestSysexPermission(const WebMIDIPermissionRequest&) override;
+    virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest&) override;
 
 private:
     WebPrivateOwnPtr<MIDIClientMock> m_clientMock;
