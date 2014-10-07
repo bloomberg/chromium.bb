@@ -451,6 +451,8 @@ bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE));
   localized_strings->SetString("search_button",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_SEARCH_BUTTON));
+  localized_strings->SetString("folders_menu",
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_FOLDERS_MENU));
   localized_strings->SetString("organize_menu",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_ORGANIZE_MENU));
   localized_strings->SetString("show_in_folder",

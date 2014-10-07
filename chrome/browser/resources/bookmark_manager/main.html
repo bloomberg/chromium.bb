@@ -58,24 +58,36 @@ found in the LICENSE file.
 <header>
   <h2 i18n-content="title"></h2>
   <form>
-    <input type="search" id="term" tabindex=1 autofocus incremental
-        i18n-values="placeholder:search_button">
+    <input type="search" id="term" i18n-values="placeholder:search_button"
+        autofocus incremental>
   </form>
 </header>
 
-<div class="summary">
-  <div>
-    <button menu="#organize-menu" tabindex="4" i18n-content="organize_menu">
-    </button>
+<div class="main">
+  <div id="tree-pane" class="pane">
+    <div>
+      <button menu="#folders-menu" i18n-content="folders_menu"
+          id="folders-button"></button>
+    </div>
+    <div id="tree-container">
+      <tree id="tree" role="tree"></tree>
+    </div>
   </div>
-</div>
-
-<div class=main>
-  <div id=tree-container>
-    <tree id=tree tabindex=2 role="tree"></tree>
+  <div class="splitter">
+    <div>
+      <!-- Used to occupy the correct amount of vertical space. -->
+      <button menu="#no-menu"></button>
+    </div>
   </div>
-  <div class=splitter></div>
-  <list id=list tabindex=2></list>
+  <div id="list-pane" class="pane">
+    <div>
+      <button menu="#organize-menu" i18n-content="organize_menu"
+          id="organize-button"></button>
+    </div>
+    <!-- The list doesn't use a scroll container as it truncates horizontally
+         and handles its own vertical overflow. -->
+    <list id="list"></list>
+  </div>
 </div>
 
 <!-- Organize menu -->
@@ -88,8 +100,6 @@ found in the LICENSE file.
 <command i18n-values=".label:copy" id="copy-command"></command>
 <command i18n-values=".label:paste" id="paste-from-organize-menu-command">
 </command>
-<command i18n-values=".label:paste" id="paste-from-context-menu-command">
-</command>
 <command i18n-values=".label:delete" id="delete-command"></command>
 <command i18n-values=".label:undo_delete" id="undo-delete-command"></command>
 <command i18n-values=".label:sort" id="sort-command"></command>
@@ -97,9 +107,26 @@ found in the LICENSE file.
 </command>
 <command i18n-values=".label:new_folder" id="new-folder-command"></command>
 
+<!-- Folders menu -->
+<command i18n-values=".label:cut" id="cut-from-folders-menu-command"></command>
+<command i18n-values=".label:copy" id="copy-from-folders-menu-command">
+</command>
+<command i18n-values=".label:paste" id="paste-from-folders-menu-command">
+</command>
+<command i18n-values=".label:new_folder"
+    id="new-folder-from-folders-menu-command"></command>
+<command i18n-values=".label:delete" id="delete-from-folders-menu-command">
+</command>
+<command i18n-values=".label:undo_delete"
+    id="undo-delete-from-folders-menu-command"></command>
+
 <!-- Tools menu -->
 <command i18n-values=".label:import_menu" id="import-menu-command"></command>
 <command i18n-values=".label:export_menu" id="export-menu-command"></command>
+
+<!-- Context menu -->
+<command i18n-values=".label:paste" id="paste-from-context-menu-command">
+</command>
 
 <!-- open * are handled in canExecute handler -->
 <command id="open-in-new-tab-command"></command>
@@ -110,7 +137,27 @@ found in the LICENSE file.
 
 <command id="undo-command"></command>
 
+<command i18n-values=".label:rename_folder"
+    id="rename-folder-from-folders-menu-command"></command>
+<command i18n-values=".label:paste" id="paste-from-folders-menu-command">
+</command>
+
 <!-- TODO(arv): I think the commands might be better created in code? -->
+
+<menu id="folders-menu">
+  <button command="#new-folder-from-folders-menu-command"></button>
+  <hr>
+  <button command="#rename-folder-from-folders-menu-command"></button>
+  <hr>
+  <button command="#cut-from-folders-menu-command"></button>
+  <button command="#copy-from-folders-menu-command"></button>
+  <button command="#paste-from-folders-menu-command"></button>
+  <hr>
+  <button command="#delete-from-folders-menu-command"></button>
+  <button command="#undo-delete-from-folders-menu-command"></button>
+</menu>
+
+<menu id="no-menu"></menu>
 
 <menu id="organize-menu">
   <button command="#add-new-bookmark-command"></button>

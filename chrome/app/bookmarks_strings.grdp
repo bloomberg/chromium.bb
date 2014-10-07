@@ -348,6 +348,9 @@
     <message name="IDS_BOOKMARK_MANAGER" desc="The label of the menu item that shows the bookmark manager">
       &amp;Bookmark manager
     </message>
+    <message name="IDS_BOOKMARK_MANAGER_FOLDERS_MENU" desc="Title of the folders menu in the bookmark manager.">
+      Folders
+    </message>
     <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="Title of the organize menu in the bookmark manager.">
       Organize
     </message>
@@ -382,6 +385,9 @@
   <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_MANAGER" desc="In Title Case: The label of the menu item that shows the bookmark manager">
       &amp;Bookmark Manager
+    </message>
+    <message name="IDS_BOOKMARK_MANAGER_FOLDERS_MENU" desc="In Title Case: Title of the folders menu in the bookmark manager.">
+      Folders
     </message>
     <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="In Title Case: Title of the organize menu in the bookmark manager.">
       Organize
