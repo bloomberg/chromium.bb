@@ -150,23 +150,12 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     // Draw pattern
     context->save();
 
-    if (resourceMode & ApplyToFillMode) {
-        context->setAlphaAsFloat(svgStyle.fillOpacity());
+    if (resourceMode & ApplyToFillMode)
         context->setFillPattern(patternData->pattern);
-        context->setFillRule(svgStyle.fillRule());
-    } else if (resourceMode & ApplyToStrokeMode) {
-        context->setAlphaAsFloat(svgStyle.strokeOpacity());
+    else if (resourceMode & ApplyToStrokeMode)
         context->setStrokePattern(patternData->pattern);
-        SVGRenderSupport::applyStrokeStyleToContext(context, style, object);
-    }
 
-    if (resourceMode & ApplyToTextMode) {
-        if (resourceMode & ApplyToFillMode)
-            context->setTextDrawingMode(TextModeFill);
-        else if (resourceMode & ApplyToStrokeMode)
-            context->setTextDrawingMode(TextModeStroke);
-    }
-
+    updateGraphicsContext(context, style, *object, resourceMode);
     return true;
 }
 

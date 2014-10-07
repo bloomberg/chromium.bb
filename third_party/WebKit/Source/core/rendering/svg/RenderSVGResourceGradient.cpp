@@ -111,19 +111,12 @@ bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle*
     // Draw gradient
     context->save();
 
-    if (resourceMode & ApplyToTextMode)
-        context->setTextDrawingMode(resourceMode & ApplyToFillMode ? TextModeFill : TextModeStroke);
-
-    if (resourceMode & ApplyToFillMode) {
-        context->setAlphaAsFloat(svgStyle.fillOpacity());
+    if (resourceMode & ApplyToFillMode)
         context->setFillGradient(gradientData->gradient);
-        context->setFillRule(svgStyle.fillRule());
-    } else if (resourceMode & ApplyToStrokeMode) {
-        context->setAlphaAsFloat(svgStyle.strokeOpacity());
+    else if (resourceMode & ApplyToStrokeMode)
         context->setStrokeGradient(gradientData->gradient);
-        SVGRenderSupport::applyStrokeStyleToContext(context, style, object);
-    }
 
+    updateGraphicsContext(context, style, *object, resourceMode);
     return true;
 }
 

@@ -40,37 +40,17 @@ RenderSVGResourceSolidColor::~RenderSVGResourceSolidColor()
 
 bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext* context, RenderSVGResourceModeFlags resourceMode)
 {
-    ASSERT(object);
-    ASSERT(style);
+    ASSERT_UNUSED(object, object);
+    ASSERT_UNUSED(style, style);
     ASSERT(context);
     ASSERT_UNUSED(resourceMode, resourceMode);
 
-    bool isRenderingMask = SVGRenderSupport::isRenderingClipPathAsMaskImage(*object);
-    const SVGRenderStyle& svgStyle = style->svgStyle();
-
-    if (resourceMode & ApplyToFillMode) {
-        if (!isRenderingMask)
-            context->setAlphaAsFloat(svgStyle.fillOpacity());
-        else
-            context->setAlphaAsFloat(1);
+    if (resourceMode & ApplyToFillMode)
         context->setFillColor(m_color);
-        if (!isRenderingMask)
-            context->setFillRule(svgStyle.fillRule());
-
-        if (resourceMode & ApplyToTextMode)
-            context->setTextDrawingMode(TextModeFill);
-    } else if (resourceMode & ApplyToStrokeMode) {
-        // When rendering the mask for a RenderSVGResourceClipper, the stroke code path is never hit.
-        ASSERT(!isRenderingMask);
-        context->setAlphaAsFloat(svgStyle.strokeOpacity());
+    else if (resourceMode & ApplyToStrokeMode)
         context->setStrokeColor(m_color);
 
-        SVGRenderSupport::applyStrokeStyleToContext(context, style, object);
-
-        if (resourceMode & ApplyToTextMode)
-            context->setTextDrawingMode(TextModeStroke);
-    }
-
+    updateGraphicsContext(context, style, *object, resourceMode);
     return true;
 }
 

@@ -62,6 +62,10 @@ public:
     static RenderSVGResourceSolidColor* sharedSolidPaintingResource();
 
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
+
+protected:
+    // Transfer fill/stroke style (except paint server) to the GC.
+    static void updateGraphicsContext(GraphicsContext*, const RenderStyle*, const RenderObject&, unsigned resourceModeFlags);
 };
 
 #define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \

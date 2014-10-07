@@ -31,6 +31,7 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -127,6 +128,37 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
         hasFallback = true;
     }
     return uriResource;
+}
+
+void RenderSVGResource::updateGraphicsContext(GraphicsContext* context, const RenderStyle* style, const RenderObject& renderer, unsigned resourceModeFlags)
+{
+    ASSERT(context);
+    ASSERT(style);
+
+    RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
+    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+
+    if (SVGRenderSupport::isRenderingClipPathAsMaskImage(renderer)) {
+        // When rendering the mask for a RenderSVGResourceClipper, the stroke code path is never hit.
+        ASSERT(resourceMode == ApplyToFillMode);
+        context->setAlphaAsFloat(1);
+        if (resourceModeFlags & ApplyToTextMode)
+            context->setTextDrawingMode(TextModeFill);
+        return;
+    }
+
+    const SVGRenderStyle& svgStyle = style->svgStyle();
+
+    if (resourceMode == ApplyToFillMode) {
+        context->setAlphaAsFloat(svgStyle.fillOpacity());
+        context->setFillRule(svgStyle.fillRule());
+    } else {
+        context->setAlphaAsFloat(svgStyle.strokeOpacity());
+        SVGRenderSupport::applyStrokeStyleToContext(context, style, &renderer);
+    }
+
+    if (resourceModeFlags & ApplyToTextMode)
+        context->setTextDrawingMode(resourceMode == ApplyToFillMode ? TextModeFill : TextModeStroke);
 }
 
 RenderSVGResourceSolidColor* RenderSVGResource::sharedSolidPaintingResource()
