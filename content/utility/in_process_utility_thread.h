@@ -21,8 +21,8 @@ class InProcessUtilityThread : public base::Thread {
 
  private:
   // base::Thread implementation:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
   void InitInternal();
 
