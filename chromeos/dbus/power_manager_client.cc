@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -403,7 +404,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     dbus::MessageReader reader(signal);
     power_manager::PowerSupplyProperties protobuf;
     if (reader.PopArrayOfBytesAsProto(&protobuf)) {
-      FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(protobuf));
+      HandlePowerSupplyProperties(protobuf);
     } else {
       LOG(ERROR) << "Unable to decode "
                  << power_manager::kPowerSupplyPollSignal << "signal";
@@ -420,7 +421,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     dbus::MessageReader reader(response);
     power_manager::PowerSupplyProperties protobuf;
     if (reader.PopArrayOfBytesAsProto(&protobuf)) {
-      FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(protobuf));
+      HandlePowerSupplyProperties(protobuf);
     } else {
       LOG(ERROR) << "Unable to decode "
                  << power_manager::kGetPowerSupplyPropertiesMethod
@@ -442,6 +443,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
       LOG(ERROR) << "Error reading response from powerd: "
                  << response->ToString();
     callback.Run(percent);
+  }
+
+  void HandlePowerSupplyProperties(
+      const power_manager::PowerSupplyProperties& proto) {
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(proto));
+    const bool on_battery = proto.external_power() ==
+        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
+    base::PowerMonitorDeviceSource::SetPowerSource(on_battery);
   }
 
   void HandleRegisterSuspendDelayReply(bool dark_suspend,
@@ -507,6 +516,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
       FOR_EACH_OBSERVER(Observer, observers_, DarkSuspendImminent());
     else
       FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
+    base::PowerMonitorDeviceSource::HandleSystemSuspending();
     MaybeReportSuspendReadiness();
   }
 
@@ -526,6 +536,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << " duration=" << duration.InSeconds() << " sec";
     FOR_EACH_OBSERVER(
         PowerManagerClient::Observer, observers_, SuspendDone(duration));
+    base::PowerMonitorDeviceSource::HandleSystemResumed();
   }
 
   void IdleActionImminentReceived(dbus::Signal* signal) {

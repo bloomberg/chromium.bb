@@ -432,6 +432,7 @@
           'power_monitor/power_monitor.h',
           'power_monitor/power_monitor_device_source_android.cc',
           'power_monitor/power_monitor_device_source_android.h',
+          'power_monitor/power_monitor_device_source_chromeos.cc',
           'power_monitor/power_monitor_device_source.cc',
           'power_monitor/power_monitor_device_source.h',
           'power_monitor/power_monitor_device_source_ios.mm',
@@ -836,6 +837,11 @@
                # WebView builds as part of the system which already has sincos;
                # avoid defining it again as it causes a linker warning.
                'ANDROID_SINCOS_PROVIDED',
+            ],
+          }],
+          ['<(chromeos) == 1', {
+            'sources!': [
+              'power_monitor/power_monitor_device_source_posix.cc',
             ],
           }],
           ['OS == "ios" and _toolset != "host"', {

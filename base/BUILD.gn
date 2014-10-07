@@ -445,6 +445,7 @@ component("base") {
     "power_monitor/power_monitor_device_source.h",
     "power_monitor/power_monitor_device_source_android.cc",
     "power_monitor/power_monitor_device_source_android.h",
+    "power_monitor/power_monitor_device_source_chromeos.cc",
     "power_monitor/power_monitor_device_source_ios.mm",
     "power_monitor/power_monitor_device_source_mac.mm",
     "power_monitor/power_monitor_device_source_posix.cc",
@@ -799,6 +800,12 @@ component("base") {
 
     sources -= [
       "debug/stack_trace_posix.cc",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources -= [
+      "power_monitor/power_monitor_device_source_posix.cc",
     ]
   }
 
