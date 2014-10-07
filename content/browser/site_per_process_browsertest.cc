@@ -23,6 +23,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
@@ -189,6 +190,13 @@ void SitePerProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
 };
 
+void SitePerProcessBrowserTest::SetUpOnMainThread() {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  SetupCrossSiteRedirector(embedded_test_server());
+  embedded_test_server()->ServeFilesFromDirectory(GetTestFilePath("files", ""));
+}
+
 // It fails on ChromeOS and Android, so disabled while investigating.
 // http://crbug.com/399775
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -197,9 +205,7 @@ void SitePerProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 #define MAYBE_CrossSiteIframe CrossSiteIframe
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -211,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
 
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
-  GURL http_url(test_server()->GetURL("files/title1.html"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(child, http_url);
   EXPECT_EQ(http_url, observer.navigation_url());
   EXPECT_TRUE(observer.navigation_succeeded());
@@ -228,17 +234,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
           shell()->web_contents()->GetSiteInstance());
   EXPECT_FALSE(proxy_to_parent);
 
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-
   // Load cross-site page into iframe.
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
-  EXPECT_EQ(cross_site_url, observer.navigation_url());
+  NavigateFrameToURL(
+      root->child_at(0),
+      embedded_test_server()->GetURL("/cross-site/foo.com/title2.html"));
+  // Verify that the navigation succeeded and the expected URL was loaded.
   EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(embedded_test_server()->base_url().scheme(),
+            observer.navigation_url().scheme());
+  EXPECT_EQ("foo.com", observer.navigation_url().host());
+  EXPECT_EQ("/title2.html", observer.navigation_url().path());
 
   // Ensure that we have created a new process for the subframe.
   ASSERT_EQ(1U, root->child_count());
@@ -264,13 +269,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 
   // Load another cross-site page into the same iframe.
-  cross_site_url = test_server()->GetURL("files/title3.html");
-  std::string bar_com("bar.com");
-  replace_host.SetHostStr(bar_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
-  EXPECT_EQ(cross_site_url, observer.navigation_url());
+  NavigateFrameToURL(
+      root->child_at(0),
+      embedded_test_server()->GetURL("/cross-site/bar.com/title3.html"));
   EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(embedded_test_server()->base_url().scheme(),
+            observer.navigation_url().scheme());
+  EXPECT_EQ("bar.com", observer.navigation_url().host());
+  EXPECT_EQ("/title3.html", observer.navigation_url().path());
 
   // Check again that a new process is created and is different from the
   // top level one and the previous one.
@@ -307,9 +313,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
 #define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -321,22 +325,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
 
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
-  GURL http_url(test_server()->GetURL("files/title1.html"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(child, http_url);
   EXPECT_EQ(http_url, observer.navigation_url());
   EXPECT_TRUE(observer.navigation_succeeded());
 
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-
   // Load cross-site page into iframe.
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
-  EXPECT_EQ(cross_site_url, observer.navigation_url());
+  NavigateFrameToURL(
+      root->child_at(0),
+      embedded_test_server()->GetURL("/cross-site/foo.com/title2.html"));
   EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ("foo.com", observer.navigation_url().host());
+  EXPECT_EQ("/title2.html", observer.navigation_url().path());
 
   // Ensure that we have created a new process for the subframe.
   ASSERT_EQ(1U, root->child_count());
@@ -345,13 +345,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
 
   // Emulate the main frame changing the src of the iframe such that it
   // navigates cross-site.
-  cross_site_url = test_server()->GetURL("files/title3.html");
-  std::string bar_com("bar.com");
-  replace_host.SetHostStr(bar_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  NavigateIframeToURL(shell(), cross_site_url, "test");
-  EXPECT_EQ(cross_site_url, observer.navigation_url());
+  NavigateIframeToURL(
+      shell(),
+      embedded_test_server()->GetURL("/cross-site/bar.com/title3.html"),
+      "test");
   EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ("bar.com", observer.navigation_url().host());
+  EXPECT_EQ("/title3.html", observer.navigation_url().path());
 
   // Check again that a new process is created and is different from the
   // top level one and the previous one.
@@ -376,9 +376,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
 // TODO(creis): Disabled for flakiness; see http://crbug.com/405582.
 // TODO(creis): Enable this on Android when we can kill the process there.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
   StartFrameAtDataURL();
@@ -388,10 +386,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   std::string foo_com("foo.com");
 
   // Load cross-site page into iframe.
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  EXPECT_TRUE(NavigateIframeToURL(shell(), cross_site_url, "test"));
+  EXPECT_TRUE(NavigateIframeToURL(
+      shell(),
+      embedded_test_server()->GetURL("/cross-site/foo.com/title2.html"),
+      "test"));
 
   // Check the subframe process.
   FrameTreeNode* root =
@@ -400,7 +398,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* child = root->child_at(0);
   EXPECT_EQ(main_url, root->current_url());
-  EXPECT_EQ(cross_site_url, child->current_url());
+  EXPECT_EQ("foo.com", child->current_url().host());
+  EXPECT_EQ("/title2.html", child->current_url().path());
 
   EXPECT_TRUE(
       child->current_frame_host()->render_view_host()->IsRenderViewLive());

@@ -24,6 +24,7 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
                            std::string iframe_id);
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 };
 
 }  // namespace content
