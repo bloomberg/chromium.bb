@@ -76,7 +76,7 @@ class NoEventWindowDelegate : public aura::test::TestWindowDelegate {
 
  private:
   // Overridden from aura::WindowDelegate:
-  virtual bool HasHitTestMask() const OVERRIDE { return true; }
+  virtual bool HasHitTestMask() const override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(NoEventWindowDelegate);
 };
@@ -127,33 +127,33 @@ class WindowSliderDelegateTest : public WindowSlider::Delegate {
   }
 
   // Overridden from WindowSlider::Delegate:
-  virtual ui::Layer* CreateBackLayer() OVERRIDE {
+  virtual ui::Layer* CreateBackLayer() override {
     if (!can_create_layer_)
       return NULL;
     created_back_layer_ = true;
     return CreateLayerForTest();
   }
 
-  virtual ui::Layer* CreateFrontLayer() OVERRIDE {
+  virtual ui::Layer* CreateFrontLayer() override {
     if (!can_create_layer_)
       return NULL;
     created_front_layer_ = true;
     return CreateLayerForTest();
   }
 
-  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) OVERRIDE {
+  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override {
     slide_completed_ = true;
   }
 
-  virtual void OnWindowSlideCompleting() OVERRIDE {
+  virtual void OnWindowSlideCompleting() override {
     slide_completing_ = true;
   }
 
-  virtual void OnWindowSlideAborted() OVERRIDE {
+  virtual void OnWindowSlideAborted() override {
     slide_aborted_ = true;
   }
 
-  virtual void OnWindowSliderDestroyed() OVERRIDE {
+  virtual void OnWindowSliderDestroyed() override {
     slider_destroyed_ = true;
   }
 
@@ -179,7 +179,7 @@ class WindowSliderDeleteOwnerOnDestroy : public WindowSliderDelegateTest {
 
  private:
   // Overridden from WindowSlider::Delegate:
-  virtual void OnWindowSliderDestroyed() OVERRIDE {
+  virtual void OnWindowSliderDestroyed() override {
     WindowSliderDelegateTest::OnWindowSliderDestroyed();
     delete owner_;
   }
@@ -198,7 +198,7 @@ class WindowSliderDeleteOwnerOnComplete : public WindowSliderDelegateTest {
 
  private:
   // Overridden from WindowSlider::Delegate:
-  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) OVERRIDE {
+  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override {
     WindowSliderDelegateTest::OnWindowSlideCompleted(layer.Pass());
     delete owner_;
   }

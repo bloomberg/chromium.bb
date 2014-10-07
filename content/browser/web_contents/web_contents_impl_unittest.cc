@@ -45,24 +45,24 @@ class WebContentsImplTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
   virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE {
+      WebUI* web_ui, const GURL& url) const override {
     if (!UseWebUI(url))
       return NULL;
     return new WebUIController(web_ui);
   }
 
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE {
+      const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE {
+                              const GURL& url) const override {
     return UseWebUI(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE {
+                                      const GURL& url) const override {
     return UseWebUI(url);
   }
 
@@ -78,10 +78,10 @@ class TestInterstitialPageDelegate : public InterstitialPageDelegate {
  public:
   explicit TestInterstitialPageDelegate(TestInterstitialPage* interstitial_page)
       : interstitial_page_(interstitial_page) {}
-  virtual void CommandReceived(const std::string& command) OVERRIDE;
-  virtual std::string GetHTMLContents() OVERRIDE { return std::string(); }
-  virtual void OnDontProceed() OVERRIDE;
-  virtual void OnProceed() OVERRIDE;
+  virtual void CommandReceived(const std::string& command) override;
+  virtual std::string GetHTMLContents() override { return std::string(); }
+  virtual void OnDontProceed() override;
+  virtual void OnProceed() override;
  private:
   TestInterstitialPage* interstitial_page_;
 };
@@ -186,7 +186,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
   }
 
  protected:
-  virtual WebContentsView* CreateWebContentsView() OVERRIDE {
+  virtual WebContentsView* CreateWebContentsView() override {
     return NULL;
   }
 
@@ -223,7 +223,7 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
   }
 
   virtual void TestInterstitialPageDeleted(
-      TestInterstitialPage* interstitial) OVERRIDE {
+      TestInterstitialPage* interstitial) override {
     DCHECK(interstitial_page_ == interstitial);
     interstitial_page_ = NULL;
   }
@@ -239,7 +239,7 @@ class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
 
   virtual ~WebContentsImplTestBrowserClient() {}
 
-  virtual bool ShouldAssignSiteForURL(const GURL& url) OVERRIDE {
+  virtual bool ShouldAssignSiteForURL(const GURL& url) override {
     return assign_site_for_url_;
   }
 
@@ -275,13 +275,13 @@ class TestWebContentsObserver : public WebContentsObserver {
   virtual ~TestWebContentsObserver() {}
 
   virtual void DidFinishLoad(RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE {
+                             const GURL& validated_url) override {
     last_url_ = validated_url;
   }
   virtual void DidFailLoad(RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
                            int error_code,
-                           const base::string16& error_description) OVERRIDE {
+                           const base::string16& error_description) override {
     last_url_ = validated_url;
   }
 
@@ -301,12 +301,12 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
   virtual ~FakeFullscreenDelegate() {}
 
   virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen) OVERRIDE {
+                                          bool enter_fullscreen) override {
     fullscreened_contents_ = enter_fullscreen ? web_contents : NULL;
   }
 
   virtual bool IsFullscreenForTabOrPending(const WebContents* web_contents)
-      const OVERRIDE {
+      const override {
     return fullscreened_contents_ && web_contents == fullscreened_contents_;
   }
 
@@ -322,7 +322,7 @@ class FakeValidationMessageDelegate : public WebContentsDelegate {
       : hide_validation_message_was_called_(false) {}
   virtual ~FakeValidationMessageDelegate() {}
 
-  virtual void HideValidationMessage(WebContents* web_contents) OVERRIDE {
+  virtual void HideValidationMessage(WebContents* web_contents) override {
     hide_validation_message_was_called_ = true;
   }
 
@@ -2453,7 +2453,7 @@ class ContentsZoomChangedDelegate : public WebContentsDelegate {
   }
 
   // WebContentsDelegate:
-  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE {
+  virtual void ContentsZoomChange(bool zoom_in) override {
     contents_zoom_changed_call_count_++;
     last_zoom_in_ = zoom_in;
   }

@@ -31,7 +31,7 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     if (!closure_.is_null())
       closure_.Run();
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);

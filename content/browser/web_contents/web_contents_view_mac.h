@@ -66,35 +66,35 @@ class WebContentsViewMac : public WebContentsView,
   virtual ~WebContentsViewMac();
 
   // WebContentsView implementation --------------------------------------------
-  virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
-  virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
-  virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void SizeContents(const gfx::Size& size) OVERRIDE;
-  virtual void Focus() OVERRIDE;
-  virtual void SetInitialFocus() OVERRIDE;
-  virtual void StoreFocus() OVERRIDE;
-  virtual void RestoreFocus() OVERRIDE;
-  virtual DropData* GetDropData() const OVERRIDE;
-  virtual gfx::Rect GetViewBounds() const OVERRIDE;
-  virtual void SetAllowOtherViews(bool allow) OVERRIDE;
-  virtual bool GetAllowOtherViews() const OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const override;
+  virtual gfx::NativeView GetContentNativeView() const override;
+  virtual gfx::NativeWindow GetTopLevelNativeWindow() const override;
+  virtual void GetContainerBounds(gfx::Rect* out) const override;
+  virtual void SizeContents(const gfx::Size& size) override;
+  virtual void Focus() override;
+  virtual void SetInitialFocus() override;
+  virtual void StoreFocus() override;
+  virtual void RestoreFocus() override;
+  virtual DropData* GetDropData() const override;
+  virtual gfx::Rect GetViewBounds() const override;
+  virtual void SetAllowOtherViews(bool allow) override;
+  virtual bool GetAllowOtherViews() const override;
   virtual void CreateView(
-      const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
+      const gfx::Size& initial_size, gfx::NativeView context) override;
   virtual RenderWidgetHostViewBase* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
+      RenderWidgetHost* render_widget_host) override;
   virtual RenderWidgetHostViewBase* CreateViewForPopupWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
-  virtual void SetPageTitle(const base::string16& title) OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
-  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
-  virtual void SetOverscrollControllerEnabled(bool enabled) OVERRIDE;
-  virtual bool IsEventTracking() const OVERRIDE;
-  virtual void CloseTabAfterEventTracking() OVERRIDE;
+      RenderWidgetHost* render_widget_host) override;
+  virtual void SetPageTitle(const base::string16& title) override;
+  virtual void RenderViewCreated(RenderViewHost* host) override;
+  virtual void RenderViewSwappedIn(RenderViewHost* host) override;
+  virtual void SetOverscrollControllerEnabled(bool enabled) override;
+  virtual bool IsEventTracking() const override;
+  virtual void CloseTabAfterEventTracking() override;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
-                               const ContextMenuParams& params) OVERRIDE;
+                               const ContextMenuParams& params) override;
   virtual void ShowPopupMenu(RenderFrameHost* render_frame_host,
                              const gfx::Rect& bounds,
                              int item_height,
@@ -102,16 +102,16 @@ class WebContentsViewMac : public WebContentsView,
                              int selected_item,
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
-                             bool allow_multiple_selection) OVERRIDE;
-  virtual void HidePopupMenu() OVERRIDE;
+                             bool allow_multiple_selection) override;
+  virtual void HidePopupMenu() override;
   virtual void StartDragging(const DropData& drop_data,
                              blink::WebDragOperationsMask allowed_operations,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
-                             const DragEventSourceInfo& event_info) OVERRIDE;
-  virtual void UpdateDragCursor(blink::WebDragOperation operation) OVERRIDE;
-  virtual void GotFocus() OVERRIDE;
-  virtual void TakeFocus(bool reverse) OVERRIDE;
+                             const DragEventSourceInfo& event_info) override;
+  virtual void UpdateDragCursor(blink::WebDragOperation operation) override;
+  virtual void GotFocus() override;
+  virtual void TakeFocus(bool reverse) override;
 
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.

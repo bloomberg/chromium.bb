@@ -55,7 +55,7 @@ class ImageLayerDelegate : public ui::LayerDelegate {
 
  private:
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
     if (image_.IsEmpty()) {
       canvas->DrawColor(SK_ColorWHITE);
     } else {
@@ -69,15 +69,15 @@ class ImageLayerDelegate : public ui::LayerDelegate {
   }
 
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+      const gfx::Rect& damage_rect_in_dip) override {}
 
   // Called when the layer's device scale factor has changed.
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
   }
 
   // Invoked prior to the bounds changing. The returned closured is run after
   // the bounds change.
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+  virtual base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -111,17 +111,17 @@ class OverlayDismissAnimator
 
   // Overridden from ui::LayerAnimationObserver
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     delete this;
   }
 
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     delete this;
   }
 
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
+      ui::LayerAnimationSequence* sequence) override {}
 
  private:
   virtual ~OverlayDismissAnimator() {}

@@ -32,11 +32,11 @@ class ShadowLayerDelegate : public ui::LayerDelegate {
 
  private:
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
+      const gfx::Rect& damage_rect_in_dip) override;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  virtual base::Closure PrepareForLayerBoundsChange() override;
 
   scoped_ptr<ui::Layer> layer_;
 

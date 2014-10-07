@@ -35,12 +35,12 @@ class GestureNavSimple : public OverscrollControllerDelegate {
   bool ApplyEffectsForDelta(float delta_x);
 
   // OverscrollControllerDelegate:
-  virtual gfx::Rect GetVisibleBounds() const OVERRIDE;
+  virtual gfx::Rect GetVisibleBounds() const override;
   // Returns true if the scroll update was consumed.
-  virtual bool OnOverscrollUpdate(float delta_x, float delta_y) OVERRIDE;
-  virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) OVERRIDE;
+  virtual bool OnOverscrollUpdate(float delta_x, float delta_y) override;
+  virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) override;
   virtual void OnOverscrollModeChange(OverscrollMode old_mode,
-                                      OverscrollMode new_mode) OVERRIDE;
+                                      OverscrollMode new_mode) override;
 
   WebContentsImpl* web_contents_;
   scoped_ptr<ui::Layer> clip_layer_;

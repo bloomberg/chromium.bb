@@ -309,7 +309,7 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
   }
 
   // WebContentsObserver:
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     owner_->OnWebContentsDestroyed(
         static_cast<WebContentsImpl*>(web_contents()));
   }

@@ -77,16 +77,16 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   ui::Layer* CreateSlideLayer(int offset);
 
   // Overridden from WindowSlider::Delegate:
-  virtual ui::Layer* CreateBackLayer() OVERRIDE;
-  virtual ui::Layer* CreateFrontLayer() OVERRIDE;
-  virtual void OnWindowSlideCompleting() OVERRIDE;
-  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) OVERRIDE;
-  virtual void OnWindowSlideAborted() OVERRIDE;
-  virtual void OnWindowSliderDestroyed() OVERRIDE;
+  virtual ui::Layer* CreateBackLayer() override;
+  virtual ui::Layer* CreateFrontLayer() override;
+  virtual void OnWindowSlideCompleting() override;
+  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override;
+  virtual void OnWindowSlideAborted() override;
+  virtual void OnWindowSliderDestroyed() override;
 
   // Overridden from WebContentsObserver:
-  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
-  virtual void DidStopLoading(RenderViewHost* host) OVERRIDE;
+  virtual void DidFirstVisuallyNonEmptyPaint() override;
+  virtual void DidStopLoading(RenderViewHost* host) override;
 
   // The WebContents which is being navigated.
   WebContentsImpl* web_contents_;

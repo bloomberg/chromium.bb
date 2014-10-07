@@ -42,34 +42,34 @@ class CONTENT_EXPORT TouchEditableImplAura
   void OverscrollCompleted();
 
   // Overridden from RenderWidgetHostViewAura::TouchEditingClient.
-  virtual void StartTouchEditing() OVERRIDE;
-  virtual void EndTouchEditing(bool quick) OVERRIDE;
+  virtual void StartTouchEditing() override;
+  virtual void EndTouchEditing(bool quick) override;
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
-                                          const gfx::Rect& focus) OVERRIDE;
-  virtual void OnTextInputTypeChanged(ui::TextInputType type) OVERRIDE;
-  virtual bool HandleInputEvent(const ui::Event* event) OVERRIDE;
-  virtual void GestureEventAck(int gesture_event_type) OVERRIDE;
-  virtual void DidStopFlinging() OVERRIDE;
-  virtual void OnViewDestroyed() OVERRIDE;
+                                          const gfx::Rect& focus) override;
+  virtual void OnTextInputTypeChanged(ui::TextInputType type) override;
+  virtual bool HandleInputEvent(const ui::Event* event) override;
+  virtual void GestureEventAck(int gesture_event_type) override;
+  virtual void DidStopFlinging() override;
+  virtual void OnViewDestroyed() override;
 
   // Overridden from ui::TouchEditable:
   virtual void SelectRect(const gfx::Point& start,
-                          const gfx::Point& end) OVERRIDE;
-  virtual void MoveCaretTo(const gfx::Point& point) OVERRIDE;
-  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) OVERRIDE;
-  virtual gfx::Rect GetBounds() OVERRIDE;
-  virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE;
-  virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE;
-  virtual bool DrawsHandles() OVERRIDE;
-  virtual void OpenContextMenu(const gfx::Point& anchor) OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+                          const gfx::Point& end) override;
+  virtual void MoveCaretTo(const gfx::Point& point) override;
+  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override;
+  virtual gfx::Rect GetBounds() override;
+  virtual gfx::NativeView GetNativeView() const override;
+  virtual void ConvertPointToScreen(gfx::Point* point) override;
+  virtual void ConvertPointFromScreen(gfx::Point* point) override;
+  virtual bool DrawsHandles() override;
+  virtual void OpenContextMenu(const gfx::Point& anchor) override;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual void DestroyTouchSelection() OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  virtual void DestroyTouchSelection() override;
 
  protected:
   TouchEditableImplAura();

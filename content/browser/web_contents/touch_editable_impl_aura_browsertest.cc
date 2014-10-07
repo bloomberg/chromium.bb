@@ -50,14 +50,14 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   }
 
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
-                                          const gfx::Rect& focus) OVERRIDE {
+                                          const gfx::Rect& focus) override {
     selection_changed_callback_arrived_ = true;
     TouchEditableImplAura::OnSelectionOrCursorChanged(anchor, focus);
     if (waiting_for_selection_changed_callback_)
       selection_changed_wait_run_loop_->Quit();
   }
 
-  virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
+  virtual void GestureEventAck(int gesture_event_type) override {
     last_gesture_ack_type_ =
         static_cast<WebInputEvent::Type>(gesture_event_type);
     TouchEditableImplAura::GestureEventAck(gesture_event_type);
@@ -65,7 +65,7 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
       gesture_ack_wait_run_loop_->Quit();
   }
 
-  virtual void DidStopFlinging() OVERRIDE {
+  virtual void DidStopFlinging() override {
     fling_stop_callback_arrived_ = true;
     TouchEditableImplAura::DidStopFlinging();
     if (waiting_for_fling_stop_callback_)
@@ -118,7 +118,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
   TouchEditableImplAuraTest() {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableTouchEditing);
   }
 

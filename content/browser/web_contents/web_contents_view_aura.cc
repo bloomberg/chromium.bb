@@ -151,12 +151,12 @@ class OverscrollWindowDelegate : public ImageWindowDelegate {
   }
 
   // Overridden from ui::EventHandler.
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override {
     if (forward_events_ && web_contents_window())
       web_contents_window()->delegate()->OnScrollEvent(event);
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     if (forward_events_ && web_contents_window())
       web_contents_window()->delegate()->OnGestureEvent(event);
   }
@@ -192,7 +192,7 @@ class WebDragSourceAura : public NotificationObserver {
   // NotificationObserver:
   virtual void Observe(int type,
       const NotificationSource& source,
-      const NotificationDetails& details) OVERRIDE {
+      const NotificationDetails& details) override {
     if (type != NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
       return;
 
@@ -504,7 +504,7 @@ class WebContentsViewAura::WindowObserver
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowHierarchyChanged(
-      const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE {
+      const aura::WindowObserver::HierarchyChangeParams& params) override {
     if (params.receiver != view_->window_.get() ||
         !params.target->Contains(view_->window_.get())) {
       return;
@@ -524,7 +524,7 @@ class WebContentsViewAura::WindowObserver
   // Note: this is hard coding how Chrome layer adds its dialogs. Since NPAPI is
   // going to be deprecated in a year, this is ok for now. The test for this is
   // PrintPreviewTest.WindowedNPAPIPluginHidden.
-  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
+  virtual void OnWindowAdded(aura::Window* new_window) override {
     if (!new_window->Contains(view_->window_.get())) {
       // Skip the case when the parent moves to the root window.
       if (new_window != host_window_) {
@@ -542,7 +542,7 @@ class WebContentsViewAura::WindowObserver
     }
   }
 
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE {
+  virtual void OnWillRemoveWindow(aura::Window* window) override {
     if (window == view_->window_)
       return;
 
@@ -551,7 +551,7 @@ class WebContentsViewAura::WindowObserver
   }
 
   virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     if (window == view_->window_ ||
         window->parent() == host_window_ ||
         window->parent() == view_->window_->GetRootWindow()) {
@@ -561,7 +561,7 @@ class WebContentsViewAura::WindowObserver
 #endif
 
   virtual void OnWindowParentChanged(aura::Window* window,
-                                     aura::Window* parent) OVERRIDE {
+                                     aura::Window* parent) override {
     if (window != view_->window_)
       return;
 
@@ -617,7 +617,7 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     if (window == host_window_ || window == view_->window_) {
       SendScreenRects();
       if (view_->touch_editable_)
@@ -629,14 +629,14 @@ class WebContentsViewAura::WindowObserver
     }
   }
 
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     if (window == host_window_) {
       host_window_->RemoveObserver(this);
       host_window_ = NULL;
     }
   }
 
-  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) override {
     if (window == view_->window_) {
       window->GetHost()->AddObserver(this);
 #if defined(OS_WIN)
@@ -647,7 +647,7 @@ class WebContentsViewAura::WindowObserver
   }
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) OVERRIDE {
+                                              aura::Window* new_root) override {
     if (window == view_->window_) {
       window->GetHost()->RemoveObserver(this);
 #if defined(OS_WIN)
@@ -667,7 +667,7 @@ class WebContentsViewAura::WindowObserver
 
   // Overridden WindowTreeHostObserver:
   virtual void OnHostMoved(const aura::WindowTreeHost* host,
-                           const gfx::Point& new_origin) OVERRIDE {
+                           const gfx::Point& new_origin) override {
     TRACE_EVENT1("ui",
                  "WebContentsViewAura::WindowObserver::OnHostMoved",
                  "new_origin", new_origin.ToString());

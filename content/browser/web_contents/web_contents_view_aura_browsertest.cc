@@ -73,15 +73,15 @@ class VerticalOverscrollTracker : public content::WebContentsDelegate {
   }
 
  private:
-  virtual bool CanOverscrollContent() const OVERRIDE {
+  virtual bool CanOverscrollContent() const override {
     return true;
   }
 
-  virtual void OverscrollUpdate(int delta_y) OVERRIDE {
+  virtual void OverscrollUpdate(int delta_y) override {
     ++count_;
   }
 
-  virtual void OverscrollComplete() OVERRIDE {
+  virtual void OverscrollComplete() override {
     completed_ = true;
   }
 
@@ -133,13 +133,13 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
  private:
   // Overridden from NavigationEntryScreenshotManager:
   virtual void TakeScreenshotImpl(RenderViewHost* host,
-                                  NavigationEntryImpl* entry) OVERRIDE {
+                                  NavigationEntryImpl* entry) override {
     ++waiting_for_screenshots_;
     screenshot_taken_for_ = host;
     NavigationEntryScreenshotManager::TakeScreenshotImpl(host, entry);
   }
 
-  virtual void OnScreenshotSet(NavigationEntryImpl* entry) OVERRIDE {
+  virtual void OnScreenshotSet(NavigationEntryImpl* entry) override {
     --waiting_for_screenshots_;
     screenshot_set_[entry] = true;
     NavigationEntryScreenshotManager::OnScreenshotSet(entry);
@@ -174,7 +174,7 @@ class NavigationWatcher : public WebContentsObserver {
 
  private:
   // Overridden from WebContentsObserver:
-  virtual void AboutToNavigateRenderView(RenderViewHost* host) OVERRIDE {
+  virtual void AboutToNavigateRenderView(RenderViewHost* host) override {
     navigated_ = true;
     if (should_quit_loop_)
       base::MessageLoop::current()->Quit();
@@ -215,7 +215,7 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
   }
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
       InputHostMsg_HandleInputEvent_ACK::Param params;
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
@@ -264,7 +264,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     controller->SetScreenshotManager(screenshot_manager_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
   }

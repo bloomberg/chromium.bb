@@ -105,14 +105,14 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
                                     scoped_ptr<ShadowLayerDelegate> shadow);
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) OVERRIDE;
+                                              aura::Window* new_root) override;
 
   Delegate* delegate_;
 

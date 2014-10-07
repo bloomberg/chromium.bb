@@ -62,7 +62,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
  protected:
   // RenderViewHostImplTestHarness:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
     const GURL first("https://www.google.com");
@@ -103,7 +103,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     EXPECT_FALSE(overlay_->received_paint_update_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     overlay_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }

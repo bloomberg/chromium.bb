@@ -56,7 +56,7 @@ class DeleteAfterAnimation : public ui::ImplicitAnimationObserver {
   virtual ~DeleteAfterAnimation() {}
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     // Deleting an observer when a ScopedLayerAnimationSettings is iterating
     // over them can cause a crash (which can happen during tests). So instead,
     // schedule this observer to be deleted soon.
@@ -84,7 +84,7 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
 
  private:
   // ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
     SkPaint paint;
     paint.setColor(SkColorSetARGB(0xa0, 0, 0, 0));
     paint.setStyle(SkPaint::kFill_Style);
@@ -100,11 +100,11 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
   }
 
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+      const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+  virtual base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
