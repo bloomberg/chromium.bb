@@ -3,21 +3,48 @@
     "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
-      "base_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 5
+        }
+      },
       "cacheinvalidation_unittests",
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
       "components_unittests",
-      "content_browsertests",
-      "content_unittests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
       "gpu_unittests",
       "google_apis_unittests",
-      "interactive_ui_tests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
@@ -32,22 +59,36 @@
       "mojo_application_manager_unittests",
       "mojo_shell_tests",
       "mojo_system_unittests",
-      "net_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
       "sandbox_mac_unittests",
       "sql_unittests",
-      "sync_integration_tests",
+      {
+        "test": "sync_integration_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "sync_unit_tests",
       "ui_unittests",
-      "unit_tests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "url_unittests"
     ]
   },
   "Mac10.6 Tests (2)": {
     "gtest_tests": [
-      "browser_tests"
     ]
   },
   "Mac10.7 Tests (1)": {
