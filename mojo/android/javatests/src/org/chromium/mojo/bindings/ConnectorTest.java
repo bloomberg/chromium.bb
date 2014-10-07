@@ -24,8 +24,6 @@ import java.util.ArrayList;
  */
 public class ConnectorTest extends MojoTestCase {
 
-    private static final long RUN_LOOP_TIMEOUT_MS = 25;
-
     private static final int DATA_LENGTH = 1024;
 
     private MessagePipeHandle mHandle;
@@ -87,7 +85,7 @@ public class ConnectorTest extends MojoTestCase {
     public void testReceivingMessage() {
         mHandle.writeMessage(mTestMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertNull(mErrorHandler.getLastMojoException());
         assertEquals(1, mReceiver.messages.size());
         Message received = mReceiver.messages.get(0);
@@ -101,7 +99,7 @@ public class ConnectorTest extends MojoTestCase {
     @SmallTest
     public void testErrors() {
         mHandle.close();
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertNotNull(mErrorHandler.getLastMojoException());
         assertEquals(MojoResult.FAILED_PRECONDITION,
                 mErrorHandler.getLastMojoException().getMojoResult());

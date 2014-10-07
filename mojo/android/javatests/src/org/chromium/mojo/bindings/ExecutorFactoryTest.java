@@ -53,7 +53,7 @@ public class ExecutorFactoryTest extends MojoTestCase {
         mExecutor.execute(action);
         mExecutor.execute(action);
         assertEquals(0, mThreadContainer.size());
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoop(RUN_LOOP_TIMEOUT_MS);
         assertEquals(2, mThreadContainer.size());
         for (Thread thread : mThreadContainer) {
             assertEquals(Thread.currentThread(), thread);
@@ -95,7 +95,7 @@ public class ExecutorFactoryTest extends MojoTestCase {
             fail("Unexpected exception: " + e.getMessage());
         }
         assertEquals(0, mThreadContainer.size());
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoop(RUN_LOOP_TIMEOUT_MS);
         assertEquals(CONCURRENCY_LEVEL, mThreadContainer.size());
         for (Thread thread : mThreadContainer) {
             assertEquals(Thread.currentThread(), thread);

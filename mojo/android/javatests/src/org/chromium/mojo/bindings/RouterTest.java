@@ -24,8 +24,6 @@ import java.util.ArrayList;
  */
 public class RouterTest extends MojoTestCase {
 
-    private static final long RUN_LOOP_TIMEOUT_MS = 25;
-
     private MessagePipeHandle mHandle;
     private Router mRouter;
     private RecordingMessageReceiverWithResponder mReceiver;
@@ -82,7 +80,7 @@ public class RouterTest extends MojoTestCase {
         Message responseMessage = encoder.getMessage();
         mHandle.writeMessage(responseMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
 
         assertEquals(1, mReceiver.messages.size());
         ServiceMessage receivedResponseMessage = mReceiver.messages.get(0).asServiceMessage();
@@ -108,7 +106,7 @@ public class RouterTest extends MojoTestCase {
         Message headerMessage = encoder.getMessage();
         mHandle.writeMessage(headerMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
 
         assertEquals(1, mReceiver.messagesWithReceivers.size());
         Pair<Message, MessageReceiver> receivedMessage =

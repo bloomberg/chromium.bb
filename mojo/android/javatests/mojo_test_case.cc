@@ -13,13 +13,17 @@
 #include "base/run_loop.h"
 #include "base/test/test_support_android.h"
 #include "jni/MojoTestCase_jni.h"
+#include "mojo/common/message_pump_mojo.h"
+
 #include "mojo/public/cpp/environment/environment.h"
 
 namespace {
 
 struct TestEnvironment {
+  TestEnvironment() : message_loop(mojo::common::MessagePumpMojo::Create()) {}
+
   base::ShadowingAtExitManager at_exit;
-  base::MessageLoopForUI message_loop;
+  base::MessageLoop message_loop;
 };
 
 }  // namespace
@@ -46,12 +50,16 @@ static void TearDownTestEnvironment(JNIEnv* env,
 }
 
 static void RunLoop(JNIEnv* env, jobject jcaller, jlong timeout_ms) {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(timeout_ms));
   base::RunLoop run_loop;
-  run_loop.Run();
+  if (timeout_ms) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::MessageLoop::QuitClosure(),
+        base::TimeDelta::FromMilliseconds(timeout_ms));
+    run_loop.Run();
+  } else {
+    run_loop.RunUntilIdle();
+  }
 }
 
 bool RegisterMojoTestCase(JNIEnv* env) {

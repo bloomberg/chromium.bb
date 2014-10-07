@@ -38,12 +38,26 @@ public class MojoTestCase extends InstrumentationTestCase {
         super.tearDown();
     }
 
+    /**
+     * Runs the run loop for the given time.
+     */
+    protected void runLoop(long timeoutMS) {
+        nativeRunLoop(timeoutMS);
+    }
+
+    /**
+     * Runs the run loop until no handle or task are immediately available.
+     */
+    protected void runLoopUntilIdle() {
+        nativeRunLoop(0);
+    }
+
     private native void nativeInitApplicationContext(Context context);
 
     private native long nativeSetupTestEnvironment();
 
     private native void nativeTearDownTestEnvironment(long testEnvironment);
 
-    protected native void nativeRunLoop(long timeoutMS);
+    private native void nativeRunLoop(long timeoutMS);
 
 }

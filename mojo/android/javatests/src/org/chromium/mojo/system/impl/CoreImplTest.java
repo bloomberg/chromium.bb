@@ -598,7 +598,7 @@ public class CoreImplTest extends MojoTestCase {
 
         handles.second.writeMessage(ByteBuffer.allocateDirect(1), null,
                 MessagePipeHandle.WriteFlags.NONE);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertNull(asyncWaiterResult.getException());
         assertEquals(MojoResult.OK, asyncWaiterResult.getResult());
     }
@@ -623,12 +623,12 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
         handles.second.close();
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertNull(asyncWaiterResult.getException());
         assertEquals(MojoResult.FAILED_PRECONDITION, asyncWaiterResult.getResult());
     }
@@ -653,12 +653,12 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
         cancellable.cancel();
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         // TODO(qsr) Re-enable when MojoWaitMany handles it correctly.
         // assertNull(asyncWaiterResult.getException());
         // assertEquals(MojoResult.CANCELLED, asyncWaiterResult.getResult());
@@ -684,7 +684,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        nativeRunLoop(10 * RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertNull(asyncWaiterResult.getException());
         assertEquals(MojoResult.DEADLINE_EXCEEDED, asyncWaiterResult.getResult());
     }
@@ -709,18 +709,18 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
         cancellable.cancel();
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
         handles.second.writeMessage(ByteBuffer.allocateDirect(1), null,
                 MessagePipeHandle.WriteFlags.NONE);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
     }
@@ -747,7 +747,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(null, asyncWaiterResult.getException());
         cancellable.cancel();
 
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
     }

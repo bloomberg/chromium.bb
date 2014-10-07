@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class InterfacesTest extends MojoTestCase {
 
-    private static final long RUN_LOOP_TIMEOUT_MS = 25;
+    private static final String OBJECT_NAME = "hello world";
 
     private final List<Closeable> mCloseablesToClose = new ArrayList<Closeable>();
 
@@ -241,7 +241,6 @@ public class InterfacesTest extends MojoTestCase {
      * calls are forwared to |impl|.
      */
     private void checkProxy(NamedObject.Proxy proxy, MockNamedObjectImpl impl) {
-        final String NAME = "hello world";
         RecordingGetNameResponse callback = new RecordingGetNameResponse();
         CapturingErrorHandler errorHandler = new CapturingErrorHandler();
         proxy.setErrorHandler(errorHandler);
@@ -252,28 +251,28 @@ public class InterfacesTest extends MojoTestCase {
         }
 
         proxy.getName(callback);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
 
         assertNull(errorHandler.getLastMojoException());
         assertTrue(callback.wasCalled());
         assertEquals("", callback.getName());
 
         callback.reset();
-        proxy.setName(NAME);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        proxy.setName(OBJECT_NAME);
+        runLoopUntilIdle();
 
         assertNull(errorHandler.getLastMojoException());
         if (impl != null) {
             assertNull(impl.getLastMojoException());
-            assertEquals(NAME, impl.getNameSynchronously());
+            assertEquals(OBJECT_NAME, impl.getNameSynchronously());
         }
 
         proxy.getName(callback);
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
 
         assertNull(errorHandler.getLastMojoException());
         assertTrue(callback.wasCalled());
-        assertEquals(NAME, callback.getName());
+        assertEquals(OBJECT_NAME, callback.getName());
     }
 
     @SmallTest
@@ -320,7 +319,7 @@ public class InterfacesTest extends MojoTestCase {
         assertFalse(client.isClosed());
 
         proxy.close();
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
 
         assertTrue(impl.isClosed());
         assertTrue(client.isClosed());
@@ -338,7 +337,7 @@ public class InterfacesTest extends MojoTestCase {
 
         assertFalse(client.wasDidStuffCalled());
 
-        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        runLoopUntilIdle();
 
         assertTrue(client.wasDidStuffCalled());
     }
