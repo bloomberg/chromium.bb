@@ -115,17 +115,11 @@ bool MatchesSecurityOrigin(const BuiltInHost& host,
                            const std::string& extension_id) {
   GURL origin(std::string(kExtensionScheme) + "://" + extension_id);
   for (int i = 0; i < host.allowed_origins_count; i++) {
-    URLPattern allowed_origin(URLPattern::SCHEME_ALL);
-    DCHECK_EQ(URLPattern::PARSE_SUCCESS,
-              allowed_origin.Parse(host.allowed_origins[i]));
-    LOG(ERROR) << "allowed_origin is " << allowed_origin.GetAsString()
-              << " and extension_id is " << extension_id;
+    URLPattern allowed_origin(URLPattern::SCHEME_ALL, host.allowed_origins[i]);
     if (allowed_origin.MatchesSecurityOrigin(origin)) {
-      LOG(ERROR) << "Pattern matched";
       return true;
     }
   }
-  LOG(ERROR) << "Pattern mismatched";
   return false;
 }
 
