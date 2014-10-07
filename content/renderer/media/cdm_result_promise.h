@@ -13,59 +13,71 @@
 
 namespace content {
 
-// Used to convert a WebContentDecryptionModuleResult into a CdmPromise so that
-// it can be passed through Chromium. When CdmPromise::resolve(T) is called,
-// OnResolve(T) will be called and will call the appropriate complete...()
-// method on WebContentDecryptionModuleResult. If CdmPromise::reject() is called
-// instead, WebContentDecryptionModuleResult::completeWithError() is called.
-// If constructed with a |uma_name| (which must be the name of a
-// CdmPromiseResult UMA), CdmResultPromise will report the promise result
-// (success or rejection code).
-template <typename T>
-class CdmResultPromise : public media::CdmPromiseTemplate<T> {
+// Used to convert a WebContentDecryptionModuleResult into a CdmPromiseTemplate
+// so that it can be passed through Chromium. When resolve(T) is called, the
+// appropriate complete...() method on WebContentDecryptionModuleResult will be
+// invoked. If reject() is called instead,
+// WebContentDecryptionModuleResult::completeWithError() is called.
+// If constructed with a |uma_name|, CdmResultPromise will report the promise
+// result (success or rejection code) to UMA.
+template <typename... T>
+class CdmResultPromise : public media::CdmPromiseTemplate<T...> {
  public:
-  explicit CdmResultPromise(
-      const blink::WebContentDecryptionModuleResult& result);
   CdmResultPromise(const blink::WebContentDecryptionModuleResult& result,
                    const std::string& uma_name);
   virtual ~CdmResultPromise();
 
- protected:
-  // OnResolve() is virtual as it may need special handling in derived classes.
-  virtual void OnResolve(const T& result);
-  void OnReject(media::MediaKeys::Exception exception_code,
-                uint32 system_code,
-                const std::string& error_message);
+  // CdmPromiseTemplate<T> implementation.
+  virtual void resolve(const T&... result) override;
+  virtual void reject(media::MediaKeys::Exception exception_code,
+                      uint32 system_code,
+                      const std::string& error_message) override;
+
+ private:
+  using media::CdmPromiseTemplate<T...>::MarkPromiseSettled;
 
   blink::WebContentDecryptionModuleResult web_cdm_result_;
 
- private:
+  // UMA name to report result to.
+  std::string uma_name_;
+
   DISALLOW_COPY_AND_ASSIGN(CdmResultPromise);
 };
 
-// Specialization for no parameter to resolve().
-template <>
-class CdmResultPromise<void> : public media::CdmPromiseTemplate<void> {
+typedef base::Callback<blink::WebContentDecryptionModuleResult::SessionStatus(
+    const std::string& web_session_id)> SessionInitializedCB;
+
+// Special class for resolving a new session promise. Resolving a new session
+// promise returns the session ID (as a string), but the blink promise needs
+// to get passed a SessionStatus. This class converts the session id to a
+// SessionStatus by calling |new_session_created_cb|.
+class NewSessionCdmResultPromise
+    : public media::CdmPromiseTemplate<std::string> {
  public:
-  explicit CdmResultPromise(
-      const blink::WebContentDecryptionModuleResult& result);
-  CdmResultPromise(const blink::WebContentDecryptionModuleResult& result,
-                   const std::string& uma_name);
-  virtual ~CdmResultPromise();
+  NewSessionCdmResultPromise(
+      const blink::WebContentDecryptionModuleResult& result,
+      const std::string& uma_name,
+      const SessionInitializedCB& new_session_created_cb);
+  virtual ~NewSessionCdmResultPromise();
 
- protected:
-  virtual void OnResolve();
-  void OnReject(media::MediaKeys::Exception exception_code,
-                uint32 system_code,
-                const std::string& error_message);
-
-  blink::WebContentDecryptionModuleResult web_cdm_result_;
+  // CdmPromiseTemplate<T> implementation.
+  virtual void resolve(const std::string& web_session_id) override;
+  virtual void reject(media::MediaKeys::Exception exception_code,
+                      uint32 system_code,
+                      const std::string& error_message) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CdmResultPromise);
-};
+  blink::WebContentDecryptionModuleResult web_cdm_result_;
 
-typedef CdmResultPromise<void> SimpleCdmResultPromise;
+  // UMA name to report result to.
+  std::string uma_name_;
+
+  // Called on resolve() to convert the session ID into a SessionStatus to
+  // be reported to blink.
+  SessionInitializedCB new_session_created_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewSessionCdmResultPromise);
+};
 
 }  // namespace content
 

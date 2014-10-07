@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "media/base/cdm_promise.h"
+#include "media/base/cdm_callback_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/mock_filters.h"
@@ -258,31 +258,32 @@ class AesDecryptorTest : public testing::Test {
 
   scoped_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected_result) {
     scoped_ptr<SimpleCdmPromise> promise(
-        new SimpleCdmPromise(base::Bind(&AesDecryptorTest::OnResolve,
-                                        base::Unretained(this),
-                                        expected_result),
-                             base::Bind(&AesDecryptorTest::OnReject,
-                                        base::Unretained(this),
-                                        expected_result)));
+        new CdmCallbackPromise<>(base::Bind(&AesDecryptorTest::OnResolve,
+                                            base::Unretained(this),
+                                            expected_result),
+                                 base::Bind(&AesDecryptorTest::OnReject,
+                                            base::Unretained(this),
+                                            expected_result)));
     return promise.Pass();
   }
 
   scoped_ptr<NewSessionCdmPromise> CreateSessionPromise(
       PromiseResult expected_result) {
-    scoped_ptr<NewSessionCdmPromise> promise(new NewSessionCdmPromise(
-        base::Bind(&AesDecryptorTest::OnResolveWithSession,
-                   base::Unretained(this),
-                   expected_result),
-        base::Bind(&AesDecryptorTest::OnReject,
-                   base::Unretained(this),
-                   expected_result)));
+    scoped_ptr<NewSessionCdmPromise> promise(
+        new CdmCallbackPromise<std::string>(
+            base::Bind(&AesDecryptorTest::OnResolveWithSession,
+                       base::Unretained(this),
+                       expected_result),
+            base::Bind(&AesDecryptorTest::OnReject,
+                       base::Unretained(this),
+                       expected_result)));
     return promise.Pass();
   }
 
   scoped_ptr<KeyIdsPromise> CreateUsableKeyIdsPromise(
       PromiseResult expected_result,
       uint32 expected_count) {
-    scoped_ptr<KeyIdsPromise> promise(new KeyIdsPromise(
+    scoped_ptr<KeyIdsPromise> promise(new CdmCallbackPromise<KeyIdsVector>(
         base::Bind(&AesDecryptorTest::OnResolveWithUsableKeyIds,
                    base::Unretained(this),
                    expected_result,

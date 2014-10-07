@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
-#include "media/base/cdm_promise.h"
+#include "media/base/cdm_callback_promise.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
 
@@ -112,7 +112,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
   }
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
-      new media::NewSessionCdmPromise(
+      new media::CdmCallbackPromise<std::string>(
           base::Bind(&ProxyDecryptor::SetSessionId,
                      weak_ptr_factory_.GetWeakPtr(),
                      session_creation_type),
@@ -163,13 +163,13 @@ void ProxyDecryptor::AddKey(const uint8* key,
     }
   }
 
-  scoped_ptr<media::SimpleCdmPromise> promise(
-      new media::SimpleCdmPromise(base::Bind(&ProxyDecryptor::OnSessionReady,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             web_session_id),
-                                  base::Bind(&ProxyDecryptor::OnSessionError,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             web_session_id)));
+  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
+      base::Bind(&ProxyDecryptor::OnSessionReady,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 web_session_id),
+      base::Bind(&ProxyDecryptor::OnSessionError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 web_session_id)));
 
   // EME WD spec only supports a single array passed to the CDM. For
   // Clear Key using v0.1b, both arrays are used (|init_data| is key_id).
@@ -200,13 +200,13 @@ void ProxyDecryptor::AddKey(const uint8* key,
 void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
-  scoped_ptr<media::SimpleCdmPromise> promise(
-      new media::SimpleCdmPromise(base::Bind(&ProxyDecryptor::OnSessionClosed,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             web_session_id),
-                                  base::Bind(&ProxyDecryptor::OnSessionError,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             web_session_id)));
+  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
+      base::Bind(&ProxyDecryptor::OnSessionClosed,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 web_session_id),
+      base::Bind(&ProxyDecryptor::OnSessionError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 web_session_id)));
   media_keys_->RemoveSession(web_session_id, promise.Pass());
 }
 

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "media/base/cdm_promise.h"
+#include "media/base/cdm_callback_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
@@ -211,7 +211,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   scoped_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
-    scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
+    scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
         base::Bind(
             &KeyProvidingApp::OnResolve, base::Unretained(this), expected),
         base::Bind(
@@ -222,7 +222,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   scoped_ptr<NewSessionCdmPromise> CreateSessionPromise(
       PromiseResult expected) {
     scoped_ptr<media::NewSessionCdmPromise> promise(
-        new media::NewSessionCdmPromise(
+        new media::CdmCallbackPromise<std::string>(
             base::Bind(&KeyProvidingApp::OnResolveWithSession,
                        base::Unretained(this),
                        expected),

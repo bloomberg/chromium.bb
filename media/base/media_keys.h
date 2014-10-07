@@ -22,11 +22,11 @@ namespace media {
 
 class Decryptor;
 
-template <typename T>
+template <typename... T>
 class CdmPromiseTemplate;
 
 typedef CdmPromiseTemplate<std::string> NewSessionCdmPromise;
-typedef CdmPromiseTemplate<void> SimpleCdmPromise;
+typedef CdmPromiseTemplate<> SimpleCdmPromise;
 typedef std::vector<std::vector<uint8> > KeyIdsVector;
 typedef CdmPromiseTemplate<KeyIdsVector> KeyIdsPromise;
 

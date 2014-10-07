@@ -18,28 +18,6 @@ namespace content {
 
 const char kCreateSessionUMAName[] = "CreateSession";
 
-typedef base::Callback<blink::WebContentDecryptionModuleResult::SessionStatus(
-    const std::string& web_session_id)> SessionInitializedCB;
-
-class NewSessionCdmResultPromise : public CdmResultPromise<std::string> {
- public:
-  NewSessionCdmResultPromise(blink::WebContentDecryptionModuleResult result,
-                             std::string uma_name,
-                             const SessionInitializedCB& new_session_created_cb)
-      : CdmResultPromise<std::string>(result, uma_name),
-        new_session_created_cb_(new_session_created_cb) {}
-
- protected:
-  virtual void OnResolve(const std::string& web_session_id) OVERRIDE {
-    blink::WebContentDecryptionModuleResult::SessionStatus status =
-        new_session_created_cb_.Run(web_session_id);
-    web_cdm_result_.completeWithSession(status);
-  }
-
- private:
-  SessionInitializedCB new_session_created_cb_;
-};
-
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter),
@@ -125,27 +103,27 @@ void WebContentDecryptionModuleSessionImpl::update(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
   DCHECK(!web_session_id_.empty());
-  adapter_->UpdateSession(
-      web_session_id_,
-      response,
-      response_length,
-      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+  adapter_->UpdateSession(web_session_id_,
+                          response,
+                          response_length,
+                          scoped_ptr<media::SimpleCdmPromise>(
+                              new CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!web_session_id_.empty());
-  adapter_->CloseSession(
-      web_session_id_,
-      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+  adapter_->CloseSession(web_session_id_,
+                         scoped_ptr<media::SimpleCdmPromise>(
+                             new CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::remove(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!web_session_id_.empty());
-  adapter_->RemoveSession(
-      web_session_id_,
-      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+  adapter_->RemoveSession(web_session_id_,
+                          scoped_ptr<media::SimpleCdmPromise>(
+                              new CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::getUsableKeyIds(
@@ -154,7 +132,7 @@ void WebContentDecryptionModuleSessionImpl::getUsableKeyIds(
   adapter_->GetUsableKeyIds(
       web_session_id_,
       scoped_ptr<media::KeyIdsPromise>(
-          new CdmResultPromise<media::KeyIdsVector>(result)));
+          new CdmResultPromise<media::KeyIdsVector>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::release(

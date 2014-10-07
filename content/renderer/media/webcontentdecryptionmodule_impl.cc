@@ -108,7 +108,8 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
   adapter_->SetServerCertificate(
       server_certificate,
       server_certificate_length,
-      scoped_ptr<media::SimpleCdmPromise>(new SimpleCdmResultPromise(result)));
+      scoped_ptr<media::SimpleCdmPromise>(
+          new CdmResultPromise<>(result, std::string())));
 }
 
 media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
