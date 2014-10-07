@@ -43,13 +43,13 @@ class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
 
   // Checks if backoff is complete. Called repeatedly each time PSS notifies
   // observers of a state change.
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
+  virtual bool IsExitConditionSatisfied() override {
     const SyncSessionSnapshot& snap = service()->GetLastSessionSnapshot();
     retry_verifier_.VerifyRetryInterval(snap);
     return (retry_verifier_.done() && retry_verifier_.Succeeded());
   }
 
-  virtual std::string GetDebugMessage() const OVERRIDE {
+  virtual std::string GetDebugMessage() const override {
     return base::StringPrintf("Verifying backoff intervals (%d/%d)",
                               retry_verifier_.retry_count(),
                               RetryVerifier::kMaxRetry);

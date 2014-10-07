@@ -82,7 +82,7 @@ class SyncBackendStoppedChecker : public ProfileSyncServiceBase::Observer {
         timeout_(TestTimeouts::action_max_timeout()),
         done_(false) {}
 
-  virtual void OnStateChanged() OVERRIDE {
+  virtual void OnStateChanged() override {
     if (ProfileSyncService::IDLE == pss_->backend_mode()) {
       done_ = true;
       run_loop_.Quit();
@@ -121,7 +121,7 @@ class SyncRollbackChecker : public ProfileSyncServiceBase::Observer,
         clear_done_(false) {}
 
   // ProfileSyncServiceBase::Observer implementation.
-  virtual void OnStateChanged() OVERRIDE {
+  virtual void OnStateChanged() override {
     if (ProfileSyncService::ROLLBACK == pss_->backend_mode()) {
       rollback_started_ = true;
       if (clear_done_)
@@ -130,7 +130,7 @@ class SyncRollbackChecker : public ProfileSyncServiceBase::Observer,
   }
 
   // BrowsingDataRemoverObserver::Observer implementation.
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE {
+  virtual void OnBrowsingDataRemoverDone() override {
     clear_done_ = true;
     if (rollback_started_) {
       run_loop_.Quit();

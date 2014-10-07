@@ -25,27 +25,27 @@ class InMemoryTabRestoreService : public TabRestoreService {
   virtual ~InMemoryTabRestoreService();
 
   // TabRestoreService:
-  virtual void AddObserver(TabRestoreServiceObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(TabRestoreServiceObserver* observer) OVERRIDE;
+  virtual void AddObserver(TabRestoreServiceObserver* observer) override;
+  virtual void RemoveObserver(TabRestoreServiceObserver* observer) override;
   virtual void CreateHistoricalTab(content::WebContents* contents,
-                                   int index) OVERRIDE;
-  virtual void BrowserClosing(TabRestoreServiceDelegate* delegate) OVERRIDE;
-  virtual void BrowserClosed(TabRestoreServiceDelegate* delegate) OVERRIDE;
-  virtual void ClearEntries() OVERRIDE;
-  virtual const Entries& entries() const OVERRIDE;
+                                   int index) override;
+  virtual void BrowserClosing(TabRestoreServiceDelegate* delegate) override;
+  virtual void BrowserClosed(TabRestoreServiceDelegate* delegate) override;
+  virtual void ClearEntries() override;
+  virtual const Entries& entries() const override;
   virtual std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
-      chrome::HostDesktopType host_desktop_type) OVERRIDE;
-  virtual Tab* RemoveTabEntryById(SessionID::id_type id) OVERRIDE;
+      chrome::HostDesktopType host_desktop_type) override;
+  virtual Tab* RemoveTabEntryById(SessionID::id_type id) override;
   virtual std::vector<content::WebContents*>
     RestoreEntryById(TabRestoreServiceDelegate* delegate,
                      SessionID::id_type id,
                      chrome::HostDesktopType host_desktop_type,
-                     WindowOpenDisposition disposition) OVERRIDE;
-  virtual void LoadTabsFromLastSession() OVERRIDE;
-  virtual bool IsLoaded() const OVERRIDE;
-  virtual void DeleteLastSession() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+                     WindowOpenDisposition disposition) override;
+  virtual void LoadTabsFromLastSession() override;
+  virtual bool IsLoaded() const override;
+  virtual void DeleteLastSession() override;
+  virtual void Shutdown() override;
 
  private:
   TabRestoreServiceHelper helper_;

@@ -28,7 +28,7 @@ class ExtensionDataTypeController : public sync_driver::UIDataTypeController {
   virtual ~ExtensionDataTypeController();
 
   // DataTypeController implementations.
-  virtual bool StartModels() OVERRIDE;
+  virtual bool StartModels() override;
 
   Profile* const profile_;
 

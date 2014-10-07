@@ -37,7 +37,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   // Implementation of pure virtuals in RenderViewContextMenu.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
+      ui::Accelerator* accelerator) override;
 
   // Returns true if command specified by |command_id| is present
   // in the menu.

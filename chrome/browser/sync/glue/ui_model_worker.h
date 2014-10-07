@@ -22,12 +22,12 @@ class UIModelWorker : public syncer::ModelSafeWorker {
   explicit UIModelWorker(syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual void RegisterForLoopDestruction() OVERRIDE;
-  virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  virtual void RegisterForLoopDestruction() override;
+  virtual syncer::ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
   virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
-      const syncer::WorkCallback& work) OVERRIDE;
+      const syncer::WorkCallback& work) override;
 
  private:
   virtual ~UIModelWorker();

@@ -589,8 +589,8 @@ class TokenServiceProvider
 
   // OAuth2TokenServiceRequest::TokenServiceProvider implementation.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetTokenServiceTaskRunner() OVERRIDE;
-  virtual OAuth2TokenService* GetTokenService() OVERRIDE;
+      GetTokenServiceTaskRunner() override;
+  virtual OAuth2TokenService* GetTokenService() override;
 
  private:
   virtual ~TokenServiceProvider();

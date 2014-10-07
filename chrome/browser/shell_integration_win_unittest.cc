@@ -32,7 +32,7 @@ struct ShortcutTestObject {
 
 class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // A path to a random target.

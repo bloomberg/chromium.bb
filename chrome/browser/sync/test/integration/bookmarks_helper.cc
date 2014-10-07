@@ -50,13 +50,13 @@ class HistoryEmptyTask : public history::HistoryDBTask {
   explicit HistoryEmptyTask(base::WaitableEvent* done) : done_(done) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     content::RunAllPendingInMessageLoop();
     done_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {}
+  virtual void DoneRunOnMainThread() override {}
 
  private:
   virtual ~HistoryEmptyTask() {}
@@ -88,36 +88,36 @@ class FaviconChangeObserver : public BookmarkModelObserver {
     content::RunMessageLoop();
   }
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE {}
+                                   bool ids_reassigned) override {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE {}
+                                 int new_index) override {}
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE {}
+                                 int index) override {}
   virtual void BookmarkNodeRemoved(
       BookmarkModel* model,
       const BookmarkNode* parent,
       int old_index,
       const BookmarkNode* node,
-      const std::set<GURL>& removed_urls) OVERRIDE {}
+      const std::set<GURL>& removed_urls) override {}
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE {}
+      const std::set<GURL>& removed_urls) override {}
 
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE {
+                                   const BookmarkNode* node) override {
     if (model == model_ && node == node_)
       model->GetFavicon(node);
   }
   virtual void BookmarkNodeChildrenReordered(
       BookmarkModel* model,
-      const BookmarkNode* node) OVERRIDE {}
+      const BookmarkNode* node) override {}
   virtual void BookmarkNodeFaviconChanged(
       BookmarkModel* model,
-      const BookmarkNode* node) OVERRIDE {
+      const BookmarkNode* node) override {
     if (model == model_ && node == node_) {
       if (!wait_for_load_ || (wait_for_load_ && node->is_favicon_loaded()))
         base::MessageLoopForUI::current()->Quit();
@@ -711,8 +711,8 @@ class AllModelsMatchChecker : public MultiClientStatusChangeChecker {
   AllModelsMatchChecker();
   virtual ~AllModelsMatchChecker();
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 };
 
 AllModelsMatchChecker::AllModelsMatchChecker()

@@ -171,7 +171,7 @@ class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {
   explicit FakeNetworkOnlineStateForTest(bool online) : online_(online) {}
   virtual ~FakeNetworkOnlineStateForTest() {}
 
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  virtual ConnectionType GetCurrentConnectionType() const override {
     return online_ ?
         net::NetworkChangeNotifier::CONNECTION_ETHERNET :
         net::NetworkChangeNotifier::CONNECTION_NONE;

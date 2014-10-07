@@ -25,8 +25,8 @@ class MigrationWaiter : public StatusChangeChecker {
   virtual ~MigrationWaiter();
 
   // Implementation of StatusChangeChecker.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 
   // Function to trigger the waiting.
   void Wait();

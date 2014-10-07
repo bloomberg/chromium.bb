@@ -88,12 +88,12 @@ class SupervisedUserWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SupervisedUserWarningInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
+  virtual bool ShouldExpire(const NavigationDetails& details) const override;
+  virtual void InfoBarDismissed() override;
+  virtual base::string16 GetMessageText() const override;
+  virtual int GetButtons() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserWarningInfoBarDelegate);
 };

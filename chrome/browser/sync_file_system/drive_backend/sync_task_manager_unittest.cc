@@ -70,16 +70,16 @@ class TaskManagerClient
   virtual ~TaskManagerClient() {}
 
   // DriveFileSyncManager::Client overrides.
-  virtual void MaybeScheduleNextTask() OVERRIDE {
+  virtual void MaybeScheduleNextTask() override {
     ++maybe_schedule_next_task_count_;
   }
   virtual void NotifyLastOperationStatus(
       SyncStatusCode last_operation_status,
-      bool last_operation_used_network) OVERRIDE {
+      bool last_operation_used_network) override {
     last_operation_status_ = last_operation_status;
   }
 
-  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog>) OVERRIDE {}
+  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog>) override {}
 
   void ScheduleTask(SyncStatusCode status_to_return,
                     const SyncStatusCallback& callback) {
@@ -143,7 +143,7 @@ class MultihopSyncTask : public ExclusiveTask {
 
   virtual ~MultihopSyncTask() {}
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void RunExclusive(const SyncStatusCallback& callback) override {
     DCHECK(!*task_started_);
     *task_started_ = true;
     base::MessageLoop::current()->PostTask(
@@ -191,7 +191,7 @@ class BackgroundTask : public SyncTask {
   virtual ~BackgroundTask() {
   }
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE {
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
     scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
     task_blocker->app_id = app_id_;
     task_blocker->paths.push_back(path_);
@@ -248,7 +248,7 @@ class BlockerUpdateTestHelper : public SyncTask {
   virtual ~BlockerUpdateTestHelper() {
   }
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE {
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
     UpdateBlocker(token.Pass());
   }
 

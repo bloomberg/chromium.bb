@@ -46,10 +46,10 @@ class MockChangeProcessor : public SyncChangeProcessor {
   // SyncChangeProcessor implementation:
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const SyncChangeList& change_list) override;
 
   virtual SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
+      override {
     return SyncDataList();
   }
 

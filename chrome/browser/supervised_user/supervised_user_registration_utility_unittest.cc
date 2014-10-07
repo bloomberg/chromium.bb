@@ -51,10 +51,10 @@ class MockChangeProcessor : public SyncChangeProcessor {
   // SyncChangeProcessor implementation:
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const SyncChangeList& change_list) override;
 
   virtual SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
+      override {
     return SyncDataList();
   }
 
@@ -80,7 +80,7 @@ class MockSupervisedUserRefreshTokenFetcher
   // SupervisedUserRefreshTokenFetcher implementation:
   virtual void Start(const std::string& supervised_user_id,
                      const std::string& device_name,
-                     const TokenCallback& callback) OVERRIDE {
+                     const TokenCallback& callback) override {
     GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
     callback.Run(error, kSupervisedUserToken);
   }
@@ -93,7 +93,7 @@ class SupervisedUserRegistrationUtilityTest : public ::testing::Test {
   SupervisedUserRegistrationUtilityTest();
   virtual ~SupervisedUserRegistrationUtilityTest();
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
  protected:
   scoped_ptr<SyncChangeProcessor> CreateChangeProcessor();

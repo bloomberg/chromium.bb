@@ -43,7 +43,7 @@ class MockSyncErrorFactory : public syncer::SyncErrorFactory {
   // SyncErrorFactory implementation:
   virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
-      const std::string& message) OVERRIDE;
+      const std::string& message) override;
 
  private:
   syncer::ModelType type_;
@@ -114,13 +114,13 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
   }
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     subscription_ = settings_service_.Subscribe(
         base::Bind(&SupervisedUserSharedSettingsServiceTest::OnSettingChanged,
                    base::Unretained(this)));
   }
 
-  virtual void TearDown() OVERRIDE { settings_service_.Shutdown(); }
+  virtual void TearDown() override { settings_service_.Shutdown(); }
 
   void OnSettingChanged(const std::string& su_id, const std::string& key) {
     const Value* value = settings_service_.GetValue(su_id, key);

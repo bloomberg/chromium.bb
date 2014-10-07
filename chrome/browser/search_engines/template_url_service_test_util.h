@@ -26,7 +26,7 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   virtual ~TemplateURLServiceTestUtil();
 
   // TemplateURLServiceObserver implemementation.
-  virtual void OnTemplateURLServiceChanged() OVERRIDE;
+  virtual void OnTemplateURLServiceChanged() override;
 
   // Gets the observer count.
   int GetObserverCount();

@@ -47,7 +47,7 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
                         SigninClient* client);
   virtual ~MockAccountReconcilor() {}
 
-  virtual void StartFetchingExternalCcResult() OVERRIDE {
+  virtual void StartFetchingExternalCcResult() override {
     // Don't do this in tests.
   }
 
@@ -79,7 +79,7 @@ MockAccountReconcilor::MockAccountReconcilor(
 class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
  public:
   AccountReconcilorTest();
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }

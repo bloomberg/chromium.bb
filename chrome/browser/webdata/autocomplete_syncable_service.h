@@ -69,17 +69,17 @@ class AutocompleteSyncableService
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
   // AutofillWebDataServiceObserverOnDBThread:
   virtual void AutofillEntriesChanged(
-      const autofill::AutofillChangeList& changes) OVERRIDE;
+      const autofill::AutofillChangeList& changes) override;
 
   // Provides a StartSyncFlare to the SyncableService. See sync_start_util for
   // more.

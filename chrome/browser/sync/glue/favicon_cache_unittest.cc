@@ -43,10 +43,10 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
   // Store a copy of all the changes passed in so we can examine them later.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
+      override {
     return syncer::SyncDataList();
   }
 

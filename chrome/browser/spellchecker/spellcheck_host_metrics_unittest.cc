@@ -27,7 +27,7 @@ class SpellcheckHostMetricsTest : public testing::Test {
     base::StatisticsRecorder::Initialize();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     metrics_.reset(new SpellCheckHostMetrics);
   }
 

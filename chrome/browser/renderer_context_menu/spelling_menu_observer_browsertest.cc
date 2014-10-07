@@ -47,20 +47,20 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
 
   // RenderViewContextMenuProxy implementation.
   virtual void AddMenuItem(int command_id,
-                           const base::string16& title) OVERRIDE;
+                           const base::string16& title) override;
   virtual void AddCheckItem(int command_id,
-                            const base::string16& title) OVERRIDE;
-  virtual void AddSeparator() OVERRIDE;
+                            const base::string16& title) override;
+  virtual void AddSeparator() override;
   virtual void AddSubMenu(int command_id,
                           const base::string16& label,
-                          ui::MenuModel* model) OVERRIDE;
+                          ui::MenuModel* model) override;
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const base::string16& title) OVERRIDE;
-  virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual WebContents* GetWebContents() const OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+                              const base::string16& title) override;
+  virtual RenderViewHost* GetRenderViewHost() const override;
+  virtual WebContents* GetWebContents() const override;
+  virtual content::BrowserContext* GetBrowserContext() const override;
 
   // Attaches a RenderViewContextMenuObserver to be tested.
   void SetObserver(RenderViewContextMenuObserver* observer);
@@ -206,11 +206,11 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
  public:
   SpellingMenuObserverTest();
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     Reset(false);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     observer_.reset();
     menu_.reset();
   }

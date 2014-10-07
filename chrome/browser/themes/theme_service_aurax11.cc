@@ -20,11 +20,11 @@ class SystemThemeX11 : public CustomThemeSupplier {
   explicit SystemThemeX11(PrefService* pref_service);
 
   // Overridden from CustomThemeSupplier:
-  virtual void StartUsingTheme() OVERRIDE;
-  virtual void StopUsingTheme() OVERRIDE;
-  virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
-  virtual gfx::Image GetImageNamed(int id) OVERRIDE;
-  virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual void StartUsingTheme() override;
+  virtual void StopUsingTheme() override;
+  virtual bool GetColor(int id, SkColor* color) const override;
+  virtual gfx::Image GetImageNamed(int id) override;
+  virtual bool HasCustomImage(int id) const override;
 
  private:
   virtual ~SystemThemeX11();

@@ -18,10 +18,10 @@ class IframeSource : public content::URLDataSource {
  protected:
   // Overridden from content::URLDataSource:
   virtual std::string GetMimeType(
-      const std::string& path_and_query) const OVERRIDE;
-  virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
+      const std::string& path_and_query) const override;
+  virtual bool ShouldDenyXFrameOptions() const override;
   virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const OVERRIDE;
+      const net::URLRequest* request) const override;
 
   // Returns whether this source should serve data for a particular path.
   virtual bool ServesPath(const std::string& path) const = 0;

@@ -51,7 +51,7 @@ class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
   ScreenTypeDelegateDesktop() {}
   virtual ~ScreenTypeDelegateDesktop() {}
   virtual gfx::ScreenType GetScreenTypeForNativeView(
-      gfx::NativeView view) OVERRIDE {
+      gfx::NativeView view) override {
     return chrome::IsNativeViewInAsh(view) ?
         gfx::SCREEN_TYPE_ALTERNATE :
         gfx::SCREEN_TYPE_NATIVE;
@@ -78,10 +78,10 @@ class FakeLoginUI : public LoginUIService::LoginUI {
 
  private:
   // LoginUIService::LoginUI:
-  virtual void FocusUI() OVERRIDE {
+  virtual void FocusUI() override {
     ++focus_ui_call_count_;
   }
-  virtual void CloseUI() OVERRIDE {}
+  virtual void CloseUI() override {}
 
   int focus_ui_call_count_;
 };
@@ -96,7 +96,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
   SyncErrorNotifierTest() {}
   virtual ~SyncErrorNotifierTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -128,7 +128,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     error_notifier_->Shutdown();
     service_.reset();
 #if defined(OS_WIN)

@@ -25,10 +25,10 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
   virtual ~PermissionRequestCreatorSync();
 
   // PermissionRequestCreator implementation:
-  virtual bool IsEnabled() const OVERRIDE;
+  virtual bool IsEnabled() const override;
   virtual void CreatePermissionRequest(
       const GURL& url_requested,
-      const SuccessCallback& callback) OVERRIDE;
+      const SuccessCallback& callback) override;
 
  private:
   SupervisedUserSettingsService* settings_service_;

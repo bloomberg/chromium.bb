@@ -34,17 +34,17 @@ class EasyUnlockToggleFlow : public OAuth2TokenService::Consumer,
   // OAuth2TokenService::Consumer
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // OAuth2MintTokenFlow::Delegate
   virtual void OnMintTokenSuccess(const std::string& access_token,
-                                  int time_to_live) OVERRIDE;
+                                  int time_to_live) override;
   virtual void OnMintTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
   virtual void OnIssueAdviceSuccess(
-      const IssueAdviceInfo& issue_advice) OVERRIDE;
+      const IssueAdviceInfo& issue_advice) override;
 
  private:
   // Derived OAuth2ApiCallFlow class to make toggle api call after access token

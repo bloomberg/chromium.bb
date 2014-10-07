@@ -38,7 +38,7 @@ class ExclusiveTask : public SyncTask {
   ExclusiveTask();
   virtual ~ExclusiveTask();
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE FINAL;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override final;
   virtual void RunExclusive(const SyncStatusCallback& callback) = 0;
 
  private:

@@ -34,8 +34,8 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   void NotifyObserver();
 
   // ResourceRequestAllowedNotifier overrides:
-  virtual State GetResourceRequestsAllowedState() OVERRIDE;
-  virtual EulaAcceptedNotifier* CreateEulaNotifier() OVERRIDE;
+  virtual State GetResourceRequestsAllowedState() override;
+  virtual EulaAcceptedNotifier* CreateEulaNotifier() override;
 
  private:
   scoped_ptr<EulaAcceptedNotifier> test_eula_notifier_;

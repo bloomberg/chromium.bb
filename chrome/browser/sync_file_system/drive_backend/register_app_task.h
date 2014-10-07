@@ -37,7 +37,7 @@ class RegisterAppTask : public ExclusiveTask {
   virtual ~RegisterAppTask();
 
   bool CanFinishImmediately();
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunExclusive(const SyncStatusCallback& callback) override;
 
  private:
   void CreateAppRootFolder(const SyncStatusCallback& callback);

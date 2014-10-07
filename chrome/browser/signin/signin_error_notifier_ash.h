@@ -23,10 +23,10 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   virtual ~SigninErrorNotifier();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // SigninErrorController::Observer:
-  virtual void OnErrorChanged() OVERRIDE;
+  virtual void OnErrorChanged() override;
 
  private:
   base::string16 GetMessageBody() const;

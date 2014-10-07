@@ -93,7 +93,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
     DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   }
 
-  virtual void OnPendingFileListUpdated(int item_count) OVERRIDE {
+  virtual void OnPendingFileListUpdated(int item_count) override {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->OnPendingFileListUpdated(item_count);
@@ -112,7 +112,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
                                    SyncFileType file_type,
                                    SyncFileStatus file_status,
                                    SyncAction sync_action,
-                                   SyncDirection direction) OVERRIDE {
+                                   SyncDirection direction) override {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->OnFileStatusChanged(
@@ -129,7 +129,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
   }
 
   virtual void UpdateServiceState(RemoteServiceState state,
-                                  const std::string& description) OVERRIDE {
+                                  const std::string& description) override {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->UpdateServiceState(state, description);

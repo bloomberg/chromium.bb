@@ -25,14 +25,14 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   virtual ~SpellingBubbleModel();
 
   // ConfirmBubbleModel implementation.
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(BubbleButton button) const OVERRIDE;
-  virtual void Accept() OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual void LinkClicked() OVERRIDE;
+  virtual base::string16 GetTitle() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual gfx::Image* GetIcon() const override;
+  virtual base::string16 GetButtonLabel(BubbleButton button) const override;
+  virtual void Accept() override;
+  virtual void Cancel() override;
+  virtual base::string16 GetLinkText() const override;
+  virtual void LinkClicked() override;
 
  private:
   // Set the profile preferences to enable or disable the feature.

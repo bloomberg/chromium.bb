@@ -41,8 +41,8 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
   void OnServiceStateChanged(ProfileSyncService* service);
 
   // Implementation of StatusChangeChecker.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 
  private:
   std::vector<ProfileSyncService*> services_;

@@ -33,10 +33,10 @@ class PepperBrokerMessageFilter : public ppapi::host::ResourceMessageFilter {
 
   // ppapi::host::ResourceMessageFilter overrides.
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
-      const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   int32_t OnIsAllowed(ppapi::host::HostMessageContext* context);
 

@@ -52,7 +52,7 @@ class TestSafeBrowsingUIManager: public SafeBrowsingUIManager {
   }
 
   virtual void SendSerializedMalwareDetails(
-      const std::string& serialized) OVERRIDE {
+      const std::string& serialized) override {
     details_.push_back(serialized);
   }
 
@@ -76,7 +76,7 @@ class TestSafeBrowsingBlockingPageFactory
       SafeBrowsingUIManager* manager,
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      OVERRIDE {
+      override {
     return new TestSafeBrowsingBlockingPage(manager, web_contents,
                                               unsafe_resources);
   }
@@ -99,13 +99,13 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Release the UI manager before the BrowserThreads are destroyed.
     ui_manager_ = NULL;
     SafeBrowsingBlockingPage::RegisterFactory(NULL);

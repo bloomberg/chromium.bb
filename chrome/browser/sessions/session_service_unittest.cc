@@ -71,7 +71,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   // Upon notification, increment the sync_save_count variable
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     ASSERT_EQ(type, chrome::NOTIFICATION_SESSION_SERVICE_SAVED);
     sync_save_count_++;
   }

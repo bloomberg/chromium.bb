@@ -159,8 +159,8 @@ class CannedSyncableFileSystem
   storage::FileSystemOperationRunner* operation_runner();
 
   // LocalFileSyncStatus::Observer overrides.
-  virtual void OnSyncEnabled(const storage::FileSystemURL& url) OVERRIDE;
-  virtual void OnWriteEnabled(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnSyncEnabled(const storage::FileSystemURL& url) override;
+  virtual void OnWriteEnabled(const storage::FileSystemURL& url) override;
 
   // Operation methods body.
   // They can be also called directly if the caller is already on IO thread.

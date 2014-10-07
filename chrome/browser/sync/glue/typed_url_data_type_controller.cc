@@ -39,7 +39,7 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     // Set the backend, then release our reference before executing the task.
     dtc_->SetBackend(backend);
     dtc_ = NULL;
@@ -53,7 +53,7 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {}
+  virtual void DoneRunOnMainThread() override {}
 
  protected:
   virtual ~RunTaskOnHistoryThread() {}

@@ -23,7 +23,7 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
   }
 
   // SupervisedUserURLFilter::Observer:
-  virtual void OnSiteListUpdated() OVERRIDE {
+  virtual void OnSiteListUpdated() override {
     run_loop_.Quit();
   }
 

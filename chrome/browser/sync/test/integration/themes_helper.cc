@@ -90,13 +90,13 @@ class ThemePendingInstallChecker : public StatusChangeChecker,
   virtual ~ThemePendingInstallChecker();
 
   // Implementation of StatusChangeChecker.
-  virtual std::string GetDebugMessage() const OVERRIDE;
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const override;
+  virtual bool IsExitConditionSatisfied() override;
 
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Waits until the condition to be met or a timeout occurs.
   void Wait();
@@ -170,13 +170,13 @@ class ThemeConditionChecker : public StatusChangeChecker,
   virtual ~ThemeConditionChecker();
 
   // Implementation of StatusChangeChecker.
-  virtual std::string GetDebugMessage() const OVERRIDE;
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const override;
+  virtual bool IsExitConditionSatisfied() override;
 
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Waits until the condition to be met or a timeout occurs.
   void Wait();

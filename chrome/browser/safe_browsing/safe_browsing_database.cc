@@ -319,7 +319,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
       bool enable_side_effect_free_whitelist,
-      bool enable_ip_blacklist) OVERRIDE {
+      bool enable_ip_blacklist) override {
     return new SafeBrowsingDatabaseNew(
         new SafeBrowsingStoreFile,
         enable_download_protection ? new SafeBrowsingStoreFile : NULL,

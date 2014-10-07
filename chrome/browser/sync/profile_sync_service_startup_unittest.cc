@@ -75,7 +75,7 @@ class TestProfileSyncServiceNoBackup : public ProfileSyncService {
                           oauth2_token_service, start_behavior) {}
 
  protected:
-  virtual bool NeedBackup() const OVERRIDE {
+  virtual bool NeedBackup() const override {
     return false;
   }
 };

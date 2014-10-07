@@ -33,22 +33,22 @@ class BrowserProcessResource : public Resource {
   virtual ~BrowserProcessResource();
 
   // Resource methods:
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual base::ProcessHandle GetProcess() const OVERRIDE;
-  virtual int GetUniqueChildProcessId() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
+  virtual base::string16 GetTitle() const override;
+  virtual base::string16 GetProfileName() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual base::ProcessHandle GetProcess() const override;
+  virtual int GetUniqueChildProcessId() const override;
+  virtual Type GetType() const override;
 
-  virtual bool SupportNetworkUsage() const OVERRIDE;
-  virtual void SetSupportNetworkUsage() OVERRIDE;
+  virtual bool SupportNetworkUsage() const override;
+  virtual void SetSupportNetworkUsage() override;
 
-  virtual bool ReportsSqliteMemoryUsed() const OVERRIDE;
-  virtual size_t SqliteMemoryUsedBytes() const OVERRIDE;
+  virtual bool ReportsSqliteMemoryUsed() const override;
+  virtual size_t SqliteMemoryUsedBytes() const override;
 
-  virtual bool ReportsV8MemoryStats() const OVERRIDE;
-  virtual size_t GetV8MemoryAllocated() const OVERRIDE;
-  virtual size_t GetV8MemoryUsed() const OVERRIDE;
+  virtual bool ReportsV8MemoryStats() const override;
+  virtual size_t GetV8MemoryAllocated() const override;
+  virtual size_t GetV8MemoryUsed() const override;
 
  private:
   base::ProcessHandle process_;
@@ -65,9 +65,9 @@ class BrowserProcessResourceProvider : public ResourceProvider {
 
   virtual Resource* GetResource(int origin_pid,
                                 int child_id,
-                                int route_id) OVERRIDE;
-  virtual void StartUpdating() OVERRIDE;
-  virtual void StopUpdating() OVERRIDE;
+                                int route_id) override;
+  virtual void StartUpdating() override;
+  virtual void StopUpdating() override;
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().

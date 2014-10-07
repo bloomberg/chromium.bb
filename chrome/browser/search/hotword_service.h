@@ -48,17 +48,17 @@ class HotwordService : public content::NotificationObserver,
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Overridden from ExtensionRegisterObserver:
   virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      bool is_update) OVERRIDE;
+      bool is_update) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // Checks for whether all the necessary files have downloaded to allow for
   // using the extension.

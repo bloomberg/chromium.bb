@@ -23,7 +23,7 @@ class TestUpgradeDetectorImpl : public UpgradeDetectorImpl {
   using UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed;
 
   // UpgradeDetector:
-  virtual void TriggerCriticalUpdate() OVERRIDE {
+  virtual void TriggerCriticalUpdate() override {
     trigger_critical_update_call_count_++;
   }
 
@@ -56,7 +56,7 @@ class TestUpgradeNotificationListener : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     notifications_received_.push_back(type);
   }
 

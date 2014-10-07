@@ -35,11 +35,11 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   // FakeGCMDriver overrides:
   virtual void RegisterImpl(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids) OVERRIDE;
-  virtual void UnregisterImpl(const std::string& app_id) OVERRIDE;
+      const std::vector<std::string>& sender_ids) override;
+  virtual void UnregisterImpl(const std::string& app_id) override;
   virtual void SendImpl(const std::string& app_id,
                         const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) OVERRIDE;
+                        const GCMClient::OutgoingMessage& message) override;
 
  private:
   FakeGCMProfileService* service_;

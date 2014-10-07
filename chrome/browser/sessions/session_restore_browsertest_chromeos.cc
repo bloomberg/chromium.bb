@@ -30,7 +30,7 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
   virtual ~SessionRestoreTestChromeOS() {}
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 

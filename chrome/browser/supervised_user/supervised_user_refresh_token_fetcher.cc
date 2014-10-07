@@ -65,27 +65,27 @@ class SupervisedUserRefreshTokenFetcherImpl
   // SupervisedUserRefreshTokenFetcher implementation:
   virtual void Start(const std::string& supervised_user_id,
                      const std::string& device_name,
-                     const TokenCallback& callback) OVERRIDE;
+                     const TokenCallback& callback) override;
 
  protected:
   // OAuth2TokenService::Consumer implementation:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const Time& expiration_time) OVERRIDE;
+                                 const Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const URLFetcher* source) override;
 
   // GaiaOAuthClient::Delegate implementation:
   virtual void OnGetTokensResponse(const std::string& refresh_token,
                                    const std::string& access_token,
-                                   int expires_in_seconds) OVERRIDE;
+                                   int expires_in_seconds) override;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+                                      int expires_in_seconds) override;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
  private:
   // Requests an access token, which is the first thing we need. This is where

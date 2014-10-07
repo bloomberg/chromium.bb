@@ -62,42 +62,42 @@ class BookmarkModelAssociator
   // should abort the sync operation and report an error to the user.
   virtual syncer::SyncError AssociateModels(
       syncer::SyncMergeResult* local_merge_result,
-      syncer::SyncMergeResult* syncer_merge_result) OVERRIDE;
+      syncer::SyncMergeResult* syncer_merge_result) override;
 
-  virtual syncer::SyncError DisassociateModels() OVERRIDE;
+  virtual syncer::SyncError DisassociateModels() override;
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
 
   // Returns sync id for the given bookmark node id.
   // Returns syncer::kInvalidId if the sync node is not found for the given
   // bookmark node id.
-  virtual int64 GetSyncIdFromChromeId(const int64& node_id) OVERRIDE;
+  virtual int64 GetSyncIdFromChromeId(const int64& node_id) override;
 
   // Returns the bookmark node for the given sync id.
   // Returns NULL if no bookmark node is found for the given sync id.
-  virtual const BookmarkNode* GetChromeNodeFromSyncId(int64 sync_id) OVERRIDE;
+  virtual const BookmarkNode* GetChromeNodeFromSyncId(int64 sync_id) override;
 
   // Initializes the given sync node from the given bookmark node id.
   // Returns false if no sync node was found for the given bookmark node id or
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(
       const int64& node_id,
-      syncer::BaseNode* sync_node) OVERRIDE;
+      syncer::BaseNode* sync_node) override;
 
   // Associates the given bookmark node with the given sync id.
-  virtual void Associate(const BookmarkNode* node, int64 sync_id) OVERRIDE;
+  virtual void Associate(const BookmarkNode* node, int64 sync_id) override;
   // Remove the association that corresponds to the given sync id.
-  virtual void Disassociate(int64 sync_id) OVERRIDE;
+  virtual void Disassociate(int64 sync_id) override;
 
-  virtual void AbortAssociation() OVERRIDE {
+  virtual void AbortAssociation() override {
     // No implementation needed, this associator runs on the main
     // thread.
   }
 
   // See ModelAssociator interface.
-  virtual bool CryptoReadyIfNecessary() OVERRIDE;
+  virtual bool CryptoReadyIfNecessary() override;
 
  protected:
   // Stores the id of the node with the given tag in |sync_id|.

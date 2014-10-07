@@ -39,7 +39,7 @@ class ListChangesTaskTest : public testing::Test {
   ListChangesTaskTest() {}
   virtual ~ListChangesTaskTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -75,7 +75,7 @@ class ListChangesTaskTest : public testing::Test {
     RegisterApp(kAppID);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sync_task_manager_.reset();
     context_.reset();
     base::RunLoop().RunUntilIdle();

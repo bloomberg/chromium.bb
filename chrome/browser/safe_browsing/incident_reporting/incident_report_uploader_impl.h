@@ -54,7 +54,7 @@ class IncidentReportUploaderImpl : public IncidentReportUploader,
   static GURL GetIncidentReportUrl();
 
   // net::URLFetcherDelegate methods.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // The underlying URL fetcher. The instance is alive from construction through
   // OnURLFetchComplete.

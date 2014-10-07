@@ -21,7 +21,7 @@ class ThemeDataTypeController : public sync_driver::UIDataTypeController {
   virtual ~ThemeDataTypeController();
 
   // UIDataTypeController implementations.
-  virtual bool StartModels() OVERRIDE;
+  virtual bool StartModels() override;
 
   Profile* const profile_;
   DISALLOW_COPY_AND_ASSIGN(ThemeDataTypeController);

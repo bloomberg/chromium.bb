@@ -51,8 +51,8 @@ class TestForAuthError : public SingleClientStatusChangeChecker {
  public:
   explicit TestForAuthError(ProfileSyncService* service);
   virtual ~TestForAuthError();
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 };
 
 TestForAuthError::TestForAuthError(ProfileSyncService* service)

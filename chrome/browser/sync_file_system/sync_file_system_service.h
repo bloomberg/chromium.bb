@@ -54,7 +54,7 @@ class SyncFileSystemService
       ExtensionStatusMapCallback;
 
   // KeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void InitializeForApp(storage::FileSystemContext* file_system_context,
                         const GURL& app_origin,
@@ -74,9 +74,9 @@ class SyncFileSystemService
   LocalChangeProcessor* GetLocalChangeProcessor(const GURL& origin);
 
   // SyncProcessRunner::Client implementations.
-  virtual void OnSyncIdle() OVERRIDE;
-  virtual SyncServiceState GetSyncServiceState() OVERRIDE;
-  virtual SyncFileSystemService* GetSyncService() OVERRIDE;
+  virtual void OnSyncIdle() override;
+  virtual SyncServiceState GetSyncServiceState() override;
+  virtual SyncFileSystemService* GetSyncService() override;
 
   void OnPromotionCompleted(int* num_running_jobs);
   void CheckIfIdle();
@@ -135,28 +135,28 @@ class SyncFileSystemService
   virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      bool is_update) OVERRIDE;
+      bool is_update) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // SyncFileStatusObserver implementation.
   virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
                                    SyncFileType file_type,
                                    SyncFileStatus sync_status,
                                    SyncAction action_taken,
-                                   SyncDirection direction) OVERRIDE;
+                                   SyncDirection direction) override;
 
   // Check the profile's sync preference settings and call
   // remote_file_service_->SetSyncEnabled() to update the status.

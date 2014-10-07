@@ -30,7 +30,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   }
 
  private:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  virtual ConnectionType GetCurrentConnectionType() const override {
     return connection_type_to_return_;
   }
 
@@ -52,7 +52,7 @@ class TestEulaAcceptedNotifier : public EulaAcceptedNotifier {
   virtual ~TestEulaAcceptedNotifier() {
   }
 
-  virtual bool IsEulaAccepted() OVERRIDE {
+  virtual bool IsEulaAccepted() override {
     return eula_accepted_;
   }
 
@@ -89,7 +89,7 @@ class ResourceRequestAllowedNotifierTest
   bool was_notified() const { return was_notified_; }
 
   // ResourceRequestAllowedNotifier::Observer override:
-  virtual void OnResourceRequestsAllowed() OVERRIDE {
+  virtual void OnResourceRequestsAllowed() override {
     was_notified_ = true;
   }
 
@@ -133,7 +133,7 @@ class ResourceRequestAllowedNotifierTest
     SetNeedsEulaAcceptance(true);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Assume the test service has already requested permission, as all tests
     // just test that criteria changes notify the server.
     // Set default EULA state to done (not waiting and EULA accepted) to

@@ -56,31 +56,31 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   };
 
   // EasyUnlockService implementation:
-  virtual EasyUnlockService::Type GetType() const OVERRIDE;
-  virtual std::string GetUserEmail() const OVERRIDE;
-  virtual void LaunchSetup() OVERRIDE;
-  virtual const base::DictionaryValue* GetPermitAccess() const OVERRIDE;
-  virtual void SetPermitAccess(const base::DictionaryValue& permit) OVERRIDE;
-  virtual void ClearPermitAccess() OVERRIDE;
-  virtual const base::ListValue* GetRemoteDevices() const OVERRIDE;
-  virtual void SetRemoteDevices(const base::ListValue& devices) OVERRIDE;
-  virtual void ClearRemoteDevices() OVERRIDE;
-  virtual void RunTurnOffFlow() OVERRIDE;
-  virtual void ResetTurnOffFlow() OVERRIDE;
-  virtual TurnOffFlowStatus GetTurnOffFlowStatus() const OVERRIDE;
-  virtual std::string GetChallenge() const OVERRIDE;
-  virtual std::string GetWrappedSecret() const OVERRIDE;
-  virtual void InitializeInternal() OVERRIDE;
-  virtual void ShutdownInternal() OVERRIDE;
-  virtual bool IsAllowedInternal() OVERRIDE;
+  virtual EasyUnlockService::Type GetType() const override;
+  virtual std::string GetUserEmail() const override;
+  virtual void LaunchSetup() override;
+  virtual const base::DictionaryValue* GetPermitAccess() const override;
+  virtual void SetPermitAccess(const base::DictionaryValue& permit) override;
+  virtual void ClearPermitAccess() override;
+  virtual const base::ListValue* GetRemoteDevices() const override;
+  virtual void SetRemoteDevices(const base::ListValue& devices) override;
+  virtual void ClearRemoteDevices() override;
+  virtual void RunTurnOffFlow() override;
+  virtual void ResetTurnOffFlow() override;
+  virtual TurnOffFlowStatus GetTurnOffFlowStatus() const override;
+  virtual std::string GetChallenge() const override;
+  virtual std::string GetWrappedSecret() const override;
+  virtual void InitializeInternal() override;
+  virtual void ShutdownInternal() override;
+  virtual bool IsAllowedInternal() override;
 
   // ScreenlockBridge::Observer implementation:
-  virtual void OnScreenDidLock() OVERRIDE;
-  virtual void OnScreenDidUnlock() OVERRIDE;
-  virtual void OnFocusedUserChanged(const std::string& user_id) OVERRIDE;
+  virtual void OnScreenDidLock() override;
+  virtual void OnScreenDidUnlock() override;
+  virtual void OnFocusedUserChanged(const std::string& user_id) override;
 
   // chromeos::LoginState::Observer implementation:
-  virtual void LoggedInStateChanged() OVERRIDE;
+  virtual void LoggedInStateChanged() override;
 
   // Loads the device data associated with the user's Easy unlock keys from
   // crypthome.

@@ -24,17 +24,17 @@ class ThumbnailServiceImpl : public ThumbnailService {
 
   // Implementation of ThumbnailService.
   virtual bool SetPageThumbnail(const ThumbnailingContext& context,
-                                const gfx::Image& thumbnail) OVERRIDE;
-  virtual ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const OVERRIDE;
+                                const gfx::Image& thumbnail) override;
+  virtual ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const override;
   virtual bool GetPageThumbnail(
       const GURL& url,
       bool prefix_match,
-      scoped_refptr<base::RefCountedMemory>* bytes) OVERRIDE;
-  virtual void AddForcedURL(const GURL& url) OVERRIDE;
-  virtual bool ShouldAcquirePageThumbnail(const GURL& url) OVERRIDE;
+      scoped_refptr<base::RefCountedMemory>* bytes) override;
+  virtual void AddForcedURL(const GURL& url) override;
+  virtual bool ShouldAcquirePageThumbnail(const GURL& url) override;
 
   // Implementation of RefcountedBrowserContextKeyedService.
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void ShutdownOnUIThread() override;
 
  private:
   virtual ~ThumbnailServiceImpl();

@@ -30,7 +30,7 @@ class FakeDriveServiceWrapper : public drive::FakeDriveService {
       const std::string& parent_resource_id,
       const std::string& directory_name,
       const AddNewDirectoryOptions& options,
-      const google_apis::FileResourceCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) override;
 
   void set_make_directory_conflict(bool enable) {
     make_directory_conflict_ = enable;
@@ -57,20 +57,20 @@ class FakeDriveUploader : public drive::DriveUploaderInterface {
       const std::string& content_type,
       const UploadNewFileOptions& options,
       const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
   virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadExistingFileOptions& options,
       const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
   virtual google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
 
   void set_make_file_conflict(bool enable) {
     make_file_conflict_ = enable;

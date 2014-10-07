@@ -108,9 +108,9 @@ class SafeBrowsingURLRequestContextGetter
       SafeBrowsingService* sb_service_);
 
   // Implementation for net::UrlRequestContextGetter.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
  protected:
   virtual ~SafeBrowsingURLRequestContextGetter();
@@ -151,7 +151,7 @@ SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
 // don't leak it.
 class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
  public:
-  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
+  virtual SafeBrowsingService* CreateSafeBrowsingService() override {
     return new SafeBrowsingService();
   }
 

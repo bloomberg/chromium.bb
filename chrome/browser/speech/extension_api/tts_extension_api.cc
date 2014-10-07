@@ -89,7 +89,7 @@ class TtsExtensionEventHandler
   virtual void OnTtsEvent(Utterance* utterance,
                           TtsEventType event_type,
                           int char_index,
-                          const std::string& error_message) OVERRIDE;
+                          const std::string& error_message) override;
 };
 
 void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,

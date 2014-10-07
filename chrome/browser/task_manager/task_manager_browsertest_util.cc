@@ -34,19 +34,19 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
         required_count_(required_count),
         title_pattern_(title_pattern) {}
 
-  virtual void OnModelChanged() OVERRIDE {
+  virtual void OnModelChanged() override {
     OnResourceChange();
   }
 
-  virtual void OnItemsChanged(int start, int length) OVERRIDE {
+  virtual void OnItemsChanged(int start, int length) override {
     OnResourceChange();
   }
 
-  virtual void OnItemsAdded(int start, int length) OVERRIDE {
+  virtual void OnItemsAdded(int start, int length) override {
     OnResourceChange();
   }
 
-  virtual void OnItemsRemoved(int start, int length) OVERRIDE {
+  virtual void OnItemsRemoved(int start, int length) override {
     OnResourceChange();
   }
 

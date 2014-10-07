@@ -39,7 +39,7 @@ class UninstallAppTask : public ExclusiveTask {
                    UninstallFlag uninstall_flag);
   virtual ~UninstallAppTask();
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunExclusive(const SyncStatusCallback& callback) override;
 
  private:
   void DidDeleteAppRoot(const SyncStatusCallback& callback,

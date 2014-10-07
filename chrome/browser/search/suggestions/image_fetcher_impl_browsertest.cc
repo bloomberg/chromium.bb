@@ -38,7 +38,7 @@ class TestImageFetcherDelegate : public ImageFetcherDelegate {
 
   // Perform additional tasks when an image has been fetched.
   virtual void OnImageFetched(const GURL& url, const SkBitmap* bitmap)
-      OVERRIDE {
+      override {
     if (bitmap) {
       num_delegate_valid_called_++;
     } else {
@@ -65,12 +65,12 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
                    net::SpawnedTestServer::kLocalhost,
                    base::FilePath(kDocRoot)) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(test_server_.Start());
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     test_server_.Stop();
   }
 

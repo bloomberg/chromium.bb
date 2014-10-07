@@ -101,7 +101,7 @@ class EasyUnlockService::BluetoothDetector
 
   // device::BluetoothAdapter::Observer:
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE {
+                                     bool present) override {
     service_->OnBluetoothAdapterPresentChanged();
   }
 
@@ -136,11 +136,11 @@ class EasyUnlockService::PowerMonitor
 
  private:
   // chromeos::PowerManagerClient::Observer:
-  virtual void SuspendImminent() OVERRIDE {
+  virtual void SuspendImminent() override {
     service_->DisableAppIfLoaded();
   }
 
-  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE {
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) override {
     service_->LoadApp();
   }
 

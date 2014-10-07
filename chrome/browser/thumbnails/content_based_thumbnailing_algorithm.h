@@ -20,11 +20,11 @@ class ContentBasedThumbnailingAlgorithm : public ThumbnailingAlgorithm {
   virtual ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
                                        ui::ScaleFactor scale_factor,
                                        gfx::Rect* clipping_rect,
-                                       gfx::Size* target_size) const OVERRIDE;
+                                       gfx::Size* target_size) const override;
 
   virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
                              const ConsumerCallback& callback,
-                             const SkBitmap& bitmap) OVERRIDE;
+                             const SkBitmap& bitmap) override;
 
   // Prepares (clips to size, copies etc.) the bitmap passed to ProcessBitmap.
   // Always returns a bitmap that can be properly refcounted.

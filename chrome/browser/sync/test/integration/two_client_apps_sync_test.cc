@@ -59,7 +59,7 @@ class TwoClientAppsSyncTest : public SyncTest {
 
   virtual ~TwoClientAppsSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
+  virtual bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientAppsSyncTest);

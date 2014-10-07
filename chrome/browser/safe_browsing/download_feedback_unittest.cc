@@ -31,7 +31,7 @@ class FakeUploader : public TwoPhaseUploader {
                const FinishCallback& finish_callback);
   virtual ~FakeUploader() {}
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     start_called_ = true;
   }
 
@@ -76,7 +76,7 @@ class FakeUploaderFactory : public TwoPhaseUploaderFactory {
       const std::string& metadata,
       const base::FilePath& file_path,
       const TwoPhaseUploader::ProgressCallback& progress_callback,
-      const TwoPhaseUploader::FinishCallback& finish_callback) OVERRIDE;
+      const TwoPhaseUploader::FinishCallback& finish_callback) override;
 
   FakeUploader* uploader_;
 };
@@ -112,7 +112,7 @@ class DownloadFeedbackTest : public testing::Test {
     EXPECT_NE(io_task_runner_, file_task_runner_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     upload_file_path_ = temp_dir_.path().AppendASCII("test file");
     upload_file_data_ = "data";
@@ -122,7 +122,7 @@ class DownloadFeedbackTest : public testing::Test {
     TwoPhaseUploader::RegisterFactory(&two_phase_uploader_factory_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     TwoPhaseUploader::RegisterFactory(NULL);
   }
 

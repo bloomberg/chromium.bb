@@ -12,7 +12,7 @@ class ContextMenuContentTypeExtensionPopup : public ContextMenuContentType {
   virtual ~ContextMenuContentTypeExtensionPopup();
 
   // ContextMenuContentType overrides.
-  virtual bool SupportsGroup(int group) OVERRIDE;
+  virtual bool SupportsGroup(int group) override;
 
  protected:
   ContextMenuContentTypeExtensionPopup(

@@ -47,8 +47,8 @@ class WebResourceService
 
   // JSONAsynchronousUnpackerDelegate methods.
   virtual void OnUnpackFinished(
-      const base::DictionaryValue& parsed_json) OVERRIDE;
-  virtual void OnUnpackError(const std::string& error_message) OVERRIDE;
+      const base::DictionaryValue& parsed_json) override;
+  virtual void OnUnpackError(const std::string& error_message) override;
 
  protected:
   virtual ~WebResourceService();
@@ -63,7 +63,7 @@ class WebResourceService
   friend class base::RefCountedThreadSafe<WebResourceService>;
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Schedules a fetch after |delay_ms| milliseconds.
   void ScheduleFetch(int64 delay_ms);
@@ -75,7 +75,7 @@ class WebResourceService
   void EndFetch();
 
   // Implements ResourceRequestAllowedNotifier::Observer.
-  virtual void OnResourceRequestsAllowed() OVERRIDE;
+  virtual void OnResourceRequestsAllowed() override;
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.

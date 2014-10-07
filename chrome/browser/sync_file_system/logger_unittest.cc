@@ -28,7 +28,7 @@ class LoggerTest : public testing::Test {
  public:
   LoggerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     logging::SetMinLogLevel(logging::LOG_INFO);
     util::ClearLog();
   }

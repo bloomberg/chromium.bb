@@ -21,9 +21,9 @@ class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
   virtual ~SSLClientCertificateSelectorTestBase();
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   virtual void SetUpOnIOThread();
   virtual void TearDownOnIOThread();

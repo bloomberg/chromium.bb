@@ -76,7 +76,7 @@ class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
-      const SafeBrowsingProtocolConfig& config) OVERRIDE {
+      const SafeBrowsingProtocolConfig& config) override {
     return new SafeBrowsingProtocolManager(
         delegate, request_context_getter, config);
   }

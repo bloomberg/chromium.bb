@@ -31,7 +31,7 @@ class SyncEngineTest : public testing::Test,
   SyncEngineTest() {}
   virtual ~SyncEngineTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
 
     scoped_ptr<drive::DriveServiceInterface>
@@ -69,7 +69,7 @@ class SyncEngineTest : public testing::Test,
     WaitForWorkerTaskRunner();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sync_engine_.reset();
     WaitForWorkerTaskRunner();
     worker_pool_->Shutdown();

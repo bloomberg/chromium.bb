@@ -24,7 +24,7 @@ class ChromeBrowserPepperHostFactory : public ppapi::host::HostFactory {
       ppapi::host::PpapiHost* host,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,
-      const IPC::Message& message) OVERRIDE;
+      const IPC::Message& message) override;
 
  private:
   // Non-owning pointer.

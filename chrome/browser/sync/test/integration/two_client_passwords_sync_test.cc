@@ -37,7 +37,7 @@ class TwoClientPasswordsSyncTest : public SyncTest {
   TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientPasswordsSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
+  virtual bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPasswordsSyncTest);

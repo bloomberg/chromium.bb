@@ -128,7 +128,7 @@ class SafeBrowsingBlockingPageFactoryImpl
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      OVERRIDE {
+      override {
     return new SafeBrowsingBlockingPage(ui_manager, web_contents,
         unsafe_resources);
   }

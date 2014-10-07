@@ -98,17 +98,17 @@ class ServiceProcessControl : public IPC::Sender,
   virtual void Disconnect();
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   // IPC::Sender implementation
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.

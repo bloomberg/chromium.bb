@@ -160,7 +160,7 @@ class EasyUnlockService : public KeyedService {
   virtual bool IsAllowedInternal() = 0;
 
   // KeyedService override:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Exposes the profile to which the service is attached to subclasses.
   Profile* profile() const { return profile_; }

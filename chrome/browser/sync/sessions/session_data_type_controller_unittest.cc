@@ -30,20 +30,20 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
       profile_(profile) {}
   virtual ~MockSyncedWindowDelegate() {}
 
-  virtual bool HasWindow() const OVERRIDE { return false; }
-  virtual SessionID::id_type GetSessionId() const OVERRIDE { return 0; }
-  virtual int GetTabCount() const OVERRIDE { return 0; }
-  virtual int GetActiveIndex() const OVERRIDE { return 0; }
-  virtual bool IsApp() const OVERRIDE { return false; }
-  virtual bool IsTypeTabbed() const OVERRIDE { return false; }
-  virtual bool IsTypePopup() const OVERRIDE { return false; }
-  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const OVERRIDE {
+  virtual bool HasWindow() const override { return false; }
+  virtual SessionID::id_type GetSessionId() const override { return 0; }
+  virtual int GetTabCount() const override { return 0; }
+  virtual int GetActiveIndex() const override { return 0; }
+  virtual bool IsApp() const override { return false; }
+  virtual bool IsTypeTabbed() const override { return false; }
+  virtual bool IsTypePopup() const override { return false; }
+  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const override {
     return false;
   }
-  virtual SyncedTabDelegate* GetTabAt(int index) const OVERRIDE { return NULL; }
-  virtual SessionID::id_type GetTabIdAt(int index) const OVERRIDE { return 0; }
+  virtual SyncedTabDelegate* GetTabAt(int index) const override { return NULL; }
+  virtual SessionID::id_type GetTabIdAt(int index) const override { return 0; }
 
-  virtual bool IsSessionRestoreInProgress() const OVERRIDE {
+  virtual bool IsSessionRestoreInProgress() const override {
     return is_restore_in_progress_;
   }
 
@@ -66,7 +66,7 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
 class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
  public:
   virtual const std::set<SyncedWindowDelegate*>
-  GetSyncedWindowDelegates() OVERRIDE {
+  GetSyncedWindowDelegates() override {
     return delegates_;
   }
 
@@ -88,7 +88,7 @@ class SessionDataTypeControllerTest
         last_type_(syncer::UNSPECIFIED) {}
   virtual ~SessionDataTypeControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     synced_window_delegate_.reset(new MockSyncedWindowDelegate(&profile_));
     synced_window_getter_.reset(new MockSyncedWindowDelegatesGetter());
     synced_window_getter_->Add(synced_window_delegate_.get());
@@ -112,7 +112,7 @@ class SessionDataTypeControllerTest
     last_error_ = syncer::SyncError();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_ = NULL;
     local_device_.reset();
     synced_window_getter_.reset();

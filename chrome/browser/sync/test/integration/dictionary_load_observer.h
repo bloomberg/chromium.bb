@@ -17,9 +17,9 @@ class DictionaryLoadObserver : public SpellcheckCustomDictionary::Observer {
   virtual ~DictionaryLoadObserver();
 
   // SpellcheckCustomDictionary::Observer implementation.
-  virtual void OnCustomDictionaryLoaded() OVERRIDE;
+  virtual void OnCustomDictionaryLoaded() override;
   virtual void OnCustomDictionaryChanged(
-      const SpellcheckCustomDictionary::Change& dictionary_change) OVERRIDE;
+      const SpellcheckCustomDictionary::Change& dictionary_change) override;
 
  private:
   base::Closure quit_task_;

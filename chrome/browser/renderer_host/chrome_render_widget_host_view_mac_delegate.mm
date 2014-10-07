@@ -51,7 +51,7 @@ class SpellCheckObserver : public content::WebContentsObserver {
   }
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SpellCheckObserver, message)
       IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,

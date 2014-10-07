@@ -101,7 +101,7 @@ class SyncServerStatusChecker : public net::URLFetcherDelegate {
  public:
   SyncServerStatusChecker() : running_(false) {}
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     std::string data;
     source->GetResponseAsString(&data);
     running_ =
@@ -126,11 +126,11 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
   explicit EncryptionChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
+  virtual bool IsExitConditionSatisfied() override {
     return IsEncryptionComplete(service());
   }
 
-  virtual std::string GetDebugMessage() const OVERRIDE {
+  virtual std::string GetDebugMessage() const override {
     return "Encryption";
   }
 };

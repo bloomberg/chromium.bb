@@ -57,7 +57,7 @@ class SupervisedUserURLFilterObserver :
   }
 
   // SupervisedUserURLFilter::Observer
-  virtual void OnSiteListUpdated() OVERRIDE {
+  virtual void OnSiteListUpdated() override {
     message_loop_runner_->Quit();
   }
 
@@ -74,7 +74,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
  public:
   SupervisedUserServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
@@ -83,7 +83,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     profile_.reset();
   }
 
@@ -180,7 +180,7 @@ class SupervisedUserServiceExtensionTestBase
         channel_(chrome::VersionInfo::CHANNEL_DEV) {}
   virtual ~SupervisedUserServiceExtensionTestBase() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();

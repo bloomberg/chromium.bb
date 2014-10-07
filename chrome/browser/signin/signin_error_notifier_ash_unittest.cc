@@ -50,7 +50,7 @@ class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
  public:
   ScreenTypeDelegateDesktop() {}
   virtual gfx::ScreenType GetScreenTypeForNativeView(
-      gfx::NativeView view) OVERRIDE {
+      gfx::NativeView view) override {
     return chrome::IsNativeViewInAsh(view) ?
         gfx::SCREEN_TYPE_ALTERNATE :
         gfx::SCREEN_TYPE_NATIVE;
@@ -62,7 +62,7 @@ class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
 
 class SigninErrorNotifierTest : public AshTestBase {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
@@ -91,7 +91,7 @@ class SigninErrorNotifierTest : public AshTestBase {
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
 #if defined(OS_WIN)
     test_screen_.reset();
 #endif

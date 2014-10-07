@@ -15,11 +15,11 @@ class PassphraseRequiredChecker : public SingleClientStatusChangeChecker {
   explicit PassphraseRequiredChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
+  virtual bool IsExitConditionSatisfied() override {
     return service()->IsPassphraseRequired();
   }
 
-  virtual std::string GetDebugMessage() const OVERRIDE {
+  virtual std::string GetDebugMessage() const override {
     return "Passhrase Required";
   }
 };
@@ -29,12 +29,12 @@ class PassphraseAcceptedChecker : public SingleClientStatusChangeChecker {
   explicit PassphraseAcceptedChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
+  virtual bool IsExitConditionSatisfied() override {
     return !service()->IsPassphraseRequired() &&
         service()->IsUsingSecondaryPassphrase();
   }
 
-  virtual std::string GetDebugMessage() const OVERRIDE {
+  virtual std::string GetDebugMessage() const override {
     return "Passhrase Accepted";
   }
 };

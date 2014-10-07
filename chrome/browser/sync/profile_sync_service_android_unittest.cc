@@ -39,7 +39,7 @@ class ProfileSyncServiceAndroidTest : public testing::Test {
       : command_line_(base::CommandLine::NO_PROGRAM) {}
   virtual ~ProfileSyncServiceAndroidTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(&profile_);
     ProfileSyncComponentsFactory* factory =

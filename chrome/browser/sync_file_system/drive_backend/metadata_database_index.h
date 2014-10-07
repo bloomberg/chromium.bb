@@ -66,41 +66,41 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
 
   // MetadataDatabaseIndexInterface overrides.
   virtual bool GetFileMetadata(
-      const std::string& file_id, FileMetadata* metadata) const OVERRIDE;
+      const std::string& file_id, FileMetadata* metadata) const override;
   virtual bool GetFileTracker(
-      int64 tracker_id, FileTracker* tracker) const OVERRIDE;
-  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) OVERRIDE;
-  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) OVERRIDE;
-  virtual void RemoveFileMetadata(const std::string& file_id) OVERRIDE;
-  virtual void RemoveFileTracker(int64 tracker_id) OVERRIDE;
+      int64 tracker_id, FileTracker* tracker) const override;
+  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) override;
+  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) override;
+  virtual void RemoveFileMetadata(const std::string& file_id) override;
+  virtual void RemoveFileTracker(int64 tracker_id) override;
   virtual TrackerIDSet GetFileTrackerIDsByFileID(
-      const std::string& file_id) const OVERRIDE;
-  virtual int64 GetAppRootTracker(const std::string& app_id) const OVERRIDE;
+      const std::string& file_id) const override;
+  virtual int64 GetAppRootTracker(const std::string& app_id) const override;
   virtual TrackerIDSet GetFileTrackerIDsByParentAndTitle(
       int64 parent_tracker_id,
-      const std::string& title) const OVERRIDE;
+      const std::string& title) const override;
   virtual std::vector<int64> GetFileTrackerIDsByParent(
-      int64 parent_tracker_id) const OVERRIDE;
-  virtual std::string PickMultiTrackerFileID() const OVERRIDE;
-  virtual ParentIDAndTitle PickMultiBackingFilePath() const OVERRIDE;
-  virtual int64 PickDirtyTracker() const OVERRIDE;
-  virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
-  virtual bool HasDemotedDirtyTracker() const OVERRIDE;
-  virtual bool IsDemotedDirtyTracker(int64 tracker_id) const OVERRIDE;
-  virtual void PromoteDemotedDirtyTracker(int64 tracker_id) OVERRIDE;
-  virtual bool PromoteDemotedDirtyTrackers() OVERRIDE;
-  virtual size_t CountDirtyTracker() const OVERRIDE;
-  virtual size_t CountFileMetadata() const OVERRIDE;
-  virtual size_t CountFileTracker() const OVERRIDE;
-  virtual void SetSyncRootTrackerID(int64 sync_root_id) const OVERRIDE;
-  virtual void SetLargestChangeID(int64 largest_change_id) const OVERRIDE;
-  virtual void SetNextTrackerID(int64 next_tracker_id) const OVERRIDE;
-  virtual int64 GetSyncRootTrackerID() const OVERRIDE;
-  virtual int64 GetLargestChangeID() const OVERRIDE;
-  virtual int64 GetNextTrackerID() const OVERRIDE;
-  virtual std::vector<std::string> GetRegisteredAppIDs() const OVERRIDE;
-  virtual std::vector<int64> GetAllTrackerIDs() const OVERRIDE;
-  virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
+      int64 parent_tracker_id) const override;
+  virtual std::string PickMultiTrackerFileID() const override;
+  virtual ParentIDAndTitle PickMultiBackingFilePath() const override;
+  virtual int64 PickDirtyTracker() const override;
+  virtual void DemoteDirtyTracker(int64 tracker_id) override;
+  virtual bool HasDemotedDirtyTracker() const override;
+  virtual bool IsDemotedDirtyTracker(int64 tracker_id) const override;
+  virtual void PromoteDemotedDirtyTracker(int64 tracker_id) override;
+  virtual bool PromoteDemotedDirtyTrackers() override;
+  virtual size_t CountDirtyTracker() const override;
+  virtual size_t CountFileMetadata() const override;
+  virtual size_t CountFileTracker() const override;
+  virtual void SetSyncRootTrackerID(int64 sync_root_id) const override;
+  virtual void SetLargestChangeID(int64 largest_change_id) const override;
+  virtual void SetNextTrackerID(int64 next_tracker_id) const override;
+  virtual int64 GetSyncRootTrackerID() const override;
+  virtual int64 GetLargestChangeID() const override;
+  virtual int64 GetNextTrackerID() const override;
+  virtual std::vector<std::string> GetRegisteredAppIDs() const override;
+  virtual std::vector<int64> GetAllTrackerIDs() const override;
+  virtual std::vector<std::string> GetAllMetadataIDs() const override;
 
  private:
   typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;

@@ -41,10 +41,10 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
       Profile* profile, const GURL& apiary_url);
 
   // PermissionRequestCreator implementation:
-  virtual bool IsEnabled() const OVERRIDE;
+  virtual bool IsEnabled() const override;
   virtual void CreatePermissionRequest(
       const GURL& url_requested,
-      const SuccessCallback& callback) OVERRIDE;
+      const SuccessCallback& callback) override;
 
   void set_url_fetcher_id_for_testing(int id) { url_fetcher_id_ = id; }
 
@@ -55,12 +55,12 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   // OAuth2TokenService::Consumer implementation:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   std::string GetApiScopeToUse() const;
 

@@ -12,7 +12,7 @@ class ContextMenuContentTypeAppMode : public ContextMenuContentType {
   virtual ~ContextMenuContentTypeAppMode();
 
   // ContextMenuContentType overrides.
-  virtual bool SupportsGroup(int group) OVERRIDE;
+  virtual bool SupportsGroup(int group) override;
 
  protected:
   ContextMenuContentTypeAppMode(content::WebContents* web_contents,

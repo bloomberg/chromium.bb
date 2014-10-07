@@ -233,7 +233,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+  virtual content::BrowserContext* CreateBrowserContext() override {
     // Set custom profile object so that we can mock calls to IsOffTheRecord.
     // This needs to happen before we call the parent SetUp() function.  We use
     // a nice mock because other parts of the code are calling IsOffTheRecord.

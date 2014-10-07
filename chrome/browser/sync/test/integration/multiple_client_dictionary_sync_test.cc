@@ -16,7 +16,7 @@ class MultipleClientDictionarySyncTest : public SyncTest {
   MultipleClientDictionarySyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientDictionarySyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
+  virtual bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientDictionarySyncTest);

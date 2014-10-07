@@ -184,7 +184,7 @@ class FakeSigninManagerForSyncUIUtilTest : public FakeSigninManagerBase {
   virtual ~FakeSigninManagerForSyncUIUtilTest() {
   }
 
-  virtual bool AuthInProgress() const OVERRIDE {
+  virtual bool AuthInProgress() const override {
     return auth_in_progress_;
   }
 

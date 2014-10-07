@@ -47,8 +47,8 @@ class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
   virtual ~IdentityObserver();
 
   // IdentityProvider::Observer:
-  virtual void OnActiveAccountLogin() OVERRIDE;
-  virtual void OnActiveAccountLogout() OVERRIDE;
+  virtual void OnActiveAccountLogin() override;
+  virtual void OnActiveAccountLogout() override;
 
   std::string SignedInUserName() const;
 

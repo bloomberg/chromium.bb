@@ -79,38 +79,38 @@ class ChromeTranslateClient
   content::WebContents* GetWebContents();
 
   // TranslateClient implementation.
-  virtual translate::TranslateDriver* GetTranslateDriver() OVERRIDE;
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() OVERRIDE;
+  virtual translate::TranslateDriver* GetTranslateDriver() override;
+  virtual PrefService* GetPrefs() override;
+  virtual scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   virtual translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages()
-      OVERRIDE;
-  virtual int GetInfobarIconID() const OVERRIDE;
+      override;
+  virtual int GetInfobarIconID() const override;
   virtual scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const OVERRIDE;
+      scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const override;
   virtual void ShowTranslateUI(translate::TranslateStep step,
                                const std::string source_language,
                                const std::string target_language,
                                translate::TranslateErrors::Type error_type,
-                               bool triggered_from_menu) OVERRIDE;
-  virtual bool IsTranslatableURL(const GURL& url) OVERRIDE;
+                               bool triggered_from_menu) override;
+  virtual bool IsTranslatableURL(const GURL& url) override;
   virtual void ShowReportLanguageDetectionErrorUI(
-      const GURL& report_url) OVERRIDE;
+      const GURL& report_url) override;
 
   // ContentTranslateDriver::Observer implementation.
   virtual void OnLanguageDetermined(
-      const translate::LanguageDetectionDetails& details) OVERRIDE;
+      const translate::LanguageDetectionDetails& details) override;
   virtual void OnPageTranslated(
       const std::string& original_lang,
       const std::string& translated_lang,
-      translate::TranslateErrors::Type error_type) OVERRIDE;
+      translate::TranslateErrors::Type error_type) override;
 
  private:
   explicit ChromeTranslateClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeTranslateClient>;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void WebContentsDestroyed() override;
 
   // Shows the translate bubble.
   void ShowBubble(translate::TranslateStep step,

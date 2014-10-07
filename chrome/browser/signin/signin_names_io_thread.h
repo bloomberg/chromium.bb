@@ -44,13 +44,13 @@ class SigninNamesOnIOThread : public SigninManagerBase::Observer,
   // SigninManagerBase::Observer:
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   // SigninManagerFactory::Observer:
-  virtual void SigninManagerCreated(SigninManagerBase* manager) OVERRIDE;
-  virtual void SigninManagerShutdown(SigninManagerBase* manager) OVERRIDE;
+  virtual void SigninManagerCreated(SigninManagerBase* manager) override;
+  virtual void SigninManagerShutdown(SigninManagerBase* manager) override;
 
   // Checks whether the current thread is the IO thread.
   void CheckOnIOThread() const;

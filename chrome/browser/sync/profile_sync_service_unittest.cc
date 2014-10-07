@@ -51,18 +51,18 @@ class FakeDataTypeManager : public sync_driver::DataTypeManager {
   virtual ~FakeDataTypeManager() {};
 
   virtual void Configure(syncer::ModelTypeSet desired_types,
-                         syncer::ConfigureReason reason) OVERRIDE {
+                         syncer::ConfigureReason reason) override {
     sync_driver::DataTypeManager::ConfigureResult result;
     result.status = sync_driver::DataTypeManager::OK;
     observer_->OnConfigureDone(result);
   }
 
-  virtual void ReenableType(syncer::ModelType type) OVERRIDE {}
-  virtual void ResetDataTypeErrors() OVERRIDE {}
+  virtual void ReenableType(syncer::ModelType type) override {}
+  virtual void ResetDataTypeErrors() override {}
   virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
-                                 syncer::ConfigureReason reason) OVERRIDE {}
-  virtual void Stop() OVERRIDE {};
-  virtual State state() const OVERRIDE {
+                                 syncer::ConfigureReason reason) override {}
+  virtual void Stop() override {};
+  virtual State state() const override {
     return sync_driver::DataTypeManager::CONFIGURED;
   };
 
@@ -82,7 +82,7 @@ class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
  public:
   explicit TestProfileSyncServiceObserver(ProfileSyncService* service)
       : service_(service), first_setup_in_progress_(false) {}
-  virtual void OnStateChanged() OVERRIDE {
+  virtual void OnStateChanged() override {
     first_setup_in_progress_ = service_->FirstSetupInProgress();
   }
   bool first_setup_in_progress() const { return first_setup_in_progress_; }
@@ -106,7 +106,7 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources) OVERRIDE {}
+      syncer::NetworkResources* network_resources) override {}
 };
 
 class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
@@ -126,7 +126,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources) OVERRIDE {
+      syncer::NetworkResources* network_resources) override {
     delete_dir_param_->push_back(delete_sync_data_folder);
     SyncBackendHostMock::Initialize(frontend, sync_thread.Pass(),
                                     event_handler, service_url, credentials,
@@ -173,7 +173,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   virtual ~ProfileSyncServiceTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSyncDeferredStartupTimeoutSeconds, "0");
 
@@ -194,7 +194,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         testing_facotries);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Kill the service before the profile.
     if (service_)
       service_->Shutdown();

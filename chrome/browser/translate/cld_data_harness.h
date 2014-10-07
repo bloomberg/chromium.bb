@@ -36,7 +36,7 @@ namespace test {
 //     MyTestClass() :
 //       cld_data_scope(test::CreateCldDataHarness()) {
 //     }
-//     virtual void SetUpOnMainThread() OVERRIDE {
+//     virtual void SetUpOnMainThread() override {
 //       cld_data_scope->Init();
 //       InProcessBrowserTest::SetUpOnMainThread();
 //     }

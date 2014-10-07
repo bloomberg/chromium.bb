@@ -43,10 +43,10 @@ class SubframeResource : public RendererResource {
   virtual ~SubframeResource() {}
 
   // Resource methods:
-  virtual Type GetType() const OVERRIDE;
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual WebContents* GetWebContents() const OVERRIDE;
+  virtual Type GetType() const override;
+  virtual base::string16 GetTitle() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual WebContents* GetWebContents() const override;
 
  private:
   WebContents* web_contents_;
@@ -112,27 +112,27 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
   }
 
   // content::WebContentsObserver implementation.
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     ClearResourceForFrame(render_frame_host);
   }
 
   virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
-                                      RenderFrameHost* new_host) OVERRIDE {
+                                      RenderFrameHost* new_host) override {
     if (old_host)
       ClearResourceForFrame(old_host);
     CreateResourceForFrame(new_host);
   }
 
-  virtual void RenderViewReady() OVERRIDE {
+  virtual void RenderViewReady() override {
     ClearAllResources();
     CreateAllResources();
   }
 
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+  virtual void RenderProcessGone(base::TerminationStatus status) override {
     ClearAllResources();
   }
 
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     ClearAllResources();
     provider_->DeleteEntry(web_contents(), this);  // Deletes |this|.
   }

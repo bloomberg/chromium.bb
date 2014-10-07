@@ -29,16 +29,16 @@ class ImageFetcherImpl : public ImageFetcher,
   explicit ImageFetcherImpl(net::URLRequestContextGetter* url_request_context);
   virtual ~ImageFetcherImpl();
 
-  virtual void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) OVERRIDE;
+  virtual void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) override;
 
   virtual void StartOrQueueNetworkRequest(
       const GURL& url, const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback) OVERRIDE;
+      base::Callback<void(const GURL&, const SkBitmap*)> callback) override;
 
  private:
   // Inherited from BitmapFetcherDelegate. Runs on the UI thread.
   virtual void OnFetchComplete(const GURL image_url,
-                               const SkBitmap* bitmap) OVERRIDE;
+                               const SkBitmap* bitmap) override;
 
   typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >
       CallbackVector;

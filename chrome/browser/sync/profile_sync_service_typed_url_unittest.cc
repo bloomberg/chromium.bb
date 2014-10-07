@@ -88,7 +88,7 @@ static const int EXPIRED_VISIT = -1;
 class HistoryBackendMock : public HistoryBackend {
  public:
   HistoryBackendMock() : HistoryBackend(base::FilePath(), NULL, NULL) {}
-  virtual bool IsExpiredVisitTime(const base::Time& time) OVERRIDE {
+  virtual bool IsExpiredVisitTime(const base::Time& time) override {
     return time.ToInternalValue() == EXPIRED_VISIT;
   }
   MOCK_METHOD1(GetAllTypedURLs, bool(history::URLRows* entries));
@@ -115,7 +115,7 @@ class HistoryServiceMock : public HistoryService {
       : HistoryService(client, profile), backend_(NULL) {}
 
   virtual void ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
-                              base::CancelableTaskTracker* tracker) OVERRIDE {
+                              base::CancelableTaskTracker* tracker) override {
     history::HistoryDBTask* task_raw = task.get();
     task_runner_->PostTaskAndReply(
         FROM_HERE,
@@ -174,7 +174,7 @@ class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
  protected:
   // Don't clear error stats - that way we can verify their values in our
   // tests.
-  virtual void ClearErrorStats() OVERRIDE {}
+  virtual void ClearErrorStats() override {}
 };
 
 ACTION_P2(ShutdownHistoryService, thread, service) {

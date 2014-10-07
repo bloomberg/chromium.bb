@@ -61,36 +61,36 @@ class FakeThemeService : public ThemeService {
     is_dirty_(false) {}
 
   // ThemeService implementation
-  virtual void SetTheme(const extensions::Extension* extension) OVERRIDE {
+  virtual void SetTheme(const extensions::Extension* extension) override {
     is_dirty_ = true;
     theme_extension_ = extension;
     using_system_theme_ = false;
     using_default_theme_ = false;
   }
 
-  virtual void UseDefaultTheme() OVERRIDE {
+  virtual void UseDefaultTheme() override {
     is_dirty_ = true;
     using_default_theme_ = true;
     using_system_theme_ = false;
     theme_extension_ = NULL;
   }
 
-  virtual void UseSystemTheme() OVERRIDE {
+  virtual void UseSystemTheme() override {
     is_dirty_ = true;
     using_system_theme_ = true;
     using_default_theme_ = false;
     theme_extension_ = NULL;
   }
 
-  virtual bool UsingDefaultTheme() const OVERRIDE {
+  virtual bool UsingDefaultTheme() const override {
     return using_default_theme_;
   }
 
-  virtual bool UsingSystemTheme() const OVERRIDE {
+  virtual bool UsingSystemTheme() const override {
     return using_system_theme_;
   }
 
-  virtual string GetThemeID() const OVERRIDE {
+  virtual string GetThemeID() const override {
     if (theme_extension_.get())
       return theme_extension_->id();
     else
@@ -236,7 +236,7 @@ class ThemeSyncableServiceTest : public testing::Test {
 };
 
 class PolicyInstalledThemeTest : public ThemeSyncableServiceTest {
-  virtual extensions::Manifest::Location GetThemeLocation() OVERRIDE {
+  virtual extensions::Manifest::Location GetThemeLocation() override {
     return extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD;
   }
 };

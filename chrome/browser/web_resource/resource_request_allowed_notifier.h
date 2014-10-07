@@ -81,11 +81,11 @@ class ResourceRequestAllowedNotifier
   virtual EulaAcceptedNotifier* CreateEulaNotifier();
 
   // EulaAcceptedNotifier::Observer overrides:
-  virtual void OnEulaAccepted() OVERRIDE;
+  virtual void OnEulaAccepted() override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Tracks whether or not the observer/service depending on this class actually
   // requested permission to make a request or not. If it did not, then this

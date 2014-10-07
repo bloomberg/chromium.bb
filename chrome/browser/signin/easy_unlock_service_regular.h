@@ -29,23 +29,23 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
 
  private:
   // EasyUnlockService implementation.
-  virtual EasyUnlockService::Type GetType() const OVERRIDE;
-  virtual std::string GetUserEmail() const OVERRIDE;
-  virtual void LaunchSetup() OVERRIDE;
-  virtual const base::DictionaryValue* GetPermitAccess() const OVERRIDE;
-  virtual void SetPermitAccess(const base::DictionaryValue& permit) OVERRIDE;
-  virtual void ClearPermitAccess() OVERRIDE;
-  virtual const base::ListValue* GetRemoteDevices() const OVERRIDE;
-  virtual void SetRemoteDevices(const base::ListValue& devices) OVERRIDE;
-  virtual void ClearRemoteDevices() OVERRIDE;
-  virtual void RunTurnOffFlow() OVERRIDE;
-  virtual void ResetTurnOffFlow() OVERRIDE;
-  virtual TurnOffFlowStatus GetTurnOffFlowStatus() const OVERRIDE;
-  virtual std::string GetChallenge() const OVERRIDE;
-  virtual std::string GetWrappedSecret() const OVERRIDE;
-  virtual void InitializeInternal() OVERRIDE;
-  virtual void ShutdownInternal() OVERRIDE;
-  virtual bool IsAllowedInternal() OVERRIDE;
+  virtual EasyUnlockService::Type GetType() const override;
+  virtual std::string GetUserEmail() const override;
+  virtual void LaunchSetup() override;
+  virtual const base::DictionaryValue* GetPermitAccess() const override;
+  virtual void SetPermitAccess(const base::DictionaryValue& permit) override;
+  virtual void ClearPermitAccess() override;
+  virtual const base::ListValue* GetRemoteDevices() const override;
+  virtual void SetRemoteDevices(const base::ListValue& devices) override;
+  virtual void ClearRemoteDevices() override;
+  virtual void RunTurnOffFlow() override;
+  virtual void ResetTurnOffFlow() override;
+  virtual TurnOffFlowStatus GetTurnOffFlowStatus() const override;
+  virtual std::string GetChallenge() const override;
+  virtual std::string GetWrappedSecret() const override;
+  virtual void InitializeInternal() override;
+  virtual void ShutdownInternal() override;
+  virtual bool IsAllowedInternal() override;
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();

@@ -82,7 +82,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
         base_path, base::FilePath(FILE_PATH_LITERAL("iframe.html")));
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     event_queue_.reset([[NSMutableArray alloc] init]);
     touch_ = CGPointMake(0.5, 0.5);
 
@@ -93,7 +93,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
     ASSERT_EQ(url2_, GetWebContents()->GetURL());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     event_queue_.reset();
   }
 

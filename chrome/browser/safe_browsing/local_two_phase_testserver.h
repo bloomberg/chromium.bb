@@ -21,7 +21,7 @@ class LocalTwoPhaseTestServer : public net::LocalTestServer {
 
   // Returns the path to two_phase_testserver.py.
   virtual bool GetTestServerPath(
-      base::FilePath* testserver_path) const OVERRIDE;
+      base::FilePath* testserver_path) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalTwoPhaseTestServer);

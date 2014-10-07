@@ -29,11 +29,11 @@ class SupervisedUserPrefStore : public PrefStore {
 
   // PrefStore overrides:
   virtual bool GetValue(const std::string& key,
-                        const base::Value** value) const OVERRIDE;
-  virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual bool HasObservers() const OVERRIDE;
-  virtual bool IsInitializationComplete() const OVERRIDE;
+                        const base::Value** value) const override;
+  virtual void AddObserver(PrefStore::Observer* observer) override;
+  virtual void RemoveObserver(PrefStore::Observer* observer) override;
+  virtual bool HasObservers() const override;
+  virtual bool IsInitializationComplete() const override;
 
  private:
   virtual ~SupervisedUserPrefStore();

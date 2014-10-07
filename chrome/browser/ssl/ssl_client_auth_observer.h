@@ -50,7 +50,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   const net::HttpNetworkSession* network_session_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;

@@ -40,10 +40,10 @@ class GuestResource : public RendererResource {
   virtual ~GuestResource();
 
   // Resource methods:
-  virtual Type GetType() const OVERRIDE;
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual Type GetType() const override;
+  virtual base::string16 GetTitle() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual content::WebContents* GetWebContents() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestResource);

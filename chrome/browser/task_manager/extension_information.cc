@@ -50,9 +50,9 @@ class ExtensionProcessResource : public RendererResource {
   virtual ~ExtensionProcessResource();
 
   // Resource methods:
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
+  virtual base::string16 GetTitle() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual Type GetType() const override;
 
  private:
   // Returns true if the associated extension has a background page.

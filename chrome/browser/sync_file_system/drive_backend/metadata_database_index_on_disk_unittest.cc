@@ -35,14 +35,14 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
  public:
   virtual ~MetadataDatabaseIndexOnDiskTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     db_ = InitializeLevelDB();
     index_ = MetadataDatabaseIndexOnDisk::Create(db_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     index_.reset();
     db_.reset();
     in_memory_env_.reset();

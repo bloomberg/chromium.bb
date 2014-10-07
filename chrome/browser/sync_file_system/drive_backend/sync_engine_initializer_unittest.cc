@@ -45,7 +45,7 @@ class SyncEngineInitializerTest : public testing::Test {
   SyncEngineInitializerTest() {}
   virtual ~SyncEngineInitializerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -66,7 +66,7 @@ class SyncEngineInitializerTest : public testing::Test {
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sync_task_manager_.reset();
     metadata_database_.reset();
     sync_context_.reset();

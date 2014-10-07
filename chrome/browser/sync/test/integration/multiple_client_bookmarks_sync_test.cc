@@ -15,7 +15,7 @@ class MultipleClientBookmarksSyncTest : public SyncTest {
   MultipleClientBookmarksSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientBookmarksSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE {
+  virtual bool TestUsesSelfNotifications() override {
     return false;
   }
 

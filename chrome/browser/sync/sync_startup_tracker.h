@@ -46,7 +46,7 @@ class SyncStartupTracker : public ProfileSyncServiceObserver {
   static SyncServiceState GetSyncServiceState(Profile* profile);
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
  private:
   // Checks the current service state and notifies |observer_| if the state

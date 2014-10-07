@@ -43,39 +43,39 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // BookmarkModelObserver implementation.
   // BookmarkModel -> sync API model change application.
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+                                   bool ids_reassigned) override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE;
+                                 int new_index) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE;
+                                   const BookmarkNode* node) override;
   virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
-                                       const BookmarkNode* node) OVERRIDE;
+                                       const BookmarkNode* node) override;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE;
+                                          const BookmarkNode* node) override;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) OVERRIDE;
+                                             const BookmarkNode* node) override;
 
   // The change processor implementation, responsible for applying changes from
   // the sync model to the bookmarks model.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 model_version,
-      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::ImmutableChangeRecordList& changes) override;
 
   // The following methods are static and hence may be invoked at any time, and
   // do not depend on having a running ChangeProcessor.
@@ -148,7 +148,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
       const std::vector<const BookmarkNode*>& nodes);
 
  protected:
-  virtual void StartImpl() OVERRIDE;
+  virtual void StartImpl() override;
 
  private:
   enum MoveOrCreate {

@@ -43,7 +43,7 @@ class RegisterAppTaskTest : public testing::Test {
         next_tracker_id_(10000) {}
   virtual ~RegisterAppTaskTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -71,7 +71,7 @@ class RegisterAppTaskTest : public testing::Test {
                   kSyncRootFolderTitle, &sync_root_folder_id_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     context_.reset();
     base::RunLoop().RunUntilIdle();
   }

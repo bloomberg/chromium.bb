@@ -23,7 +23,7 @@ class TwoClientExtensionsSyncTest : public SyncTest {
   TwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT) {}
 
   virtual ~TwoClientExtensionsSyncTest() {}
-  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
+  virtual bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionsSyncTest);

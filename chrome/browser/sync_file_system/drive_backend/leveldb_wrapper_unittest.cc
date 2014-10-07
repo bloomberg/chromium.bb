@@ -26,13 +26,13 @@ class LevelDBWrapperTest : public testing::Test {
  public:
   virtual ~LevelDBWrapperTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     InitializeLevelDB();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     db_.reset();
     in_memory_env_.reset();
   }

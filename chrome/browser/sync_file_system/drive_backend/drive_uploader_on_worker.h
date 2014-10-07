@@ -39,7 +39,7 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
       const std::string& content_type,
       const UploadNewFileOptions& options,
       const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
 
   virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
@@ -47,7 +47,7 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
       const std::string& content_type,
       const UploadExistingFileOptions& options,
       const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
 
   // Following method is expected not to be used.
   virtual google_apis::CancelCallback ResumeUploadFile(
@@ -55,7 +55,7 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const drive::UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
 
  private:
   base::WeakPtr<DriveUploaderWrapper> wrapper_;

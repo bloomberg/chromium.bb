@@ -30,8 +30,8 @@ class OfflineResourceThrottle
   virtual ~OfflineResourceThrottle();
 
   // content::ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
-  virtual const char* GetNameForLogging() const OVERRIDE;
+  virtual void WillStartRequest(bool* defer) override;
+  virtual const char* GetNameForLogging() const override;
 
  private:
   // OfflineLoadPage callback.

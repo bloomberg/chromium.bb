@@ -27,7 +27,7 @@ class SupervisedUserPrefMappingServiceFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_PREF_MAPPING_SERVICE_FACTORY_H_

@@ -32,8 +32,8 @@ class SearchEngineDataTypeController
   virtual ~SearchEngineDataTypeController();
 
   // FrontendDataTypeController implementations.
-  virtual bool StartModels() OVERRIDE;
-  virtual void StopModels() OVERRIDE;
+  virtual bool StartModels() override;
+  virtual void StopModels() override;
 
   void OnTemplateURLServiceLoaded();
 

@@ -32,13 +32,13 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
       syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual void RegisterForLoopDestruction() OVERRIDE;
-  virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
-  virtual void RequestStop() OVERRIDE;
+  virtual void RegisterForLoopDestruction() override;
+  virtual syncer::ModelSafeGroup GetModelSafeGroup() override;
+  virtual void RequestStop() override;
 
  protected:
   virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
-      const syncer::WorkCallback& work) OVERRIDE;
+      const syncer::WorkCallback& work) override;
 
  private:
   virtual ~PasswordModelWorker();

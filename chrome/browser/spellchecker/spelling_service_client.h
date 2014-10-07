@@ -110,7 +110,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   };
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
   // function is overridden by unit tests to prevent them from actually sending

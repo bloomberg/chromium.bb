@@ -68,11 +68,11 @@ class ServiceProcessControlBrowserTest
     ServiceProcessControl::GetInstance()->Disconnect();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     service_process_handle_ = base::kNullProcessHandle;
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (ServiceProcessControl::GetInstance()->IsConnected())
       EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 #if defined(OS_MACOSX)
@@ -118,7 +118,7 @@ class ServiceProcessControlBrowserTest
 class RealServiceProcessControlBrowserTest
       : public ServiceProcessControlBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ServiceProcessControlBrowserTest::SetUpCommandLine(command_line);
     base::FilePath exe;
     PathService::Get(base::DIR_EXE, &exe);

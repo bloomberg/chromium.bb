@@ -48,31 +48,31 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
   virtual ~TestLockHandler() {}
 
   // ScreenlockBridge::LockHandler implementation:
-  virtual void ShowBannerMessage(const base::string16& message) OVERRIDE {
+  virtual void ShowBannerMessage(const base::string16& message) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
   virtual void ShowUserPodCustomIcon(
       const std::string& user_email,
-      const ScreenlockBridge::UserPodCustomIconOptions& icon) OVERRIDE {
+      const ScreenlockBridge::UserPodCustomIconOptions& icon) override {
     ASSERT_EQ(user_email_, user_email);
     ++show_icon_count_;
     last_custom_icon_ = icon.ToDictionaryValue().Pass();
     ValidateCustomIcon();
   }
 
-  virtual void HideUserPodCustomIcon(const std::string& user_email) OVERRIDE {
+  virtual void HideUserPodCustomIcon(const std::string& user_email) override {
     ASSERT_EQ(user_email_, user_email);
     last_custom_icon_.reset();
   }
 
-  virtual void EnableInput() OVERRIDE {
+  virtual void EnableInput() override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
   virtual void SetAuthType(const std::string& user_email,
                            AuthType auth_type,
-                           const base::string16& auth_value) OVERRIDE {
+                           const base::string16& auth_value) override {
     ASSERT_EQ(user_email_, user_email);
     // Generally, this is allowed, but EasyUnlockScreenlockStateHandler should
     // avoid resetting the same auth type.
@@ -82,18 +82,18 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
     auth_value_ = auth_value;
   }
 
-  virtual AuthType GetAuthType(const std::string& user_email) const OVERRIDE {
+  virtual AuthType GetAuthType(const std::string& user_email) const override {
     EXPECT_EQ(user_email_, user_email);
     return auth_type_;
   }
 
-  virtual void Unlock(const std::string& user_email) OVERRIDE {
+  virtual void Unlock(const std::string& user_email) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
   virtual void AttemptEasySignin(const std::string& user_email,
                                  const std::string& secret,
-                                 const std::string& key_label) OVERRIDE {
+                                 const std::string& key_label) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
@@ -199,7 +199,7 @@ class EasyUnlockScreenlockStateHandlerTest : public testing::Test {
   EasyUnlockScreenlockStateHandlerTest() : user_email_("test_user@gmail.com") {}
   virtual ~EasyUnlockScreenlockStateHandlerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSyncable());
 
     // The preference used to determine if easy unlock was previously used by
@@ -219,7 +219,7 @@ class EasyUnlockScreenlockStateHandlerTest : public testing::Test {
         screenlock_bridge));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ScreenlockBridge::Get()->SetLockHandler(NULL);
     lock_handler_.reset();
     state_handler_.reset();

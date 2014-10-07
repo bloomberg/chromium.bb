@@ -27,7 +27,7 @@ class CustodianProfileDownloaderServiceFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_CUSTODIAN_PROFILE_DOWNLOADER_SERVICE_FACTORY_H_

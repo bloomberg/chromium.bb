@@ -101,59 +101,59 @@ class SyncEngine : public RemoteFileSyncService,
       scoped_ptr<SyncWorkerInterface> sync_worker);
 
   // RemoteFileSyncService overrides.
-  virtual void AddServiceObserver(SyncServiceObserver* observer) OVERRIDE;
-  virtual void AddFileStatusObserver(FileStatusObserver* observer) OVERRIDE;
+  virtual void AddServiceObserver(SyncServiceObserver* observer) override;
+  virtual void AddFileStatusObserver(FileStatusObserver* observer) override;
   virtual void RegisterOrigin(
       const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
+      const SyncStatusCallback& callback) override;
   virtual void EnableOrigin(
       const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
+      const SyncStatusCallback& callback) override;
   virtual void DisableOrigin(
       const GURL& origin,
-      const SyncStatusCallback& callback) OVERRIDE;
+      const SyncStatusCallback& callback) override;
   virtual void UninstallOrigin(
       const GURL& origin,
       UninstallFlag flag,
-      const SyncStatusCallback& callback) OVERRIDE;
-  virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
+      const SyncStatusCallback& callback) override;
+  virtual void ProcessRemoteChange(const SyncFileCallback& callback) override;
   virtual void SetRemoteChangeProcessor(
-      RemoteChangeProcessor* processor) OVERRIDE;
-  virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
-  virtual RemoteServiceState GetCurrentState() const OVERRIDE;
-  virtual void GetOriginStatusMap(const StatusMapCallback& callback) OVERRIDE;
+      RemoteChangeProcessor* processor) override;
+  virtual LocalChangeProcessor* GetLocalChangeProcessor() override;
+  virtual RemoteServiceState GetCurrentState() const override;
+  virtual void GetOriginStatusMap(const StatusMapCallback& callback) override;
   virtual void DumpFiles(const GURL& origin,
-                         const ListCallback& callback) OVERRIDE;
-  virtual void DumpDatabase(const ListCallback& callback) OVERRIDE;
-  virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual void PromoteDemotedChanges(const base::Closure& callback) OVERRIDE;
+                         const ListCallback& callback) override;
+  virtual void DumpDatabase(const ListCallback& callback) override;
+  virtual void SetSyncEnabled(bool enabled) override;
+  virtual void PromoteDemotedChanges(const base::Closure& callback) override;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(const FileChange& local_change,
                                 const base::FilePath& local_path,
                                 const SyncFileMetadata& local_metadata,
                                 const storage::FileSystemURL& url,
-                                const SyncStatusCallback& callback) OVERRIDE;
+                                const SyncStatusCallback& callback) override;
 
   // drive::DriveNotificationObserver overrides.
-  virtual void OnNotificationReceived() OVERRIDE;
-  virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
+  virtual void OnNotificationReceived() override;
+  virtual void OnPushNotificationEnabled(bool enabled) override;
 
   // drive::DriveServiceObserver overrides.
-  virtual void OnReadyToSendRequests() OVERRIDE;
-  virtual void OnRefreshTokenInvalid() OVERRIDE;
+  virtual void OnReadyToSendRequests() override;
+  virtual void OnRefreshTokenInvalid() override;
 
   // net::NetworkChangeNotifier::NetworkChangeObserver overrides.
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // SigninManagerBase::Observer overrides.
-  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
  private:
   class WorkerObserver;

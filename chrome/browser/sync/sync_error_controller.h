@@ -34,7 +34,7 @@ class SyncErrorController : public ProfileSyncServiceObserver {
   void RemoveObserver(Observer* observer);
 
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
  private:
   ProfileSyncService* service_;

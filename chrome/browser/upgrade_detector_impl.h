@@ -31,7 +31,7 @@ class UpgradeDetectorImpl :
   UpgradeDetectorImpl();
 
   // chrome_variations::VariationsService::Observer:
-  virtual void OnExperimentChangesDetected(Severity severity) OVERRIDE;
+  virtual void OnExperimentChangesDetected(Severity severity) override;
 
   // Trigger an "on upgrade" notification based on the specified |time_passed|
   // interval. Exposed as protected for testing.

@@ -129,7 +129,7 @@ class SSLErrorClassification : public content::NotificationObserver {
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
+      const content::NotificationDetails& details) override;
 
   content::WebContents* web_contents_;
   // This stores the current time.

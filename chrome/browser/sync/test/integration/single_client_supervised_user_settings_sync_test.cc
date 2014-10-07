@@ -22,7 +22,7 @@ class SingleClientSupervisedUserSettingsSyncTest : public SyncTest {
   virtual ~SingleClientSupervisedUserSettingsSyncTest() {}
 
   // SyncTest overrides:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     SyncTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }

@@ -243,7 +243,7 @@ class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
   ThemeServiceSupervisedUserTest() {}
   virtual ~ThemeServiceSupervisedUserTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     is_supervised_ = true;
     ThemeServiceTest::SetUp();
   }

@@ -22,7 +22,7 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void ExecuteCommand(RenderViewContextMenu* context_menu);
 
@@ -51,7 +51,7 @@ class SaveLinkAsContextMenuObserver : public ContextMenuNotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void Cancel(RenderViewContextMenu* context_menu);
 

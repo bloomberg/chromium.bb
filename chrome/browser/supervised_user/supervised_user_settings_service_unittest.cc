@@ -25,7 +25,7 @@ class MockSyncErrorFactory : public syncer::SyncErrorFactory {
   // SyncErrorFactory implementation:
   virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
-      const std::string& message) OVERRIDE;
+      const std::string& message) override;
 
  private:
   syncer::ModelType type_;
@@ -119,7 +119,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   }
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestingPrefStore* pref_store = new TestingPrefStore;
     settings_service_.Init(pref_store);
     settings_service_.Subscribe(
@@ -131,7 +131,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     ASSERT_TRUE(settings_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     settings_service_.Shutdown();
   }
 

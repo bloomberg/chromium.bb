@@ -60,17 +60,17 @@ class FakeProfileOAuth2TokenService
 
   // Overriden to make sure it works on Android.
   virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) const OVERRIDE;
+      const std::string& account_id) const override;
 
   // Overriden to make sure it works on iOS.
-  virtual void LoadCredentials(const std::string& primary_account_id) OVERRIDE;
+  virtual void LoadCredentials(const std::string& primary_account_id) override;
 
-  virtual std::vector<std::string> GetAccounts() OVERRIDE;
+  virtual std::vector<std::string> GetAccounts() override;
 
   // Overriden to make sure it works on Android.  Simply calls
   // IssueRefreshToken().
   virtual void UpdateCredentials(const std::string& account_id,
-                                 const std::string& refresh_token) OVERRIDE;
+                                 const std::string& refresh_token) override;
 
   // Sets the current refresh token. If |token| is non-empty, this will invoke
   // OnRefreshTokenAvailable() on all Observers, otherwise this will invoke
@@ -121,19 +121,19 @@ class FakeProfileOAuth2TokenService
                                 net::URLRequestContextGetter* getter,
                                 const std::string& client_id,
                                 const std::string& client_secret,
-                                const ScopeSet& scopes) OVERRIDE;
+                                const ScopeSet& scopes) override;
 
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) OVERRIDE;
+      OAuth2AccessTokenConsumer* consumer) override;
 
   virtual void InvalidateOAuth2Token(const std::string& account_id,
                                      const std::string& client_id,
                                      const ScopeSet& scopes,
-                                     const std::string& access_token) OVERRIDE;
+                                     const std::string& access_token) override;
 
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContext() override;
 
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,

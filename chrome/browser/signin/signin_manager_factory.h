@@ -55,7 +55,7 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
   // Implementation of BrowserContextKeyedServiceFactory (public so tests
   // can call it).
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   // Registers the browser-global prefs used by SigninManager.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -81,9 +81,9 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
   virtual void BrowserContextShutdown(content::BrowserContext* context)
-      OVERRIDE;
+      override;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FACTORY_H_

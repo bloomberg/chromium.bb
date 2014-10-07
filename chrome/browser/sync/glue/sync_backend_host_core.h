@@ -91,47 +91,47 @@ class SyncBackendHostCore
   // traffic controller here, forwarding incoming messages to appropriate
   // landing threads.
   virtual void OnSyncCycleCompleted(
-      const syncer::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
+      const syncer::sessions::SyncSessionSnapshot& snapshot) override;
   virtual void OnInitializationComplete(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       bool success,
-      syncer::ModelTypeSet restored_types) OVERRIDE;
+      syncer::ModelTypeSet restored_types) override;
   virtual void OnConnectionStatusChange(
-      syncer::ConnectionStatus status) OVERRIDE;
+      syncer::ConnectionStatus status) override;
   virtual void OnActionableError(
-      const syncer::SyncProtocolError& sync_error) OVERRIDE;
-  virtual void OnMigrationRequested(syncer::ModelTypeSet types) OVERRIDE;
-  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) OVERRIDE;
+      const syncer::SyncProtocolError& sync_error) override;
+  virtual void OnMigrationRequested(syncer::ModelTypeSet types) override;
+  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) override;
 
   // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(
       syncer::PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
-  virtual void OnPassphraseAccepted() OVERRIDE;
+      const sync_pb::EncryptedData& pending_keys) override;
+  virtual void OnPassphraseAccepted() override;
   virtual void OnBootstrapTokenUpdated(
       const std::string& bootstrap_token,
-      syncer::BootstrapTokenType type) OVERRIDE;
+      syncer::BootstrapTokenType type) override;
   virtual void OnEncryptedTypesChanged(
       syncer::ModelTypeSet encrypted_types,
-      bool encrypt_everything) OVERRIDE;
-  virtual void OnEncryptionComplete() OVERRIDE;
+      bool encrypt_everything) override;
+  virtual void OnEncryptionComplete() override;
   virtual void OnCryptographerStateChanged(
-      syncer::Cryptographer* cryptographer) OVERRIDE;
+      syncer::Cryptographer* cryptographer) override;
   virtual void OnPassphraseTypeChanged(syncer::PassphraseType type,
-                                       base::Time passphrase_time) OVERRIDE;
+                                       base::Time passphrase_time) override;
 
   // TypeDebugInfoObserver implementation
   virtual void OnCommitCountersUpdated(
       syncer::ModelType type,
-      const syncer::CommitCounters& counters) OVERRIDE;
+      const syncer::CommitCounters& counters) override;
   virtual void OnUpdateCountersUpdated(
       syncer::ModelType type,
-      const syncer::UpdateCounters& counters) OVERRIDE;
+      const syncer::UpdateCounters& counters) override;
   virtual void OnStatusCountersUpdated(
       syncer::ModelType type,
-      const syncer::StatusCounters& counters) OVERRIDE;
+      const syncer::StatusCounters& counters) override;
 
   // Forwards an invalidation state change to the sync manager.
   void DoOnInvalidatorStateChange(syncer::InvalidatorState state);

@@ -106,20 +106,20 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   bool IsSyncing();
 
   // Overridden from SpellcheckDictionary:
-  virtual void Load() OVERRIDE;
+  virtual void Load() override;
 
   // Overridden from syncer::SyncableService:
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_handler) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_handler) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
  private:
   friend class DictionarySyncIntegrationTestHelper;

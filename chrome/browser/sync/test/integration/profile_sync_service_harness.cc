@@ -54,7 +54,7 @@ class BackendInitializeChecker : public SingleClientStatusChangeChecker {
   explicit BackendInitializeChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
+  virtual bool IsExitConditionSatisfied() override {
     if (service()->backend_mode() != ProfileSyncService::SYNC)
       return false;
     if (service()->backend_initialized())
@@ -69,7 +69,7 @@ class BackendInitializeChecker : public SingleClientStatusChangeChecker {
     return false;
   }
 
-  virtual std::string GetDebugMessage() const OVERRIDE {
+  virtual std::string GetDebugMessage() const override {
     return "Backend Initialize";
   }
 };
@@ -79,7 +79,7 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
   explicit SyncSetupChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
+  virtual bool IsExitConditionSatisfied() override {
     if (!service()->SyncActive())
       return false;
     if (service()->ConfigurationDone())
@@ -94,7 +94,7 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
     return false;
   }
 
-  virtual std::string GetDebugMessage() const OVERRIDE {
+  virtual std::string GetDebugMessage() const override {
     return "Sync Setup";
   }
 };

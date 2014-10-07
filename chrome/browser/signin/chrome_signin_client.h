@@ -34,40 +34,40 @@ class ChromeSigninClient : public SigninClient,
   // N.B. This is the id returned by RenderProcessHost::GetID().
   // TODO(guohui): Eliminate these APIs once the web-based signin flow is
   // replaced by a native flow. crbug.com/347247
-  virtual void SetSigninProcess(int host_id) OVERRIDE;
-  virtual void ClearSigninProcess() OVERRIDE;
-  virtual bool IsSigninProcess(int host_id) const OVERRIDE;
-  virtual bool HasSigninProcess() const OVERRIDE;
+  virtual void SetSigninProcess(int host_id) override;
+  virtual void ClearSigninProcess() override;
+  virtual bool IsSigninProcess(int host_id) const override;
+  virtual bool HasSigninProcess() const override;
 
   // content::RenderProcessHostObserver implementation.
   virtual void RenderProcessHostDestroyed(content::RenderProcessHost* host)
-      OVERRIDE;
+      override;
 
   // SigninClient implementation.
-  virtual PrefService* GetPrefs() OVERRIDE;
-  virtual scoped_refptr<TokenWebData> GetDatabase() OVERRIDE;
-  virtual bool CanRevokeCredentials() OVERRIDE;
-  virtual std::string GetSigninScopedDeviceId() OVERRIDE;
-  virtual void ClearSigninScopedDeviceId() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
-  virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
-  virtual bool IsFirstRun() const OVERRIDE;
-  virtual base::Time GetInstallDate() OVERRIDE;
+  virtual PrefService* GetPrefs() override;
+  virtual scoped_refptr<TokenWebData> GetDatabase() override;
+  virtual bool CanRevokeCredentials() override;
+  virtual std::string GetSigninScopedDeviceId() override;
+  virtual void ClearSigninScopedDeviceId() override;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() override;
+  virtual bool ShouldMergeSigninCredentialsIntoCookieJar() override;
+  virtual bool IsFirstRun() const override;
+  virtual base::Time GetInstallDate() override;
 
   // Returns a string describing the chrome version environment. Version format:
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
-  virtual std::string GetProductVersion() OVERRIDE;
+  virtual std::string GetProductVersion() override;
   virtual scoped_ptr<CookieChangedCallbackList::Subscription>
-      AddCookieChangedCallback(const CookieChangedCallback& callback) OVERRIDE;
+      AddCookieChangedCallback(const CookieChangedCallback& callback) override;
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   void RegisterForCookieChangedNotification();

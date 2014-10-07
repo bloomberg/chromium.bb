@@ -29,14 +29,14 @@ class BrowserThreadModelWorker : public syncer::ModelSafeWorker {
                            syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on the sync thread.
-  virtual void RegisterForLoopDestruction() OVERRIDE;
-  virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  virtual void RegisterForLoopDestruction() override;
+  virtual syncer::ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
   virtual ~BrowserThreadModelWorker();
 
   virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
-      const syncer::WorkCallback& work) OVERRIDE;
+      const syncer::WorkCallback& work) override;
 
   // Marked pure virtual so subclasses have to override, but there is
   // an implementation that subclasses should use.  This is so that
@@ -64,7 +64,7 @@ class DatabaseModelWorker : public BrowserThreadModelWorker {
   virtual void CallDoWorkAndSignalTask(
       const syncer::WorkCallback& work,
       base::WaitableEvent* done,
-      syncer::SyncerError* error) OVERRIDE;
+      syncer::SyncerError* error) override;
 
  private:
   virtual ~DatabaseModelWorker();
@@ -78,7 +78,7 @@ class FileModelWorker : public BrowserThreadModelWorker {
   virtual void CallDoWorkAndSignalTask(
       const syncer::WorkCallback& work,
       base::WaitableEvent* done,
-      syncer::SyncerError* error) OVERRIDE;
+      syncer::SyncerError* error) override;
 
  private:
   virtual ~FileModelWorker();

@@ -40,9 +40,9 @@ class WebContentsResourceProvider : public ResourceProvider {
   // ResourceProvider implementation.
   virtual RendererResource* GetResource(int origin_pid,
                                         int child_id,
-                                        int route_id) OVERRIDE;
-  virtual void StartUpdating() OVERRIDE;
-  virtual void StopUpdating() OVERRIDE;
+                                        int route_id) override;
+  virtual void StartUpdating() override;
+  virtual void StopUpdating() override;
 
   // Start observing |web_contents| for changes via WebContentsObserver, and
   // add it to the task manager.

@@ -13,7 +13,7 @@ class StaticCldDataHarness : public CldDataHarness {
  public:
   StaticCldDataHarness();
   virtual ~StaticCldDataHarness();
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StaticCldDataHarness);

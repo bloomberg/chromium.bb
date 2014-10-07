@@ -44,7 +44,7 @@ class SyncableFileSystemOperation::QueueableTask
     DCHECK(!operation_);
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     if (!operation_)
       return;
     DCHECK(!task_.is_null());
@@ -52,7 +52,7 @@ class SyncableFileSystemOperation::QueueableTask
     operation_.reset();
   }
 
-  virtual void Cancel() OVERRIDE {
+  virtual void Cancel() override {
     DCHECK(!task_.is_null());
     if (operation_)
       operation_->OnCancelled();
@@ -60,7 +60,7 @@ class SyncableFileSystemOperation::QueueableTask
     operation_.reset();
   }
 
-  virtual const std::vector<FileSystemURL>& target_paths() const OVERRIDE {
+  virtual const std::vector<FileSystemURL>& target_paths() const override {
     return target_paths_;
   }
 

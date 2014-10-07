@@ -41,10 +41,10 @@ class FakeLoginUI : public LoginUIService::LoginUI {
 
  private:
   // Overridden from LoginUIService::LoginUI:
-  virtual void FocusUI() OVERRIDE {
+  virtual void FocusUI() override {
     ++focus_ui_call_count_;
   }
-  virtual void CloseUI() OVERRIDE {}
+  virtual void CloseUI() override {}
 
   int focus_ui_call_count_;
 };
@@ -60,7 +60,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
   SyncGlobalErrorTest() {}
   virtual ~SyncGlobalErrorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
 
     BrowserWithTestWindowTest::SetUp();

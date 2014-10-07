@@ -22,7 +22,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
       : SpellCheckMessageFilterMac(0),
         loop_(loop) { }
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     sent_messages_.push_back(message);
     loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
     return true;

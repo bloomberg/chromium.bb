@@ -84,12 +84,12 @@ class TwoClientAppListSyncTest : public SyncTest {
   virtual ~TwoClientAppListSyncTest() {}
 
   // SyncTest
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     SyncTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(app_list::switches::kEnableSyncAppList);
   }
 
-  virtual bool SetupClients() OVERRIDE {
+  virtual bool SetupClients() override {
     if (!SyncTest::SetupClients())
       return false;
 
@@ -99,7 +99,7 @@ class TwoClientAppListSyncTest : public SyncTest {
     return true;
   }
 
-  virtual bool SetupSync() OVERRIDE {
+  virtual bool SetupSync() override {
     if (!SyncTest::SetupSync())
       return false;
     WaitForExtensionServicesToLoad();
@@ -520,11 +520,11 @@ class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
   TwoClientAppListSyncFolderTest() {}
   virtual ~TwoClientAppListSyncFolderTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     TwoClientAppListSyncTest::SetUpCommandLine(command_line);
   }
 
-  virtual bool SetupClients() OVERRIDE {
+  virtual bool SetupClients() override {
     bool res = TwoClientAppListSyncTest::SetupClients();
     app_list::AppListSyncableService* verifier_service =
         app_list::AppListSyncableServiceFactory::GetForProfile(verifier());

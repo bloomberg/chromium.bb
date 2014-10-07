@@ -190,7 +190,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED ||
            type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED);

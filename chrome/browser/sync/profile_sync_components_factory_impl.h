@@ -42,7 +42,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       net::URLRequestContextGetter* url_request_context_getter);
   virtual ~ProfileSyncComponentsFactoryImpl();
 
-  virtual void RegisterDataTypes(ProfileSyncService* pss) OVERRIDE;
+  virtual void RegisterDataTypes(ProfileSyncService* pss) override;
 
   virtual sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -51,33 +51,33 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
       sync_driver::DataTypeManagerObserver* observer)
-          OVERRIDE;
+          override;
 
   virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
       Profile* profile,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder) OVERRIDE;
+      const base::FilePath& sync_folder) override;
 
   virtual scoped_ptr<sync_driver::LocalDeviceInfoProvider>
-      CreateLocalDeviceInfoProvider() OVERRIDE;
+      CreateLocalDeviceInfoProvider() override;
 
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) OVERRIDE;
+      syncer::ModelType type) override;
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
-      syncer::AttachmentService::Delegate* delegate) OVERRIDE;
+      syncer::AttachmentService::Delegate* delegate) override;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
-      sync_driver::DataTypeErrorHandler* error_handler) OVERRIDE;
+      sync_driver::DataTypeErrorHandler* error_handler) override;
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
-      sync_driver::DataTypeErrorHandler* error_handler) OVERRIDE;
+      sync_driver::DataTypeErrorHandler* error_handler) override;
 
  private:
   // Register data types which are enabled on desktop platforms only.

@@ -111,18 +111,18 @@ class SpellcheckService : public KeyedService,
   // NotificationProfile implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // SpellcheckCustomDictionary::Observer implementation.
-  virtual void OnCustomDictionaryLoaded() OVERRIDE;
+  virtual void OnCustomDictionaryLoaded() override;
   virtual void OnCustomDictionaryChanged(
-      const SpellcheckCustomDictionary::Change& dictionary_change) OVERRIDE;
+      const SpellcheckCustomDictionary::Change& dictionary_change) override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
-  virtual void OnHunspellDictionaryInitialized() OVERRIDE;
-  virtual void OnHunspellDictionaryDownloadBegin() OVERRIDE;
-  virtual void OnHunspellDictionaryDownloadSuccess() OVERRIDE;
-  virtual void OnHunspellDictionaryDownloadFailure() OVERRIDE;
+  virtual void OnHunspellDictionaryInitialized() override;
+  virtual void OnHunspellDictionaryDownloadBegin() override;
+  virtual void OnHunspellDictionaryDownloadSuccess() override;
+  virtual void OnHunspellDictionaryDownloadFailure() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);

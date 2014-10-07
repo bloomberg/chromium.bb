@@ -42,7 +42,7 @@ class ConflictResolver : public SyncTask {
 
   explicit ConflictResolver(SyncEngineContext* sync_context);
   virtual ~ConflictResolver();
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
   void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
  private:

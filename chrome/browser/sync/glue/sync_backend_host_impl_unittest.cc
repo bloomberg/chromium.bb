@@ -119,7 +119,7 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
 
   // SyncManagerFactory implementation.  Called on the sync thread.
   virtual scoped_ptr<SyncManager> CreateSyncManager(
-      std::string name) OVERRIDE {
+      std::string name) override {
     *fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
                                          progress_marker_types_,
                                          configure_fail_types_);
@@ -154,7 +154,7 @@ class SyncBackendHostTest : public testing::Test {
 
   virtual ~SyncBackendHostTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile(kTestProfileName);
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
@@ -188,7 +188,7 @@ class SyncBackendHostTest : public testing::Test {
     network_resources_.reset(new syncer::HttpBridgeNetworkResources());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (backend_) {
       backend_->StopSyncingForShutdown();
       backend_->Shutdown(syncer::STOP_SYNC);

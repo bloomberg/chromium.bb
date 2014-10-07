@@ -127,11 +127,11 @@ class TabLoader : public content::NotificationObserver,
   // tab.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load
@@ -699,7 +699,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_BROWSER_CLOSED:
         delete this;

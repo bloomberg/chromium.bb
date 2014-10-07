@@ -244,8 +244,8 @@ class KeysMatchStatusChecker : public MultiClientStatusChangeChecker {
   KeysMatchStatusChecker(int profile_a, int profile_b);
   virtual ~KeysMatchStatusChecker();
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 
  private:
   const int profile_a_;
@@ -422,11 +422,11 @@ class ProfilesMatchStatusChecker : public StatusChangeChecker,
   virtual ~ProfilesMatchStatusChecker();
 
   // StatusChangeChecker implementation.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 
   // PersonalDataManager implementation.
-  virtual void OnPersonalDataChanged() OVERRIDE;
+  virtual void OnPersonalDataChanged() override;
 
   // Wait for conidtion to beome true.
   void Wait();

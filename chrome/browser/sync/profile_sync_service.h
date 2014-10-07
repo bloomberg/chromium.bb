@@ -284,14 +284,14 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void SetSyncSetupCompleted();
 
   // ProfileSyncServiceBase implementation.
-  virtual bool HasSyncSetupCompleted() const OVERRIDE;
-  virtual bool SyncActive() const OVERRIDE;
-  virtual syncer::ModelTypeSet GetActiveDataTypes() const OVERRIDE;
-  virtual void AddObserver(ProfileSyncServiceBase::Observer* observer) OVERRIDE;
+  virtual bool HasSyncSetupCompleted() const override;
+  virtual bool SyncActive() const override;
+  virtual syncer::ModelTypeSet GetActiveDataTypes() const override;
+  virtual void AddObserver(ProfileSyncServiceBase::Observer* observer) override;
   virtual void RemoveObserver(
-      ProfileSyncServiceBase::Observer* observer) OVERRIDE;
+      ProfileSyncServiceBase::Observer* observer) override;
   virtual bool HasObserver(
-      ProfileSyncServiceBase::Observer* observer) const OVERRIDE;
+      ProfileSyncServiceBase::Observer* observer) const override;
 
   void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
   void RemoveProtocolEventObserver(
@@ -398,50 +398,50 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       const std::string& cache_guid,
-      bool success) OVERRIDE;
-  virtual void OnSyncCycleCompleted() OVERRIDE;
-  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) OVERRIDE;
+      bool success) override;
+  virtual void OnSyncCycleCompleted() override;
+  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) override;
   virtual void OnDirectoryTypeCommitCounterUpdated(
       syncer::ModelType type,
-      const syncer::CommitCounters& counters) OVERRIDE;
+      const syncer::CommitCounters& counters) override;
   virtual void OnDirectoryTypeUpdateCounterUpdated(
       syncer::ModelType type,
-      const syncer::UpdateCounters& counters) OVERRIDE;
+      const syncer::UpdateCounters& counters) override;
   virtual void OnDirectoryTypeStatusCounterUpdated(
       syncer::ModelType type,
-      const syncer::StatusCounters& counters) OVERRIDE;
+      const syncer::StatusCounters& counters) override;
   virtual void OnConnectionStatusChange(
-      syncer::ConnectionStatus status) OVERRIDE;
+      syncer::ConnectionStatus status) override;
   virtual void OnPassphraseRequired(
       syncer::PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
-  virtual void OnPassphraseAccepted() OVERRIDE;
+      const sync_pb::EncryptedData& pending_keys) override;
+  virtual void OnPassphraseAccepted() override;
   virtual void OnEncryptedTypesChanged(
       syncer::ModelTypeSet encrypted_types,
-      bool encrypt_everything) OVERRIDE;
-  virtual void OnEncryptionComplete() OVERRIDE;
+      bool encrypt_everything) override;
+  virtual void OnEncryptionComplete() override;
   virtual void OnMigrationNeededForTypes(
-      syncer::ModelTypeSet types) OVERRIDE;
+      syncer::ModelTypeSet types) override;
   virtual void OnExperimentsChanged(
-      const syncer::Experiments& experiments) OVERRIDE;
+      const syncer::Experiments& experiments) override;
   virtual void OnActionableError(
-      const syncer::SyncProtocolError& error) OVERRIDE;
+      const syncer::SyncProtocolError& error) override;
 
   // DataTypeManagerObserver implementation.
   virtual void OnConfigureDone(
-      const sync_driver::DataTypeManager::ConfigureResult& result) OVERRIDE;
-  virtual void OnConfigureStart() OVERRIDE;
+      const sync_driver::DataTypeManager::ConfigureResult& result) override;
+  virtual void OnConfigureStart() override;
 
   // DataTypeEncryptionHandler implementation.
-  virtual bool IsPassphraseRequired() const OVERRIDE;
-  virtual syncer::ModelTypeSet GetEncryptedDataTypes() const OVERRIDE;
+  virtual bool IsPassphraseRequired() const override;
+  virtual syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 
   // SigninManagerBase::Observer implementation.
   virtual void GoogleSigninSucceeded(const std::string& account_id,
                                      const std::string& username,
-                                     const std::string& password) OVERRIDE;
+                                     const std::string& password) override;
   virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) OVERRIDE;
+                               const std::string& username) override;
 
   // Called when a user chooses which data types to sync as part of the sync
   // setup wizard.  |sync_everything| represents whether they chose the
@@ -543,7 +543,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // syncer::UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
+      const std::string& message) override;
 
   // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
   // not change the preferred state of a datatype, and is not persisted across
@@ -601,7 +601,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void DeactivateDataType(syncer::ModelType type);
 
   // SyncPrefObserver implementation.
-  virtual void OnSyncManagedPrefChange(bool is_sync_managed) OVERRIDE;
+  virtual void OnSyncManagedPrefChange(bool is_sync_managed) override;
 
   // Changes which data types we're going to be syncing to |preferred_types|.
   // If it is running, the DataTypeManager will be instructed to reconfigure
@@ -730,19 +730,19 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
-      const base::Time& expiration_time) OVERRIDE;
+      const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokensLoaded() OVERRIDE;
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
+  virtual void OnRefreshTokensLoaded() override;
 
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're

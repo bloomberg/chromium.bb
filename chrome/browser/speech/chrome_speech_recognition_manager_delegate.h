@@ -24,28 +24,28 @@ class ChromeSpeechRecognitionManagerDelegate
 
  protected:
   // SpeechRecognitionEventListener methods.
-  virtual void OnRecognitionStart(int session_id) OVERRIDE;
-  virtual void OnAudioStart(int session_id) OVERRIDE;
-  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE;
-  virtual void OnSoundStart(int session_id) OVERRIDE;
-  virtual void OnSoundEnd(int session_id) OVERRIDE;
-  virtual void OnAudioEnd(int session_id) OVERRIDE;
-  virtual void OnRecognitionEnd(int session_id) OVERRIDE;
+  virtual void OnRecognitionStart(int session_id) override;
+  virtual void OnAudioStart(int session_id) override;
+  virtual void OnEnvironmentEstimationComplete(int session_id) override;
+  virtual void OnSoundStart(int session_id) override;
+  virtual void OnSoundEnd(int session_id) override;
+  virtual void OnAudioEnd(int session_id) override;
+  virtual void OnRecognitionEnd(int session_id) override;
   virtual void OnRecognitionResults(
-      int session_id, const content::SpeechRecognitionResults& result) OVERRIDE;
+      int session_id, const content::SpeechRecognitionResults& result) override;
   virtual void OnRecognitionError(
-      int session_id, const content::SpeechRecognitionError& error) OVERRIDE;
+      int session_id, const content::SpeechRecognitionError& error) override;
   virtual void OnAudioLevelsChange(int session_id, float volume,
-                                   float noise_volume) OVERRIDE;
+                                   float noise_volume) override;
 
   // SpeechRecognitionManagerDelegate methods.
   virtual void GetDiagnosticInformation(bool* can_report_metrics,
-                                        std::string* hardware_info) OVERRIDE;
+                                        std::string* hardware_info) override;
   virtual void CheckRecognitionIsAllowed(
       int session_id,
-      base::Callback<void(bool ask_user, bool is_allowed)> callback) OVERRIDE;
-  virtual content::SpeechRecognitionEventListener* GetEventListener() OVERRIDE;
-  virtual bool FilterProfanities(int render_process_id) OVERRIDE;
+      base::Callback<void(bool ask_user, bool is_allowed)> callback) override;
+  virtual content::SpeechRecognitionEventListener* GetEventListener() override;
+  virtual bool FilterProfanities(int render_process_id) override;
 
   // Callback called by |tab_watcher_| on the IO thread to signal tab closure.
   virtual void TabClosedCallback(int render_process_id, int render_view_id);

@@ -31,15 +31,15 @@ class ChildProcessResourceProvider
 
   virtual Resource* GetResource(int origin_pid,
                                 int child_id,
-                                int route_id) OVERRIDE;
-  virtual void StartUpdating() OVERRIDE;
-  virtual void StopUpdating() OVERRIDE;
+                                int route_id) override;
+  virtual void StartUpdating() override;
+  virtual void StopUpdating() override;
 
   // content::BrowserChildProcessObserver methods:
   virtual void BrowserChildProcessHostConnected(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
   virtual void BrowserChildProcessHostDisconnected(
-      const content::ChildProcessData& data) OVERRIDE;
+      const content::ChildProcessData& data) override;
 
  private:
   virtual ~ChildProcessResourceProvider();

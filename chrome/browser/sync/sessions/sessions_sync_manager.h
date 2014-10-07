@@ -96,33 +96,33 @@ class SessionsSyncManager : public syncer::SyncableService,
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
   // OpenTabsUIDelegate implementation.
   virtual bool GetSyncedFaviconForPageURL(
       const std::string& pageurl,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const OVERRIDE;
+      scoped_refptr<base::RefCountedMemory>* favicon_png) const override;
   virtual bool GetAllForeignSessions(
-      std::vector<const SyncedSession*>* sessions) OVERRIDE;
+      std::vector<const SyncedSession*>* sessions) override;
   virtual bool GetForeignSession(
       const std::string& tag,
-      std::vector<const SessionWindow*>* windows) OVERRIDE;
+      std::vector<const SessionWindow*>* windows) override;
   virtual bool GetForeignTab(const std::string& tag,
                              const SessionID::id_type tab_id,
-                             const SessionTab** tab) OVERRIDE;
-  virtual void DeleteForeignSession(const std::string& tag) OVERRIDE;
-  virtual bool GetLocalSession(const SyncedSession* * local_session) OVERRIDE;
+                             const SessionTab** tab) override;
+  virtual void DeleteForeignSession(const std::string& tag) override;
+  virtual bool GetLocalSession(const SyncedSession* * local_session) override;
 
   // LocalSessionEventHandler implementation.
-  virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) OVERRIDE;
+  virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
   virtual void OnFaviconPageUrlsUpdated(
-      const std::set<GURL>& updated_favicon_page_urls) OVERRIDE;
+      const std::set<GURL>& updated_favicon_page_urls) override;
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.

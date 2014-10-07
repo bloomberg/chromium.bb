@@ -117,13 +117,13 @@ class SyncTest : public InProcessBrowserTest {
 
   // Validates command line parameters and creates a local python test server if
   // specified.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Brings down local python test server if one was created.
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // Sets up command line flags required for sync tests.
-  virtual void SetUpCommandLine(base::CommandLine* cl) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* cl) override;
 
   // Used to get the number of sync clients used by a test.
   int num_clients() WARN_UNUSED_RESULT { return num_clients_; }
@@ -259,15 +259,15 @@ class SyncTest : public InProcessBrowserTest {
 
   // BrowserTestBase override. Destroys all the sync clients and sync
   // profiles created by a test.
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() override;
 
   // InProcessBrowserTest override. Changes behavior of the default host
   // resolver to avoid DNS lookup errors.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
 
   // InProcessBrowserTest override. Resets the host resolver its default
   // behavior.
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+  virtual void TearDownInProcessBrowserTestFixture() override;
 
   // Creates Profile, Browser and ProfileSyncServiceHarness instances for
   // |index|. Used by SetupClients().

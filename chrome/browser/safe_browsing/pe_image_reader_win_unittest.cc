@@ -25,7 +25,7 @@ class PeImageReaderTest : public testing::TestWithParam<const TestData*> {
  protected:
   PeImageReaderTest() : expected_data_(GetParam()) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_file_path_));
     data_file_path_ = data_file_path_.AppendASCII("safe_browsing");
     data_file_path_ = data_file_path_.AppendASCII(expected_data_->filename);

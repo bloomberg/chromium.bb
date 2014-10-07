@@ -21,8 +21,8 @@ class BookmarkUndoServiceTest : public testing::Test {
  public:
   BookmarkUndoServiceTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   BookmarkModel* GetModel();
   BookmarkUndoService* GetUndoService();

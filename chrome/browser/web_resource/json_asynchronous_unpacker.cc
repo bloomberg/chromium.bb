@@ -29,7 +29,7 @@ class JSONAsynchronousUnpackerImpl
       got_response_(false) {
   }
 
-  virtual void Start(const std::string& json_data) OVERRIDE {
+  virtual void Start(const std::string& json_data) override {
     AddRef();  // balanced in Cleanup.
 
     BrowserThread::ID thread_id;
@@ -45,7 +45,7 @@ class JSONAsynchronousUnpackerImpl
   virtual ~JSONAsynchronousUnpackerImpl() {}
 
   // UtilityProcessHostClient.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(JSONAsynchronousUnpackerImpl, message)
       IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackWebResource_Succeeded,
@@ -57,7 +57,7 @@ class JSONAsynchronousUnpackerImpl
     return handled;
   }
 
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE {
+  virtual void OnProcessCrashed(int exit_code) override {
     if (got_response_)
       return;
 

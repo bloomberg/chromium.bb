@@ -91,7 +91,7 @@ class LastDownloadFinder : public content::NotificationObserver {
   // content::NotificationObserver methods.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Caller-supplied callback to be invoked when the most recent download is
   // found.

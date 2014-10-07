@@ -90,53 +90,53 @@ class SyncBackendHostImpl
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources) OVERRIDE;
+      syncer::NetworkResources* network_resources) override;
   virtual void UpdateCredentials(
-      const syncer::SyncCredentials& credentials) OVERRIDE;
-  virtual void StartSyncingWithServer() OVERRIDE;
+      const syncer::SyncCredentials& credentials) override;
+  virtual void StartSyncingWithServer() override;
   virtual void SetEncryptionPassphrase(
       const std::string& passphrase,
-      bool is_explicit) OVERRIDE;
+      bool is_explicit) override;
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
-      OVERRIDE WARN_UNUSED_RESULT;
-  virtual void StopSyncingForShutdown() OVERRIDE;
+      override WARN_UNUSED_RESULT;
+  virtual void StopSyncingForShutdown() override;
   virtual scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason)
-      OVERRIDE;
-  virtual void UnregisterInvalidationIds() OVERRIDE;
+      override;
+  virtual void UnregisterInvalidationIds() override;
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(syncer::ModelTypeSet,
                                 syncer::ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) OVERRIDE;
+      const base::Callback<void()>& retry_callback) override;
   virtual void ActivateDataType(
      syncer::ModelType type, syncer::ModelSafeGroup group,
-     sync_driver::ChangeProcessor* change_processor) OVERRIDE;
-  virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE;
-  virtual void EnableEncryptEverything() OVERRIDE;
-  virtual syncer::UserShare* GetUserShare() const OVERRIDE;
-  virtual scoped_ptr<syncer::SyncContextProxy> GetSyncContextProxy() OVERRIDE;
-  virtual Status GetDetailedStatus() OVERRIDE;
+     sync_driver::ChangeProcessor* change_processor) override;
+  virtual void DeactivateDataType(syncer::ModelType type) override;
+  virtual void EnableEncryptEverything() override;
+  virtual syncer::UserShare* GetUserShare() const override;
+  virtual scoped_ptr<syncer::SyncContextProxy> GetSyncContextProxy() override;
+  virtual Status GetDetailedStatus() override;
   virtual syncer::sessions::SyncSessionSnapshot
-      GetLastSessionSnapshot() const OVERRIDE;
-  virtual bool HasUnsyncedItems() const OVERRIDE;
-  virtual bool IsNigoriEnabled() const OVERRIDE;
-  virtual syncer::PassphraseType GetPassphraseType() const OVERRIDE;
-  virtual base::Time GetExplicitPassphraseTime() const OVERRIDE;
+      GetLastSessionSnapshot() const override;
+  virtual bool HasUnsyncedItems() const override;
+  virtual bool IsNigoriEnabled() const override;
+  virtual syncer::PassphraseType GetPassphraseType() const override;
+  virtual base::Time GetExplicitPassphraseTime() const override;
   virtual bool IsCryptographerReady(
-      const syncer::BaseTransaction* trans) const OVERRIDE;
+      const syncer::BaseTransaction* trans) const override;
   virtual void GetModelSafeRoutingInfo(
-      syncer::ModelSafeRoutingInfo* out) const OVERRIDE;
-  virtual void FlushDirectory() const OVERRIDE;
-  virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
-  virtual void DisableProtocolEventForwarding() OVERRIDE;
-  virtual void EnableDirectoryTypeDebugInfoForwarding() OVERRIDE;
-  virtual void DisableDirectoryTypeDebugInfoForwarding() OVERRIDE;
+      syncer::ModelSafeRoutingInfo* out) const override;
+  virtual void FlushDirectory() const override;
+  virtual void RequestBufferedProtocolEventsAndEnableForwarding() override;
+  virtual void DisableProtocolEventForwarding() override;
+  virtual void EnableDirectoryTypeDebugInfoForwarding() override;
+  virtual void DisableDirectoryTypeDebugInfoForwarding() override;
   virtual void GetAllNodesForTypes(
       syncer::ModelTypeSet types,
       base::Callback<void(const std::vector<syncer::ModelType>&,
-                          ScopedVector<base::ListValue>)> type) OVERRIDE;
-  virtual base::MessageLoop* GetSyncLoopForTesting() OVERRIDE;
+                          ScopedVector<base::ListValue>)> type) override;
+  virtual base::MessageLoop* GetSyncLoopForTesting() override;
 
  protected:
   // The types and functions below are protected so that test
@@ -295,14 +295,14 @@ class SyncBackendHostImpl
   virtual void Observe(
     int type,
     const content::NotificationSource& source,
-    const content::NotificationDetails& details) OVERRIDE;
+    const content::NotificationDetails& details) override;
 
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
+      syncer::InvalidatorState state) override;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  virtual std::string GetOwnerName() const override;
 
   content::NotificationRegistrar notification_registrar_;
 

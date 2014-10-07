@@ -183,7 +183,7 @@ class SafeBrowsingService
   // content::NotificationObserver override
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Starts following the safe browsing preference on |pref_service|.
   void AddPrefService(PrefService* pref_service);

@@ -31,11 +31,11 @@ class SupervisedUserPrefMappingServiceTest : public ::testing::Test {
   virtual ~SupervisedUserPrefMappingServiceTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     mapping_service_->Init();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     mapping_service_->Shutdown();
     shared_settings_service_->Shutdown();
   }

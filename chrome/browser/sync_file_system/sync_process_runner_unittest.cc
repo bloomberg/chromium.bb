@@ -18,11 +18,11 @@ class FakeClient : public SyncProcessRunner::Client {
   FakeClient() : service_state_(SYNC_SERVICE_RUNNING) {}
   virtual ~FakeClient() {}
 
-  virtual SyncServiceState GetSyncServiceState() OVERRIDE {
+  virtual SyncServiceState GetSyncServiceState() override {
     return service_state_;
   }
 
-  virtual SyncFileSystemService* GetSyncService() OVERRIDE {
+  virtual SyncFileSystemService* GetSyncService() override {
     return nullptr;
   }
 
@@ -41,18 +41,18 @@ class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
   FakeTimerHelper() {}
   virtual ~FakeTimerHelper() {}
 
-  virtual bool IsRunning() OVERRIDE {
+  virtual bool IsRunning() override {
     return !timer_task_.is_null();
   }
 
   virtual void Start(const tracked_objects::Location& from_here,
                      const base::TimeDelta& delay,
-                     const base::Closure& closure) OVERRIDE {
+                     const base::Closure& closure) override {
     scheduled_time_ = current_time_ + delay;
     timer_task_ = closure;
   }
 
-  virtual base::TimeTicks Now() const OVERRIDE {
+  virtual base::TimeTicks Now() const override {
     return current_time_;
   }
 
@@ -94,7 +94,7 @@ class FakeSyncProcessRunner : public SyncProcessRunner {
         max_parallel_task_(max_parallel_task) {
   }
 
-  virtual void StartSync(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void StartSync(const SyncStatusCallback& callback) override {
     EXPECT_LT(running_tasks_.size(), max_parallel_task_);
     running_tasks_.push(callback);
   }

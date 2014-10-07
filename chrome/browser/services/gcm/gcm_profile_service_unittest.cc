@@ -57,8 +57,8 @@ class GCMProfileServiceTest : public testing::Test {
   virtual ~GCMProfileServiceTest();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   FakeGCMClient* GetGCMClient() const;
 

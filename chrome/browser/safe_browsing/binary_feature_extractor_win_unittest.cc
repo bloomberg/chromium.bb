@@ -21,7 +21,7 @@ namespace safe_browsing {
 
 class BinaryFeatureExtractorWinTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::FilePath source_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
     testdata_path_ = source_path

@@ -22,13 +22,13 @@ class LocalDeviceInfoProviderImpl
   virtual ~LocalDeviceInfoProviderImpl();
 
   // LocalDeviceInfoProvider implementation.
-  virtual const sync_driver::DeviceInfo* GetLocalDeviceInfo() const OVERRIDE;
-  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE;
+  virtual const sync_driver::DeviceInfo* GetLocalDeviceInfo() const override;
+  virtual std::string GetLocalSyncCacheGUID() const override;
   virtual void Initialize(
       const std::string& cache_guid,
-      const std::string& signin_scoped_device_id) OVERRIDE;
+      const std::string& signin_scoped_device_id) override;
   virtual scoped_ptr<Subscription> RegisterOnInitializedCallback(
-    const base::Closure& callback) OVERRIDE;
+    const base::Closure& callback) override;
 
   // Helper to construct a user agent string (ASCII) suitable for use by
   // the syncapi for any HTTP communication. This string is used by the sync

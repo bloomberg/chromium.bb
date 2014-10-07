@@ -63,8 +63,8 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
                                       sync_service),
         mock_(mock) {}
 
-  virtual syncer::ModelType type() const OVERRIDE { return syncer::BOOKMARKS; }
-  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE {
+  virtual syncer::ModelType type() const override { return syncer::BOOKMARKS; }
+  virtual syncer::ModelSafeGroup model_safe_group() const override {
     return syncer::GROUP_DB;
   }
 
@@ -72,36 +72,36 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
   virtual ~NonFrontendDataTypeControllerFake() {}
 
   virtual ProfileSyncComponentsFactory::SyncComponents
-  CreateSyncComponents() OVERRIDE {
+  CreateSyncComponents() override {
     return profile_sync_factory()->
             CreateBookmarkSyncComponents(profile_sync_service(), this);
   }
 
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE {
+      const base::Closure& task) override {
     return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
   }
 
   // We mock the following methods because their default implementations do
   // nothing, but we still want to make sure they're called appropriately.
-  virtual bool StartModels() OVERRIDE {
+  virtual bool StartModels() override {
     return mock_->StartModels();
   }
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE {
+      const std::string& message) override {
     mock_->RecordUnrecoverableError(from_here, message);
   }
-  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE {
+  virtual void RecordAssociationTime(base::TimeDelta time) override {
     mock_->RecordAssociationTime(time);
   }
   virtual void RecordStartFailure(
-      DataTypeController::ConfigureResult result) OVERRIDE {
+      DataTypeController::ConfigureResult result) override {
     mock_->RecordStartFailure(result);
   }
   virtual void DisconnectProcessor(
-      sync_driver::ChangeProcessor* processor) OVERRIDE{
+      sync_driver::ChangeProcessor* processor) override{
     mock_->DisconnectProcessor(processor);
   }
 

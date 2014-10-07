@@ -45,9 +45,9 @@ class SessionTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver:
 #if defined(ENABLE_EXTENSIONS)
   virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 #endif
-  virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
+  virtual void UserAgentOverrideSet(const std::string& user_agent) override;
 
  private:
   explicit SessionTabHelper(content::WebContents* contents);

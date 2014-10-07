@@ -16,8 +16,8 @@ class ChromeOSGCMConnectionObserver : public GCMConnectionObserver {
   ChromeOSGCMConnectionObserver();
   virtual ~ChromeOSGCMConnectionObserver();
   // gcm::GCMConnectionObserver implementation:
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
 
   static void ErrorCallback(
       const std::string& error_name,

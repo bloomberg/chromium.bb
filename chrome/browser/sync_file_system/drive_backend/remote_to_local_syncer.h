@@ -49,7 +49,7 @@ class RemoteToLocalSyncer : public SyncTask {
   explicit RemoteToLocalSyncer(SyncEngineContext* sync_context);
   virtual ~RemoteToLocalSyncer();
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
   void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
   const storage::FileSystemURL& url() const { return url_; }

@@ -76,27 +76,27 @@ class ThemeService : public base::NonThreadSafe,
   virtual gfx::Image GetImageNamed(int id) const;
 
   // Overridden from ui::ThemeProvider:
-  virtual bool UsingSystemTheme() const OVERRIDE;
-  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE;
-  virtual SkColor GetColor(int id) const OVERRIDE;
-  virtual int GetDisplayProperty(int id) const OVERRIDE;
-  virtual bool ShouldUseNativeFrame() const OVERRIDE;
-  virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual bool UsingSystemTheme() const override;
+  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
+  virtual SkColor GetColor(int id) const override;
+  virtual int GetDisplayProperty(int id) const override;
+  virtual bool ShouldUseNativeFrame() const override;
+  virtual bool HasCustomImage(int id) const override;
   virtual base::RefCountedMemory* GetRawData(
       int id,
-      ui::ScaleFactor scale_factor) const OVERRIDE;
+      ui::ScaleFactor scale_factor) const override;
 #if defined(OS_MACOSX)
-  virtual NSImage* GetNSImageNamed(int id) const OVERRIDE;
-  virtual NSColor* GetNSImageColorNamed(int id) const OVERRIDE;
-  virtual NSColor* GetNSColor(int id) const OVERRIDE;
-  virtual NSColor* GetNSColorTint(int id) const OVERRIDE;
-  virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
+  virtual NSImage* GetNSImageNamed(int id) const override;
+  virtual NSColor* GetNSImageColorNamed(int id) const override;
+  virtual NSColor* GetNSColor(int id) const override;
+  virtual NSColor* GetNSColorTint(int id) const override;
+  virtual NSGradient* GetNSGradient(int id) const override;
 #endif
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Set the current theme to the theme defined in |extension|.
   // |extension| must already be added to this profile's

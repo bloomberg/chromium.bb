@@ -42,43 +42,43 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual ~MockRenderViewContextMenu() {}
 
   // SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdChecked(int command_id) const override {
     return observer_->IsCommandIdChecked(command_id);
   }
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+  virtual bool IsCommandIdEnabled(int command_id) const override {
     return observer_->IsCommandIdEnabled(command_id);
   }
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) override {
     observer_->ExecuteCommand(command_id);
   }
-  virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE {}
-  virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE {}
+  virtual void MenuWillShow(ui::SimpleMenuModel* source) override {}
+  virtual void MenuClosed(ui::SimpleMenuModel* source) override {}
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
+      ui::Accelerator* accelerator) override {
     return false;
   }
 
   // RenderViewContextMenuProxy implementation.
   virtual void AddMenuItem(int command_id,
-                           const base::string16& title) OVERRIDE {}
+                           const base::string16& title) override {}
   virtual void AddCheckItem(int command_id,
-                            const base::string16& title) OVERRIDE {}
-  virtual void AddSeparator() OVERRIDE {}
+                            const base::string16& title) override {}
+  virtual void AddSeparator() override {}
   virtual void AddSubMenu(int command_id,
                           const base::string16& label,
-                          ui::MenuModel* model) OVERRIDE {}
+                          ui::MenuModel* model) override {}
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const base::string16& title) OVERRIDE {}
-  virtual RenderViewHost* GetRenderViewHost() const OVERRIDE {
+                              const base::string16& title) override {}
+  virtual RenderViewHost* GetRenderViewHost() const override {
     return NULL;
   }
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() const override {
     return profile_.get();
   }
-  virtual content::WebContents* GetWebContents() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const override {
     return NULL;
   }
 

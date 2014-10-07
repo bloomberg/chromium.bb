@@ -101,14 +101,14 @@ class LastDownloadFinderTest : public testing::Test {
 
   LastDownloadFinderTest() : profile_number_() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Shut down the history service on all profiles.
     std::vector<Profile*> profiles(
         profile_manager_->profile_manager()->GetLoadedProfiles());

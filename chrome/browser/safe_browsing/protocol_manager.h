@@ -83,7 +83,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   virtual void Initialize();
 
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Retrieve the full hash for a set of prefixes, and invoke the callback
   // argument when the results are retrieved. The callback may be invoked

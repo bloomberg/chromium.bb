@@ -52,7 +52,7 @@ class GCMProfileService : public KeyedService {
                 const GCMDriver::RegisterCallback& callback);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns the user name if the profile is signed in or an empty string
   // otherwise.

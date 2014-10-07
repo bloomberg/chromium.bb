@@ -31,12 +31,12 @@ class MockHotwordService : public HotwordService {
   }
 
   virtual bool UninstallHotwordExtension(
-      ExtensionService* extension_service) OVERRIDE {
+      ExtensionService* extension_service) override {
     uninstall_count_++;
     return HotwordService::UninstallHotwordExtension(extension_service);
   }
 
-  virtual void InstallHotwordExtensionFromWebstore() OVERRIDE{
+  virtual void InstallHotwordExtensionFromWebstore() override{
     scoped_ptr<base::DictionaryValue> manifest =
         extensions::DictionaryBuilder()
         .Set("name", "Hotword Test Extension")

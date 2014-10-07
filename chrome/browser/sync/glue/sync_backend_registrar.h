@@ -109,14 +109,14 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
       syncer::ModelType model_type,
       int64 model_version,
       const syncer::BaseTransaction* trans,
-      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
-  virtual void OnChangesComplete(syncer::ModelType model_type) OVERRIDE;
+      const syncer::ImmutableChangeRecordList& changes) override;
+  virtual void OnChangesComplete(syncer::ModelType model_type) override;
 
   void GetWorkers(std::vector<scoped_refptr<syncer::ModelSafeWorker> >* out);
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
 
   // syncer::WorkerLoopDestructionObserver implementation.
-  virtual void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) OVERRIDE;
+  virtual void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) override;
 
   // Release ownership of |sync_thread_|. Called when sync is disabled.
   scoped_ptr<base::Thread> ReleaseSyncThread();

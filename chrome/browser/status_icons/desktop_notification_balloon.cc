@@ -38,18 +38,18 @@ class DummyNotificationDelegate : public NotificationDelegate {
   explicit DummyNotificationDelegate(const std::string& id, Profile* profile)
       : id_(kNotificationPrefix + id), profile_(profile) {}
 
-  virtual void Display() OVERRIDE {
+  virtual void Display() override {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(
             &CloseBalloon, id(), NotificationUIManager::GetProfileID(profile_)),
         base::TimeDelta::FromSeconds(kTimeoutSeconds));
   }
-  virtual void Error() OVERRIDE {}
-  virtual void Close(bool by_user) OVERRIDE {}
-  virtual void Click() OVERRIDE {}
-  virtual std::string id() const OVERRIDE { return id_; }
-  virtual content::WebContents* GetWebContents() const OVERRIDE {
+  virtual void Error() override {}
+  virtual void Close(bool by_user) override {}
+  virtual void Click() override {}
+  virtual std::string id() const override { return id_; }
+  virtual content::WebContents* GetWebContents() const override {
     return NULL;
   }
 

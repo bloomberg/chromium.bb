@@ -52,7 +52,7 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
   ~TranslateService();
 
   // ResourceRequestAllowedNotifier::Observer methods.
-  virtual void OnResourceRequestsAllowed() OVERRIDE;
+  virtual void OnResourceRequestsAllowed() override;
 
   // Helper class to know if it's allowed to make network resource requests.
   ResourceRequestAllowedNotifier resource_request_allowed_notifier_;

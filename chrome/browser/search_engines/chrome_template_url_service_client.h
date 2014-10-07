@@ -21,20 +21,20 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
   virtual ~ChromeTemplateURLServiceClient();
 
   // TemplateURLServiceClient:
-  virtual void SetOwner(TemplateURLService* owner) OVERRIDE;
+  virtual void SetOwner(TemplateURLService* owner) override;
   virtual void DeleteAllSearchTermsForKeyword(
-      history::KeywordID keyword_Id) OVERRIDE;
+      history::KeywordID keyword_Id) override;
   virtual void SetKeywordSearchTermsForURL(const GURL& url,
                                            TemplateURLID id,
-                                           const base::string16& term) OVERRIDE;
-  virtual void AddKeywordGeneratedVisit(const GURL& url) OVERRIDE;
+                                           const base::string16& term) override;
+  virtual void AddKeywordGeneratedVisit(const GURL& url) override;
   virtual void RestoreExtensionInfoIfNecessary(
-      TemplateURL* template_url) OVERRIDE;
+      TemplateURL* template_url) override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   Profile* profile_;

@@ -53,17 +53,17 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
 
   // DataTypeController interface.
   virtual void LoadModels(
-      const ModelLoadCallback& model_load_callback) OVERRIDE;
-  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+      const ModelLoadCallback& model_load_callback) override;
+  virtual void StartAssociating(const StartCallback& start_callback) override;
+  virtual void Stop() override;
   virtual syncer::ModelType type() const = 0;
-  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
-  virtual std::string name() const OVERRIDE;
-  virtual State state() const OVERRIDE;
+  virtual syncer::ModelSafeGroup model_safe_group() const override;
+  virtual std::string name() const override;
+  virtual State state() const override;
 
   // DataTypeErrorHandler interface.
   virtual void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) OVERRIDE;
+      const syncer::SyncError& error) override;
 
  protected:
   friend class FrontendDataTypeControllerMock;
@@ -84,7 +84,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
   virtual void CreateSyncComponents() = 0;
 
   // DataTypeController interface.
-  virtual void OnModelLoaded() OVERRIDE;
+  virtual void OnModelLoaded() override;
 
   // Perform any DataType controller specific state cleanup before stopping
   // the datatype controller. The default implementation is a no-op.
@@ -104,7 +104,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
   virtual sync_driver::AssociatorInterface* model_associator() const;
   virtual void set_model_associator(
       sync_driver::AssociatorInterface* associator);
-  virtual sync_driver::ChangeProcessor* GetChangeProcessor() const OVERRIDE;
+  virtual sync_driver::ChangeProcessor* GetChangeProcessor() const override;
   virtual void set_change_processor(sync_driver::ChangeProcessor* processor);
 
   // Handles the reporting of unrecoverable error. It records stuff in

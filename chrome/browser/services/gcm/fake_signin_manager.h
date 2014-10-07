@@ -40,7 +40,7 @@ class FakeSigninManager : public SigninManager {
   void SignOut(signin_metrics::ProfileSignout signout_source_metric);
 #else
   virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric)
-      OVERRIDE;
+      override;
 #endif
 
   static KeyedService* Build(content::BrowserContext* context);

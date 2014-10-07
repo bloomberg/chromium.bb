@@ -144,25 +144,25 @@ class ExtensionsMatchChecker : public StatusChangeChecker,
   virtual ~ExtensionsMatchChecker();
 
   // StatusChangeChecker implementation.
-  virtual std::string GetDebugMessage() const OVERRIDE;
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const override;
+  virtual bool IsExitConditionSatisfied() override;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(
       content::BrowserContext* context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* context,
       const extensions::Extension* extenion,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      bool is_update) OVERRIDE;
+      bool is_update) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   void Wait();
 

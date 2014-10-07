@@ -37,7 +37,7 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
 
   // Overridden from MediaCaptureDevicesDispatcher::Observer
   virtual void OnUpdateAudioDevices(
-      const content::MediaStreamDevices& devices) OVERRIDE;
+      const content::MediaStreamDevices& devices) override;
 
   // This will kick off the monitor that calls OnUpdateAudioDevices when the
   // number of audio devices changes (or is initialized). It needs to be a
@@ -55,9 +55,9 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
 
   // Overrides from BrowserContextKeyedServiceFactory:
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   // Must be called from the UI thread since the instance of
   // MediaCaptureDevicesDispatcher can only be accessed on the UI thread.

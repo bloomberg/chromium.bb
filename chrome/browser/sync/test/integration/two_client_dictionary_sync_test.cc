@@ -16,7 +16,7 @@ class TwoClientDictionarySyncTest : public SyncTest {
   TwoClientDictionarySyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientDictionarySyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE {
+  virtual bool TestUsesSelfNotifications() override {
     return false;
   }
 

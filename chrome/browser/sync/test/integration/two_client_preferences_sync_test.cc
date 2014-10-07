@@ -25,7 +25,7 @@ class TwoClientPreferencesSyncTest : public SyncTest {
   TwoClientPreferencesSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientPreferencesSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
+  virtual bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTest);

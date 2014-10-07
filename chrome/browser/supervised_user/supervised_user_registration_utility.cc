@@ -61,13 +61,13 @@ class SupervisedUserRegistrationUtilityImpl
   // OS the profile of the supervised user does not yet exist.
   virtual void Register(const std::string& supervised_user_id,
                         const SupervisedUserRegistrationInfo& info,
-                        const RegistrationCallback& callback) OVERRIDE;
+                        const RegistrationCallback& callback) override;
 
   // SupervisedUserSyncServiceObserver:
   virtual void OnSupervisedUserAcknowledged(
-      const std::string& supervised_user_id) OVERRIDE;
-  virtual void OnSupervisedUsersSyncingStopped() OVERRIDE;
-  virtual void OnSupervisedUsersChanged() OVERRIDE;
+      const std::string& supervised_user_id) override;
+  virtual void OnSupervisedUsersSyncingStopped() override;
+  virtual void OnSupervisedUsersChanged() override;
 
  private:
   // Fetches the supervised user token when we have the device name.

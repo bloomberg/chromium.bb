@@ -24,7 +24,7 @@ class SyncTaskAdapter : public ExclusiveTask {
   explicit SyncTaskAdapter(const SyncTaskManager::Task& task) : task_(task) {}
   virtual ~SyncTaskAdapter() {}
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void RunExclusive(const SyncStatusCallback& callback) override {
     task_.Run(callback);
   }
 

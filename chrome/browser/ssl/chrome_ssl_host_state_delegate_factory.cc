@@ -20,7 +20,7 @@ class Service : public KeyedService {
 
   ChromeSSLHostStateDelegate* decisions() { return decisions_.get(); }
 
-  virtual void Shutdown() OVERRIDE {}
+  virtual void Shutdown() override {}
 
  private:
   scoped_ptr<ChromeSSLHostStateDelegate> decisions_;

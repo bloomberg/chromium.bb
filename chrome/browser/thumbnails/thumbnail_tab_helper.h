@@ -36,14 +36,14 @@ class ThumbnailTabHelper
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver overrides.
   virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
   virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void NavigationStopped() OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
+  virtual void NavigationStopped() override;
 
   // Update the thumbnail of the given tab contents if necessary.
   void UpdateThumbnailIfNecessary(content::WebContents* web_contents);

@@ -22,8 +22,8 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   InstantUnitTestBase();
   virtual ~InstantUnitTestBase();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // Query extraction is always enabled on Android and iOS.
@@ -50,7 +50,7 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
 
  private:
   // BrowserWithTestWindowTest override:
-  virtual TestingProfile* CreateProfile() OVERRIDE;
+  virtual TestingProfile* CreateProfile() override;
 
   void SetUpHelper();
 };

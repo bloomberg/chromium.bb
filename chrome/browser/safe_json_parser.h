@@ -47,7 +47,7 @@ class SafeJsonParser : public content::UtilityProcessHostClient {
   void ReportResultOnUIThread();
 
   // Implementing pieces of the UtilityProcessHostClient interface.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   const std::string unsafe_json_;
   SuccessCallback success_callback_;

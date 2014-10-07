@@ -45,10 +45,10 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   };
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      content::BrowserThread::ID* thread) override;
 
  private:
   friend class content::BrowserThread;

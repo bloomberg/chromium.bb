@@ -21,17 +21,17 @@ class MockTopSites : public history::TopSitesImpl {
   }
 
   // history::TopSitesImpl overrides.
-  virtual bool IsNonForcedFull() OVERRIDE {
+  virtual bool IsNonForcedFull() override {
     return known_url_map_.size() >= capacity_;
   }
-  virtual bool IsForcedFull() OVERRIDE {
+  virtual bool IsForcedFull() override {
     return false;
   }
-  virtual bool IsKnownURL(const GURL& url) OVERRIDE {
+  virtual bool IsKnownURL(const GURL& url) override {
     return known_url_map_.find(url.spec()) != known_url_map_.end();
   }
   virtual bool GetPageThumbnailScore(const GURL& url,
-                                     ThumbnailScore* score) OVERRIDE {
+                                     ThumbnailScore* score) override {
     std::map<std::string, ThumbnailScore>::const_iterator iter =
         known_url_map_.find(url.spec());
     if (iter == known_url_map_.end()) {
@@ -62,7 +62,7 @@ class MockProfile : public TestingProfile {
   MockProfile() : mock_top_sites_(new MockTopSites(this)) {
   }
 
-  virtual history::TopSites* GetTopSites() OVERRIDE {
+  virtual history::TopSites* GetTopSites() override {
     return mock_top_sites_.get();
   }
 

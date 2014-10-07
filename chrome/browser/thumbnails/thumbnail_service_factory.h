@@ -38,7 +38,7 @@ class ThumbnailServiceFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
+      BuildServiceInstanceFor(content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceFactory);
 };

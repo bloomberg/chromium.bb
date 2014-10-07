@@ -48,7 +48,7 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
 
   // content::UtilityProcessHostClient implementation.
   // These notifications run on the IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Notification that the utility process is running, and we can now get its
   // process handle.

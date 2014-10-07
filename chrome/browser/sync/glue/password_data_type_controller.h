@@ -27,8 +27,8 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController {
       Profile* profile);
 
   // NonFrontendDataTypeController implementation
-  virtual syncer::ModelType type() const OVERRIDE;
-  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual syncer::ModelType type() const override;
+  virtual syncer::ModelSafeGroup model_safe_group() const override;
 
  protected:
   virtual ~PasswordDataTypeController();
@@ -36,8 +36,8 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController {
   // NonUIDataTypeController interface.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE;
-  virtual bool StartModels() OVERRIDE;
+      const base::Closure& task) override;
+  virtual bool StartModels() override;
 
  private:
   Profile* const profile_;

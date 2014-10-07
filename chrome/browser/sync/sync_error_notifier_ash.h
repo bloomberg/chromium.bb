@@ -23,10 +23,10 @@ class SyncErrorNotifier : public SyncErrorController::Observer,
   virtual ~SyncErrorNotifier();
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // SyncErrorController::Observer:
-  virtual void OnErrorChanged() OVERRIDE;
+  virtual void OnErrorChanged() override;
 
  private:
   // The error controller to query for error details.

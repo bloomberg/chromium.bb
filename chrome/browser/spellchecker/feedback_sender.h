@@ -114,7 +114,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   friend class FeedbackSenderTest;
 
   // net::URLFetcherDelegate implementation. Takes ownership of |source|.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Requests the document markers from all of the renderers to determine which
   // feedback can be finalized. Finalizes feedback for renderers that are gone.

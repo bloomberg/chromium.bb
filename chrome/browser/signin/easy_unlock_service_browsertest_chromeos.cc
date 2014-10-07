@@ -98,7 +98,7 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
 #endif
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
@@ -160,7 +160,7 @@ class EasyUnlockServiceNoBluetoothTest : public EasyUnlockServiceTest {
   virtual ~EasyUnlockServiceNoBluetoothTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     set_is_bluetooth_adapter_present(false);
     EasyUnlockServiceTest::SetUpInProcessBrowserTestFixture();
   }
@@ -182,7 +182,7 @@ class EasyUnlockServiceFinchEnabledTest : public EasyUnlockServiceTest {
   virtual ~EasyUnlockServiceFinchEnabledTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     "EasyUnlock/Enable/");
   }
@@ -218,7 +218,7 @@ class EasyUnlockServiceFinchDisabledTest : public EasyUnlockServiceTest {
   virtual ~EasyUnlockServiceFinchDisabledTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     "EasyUnlock/Disable/");
   }
@@ -250,7 +250,7 @@ class EasyUnlockServiceMultiProfileTest : public LoginManagerTest {
   virtual ~EasyUnlockServiceMultiProfileTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
     mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();

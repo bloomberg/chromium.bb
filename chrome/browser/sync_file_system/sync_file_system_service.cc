@@ -150,14 +150,14 @@ class LocalSyncRunner : public SyncProcessRunner,
                           1  /* max_parallel_task */),
         factory_(this) {}
 
-  virtual void StartSync(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void StartSync(const SyncStatusCallback& callback) override {
     GetSyncService()->local_service_->ProcessLocalChange(
         base::Bind(&LocalSyncRunner::DidProcessLocalChange,
                    factory_.GetWeakPtr(), callback));
   }
 
   // LocalFileSyncService::Observer overrides.
-  virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE {
+  virtual void OnLocalChangeAvailable(int64 pending_changes) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     OnChangesUpdated(pending_changes);
@@ -196,18 +196,18 @@ class RemoteSyncRunner : public SyncProcessRunner,
         last_state_(REMOTE_SERVICE_OK),
         factory_(this) {}
 
-  virtual void StartSync(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void StartSync(const SyncStatusCallback& callback) override {
     remote_service_->ProcessRemoteChange(
         base::Bind(&RemoteSyncRunner::DidProcessRemoteChange,
                    factory_.GetWeakPtr(), callback));
   }
 
-  virtual SyncServiceState GetServiceState() OVERRIDE {
+  virtual SyncServiceState GetServiceState() override {
     return RemoteStateToSyncServiceState(last_state_);
   }
 
   // RemoteFileSyncService::Observer overrides.
-  virtual void OnRemoteChangeQueueUpdated(int64 pending_changes) OVERRIDE {
+  virtual void OnRemoteChangeQueueUpdated(int64 pending_changes) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     OnChangesUpdated(pending_changes);
@@ -218,7 +218,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
 
   virtual void OnRemoteServiceStateUpdated(
       RemoteServiceState state,
-      const std::string& description) OVERRIDE {
+      const std::string& description) override {
     // Just forward to SyncFileSystemService.
     GetSyncService()->OnRemoteServiceStateUpdated(state, description);
     last_state_ = state;

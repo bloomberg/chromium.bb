@@ -21,12 +21,12 @@ class ContextualSearchPromoSourceAndroid : public content::URLDataSource {
       const std::string& path_and_query,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
-  virtual std::string GetSource() const OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
+  virtual std::string GetSource() const override;
   virtual std::string GetMimeType(
-      const std::string& path_and_query) const OVERRIDE;
-  virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
+      const std::string& path_and_query) const override;
+  virtual bool ShouldDenyXFrameOptions() const override;
+  virtual bool ShouldAddContentSecurityPolicy() const override;
 
   // Sends unmodified resource bytes.
   void SendResource(

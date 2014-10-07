@@ -181,7 +181,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   jint GetAuthError(JNIEnv* env, jobject obj);
 
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // Returns a timestamp for when a sync was last executed. The return value is
   // the internal value of base::Time.

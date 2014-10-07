@@ -25,7 +25,7 @@ class MigrationWatcher : public browser_sync::MigrationObserver {
   syncer::ModelTypeSet GetMigratedTypes() const;
 
   // Implementation of browser_sync::MigrationObserver.
-  virtual void OnMigrationStateChange() OVERRIDE;
+  virtual void OnMigrationStateChange() override;
 
   // Registers the |waiter| to receive callbacks on migration state change.
   void set_migration_waiter(MigrationWaiter* waiter);

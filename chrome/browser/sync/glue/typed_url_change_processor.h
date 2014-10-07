@@ -55,23 +55,23 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   // History -> sync API change application.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // sync API model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 model_version,
-      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::ImmutableChangeRecordList& changes) override;
 
   // Commit changes here, after we've released the transaction lock to avoid
   // jank.
-  virtual void CommitChangesFromSyncModel() OVERRIDE;
+  virtual void CommitChangesFromSyncModel() override;
 
   // Stop processing changes and wait for being destroyed.
   void Disconnect();
 
  protected:
-  virtual void StartImpl() OVERRIDE;
+  virtual void StartImpl() override;
 
  private:
   friend class ScopedStopObserving<TypedUrlChangeProcessor>;

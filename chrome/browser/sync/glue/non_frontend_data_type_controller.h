@@ -58,18 +58,18 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
 
   // DataTypeController interface.
   virtual void LoadModels(
-      const ModelLoadCallback& model_load_callback) OVERRIDE;
-  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+      const ModelLoadCallback& model_load_callback) override;
+  virtual void StartAssociating(const StartCallback& start_callback) override;
+  virtual void Stop() override;
   virtual syncer::ModelType type() const = 0;
   virtual syncer::ModelSafeGroup model_safe_group() const = 0;
-  virtual std::string name() const OVERRIDE;
-  virtual State state() const OVERRIDE;
+  virtual std::string name() const override;
+  virtual State state() const override;
 
   // DataTypeErrorHandler interface.
   // Note: this is performed on the datatype's thread.
   virtual void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) OVERRIDE;
+      const syncer::SyncError& error) override;
 
   // Callback to receive background association results.
   struct AssociationResult {
@@ -94,7 +94,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
   virtual ~NonFrontendDataTypeController();
 
   // DataTypeController interface.
-  virtual void OnModelLoaded() OVERRIDE;
+  virtual void OnModelLoaded() override;
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -168,7 +168,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
   void set_state(State state);
 
   virtual sync_driver::AssociatorInterface* associator() const;
-  virtual sync_driver::ChangeProcessor* GetChangeProcessor() const OVERRIDE;
+  virtual sync_driver::ChangeProcessor* GetChangeProcessor() const override;
 
   State state_;
   StartCallback start_callback_;

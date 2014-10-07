@@ -81,17 +81,17 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   typedef std::map<std::string, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.
-  virtual void OnAccountAdded(const gaia::AccountIds& ids) OVERRIDE;
-  virtual void OnAccountRemoved(const gaia::AccountIds& ids) OVERRIDE;
+  virtual void OnAccountAdded(const gaia::AccountIds& ids) override;
+  virtual void OnAccountRemoved(const gaia::AccountIds& ids) override;
   virtual void OnAccountSignInChanged(const gaia::AccountIds& ids,
-                                      bool is_signed_in) OVERRIDE;
+                                      bool is_signed_in) override;
 
   // OAuth2TokenService::Consumer overrides.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+                                 const base::Time& expiration_time) override;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
+                                 const GoogleServiceAuthError& error) override;
 
   // Report the list of accounts with OAuth2 tokens back using the |callback_|
   // function. If there are token requests in progress, do nothing.

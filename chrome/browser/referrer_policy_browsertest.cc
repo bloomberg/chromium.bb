@@ -37,7 +37,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   ReferrerPolicyTest() {}
   virtual ~ReferrerPolicyTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test_server_.reset(new net::SpawnedTestServer(
                            net::SpawnedTestServer::TYPE_HTTP,
                            net::SpawnedTestServer::kLocalhost,

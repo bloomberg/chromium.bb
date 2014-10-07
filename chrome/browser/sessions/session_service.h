@@ -200,7 +200,7 @@ class SessionService : public BaseSessionService,
 
   // Overridden from BaseSessionService because we want some UMA reporting on
   // session update activities.
-  virtual void Save() OVERRIDE;
+  virtual void Save() override;
 
  private:
   // Allow tests to access our innards for testing purposes.
@@ -235,12 +235,12 @@ class SessionService : public BaseSessionService,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // chrome::BrowserListObserver
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {}
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {}
-  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override {}
+  virtual void OnBrowserRemoved(Browser* browser) override {}
+  virtual void OnBrowserSetLastActive(Browser* browser) override;
 
   // Sets the application extension id of the specified tab.
   void SetTabExtensionAppID(const SessionID& window_id,
@@ -389,7 +389,7 @@ class SessionService : public BaseSessionService,
 
   // Schedules the specified command. This method takes ownership of the
   // command.
-  virtual void ScheduleCommand(SessionCommand* command) OVERRIDE;
+  virtual void ScheduleCommand(SessionCommand* command) override;
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();

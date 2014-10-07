@@ -36,13 +36,13 @@ class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
   virtual ~TwoPhaseUploaderImpl();
 
   // Begins the upload process.
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
                                         int64 current,
-                                        int64 total) OVERRIDE;
+                                        int64 total) override;
 
  private:
   void UploadMetadata();

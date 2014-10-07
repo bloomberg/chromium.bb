@@ -74,7 +74,7 @@ class ProgressMarkerWatcher : public ProfileSyncServiceObserver {
       ProfileSyncService* service,
       QuiesceStatusChangeChecker* quiesce_checker);
   virtual ~ProgressMarkerWatcher();
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   bool HasLatestProgressMarkers();
   bool IsSyncDisabled();

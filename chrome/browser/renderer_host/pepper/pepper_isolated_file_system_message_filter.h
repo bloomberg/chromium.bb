@@ -39,10 +39,10 @@ class PepperIsolatedFileSystemMessageFilter
 
   // ppapi::host::ResourceMessageFilter implementation.
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) OVERRIDE;
+      const IPC::Message& msg) override;
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   PepperIsolatedFileSystemMessageFilter(int render_process_id,

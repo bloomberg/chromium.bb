@@ -65,14 +65,14 @@ class SessionRestoreTest : public InProcessBrowserTest {
 
  protected:
 #if defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // TODO(nkostylev): Investigate if we can remove this switch.
     command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 #endif
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     active_browser_list_ = BrowserList::GetInstance(chrome::GetActiveDesktop());
 
     SessionStartupPref pref(SessionStartupPref::LAST);
@@ -93,7 +93,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  virtual bool SetUpUserDataDirectory() OVERRIDE {
+  virtual bool SetUpUserDataDirectory() override {
     url1_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot1.html"));

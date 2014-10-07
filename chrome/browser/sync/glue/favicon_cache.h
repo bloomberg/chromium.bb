@@ -56,13 +56,13 @@ class FaviconCache : public syncer::SyncableService,
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE;
+      const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
   // If a valid favicon for the icon at |favicon_url| is found, fills
   // |favicon_png| with the png-encoded image and returns true. Else, returns
@@ -100,7 +100,7 @@ class FaviconCache : public syncer::SyncableService,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   friend class SyncFaviconCacheTest;

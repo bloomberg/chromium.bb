@@ -79,13 +79,13 @@ class BrowserThemePack : public CustomThemeSupplier {
   bool WriteToDisk(const base::FilePath& path) const;
 
   // Overridden from CustomThemeSupplier:
-  virtual bool GetTint(int id, color_utils::HSL* hsl) const OVERRIDE;
-  virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
-  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
-  virtual gfx::Image GetImageNamed(int id) OVERRIDE;
+  virtual bool GetTint(int id, color_utils::HSL* hsl) const override;
+  virtual bool GetColor(int id, SkColor* color) const override;
+  virtual bool GetDisplayProperty(int id, int* result) const override;
+  virtual gfx::Image GetImageNamed(int id) override;
   virtual base::RefCountedMemory* GetRawData(
-      int id, ui::ScaleFactor scale_factor) const OVERRIDE;
-  virtual bool HasCustomImage(int id) const OVERRIDE;
+      int id, ui::ScaleFactor scale_factor) const override;
+  virtual bool HasCustomImage(int id) const override;
 
  private:
   friend class BrowserThemePackTest;

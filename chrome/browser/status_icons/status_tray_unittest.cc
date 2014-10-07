@@ -13,13 +13,13 @@
 #include "ui/gfx/image/image_skia.h"
 
 class MockStatusIcon : public StatusIcon {
-  virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE {}
-  virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE {}
+  virtual void SetImage(const gfx::ImageSkia& image) override {}
+  virtual void SetToolTip(const base::string16& tool_tip) override {}
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const base::string16& title,
-                              const base::string16& contents) OVERRIDE {}
+                              const base::string16& contents) override {}
   virtual void UpdatePlatformContextMenu(
-      StatusIconMenuModel* menu) OVERRIDE {}
+      StatusIconMenuModel* menu) override {}
 };
 
 class TestStatusTray : public StatusTray {
@@ -27,7 +27,7 @@ class TestStatusTray : public StatusTray {
   virtual StatusIcon* CreatePlatformStatusIcon(
       StatusIconType type,
       const gfx::ImageSkia& image,
-      const base::string16& tool_tip) OVERRIDE {
+      const base::string16& tool_tip) override {
     return new MockStatusIcon();
   }
 

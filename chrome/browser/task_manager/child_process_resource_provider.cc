@@ -35,14 +35,14 @@ class ChildProcessResource : public Resource {
   virtual ~ChildProcessResource();
 
   // Resource methods:
-  virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual base::ProcessHandle GetProcess() const OVERRIDE;
-  virtual int GetUniqueChildProcessId() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual bool SupportNetworkUsage() const OVERRIDE;
-  virtual void SetSupportNetworkUsage() OVERRIDE;
+  virtual base::string16 GetTitle() const override;
+  virtual base::string16 GetProfileName() const override;
+  virtual gfx::ImageSkia GetIcon() const override;
+  virtual base::ProcessHandle GetProcess() const override;
+  virtual int GetUniqueChildProcessId() const override;
+  virtual Type GetType() const override;
+  virtual bool SupportNetworkUsage() const override;
+  virtual void SetSupportNetworkUsage() override;
 
   // Returns the pid of the child process.
   int process_id() const { return pid_; }

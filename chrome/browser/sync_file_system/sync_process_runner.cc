@@ -26,17 +26,17 @@ class BaseTimerHelper : public SyncProcessRunner::TimerHelper {
  public:
   BaseTimerHelper() {}
 
-  virtual bool IsRunning() OVERRIDE {
+  virtual bool IsRunning() override {
     return timer_.IsRunning();
   }
 
   virtual void Start(const tracked_objects::Location& from_here,
                      const base::TimeDelta& delay,
-                     const base::Closure& closure) OVERRIDE {
+                     const base::Closure& closure) override {
     timer_.Start(from_here, delay, closure);
   }
 
-  virtual base::TimeTicks Now() const OVERRIDE {
+  virtual base::TimeTicks Now() const override {
     return base::TimeTicks::Now();
   }
 

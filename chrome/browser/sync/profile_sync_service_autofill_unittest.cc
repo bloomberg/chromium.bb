@@ -165,13 +165,13 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
   }
 
   virtual ~MockAutofillBackend() {}
-  virtual WebDatabase* GetDatabase() OVERRIDE { return web_database_; }
+  virtual WebDatabase* GetDatabase() override { return web_database_; }
   virtual void AddObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE {}
+      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
   virtual void RemoveObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE {}
-  virtual void RemoveExpiredFormElements() OVERRIDE {}
-  virtual void NotifyOfMultipleAutofillChanges() OVERRIDE {
+      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
+  virtual void RemoveExpiredFormElements() override {}
+  virtual void NotifyOfMultipleAutofillChanges() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_changed_);
   }
@@ -206,12 +206,12 @@ class TokenWebDataServiceFake : public TokenWebData {
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)) {
   }
 
-  virtual bool IsDatabaseLoaded() OVERRIDE {
+  virtual bool IsDatabaseLoaded() override {
     return true;
   }
 
   virtual AutofillWebDataService::Handle GetAllTokens(
-      WebDataServiceConsumer* consumer) OVERRIDE {
+      WebDataServiceConsumer* consumer) override {
     // TODO(tim): It would be nice if WebDataService was injected on
     // construction of ProfileOAuth2TokenService rather than fetched by
     // Initialize so that this isn't necessary (we could pass a NULL service).
@@ -267,11 +267,11 @@ class WebDataServiceFake : public AutofillWebDataService {
     syncable_service_created_or_destroyed_.Wait();
   }
 
-  virtual bool IsDatabaseLoaded() OVERRIDE {
+  virtual bool IsDatabaseLoaded() override {
     return true;
   }
 
-  virtual WebDatabase* GetDatabase() OVERRIDE {
+  virtual WebDatabase* GetDatabase() override {
     return web_database_;
   }
 
@@ -390,14 +390,14 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
   virtual DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
       TestingProfile* profile,
-      ProfileSyncService* service) OVERRIDE {
+      ProfileSyncService* service) override {
     return new AutofillDataTypeController(factory, profile);
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
                               AutofillWebDataService* wds,
-                              DataTypeController* dtc) OVERRIDE {
+                              DataTypeController* dtc) override {
     EXPECT_CALL(*factory, GetSyncableServiceForType(syncer::AUTOFILL)).
         WillOnce(MakeAutocompleteSyncComponents(wds));
   }
@@ -408,14 +408,14 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
   virtual DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
       TestingProfile* profile,
-      ProfileSyncService* service) OVERRIDE {
+      ProfileSyncService* service) override {
     return new AutofillProfileDataTypeController(factory, profile);
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
                               AutofillWebDataService* wds,
-                              DataTypeController* dtc) OVERRIDE {
+                              DataTypeController* dtc) override {
     EXPECT_CALL(*factory,
         GetSyncableServiceForType(syncer::AUTOFILL_PROFILE)).
         WillOnce(MakeAutofillProfileSyncComponents(wds));
@@ -444,7 +444,7 @@ class ProfileSyncServiceAutofillTest
   // DataTypeDebugInfoListener implementation.
   virtual void OnDataTypeConfigureComplete(
       const std::vector<syncer::DataTypeConfigurationStats>&
-          configuration_stats) OVERRIDE {
+          configuration_stats) override {
     ASSERT_EQ(1u, configuration_stats.size());
     association_stats_ = configuration_stats[0].association_stats;
   }
@@ -471,7 +471,7 @@ class ProfileSyncServiceAutofillTest
     }
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AbstractProfileSyncServiceTest::SetUp();
     ASSERT_TRUE(profile_manager_.SetUp());
     TestingProfile::TestingFactories testing_factories;
@@ -517,7 +517,7 @@ class ProfileSyncServiceAutofillTest
         .WillRepeatedly(Return(true));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Note: The tear down order is important.
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);
     web_data_service_->ShutdownOnUIThread();
@@ -781,7 +781,7 @@ class WriteTransactionTest: public WriteTransaction {
         wait_for_syncapi_(wait_for_syncapi) { }
 
   virtual void NotifyTransactionComplete(
-      syncer::ModelTypeSet types) OVERRIDE {
+      syncer::ModelTypeSet types) override {
     // This is where we differ. Force a thread change here, giving another
     // thread a chance to create a WriteTransaction
     (*wait_for_syncapi_)->Wait();

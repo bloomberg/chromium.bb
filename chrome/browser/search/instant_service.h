@@ -105,18 +105,18 @@ class InstantService : public KeyedService,
                            SendsSearchURLsToRenderer);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // TemplateURLServiceObserver:
   // Caches the previous value of the Default Search Provider and the Google
   // base URL to filter out changes other than those affecting the Default
   // Search Provider.
-  virtual void OnTemplateURLServiceChanged() OVERRIDE;
+  virtual void OnTemplateURLServiceChanged() override;
 
   // Called when a renderer process is terminated.
   void OnRendererProcessTerminated(int process_id);

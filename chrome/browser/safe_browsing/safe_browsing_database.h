@@ -290,39 +290,39 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual ~SafeBrowsingDatabaseNew();
 
   // Implement SafeBrowsingDatabase interface.
-  virtual void Init(const base::FilePath& filename) OVERRIDE;
-  virtual bool ResetDatabase() OVERRIDE;
+  virtual void Init(const base::FilePath& filename) override;
+  virtual bool ResetDatabase() override;
   virtual bool ContainsBrowseUrl(
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
-      std::vector<SBFullHashResult>* cache_hits) OVERRIDE;
+      std::vector<SBFullHashResult>* cache_hits) override;
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
-                                   std::vector<SBPrefix>* prefix_hits) OVERRIDE;
-  virtual bool ContainsCsdWhitelistedUrl(const GURL& url) OVERRIDE;
-  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) OVERRIDE;
+                                   std::vector<SBPrefix>* prefix_hits) override;
+  virtual bool ContainsCsdWhitelistedUrl(const GURL& url) override;
+  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) override;
   virtual bool ContainsDownloadWhitelistedString(
-      const std::string& str) OVERRIDE;
+      const std::string& str) override;
   virtual bool ContainsExtensionPrefixes(
       const std::vector<SBPrefix>& prefixes,
-      std::vector<SBPrefix>* prefix_hits) OVERRIDE;
-  virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url)  OVERRIDE;
-  virtual bool ContainsMalwareIP(const std::string& ip_address) OVERRIDE;
-  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE;
+      std::vector<SBPrefix>* prefix_hits) override;
+  virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url)  override;
+  virtual bool ContainsMalwareIP(const std::string& ip_address) override;
+  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override;
   virtual void InsertChunks(const std::string& list_name,
-                            const std::vector<SBChunkData*>& chunks) OVERRIDE;
+                            const std::vector<SBChunkData*>& chunks) override;
   virtual void DeleteChunks(
-      const std::vector<SBChunkDelete>& chunk_deletes) OVERRIDE;
-  virtual void UpdateFinished(bool update_succeeded) OVERRIDE;
+      const std::vector<SBChunkDelete>& chunk_deletes) override;
+  virtual void UpdateFinished(bool update_succeeded) override;
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits,
-      const base::TimeDelta& cache_lifetime) OVERRIDE;
+      const base::TimeDelta& cache_lifetime) override;
 
   // Returns the value of malware_kill_switch_;
-  virtual bool IsMalwareIPMatchKillSwitchOn() OVERRIDE;
+  virtual bool IsMalwareIPMatchKillSwitchOn() override;
 
   // Returns true if the CSD whitelist has everything whitelisted.
-  virtual bool IsCsdWhitelistKillSwitchOn() OVERRIDE;
+  virtual bool IsCsdWhitelistKillSwitchOn() override;
 
  private:
   friend class SafeBrowsingDatabaseTest;

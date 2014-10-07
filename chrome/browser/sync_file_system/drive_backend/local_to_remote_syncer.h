@@ -48,7 +48,7 @@ class LocalToRemoteSyncer : public SyncTask {
                       const base::FilePath& local_path,
                       const storage::FileSystemURL& url);
   virtual ~LocalToRemoteSyncer();
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
 
   const storage::FileSystemURL& url() const { return url_; }
   const base::FilePath& target_path() const { return target_path_; }

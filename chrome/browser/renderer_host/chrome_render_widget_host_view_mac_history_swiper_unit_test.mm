@@ -28,7 +28,7 @@
 
 class MacHistorySwiperTest : public CocoaTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CocoaTest::SetUp();
 
     [HistorySwiper resetMagicMouseState];
@@ -90,7 +90,7 @@ class MacHistorySwiperTest : public CocoaTest {
     magic_mouse_history_swipe_ = false;
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [view_ release];
     [historySwiper_ release];
     CocoaTest::TearDown();

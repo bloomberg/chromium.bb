@@ -42,13 +42,13 @@ class NoOpAutofillBackend : public AutofillWebDataBackend {
  public:
   NoOpAutofillBackend() {}
   virtual ~NoOpAutofillBackend() {}
-  virtual WebDatabase* GetDatabase() OVERRIDE { return NULL; }
+  virtual WebDatabase* GetDatabase() override { return NULL; }
   virtual void AddObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE {}
+      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
   virtual void RemoveObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE {}
-  virtual void RemoveExpiredFormElements() OVERRIDE {}
-  virtual void NotifyOfMultipleAutofillChanges() OVERRIDE {}
+      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
+  virtual void RemoveExpiredFormElements() override {}
+  virtual void NotifyOfMultipleAutofillChanges() override {}
 };
 
 // Fake WebDataService implementation that stubs out the database loading.
@@ -70,12 +70,12 @@ class FakeWebDataService : public AutofillWebDataService {
       db_loaded_callback_.Run();
   }
 
-  virtual bool IsDatabaseLoaded() OVERRIDE {
+  virtual bool IsDatabaseLoaded() override {
     return is_database_loaded_;
   }
 
   virtual void RegisterDBLoadedCallback(
-      const base::Callback<void(void)>& callback) OVERRIDE {
+      const base::Callback<void(void)>& callback) override {
     db_loaded_callback_ = callback;
   }
 
@@ -118,7 +118,7 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
       : MockWebDataServiceWrapper(new FakeWebDataService(), NULL) {
   }
 
-  virtual void Shutdown() OVERRIDE {
+  virtual void Shutdown() override {
     static_cast<FakeWebDataService*>(
         fake_autofill_web_data_.get())->ShutdownOnUIThread();
     // Make sure WebDataService is shutdown properly on DB thread before we

@@ -120,8 +120,8 @@ class SearchProviderInstallDataTest : public testing::Test {
  public:
   SearchProviderInstallDataTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   TemplateURL* AddNewTemplateURL(const std::string& url,
                                  const base::string16& keyword);

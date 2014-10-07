@@ -22,7 +22,7 @@ class SyncPolicyHandler : public policy::TypeCheckingPolicyHandler {
 
   // ConfigurationPolicyHandler methods:
   virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+                                   PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPolicyHandler);

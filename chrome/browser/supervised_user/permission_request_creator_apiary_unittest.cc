@@ -34,13 +34,13 @@ class FakeSupervisedUserSigninManagerWrapper
   FakeSupervisedUserSigninManagerWrapper()
       : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
 
-  virtual std::string GetEffectiveUsername() const OVERRIDE {
+  virtual std::string GetEffectiveUsername() const override {
     return kAccountId;
   }
-  virtual std::string GetAccountIdToUse() const OVERRIDE {
+  virtual std::string GetAccountIdToUse() const override {
     return kAccountId;
   }
-  virtual std::string GetSyncScopeToUse() const OVERRIDE {
+  virtual std::string GetSyncScopeToUse() const override {
     return kApiScope;
   }
 };

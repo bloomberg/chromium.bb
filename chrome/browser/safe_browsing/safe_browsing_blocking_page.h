@@ -89,12 +89,12 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   }
 
   // InterstitialPageDelegate method:
-  virtual std::string GetHTMLContents() OVERRIDE;
-  virtual void OnProceed() OVERRIDE;
-  virtual void OnDontProceed() OVERRIDE;
-  virtual void CommandReceived(const std::string& command) OVERRIDE;
+  virtual std::string GetHTMLContents() override;
+  virtual void OnProceed() override;
+  virtual void OnDontProceed() override;
+  virtual void CommandReceived(const std::string& command) override;
   virtual void OverrideRendererPrefs(
-      content::RendererPreferences* prefs) OVERRIDE;
+      content::RendererPreferences* prefs) override;
 
  protected:
   friend class SafeBrowsingBlockingPageTest;

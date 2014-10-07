@@ -30,7 +30,7 @@ class SupervisedUserPrefMappingService : public KeyedService {
   virtual ~SupervisedUserPrefMappingService();
 
   // KeyedService implementation:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void Init();
 

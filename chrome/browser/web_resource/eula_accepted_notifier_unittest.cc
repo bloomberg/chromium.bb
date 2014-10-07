@@ -17,14 +17,14 @@ class EulaAcceptedNotifierTest : public testing::Test,
   }
 
   // testing::Test overrides.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     local_state_.registry()->RegisterBooleanPref(prefs::kEulaAccepted, false);
     notifier_.reset(new EulaAcceptedNotifier(&local_state_));
     notifier_->Init(this);
   }
 
   // EulaAcceptedNotifier::Observer overrides.
-  virtual void OnEulaAccepted() OVERRIDE {
+  virtual void OnEulaAccepted() override {
     EXPECT_FALSE(eula_accepted_called_);
     eula_accepted_called_ = true;
   }

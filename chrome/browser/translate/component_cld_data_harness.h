@@ -14,7 +14,7 @@ class ComponentCldDataHarness : public CldDataHarness {
  public:
   ComponentCldDataHarness();
   virtual ~ComponentCldDataHarness();
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
  private:
   void ClearComponentDataFileState();

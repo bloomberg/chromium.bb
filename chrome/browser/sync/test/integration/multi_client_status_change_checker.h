@@ -32,7 +32,7 @@ class MultiClientStatusChangeChecker
   void Wait();
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // StatusChangeChecker implementations and stubs.
   virtual bool IsExitConditionSatisfied() = 0;

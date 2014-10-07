@@ -19,12 +19,12 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
       : SpellCheckMessageFilter(0),
         spellcheck_(new SpellcheckService(&profile_)) {}
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     sent_messages.push_back(message);
     return true;
   }
 
-  virtual SpellcheckService* GetSpellcheckService() const OVERRIDE {
+  virtual SpellcheckService* GetSpellcheckService() const override {
     return spellcheck_.get();
   }
 

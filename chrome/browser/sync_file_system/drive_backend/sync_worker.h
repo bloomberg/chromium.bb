@@ -60,45 +60,45 @@ class SyncWorker : public SyncWorkerInterface,
 
   virtual ~SyncWorker();
 
-  virtual void Initialize(scoped_ptr<SyncEngineContext> context) OVERRIDE;
+  virtual void Initialize(scoped_ptr<SyncEngineContext> context) override;
 
   // SyncTaskManager::Client overrides
-  virtual void MaybeScheduleNextTask() OVERRIDE;
+  virtual void MaybeScheduleNextTask() override;
   virtual void NotifyLastOperationStatus(
-      SyncStatusCode sync_status, bool used_network) OVERRIDE;
-  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) OVERRIDE;
+      SyncStatusCode sync_status, bool used_network) override;
+  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) override;
 
   // SyncWorkerInterface overrides
   virtual void RegisterOrigin(const GURL& origin,
-                              const SyncStatusCallback& callback) OVERRIDE;
+                              const SyncStatusCallback& callback) override;
   virtual void EnableOrigin(const GURL& origin,
-                            const SyncStatusCallback& callback) OVERRIDE;
+                            const SyncStatusCallback& callback) override;
   virtual void DisableOrigin(const GURL& origin,
-                             const SyncStatusCallback& callback) OVERRIDE;
+                             const SyncStatusCallback& callback) override;
   virtual void UninstallOrigin(const GURL& origin,
                                RemoteFileSyncService::UninstallFlag flag,
-                               const SyncStatusCallback& callback) OVERRIDE;
-  virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
+                               const SyncStatusCallback& callback) override;
+  virtual void ProcessRemoteChange(const SyncFileCallback& callback) override;
   virtual void SetRemoteChangeProcessor(
       RemoteChangeProcessorOnWorker* remote_change_processor_on_worker)
-      OVERRIDE;
-  virtual RemoteServiceState GetCurrentState() const OVERRIDE;
+      override;
+  virtual RemoteServiceState GetCurrentState() const override;
   virtual void GetOriginStatusMap(
-      const RemoteFileSyncService::StatusMapCallback& callback) OVERRIDE;
-  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
-  virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
-  virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual void PromoteDemotedChanges(const base::Closure& callback) OVERRIDE;
+      const RemoteFileSyncService::StatusMapCallback& callback) override;
+  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) override;
+  virtual scoped_ptr<base::ListValue> DumpDatabase() override;
+  virtual void SetSyncEnabled(bool enabled) override;
+  virtual void PromoteDemotedChanges(const base::Closure& callback) override;
   virtual void ApplyLocalChange(const FileChange& local_change,
                                 const base::FilePath& local_path,
                                 const SyncFileMetadata& local_metadata,
                                 const storage::FileSystemURL& url,
-                                const SyncStatusCallback& callback) OVERRIDE;
+                                const SyncStatusCallback& callback) override;
   virtual void ActivateService(RemoteServiceState service_state,
-                               const std::string& description) OVERRIDE;
-  virtual void DeactivateService(const std::string& description) OVERRIDE;
-  virtual void DetachFromSequence() OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
+                               const std::string& description) override;
+  virtual void DeactivateService(const std::string& description) override;
+  virtual void DetachFromSequence() override;
+  virtual void AddObserver(Observer* observer) override;
 
  private:
   friend class DriveBackendSyncTest;

@@ -44,16 +44,16 @@ class FakeDownloadFeedback : public DownloadFeedback {
     deletion_callback_.Run();
   }
 
-  virtual void Start(const base::Closure& finish_callback) OVERRIDE {
+  virtual void Start(const base::Closure& finish_callback) override {
     start_called_ = true;
     finish_callback_ = finish_callback;
   }
 
-  virtual const std::string& GetPingRequestForTesting() const OVERRIDE {
+  virtual const std::string& GetPingRequestForTesting() const override {
     return ping_request_;
   }
 
-  virtual const std::string& GetPingResponseForTesting() const OVERRIDE {
+  virtual const std::string& GetPingResponseForTesting() const override {
     return ping_response_;
   }
 
@@ -86,7 +86,7 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,
       const std::string& ping_request,
-      const std::string& ping_response) OVERRIDE {
+      const std::string& ping_response) override {
     FakeDownloadFeedback* feedback = new FakeDownloadFeedback(
         request_context_getter,
         file_task_runner,
@@ -139,12 +139,12 @@ class DownloadFeedbackServiceTest : public testing::Test {
             new net::TestURLRequestContextGetter(io_task_runner_)) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     DownloadFeedback::RegisterFactory(&download_feedback_factory_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     DownloadFeedback::RegisterFactory(NULL);
   }
 

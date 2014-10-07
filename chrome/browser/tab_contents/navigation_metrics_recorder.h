@@ -21,10 +21,10 @@ class NavigationMetricsRecorder
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };

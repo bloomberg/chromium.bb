@@ -58,12 +58,12 @@ class BookmarkAddOperation : public BookmarkUndoOperation {
   virtual ~BookmarkAddOperation() {}
 
   // UndoOperation:
-  virtual void Undo() OVERRIDE;
-  virtual int GetUndoLabelId() const OVERRIDE;
-  virtual int GetRedoLabelId() const OVERRIDE;
+  virtual void Undo() override;
+  virtual int GetUndoLabelId() const override;
+  virtual int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
+  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 parent_id_;
@@ -117,12 +117,12 @@ class BookmarkRemoveOperation : public BookmarkUndoOperation {
   virtual ~BookmarkRemoveOperation() {}
 
   // UndoOperation:
-  virtual void Undo() OVERRIDE;
-  virtual int GetUndoLabelId() const OVERRIDE;
-  virtual int GetRedoLabelId() const OVERRIDE;
+  virtual void Undo() override;
+  virtual int GetUndoLabelId() const override;
+  virtual int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
+  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   void UpdateBookmarkIds(const BookmarkNodeData::Element& element,
@@ -194,12 +194,12 @@ class BookmarkEditOperation : public BookmarkUndoOperation {
   virtual ~BookmarkEditOperation() {}
 
   // UndoOperation:
-  virtual void Undo() OVERRIDE;
-  virtual int GetUndoLabelId() const OVERRIDE;
-  virtual int GetRedoLabelId() const OVERRIDE;
+  virtual void Undo() override;
+  virtual int GetUndoLabelId() const override;
+  virtual int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
+  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 node_id_;
@@ -250,14 +250,14 @@ class BookmarkMoveOperation : public BookmarkUndoOperation {
                         const BookmarkNode* new_parent,
                         int new_index);
   virtual ~BookmarkMoveOperation() {}
-  virtual int GetUndoLabelId() const OVERRIDE;
-  virtual int GetRedoLabelId() const OVERRIDE;
+  virtual int GetUndoLabelId() const override;
+  virtual int GetRedoLabelId() const override;
 
   // UndoOperation:
-  virtual void Undo() OVERRIDE;
+  virtual void Undo() override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
+  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 old_parent_id_;
@@ -329,12 +329,12 @@ class BookmarkReorderOperation : public BookmarkUndoOperation {
   virtual ~BookmarkReorderOperation();
 
   // UndoOperation:
-  virtual void Undo() OVERRIDE;
-  virtual int GetUndoLabelId() const OVERRIDE;
-  virtual int GetRedoLabelId() const OVERRIDE;
+  virtual void Undo() override;
+  virtual int GetUndoLabelId() const override;
+  virtual int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;
+  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 parent_id_;

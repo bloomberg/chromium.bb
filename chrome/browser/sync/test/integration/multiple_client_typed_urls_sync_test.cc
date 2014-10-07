@@ -20,7 +20,7 @@ class MultipleClientTypedUrlsSyncTest : public SyncTest {
   MultipleClientTypedUrlsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientTypedUrlsSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE {
+  virtual bool TestUsesSelfNotifications() override {
     return false;
   }
 

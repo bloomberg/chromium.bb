@@ -60,10 +60,10 @@ class WaitForLoadObserver : public TabRestoreServiceObserver {
 
  private:
   // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE {}
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE {
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) override {}
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override {
   }
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE {
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override {
     DCHECK(do_wait_);
     run_loop_.Quit();
   }
@@ -87,7 +87,7 @@ class TabRestoreTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     active_browser_list_ = BrowserList::GetInstance(chrome::GetActiveDesktop());
     InProcessBrowserTest::SetUpOnMainThread();
   }

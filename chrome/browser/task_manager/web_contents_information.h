@@ -65,13 +65,13 @@ class NotificationObservingWebContentsInformation
 
   // WebContentsInformation partial implementation.
   virtual void StartObservingCreation(const NewWebContentsCallback& callback)
-      OVERRIDE;
-  virtual void StopObservingCreation() OVERRIDE;
+      override;
+  virtual void StopObservingCreation() override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   content::NotificationRegistrar registrar_;

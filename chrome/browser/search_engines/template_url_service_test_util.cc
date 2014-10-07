@@ -29,7 +29,7 @@ class TestingTemplateURLServiceClient : public ChromeTemplateURLServiceClient {
   virtual void SetKeywordSearchTermsForURL(
       const GURL& url,
       TemplateURLID id,
-      const base::string16& term) OVERRIDE {
+      const base::string16& term) override {
     *search_term_ = term;
   }
 

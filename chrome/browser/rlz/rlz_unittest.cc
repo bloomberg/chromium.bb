@@ -106,40 +106,40 @@ class TestRLZTracker : public RLZTracker {
   }
 
  private:
-  virtual void ScheduleDelayedInit(base::TimeDelta delay) OVERRIDE {
+  virtual void ScheduleDelayedInit(base::TimeDelta delay) override {
     // If the delay is 0, invoke the delayed init now. Otherwise,
     // don't schedule anything, it will be manually called during tests.
     if (delay == base::TimeDelta())
       DelayedInit();
   }
 
-  virtual void ScheduleFinancialPing() OVERRIDE {
+  virtual void ScheduleFinancialPing() override {
     PingNowImpl();
   }
 
   virtual bool ScheduleRecordProductEvent(rlz_lib::Product product,
                                           rlz_lib::AccessPoint point,
-                                          rlz_lib::Event event_id) OVERRIDE {
+                                          rlz_lib::Event event_id) override {
     return !assume_not_ui_thread_;
   }
 
-  virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) OVERRIDE {
+  virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) override {
     return !assume_not_ui_thread_;
   }
 
-  virtual bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) OVERRIDE {
+  virtual bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) override {
     return !assume_not_ui_thread_;
   }
 
 #if defined(OS_CHROMEOS)
-  virtual bool ScheduleClearRlzState() OVERRIDE {
+  virtual bool ScheduleClearRlzState() override {
     return !assume_not_ui_thread_;
   }
 #endif
 
   virtual bool SendFinancialPing(const std::string& brand,
                                  const base::string16& lang,
-                                 const base::string16& referral) OVERRIDE {
+                                 const base::string16& referral) override {
     // Don't ping the server during tests, just pretend as if we did.
     EXPECT_FALSE(brand.empty());
     pinged_brands_.insert(brand);
@@ -163,7 +163,7 @@ class TestRLZTracker : public RLZTracker {
 
 class RlzLibTest : public RlzLibTestNoMachineState {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void SetMainBrand(const char* brand);
   void SetReactivationBrand(const char* brand);

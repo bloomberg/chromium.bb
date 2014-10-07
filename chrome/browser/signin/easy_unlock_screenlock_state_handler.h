@@ -76,9 +76,9 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
  private:
   // ScreenlockBridge::Observer:
-  virtual void OnScreenDidLock() OVERRIDE;
-  virtual void OnScreenDidUnlock() OVERRIDE;
-  virtual void OnFocusedUserChanged(const std::string& user_id) OVERRIDE;
+  virtual void OnScreenDidLock() override;
+  virtual void OnScreenDidUnlock() override;
+  virtual void OnFocusedUserChanged(const std::string& user_id) override;
 
   void ShowHardlockUI();
 

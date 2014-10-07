@@ -32,9 +32,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
       ProfileSyncService* sync_service);
 
   // NonFrontendDataTypeController implementation
-  virtual syncer::ModelType type() const OVERRIDE;
-  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
-  virtual bool ReadyForStart() const OVERRIDE;
+  virtual syncer::ModelType type() const override;
+  virtual syncer::ModelSafeGroup model_safe_group() const override;
+  virtual bool ReadyForStart() const override;
 
   // Invoked on the history thread to set our history backend - must be called
   // before CreateSyncComponents() is invoked.
@@ -44,11 +44,11 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
   // NonFrontendDataTypeController interface.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE;
+      const base::Closure& task) override;
   virtual ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents()
-      OVERRIDE;
+      override;
   virtual void DisconnectProcessor(
-      sync_driver::ChangeProcessor* processor) OVERRIDE;
+      sync_driver::ChangeProcessor* processor) override;
 
  private:
   virtual ~TypedUrlDataTypeController();

@@ -53,10 +53,10 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
       const syncer::ModelSafeRoutingInfo& routing_info,
       const base::Callback<void(syncer::ModelTypeSet,
                                 syncer::ModelTypeSet)>& ready_task,
-      const base::Closure& retry_callback) OVERRIDE;
+      const base::Closure& retry_callback) override;
 
  protected:
-  virtual void InitCore(scoped_ptr<DoInitializeOptions> options) OVERRIDE;
+  virtual void InitCore(scoped_ptr<DoInitializeOptions> options) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -81,10 +81,10 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual ~TestProfileSyncService();
 
   virtual void OnConfigureDone(
-      const sync_driver::DataTypeManager::ConfigureResult& result) OVERRIDE;
+      const sync_driver::DataTypeManager::ConfigureResult& result) override;
 
   // We implement our own version to avoid some DCHECKs.
-  virtual syncer::UserShare* GetUserShare() const OVERRIDE;
+  virtual syncer::UserShare* GetUserShare() const override;
 
   static TestProfileSyncService* BuildAutoStartAsyncInit(
       Profile* profile, base::Closure callback);
@@ -103,9 +103,9 @@ class TestProfileSyncService : public ProfileSyncService {
   // js messages on UI loop when it's being destroyed, which are not deleted
   // and cause memory leak in test.
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler()
-      OVERRIDE;
+      override;
 
-  virtual bool NeedBackup() const OVERRIDE;
+  virtual bool NeedBackup() const override;
 
  private:
   syncer::TestIdFactory id_factory_;

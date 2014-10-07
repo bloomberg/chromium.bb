@@ -77,7 +77,7 @@ class MigrationTest : public SyncTest  {
   // Set up sync for all profiles and initialize all MigrationWatchers. This
   // helps ensure that all migration events are captured, even if they were to
   // occur before a test calls AwaitMigration for a specific profile.
-  virtual bool SetupSync() OVERRIDE {
+  virtual bool SetupSync() override {
     if (!SyncTest::SetupSync())
       return false;
 
@@ -421,7 +421,7 @@ class MigrationReconfigureTest : public MigrationTwoClientTest {
  public:
   MigrationReconfigureTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* cl) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* cl) override {
     AddTestSwitches(cl);
     // Do not add optional datatypes.
   }

@@ -29,16 +29,16 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // SSLHostStateDelegate:
   virtual void AllowCert(const std::string& host,
                          const net::X509Certificate& cert,
-                         net::CertStatus error) OVERRIDE;
-  virtual void Clear() OVERRIDE;
+                         net::CertStatus error) override;
+  virtual void Clear() override;
   virtual CertJudgment QueryPolicy(const std::string& host,
                                    const net::X509Certificate& cert,
                                    net::CertStatus error,
-                                   bool* expired_previous_decision) OVERRIDE;
+                                   bool* expired_previous_decision) override;
   virtual void HostRanInsecureContent(const std::string& host,
-                                      int pid) OVERRIDE;
+                                      int pid) override;
   virtual bool DidHostRunInsecureContent(const std::string& host,
-                                         int pid) const OVERRIDE;
+                                         int pid) const override;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host| in the given Profile.

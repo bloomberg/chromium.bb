@@ -220,7 +220,7 @@ class PrefMatchChecker : public StatusChangeChecker {
 
   // StatusChangeChecker implementation.
   virtual bool IsExitConditionSatisfied() = 0;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual std::string GetDebugMessage() const override;
 
   // Wait for condition to become true.
   void Wait();
@@ -281,7 +281,7 @@ class ListPrefMatchChecker : public PrefMatchChecker {
   virtual ~ListPrefMatchChecker();
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
 };
 
 ListPrefMatchChecker::ListPrefMatchChecker(const char* path)
@@ -302,7 +302,7 @@ class BooleanPrefMatchChecker : public PrefMatchChecker {
   virtual ~BooleanPrefMatchChecker();
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
 };
 
 BooleanPrefMatchChecker::BooleanPrefMatchChecker(const char* path)
@@ -323,7 +323,7 @@ class IntegerPrefMatchChecker : public PrefMatchChecker {
   virtual ~IntegerPrefMatchChecker();
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
 };
 
 IntegerPrefMatchChecker::IntegerPrefMatchChecker(const char* path)
@@ -344,7 +344,7 @@ class StringPrefMatchChecker : public PrefMatchChecker {
   virtual ~StringPrefMatchChecker();
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
 };
 
 StringPrefMatchChecker::StringPrefMatchChecker(const char* path)

@@ -23,7 +23,7 @@ class WorkerTask : public history::HistoryDBTask {
     : work_(work), done_(done), error_(error) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     *error_ = work_.Run();
     done_->Signal();
     return true;
@@ -31,7 +31,7 @@ class WorkerTask : public history::HistoryDBTask {
 
   // Since the DoWorkAndWaitUntilDone() is synchronous, we don't need to run
   // any code asynchronously on the main thread after completion.
-  virtual void DoneRunOnMainThread() OVERRIDE {}
+  virtual void DoneRunOnMainThread() override {}
 
  protected:
   virtual ~WorkerTask() {}
@@ -47,12 +47,12 @@ class AddDBThreadObserverTask : public history::HistoryDBTask {
      : register_callback_(register_callback) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     register_callback_.Run();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {}
+  virtual void DoneRunOnMainThread() override {}
 
  private:
   virtual ~AddDBThreadObserverTask() {}

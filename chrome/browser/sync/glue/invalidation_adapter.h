@@ -17,11 +17,11 @@ class InvalidationAdapter : public syncer::InvalidationInterface {
   virtual ~InvalidationAdapter();
 
   // Implementation of InvalidationInterface.
-  virtual bool IsUnknownVersion() const OVERRIDE;
-  virtual const std::string& GetPayload() const OVERRIDE;
-  virtual int64 GetVersion() const OVERRIDE;
-  virtual void Acknowledge() OVERRIDE;
-  virtual void Drop() OVERRIDE;
+  virtual bool IsUnknownVersion() const override;
+  virtual const std::string& GetPayload() const override;
+  virtual int64 GetVersion() const override;
+  virtual void Acknowledge() override;
+  virtual void Drop() override;
 
  private:
   syncer::Invalidation invalidation_;

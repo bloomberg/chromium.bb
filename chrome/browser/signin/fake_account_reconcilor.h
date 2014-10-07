@@ -23,7 +23,7 @@ class FakeAccountReconcilor : public AccountReconcilor {
   // Override this method to perform no network call, instead the callback
   // is called immediately
   virtual void GetAccountsFromCookie(GetAccountsFromCookieCallback callback)
-      OVERRIDE;
+      override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccountReconcilor);
 };

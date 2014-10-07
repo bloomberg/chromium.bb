@@ -35,11 +35,11 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   ChromeExtensionMessageFilter(int render_process_id, Profile* profile);
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
+      content::BrowserThread::ID* thread) override;
+  virtual void OnDestruct() const override;
 
  private:
   friend class content::BrowserThread;
@@ -103,7 +103,7 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   const int render_process_id_;
 

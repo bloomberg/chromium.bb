@@ -47,7 +47,7 @@ class MockSyncTask : public ExclusiveTask {
   }
   virtual ~MockSyncTask() {}
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void RunExclusive(const SyncStatusCallback& callback) override {
     callback.Run(SYNC_STATUS_OK);
   }
 
@@ -60,21 +60,21 @@ class MockExtensionService : public TestExtensionService {
   MockExtensionService() {}
   virtual ~MockExtensionService() {}
 
-  virtual const extensions::ExtensionSet* extensions() const OVERRIDE {
+  virtual const extensions::ExtensionSet* extensions() const override {
     return &extensions_;
   }
 
-  virtual void AddExtension(const extensions::Extension* extension) OVERRIDE {
+  virtual void AddExtension(const extensions::Extension* extension) override {
     extensions_.Insert(make_scoped_refptr(extension));
   }
 
   virtual const extensions::Extension* GetInstalledExtension(
-      const std::string& extension_id) const OVERRIDE {
+      const std::string& extension_id) const override {
     return extensions_.GetByID(extension_id);
   }
 
   virtual bool IsExtensionEnabled(
-      const std::string& extension_id) const OVERRIDE {
+      const std::string& extension_id) const override {
     return extensions_.Contains(extension_id) &&
         !disabled_extensions_.Contains(extension_id);
   }
@@ -104,7 +104,7 @@ class SyncWorkerTest : public testing::Test,
   SyncWorkerTest() {}
   virtual ~SyncWorkerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -130,7 +130,7 @@ class SyncWorkerTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     sync_worker_.reset();
     extension_service_.reset();
     base::RunLoop().RunUntilIdle();

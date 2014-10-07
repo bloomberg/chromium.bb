@@ -24,7 +24,7 @@ class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
 
   // Implementation of BrowserContextKeyedServiceFactory.
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
   friend struct DefaultSingletonTraits<AboutSigninInternalsFactory>;
@@ -34,7 +34,7 @@ class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_ABOUT_SIGNIN_INTERNALS_FACTORY_H_

@@ -43,12 +43,12 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   virtual ~SpellingMenuObserver();
 
   // RenderViewContextMenuObserver implementation.
-  virtual void InitMenu(const content::ContextMenuParams& params) OVERRIDE;
-  virtual bool IsCommandIdSupported(int command_id) OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
-  virtual void OnMenuCancel() OVERRIDE;
+  virtual void InitMenu(const content::ContextMenuParams& params) override;
+  virtual bool IsCommandIdSupported(int command_id) override;
+  virtual bool IsCommandIdChecked(int command_id) override;
+  virtual bool IsCommandIdEnabled(int command_id) override;
+  virtual void ExecuteCommand(int command_id) override;
+  virtual void OnMenuCancel() override;
 
   // A callback function called when the Spelling service finishes checking a
   // misspelled word.

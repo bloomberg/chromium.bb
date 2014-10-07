@@ -101,7 +101,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     // Do not launch device discovery process.

@@ -25,19 +25,19 @@ class TtsMessageFilter
   // content::BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
+      content::BrowserThread::ID* thread) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelClosing() override;
+  virtual void OnDestruct() const override;
 
   // UtteranceEventDelegate implementation.
   virtual void OnTtsEvent(Utterance* utterance,
                           TtsEventType event_type,
                           int char_index,
-                          const std::string& error_message) OVERRIDE;
+                          const std::string& error_message) override;
 
   // VoicesChangedDelegate implementation.
-  virtual void OnVoicesChanged() OVERRIDE;
+  virtual void OnVoicesChanged() override;
 
  private:
   friend class content::BrowserThread;

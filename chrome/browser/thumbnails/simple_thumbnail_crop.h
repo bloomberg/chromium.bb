@@ -21,11 +21,11 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
   virtual ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
                                        ui::ScaleFactor scale_factor,
                                        gfx::Rect* clipping_rect,
-                                       gfx::Size* target_size) const OVERRIDE;
+                                       gfx::Size* target_size) const override;
 
   virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
                              const ConsumerCallback& callback,
-                             const SkBitmap& bitmap) OVERRIDE;
+                             const SkBitmap& bitmap) override;
 
   // Calculates how "boring" a thumbnail is. The boring score is the
   // 0,1 ranged percentage of pixels that are the most common

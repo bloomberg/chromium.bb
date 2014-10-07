@@ -21,10 +21,10 @@ class TabContentsInformation
   virtual ~TabContentsInformation();
 
   // WebContentsInformation implementation.
-  virtual bool CheckOwnership(content::WebContents* web_contents) OVERRIDE;
-  virtual void GetAll(const NewWebContentsCallback& callback) OVERRIDE;
+  virtual bool CheckOwnership(content::WebContents* web_contents) override;
+  virtual void GetAll(const NewWebContentsCallback& callback) override;
   virtual scoped_ptr<RendererResource> MakeResource(
-      content::WebContents* web_contents) OVERRIDE;
+      content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabContentsInformation);

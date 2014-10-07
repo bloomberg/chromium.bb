@@ -25,7 +25,7 @@ class TwoClientThemesSyncTest : public SyncTest {
   TwoClientThemesSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientThemesSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() OVERRIDE {
+  virtual bool TestUsesSelfNotifications() override {
     return false;
   }
 

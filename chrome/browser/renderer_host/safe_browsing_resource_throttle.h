@@ -54,14 +54,14 @@ class SafeBrowsingResourceThrottle
                                SafeBrowsingService* safe_browsing);
 
   // content::ResourceThrottle implementation (called on IO thread):
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
-  virtual const char* GetNameForLogging() const OVERRIDE;
+  virtual void WillStartRequest(bool* defer) override;
+  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  virtual const char* GetNameForLogging() const override;
 
   // SafeBrowsingDabaseManager::Client implementation (called on IO thread):
   virtual void OnCheckBrowseUrlResult(const GURL& url,
                                       SBThreatType result,
-                                      const std::string& metadata) OVERRIDE;
+                                      const std::string& metadata) override;
 
  private:
   // Describes what phase of the check a throttle is in.

@@ -75,14 +75,14 @@ class IncidentReportingServiceTest : public testing::Test {
     }
 
    protected:
-    virtual void OnProfileAdded(Profile* profile) OVERRIDE {
+    virtual void OnProfileAdded(Profile* profile) override {
       pre_profile_add_callback_.Run(profile);
       safe_browsing::IncidentReportingService::OnProfileAdded(profile);
     }
 
     virtual scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
         const safe_browsing::LastDownloadFinder::LastDownloadCallback& callback)
-        OVERRIDE {
+        override {
       return create_download_finder_callback_.Run(callback);
     }
 
@@ -90,7 +90,7 @@ class IncidentReportingServiceTest : public testing::Test {
         const safe_browsing::IncidentReportUploader::OnResultCallback& callback,
         const scoped_refptr<net::URLRequestContextGetter>&
             request_context_getter,
-        const safe_browsing::ClientIncidentReport& report) OVERRIDE {
+        const safe_browsing::ClientIncidentReport& report) override {
       return start_upload_callback_.Run(callback, report);
     }
 
@@ -175,7 +175,7 @@ class IncidentReportingServiceTest : public testing::Test {
         uploader_destroyed_(),
         delayed_analysis_ran_() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     ASSERT_TRUE(profile_manager_.SetUp());
   }

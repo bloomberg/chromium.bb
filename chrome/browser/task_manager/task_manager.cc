@@ -177,7 +177,7 @@ class TaskManagerModelGpuDataManagerObserver
 
   virtual void OnVideoMemoryUsageStatsUpdate(
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          OVERRIDE {
+          override {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       NotifyVideoMemoryUsageStats(video_memory_usage_stats);
     } else {

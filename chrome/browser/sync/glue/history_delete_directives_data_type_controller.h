@@ -25,12 +25,12 @@ class HistoryDeleteDirectivesDataTypeController
       ProfileSyncService* sync_service);
 
   // UIDataTypeController override.
-  virtual bool ReadyForStart() const OVERRIDE;
-  virtual bool StartModels() OVERRIDE;
-  virtual void StopModels() OVERRIDE;
+  virtual bool ReadyForStart() const override;
+  virtual bool StartModels() override;
+  virtual void StopModels() override;
 
   // ProfileSyncServiceBaseObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
  private:
   // Refcounted.

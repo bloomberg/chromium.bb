@@ -72,7 +72,7 @@ class ProfileSyncComponentsFactory
         : model_associator(ma), change_processor(cp) {}
   };
 
-  virtual ~ProfileSyncComponentsFactory() OVERRIDE {}
+  virtual ~ProfileSyncComponentsFactory() override {}
 
   // Creates and registers enabled datatypes with the provided
   // ProfileSyncService.

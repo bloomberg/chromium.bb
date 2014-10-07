@@ -13,7 +13,7 @@ class StandaloneCldDataHarness : public CldDataHarness {
  public:
   StandaloneCldDataHarness();
   virtual ~StandaloneCldDataHarness();
-  virtual void Init() OVERRIDE;
+  virtual void Init() override;
 
  private:
   void GetStandaloneDataFileSource(base::FilePath*);

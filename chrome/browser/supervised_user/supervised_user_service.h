@@ -93,7 +93,7 @@ class SupervisedUserService : public KeyedService,
   virtual ~SupervisedUserService();
 
   // ProfileKeyedService override:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -175,30 +175,30 @@ class SupervisedUserService : public KeyedService,
 
 #if defined(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:
-  virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
+  virtual std::string GetDebugPolicyProviderName() const override;
   virtual bool UserMayLoad(const extensions::Extension* extension,
-                           base::string16* error) const OVERRIDE;
+                           base::string16* error) const override;
   virtual bool UserMayModifySettings(const extensions::Extension* extension,
-                                     base::string16* error) const OVERRIDE;
+                                     base::string16* error) const override;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 #endif
 
   // SyncTypePreferenceProvider implementation:
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const OVERRIDE;
+  virtual syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
   // ProfileSyncServiceObserver implementation:
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // chrome::BrowserListObserver implementation:
-  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(Browser* browser) override;
 
  private:
   friend class SupervisedUserServiceExtensionTestBase;

@@ -27,13 +27,13 @@ class MostVisitedIframeSource : public IframeSource {
       const std::string& path_and_query,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
+      const content::URLDataSource::GotDataCallback& callback) override;
 
  protected:
   // Overridden from IframeSource:
-  virtual std::string GetSource() const OVERRIDE;
+  virtual std::string GetSource() const override;
 
-  virtual bool ServesPath(const std::string& path) const OVERRIDE;
+  virtual bool ServesPath(const std::string& path) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MostVisitedIframeSourceTest,

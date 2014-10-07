@@ -58,12 +58,12 @@ class FakeSigninManager : public SigninManager {
       const std::string& refresh_token,
       const std::string& username,
       const std::string& password,
-      const OAuthTokenFetchedCallback& oauth_fetched_callback) OVERRIDE;
+      const OAuthTokenFetchedCallback& oauth_fetched_callback) override;
 
   virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric)
-      OVERRIDE;
+      override;
 
-  virtual void CompletePendingSignin() OVERRIDE;
+  virtual void CompletePendingSignin() override;
 };
 
 #endif  // !defined (OS_CHROMEOS)

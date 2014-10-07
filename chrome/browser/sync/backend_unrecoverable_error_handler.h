@@ -23,7 +23,7 @@ class BackendUnrecoverableErrorHandler
       const syncer::WeakHandle<ProfileSyncService>& service);
   virtual ~BackendUnrecoverableErrorHandler();
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) OVERRIDE;
+                                    const std::string& message) override;
 
  private:
   syncer::WeakHandle<ProfileSyncService> service_;

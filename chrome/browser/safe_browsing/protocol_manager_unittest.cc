@@ -330,7 +330,7 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
                                   AddChunksCallback));
   virtual void AddChunks(const std::string& list,
                          scoped_ptr<ScopedVector<SBChunkData> > chunks,
-                         AddChunksCallback callback) OVERRIDE {
+                         AddChunksCallback callback) override {
     AddChunksRaw(list, *chunks, callback);
   }
 
@@ -338,7 +338,7 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
   MOCK_METHOD1(DeleteChunksRaw,
                void(const std::vector<SBChunkDelete>& chunk_deletes));
   virtual void DeleteChunks(
-      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) OVERRIDE{
+      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) override{
     DeleteChunksRaw(*chunk_deletes);
   }
 };

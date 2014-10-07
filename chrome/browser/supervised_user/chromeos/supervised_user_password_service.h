@@ -21,7 +21,7 @@ class SupervisedUserPasswordService : public KeyedService {
   SupervisedUserPasswordService();
   virtual ~SupervisedUserPasswordService();
 
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void Init(const std::string& user_id,
             SupervisedUserSharedSettingsService* service);

@@ -39,20 +39,20 @@ class TtsExtensionEngine : public TtsEngineDelegate {
 
   // Overridden from TtsEngineDelegate:
   virtual void GetVoices(content::BrowserContext* browser_context,
-                         std::vector<VoiceData>* out_voices) OVERRIDE;
-  virtual void Speak(Utterance* utterance, const VoiceData& voice) OVERRIDE;
-  virtual void Stop(Utterance* utterance) OVERRIDE;
-  virtual void Pause(Utterance* utterance) OVERRIDE;
-  virtual void Resume(Utterance* utterance) OVERRIDE;
+                         std::vector<VoiceData>* out_voices) override;
+  virtual void Speak(Utterance* utterance, const VoiceData& voice) override;
+  virtual void Stop(Utterance* utterance) override;
+  virtual void Pause(Utterance* utterance) override;
+  virtual void Resume(Utterance* utterance) override;
   virtual bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) OVERRIDE;
+      content::BrowserContext* browser_context) override;
 };
 // Hidden/internal extension function used to allow TTS engine extensions
 // to send events back to the client that's calling tts.speak().
 class ExtensionTtsEngineSendTtsEventFunction : public SyncExtensionFunction {
  private:
   virtual ~ExtensionTtsEngineSendTtsEventFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("ttsEngine.sendTtsEvent", TTSENGINE_SENDTTSEVENT)
 };
 

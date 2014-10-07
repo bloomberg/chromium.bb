@@ -64,7 +64,7 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
+      ScopedVector<content::ResourceThrottle>* throttles) override {
     ChromeResourceDispatcherHostDelegate::RequestBeginning(
         request,
         resource_context,
@@ -78,7 +78,7 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
       const GURL& redirect_url,
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      content::ResourceResponse* response) OVERRIDE {
+      content::ResourceResponse* response) override {
     ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
         redirect_url,
         request,
@@ -100,7 +100,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
  public:
   ChromeResourceDispatcherHostDelegateBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     // Hook navigations with our delegate.
     dispatcher_host_delegate_.reset(new TestDispatcherHostDelegate(
@@ -130,7 +130,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
     }
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     content::ResourceDispatcherHost::Get()->SetDelegate(NULL);
     dispatcher_host_delegate_.reset();
   }

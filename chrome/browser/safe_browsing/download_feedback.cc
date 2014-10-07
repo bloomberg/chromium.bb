@@ -40,13 +40,13 @@ class DownloadFeedbackImpl : public DownloadFeedback {
                        const std::string& ping_response);
   virtual ~DownloadFeedbackImpl();
 
-  virtual void Start(const base::Closure& finish_callback) OVERRIDE;
+  virtual void Start(const base::Closure& finish_callback) override;
 
-  virtual const std::string& GetPingRequestForTesting() const OVERRIDE {
+  virtual const std::string& GetPingRequestForTesting() const override {
     return ping_request_;
   }
 
-  virtual const std::string& GetPingResponseForTesting() const OVERRIDE {
+  virtual const std::string& GetPingResponseForTesting() const override {
     return ping_response_;
   }
 

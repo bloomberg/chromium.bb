@@ -38,13 +38,13 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   bool Init();
 
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() OVERRIDE;
-  virtual void CommandReceived(const std::string& command) OVERRIDE;
-  virtual void OnProceed() OVERRIDE;
-  virtual void OnDontProceed() OVERRIDE;
+  virtual std::string GetHTMLContents() override;
+  virtual void CommandReceived(const std::string& command) override;
+  virtual void OnProceed() override;
+  virtual void OnDontProceed() override;
 
   // SupervisedUserServiceObserver implementation.
-  virtual void OnURLFilterChanged() OVERRIDE;
+  virtual void OnURLFilterChanged() override;
 
   // Returns whether the blocked URL is now allowed. Called initially before the
   // interstitial is shown (to catch race conditions), or when the URL filtering

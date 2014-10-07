@@ -12,7 +12,7 @@ class ContextMenuContentTypePanel : public ContextMenuContentType {
   virtual ~ContextMenuContentTypePanel();
 
   // ContextMenuContentType overrides.
-  virtual bool SupportsGroup(int group) OVERRIDE;
+  virtual bool SupportsGroup(int group) override;
 
  protected:
   ContextMenuContentTypePanel(content::WebContents* web_contents,

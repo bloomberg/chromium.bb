@@ -70,7 +70,7 @@ class SyncEngineInitializer : public SyncTask {
                         const base::FilePath& database_path,
                         leveldb::Env* env_override);
   virtual ~SyncEngineInitializer();
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
 
   scoped_ptr<MetadataDatabase> PassMetadataDatabase();
 

@@ -106,8 +106,8 @@ class DictionaryMatchStatusChecker : public MultiClientStatusChangeChecker {
   DictionaryMatchStatusChecker();
   virtual ~DictionaryMatchStatusChecker();
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
 };
 
 DictionaryMatchStatusChecker::DictionaryMatchStatusChecker()
@@ -131,8 +131,8 @@ class NumDictionaryEntriesStatusChecker
   NumDictionaryEntriesStatusChecker(int index, size_t num_words);
   virtual ~NumDictionaryEntriesStatusChecker();
 
-  virtual bool IsExitConditionSatisfied() OVERRIDE;
-  virtual std::string GetDebugMessage() const OVERRIDE;
+  virtual bool IsExitConditionSatisfied() override;
+  virtual std::string GetDebugMessage() const override;
  private:
   int index_;
   size_t num_words_;

@@ -36,11 +36,11 @@ class FakeSupervisedUserSigninManagerWrapper
  public:
   FakeSupervisedUserSigninManagerWrapper()
       : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
-  virtual std::string GetEffectiveUsername() const OVERRIDE {
+  virtual std::string GetEffectiveUsername() const override {
     return account_;
   }
 
-  virtual std::string GetAccountIdToUse() const OVERRIDE {
+  virtual std::string GetAccountIdToUse() const override {
     return account_;
   }
 
@@ -54,7 +54,7 @@ class StartupControllerTest : public testing::Test {
  public:
   StartupControllerTest() : started_(false) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     profile_.reset(new TestingProfile());
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
@@ -73,7 +73,7 @@ class StartupControllerTest : public testing::Test {
         base::TimeDelta::FromSeconds(0));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     signin_.reset();
     token_service_->Shutdown();

@@ -120,7 +120,7 @@ class RLZTracker : public content::NotificationObserver {
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Used by test code to override the default RLZTracker instance returned
   // by GetInstance().

@@ -34,9 +34,9 @@ class AccountTrackerServiceFactory
 
   // BrowserContextKeyedServiceFactory implementation.
   virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
+      user_prefs::PrefRegistrySyncable* registry) override;
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerServiceFactory);
 };

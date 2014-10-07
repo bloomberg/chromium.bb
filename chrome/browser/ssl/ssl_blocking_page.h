@@ -82,13 +82,13 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
 
  protected:
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() OVERRIDE;
-  virtual void CommandReceived(const std::string& command) OVERRIDE;
-  virtual void OverrideEntry(content::NavigationEntry* entry) OVERRIDE;
+  virtual std::string GetHTMLContents() override;
+  virtual void CommandReceived(const std::string& command) override;
+  virtual void OverrideEntry(content::NavigationEntry* entry) override;
   virtual void OverrideRendererPrefs(
-      content::RendererPreferences* prefs) OVERRIDE;
-  virtual void OnProceed() OVERRIDE;
-  virtual void OnDontProceed() OVERRIDE;
+      content::RendererPreferences* prefs) override;
+  virtual void OnProceed() override;
+  virtual void OnDontProceed() override;
 
  private:
   void NotifyDenyCertificate();

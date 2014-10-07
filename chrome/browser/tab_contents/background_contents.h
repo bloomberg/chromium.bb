@@ -55,25 +55,25 @@ class BackgroundContents : public content::WebContentsDelegate,
   virtual const GURL& GetURL() const;
 
   // content::WebContentsDelegate implementation:
-  virtual void CloseContents(content::WebContents* source) OVERRIDE;
-  virtual bool ShouldSuppressDialogs() OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) override;
+  virtual bool ShouldSuppressDialogs() override;
   virtual void DidNavigateMainFramePostCommit(
-      content::WebContents* tab) OVERRIDE;
+      content::WebContents* tab) override;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
-  virtual bool IsNeverVisible(content::WebContents* web_contents) OVERRIDE;
+                              bool* was_blocked) override;
+  virtual bool IsNeverVisible(content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation:
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  protected:
   // Exposed for testing.

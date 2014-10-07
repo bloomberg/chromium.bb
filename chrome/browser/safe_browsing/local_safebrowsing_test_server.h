@@ -19,16 +19,16 @@ class LocalSafeBrowsingTestServer : public net::LocalTestServer {
 
   virtual ~LocalSafeBrowsingTestServer();
 
-  virtual bool SetPythonPath() const OVERRIDE;
+  virtual bool SetPythonPath() const override;
 
   // Returns the path to safe_browsing_testserver.py.
   virtual bool GetTestServerPath(
-      base::FilePath* testserver_path) const OVERRIDE;
+      base::FilePath* testserver_path) const override;
 
  protected:
   // Adds the --data-file switch. Returns true on success.
   virtual bool GenerateAdditionalArguments(
-      base::DictionaryValue* arguments) const OVERRIDE;
+      base::DictionaryValue* arguments) const override;
 
  private:
   base::FilePath data_file_;

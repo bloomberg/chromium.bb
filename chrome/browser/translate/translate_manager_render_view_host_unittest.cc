@@ -65,7 +65,7 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     details_ =
         *(content::Details<content::LoadCommittedDetails>(details).ptr());
@@ -373,7 +373,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
       BrowserWindow* window,
       content::WebContents* web_contents,
       translate::TranslateStep step,
-      translate::TranslateErrors::Type error_type) OVERRIDE {
+      translate::TranslateErrors::Type error_type) override {
     if (model_) {
       model_->SetViewState(
           TranslateBubbleModelImpl::TranslateStepToViewState(step));
