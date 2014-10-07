@@ -112,14 +112,12 @@ public:
         if (!m_websocket)
             return;
         // These statements are needed to clear WebSocket::m_channel to
-        // avoid ASSERTION failure on ~WebSocket.
+        // avoid ASSERTION failure on ~DOMWebSocket.
         ASSERT(m_websocket->channel());
         ::testing::Mock::VerifyAndClear(m_websocket->channel());
         EXPECT_CALL(channel(), disconnect()).Times(AnyNumber());
 
         m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
-        m_websocket.clear();
-        Heap::collectAllGarbage();
     }
 
     MockWebSocketChannel& channel() { return *m_websocket->channel(); }
