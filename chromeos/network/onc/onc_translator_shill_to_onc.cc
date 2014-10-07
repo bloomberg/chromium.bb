@@ -319,6 +319,14 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
       *shill_dictionary_, NULL /* ignore unknown encoding */);
   if (!ssid.empty())
     onc_object_->SetStringWithoutPathExpansion(::onc::wifi::kSSID, ssid);
+
+  bool link_monitor_disable;
+  if (shill_dictionary_->GetBooleanWithoutPathExpansion(
+          shill::kLinkMonitorDisableProperty, &link_monitor_disable)) {
+    onc_object_->SetBooleanWithoutPathExpansion(
+        ::onc::wifi::kAllowGatewayARPPolling, !link_monitor_disable);
+  }
+
   CopyPropertiesAccordingToSignature();
   TranslateAndAddNestedObject(::onc::wifi::kEAP);
 }

@@ -195,6 +195,7 @@ ONC_EXPORT extern const char k8021X[];
 }  // namespace ethernet
 
 namespace wifi {
+ONC_EXPORT extern const char kAllowGatewayARPPolling[];
 ONC_EXPORT extern const char kAutoConnect[];
 ONC_EXPORT extern const char kBSSID[];
 ONC_EXPORT extern const char kEAP[];

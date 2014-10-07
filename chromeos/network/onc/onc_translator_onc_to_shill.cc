@@ -222,6 +222,14 @@ void LocalTranslator::TranslateWiFi() {
   // We currently only support managed and no adhoc networks.
   shill_dictionary_->SetStringWithoutPathExpansion(shill::kModeProperty,
                                                    shill::kModeManaged);
+
+  bool allow_gateway_arp_polling;
+  if (onc_object_->GetBooleanWithoutPathExpansion(
+          ::onc::wifi::kAllowGatewayARPPolling, &allow_gateway_arp_polling)) {
+    shill_dictionary_->SetBooleanWithoutPathExpansion(
+        shill::kLinkMonitorDisableProperty, !allow_gateway_arp_polling);
+  }
+
   CopyFieldsAccordingToSignature();
 }
 

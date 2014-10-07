@@ -201,6 +201,7 @@ const OncFieldSignature proxy_settings_fields[] = {
 
 const OncFieldSignature wifi_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
+    { ::onc::wifi::kAllowGatewayARPPolling, &kBoolSignature},
     { ::onc::wifi::kAutoConnect, &kBoolSignature},
     { ::onc::wifi::kEAP, &kEAPSignature},
     { ::onc::wifi::kHiddenSSID, &kBoolSignature},

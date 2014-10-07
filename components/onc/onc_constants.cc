@@ -177,6 +177,7 @@ const char kWebProxyAutoDiscoveryUrl[] = "WebProxyAutoDiscoveryUrl";
 }  // namespace ipconfig
 
 namespace wifi {
+const char kAllowGatewayARPPolling[] = "AllowGatewayARPPolling";
 const char kAutoConnect[] = "AutoConnect";
 const char kBSSID[] = "BSSID";
 const char kEAP[] = "EAP";
