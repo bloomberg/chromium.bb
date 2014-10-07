@@ -11,18 +11,12 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
-namespace {
-void* const kCanaryConstant = (void*)0xbaddecafbaddecafLLU;
-}
-
 namespace chromeos {
 
 ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
                          ErrorScreenActor* actor)
     : WizardScreen(screen_observer),
-      canary_1_(kCanaryConstant),
       actor_(actor),
-      canary_2_(kCanaryConstant),
       parent_screen_(OobeDisplay::SCREEN_UNKNOWN),
       weak_factory_(this) {
   CHECK(actor_);
@@ -30,24 +24,21 @@ ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
 }
 
 ErrorScreen::~ErrorScreen() {
-  CHECK(this);
-  CHECK(canary_1_ == kCanaryConstant);
-  CHECK(canary_2_ == kCanaryConstant);
-  CHECK(actor_);
-  actor_->SetDelegate(NULL);
+  if (actor_)
+    actor_->SetDelegate(NULL);
 }
 
 void ErrorScreen::PrepareToShow() {
 }
 
 void ErrorScreen::Show() {
-  DCHECK(actor_);
-  actor_->Show(parent_screen(), NULL);
+  if (actor_)
+    actor_->Show(parent_screen(), NULL);
 }
 
 void ErrorScreen::Hide() {
-  DCHECK(actor_);
-  actor_->Hide();
+  if (actor_)
+    actor_->Hide();
 }
 
 std::string ErrorScreen::GetName() const {
@@ -62,6 +53,10 @@ void ErrorScreen::OnLaunchOobeGuestSession() {
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
                  weak_factory_.GetWeakPtr()));
+}
+
+void ErrorScreen::OnActorDestroyed() {
+  actor_ = nullptr;
 }
 
 void ErrorScreen::OnAuthFailure(const AuthFailure& error) {
@@ -106,44 +101,43 @@ void ErrorScreen::OnOnlineChecked(const std::string& username, bool success) {
 }
 
 void ErrorScreen::FixCaptivePortal() {
-  DCHECK(actor_);
-  actor_->FixCaptivePortal();
+  if (actor_)
+    actor_->FixCaptivePortal();
 }
 
 void ErrorScreen::ShowCaptivePortal() {
-  DCHECK(actor_);
-  actor_->ShowCaptivePortal();
+  if (actor_)
+    actor_->ShowCaptivePortal();
 }
 
 void ErrorScreen::HideCaptivePortal() {
-  DCHECK(actor_);
-  actor_->HideCaptivePortal();
+  if (actor_)
+    actor_->HideCaptivePortal();
 }
 
 void ErrorScreen::SetUIState(UIState ui_state) {
-  DCHECK(actor_);
-  actor_->SetUIState(ui_state);
+  if (actor_)
+    actor_->SetUIState(ui_state);
 }
 
 ErrorScreen::UIState ErrorScreen::GetUIState() const {
-  DCHECK(actor_);
-  return actor_->ui_state();
+  return actor_ ? actor_->ui_state() : UI_STATE_UNKNOWN;
 }
 
 void ErrorScreen::SetErrorState(ErrorState error_state,
                                 const std::string& network) {
-  DCHECK(actor_);
-  actor_->SetErrorState(error_state, network);
+  if (actor_)
+    actor_->SetErrorState(error_state, network);
 }
 
 void ErrorScreen::AllowGuestSignin(bool allow) {
-  DCHECK(actor_);
-  actor_->AllowGuestSignin(allow);
+  if (actor_)
+    actor_->AllowGuestSignin(allow);
 }
 
 void ErrorScreen::ShowConnectingIndicator(bool show) {
-  DCHECK(actor_);
-  actor_->ShowConnectingIndicator(show);
+  if (actor_)
+    actor_->ShowConnectingIndicator(show);
 }
 
 void ErrorScreen::StartGuestSessionAfterOwnershipCheck(

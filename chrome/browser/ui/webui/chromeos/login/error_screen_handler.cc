@@ -49,7 +49,10 @@ ErrorScreenHandler::ErrorScreenHandler(
   DCHECK(network_state_informer_.get());
 }
 
-ErrorScreenHandler::~ErrorScreenHandler() {}
+ErrorScreenHandler::~ErrorScreenHandler() {
+  if (delegate_)
+    delegate_->OnActorDestroyed();
+}
 
 void ErrorScreenHandler::SetDelegate(ErrorScreenActorDelegate* delegate) {
   delegate_ = delegate;
