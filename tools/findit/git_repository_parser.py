@@ -94,7 +94,7 @@ class GitParser(ParserInterface):
           'td')[0].firstChild.nodeValue.split('<')[0]
       revision['author'] = author
       revision['time'] = trs[1].getElementsByTagName(
-          'td')[0].firstChild.nodeValue
+          'td')[1].firstChild.nodeValue
 
       # Retrive and set message.
       revision['message'] = pre.firstChild.nodeValue
