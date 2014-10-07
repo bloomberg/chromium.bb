@@ -78,6 +78,7 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/nacl64.exe',
+          '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
         ],
       },
     }],
