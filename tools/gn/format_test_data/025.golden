@@ -1,7 +1,6 @@
 # Various parenthesis maintenance/trimming.
 if (a.b && c[d] + (x < 4 || z + b)) {
   y = z - (y - (x - !(b - d)))
-
   a += [
     "a",
     "b",

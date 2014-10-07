@@ -1,12 +1,9 @@
 f(aaaaaaaaaaaaaaaaaaa)
-
 f(aaaaaaaaaaaaaaaaaaa, aaaaaaaaaaaaa)
 
 # Exactly 80 wide.
 f(aaaaaaaaaaaaaaaaaaa, aaaaaaaaaaaaa, aaaaaaaaaaaaaaaa, aaaaaaaaaaaaaaaa, aaaaa)
-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)
-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa(
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)
 

@@ -1,0 +1,9 @@
+# Don't separate simple statements in a scope.
+test("something") {
+  if (is_linux) {
+    sources -= [ "file_version_info_unittest.cc" ]
+    sources += [ "nix/xdg_util_unittest.cc" ]
+    defines = [ "USE_SYMBOLIZE" ]
+    configs += [ "//build/config/linux:glib" ]
+  }
+}

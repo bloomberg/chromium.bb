@@ -242,18 +242,13 @@ bool Printer::IsAssignment(const ParseNode* node) {
 
 bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
                                           const ParseNode* b) {
-  // A bunch of imports looks silly at the top of a file separated by blank
-  // lines, even though they are statements.
-  if (a->AsFunctionCall() && b->AsFunctionCall() &&
-      a->AsFunctionCall()->function().value() == "import" &&
-      b->AsFunctionCall()->function().value() == "import") {
-    return false;
-  }
-
-  if (IsAssignment(a) && IsAssignment(b)) {
+  if ((IsAssignment(a) || a->AsFunctionCall()) &&
+      (!a->comments() || a->comments()->after().size() == 0) &&
+      (IsAssignment(b) || b->AsFunctionCall()) &&
+      (!b->comments() || b->comments()->before().size() == 0)) {
     Metrics first = GetLengthOfExpr(a, kPrecedenceLowest);
     Metrics second = GetLengthOfExpr(b, kPrecedenceLowest);
-    if (!first.multiline && !second.multiline)
+    if (!first.multiline || !second.multiline)
       return false;
   }
   return true;
@@ -491,7 +486,9 @@ void Printer::Sequence(SequenceStyle style,
         if (style == kSequenceStyleList && expr_style == kExprStyleRegular) {
           Print(",");
         } else {
-          Newline();
+          if (i < list.size() - 1 &&
+              ShouldAddBlankLineInBetween(list[i], list[i + 1]))
+            Newline();
         }
       }
       ++i;
