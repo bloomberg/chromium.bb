@@ -223,10 +223,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class base::RefCounted<ServiceWorkerVersion>;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
   typedef ServiceWorkerVersion self;
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
   typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
 
   virtual ~ServiceWorkerVersion();
 
@@ -244,7 +245,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                       const GURL& source_url) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void RunStartWorkerCallbacksOnError(ServiceWorkerStatusCode status);
+  void OnStartMessageSent(ServiceWorkerStatusCode status);
 
   void DispatchInstallEventAfterStartWorker(int active_version_id,
                                             const StatusCallback& callback);

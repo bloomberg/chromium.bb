@@ -76,9 +76,11 @@ ServiceWorkerCacheListener::ServiceWorkerCacheListener(
       context_(context),
       next_cache_id_(0),
       weak_factory_(this) {
+  version_->embedded_worker()->AddListener(this);
 }
 
 ServiceWorkerCacheListener::~ServiceWorkerCacheListener() {
+  version_->embedded_worker()->RemoveListener(this);
 }
 
 bool ServiceWorkerCacheListener::OnMessageReceived(
