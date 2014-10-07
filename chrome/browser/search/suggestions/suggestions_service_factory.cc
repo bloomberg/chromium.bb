@@ -14,8 +14,10 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/image_encoder.h"
 #include "components/suggestions/image_fetcher.h"
 #include "components/suggestions/image_manager.h"
+#include "components/suggestions/jpeg/jpeg_image_encoder.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_store.h"
@@ -72,11 +74,13 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   base::FilePath database_dir(
       the_profile->GetPath().Append(FILE_PATH_LITERAL("Thumbnails")));
 
+  scoped_ptr<JpegImageEncoder> image_encoder(new JpegImageEncoder());
   scoped_ptr<ImageFetcherImpl> image_fetcher(
       new ImageFetcherImpl(the_profile->GetRequestContext()));
   scoped_ptr<ImageManager> thumbnail_manager(new ImageManager(
-      image_fetcher.PassAs<ImageFetcher>(),
-      db.PassAs<leveldb_proto::ProtoDatabase<ImageData> >(), database_dir));
+      image_fetcher.Pass(),
+      image_encoder.Pass(),
+      db.Pass(), database_dir));
   return new SuggestionsService(
       the_profile->GetRequestContext(), suggestions_store.Pass(),
       thumbnail_manager.Pass(), blacklist_store.Pass());

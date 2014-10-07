@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "components/suggestions/image_encoder.h"
 #include "components/suggestions/image_fetcher.h"
 #include "components/suggestions/image_fetcher_delegate.h"
 #include "components/suggestions/image_manager.h"
+#include "components/suggestions/jpeg/jpeg_image_encoder.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,6 +49,15 @@ class MockImageFetcher : public suggestions::ImageFetcher {
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
 };
 
+class MockImageEncoder : public suggestions::ImageEncoder {
+ public:
+  MockImageEncoder() {}
+  virtual ~MockImageEncoder() {}
+  MOCK_METHOD1(DecodeImage,
+               SkBitmap*(const std::vector<unsigned char>&));
+  MOCK_METHOD2(EncodeImage, bool(const SkBitmap&, std::vector<unsigned char>*));
+};
+
 class ImageManagerTest : public testing::Test {
  public:
   ImageManagerTest()
@@ -55,7 +67,8 @@ class ImageManagerTest : public testing::Test {
 
   virtual void SetUp() override {
     fake_db_ = new FakeDB<ImageData>(&db_model_);
-    image_manager_.reset(CreateImageManager(fake_db_));
+    jpeg_image_encoder_ = new JpegImageEncoder();
+    image_manager_.reset(CreateImageManager(fake_db_, jpeg_image_encoder_));
   }
 
   virtual void TearDown() override {
@@ -92,7 +105,7 @@ class ImageManagerTest : public testing::Test {
     ImageData data;
     data.set_url(url);
     std::vector<unsigned char> encoded;
-    EXPECT_TRUE(ImageManager::EncodeImage(bm, &encoded));
+    EXPECT_TRUE(jpeg_image_encoder_->EncodeImage(bm, &encoded));
     data.set_data(std::string(encoded.begin(), encoded.end()));
     return data;
   }
@@ -107,11 +120,13 @@ class ImageManagerTest : public testing::Test {
     loop->Quit();
   }
 
-  ImageManager* CreateImageManager(FakeDB<ImageData>* fake_db) {
+  ImageManager* CreateImageManager(FakeDB<ImageData>* fake_db,
+                                   JpegImageEncoder* jpeg_image_encoder) {
     mock_image_fetcher_ = new StrictMock<MockImageFetcher>();
     EXPECT_CALL(*mock_image_fetcher_, SetImageFetcherDelegate(_));
     return new ImageManager(
         scoped_ptr<ImageFetcher>(mock_image_fetcher_),
+        scoped_ptr<ImageEncoder>(jpeg_image_encoder),
         scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> >(fake_db),
         FakeDB<ImageData>::DirectoryForTestDB());
   }
@@ -119,6 +134,7 @@ class ImageManagerTest : public testing::Test {
   EntryMap db_model_;
   // Owned by the ImageManager under test.
   FakeDB<ImageData>* fake_db_;
+  JpegImageEncoder* jpeg_image_encoder_;
 
   MockImageFetcher* mock_image_fetcher_;
 
@@ -175,7 +191,7 @@ TEST_F(ImageManagerTest, GetImageForURLNetworkCacheHit) {
   // Create the ImageManager with an added entry in the database.
   AddEntry(GetSampleImageData(kTestUrl1), &db_model_);
   FakeDB<ImageData>* fake_db = new FakeDB<ImageData>(&db_model_);
-  image_manager_.reset(CreateImageManager(fake_db));
+  image_manager_.reset(CreateImageManager(fake_db, new JpegImageEncoder()));
   image_manager_->Initialize(suggestions_profile);
   fake_db->InitCallback(true);
   fake_db->LoadCallback(true);
