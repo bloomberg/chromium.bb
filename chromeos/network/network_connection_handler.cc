@@ -325,10 +325,11 @@ void NetworkConnectionHandler::DisconnectNetwork(
     InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
     return;
   }
-  if (!network->IsConnectedState()) {
+  if (!network->IsConnectedState() && !network->IsConnectingState()) {
     InvokeErrorCallback(service_path, error_callback, kErrorNotConnected);
     return;
   }
+  pending_requests_.erase(service_path);
   CallShillDisconnect(service_path, success_callback, error_callback);
 }
 
