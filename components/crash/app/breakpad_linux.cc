@@ -1313,16 +1313,15 @@ void HandleCrashDump(const BreakpadInfo& info) {
   MimeWriter writer(temp_file_fd, mime_boundary);
 #endif
   {
-    // TODO(thestig) Do not use this inside a compromised context.
-    std::string product_name;
-    std::string version;
+    const char* product_name = "";
+    const char* version = "";
 
     GetCrashReporterClient()->GetProductNameAndVersion(&product_name, &version);
 
     writer.AddBoundary();
-    writer.AddPairString("prod", product_name.c_str());
+    writer.AddPairString("prod", product_name);
     writer.AddBoundary();
-    writer.AddPairString("ver", version.c_str());
+    writer.AddPairString("ver", version);
     writer.AddBoundary();
     if (info.pid > 0) {
       char pid_value_buf[kUint64StringSize];

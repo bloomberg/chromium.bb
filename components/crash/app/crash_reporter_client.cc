@@ -79,8 +79,8 @@ void CrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
-void CrashReporterClient::GetProductNameAndVersion(std::string* product_name,
-                                                   std::string* version) {
+void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
+                                                   const char** version) {
 }
 
 base::FilePath CrashReporterClient::GetReporterLogFilename() {

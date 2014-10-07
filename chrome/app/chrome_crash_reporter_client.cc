@@ -285,8 +285,8 @@ bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
 void ChromeCrashReporterClient::GetProductNameAndVersion(
-    std::string* product_name,
-    std::string* version) {
+    const char** product_name,
+    const char** version) {
   DCHECK(product_name);
   DCHECK(version);
 #if defined(OS_ANDROID)

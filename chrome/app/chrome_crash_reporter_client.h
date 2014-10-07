@@ -40,8 +40,8 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
-  virtual void GetProductNameAndVersion(std::string* product_name,
-                                        std::string* version) OVERRIDE;
+  virtual void GetProductNameAndVersion(const char** product_name,
+                                        const char** version) OVERRIDE;
   virtual base::FilePath GetReporterLogFilename() OVERRIDE;
 #endif
 

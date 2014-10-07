@@ -28,8 +28,8 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
   // Returns a textual description of the product type and version to include
   // in the crash report.
-  virtual void GetProductNameAndVersion(std::string* product_name,
-                                        std::string* version) OVERRIDE;
+  virtual void GetProductNameAndVersion(const char** product_name,
+                                        const char** version) OVERRIDE;
 
   virtual base::FilePath GetReporterLogFilename() OVERRIDE;
 #endif
