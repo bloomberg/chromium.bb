@@ -209,24 +209,16 @@ bool CheckServiceProcessReady() {
     ready = false;
   } else {
     chrome::VersionInfo version_info;
-    if (!version_info.is_valid()) {
+    Version running_version(version_info.Version());
+    if (!running_version.IsValid()) {
       // Our own version is invalid. This is an error case. Pretend that we
       // are out of date.
       NOTREACHED();
       ready = true;
-    }
-    else {
-      Version running_version(version_info.Version());
-      if (!running_version.IsValid()) {
-        // Our own version is invalid. This is an error case. Pretend that we
-        // are out of date.
-        NOTREACHED();
-        ready = true;
-      } else if (running_version.CompareTo(service_version) > 0) {
-        ready = false;
-      } else {
-        ready = true;
-      }
+    } else if (running_version.CompareTo(service_version) > 0) {
+      ready = false;
+    } else {
+      ready = true;
     }
   }
   if (!ready) {

@@ -87,11 +87,6 @@ std::string LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
 #elif defined(OS_MACOSX)
   user_agent += "MAC ";
 #endif
-  if (!version_info.is_valid()) {
-    DLOG(ERROR) << "Unable to create chrome::VersionInfo object";
-    return user_agent;
-  }
-
   user_agent += version_info.Version();
   user_agent += " (" + version_info.LastChange() + ")";
   if (!version_info.IsOfficialBuild()) {

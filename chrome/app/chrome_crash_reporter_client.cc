@@ -35,7 +35,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
 #include "chrome/browser/crash_upload_list.h"
-#include "chrome/common/chrome_version_info_posix.h"
+#include "chrome/common/chrome_version_info_values.h"
 #endif
 
 #if defined(OS_POSIX)

@@ -41,17 +41,15 @@ ClientIncidentReport_EnvironmentData_Process_Channel MapChannelToProtobuf(
 // Populates |process| with data related to the chrome browser process.
 void CollectProcessData(ClientIncidentReport_EnvironmentData_Process* process) {
   chrome::VersionInfo version_info;
-  if (version_info.is_valid()) {
-    // TODO(grt): Move this logic into VersionInfo (it also appears in
-    // ChromeMetricsServiceClient).
-    std::string version(version_info.Version());
+  // TODO(grt): Move this logic into VersionInfo (it also appears in
+  // ChromeMetricsServiceClient).
+  std::string version(version_info.Version());
 #if defined(ARCH_CPU_64_BITS)
-    version += "-64";
+  version += "-64";
 #endif  // defined(ARCH_CPU_64_BITS)
-    if (!version_info.IsOfficialBuild())
-      version += "-devel";
-    process->set_version(version);
-  }
+  if (!version_info.IsOfficialBuild())
+    version += "-devel";
+  process->set_version(version);
 
   process->set_chrome_update_channel(
       MapChannelToProtobuf(chrome::VersionInfo::GetChannel()));

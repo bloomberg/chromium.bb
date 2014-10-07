@@ -241,12 +241,8 @@ if (is_linux || is_android) {
   import("//chrome/version.gni")
   process_version("version") {
     visibility = [ ":common" ]
-    source = "chrome_version_info_posix.h.version"
-    output = "$target_gen_dir/chrome_version_info_posix.h"
-  }
-} else {
-  # Other platforms have a different way to do versioning.
-  group("version") {
+    source = "chrome_version_info_values.h.version"
+    output = "$target_gen_dir/chrome_version_info_values.h"
   }
 }
 

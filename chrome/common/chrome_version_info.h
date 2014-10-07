@@ -30,12 +30,6 @@ class VersionInfo {
   VersionInfo();
   ~VersionInfo();
 
-  // In the rare case where we fail to get the version info,
-  // is_valid() will return false.  The other functions will return
-  // the empty string in this case, so it's not harmful if you don't
-  // check is_valid().
-  bool is_valid() const;
-
   // E.g. "Chrome/a.b.c.d"
   std::string ProductNameAndVersionForUserAgent() const;
 

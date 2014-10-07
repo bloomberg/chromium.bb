@@ -31,7 +31,7 @@ SafeBrowsingProtocolConfig::~SafeBrowsingProtocolConfig() {
 // static
 std::string SafeBrowsingProtocolManagerHelper::Version() {
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid() || version_info.Version().empty())
+  if (version_info.Version().empty())
     return "0.1";
   else
     return version_info.Version();

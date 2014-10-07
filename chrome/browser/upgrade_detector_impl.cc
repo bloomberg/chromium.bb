@@ -315,10 +315,6 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
 
   // Get the version of the currently *running* instance of Chrome.
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    NOTREACHED() << "Failed to get current file version";
-    return;
-  }
   Version running_version(version_info.Version());
   if (!running_version.IsValid()) {
     NOTREACHED();

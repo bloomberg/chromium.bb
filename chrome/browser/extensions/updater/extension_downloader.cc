@@ -672,8 +672,7 @@ void ExtensionDownloader::DetermineUpdates(
       // First determine the browser version if we haven't already.
       if (!browser_version.IsValid()) {
         chrome::VersionInfo version_info;
-        if (version_info.is_valid())
-          browser_version = Version(version_info.Version());
+        browser_version = Version(version_info.Version());
       }
       Version browser_min_version(update->browser_min_version);
       if (browser_version.IsValid() && browser_min_version.IsValid() &&

@@ -259,9 +259,6 @@ bool VariationsService::CreateTrialsFromSeed() {
     return false;
 
   const chrome::VersionInfo current_version_info;
-  if (!current_version_info.is_valid())
-    return false;
-
   const base::Version current_version(current_version_info.Version());
   if (!current_version.IsValid())
     return false;

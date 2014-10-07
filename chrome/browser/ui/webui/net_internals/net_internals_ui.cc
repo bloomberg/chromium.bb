@@ -1705,22 +1705,17 @@ base::Value* NetInternalsUI::GetConstants() {
 
     chrome::VersionInfo version_info;
 
-    if (!version_info.is_valid()) {
-      DLOG(ERROR) << "Unable to create chrome::VersionInfo";
-    } else {
-      // We have everything we need to send the right values.
-      dict->SetString("name", version_info.Name());
-      dict->SetString("version", version_info.Version());
-      dict->SetString("cl", version_info.LastChange());
-      dict->SetString("version_mod",
-                      chrome::VersionInfo::GetVersionStringModifier());
-      dict->SetString("official",
-                      version_info.IsOfficialBuild() ? "official" :
-                                                       "unofficial");
-      dict->SetString("os_type", version_info.OSType());
-      dict->SetString("command_line",
-                      CommandLine::ForCurrentProcess()->GetCommandLineString());
-    }
+    // We have everything we need to send the right values.
+    dict->SetString("name", version_info.Name());
+    dict->SetString("version", version_info.Version());
+    dict->SetString("cl", version_info.LastChange());
+    dict->SetString("version_mod",
+                    chrome::VersionInfo::GetVersionStringModifier());
+    dict->SetString("official",
+                    version_info.IsOfficialBuild() ? "official" : "unofficial");
+    dict->SetString("os_type", version_info.OSType());
+    dict->SetString("command_line",
+                    CommandLine::ForCurrentProcess()->GetCommandLineString());
 
     constants_dict->Set("clientInfo", dict);
   }

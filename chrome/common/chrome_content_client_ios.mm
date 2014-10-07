@@ -38,7 +38,7 @@ void ChromeContentClient::AddAdditionalSchemes(
 std::string ChromeContentClient::GetProduct() const {
   chrome::VersionInfo version_info;
   std::string product("CriOS/");
-  product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
+  product += version_info.Version();
   return product;
 }
 

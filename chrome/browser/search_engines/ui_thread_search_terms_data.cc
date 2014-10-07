@@ -178,17 +178,14 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
 // VersionInfo.
 std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   chrome::VersionInfo version_info;
-  if (version_info.is_valid()) {
-    std::string version(version_info.Name() + " " + version_info.Version());
-    if (version_info.IsOfficialBuild())
-      version += " (Official)";
-    version += " " + version_info.OSType();
-    std::string modifier(version_info.GetVersionStringModifier());
-    if (!modifier.empty())
-      version += " " + modifier;
-    return version;
-  }
-  return "unknown";
+  std::string version(version_info.Name() + " " + version_info.Version());
+  if (version_info.IsOfficialBuild())
+    version += " (Official)";
+  version += " " + version_info.OSType();
+  std::string modifier(version_info.GetVersionStringModifier());
+  if (!modifier.empty())
+    version += " " + modifier;
+  return version;
 }
 
 // static

@@ -124,8 +124,7 @@ void MemoryDetails::CollectProcessData(
       TCHAR name[MAX_PATH];
       if (index2 == CHROME_BROWSER || index2 == CHROME_NACL_PROCESS) {
         chrome::VersionInfo version_info;
-        if (version_info.is_valid())
-          info.version = base::ASCIIToWide(version_info.Version());
+        info.version = base::ASCIIToWide(version_info.Version());
         // Check if this is one of the child processes whose data we collected
         // on the IO thread, and if so copy over that data.
         for (size_t child = 0; child < child_info.size(); child++) {

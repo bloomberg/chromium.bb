@@ -26,7 +26,6 @@ namespace {
 PrinterTags PreparePrinterTags(const PrinterTags& printer_tags) {
   PrinterTags printer_tags_out = printer_tags;
   chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
   printer_tags_out[kChromeVersionTagName] =
       version_info.CreateVersionString();
   printer_tags_out[kSystemNameTagName] =

@@ -533,60 +533,56 @@
       # GN version: //chrome/common:version
       'target_name': 'common_version',
       'type': 'none',
-      'conditions': [
-        ['os_posix == 1 and OS != "mac" and OS != "ios"', {
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)',
-            ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+      },
+      # Because generate_version generates a header, we must set the
+      # hard_dependency flag.
+      'hard_dependency': 1,
+      'actions': [
+        {
+          'action_name': 'generate_version',
+          'variables': {
+            'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+            'version_py_path': '<(DEPTH)/build/util/version.py',
+            'version_path': 'VERSION',
+            'template_input_path': 'common/chrome_version_info_values.h.version',
           },
-          # Because posix_version generates a header, we must set the
-          # hard_dependency flag.
-          'hard_dependency': 1,
-          'actions': [
-            {
-              'action_name': 'posix_version',
+          'conditions': [
+            [ 'branding == "Chrome"', {
               'variables': {
-                'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
-                'version_py_path': '<(DEPTH)/build/util/version.py',
-                'version_path': 'VERSION',
-                'template_input_path': 'common/chrome_version_info_posix.h.version',
+                  'branding_path':
+                    'app/theme/google_chrome/BRANDING',
               },
-              'conditions': [
-                [ 'branding == "Chrome"', {
-                  'variables': {
-                     'branding_path':
-                       'app/theme/google_chrome/BRANDING',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_path':
-                       'app/theme/chromium/BRANDING',
-                  },
-                }],
-              ],
-              'inputs': [
-                '<(template_input_path)',
-                '<(version_path)',
-                '<(branding_path)',
-                '<(lastchange_path)',
-              ],
-              'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version_info_posix.h',
-              ],
-              'action': [
-                'python',
-                '<(version_py_path)',
-                '-f', '<(version_path)',
-                '-f', '<(branding_path)',
-                '-f', '<(lastchange_path)',
-                '<(template_input_path)',
-                '<@(_outputs)',
-              ],
-              'message': 'Generating version information',
-            },
+            }, { # else branding!="Chrome"
+              'variables': {
+                  'branding_path':
+                    'app/theme/chromium/BRANDING',
+              },
+            }],
           ],
-        }],
+          'inputs': [
+            '<(template_input_path)',
+            '<(version_path)',
+            '<(branding_path)',
+            '<(lastchange_path)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version_info_values.h',
+          ],
+          'action': [
+            'python',
+            '<(version_py_path)',
+            '-f', '<(version_path)',
+            '-f', '<(branding_path)',
+            '-f', '<(lastchange_path)',
+            '<(template_input_path)',
+            '<@(_outputs)',
+          ],
+          'message': 'Generating version information',
+        },
       ],
     },
     {

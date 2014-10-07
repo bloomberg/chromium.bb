@@ -80,9 +80,6 @@ std::string BuildOSCpuInfo() {
 std::string MakeUserAgentForServiceProcess() {
   std::string user_agent;
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    DLOG(ERROR) << "Unable to create chrome::VersionInfo object";
-  }
   std::string extra_version_info;
   if (!version_info.IsOfficialBuild())
     extra_version_info = "-devel";

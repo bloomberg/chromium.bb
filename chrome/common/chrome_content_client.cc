@@ -411,8 +411,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 
 std::string GetProduct() {
   chrome::VersionInfo version_info;
-  return version_info.is_valid() ?
-      version_info.ProductNameAndVersionForUserAgent() : std::string();
+  return version_info.ProductNameAndVersionForUserAgent();
 }
 
 }  // namespace

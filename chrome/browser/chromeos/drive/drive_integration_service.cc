@@ -78,9 +78,7 @@ std::string GetDriveUserAgent() {
   const char kDriveClientName[] = "chromedrive";
 
   chrome::VersionInfo version_info;
-  const std::string version = (version_info.is_valid() ?
-                               version_info.Version() :
-                               std::string("unknown"));
+  const std::string version = version_info.Version();
 
   // This part is <client_name>/<version>.
   const char kLibraryInfo[] = "chrome-cc/none";

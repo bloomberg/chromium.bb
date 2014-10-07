@@ -359,10 +359,6 @@ class VersionTest : public DiagnosticsTest {
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     chrome::VersionInfo version_info;
-    if (!version_info.is_valid()) {
-      RecordFailure(DIAG_RECON_NO_VERSION, "No Version");
-      return true;
-    }
     std::string current_version = version_info.Version();
     if (current_version.empty()) {
       RecordFailure(DIAG_RECON_EMPTY_VERSION, "Empty Version");

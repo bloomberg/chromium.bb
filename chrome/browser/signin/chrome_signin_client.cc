@@ -177,8 +177,6 @@ bool ChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
 
 std::string ChromeSigninClient::GetProductVersion() {
   chrome::VersionInfo chrome_version;
-  if (!chrome_version.is_valid())
-    return "invalid";
   return chrome_version.CreateVersionString();
 }
 

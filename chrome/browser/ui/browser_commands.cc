@@ -1131,9 +1131,7 @@ void ToggleRequestTabletSite(Browser* browser) {
   } else {
     entry->SetIsOverridingUserAgent(true);
     chrome::VersionInfo version_info;
-    std::string product;
-    if (version_info.is_valid())
-      product = version_info.ProductNameAndVersionForUserAgent();
+    std::string product = version_info.ProductNameAndVersionForUserAgent();
     current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
         kOsOverrideForTabletSite, product));
   }

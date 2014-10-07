@@ -312,7 +312,6 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
 // static
 base::string16 HelpHandler::BuildBrowserVersionString() {
   chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
 
   std::string version = version_info.Version();
 

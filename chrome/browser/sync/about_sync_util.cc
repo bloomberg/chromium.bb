@@ -143,8 +143,6 @@ std::string GetVersionString() {
   // Build a version string that matches MakeUserAgentForSyncApi with the
   // addition of channel info and proper OS names.
   chrome::VersionInfo chrome_version;
-  if (!chrome_version.is_valid())
-    return "invalid";
   // GetVersionStringModifier returns empty string for stable channel or
   // unofficial builds, the channel string otherwise. We want to have "-devel"
   // for unofficial builds only.
