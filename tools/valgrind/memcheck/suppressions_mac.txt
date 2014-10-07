@@ -232,9 +232,5 @@
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEiRKNS_13TaskStopwatchE
    fun:_ZN15tracked_objects10ThreadData31TallyRunOnNamedThreadIfTrackingERKN4base12TrackingInfoERKNS_13TaskStopwatchE
-   fun:_ZN4base5debug13TaskAnnotator7RunTaskEPKcS3_RKNS_11PendingTaskE
-   fun:_ZN4base11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN4base11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN4base11MessageLoop6DoWorkEv
 }
 
