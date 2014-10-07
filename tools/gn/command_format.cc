@@ -113,6 +113,13 @@ class Printer {
   // Whether there's a blank separator line at the current position.
   bool HaveBlankLine();
 
+  bool IsAssignment(const ParseNode* node);
+
+  // Heuristics to decide if there should be a blank line added between two
+  // items. For various "small" items, it doesn't look nice if there's too much
+  // vertical whitespace added.
+  bool ShouldAddBlankLineInBetween(const ParseNode* a, const ParseNode* b);
+
   // Get the 0-based x position on the current line.
   int CurrentColumn();
 
@@ -227,6 +234,31 @@ bool Printer::HaveBlankLine() {
   return n > 2 && output_[n - 1] == '\n' && output_[n - 2] == '\n';
 }
 
+bool Printer::IsAssignment(const ParseNode* node) {
+  return node->AsBinaryOp() && (node->AsBinaryOp()->op().value() == "=" ||
+                                node->AsBinaryOp()->op().value() == "+=" ||
+                                node->AsBinaryOp()->op().value() == "-=");
+}
+
+bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
+                                          const ParseNode* b) {
+  // A bunch of imports looks silly at the top of a file separated by blank
+  // lines, even though they are statements.
+  if (a->AsFunctionCall() && b->AsFunctionCall() &&
+      a->AsFunctionCall()->function().value() == "import" &&
+      b->AsFunctionCall()->function().value() == "import") {
+    return false;
+  }
+
+  if (IsAssignment(a) && IsAssignment(b)) {
+    Metrics first = GetLengthOfExpr(a, kPrecedenceLowest);
+    Metrics second = GetLengthOfExpr(b, kPrecedenceLowest);
+    if (!first.multiline && !second.multiline)
+      return false;
+  }
+  return true;
+}
+
 int Printer::CurrentColumn() {
   int n = 0;
   while (n < static_cast<int>(output_.size()) &&
@@ -261,8 +293,11 @@ void Printer::Block(const ParseNode* root) {
         Newline();
       }
     }
-    if (i < block->statements().size() - 1)
+    if (i < block->statements().size() - 1 &&
+        (ShouldAddBlankLineInBetween(block->statements()[i],
+                                     block->statements()[i + 1]))) {
       Newline();
+    }
     ++i;
   }
 
