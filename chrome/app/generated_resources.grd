@@ -6955,16 +6955,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
-        This page includes script from unauthenticated sources.
+        This page is trying to load scripts from unauthenticated sources.
       </message>
       <if expr="use_titlecase">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-          Load unsafe script
+          Load unsafe scripts
         </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-          Load unsafe script
+          Load unsafe scripts
         </message>
       </if>
       <if expr="not is_android and use_titlecase">
