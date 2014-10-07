@@ -26,6 +26,7 @@ struct NetAddressIPv6 {
 
 struct NetAddress {
   NetAddressFamily family = UNSPECIFIED;
+
   // At most one of the following fields is non-NULL depending on the value of
   // |family|.
   NetAddressIPv4? ipv4;
