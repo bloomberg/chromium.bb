@@ -79,11 +79,11 @@ class PluginChannel::MessageFilter : public IPC::MessageFilter {
   }
 
   // IPC::MessageFilter:
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+  virtual void OnFilterAdded(IPC::Sender* sender) override {
     sender_ = sender;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(PluginChannel::MessageFilter, message)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginMsg_Init, OnInit)
       IPC_MESSAGE_HANDLER(PluginMsg_SignalModalDialogEvent,

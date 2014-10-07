@@ -28,10 +28,10 @@ class WebPluginAcceleratedSurfaceProxy : public WebPluginAcceleratedSurface {
   virtual ~WebPluginAcceleratedSurfaceProxy();
 
   // WebPluginAcceleratedSurface implementation.
-  virtual void SetSize(const gfx::Size& size) OVERRIDE;
-  virtual CGLContextObj context() OVERRIDE;
-  virtual void StartDrawing() OVERRIDE;
-  virtual void EndDrawing() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) override;
+  virtual CGLContextObj context() override;
+  virtual void StartDrawing() override;
+  virtual void EndDrawing() override;
 
  private:
   WebPluginAcceleratedSurfaceProxy(WebPluginProxy* plugin_proxy,

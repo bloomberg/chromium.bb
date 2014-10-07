@@ -26,7 +26,7 @@ class PluginThread : public ChildThread {
  public:
   PluginThread();
   virtual ~PluginThread();
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns the one plugin thread.
   static PluginThread* current();
@@ -36,7 +36,7 @@ class PluginThread : public ChildThread {
   void SetForcefullyTerminatePluginProcess();
 
  private:
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
 
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool incognito);

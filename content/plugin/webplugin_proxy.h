@@ -51,21 +51,21 @@ class WebPluginProxy : public WebPlugin,
   void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
 
   // WebPlugin overrides
-  virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
-  virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
-  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
-  virtual void CancelResource(unsigned long id) OVERRIDE;
-  virtual void Invalidate() OVERRIDE;
-  virtual void InvalidateRect(const gfx::Rect& rect) OVERRIDE;
-  virtual NPObject* GetWindowScriptNPObject() OVERRIDE;
-  virtual NPObject* GetPluginElement() OVERRIDE;
+  virtual void SetWindow(gfx::PluginWindowHandle window) override;
+  virtual void SetAcceptsInputEvents(bool accepts) override;
+  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) override;
+  virtual void CancelResource(unsigned long id) override;
+  virtual void Invalidate() override;
+  virtual void InvalidateRect(const gfx::Rect& rect) override;
+  virtual NPObject* GetWindowScriptNPObject() override;
+  virtual NPObject* GetPluginElement() override;
   virtual bool FindProxyForUrl(const GURL& url,
-                               std::string* proxy_list) OVERRIDE;
+                               std::string* proxy_list) override;
   virtual void SetCookie(const GURL& url,
                          const GURL& first_party_for_cookies,
-                         const std::string& cookie) OVERRIDE;
+                         const std::string& cookie) override;
   virtual std::string GetCookies(const GURL& url,
-                                 const GURL& first_party_for_cookies) OVERRIDE;
+                                 const GURL& first_party_for_cookies) override;
   virtual void HandleURLRequest(const char* url,
                                 const char* method,
                                 const char* target,
@@ -73,42 +73,42 @@ class WebPluginProxy : public WebPlugin,
                                 unsigned int len,
                                 int notify_id,
                                 bool popups_allowed,
-                                bool notify_redirects) OVERRIDE;
+                                bool notify_redirects) override;
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer0,
                       const TransportDIB::Handle& windowless_buffer1,
                       int windowless_buffer_index);
-  virtual void CancelDocumentLoad() OVERRIDE;
+  virtual void CancelDocumentLoad() override;
   virtual void InitiateHTTPRangeRequest(
-      const char* url, const char* range_info, int range_request_id) OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+      const char* url, const char* range_info, int range_request_id) override;
+  virtual void DidStartLoading() override;
+  virtual void DidStopLoading() override;
   virtual void SetDeferResourceLoading(unsigned long resource_id,
-                                       bool defer) OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+                                       bool defer) override;
+  virtual bool IsOffTheRecord() override;
   virtual void ResourceClientDeleted(
-      WebPluginResourceClient* resource_client) OVERRIDE;
-  virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
-  virtual bool CheckIfRunInsecureContent(const GURL& url) OVERRIDE;
+      WebPluginResourceClient* resource_client) override;
+  virtual void URLRedirectResponse(bool allow, int resource_id) override;
+  virtual bool CheckIfRunInsecureContent(const GURL& url) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window);
 #endif
 #if defined(OS_MACOSX)
-  virtual void FocusChanged(bool focused) OVERRIDE;
-  virtual void StartIme() OVERRIDE;
+  virtual void FocusChanged(bool focused) override;
+  virtual void StartIme() override;
   virtual WebPluginAcceleratedSurface*
-      GetAcceleratedSurface(gfx::GpuPreference gpu_preference) OVERRIDE;
-  virtual void AcceleratedPluginEnabledRendering() OVERRIDE;
+      GetAcceleratedSurface(gfx::GpuPreference gpu_preference) override;
+  virtual void AcceleratedPluginEnabledRendering() override;
   virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
                                                    int32 height,
-                                                   uint32 surface_id) OVERRIDE;
-  virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
+                                                   uint32 surface_id) override;
+  virtual void AcceleratedPluginSwappedIOSurface() override;
 #endif
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // class-specific methods
 
