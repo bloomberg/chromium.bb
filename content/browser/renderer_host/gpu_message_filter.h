@@ -81,10 +81,10 @@ class GpuMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
-  base::WeakPtrFactory<GpuMessageFilter> weak_ptr_factory_;
-
   typedef std::vector<linked_ptr<FrameSubscription> > FrameSubscriptionList;
   FrameSubscriptionList frame_subscription_list_;
+
+  base::WeakPtrFactory<GpuMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
 };
