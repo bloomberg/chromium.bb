@@ -13,15 +13,19 @@
 
 namespace blink {
 
+class WebFederatedCredential;
+
 class FederatedCredential FINAL : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    static FederatedCredential* create(WebFederatedCredential*);
     static FederatedCredential* create(const String& id, const String& name, const String& avatar, const String& federation, ExceptionState&);
 
     // FederatedCredential.idl
     const KURL& federation() const;
 
 private:
+    FederatedCredential(WebFederatedCredential*);
     FederatedCredential(const String& id, const String& name, const KURL& avatar, const KURL& federation);
 };
 

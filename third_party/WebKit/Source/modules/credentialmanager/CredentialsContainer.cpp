@@ -13,12 +13,14 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
+#include "modules/credentialmanager/FederatedCredential.h"
 #include "modules/credentialmanager/LocalCredential.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCredential.h"
 #include "public/platform/WebCredentialManagerClient.h"
 #include "public/platform/WebCredentialManagerError.h"
+#include "public/platform/WebFederatedCredential.h"
 #include "public/platform/WebLocalCredential.h"
 
 namespace blink {
@@ -69,8 +71,11 @@ public:
             return;
         }
 
-        // FIXME: Split this into Local/Federated types. Right now it's hard-coded to be a LocalCredential. :(
-        m_resolver->resolve(LocalCredential::create(static_cast<WebLocalCredential*>(credential)));
+        ASSERT(credential->isLocalCredential() || credential->isFederatedCredential());
+        if (credential->isLocalCredential())
+            m_resolver->resolve(LocalCredential::create(static_cast<WebLocalCredential*>(credential)));
+        else
+            m_resolver->resolve(FederatedCredential::create(static_cast<WebFederatedCredential*>(credential)));
     }
 
     virtual void onError(WebCredentialManagerError* reason) OVERRIDE

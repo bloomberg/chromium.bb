@@ -7,8 +7,14 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "platform/credentialmanager/PlatformFederatedCredential.h"
+#include "public/platform/WebFederatedCredential.h"
 
 namespace blink {
+
+FederatedCredential* FederatedCredential::create(WebFederatedCredential* webFederatedCredential)
+{
+    return new FederatedCredential(webFederatedCredential);
+}
 
 FederatedCredential* FederatedCredential::create(const String& id, const String& name, const String& avatar, const String& federation, ExceptionState& exceptionState)
 {
@@ -17,6 +23,11 @@ FederatedCredential* FederatedCredential::create(const String& id, const String&
     if (exceptionState.hadException())
         return nullptr;
     return new FederatedCredential(id, name, avatarURL, federationURL);
+}
+
+FederatedCredential::FederatedCredential(WebFederatedCredential* webFederatedCredential)
+    : Credential(webFederatedCredential->platformCredential())
+{
 }
 
 FederatedCredential::FederatedCredential(const String& id, const String& name, const KURL& avatar, const KURL& federation)
