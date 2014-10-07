@@ -67,7 +67,7 @@ class ChromotingJniRuntime {
   // Returns the client for the currently-active session. Do not call if
   // |session| is null.
   scoped_refptr<ChromotingJniInstance> session() {
-    DCHECK(session_);
+    DCHECK(session_.get());
     return session_;
   }
 
