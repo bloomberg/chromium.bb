@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class SVGPointListTearOff FINAL
+class SVGPointListTearOff final
     : public SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

@@ -39,7 +39,7 @@ class RenderBox;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
-class SVGImage FINAL : public Image {
+class SVGImage final : public Image {
 public:
     static PassRefPtr<SVGImage> create(ImageObserver* observer)
     {
@@ -50,17 +50,17 @@ public:
 
     RenderBox* embeddedContentBox() const;
 
-    virtual bool isSVGImage() const OVERRIDE { return true; }
-    virtual IntSize size() const OVERRIDE { return m_intrinsicSize; }
+    virtual bool isSVGImage() const override { return true; }
+    virtual IntSize size() const override { return m_intrinsicSize; }
     void setURL(const KURL& url) { m_url = url; }
 
-    virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE;
+    virtual bool currentFrameHasSingleSecurityOrigin() const override;
 
-    virtual void startAnimation(CatchUpAnimation = CatchUp) OVERRIDE;
-    virtual void stopAnimation() OVERRIDE;
-    virtual void resetAnimation() OVERRIDE;
+    virtual void startAnimation(CatchUpAnimation = CatchUp) override;
+    virtual void stopAnimation() override;
+    virtual void resetAnimation() override;
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
 
     // Returns the SVG image document's frame.
     FrameView* frameView() const;
@@ -76,24 +76,24 @@ private:
     virtual ~SVGImage();
 
 
-    virtual String filenameExtension() const OVERRIDE;
+    virtual String filenameExtension() const override;
 
-    virtual void setContainerSize(const IntSize&) OVERRIDE;
+    virtual void setContainerSize(const IntSize&) override;
     IntSize containerSize() const;
-    virtual bool usesContainerSize() const OVERRIDE { return true; }
-    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) OVERRIDE;
+    virtual bool usesContainerSize() const override { return true; }
+    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
 
-    virtual bool dataChanged(bool allDataReceived) OVERRIDE;
+    virtual bool dataChanged(bool allDataReceived) override;
 
     // FIXME: SVGImages are underreporting decoded sizes and will be unable
     // to prune because these functions are not implemented yet.
-    virtual void destroyDecodedData(bool) OVERRIDE { }
+    virtual void destroyDecodedData(bool) override { }
 
     // FIXME: Implement this to be less conservative.
-    virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }
+    virtual bool currentFrameKnownToBeOpaque() override { return false; }
 
     SVGImage(ImageObserver*);
-    virtual void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, CompositeOperator, blink::WebBlendMode) OVERRIDE;
+    virtual void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, CompositeOperator, blink::WebBlendMode) override;
     void drawForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatRect&, CompositeOperator, blink::WebBlendMode);
     void drawPatternForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
         CompositeOperator, const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing);

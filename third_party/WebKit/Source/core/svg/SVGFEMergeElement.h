@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGFEMergeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+class SVGFEMergeElement final : public SVGFilterPrimitiveStandardAttributes {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEMergeElement);
@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGFEMergeElement(Document&);
 
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 };
 
 } // namespace blink

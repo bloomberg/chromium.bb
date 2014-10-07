@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class SVGTSpanElement FINAL : public SVGTextPositioningElement {
+class SVGTSpanElement final : public SVGTextPositioningElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGTSpanElement);
@@ -33,8 +33,8 @@ public:
 private:
     explicit SVGTSpanElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 };
 
 } // namespace blink

@@ -179,7 +179,7 @@ public:
         return adoptRef(new SVGCurrentTranslateTearOff(contextElement));
     }
 
-    virtual void commitChange() OVERRIDE
+    virtual void commitChange() override
     {
         ASSERT(contextElement());
         toSVGSVGElement(contextElement())->updateCurrentTranslate();

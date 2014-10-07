@@ -50,18 +50,18 @@ public:
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE { return animatedLocalTransform(); }
+    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return animatedLocalTransform(); }
     virtual AffineTransform animatedLocalTransform() const;
-    virtual AffineTransform* supplementalTransform() OVERRIDE;
+    virtual AffineTransform* supplementalTransform() override;
 
     virtual FloatRect getBBox();
     PassRefPtr<SVGRectTearOff> getBBoxFromJavascript();
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
+    virtual bool isValid() const override final { return SVGTests::isValid(); }
 
     SVGAnimatedTransformList* transform() { return m_transform.get(); }
     const SVGAnimatedTransformList* transform() const { return m_transform.get(); }
@@ -72,16 +72,16 @@ public:
 protected:
     SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
-    virtual bool supportsFocus() const OVERRIDE { return Element::supportsFocus() || hasFocusEventListeners(); }
+    virtual bool supportsFocus() const override { return Element::supportsFocus() || hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
     RefPtr<SVGAnimatedTransformList> m_transform;
 
 private:
-    virtual bool isSVGGraphicsElement() const OVERRIDE FINAL { return true; }
+    virtual bool isSVGGraphicsElement() const override final { return true; }
 
     // Used by <animateMotion>
     OwnPtr<AffineTransform> m_supplementalTransform;

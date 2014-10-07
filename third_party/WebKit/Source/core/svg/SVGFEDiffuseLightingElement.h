@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class SVGFEDiffuseLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+class SVGFEDiffuseLightingElement final : public SVGFilterPrimitiveStandardAttributes {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEDiffuseLightingElement);
@@ -45,10 +45,10 @@ private:
     explicit SVGFEDiffuseLightingElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtr<SVGAnimatedNumber> m_diffuseConstant;
     RefPtr<SVGAnimatedNumber> m_surfaceScale;

@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGRenderingIntent FINAL : public RefCountedWillBeGarbageCollected<SVGRenderingIntent>, public ScriptWrappable {
+class SVGRenderingIntent final : public RefCountedWillBeGarbageCollected<SVGRenderingIntent>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGRenderingIntentType {

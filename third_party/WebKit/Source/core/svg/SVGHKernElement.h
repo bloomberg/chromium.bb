@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class SVGHKernElement FINAL : public SVGElement {
+class SVGHKernElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGHKernElement);
@@ -38,10 +38,10 @@ public:
 private:
     explicit SVGHKernElement(Document&);
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 };
 
 } // namespace blink

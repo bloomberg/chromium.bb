@@ -53,14 +53,14 @@ public:
 
     // SVGPropertyBase:
     virtual PassRefPtr<SVGEnumerationBase> clone() const = 0;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
-    virtual String valueAsString() const OVERRIDE;
+    virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedEnumeration; }
 
@@ -112,7 +112,7 @@ public:
     {
     }
 
-    virtual PassRefPtr<SVGEnumerationBase> clone() const OVERRIDE
+    virtual PassRefPtr<SVGEnumerationBase> clone() const override
     {
         return create(enumValue());
     }

@@ -65,11 +65,11 @@ protected:
 
 private:
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE FINAL;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override final;
+    virtual void svgAttributeChanged(const QualifiedName&) override final;
+    virtual void childrenChanged(const ChildrenChange&) override final;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     RefPtr<SVGAnimatedNumber> m_azimuth;
     RefPtr<SVGAnimatedNumber> m_elevation;

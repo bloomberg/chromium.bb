@@ -38,7 +38,7 @@ enum SVGMarkerUnitsType {
 };
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUnitsType>();
 
-class SVGMarkerElement FINAL : public SVGElement,
+class SVGMarkerElement final : public SVGElement,
                                public SVGFitToViewBox {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -73,17 +73,17 @@ public:
 private:
     explicit SVGMarkerElement(Document&);
 
-    virtual bool needsPendingResourceHandling() const OVERRIDE { return false; }
+    virtual bool needsPendingResourceHandling() const override { return false; }
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return true; }
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return true; }
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     RefPtr<SVGAnimatedLength> m_refX;
     RefPtr<SVGAnimatedLength> m_refY;

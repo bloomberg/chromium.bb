@@ -31,12 +31,12 @@
 
 namespace blink {
 
-class SVGImageElement FINAL : public SVGGraphicsElement,
+class SVGImageElement final : public SVGGraphicsElement,
                               public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGImageElement);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     bool currentFrameHasSingleSecurityOrigin() const;
 
@@ -49,25 +49,25 @@ public:
 private:
     explicit SVGImageElement(Document&);
 
-    virtual bool isStructurallyExternal() const OVERRIDE { return !hrefString().isNull(); }
+    virtual bool isStructurallyExternal() const override { return !hrefString().isNull(); }
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual const AtomicString imageSourceURL() const OVERRIDE;
+    virtual const AtomicString imageSourceURL() const override;
 
-    virtual bool haveLoadedRequiredResources() OVERRIDE;
+    virtual bool haveLoadedRequiredResources() override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
-    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
+    virtual void didMoveToNewDocument(Document& oldDocument) override;
     SVGImageLoader& imageLoader() { return *m_imageLoader; }
 
     RefPtr<SVGAnimatedLength> m_x;

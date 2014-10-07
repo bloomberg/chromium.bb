@@ -29,7 +29,7 @@ namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSelectorType>();
 
-class SVGFEDisplacementMapElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+class SVGFEDisplacementMapElement final : public SVGFilterPrimitiveStandardAttributes {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEDisplacementMapElement);
@@ -46,10 +46,10 @@ private:
     SVGFEDisplacementMapElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtr<SVGAnimatedNumber> m_scale;
     RefPtr<SVGAnimatedString> m_in1;

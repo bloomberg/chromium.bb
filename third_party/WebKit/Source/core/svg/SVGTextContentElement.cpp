@@ -48,14 +48,14 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAd
 
 // SVGTextContentElement's 'textLength' attribute needs special handling.
 // It should return getComputedTextLength() when textLength is not specified manually.
-class SVGAnimatedTextLength FINAL : public SVGAnimatedLength {
+class SVGAnimatedTextLength final : public SVGAnimatedLength {
 public:
     static PassRefPtr<SVGAnimatedTextLength> create(SVGTextContentElement* contextElement)
     {
         return adoptRef(new SVGAnimatedTextLength(contextElement));
     }
 
-    virtual SVGLengthTearOff* baseVal() OVERRIDE
+    virtual SVGLengthTearOff* baseVal() override
     {
         SVGTextContentElement* textContentElement = toSVGTextContentElement(contextElement());
         if (!textContentElement->textLengthIsSpecifiedByUser())

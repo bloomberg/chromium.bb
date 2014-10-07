@@ -46,7 +46,7 @@ public:
         return adoptRef(new SVGAnimatedInteger(contextElement, attributeName, initialValue));
     }
 
-    virtual void synchronizeAttribute() OVERRIDE;
+    virtual void synchronizeAttribute() override;
 
     void setParentOptionalInteger(SVGAnimatedIntegerOptionalInteger* numberOptionalInteger)
     {

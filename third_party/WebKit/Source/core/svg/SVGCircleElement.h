@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class SVGCircleElement FINAL : public SVGGeometryElement {
+class SVGCircleElement final : public SVGGeometryElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGCircleElement);
@@ -41,12 +41,12 @@ private:
     explicit SVGCircleElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
     RefPtr<SVGAnimatedLength> m_cx;
     RefPtr<SVGAnimatedLength> m_cy;

@@ -41,7 +41,7 @@ enum SVGTextPathSpacingType {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPathMethodType>();
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPathSpacingType>();
 
-class SVGTextPathElement FINAL : public SVGTextContentElement,
+class SVGTextPathElement final : public SVGTextContentElement,
                                  public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -68,18 +68,18 @@ private:
 
     void clearResourceReferences();
 
-    virtual void buildPendingResource() OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual void buildPendingResource() override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     RefPtr<SVGAnimatedLength> m_startOffset;
     RefPtr<SVGAnimatedEnumeration<SVGTextPathMethodType> > m_method;

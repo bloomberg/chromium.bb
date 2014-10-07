@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class SVGStopElement FINAL : public SVGElement {
+class SVGStopElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGStopElement);
@@ -40,11 +40,11 @@ private:
     explicit SVGStopElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 
     RefPtr<SVGAnimatedNumber> m_offset;
 };

@@ -35,12 +35,12 @@
 
 namespace blink {
 
-class SVGFilterElement FINAL : public SVGElement,
+class SVGFilterElement final : public SVGElement,
                                public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFilterElement);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     void setFilterRes(unsigned x, unsigned y);
     void addClient(Node*);
@@ -58,16 +58,16 @@ public:
 private:
     explicit SVGFilterElement(Document&);
 
-    virtual bool needsPendingResourceHandling() const OVERRIDE { return false; }
+    virtual bool needsPendingResourceHandling() const override { return false; }
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;

@@ -18,13 +18,13 @@ class SVGRemoteFontFaceSource : public RemoteFontFaceSource {
 public:
     SVGRemoteFontFaceSource(const String& uri, FontResource*, PassRefPtrWillBeRawPtr<FontLoader>);
     ~SVGRemoteFontFaceSource();
-    virtual bool isSVGFontFaceSource() const OVERRIDE { return true; }
-    virtual bool ensureFontData() OVERRIDE;
+    virtual bool isSVGFontFaceSource() const override { return true; }
+    virtual bool ensureFontData() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
-    virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) OVERRIDE;
+    virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
     String m_uri;
     RefPtrWillBeMember<SVGFontElement> m_externalSVGFontElement;

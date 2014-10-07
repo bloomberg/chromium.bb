@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class SVGTransformTearOff FINAL : public SVGPropertyTearOff<SVGTransform>, public ScriptWrappable {
+class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGTransformType {

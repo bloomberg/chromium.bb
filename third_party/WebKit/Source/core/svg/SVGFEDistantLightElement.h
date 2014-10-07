@@ -24,7 +24,7 @@
 
 namespace blink {
 
-class SVGFEDistantLightElement FINAL : public SVGFELightElement {
+class SVGFEDistantLightElement final : public SVGFELightElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEDistantLightElement);
@@ -32,7 +32,7 @@ public:
 private:
     explicit SVGFEDistantLightElement(Document&);
 
-    virtual PassRefPtr<LightSource> lightSource(Filter*) const OVERRIDE;
+    virtual PassRefPtr<LightSource> lightSource(Filter*) const override;
 };
 
 } // namespace blink

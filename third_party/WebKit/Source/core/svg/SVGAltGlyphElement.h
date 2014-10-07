@@ -32,7 +32,7 @@ namespace blink {
 
 class ExceptionState;
 
-class SVGAltGlyphElement FINAL : public SVGTextPositioningElement,
+class SVGAltGlyphElement final : public SVGTextPositioningElement,
                                  public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -48,7 +48,7 @@ public:
 private:
     explicit SVGAltGlyphElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 };
 
 } // namespace blink

@@ -41,14 +41,14 @@ namespace blink {
 //
 // The main purpose of this class at the moment is to override rendererIsNeeded() to return
 // false to make sure we don't attempt to render such elements.
-class SVGUnknownElement FINAL : public SVGElement {
+class SVGUnknownElement final : public SVGElement {
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement);
 
 private:
     SVGUnknownElement(const QualifiedName&, Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 };
 
 } // namespace blink

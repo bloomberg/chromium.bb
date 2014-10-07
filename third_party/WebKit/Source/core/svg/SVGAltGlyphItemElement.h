@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class SVGAltGlyphItemElement FINAL : public SVGElement {
+class SVGAltGlyphItemElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGAltGlyphItemElement);
@@ -37,7 +37,7 @@ public:
 private:
     explicit SVGAltGlyphItemElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 };
 
 } // namespace blink

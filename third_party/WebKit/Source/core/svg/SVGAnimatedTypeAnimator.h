@@ -35,7 +35,7 @@ class SVGPropertyBase;
 class SVGElement;
 class SVGAnimationElement;
 
-class SVGAnimatedTypeAnimator FINAL : public NoBaseWillBeGarbageCollectedFinalized<SVGAnimatedTypeAnimator> {
+class SVGAnimatedTypeAnimator final : public NoBaseWillBeGarbageCollectedFinalized<SVGAnimatedTypeAnimator> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<SVGAnimatedTypeAnimator> create(SVGAnimationElement* animationElement, SVGElement* targetElement)

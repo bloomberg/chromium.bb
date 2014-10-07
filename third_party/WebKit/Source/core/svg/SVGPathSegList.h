@@ -131,14 +131,14 @@ public:
     PassRefPtr<ItemPropertyType> appendItem(PassRefPtr<ItemPropertyType> passItem);
 
     // SVGPropertyBase:
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
-    virtual PassRefPtr<SVGPathSegList> clone() OVERRIDE;
-    virtual String valueAsString() const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual PassRefPtr<SVGPathSegList> clone() override;
+    virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 

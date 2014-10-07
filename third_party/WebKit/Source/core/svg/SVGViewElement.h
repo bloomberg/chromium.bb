@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class SVGViewElement FINAL : public SVGElement,
+class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
     DEFINE_WRAPPERTYPEINFO();
@@ -49,9 +49,9 @@ private:
 
     // FIXME: svgAttributeChanged missing.
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     RefPtr<SVGStaticStringList> m_viewTarget;
 };

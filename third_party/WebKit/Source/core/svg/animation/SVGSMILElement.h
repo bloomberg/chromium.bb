@@ -49,10 +49,10 @@ public:
     virtual ~SVGSMILElement();
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
     virtual bool hasValidAttributeType() = 0;
     virtual bool hasValidAttributeName();
@@ -119,7 +119,7 @@ public:
 
     virtual bool isSVGDiscardElement() const { return false; }
 
-    void trace(Visitor*) OVERRIDE;
+    void trace(Visitor*) override;
 
 protected:
     void addBeginTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
@@ -132,7 +132,7 @@ protected:
     virtual void setAttributeName(const QualifiedName&);
 
 private:
-    virtual void buildPendingResource() OVERRIDE;
+    virtual void buildPendingResource() override;
     void clearResourceAndEventBaseReferences();
     void clearConditions();
 
@@ -140,7 +140,7 @@ private:
     void endedActiveInterval();
     virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) = 0;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     enum BeginOrEnd {
         Begin,

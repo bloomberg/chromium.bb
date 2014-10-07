@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGGElement FINAL : public SVGGraphicsElement {
+class SVGGElement final : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGGElement);
@@ -34,10 +34,10 @@ public:
 protected:
     explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
 private:
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
 };
 
 } // namespace blink

@@ -32,7 +32,7 @@ namespace blink {
 class SVGFontElement;
 class StyleRuleFontFace;
 
-class SVGFontFaceElement FINAL : public SVGElement {
+class SVGFontFaceElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFontFaceElement);
@@ -55,18 +55,18 @@ public:
     StyleRuleFontFace* fontFaceRule() const { return m_fontFaceRule.get(); }
     WeakPtr<SVGFontFaceElement> createWeakRef() { return m_weakFactory.createWeakPtr(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SVGFontFaceElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     RefPtrWillBeMember<StyleRuleFontFace> m_fontFaceRule;
     RawPtrWillBeMember<SVGFontElement> m_fontElement;

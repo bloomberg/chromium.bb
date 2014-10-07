@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGFEBlendElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Mode {
@@ -61,10 +61,10 @@ private:
     explicit SVGFEBlendElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;

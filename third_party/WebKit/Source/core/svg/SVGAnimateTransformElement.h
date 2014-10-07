@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class SVGAnimateTransformElement FINAL : public SVGAnimateElement {
+class SVGAnimateTransformElement final : public SVGAnimateElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGAnimateTransformElement);
@@ -38,9 +38,9 @@ public:
 private:
     explicit SVGAnimateTransformElement(Document&);
 
-    virtual bool hasValidAttributeType() OVERRIDE;
+    virtual bool hasValidAttributeType() override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     SVGTransformType m_type;
 };

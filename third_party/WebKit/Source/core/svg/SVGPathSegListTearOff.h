@@ -60,7 +60,7 @@ public:
     }
 };
 
-class SVGPathSegListTearOff FINAL
+class SVGPathSegListTearOff final
     : public SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

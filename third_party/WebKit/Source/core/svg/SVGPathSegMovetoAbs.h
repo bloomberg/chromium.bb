@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGPathSegMovetoAbs FINAL : public SVGPathSegSingleCoordinate {
+class SVGPathSegMovetoAbs final : public SVGPathSegSingleCoordinate {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegMovetoAbs> create(SVGPathElement* element, float x, float y)
@@ -38,8 +38,8 @@ private:
     SVGPathSegMovetoAbs(SVGPathElement* element, float x, float y)
         : SVGPathSegSingleCoordinate(element, x, y) { }
 
-    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_MOVETO_ABS; }
-    virtual String pathSegTypeAsLetter() const OVERRIDE { return "M"; }
+    virtual unsigned short pathSegType() const override { return PATHSEG_MOVETO_ABS; }
+    virtual String pathSegTypeAsLetter() const override { return "M"; }
 };
 
 } // namespace blink

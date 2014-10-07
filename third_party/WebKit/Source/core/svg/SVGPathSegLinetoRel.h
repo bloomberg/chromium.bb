@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGPathSegLinetoRel FINAL : public SVGPathSegSingleCoordinate {
+class SVGPathSegLinetoRel final : public SVGPathSegSingleCoordinate {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegLinetoRel> create(SVGPathElement* element, float x, float y)
@@ -38,8 +38,8 @@ private:
     SVGPathSegLinetoRel(SVGPathElement* element, float x, float y)
         : SVGPathSegSingleCoordinate(element, x, y) { }
 
-    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_REL; }
-    virtual String pathSegTypeAsLetter() const OVERRIDE { return "l"; }
+    virtual unsigned short pathSegType() const override { return PATHSEG_LINETO_REL; }
+    virtual String pathSegTypeAsLetter() const override { return "l"; }
 };
 
 } // namespace blink

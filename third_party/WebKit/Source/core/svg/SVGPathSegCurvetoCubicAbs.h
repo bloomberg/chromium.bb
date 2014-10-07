@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGPathSegCurvetoCubicAbs FINAL : public SVGPathSegCurvetoCubic {
+class SVGPathSegCurvetoCubicAbs final : public SVGPathSegCurvetoCubic {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegCurvetoCubicAbs> create(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
@@ -38,8 +38,8 @@ private:
     SVGPathSegCurvetoCubicAbs(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
         : SVGPathSegCurvetoCubic(element, x, y, x1, y1, x2, y2) { }
 
-    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_CURVETO_CUBIC_ABS; }
-    virtual String pathSegTypeAsLetter() const OVERRIDE { return "C"; }
+    virtual unsigned short pathSegType() const override { return PATHSEG_CURVETO_CUBIC_ABS; }
+    virtual String pathSegTypeAsLetter() const override { return "C"; }
 };
 
 } // namespace blink

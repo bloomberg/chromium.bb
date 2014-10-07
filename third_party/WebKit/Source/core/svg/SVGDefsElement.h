@@ -26,17 +26,17 @@
 
 namespace blink {
 
-class SVGDefsElement FINAL : public SVGGraphicsElement {
+class SVGDefsElement final : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGDefsElement);
 
-    virtual bool supportsFocus() const OVERRIDE { return false; }
+    virtual bool supportsFocus() const override { return false; }
 
 private:
     explicit SVGDefsElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 };
 
 } // namespace blink

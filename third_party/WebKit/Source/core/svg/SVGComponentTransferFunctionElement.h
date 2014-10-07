@@ -48,10 +48,10 @@ protected:
     SVGComponentTransferFunctionElement(const QualifiedName&, Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override final;
+    virtual void svgAttributeChanged(const QualifiedName&) override final;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE FINAL { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override final { return false; }
 
 private:
     RefPtr<SVGAnimatedNumberList> m_tableValues;

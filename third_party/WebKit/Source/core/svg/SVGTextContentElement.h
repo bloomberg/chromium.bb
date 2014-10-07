@@ -68,15 +68,15 @@ protected:
     SVGTextContentElement(const QualifiedName&, Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE FINAL;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE FINAL;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override final;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override final;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
 private:
-    virtual bool isTextContent() const OVERRIDE FINAL { return true; }
+    virtual bool isTextContent() const override final { return true; }
 
     RefPtr<SVGAnimatedLength> m_textLength;
     bool m_textLengthIsSpecifiedByUser;

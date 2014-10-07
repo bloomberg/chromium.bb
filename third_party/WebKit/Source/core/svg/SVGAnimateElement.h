@@ -38,7 +38,7 @@ public:
     static PassRefPtrWillBeRawPtr<SVGAnimateElement> create(Document&);
     virtual ~SVGAnimateElement();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     AnimatedPropertyType animatedPropertyType();
     bool animatedPropertyTypeSupportsAddition();
@@ -46,25 +46,25 @@ public:
 protected:
     SVGAnimateElement(const QualifiedName&, Document&);
 
-    virtual void resetAnimatedType() OVERRIDE FINAL;
-    virtual void clearAnimatedType(SVGElement* targetElement) OVERRIDE FINAL;
+    virtual void resetAnimatedType() override final;
+    virtual void clearAnimatedType(SVGElement* targetElement) override final;
 
-    virtual bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) OVERRIDE FINAL;
-    virtual bool calculateFromAndToValues(const String& fromString, const String& toString) OVERRIDE FINAL;
-    virtual bool calculateFromAndByValues(const String& fromString, const String& byString) OVERRIDE FINAL;
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement) OVERRIDE FINAL;
-    virtual void applyResultsToTarget() OVERRIDE FINAL;
-    virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE FINAL;
-    virtual bool isAdditive() OVERRIDE FINAL;
+    virtual bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) override final;
+    virtual bool calculateFromAndToValues(const String& fromString, const String& toString) override final;
+    virtual bool calculateFromAndByValues(const String& fromString, const String& byString) override final;
+    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement) override final;
+    virtual void applyResultsToTarget() override final;
+    virtual float calculateDistance(const String& fromString, const String& toString) override final;
+    virtual bool isAdditive() override final;
 
-    virtual void setTargetElement(SVGElement*) OVERRIDE FINAL;
-    virtual void setAttributeName(const QualifiedName&) OVERRIDE FINAL;
+    virtual void setTargetElement(SVGElement*) override final;
+    virtual void setAttributeName(const QualifiedName&) override final;
 
 private:
     void resetAnimatedPropertyType();
     SVGAnimatedTypeAnimator* ensureAnimator();
 
-    virtual bool hasValidAttributeType() OVERRIDE;
+    virtual bool hasValidAttributeType() override;
 
     RefPtr<SVGPropertyBase> m_fromProperty;
     RefPtr<SVGPropertyBase> m_toProperty;

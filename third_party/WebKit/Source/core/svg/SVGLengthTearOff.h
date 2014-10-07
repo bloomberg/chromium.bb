@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class SVGLengthTearOff FINAL : public SVGPropertyTearOff<SVGLength>, public ScriptWrappable {
+class SVGLengthTearOff final : public SVGPropertyTearOff<SVGLength>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Forward declare these enums in the w3c naming scheme, for IDL generation

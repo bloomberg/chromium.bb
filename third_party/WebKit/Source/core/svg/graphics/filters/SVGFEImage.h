@@ -33,17 +33,17 @@ namespace blink {
 class Image;
 class RenderObject;
 
-class FEImage FINAL : public FilterEffect {
+class FEImage final : public FilterEffect {
 public:
     static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
     static PassRefPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
 
-    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
+    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
-    virtual FilterEffectType filterEffectType() const OVERRIDE { return FilterEffectTypeImage; }
+    virtual FilterEffectType filterEffectType() const override { return FilterEffectTypeImage; }
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
+    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
 private:
     virtual ~FEImage() { }
@@ -51,7 +51,7 @@ private:
     FEImage(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
     RenderObject* referencedRenderer() const;
 
-    virtual void applySoftware() OVERRIDE;
+    virtual void applySoftware() override;
     PassRefPtr<SkImageFilter> createImageFilterForRenderer(RenderObject* rendererer, SkiaImageFilterBuilder*);
 
     RefPtr<Image> m_image;

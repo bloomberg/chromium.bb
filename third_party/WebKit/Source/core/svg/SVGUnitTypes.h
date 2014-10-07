@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class SVGUnitTypes FINAL : public RefCountedWillBeGarbageCollected<SVGUnitTypes>, public ScriptWrappable {
+class SVGUnitTypes final : public RefCountedWillBeGarbageCollected<SVGUnitTypes>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGUnitType {

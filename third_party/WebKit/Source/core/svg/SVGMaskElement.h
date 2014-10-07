@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class SVGMaskElement FINAL : public SVGElement,
+class SVGMaskElement final : public SVGElement,
                              public SVGTests {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -46,17 +46,17 @@ public:
 private:
     explicit SVGMaskElement(Document&);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
-    virtual bool needsPendingResourceHandling() const OVERRIDE { return false; }
+    virtual bool isValid() const override { return SVGTests::isValid(); }
+    virtual bool needsPendingResourceHandling() const override { return false; }
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;

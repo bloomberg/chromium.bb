@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGSwitchElement FINAL : public SVGGraphicsElement {
+class SVGSwitchElement final : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGSwitchElement);
@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGSwitchElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
 };
 

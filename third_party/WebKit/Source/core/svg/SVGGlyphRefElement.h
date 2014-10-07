@@ -27,14 +27,14 @@
 
 namespace blink {
 
-class SVGGlyphRefElement FINAL : public SVGElement,
+class SVGGlyphRefElement final : public SVGElement,
                                  public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGGlyphRefElement);
 
     bool hasValidGlyphElement(AtomicString& glyphName) const;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     // DOM interface
     const AtomicString& glyphRef() const;
@@ -54,7 +54,7 @@ private:
     template<typename CharType>
     void parseAttributeInternal(const QualifiedName&, const AtomicString&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
 
     float m_x;

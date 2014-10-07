@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class SVGFEMergeNodeElement FINAL : public SVGElement {
+class SVGFEMergeNodeElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
@@ -36,10 +36,10 @@ public:
 private:
     explicit SVGFEMergeNodeElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     RefPtr<SVGAnimatedString> m_in1;
 };

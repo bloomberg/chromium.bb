@@ -45,7 +45,7 @@
 
 namespace blink {
 
-class RepeatEvent FINAL : public Event {
+class RepeatEvent final : public Event {
 public:
     static PassRefPtrWillBeRawPtr<RepeatEvent> create(const AtomicString& type, int repeat)
     {
@@ -56,7 +56,7 @@ public:
 
     int repeat() const { return m_repeat; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         Event::trace(visitor);
     }
@@ -105,7 +105,7 @@ static SMILEventSender& smilRepeatNEventSender()
 // This is used for duration type time values that can't be negative.
 static const double invalidCachedTime = -1.;
 
-class ConditionEventListener FINAL : public EventListener {
+class ConditionEventListener final : public EventListener {
 public:
     static PassRefPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
     {
@@ -119,7 +119,7 @@ public:
             : 0;
     }
 
-    virtual bool operator==(const EventListener& other) OVERRIDE;
+    virtual bool operator==(const EventListener& other) override;
 
     void disconnectAnimation()
     {
@@ -134,7 +134,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
+    virtual void handleEvent(ExecutionContext*, Event*) override;
 
     SVGSMILElement* m_animation;
     SVGSMILElement::Condition* m_condition;

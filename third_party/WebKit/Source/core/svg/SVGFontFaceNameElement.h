@@ -28,7 +28,7 @@ namespace blink {
 
 class CSSFontFaceSrcValue;
 
-class SVGFontFaceNameElement FINAL : public SVGElement {
+class SVGFontFaceNameElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFontFaceNameElement);
@@ -38,7 +38,7 @@ public:
 private:
     explicit SVGFontFaceNameElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 };
 
 } // namespace blink

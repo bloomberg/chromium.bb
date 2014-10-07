@@ -40,7 +40,7 @@ class SVGElement;
 
 // SVGStringList property implementations for SVGTests properties.
 // Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but this is never animated.
-class SVGStaticStringList FINAL : public SVGAnimatedPropertyBase {
+class SVGStaticStringList final : public SVGAnimatedPropertyBase {
 public:
     static PassRefPtr<SVGStaticStringList> create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
@@ -50,12 +50,12 @@ public:
     virtual ~SVGStaticStringList();
 
     // SVGAnimatedPropertyBase:
-    virtual SVGPropertyBase* currentValueBase() OVERRIDE;
-    virtual bool isAnimating() const OVERRIDE;
-    virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() OVERRIDE;
-    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;
-    virtual void animationEnded() OVERRIDE;
-    virtual bool needsSynchronizeAttribute() OVERRIDE;
+    virtual SVGPropertyBase* currentValueBase() override;
+    virtual bool isAnimating() const override;
+    virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() override;
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) override;
+    virtual void animationEnded() override;
+    virtual bool needsSynchronizeAttribute() override;
 
     void setBaseValueAsString(const String& value, SVGParsingError& parseError);
 

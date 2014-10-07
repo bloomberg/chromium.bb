@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class SVGFontFaceFormatElement FINAL : public SVGElement {
+class SVGFontFaceFormatElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFontFaceFormatElement);
@@ -33,8 +33,8 @@ public:
 private:
     explicit SVGFontFaceFormatElement(Document&);
 
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 };
 
 } // namespace blink

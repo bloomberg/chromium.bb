@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGPathSegLinetoHorizontalAbs FINAL : public SVGPathSegLinetoHorizontal {
+class SVGPathSegLinetoHorizontalAbs final : public SVGPathSegLinetoHorizontal {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, float x)
@@ -38,8 +38,8 @@ private:
     SVGPathSegLinetoHorizontalAbs(SVGPathElement* element, float x)
         : SVGPathSegLinetoHorizontal(element, x) { }
 
-    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_HORIZONTAL_ABS; }
-    virtual String pathSegTypeAsLetter() const OVERRIDE { return "H"; }
+    virtual unsigned short pathSegType() const override { return PATHSEG_LINETO_HORIZONTAL_ABS; }
+    virtual String pathSegTypeAsLetter() const override { return "H"; }
 };
 
 } // namespace blink

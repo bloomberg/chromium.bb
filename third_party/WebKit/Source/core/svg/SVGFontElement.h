@@ -51,7 +51,7 @@ typedef unsigned KerningPairKey;
 typedef Vector<SVGKerningPair> KerningPairVector;
 typedef HashMap<KerningPairKey, float> KerningTable;
 
-class SVGFontElement FINAL : public SVGElement {
+class SVGFontElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFontElement);
@@ -70,7 +70,7 @@ public:
 private:
     explicit SVGFontElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     void ensureGlyphCache();
     void registerLigaturesInGlyphCache(Vector<String>&);

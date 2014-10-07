@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class SVGAnimatedString FINAL : public SVGAnimatedProperty<SVGString> {
+class SVGAnimatedString final : public SVGAnimatedProperty<SVGString> {
 public:
     static PassRefPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
     {

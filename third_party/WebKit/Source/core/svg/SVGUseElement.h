@@ -32,7 +32,7 @@ namespace blink {
 
 class DocumentResource;
 
-class SVGUseElement FINAL : public SVGGraphicsElement,
+class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
                             public DocumentResourceClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -49,32 +49,32 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
 
-    virtual void buildPendingResource() OVERRIDE;
+    virtual void buildPendingResource() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SVGUseElement(Document&);
 
-    virtual bool isStructurallyExternal() const OVERRIDE { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
+    virtual bool isStructurallyExternal() const override { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual void toClipPath(Path&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
+    virtual void toClipPath(Path&) override;
 
     void clearResourceReferences();
     void buildShadowAndInstanceTree(SVGElement* target);
 
     void scheduleShadowTreeRecreation();
-    virtual bool haveLoadedRequiredResources() OVERRIDE { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
+    virtual bool haveLoadedRequiredResources() override { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     // Instance tree handling
     bool buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
@@ -89,11 +89,11 @@ private:
     bool resourceIsStillLoading();
     Document* externalDocument() const;
     bool instanceTreeIsLoading(SVGElement*);
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void notifyFinished(Resource*) override;
     TreeScope* referencedScope() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
 
-    virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
+    virtual Timer<SVGElement>* svgLoadEventTimer() override { return &m_svgLoadEventTimer; }
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;

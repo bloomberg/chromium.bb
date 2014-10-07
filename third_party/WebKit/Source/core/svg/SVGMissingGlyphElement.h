@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGMissingGlyphElement FINAL : public SVGElement {
+class SVGMissingGlyphElement final : public SVGElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGMissingGlyphElement);
@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGMissingGlyphElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 };
 
 } // namespace blink

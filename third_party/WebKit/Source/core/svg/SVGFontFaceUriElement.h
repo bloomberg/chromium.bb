@@ -30,7 +30,7 @@ namespace blink {
 
 class CSSFontFaceSrcValue;
 
-class SVGFontFaceUriElement FINAL : public SVGElement, public FontResourceClient {
+class SVGFontFaceUriElement final : public SVGElement, public FontResourceClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFontFaceUriElement);
@@ -42,11 +42,11 @@ public:
 private:
     explicit SVGFontFaceUriElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void childrenChanged(const ChildrenChange&) override;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
     void loadFont();
 

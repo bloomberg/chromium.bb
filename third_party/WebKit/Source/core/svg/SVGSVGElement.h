@@ -40,7 +40,7 @@ class SVGViewSpec;
 class SVGViewElement;
 class SMILTimeContainer;
 
-class SVGSVGElement FINAL : public SVGGraphicsElement,
+class SVGSVGElement final : public SVGGraphicsElement,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
     DEFINE_WRAPPERTYPEINFO();
@@ -117,31 +117,31 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SVGSVGElement(Document&);
     virtual ~SVGSVGElement();
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) override;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    virtual void removedFrom(ContainerNode*) override;
 
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     void inheritViewAttributes(SVGViewElement*);
 
     void updateCurrentTranslate();
 
-    virtual void finishParsingChildren() OVERRIDE;
+    virtual void finishParsingChildren() override;
 
     enum CheckIntersectionOrEnclosure {
         CheckIntersection,
@@ -156,7 +156,7 @@ private:
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE;
+    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override;
 
     bool m_useCurrentView;
     RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;

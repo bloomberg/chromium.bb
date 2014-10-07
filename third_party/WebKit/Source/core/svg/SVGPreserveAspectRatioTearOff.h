@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class SVGPreserveAspectRatioTearOff FINAL : public SVGPropertyTearOff<SVGPreserveAspectRatio>, public ScriptWrappable {
+class SVGPreserveAspectRatioTearOff final : public SVGPropertyTearOff<SVGPreserveAspectRatio>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum {

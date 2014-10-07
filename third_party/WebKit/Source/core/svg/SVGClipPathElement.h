@@ -31,24 +31,24 @@ namespace blink {
 
 class RenderObject;
 
-class SVGClipPathElement FINAL : public SVGGraphicsElement {
+class SVGClipPathElement final : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGClipPathElement);
     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() { return m_clipPathUnits.get(); }
 
-    virtual bool supportsFocus() const OVERRIDE { return false; }
+    virtual bool supportsFocus() const override { return false; }
 
 private:
     explicit SVGClipPathElement(Document&);
 
-    virtual bool needsPendingResourceHandling() const OVERRIDE { return false; }
+    virtual bool needsPendingResourceHandling() const override { return false; }
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual void childrenChanged(const ChildrenChange&) override;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) override;
 
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
 };

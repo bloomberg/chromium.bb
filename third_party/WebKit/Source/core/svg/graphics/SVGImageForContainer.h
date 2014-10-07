@@ -34,34 +34,34 @@
 
 namespace blink {
 
-class SVGImageForContainer FINAL : public Image {
+class SVGImageForContainer final : public Image {
 public:
     static PassRefPtr<SVGImageForContainer> create(SVGImage* image, const FloatSize& containerSize, float zoom)
     {
         return adoptRef(new SVGImageForContainer(image, containerSize, zoom));
     }
 
-    virtual bool isSVGImage() const OVERRIDE { return true; }
+    virtual bool isSVGImage() const override { return true; }
 
-    virtual IntSize size() const OVERRIDE;
+    virtual IntSize size() const override;
     void setURL(const KURL& url) { m_image->setURL(url); }
 
-    virtual bool usesContainerSize() const OVERRIDE { return m_image->usesContainerSize(); }
-    virtual bool hasRelativeWidth() const OVERRIDE { return m_image->hasRelativeWidth(); }
-    virtual bool hasRelativeHeight() const OVERRIDE { return m_image->hasRelativeHeight(); }
-    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) OVERRIDE
+    virtual bool usesContainerSize() const override { return m_image->usesContainerSize(); }
+    virtual bool hasRelativeWidth() const override { return m_image->hasRelativeWidth(); }
+    virtual bool hasRelativeHeight() const override { return m_image->hasRelativeHeight(); }
+    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override
     {
         m_image->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
     }
 
-    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, blink::WebBlendMode) OVERRIDE;
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, blink::WebBlendMode) override;
 
-    virtual void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
+    virtual void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) override;
 
     // FIXME: Implement this to be less conservative.
-    virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }
+    virtual bool currentFrameKnownToBeOpaque() override { return false; }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
 
 private:
     SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom)
@@ -71,7 +71,7 @@ private:
     {
     }
 
-    virtual void destroyDecodedData(bool) OVERRIDE { }
+    virtual void destroyDecodedData(bool) override { }
 
     SVGImage* m_image;
     const FloatSize m_containerSize;

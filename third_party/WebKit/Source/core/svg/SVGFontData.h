@@ -31,7 +31,7 @@ class SimpleFontData;
 class SVGFontElement;
 class SVGFontFaceElement;
 
-class SVGFontData FINAL : public CustomFontData {
+class SVGFontData final : public CustomFontData {
 public:
     static PassRefPtr<SVGFontData> create(SVGFontFaceElement* element)
     {
@@ -40,12 +40,12 @@ public:
 
     virtual ~SVGFontData();
 
-    virtual bool isSVGFont() const OVERRIDE { return true; };
-    virtual bool shouldSkipDrawing() const OVERRIDE;
-    virtual void initializeFontData(SimpleFontData*, float fontSize) OVERRIDE;
-    virtual float widthForSVGGlyph(Glyph, float fontSize) const OVERRIDE;
-    virtual bool fillSVGGlyphPage(GlyphPage*, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData*) const OVERRIDE;
-    virtual bool applySVGGlyphSelection(SimpleShaper&, GlyphData&, bool mirror, int currentCharacter, unsigned& advanceLength) const OVERRIDE;
+    virtual bool isSVGFont() const override { return true; };
+    virtual bool shouldSkipDrawing() const override;
+    virtual void initializeFontData(SimpleFontData*, float fontSize) override;
+    virtual float widthForSVGGlyph(Glyph, float fontSize) const override;
+    virtual bool fillSVGGlyphPage(GlyphPage*, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData*) const override;
+    virtual bool applySVGGlyphSelection(SimpleShaper&, GlyphData&, bool mirror, int currentCharacter, unsigned& advanceLength) const override;
 
     SVGFontFaceElement* svgFontFaceElement() const;
 

@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class SVGLineElement FINAL : public SVGGeometryElement {
+class SVGLineElement final : public SVGGeometryElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGLineElement);
@@ -42,10 +42,10 @@ private:
     explicit SVGLineElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
+    virtual bool selfHasRelativeLengths() const override;
 
     RefPtr<SVGAnimatedLength> m_x1;
     RefPtr<SVGAnimatedLength> m_y1;

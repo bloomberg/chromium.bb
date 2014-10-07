@@ -39,8 +39,8 @@ protected:
     SVGPolyElement(const QualifiedName&, Document&);
 
 private:
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override final;
+    virtual void svgAttributeChanged(const QualifiedName&) override final;
 
 private:
     RefPtr<SVGAnimatedPointList> m_points;

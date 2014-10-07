@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class SVGPathSegArcAbs FINAL : public SVGPathSegArc {
+class SVGPathSegArcAbs final : public SVGPathSegArc {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegArcAbs> create(SVGPathElement* element, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
@@ -38,8 +38,8 @@ private:
     SVGPathSegArcAbs(SVGPathElement* element, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
         : SVGPathSegArc(element, x, y, r1, r2, angle, largeArcFlag, sweepFlag) { }
 
-    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_ARC_ABS; }
-    virtual String pathSegTypeAsLetter() const OVERRIDE { return "A"; }
+    virtual unsigned short pathSegType() const override { return PATHSEG_ARC_ABS; }
+    virtual String pathSegTypeAsLetter() const override { return "A"; }
 };
 
 } // namespace blink

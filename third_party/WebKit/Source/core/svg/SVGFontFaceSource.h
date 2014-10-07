@@ -17,10 +17,10 @@ class SVGFontFaceSource : public CSSFontFaceSource {
 public:
     SVGFontFaceSource(SVGFontFaceElement*);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
-    virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) OVERRIDE;
+    virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
     RawPtrWillBeMember<SVGFontFaceElement> m_svgFontFaceElement;
 };

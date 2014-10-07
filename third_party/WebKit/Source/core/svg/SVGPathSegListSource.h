@@ -29,25 +29,25 @@
 
 namespace blink {
 
-class SVGPathSegListSource FINAL : public SVGPathSource {
+class SVGPathSegListSource final : public SVGPathSource {
 public:
     SVGPathSegListSource(SVGPathSegList::ConstIterator, SVGPathSegList::ConstIterator);
 
 private:
-    virtual bool hasMoreData() const OVERRIDE;
-    virtual bool moveToNextToken() OVERRIDE { return true; }
-    virtual bool parseSVGSegmentType(SVGPathSegType&) OVERRIDE;
-    virtual SVGPathSegType nextCommand(SVGPathSegType) OVERRIDE;
+    virtual bool hasMoreData() const override;
+    virtual bool moveToNextToken() override { return true; }
+    virtual bool parseSVGSegmentType(SVGPathSegType&) override;
+    virtual SVGPathSegType nextCommand(SVGPathSegType) override;
 
-    virtual bool parseMoveToSegment(FloatPoint&) OVERRIDE;
-    virtual bool parseLineToSegment(FloatPoint&) OVERRIDE;
-    virtual bool parseLineToHorizontalSegment(float&) OVERRIDE;
-    virtual bool parseLineToVerticalSegment(float&) OVERRIDE;
-    virtual bool parseCurveToCubicSegment(FloatPoint&, FloatPoint&, FloatPoint&) OVERRIDE;
-    virtual bool parseCurveToCubicSmoothSegment(FloatPoint&, FloatPoint&) OVERRIDE;
-    virtual bool parseCurveToQuadraticSegment(FloatPoint&, FloatPoint&) OVERRIDE;
-    virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) OVERRIDE;
-    virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) OVERRIDE;
+    virtual bool parseMoveToSegment(FloatPoint&) override;
+    virtual bool parseLineToSegment(FloatPoint&) override;
+    virtual bool parseLineToHorizontalSegment(float&) override;
+    virtual bool parseLineToVerticalSegment(float&) override;
+    virtual bool parseCurveToCubicSegment(FloatPoint&, FloatPoint&, FloatPoint&) override;
+    virtual bool parseCurveToCubicSmoothSegment(FloatPoint&, FloatPoint&) override;
+    virtual bool parseCurveToQuadraticSegment(FloatPoint&, FloatPoint&) override;
+    virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) override;
+    virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) override;
 
     RefPtr<SVGPathSeg> m_segment;
     SVGPathSegList::ConstIterator m_itCurrent;

@@ -136,8 +136,8 @@ protected:
     void determinePropertyValueTypes(const String& from, const String& to);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
 
     enum AttributeType {
         AttributeTypeCSS,
@@ -151,14 +151,14 @@ protected:
     String fromValue() const;
 
     // from SVGSMILElement
-    virtual void startedActiveInterval() OVERRIDE;
-    virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) OVERRIDE;
+    virtual void startedActiveInterval() override;
+    virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) override;
 
     AnimatedPropertyValueType m_fromPropertyValueType;
     AnimatedPropertyValueType m_toPropertyValueType;
 
-    virtual void setTargetElement(SVGElement*) OVERRIDE;
-    virtual void setAttributeName(const QualifiedName&) OVERRIDE;
+    virtual void setTargetElement(SVGElement*) override;
+    virtual void setAttributeName(const QualifiedName&) override;
 
     bool hasInvalidCSSAttributeType() const { return m_hasInvalidCSSAttributeType; }
 
@@ -167,9 +167,9 @@ protected:
     void setCalcMode(CalcMode calcMode) { m_calcMode = calcMode; }
 
 private:
-    virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
+    virtual bool isValid() const override final { return SVGTests::isValid(); }
 
-    virtual void animationAttributeChanged() OVERRIDE;
+    virtual void animationAttributeChanged() override;
     void setAttributeType(const AtomicString&);
 
     void checkInvalidCSSAttributeType(SVGElement*);

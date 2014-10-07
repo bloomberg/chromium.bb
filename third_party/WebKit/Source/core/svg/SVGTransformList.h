@@ -39,7 +39,7 @@ namespace blink {
 
 class SVGTransformListTearOff;
 
-class SVGTransformList FINAL : public SVGListPropertyHelper<SVGTransformList, SVGTransform> {
+class SVGTransformList final : public SVGListPropertyHelper<SVGTransformList, SVGTransform> {
 public:
     typedef SVGTransformListTearOff TearOffType;
 
@@ -57,15 +57,15 @@ public:
     bool concatenate(AffineTransform& result) const;
 
     // SVGPropertyBase:
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
-    virtual String valueAsString() const OVERRIDE;
+    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
     bool parse(const UChar*& ptr, const UChar* end);
     bool parse(const LChar*& ptr, const LChar* end);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransformList; }
 

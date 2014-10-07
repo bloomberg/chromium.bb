@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class SVGFEGaussianBlurElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+class SVGFEGaussianBlurElement final : public SVGFilterPrimitiveStandardAttributes {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEGaussianBlurElement);
@@ -42,9 +42,9 @@ private:
     explicit SVGFEGaussianBlurElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    virtual void svgAttributeChanged(const QualifiedName&) override;
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtr<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
     RefPtr<SVGAnimatedString> m_in1;

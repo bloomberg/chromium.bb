@@ -48,9 +48,9 @@ public:
         return adoptRef(new SVGAnimatedIntegerOptionalInteger(contextElement, attributeName, initialFirstValue, initialSecondValue));
     }
 
-    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;
-    virtual bool needsSynchronizeAttribute() OVERRIDE;
-    virtual void animationEnded() OVERRIDE;
+    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) override;
+    virtual bool needsSynchronizeAttribute() override;
+    virtual void animationEnded() override;
 
     SVGAnimatedInteger* firstInteger() { return m_firstInteger.get(); }
     SVGAnimatedInteger* secondInteger() { return m_secondInteger.get(); }
