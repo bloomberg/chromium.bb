@@ -620,9 +620,9 @@
         ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
       ],
       'conditions': [
-        # Shard this taret into parts to work around linker limitations.
+        # Shard this target into parts to work around linker limitations.
         # on link time code generation builds.
-        ['OS=="win" and buildtype=="Official"', {
+        ['OS=="win" and (buildtype=="Official" or (fastbuild==0 and win_z7==1))', {
           'msvs_shard': 19,
         }],
         ['OS != "linux"', {
