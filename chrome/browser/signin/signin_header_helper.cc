@@ -261,9 +261,7 @@ void ProcessMirrorResponseHeaderIfExists(
 
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (!(info && info->IsMainFrame() &&
-        (info->HasUserGesture() ||
-         !ui::PageTransitionIsWebTriggerable(info->GetPageTransition()))))
+  if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
     return;
 
   std::string header_value;
