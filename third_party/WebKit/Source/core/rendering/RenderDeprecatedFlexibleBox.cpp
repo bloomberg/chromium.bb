@@ -1029,7 +1029,7 @@ const char* RenderDeprecatedFlexibleBox::renderName() const
         return "RenderDeprecatedFlexibleBox (positioned)";
     // FIXME: Cleanup isPseudoElement duplication with other renderName methods.
     // crbug.com/415653
-    if (isPseudoElement()) {
+    if (style() && isPseudoElement()) {
         if (style()->styleType() == BEFORE)
             return "RenderDeprecatedFlexibleBox (pseudo:before)";
         if (style()->styleType() == AFTER)

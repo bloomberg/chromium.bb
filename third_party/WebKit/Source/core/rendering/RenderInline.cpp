@@ -774,7 +774,7 @@ const char* RenderInline::renderName() const
         return "RenderInline (relative positioned)";
     // FIXME: Cleanup isPseudoElement duplication with other renderName methods.
     // crbug.com/415653
-    if (isPseudoElement()) {
+    if (style() && isPseudoElement()) {
         if (style()->styleType() == BEFORE)
             return "RenderInline (pseudo:before)";
         if (style()->styleType() == AFTER)

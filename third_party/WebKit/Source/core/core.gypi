@@ -3582,6 +3582,8 @@
             'loader/MixedContentCheckerTest.cpp',
             'page/NetworkStateNotifierTest.cpp',
             'page/PrintContextTest.cpp',
+            'rendering/RenderBlockTest.cpp',
+            'rendering/RenderInlineTest.cpp',
             'rendering/RenderOverflowTest.cpp',
             'rendering/RenderPartTest.cpp',
             'rendering/RenderTableCellTest.cpp',
