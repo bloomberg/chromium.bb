@@ -103,6 +103,7 @@ class FullscreenContainer;
 class MessageChannel;
 class PepperCompositorHost;
 class PepperGraphics2DHost;
+class PepperPluginInstanceThrottler;
 class PluginModule;
 class PluginObject;
 class PPB_Graphics3D_Impl;
@@ -704,6 +705,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                  int pending_host_id,
                                  const ppapi::URLResponseInfoData& data);
 
+  void SetPluginThrottled(bool throttled);
+
   RenderFrameImpl* render_frame_;
   base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
@@ -726,6 +729,18 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Plugin URL.
   GURL plugin_url_;
+
+  // Indicates whether this plugin may be throttled to reduce power consumption.
+  bool power_saver_enabled_;
+
+  // Indicates if the plugin is currently throttled.
+  bool plugin_throttled_;
+
+  // Fake view data used by the Power Saver feature to throttle plugins.
+  const ppapi::ViewData empty_view_data_;
+
+  // Responsible for turning on throttling if Power Saver is on.
+  scoped_ptr<PepperPluginInstanceThrottler> throttler_;
 
   // Indicates whether this is a full frame instance, which means it represents
   // an entire document rather than an embed tag.

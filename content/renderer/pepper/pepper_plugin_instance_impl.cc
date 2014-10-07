@@ -22,6 +22,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/input/web_input_event_traits.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -38,6 +39,8 @@
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -400,8 +403,12 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
     return NULL;
-  return new PepperPluginInstanceImpl(
-      render_frame, module, ppp_instance_combined, container, plugin_url);
+
+  return new PepperPluginInstanceImpl(render_frame,
+                                      module,
+                                      ppp_instance_combined,
+                                      container,
+                                      plugin_url);
 }
 
 PepperPluginInstanceImpl::ExternalDocumentLoader::ExternalDocumentLoader()
@@ -482,6 +489,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_bound_to_fullscreen_(false),
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
+      power_saver_enabled_(false),
+      plugin_throttled_(false),
       full_frame_(false),
       sent_initial_did_change_view_(false),
       bound_graphics_2d_platform_(NULL),
@@ -574,6 +583,20 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   if (GetContentClient()->renderer() &&  // NULL in unit tests.
       GetContentClient()->renderer()->IsExternalPepperPlugin(module->name()))
     external_document_load_ = true;
+
+  // TODO(tommycli): Insert heuristics to determine whether plugin content
+  // is peripheral here.
+  bool is_peripheral_content = true;
+  power_saver_enabled_ = is_peripheral_content &&
+      module->name() == kFlashPluginName &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePluginPowerSaver);
+
+  if (power_saver_enabled_) {
+    throttler_.reset(new PepperPluginInstanceThrottler(
+        base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
+                   weak_factory_.GetWeakPtr(), true /* throttled */)));
+  }
 }
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
@@ -1084,6 +1107,16 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     const blink::WebInputEvent& event,
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
+
+  if (event.type == blink::WebInputEvent::MouseUp && power_saver_enabled_)
+    power_saver_enabled_ = false;
+
+  if (plugin_throttled_) {
+    if (event.type == blink::WebInputEvent::MouseUp)
+      SetPluginThrottled(false /* throttled */);
+
+    return true;
+  }
 
   if (!render_frame_)
     return false;
@@ -1635,23 +1668,27 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
   if (module()->is_crashed())
     return;
 
+  // When plugin is throttled, send ViewData indicating it's in the background.
+  const ppapi::ViewData& view_data =
+      plugin_throttled_ ? empty_view_data_ : view_data_;
+
   if (view_change_weak_ptr_factory_.HasWeakPtrs() ||
       (sent_initial_did_change_view_ &&
-       last_sent_view_data_.Equals(view_data_)))
+       last_sent_view_data_.Equals(view_data)))
     return;  // Nothing to update.
 
   sent_initial_did_change_view_ = true;
-  last_sent_view_data_ = view_data_;
+  last_sent_view_data_ = view_data;
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),
-      (new PPB_View_Shared(ppapi::OBJECT_IS_IMPL, pp_instance(), view_data_))
+      (new PPB_View_Shared(ppapi::OBJECT_IS_IMPL, pp_instance(), view_data))
           ->GetReference());
 
   UpdateLayerTransform();
 
   if (bound_graphics_2d_platform_ &&
-      (!view_data_.is_page_visible ||
-       PP_ToGfxRect(view_data_.clip_rect).IsEmpty())) {
+      (!view_data.is_page_visible ||
+       PP_ToGfxRect(view_data.clip_rect).IsEmpty())) {
     bound_graphics_2d_platform_->ClearCache();
   }
 
@@ -1659,7 +1696,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
   // released its reference to this object yet.
   if (instance_interface_) {
     instance_interface_->DidChangeView(
-        pp_instance(), resource, &view_data_.rect, &view_data_.clip_rect);
+        pp_instance(), resource, &view_data.rect, &view_data.clip_rect);
   }
 }
 
@@ -3258,6 +3295,15 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
     dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
         ppapi::API_ID_PPP_INSTANCE, pp_instance(), pending_host_id, data));
   }
+}
+
+void PepperPluginInstanceImpl::SetPluginThrottled(bool throttled) {
+  // Do not throttle if we've already disabled power saver.
+  if (!power_saver_enabled_ && throttled)
+    return;
+
+  plugin_throttled_ = throttled;
+  SendDidChangeView();
 }
 
 }  // namespace content

@@ -492,6 +492,8 @@
       'renderer/pepper/pepper_plugin_instance_impl.h',
       'renderer/pepper/pepper_plugin_registry.cc',
       'renderer/pepper/pepper_plugin_registry.h',
+      'renderer/pepper/pepper_plugin_instance_throttler.cc',
+      'renderer/pepper/pepper_plugin_instance_throttler.h',
       'renderer/pepper/pepper_proxy_channel_delegate_impl.cc',
       'renderer/pepper/pepper_proxy_channel_delegate_impl.h',
       'renderer/pepper/pepper_try_catch.cc',
