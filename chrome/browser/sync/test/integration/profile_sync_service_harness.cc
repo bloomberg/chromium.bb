@@ -57,7 +57,7 @@ class BackendInitializeChecker : public SingleClientStatusChangeChecker {
   virtual bool IsExitConditionSatisfied() OVERRIDE {
     if (service()->backend_mode() != ProfileSyncService::SYNC)
       return false;
-    if (service()->sync_initialized())
+    if (service()->backend_initialized())
       return true;
     // Backend initialization is blocked by an auth error.
     if (HasAuthError(service()))
@@ -80,8 +80,9 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   virtual bool IsExitConditionSatisfied() OVERRIDE {
-    // Sync setup is complete, and the client is ready to sync new changes.
-    if (service()->ShouldPushChanges())
+    if (!service()->SyncActive())
+      return false;
+    if (service()->ConfigurationDone())
       return true;
     // Sync is blocked because a custom passphrase is required.
     if (service()->passphrase_required_reason() == syncer::REASON_DECRYPTION)
@@ -181,7 +182,8 @@ bool ProfileSyncServiceHarness::SetupSync(
     return false;
   }
 
-  if (!service()->sync_initialized()) {
+  if (!service()->backend_initialized()) {
+    LOG(ERROR) << "Backend not initialized.";
     return false;
   }
 
@@ -219,7 +221,6 @@ bool ProfileSyncServiceHarness::SetupSync(
   }
 
   // Wait for initial sync cycle to be completed.
-  DCHECK(service()->sync_initialized());
   if (!AwaitSyncSetupCompletion(service())) {
     LOG(ERROR) << "Initial sync cycle timed out.";
     return false;
@@ -236,6 +237,11 @@ bool ProfileSyncServiceHarness::SetupSync(
   if (service()->GetAuthError().state() ==
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
     LOG(ERROR) << "Credentials were rejected. Sync cannot proceed.";
+    return false;
+  }
+
+  if (!service()->SyncActive()) {
+    LOG(ERROR) << "Sync is not active after initial sync.";
     return false;
   }
 
@@ -289,7 +295,7 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
 
 SyncSessionSnapshot ProfileSyncServiceHarness::GetLastSessionSnapshot() const {
   DCHECK(service() != NULL) << "Sync service has not yet been set up.";
-  if (service()->sync_initialized()) {
+  if (service()->SyncActive()) {
     return service()->GetLastSessionSnapshot();
   }
   return SyncSessionSnapshot();
@@ -412,7 +418,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     service()->QueryDetailedSyncStatus(&status);
     // Capture select info from the sync session snapshot and syncer status.
     os << ", has_unsynced_items: "
-       << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
+       << (service()->SyncActive() ? service()->HasUnsyncedItems() : 0)
        << ", did_commit: "
        << (snap.model_neutral_state().num_successful_commits == 0 &&
            snap.model_neutral_state().commit_result == syncer::SYNCER_OK)
@@ -429,8 +435,8 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
            service()->passphrase_required_reason())
        << ", notifications_enabled: "
        << status.notifications_enabled
-       << ", service_is_pushing_changes: "
-       << service()->ShouldPushChanges();
+       << ", service_is_active: "
+       << service()->SyncActive();
   } else {
     os << "Sync service not available";
   }

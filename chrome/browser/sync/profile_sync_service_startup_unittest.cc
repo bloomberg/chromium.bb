@@ -265,7 +265,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Simulate the UI telling sync it has finished setting up.
   sync_->SetSetupInProgress(false);
-  EXPECT_TRUE(sync_->ShouldPushChanges());
+  EXPECT_TRUE(sync_->SyncActive());
 }
 
 // TODO(pavely): Reenable test once android is switched to oauth2.
@@ -301,7 +301,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   sync_->SetSetupInProgress(false);
   // ProfileSyncService should try to start by requesting access token.
   // This request should fail as login token was not issued.
-  EXPECT_FALSE(sync_->ShouldPushChanges());
+  EXPECT_FALSE(sync_->SyncActive());
   EXPECT_EQ(GoogleServiceAuthError::USER_NOT_SIGNED_UP,
       sync_->GetAuthError().state());
 }
@@ -323,7 +323,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_->Initialize();
-  EXPECT_FALSE(sync_->sync_initialized());
+  EXPECT_FALSE(sync_->SyncActive());
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Update the credentials, unstalling the backend.
@@ -340,7 +340,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   sync_->SetSetupInProgress(false);
 
   // Verify we successfully finish startup and configuration.
-  EXPECT_TRUE(sync_->ShouldPushChanges());
+  EXPECT_TRUE(sync_->SyncActive());
 }
 
 #if defined(OS_WIN)
@@ -359,11 +359,11 @@ TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
 
   sync_->Initialize();
   // Sync should not start because there are no tokens yet.
-  EXPECT_FALSE(sync_->ShouldPushChanges());
+  EXPECT_FALSE(sync_->SyncActive());
   sync_->SetSetupInProgress(false);
 
   // Sync should not start because there are still no tokens.
-  EXPECT_FALSE(sync_->ShouldPushChanges());
+  EXPECT_FALSE(sync_->SyncActive());
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
@@ -378,7 +378,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
 
   IssueTestTokens();
   sync_->Initialize();
-  EXPECT_TRUE(sync_->ShouldPushChanges());
+  EXPECT_TRUE(sync_->SyncActive());
 }
 
 #if defined(OS_WIN)
@@ -577,5 +577,5 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   sync_->SetSetupInProgress(true);
   IssueTestTokens();
   sync_->SetSetupInProgress(false);
-  EXPECT_FALSE(sync_->sync_initialized());
+  EXPECT_FALSE(sync_->SyncActive());
 }

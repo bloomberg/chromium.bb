@@ -33,9 +33,9 @@ TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
               .WillOnce(Return(true));
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillOnce(Return(false));
-
-  EXPECT_CALL(service, HasUnrecoverableError())
-              .WillRepeatedly(Return(true));
+  EXPECT_CALL(service, GetLastSessionSnapshot())
+      .WillOnce(Return(syncer::sessions::SyncSessionSnapshot()));
+  EXPECT_CALL(service, HasUnrecoverableError()).WillRepeatedly(Return(true));
 
   EXPECT_CALL(service, GetLastSyncedTimeString())
               .WillOnce(Return(str));

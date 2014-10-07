@@ -66,7 +66,7 @@ class FakeProfileSyncService : public ProfileSyncService {
   bool initialized_state_violation() { return initialized_state_violation_; }
 
   // ProfileSyncService:
-  virtual bool sync_initialized() const override {
+  virtual bool SyncActive() const override {
     return sync_initialized_;
   }
 

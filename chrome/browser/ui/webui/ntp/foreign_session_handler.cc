@@ -153,7 +153,7 @@ OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Only return the delegate if it exists and it is done syncing sessions.
-  if (service && service->ShouldPushChanges())
+  if (service && service->SyncActive())
     return service->GetOpenTabsUIDelegate();
 
   return NULL;

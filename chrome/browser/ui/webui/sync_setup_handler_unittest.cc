@@ -328,7 +328,7 @@ class SyncSetupHandlerTest : public testing::Test {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
     ASSERT_TRUE(mock_signin_->IsInitialized());
-    EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, SyncActive()).WillRepeatedly(Return(true));
   }
 
   void ExpectConfig() {
@@ -463,7 +463,7 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, SyncActive()).WillRepeatedly(Return(false));
 
   // We're simulating a user setting up sync, which would cause the backend to
   // kick off initialization, but not download user data types. The sync
@@ -491,7 +491,7 @@ TEST_F(SyncSetupHandlerTest,
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   // Sync backend is stopped initially, and will start up.
-  EXPECT_CALL(*mock_pss_, sync_initialized())
+  EXPECT_CALL(*mock_pss_, SyncActive())
       .WillRepeatedly(Return(false));
   SetDefaultExpectationsForConfigPage();
 
@@ -509,7 +509,7 @@ TEST_F(SyncSetupHandlerTest,
   Mock::VerifyAndClearExpectations(mock_pss_);
   // Now, act as if the ProfileSyncService has started up.
   SetDefaultExpectationsForConfigPage();
-  EXPECT_CALL(*mock_pss_, sync_initialized())
+  EXPECT_CALL(*mock_pss_, SyncActive())
       .WillRepeatedly(Return(true));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
@@ -544,7 +544,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, sync_initialized())
+  EXPECT_CALL(*mock_pss_, SyncActive())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   SetDefaultExpectationsForConfigPage();
@@ -571,7 +571,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, SyncActive()).WillRepeatedly(Return(false));
 
   handler_->OpenSyncSetup();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
@@ -887,7 +887,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, SyncActive()).WillRepeatedly(Return(false));
 
 #if defined(OS_CHROMEOS)
   // On ChromeOS, auth errors are ignored - instead we just try to start the

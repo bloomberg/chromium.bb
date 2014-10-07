@@ -55,14 +55,14 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
     return first_setup_in_progress_;
   }
 
-  virtual bool sync_initialized() const override { return sync_initialized_; }
+  virtual bool SyncActive() const override { return sync_active_; }
 
   void set_first_setup_in_progress(bool in_progress) {
     first_setup_in_progress_ = in_progress;
   }
 
-  void set_sync_initialized(bool initialized) {
-    sync_initialized_ = initialized;
+  void set_sync_active(bool active) {
+    sync_active_ = active;
   }
 
  private:
@@ -75,10 +75,10 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           browser_sync::MANUAL_START),
         first_setup_in_progress_(false),
-        sync_initialized_(false) {}
+        sync_active_(false) {}
 
   bool first_setup_in_progress_;
-  bool sync_initialized_;
+  bool sync_active_;
 };
 
 class TestOneClickSigninSyncObserver : public OneClickSigninSyncObserver {
@@ -190,7 +190,7 @@ TEST_F(OneClickSigninSyncObserverTest,
        OnSyncStateChanged_SyncConfiguredSuccessfully) {
   CreateSyncObserver(kContinueUrl);
   sync_service_->set_first_setup_in_progress(false);
-  sync_service_->set_sync_initialized(true);
+  sync_service_->set_sync_active(true);
 
   EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderView(_));
   sync_service_->NotifyObservers();
@@ -203,7 +203,7 @@ TEST_F(OneClickSigninSyncObserverTest,
        OnSyncStateChanged_SyncConfigurationFailed) {
   CreateSyncObserver(kContinueUrl);
   sync_service_->set_first_setup_in_progress(false);
-  sync_service_->set_sync_initialized(false);
+  sync_service_->set_sync_active(false);
 
   EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderView(_)).Times(0);
   sync_service_->NotifyObservers();
@@ -216,7 +216,7 @@ TEST_F(OneClickSigninSyncObserverTest,
        OnSyncStateChanged_SyncConfigurationInProgress) {
   CreateSyncObserver(kContinueUrl);
   sync_service_->set_first_setup_in_progress(true);
-  sync_service_->set_sync_initialized(false);
+  sync_service_->set_sync_active(false);
 
   EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderView(_)).Times(0);
   sync_service_->NotifyObservers();
@@ -233,7 +233,7 @@ TEST_F(OneClickSigninSyncObserverTest,
   GURL continue_url = signin::GetPromoURL(signin::SOURCE_SETTINGS, false);
   CreateSyncObserver(continue_url.spec());
   sync_service_->set_first_setup_in_progress(false);
-  sync_service_->set_sync_initialized(true);
+  sync_service_->set_sync_active(true);
 
   EXPECT_CALL(*web_contents_observer_, AboutToNavigateRenderView(_)).Times(0);
   sync_service_->NotifyObservers();

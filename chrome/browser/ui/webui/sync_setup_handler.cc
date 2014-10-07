@@ -315,7 +315,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
       GetProfile())->IsAuthenticated());
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
-  if (!service->sync_initialized()) {
+  if (!service->SyncActive()) {
     service->UnsuppressAndStart();
 
     // See if it's even possible to bring up the sync backend - if not
@@ -337,7 +337,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   // longer need a SyncStartupTracker.
   sync_startup_tracker_.reset();
   configuring_sync_ = true;
-  DCHECK(service->sync_initialized()) <<
+  DCHECK(service->SyncActive()) <<
       "Cannot configure sync until the sync backend is initialized";
 
   // Setup args for the sync configure screen:
@@ -620,7 +620,7 @@ void SyncSetupHandler::SyncStartupFailed() {
 
 void SyncSetupHandler::SyncStartupCompleted() {
   ProfileSyncService* service = GetSyncService();
-  DCHECK(service->sync_initialized());
+  DCHECK(service->SyncActive());
 
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
@@ -664,7 +664,7 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
 
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
-  if (!service || !service->sync_initialized()) {
+  if (!service || !service->SyncActive()) {
     CloseUI();
     return;
   }

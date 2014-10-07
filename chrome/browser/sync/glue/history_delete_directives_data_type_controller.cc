@@ -49,7 +49,7 @@ void HistoryDeleteDirectivesDataTypeController::OnStateChanged() {
 }
 
 bool HistoryDeleteDirectivesDataTypeController::DisableTypeIfNecessary() {
-  if (!sync_service_->ShouldPushChanges())
+  if (!sync_service_->SyncActive())
     return false;
 
   if (ReadyForStart())

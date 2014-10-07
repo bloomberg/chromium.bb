@@ -103,7 +103,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
 
-    EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*sync_service, SyncActive()).WillRepeatedly(Return(true));
     syncer::ModelTypeSet result;
     if (sync_history) {
       result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
@@ -215,7 +215,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMatch) {
   // This test does not sign in.
   ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
-  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*sync_service, SyncActive()).WillRepeatedly(Return(false));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -238,7 +238,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
   // This test does not sign in.
   ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
-  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*sync_service, SyncActive()).WillRepeatedly(Return(false));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);

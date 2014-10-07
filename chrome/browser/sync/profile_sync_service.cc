@@ -352,7 +352,7 @@ void ProfileSyncService::Initialize() {
 }
 
 void ProfileSyncService::TrySyncDatatypePrefRecovery() {
-  DCHECK(!sync_initialized());
+  DCHECK(!backend_initialized());
   if (!HasSyncSetupCompleted())
     return;
 
@@ -1576,9 +1576,9 @@ ProfileSyncService::SyncStatusSummary
   } else if (
       backend_.get() && HasSyncSetupCompleted() &&
       directory_data_type_manager_.get() &&
-      directory_data_type_manager_->state() != DataTypeManager::CONFIGURED) {
+      directory_data_type_manager_->state() == DataTypeManager::STOPPED) {
     return DATATYPES_NOT_INITIALIZED;
-  } else if (ShouldPushChanges()) {
+  } else if (SyncActive()) {
     return INITIALIZED;
   }
   return UNKNOWN_ERROR;
@@ -1650,13 +1650,28 @@ void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
     return;
 
   startup_controller_.set_setup_in_progress(setup_in_progress);
-  if (!setup_in_progress && sync_initialized())
+  if (!setup_in_progress && backend_initialized())
     ReconfigureDatatypeManager();
   NotifyObservers();
 }
 
-bool ProfileSyncService::sync_initialized() const {
+bool ProfileSyncService::SyncActive() const {
+  return backend_initialized_ && backend_mode_ == SYNC &&
+         directory_data_type_manager_ &&
+         directory_data_type_manager_->state() != DataTypeManager::STOPPED;
+}
+
+bool ProfileSyncService::backend_initialized() const {
   return backend_initialized_;
+}
+
+ProfileSyncService::BackendMode ProfileSyncService::backend_mode() const {
+  return backend_mode_;
+}
+
+bool ProfileSyncService::ConfigurationDone() const {
+  return directory_data_type_manager_ &&
+      directory_data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
 bool ProfileSyncService::waiting_for_auth() const {
@@ -1797,6 +1812,8 @@ void ProfileSyncService::ChangePreferredDataTypes(
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
+  if (!SyncActive() || !ConfigurationDone())
+    return syncer::ModelTypeSet();
   const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
   const syncer::ModelTypeSet failed_types =
       data_type_status_table_.GetFailedTypes();
@@ -1953,9 +1970,8 @@ syncer::UserShare* ProfileSyncService::GetUserShare() const {
 
 syncer::sessions::SyncSessionSnapshot
 ProfileSyncService::GetLastSessionSnapshot() const {
-  if (HasSyncingBackend() && backend_initialized_) {
+  if (backend_)
     return backend_->GetLastSessionSnapshot();
-  }
   return syncer::sessions::SyncSessionSnapshot();
 }
 
@@ -2089,7 +2105,7 @@ void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {
   // If no cached passphrase, or sync backend hasn't started up yet, just exit.
   // If the backend isn't running yet, OnBackendInitialized() will call this
   // method again after the backend starts up.
-  if (cached_passphrase_.empty() || !sync_initialized())
+  if (cached_passphrase_.empty() || !backend_initialized())
     return;
 
   // Backend is up and running, so we can consume the cached passphrase.
@@ -2139,7 +2155,7 @@ void ProfileSyncService::RequestAccessToken() {
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
                                                  PassphraseType type) {
   // This should only be called when the backend has been initialized.
-  DCHECK(sync_initialized());
+  DCHECK(backend_initialized());
   DCHECK(!(type == IMPLICIT && IsUsingSecondaryPassphrase())) <<
       "Data is already encrypted using an explicit passphrase";
   DCHECK(!(type == EXPLICIT &&
@@ -2173,10 +2189,10 @@ bool ProfileSyncService::SetDecryptionPassphrase(
 }
 
 void ProfileSyncService::EnableEncryptEverything() {
-  // Tests override sync_initialized() to always return true, so we
+  // Tests override backend_initialized() to always return true, so we
   // must check that instead of |backend_initialized_|.
   // TODO(akalin): Fix the above. :/
-  DCHECK(sync_initialized());
+  DCHECK(backend_initialized());
   // TODO(atwilson): Persist the encryption_pending_ flag to address the various
   // problems around cancelling encryption in the background (crbug.com/119649).
   if (!encrypt_everything_)
@@ -2224,7 +2240,7 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
 #if defined(OS_CHROMEOS)
   RefreshSpareBootstrapToken(password);
 #endif
-  if (!sync_initialized() || GetAuthError().state() != AuthError::NONE) {
+  if (!backend_initialized() || GetAuthError().state() != AuthError::NONE) {
     // Track the fact that we're still waiting for auth to complete.
     is_auth_in_progress_ = true;
   }
@@ -2425,19 +2441,6 @@ bool ProfileSyncService::IsSyncEnabled() {
 
 bool ProfileSyncService::IsManaged() const {
   return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
-}
-
-bool ProfileSyncService::ShouldPushChanges() {
-  // True only after all bootstrapping has succeeded: the sync backend
-  // is initialized, all enabled data types are consistent with one
-  // another, and no unrecoverable error has transpired.
-  if (HasUnrecoverableError())
-    return false;
-
-  if (!directory_data_type_manager_)
-    return false;
-
-  return directory_data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
 void ProfileSyncService::StopAndSuppress() {

@@ -285,14 +285,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // ProfileSyncServiceBase implementation.
   virtual bool HasSyncSetupCompleted() const OVERRIDE;
-  virtual bool ShouldPushChanges() OVERRIDE;
+  virtual bool SyncActive() const OVERRIDE;
   virtual syncer::ModelTypeSet GetActiveDataTypes() const OVERRIDE;
   virtual void AddObserver(ProfileSyncServiceBase::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       ProfileSyncServiceBase::Observer* observer) OVERRIDE;
   virtual bool HasObserver(
       ProfileSyncServiceBase::Observer* observer) const OVERRIDE;
-
 
   void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
   void RemoveProtocolEventObserver(
@@ -491,16 +490,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // This function is called by |SetSetupInProgress|.
   virtual void ReconfigureDatatypeManager();
 
-  // Returns true if the SyncBackendHost has told us it's ready to accept
-  // changes.
-  // [REMARK] - it is safe to call this function only from the ui thread.
-  // because the variable is not thread safe and should only be accessed from
-  // single thread. If we want multiple threads to access this(and there is
-  // currently no need to do so) we need to protect this with a lock.
-  // TODO(timsteele): What happens if the bookmark model is loaded, a change
-  // takes place, and the backend isn't initialized yet?
-  virtual bool sync_initialized() const;
-
   virtual bool HasUnrecoverableError() const;
   const std::string& unrecoverable_error_message() {
     return unrecoverable_error_message_;
@@ -562,7 +551,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void ReenableDatatype(syncer::ModelType type);
 
   // The functions below (until ActivateDataType()) should only be
-  // called if sync_initialized() is true.
+  // called if backend_initialized() is true.
 
   // TODO(akalin): This is called mostly by ModelAssociators and
   // tests.  Figure out how to pass the handle to the ModelAssociators
@@ -773,9 +762,16 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
-  BackendMode backend_mode() const {
-    return backend_mode_;
-  }
+  // Returns true if the SyncBackendHost has told us it's ready to accept
+  // changes.
+  bool backend_initialized() const;
+
+  // Returns the current mode the backend is in.
+  BackendMode backend_mode() const;
+
+  // Whether the data types active for the current mode have finished
+  // configuration.
+  bool ConfigurationDone() const;
 
   // Helpers for testing rollback.
   void SetBrowsingDataRemoverObserverForTesting(

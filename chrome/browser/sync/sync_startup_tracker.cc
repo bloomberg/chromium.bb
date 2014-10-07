@@ -63,7 +63,7 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
   }
 
   // If the sync backend has started up, notify the callback.
-  if (service->sync_initialized())
+  if (service->SyncActive())
     return SYNC_STARTUP_COMPLETE;
 
   // If the sync service has some kind of error, report to the user.

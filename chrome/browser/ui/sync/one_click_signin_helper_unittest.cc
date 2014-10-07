@@ -186,7 +186,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
     return first_setup_in_progress_;
   }
 
-  virtual bool sync_initialized() const override { return sync_initialized_; }
+  virtual bool SyncActive() const override { return sync_active_; }
 
   // Controls return value of FirstSetupInProgress. Because some bits
   // of UI depend on that value, it's useful to control it separately
@@ -196,8 +196,8 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
     first_setup_in_progress_ = in_progress;
   }
 
-  void set_sync_initialized(bool initialized) {
-    sync_initialized_ = initialized;
+  void set_sync_active(bool active) {
+    sync_active_ = active;
   }
 
  private:
@@ -210,10 +210,10 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           browser_sync::MANUAL_START),
         first_setup_in_progress_(false),
-        sync_initialized_(false) {}
+        sync_active_(false) {}
 
   bool first_setup_in_progress_;
-  bool sync_initialized_;
+  bool sync_active_;
 };
 
 }  // namespace
@@ -467,9 +467,9 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
       static_cast<OneClickTestProfileSyncService*>(
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               profile(), OneClickTestProfileSyncService::Build));
-  sync->set_sync_initialized(false);
+  sync->set_sync_active(false);
   sync->Initialize();
-  sync->set_sync_initialized(true);
+  sync->set_sync_active(true);
   sync->set_first_setup_in_progress(true);
 
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
