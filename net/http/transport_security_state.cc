@@ -270,372 +270,340 @@ std::string TransportSecurityState::CanonicalizeHost(const std::string& host) {
   return new_host;
 }
 
-// |ReportUMAOnPinFailure| uses these to report which domain was associated
-// with the public key pinning failure.
-//
-// DO NOT CHANGE THE ORDERING OF THESE NAMES OR REMOVE ANY OF THEM. Add new
-// domains at the END of the listing (but before DOMAIN_NUM_EVENTS).
-enum SecondLevelDomainName {
-  DOMAIN_NOT_PINNED,
+// BitReader is a class that allows a bytestring to be read bit-by-bit.
+class BitReader {
+ public:
+  BitReader(const uint8* bytes, size_t num_bits)
+      : bytes_(bytes),
+        num_bits_(num_bits),
+        num_bytes_((num_bits + 7) / 8),
+        current_byte_index_(0),
+        num_bits_used_(8) {}
 
-  DOMAIN_GOOGLE_COM,
-  DOMAIN_ANDROID_COM,
-  DOMAIN_GOOGLE_ANALYTICS_COM,
-  DOMAIN_GOOGLEPLEX_COM,
-  DOMAIN_YTIMG_COM,
-  DOMAIN_GOOGLEUSERCONTENT_COM,
-  DOMAIN_YOUTUBE_COM,
-  DOMAIN_GOOGLEAPIS_COM,
-  DOMAIN_GOOGLEADSERVICES_COM,
-  DOMAIN_GOOGLECODE_COM,
-  DOMAIN_APPSPOT_COM,
-  DOMAIN_GOOGLESYNDICATION_COM,
-  DOMAIN_DOUBLECLICK_NET,
-  DOMAIN_GSTATIC_COM,
-  DOMAIN_GMAIL_COM,
-  DOMAIN_GOOGLEMAIL_COM,
-  DOMAIN_GOOGLEGROUPS_COM,
-
-  DOMAIN_TORPROJECT_ORG,
-
-  DOMAIN_TWITTER_COM,
-  DOMAIN_TWIMG_COM,
-
-  DOMAIN_AKAMAIHD_NET,
-
-  DOMAIN_TOR2WEB_ORG,
-
-  DOMAIN_YOUTU_BE,
-  DOMAIN_GOOGLECOMMERCE_COM,
-  DOMAIN_URCHIN_COM,
-  DOMAIN_GOO_GL,
-  DOMAIN_G_CO,
-  DOMAIN_GOOGLE_AC,
-  DOMAIN_GOOGLE_AD,
-  DOMAIN_GOOGLE_AE,
-  DOMAIN_GOOGLE_AF,
-  DOMAIN_GOOGLE_AG,
-  DOMAIN_GOOGLE_AM,
-  DOMAIN_GOOGLE_AS,
-  DOMAIN_GOOGLE_AT,
-  DOMAIN_GOOGLE_AZ,
-  DOMAIN_GOOGLE_BA,
-  DOMAIN_GOOGLE_BE,
-  DOMAIN_GOOGLE_BF,
-  DOMAIN_GOOGLE_BG,
-  DOMAIN_GOOGLE_BI,
-  DOMAIN_GOOGLE_BJ,
-  DOMAIN_GOOGLE_BS,
-  DOMAIN_GOOGLE_BY,
-  DOMAIN_GOOGLE_CA,
-  DOMAIN_GOOGLE_CAT,
-  DOMAIN_GOOGLE_CC,
-  DOMAIN_GOOGLE_CD,
-  DOMAIN_GOOGLE_CF,
-  DOMAIN_GOOGLE_CG,
-  DOMAIN_GOOGLE_CH,
-  DOMAIN_GOOGLE_CI,
-  DOMAIN_GOOGLE_CL,
-  DOMAIN_GOOGLE_CM,
-  DOMAIN_GOOGLE_CN,
-  DOMAIN_CO_AO,
-  DOMAIN_CO_BW,
-  DOMAIN_CO_CK,
-  DOMAIN_CO_CR,
-  DOMAIN_CO_HU,
-  DOMAIN_CO_ID,
-  DOMAIN_CO_IL,
-  DOMAIN_CO_IM,
-  DOMAIN_CO_IN,
-  DOMAIN_CO_JE,
-  DOMAIN_CO_JP,
-  DOMAIN_CO_KE,
-  DOMAIN_CO_KR,
-  DOMAIN_CO_LS,
-  DOMAIN_CO_MA,
-  DOMAIN_CO_MZ,
-  DOMAIN_CO_NZ,
-  DOMAIN_CO_TH,
-  DOMAIN_CO_TZ,
-  DOMAIN_CO_UG,
-  DOMAIN_CO_UK,
-  DOMAIN_CO_UZ,
-  DOMAIN_CO_VE,
-  DOMAIN_CO_VI,
-  DOMAIN_CO_ZA,
-  DOMAIN_CO_ZM,
-  DOMAIN_CO_ZW,
-  DOMAIN_COM_AF,
-  DOMAIN_COM_AG,
-  DOMAIN_COM_AI,
-  DOMAIN_COM_AR,
-  DOMAIN_COM_AU,
-  DOMAIN_COM_BD,
-  DOMAIN_COM_BH,
-  DOMAIN_COM_BN,
-  DOMAIN_COM_BO,
-  DOMAIN_COM_BR,
-  DOMAIN_COM_BY,
-  DOMAIN_COM_BZ,
-  DOMAIN_COM_CN,
-  DOMAIN_COM_CO,
-  DOMAIN_COM_CU,
-  DOMAIN_COM_CY,
-  DOMAIN_COM_DO,
-  DOMAIN_COM_EC,
-  DOMAIN_COM_EG,
-  DOMAIN_COM_ET,
-  DOMAIN_COM_FJ,
-  DOMAIN_COM_GE,
-  DOMAIN_COM_GH,
-  DOMAIN_COM_GI,
-  DOMAIN_COM_GR,
-  DOMAIN_COM_GT,
-  DOMAIN_COM_HK,
-  DOMAIN_COM_IQ,
-  DOMAIN_COM_JM,
-  DOMAIN_COM_JO,
-  DOMAIN_COM_KH,
-  DOMAIN_COM_KW,
-  DOMAIN_COM_LB,
-  DOMAIN_COM_LY,
-  DOMAIN_COM_MT,
-  DOMAIN_COM_MX,
-  DOMAIN_COM_MY,
-  DOMAIN_COM_NA,
-  DOMAIN_COM_NF,
-  DOMAIN_COM_NG,
-  DOMAIN_COM_NI,
-  DOMAIN_COM_NP,
-  DOMAIN_COM_NR,
-  DOMAIN_COM_OM,
-  DOMAIN_COM_PA,
-  DOMAIN_COM_PE,
-  DOMAIN_COM_PH,
-  DOMAIN_COM_PK,
-  DOMAIN_COM_PL,
-  DOMAIN_COM_PR,
-  DOMAIN_COM_PY,
-  DOMAIN_COM_QA,
-  DOMAIN_COM_RU,
-  DOMAIN_COM_SA,
-  DOMAIN_COM_SB,
-  DOMAIN_COM_SG,
-  DOMAIN_COM_SL,
-  DOMAIN_COM_SV,
-  DOMAIN_COM_TJ,
-  DOMAIN_COM_TN,
-  DOMAIN_COM_TR,
-  DOMAIN_COM_TW,
-  DOMAIN_COM_UA,
-  DOMAIN_COM_UY,
-  DOMAIN_COM_VC,
-  DOMAIN_COM_VE,
-  DOMAIN_COM_VN,
-  DOMAIN_GOOGLE_CV,
-  DOMAIN_GOOGLE_CZ,
-  DOMAIN_GOOGLE_DE,
-  DOMAIN_GOOGLE_DJ,
-  DOMAIN_GOOGLE_DK,
-  DOMAIN_GOOGLE_DM,
-  DOMAIN_GOOGLE_DZ,
-  DOMAIN_GOOGLE_EE,
-  DOMAIN_GOOGLE_ES,
-  DOMAIN_GOOGLE_FI,
-  DOMAIN_GOOGLE_FM,
-  DOMAIN_GOOGLE_FR,
-  DOMAIN_GOOGLE_GA,
-  DOMAIN_GOOGLE_GE,
-  DOMAIN_GOOGLE_GG,
-  DOMAIN_GOOGLE_GL,
-  DOMAIN_GOOGLE_GM,
-  DOMAIN_GOOGLE_GP,
-  DOMAIN_GOOGLE_GR,
-  DOMAIN_GOOGLE_GY,
-  DOMAIN_GOOGLE_HK,
-  DOMAIN_GOOGLE_HN,
-  DOMAIN_GOOGLE_HR,
-  DOMAIN_GOOGLE_HT,
-  DOMAIN_GOOGLE_HU,
-  DOMAIN_GOOGLE_IE,
-  DOMAIN_GOOGLE_IM,
-  DOMAIN_GOOGLE_INFO,
-  DOMAIN_GOOGLE_IQ,
-  DOMAIN_GOOGLE_IS,
-  DOMAIN_GOOGLE_IT,
-  DOMAIN_IT_AO,
-  DOMAIN_GOOGLE_JE,
-  DOMAIN_GOOGLE_JO,
-  DOMAIN_GOOGLE_JOBS,
-  DOMAIN_GOOGLE_JP,
-  DOMAIN_GOOGLE_KG,
-  DOMAIN_GOOGLE_KI,
-  DOMAIN_GOOGLE_KZ,
-  DOMAIN_GOOGLE_LA,
-  DOMAIN_GOOGLE_LI,
-  DOMAIN_GOOGLE_LK,
-  DOMAIN_GOOGLE_LT,
-  DOMAIN_GOOGLE_LU,
-  DOMAIN_GOOGLE_LV,
-  DOMAIN_GOOGLE_MD,
-  DOMAIN_GOOGLE_ME,
-  DOMAIN_GOOGLE_MG,
-  DOMAIN_GOOGLE_MK,
-  DOMAIN_GOOGLE_ML,
-  DOMAIN_GOOGLE_MN,
-  DOMAIN_GOOGLE_MS,
-  DOMAIN_GOOGLE_MU,
-  DOMAIN_GOOGLE_MV,
-  DOMAIN_GOOGLE_MW,
-  DOMAIN_GOOGLE_NE,
-  DOMAIN_NE_JP,
-  DOMAIN_GOOGLE_NET,
-  DOMAIN_GOOGLE_NL,
-  DOMAIN_GOOGLE_NO,
-  DOMAIN_GOOGLE_NR,
-  DOMAIN_GOOGLE_NU,
-  DOMAIN_OFF_AI,
-  DOMAIN_GOOGLE_PK,
-  DOMAIN_GOOGLE_PL,
-  DOMAIN_GOOGLE_PN,
-  DOMAIN_GOOGLE_PS,
-  DOMAIN_GOOGLE_PT,
-  DOMAIN_GOOGLE_RO,
-  DOMAIN_GOOGLE_RS,
-  DOMAIN_GOOGLE_RU,
-  DOMAIN_GOOGLE_RW,
-  DOMAIN_GOOGLE_SC,
-  DOMAIN_GOOGLE_SE,
-  DOMAIN_GOOGLE_SH,
-  DOMAIN_GOOGLE_SI,
-  DOMAIN_GOOGLE_SK,
-  DOMAIN_GOOGLE_SM,
-  DOMAIN_GOOGLE_SN,
-  DOMAIN_GOOGLE_SO,
-  DOMAIN_GOOGLE_ST,
-  DOMAIN_GOOGLE_TD,
-  DOMAIN_GOOGLE_TG,
-  DOMAIN_GOOGLE_TK,
-  DOMAIN_GOOGLE_TL,
-  DOMAIN_GOOGLE_TM,
-  DOMAIN_GOOGLE_TN,
-  DOMAIN_GOOGLE_TO,
-  DOMAIN_GOOGLE_TP,
-  DOMAIN_GOOGLE_TT,
-  DOMAIN_GOOGLE_US,
-  DOMAIN_GOOGLE_UZ,
-  DOMAIN_GOOGLE_VG,
-  DOMAIN_GOOGLE_VU,
-  DOMAIN_GOOGLE_WS,
-
-  DOMAIN_CHROMIUM_ORG,
-
-  DOMAIN_CRYPTO_CAT,
-  DOMAIN_LAVABIT_COM,
-
-  DOMAIN_GOOGLETAGMANAGER_COM,
-  DOMAIN_GOOGLETAGSERVICES_COM,
-
-  DOMAIN_DROPBOX_COM,
-  DOMAIN_YOUTUBE_NOCOOKIE_COM,
-  DOMAIN_2MDN_NET,
-
-  // Boundary value for UMA_HISTOGRAM_ENUMERATION:
-  DOMAIN_NUM_EVENTS
-};
-
-// PublicKeyPins contains a number of SubjectPublicKeyInfo hashes for a site.
-// The validated certificate chain for the site must not include any of
-// |excluded_hashes| and must include one or more of |required_hashes|.
-struct PublicKeyPins {
-  const char* const* required_hashes;
-  const char* const* excluded_hashes;
-};
-
-struct HSTSPreload {
-  uint8 length;
-  bool include_subdomains;
-  char dns_name[38];
-  bool https_required;
-  PublicKeyPins pins;
-  SecondLevelDomainName second_level_domain_name;
-};
-
-static bool HasPreload(const struct HSTSPreload* entries,
-                       size_t num_entries,
-                       const std::string& canonicalized_host,
-                       size_t i,
-                       bool enable_static_pins,
-                       TransportSecurityState::DomainState* out,
-                       bool* ret) {
-  for (size_t j = 0; j < num_entries; j++) {
-    if (entries[j].length == canonicalized_host.size() - i &&
-        memcmp(entries[j].dns_name, &canonicalized_host[i],
-               entries[j].length) == 0) {
-      if (!entries[j].include_subdomains && i != 0) {
-        *ret = false;
-      } else {
-        out->sts.include_subdomains = entries[j].include_subdomains;
-        out->sts.last_observed = base::GetBuildTime();
-        *ret = true;
-        out->sts.upgrade_mode =
-            TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
-        if (!entries[j].https_required)
-          out->sts.upgrade_mode =
-              TransportSecurityState::DomainState::MODE_DEFAULT;
-
-        if (enable_static_pins) {
-          out->pkp.include_subdomains = entries[j].include_subdomains;
-          out->pkp.last_observed = base::GetBuildTime();
-          if (entries[j].pins.required_hashes) {
-            const char* const* sha1_hash = entries[j].pins.required_hashes;
-            while (*sha1_hash) {
-              AddHash(*sha1_hash, &out->pkp.spki_hashes);
-              sha1_hash++;
-            }
-          }
-          if (entries[j].pins.excluded_hashes) {
-            const char* const* sha1_hash = entries[j].pins.excluded_hashes;
-            while (*sha1_hash) {
-              AddHash(*sha1_hash, &out->pkp.bad_spki_hashes);
-              sha1_hash++;
-            }
-          }
-        }
+  // Next sets |*out| to the next bit from the input. It returns false if no
+  // more bits are available or true otherwise.
+  bool Next(bool* out) {
+    if (num_bits_used_ == 8) {
+      if (current_byte_index_ >= num_bytes_) {
+        return false;
       }
-      return true;
+      current_byte_ = bytes_[current_byte_index_++];
+      num_bits_used_ = 0;
+    }
+
+    *out = 1 & (current_byte_ >> (7 - num_bits_used_));
+    num_bits_used_++;
+    return true;
+  }
+
+  // Read sets the |num_bits| least-significant bits of |*out| to the value of
+  // the next |num_bits| bits from the input. It returns false if there are
+  // insufficient bits in the input or true otherwise.
+  bool Read(unsigned num_bits, uint32* out) {
+    DCHECK_LE(num_bits, 32u);
+
+    uint32 ret = 0;
+    for (unsigned i = 0; i < num_bits; ++i) {
+      bool bit;
+      if (!Next(&bit)) {
+        return false;
+      }
+      ret |= static_cast<uint32>(bit) << (num_bits - 1 - i);
+    }
+
+    *out = ret;
+    return true;
+  }
+
+  // Unary sets |*out| to the result of decoding a unary value from the input.
+  // It returns false if there were insufficient bits in the input and true
+  // otherwise.
+  bool Unary(size_t* out) {
+    size_t ret = 0;
+
+    for (;;) {
+      bool bit;
+      if (!Next(&bit)) {
+        return false;
+      }
+      if (!bit) {
+        break;
+      }
+      ret++;
+    }
+
+    *out = ret;
+    return true;
+  }
+
+  // Seek sets the current offest in the input to bit number |offset|. It
+  // returns true if |offset| is within the range of the input and false
+  // otherwise.
+  bool Seek(size_t offset) {
+    if (offset >= num_bits_) {
+      return false;
+    }
+    current_byte_index_ = offset / 8;
+    current_byte_ = bytes_[current_byte_index_++];
+    num_bits_used_ = offset % 8;
+    return true;
+  }
+
+ private:
+  const uint8* const bytes_;
+  const size_t num_bits_;
+  const size_t num_bytes_;
+  // current_byte_index_ contains the current byte offset in |bytes_|.
+  size_t current_byte_index_;
+  // current_byte_ contains the current byte of the input.
+  uint8 current_byte_;
+  // num_bits_used_ contains the number of bits of |current_byte_| that have
+  // been read.
+  unsigned num_bits_used_;
+};
+
+// HuffmanDecoder is a very simple Huffman reader. The input Huffman tree is
+// simply encoded as a series of two-byte structures. The first byte determines
+// the "0" pointer for that node and the second the "1" pointer. Each byte
+// either has the MSB set, in which case the bottom 7 bits are the value for
+// that position, or else the bottom seven bits contain the index of a node.
+//
+// The tree is decoded by walking rather than a table-driven approach.
+class HuffmanDecoder {
+ public:
+  HuffmanDecoder(const uint8* tree, size_t tree_bytes)
+      : tree_(tree),
+        tree_bytes_(tree_bytes) {}
+
+  bool Decode(BitReader* reader, char* out) {
+    const uint8* current = &tree_[tree_bytes_-2];
+
+    for (;;) {
+      bool bit;
+      if (!reader->Next(&bit)) {
+        return false;
+      }
+
+      uint8 b = current[bit];
+      if (b & 0x80) {
+        *out = static_cast<char>(b & 0x7f);
+        return true;
+      }
+
+      unsigned offset = static_cast<unsigned>(b) * 2;
+      DCHECK_LT(offset, tree_bytes_);
+      if (offset >= tree_bytes_) {
+        return false;
+      }
+
+      current = &tree_[offset];
     }
   }
-  return false;
-}
+
+ private:
+  const uint8* const tree_;
+  const size_t tree_bytes_;
+};
 
 #include "net/http/transport_security_state_static.h"
 
-// Returns the HSTSPreload entry for the |canonicalized_host| in |entries|,
-// or NULL if there is none. Prefers exact hostname matches to those that
-// match only because HSTSPreload.include_subdomains is true.
+// PreloadResult is the result of resolving a specific name in the preloaded
+// data.
+struct PreloadResult {
+  uint32 pinset_id;
+  uint32 domain_id;
+  // hostname_offset contains the number of bytes from the start of the given
+  // hostname where the name of the matching entry starts.
+  size_t hostname_offset;
+  bool include_subdomains;
+  bool force_https;
+  bool has_pins;
+};
+
+// DecodeHSTSPreloadRaw resolves |hostname| in the preloaded data. It returns
+// false on internal error and true otherwise. After a successful return,
+// |*out_found| is true iff a relevant entry has been found. If so, |*out|
+// contains the details.
 //
-// |canonicalized_host| should be the hostname as canonicalized by
-// CanonicalizeHost.
-static const struct HSTSPreload* GetHSTSPreload(
-    const std::string& canonicalized_host,
-    const struct HSTSPreload* entries,
-    size_t num_entries) {
-  for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
-    for (size_t j = 0; j < num_entries; j++) {
-      const struct HSTSPreload* entry = entries + j;
+// Don't call this function, call DecodeHSTSPreload, below.
+//
+// Although this code should be robust, it never processes attacker-controlled
+// data -- it only operates on the preloaded data built into the binary.
+//
+// The preloaded data is represented as a trie and matches the hostname
+// backwards. Each node in the trie starts with a number of characters, which
+// must match exactly. After that is a dispatch table which maps the next
+// character in the hostname to another node in the trie.
+//
+// In the dispatch table, the zero character represents the "end of string"
+// (which is the *beginning* of a hostname since we process it backwards). The
+// value in that case is special -- rather than an offset to another trie node,
+// it contains the HSTS information: whether subdomains are included, pinsets
+// etc. If an "end of string" matches a period in the hostname then the
+// information is remembered because, if no more specific node is found, then
+// that information applies to the hostname.
+//
+// Dispatch tables are always given in order, but the "end of string" (zero)
+// value always comes before an entry for '.'.
+bool DecodeHSTSPreloadRaw(const std::string& hostname,
+                          bool* out_found,
+                          PreloadResult* out) {
+  HuffmanDecoder huffman(kHSTSHuffmanTree, sizeof(kHSTSHuffmanTree));
+  BitReader reader(kPreloadedHSTSData, kPreloadedHSTSBits);
+  size_t bit_offset = kHSTSRootPosition;
+  static const char kEndOfString = 0;
+  static const char kEndOfTable = 127;
 
-      if (i != 0 && !entry->include_subdomains)
+  *out_found = false;
+
+  if (hostname.empty()) {
+    return true;
+  }
+  // hostname_offset contains one more than the index of the current character
+  // in the hostname that is being considered. It's one greater so that we can
+  // represent the position just before the beginning (with zero).
+  size_t hostname_offset = hostname.size();
+
+  for (;;) {
+    // Seek to the desired location.
+    if (!reader.Seek(bit_offset)) {
+      return false;
+    }
+
+    // Decode the unary length of the common prefix.
+    size_t prefix_length;
+    if (!reader.Unary(&prefix_length)) {
+      return false;
+    }
+
+    // Match each character in the prefix.
+    for (size_t i = 0; i < prefix_length; ++i) {
+      if (hostname_offset == 0) {
+        // We can't match the terminator with a prefix string.
+        return true;
+      }
+
+      char c;
+      if (!huffman.Decode(&reader, &c)) {
+        return false;
+      }
+      if (hostname[hostname_offset - 1] != c) {
+        return true;
+      }
+      hostname_offset--;
+    }
+
+    bool is_first_offset = true;
+    size_t current_offset = 0;
+
+    // Next is the dispatch table.
+    for (;;) {
+      char c;
+      if (!huffman.Decode(&reader, &c)) {
+        return false;
+      }
+      if (c == kEndOfTable) {
+        // No exact match.
+        return true;
+      }
+
+      if (c == kEndOfString) {
+        PreloadResult tmp;
+        if (!reader.Next(&tmp.include_subdomains) ||
+            !reader.Next(&tmp.force_https) ||
+            !reader.Next(&tmp.has_pins)) {
+          return false;
+        }
+
+        if (tmp.has_pins) {
+          if (!reader.Read(4, &tmp.pinset_id) ||
+              !reader.Read(9, &tmp.domain_id)) {
+            return false;
+          }
+        }
+
+        tmp.hostname_offset = hostname_offset;
+
+        if (hostname_offset == 0 || hostname[hostname_offset - 1] == '.') {
+          *out_found = tmp.include_subdomains;
+          *out = tmp;
+        }
+
+        if (hostname_offset == 0) {
+          *out_found = true;
+          return true;
+        }
+
         continue;
+      }
 
-      if (entry->length == canonicalized_host.size() - i &&
-          memcmp(entry->dns_name, &canonicalized_host[i], entry->length) == 0) {
-        return entry;
+      // The entries in a dispatch table are in order thus we can tell if there
+      // will be no match if the current character past the one that we want.
+      if (hostname_offset == 0 || hostname[hostname_offset-1] < c) {
+        return true;
+      }
+
+      if (is_first_offset) {
+        // The first offset is backwards from the current position.
+        uint32 jump_delta_bits;
+        uint32 jump_delta;
+        if (!reader.Read(5, &jump_delta_bits) ||
+            !reader.Read(jump_delta_bits, &jump_delta)) {
+          return false;
+        }
+
+        if (bit_offset <= jump_delta) {
+          return false;
+        }
+
+        current_offset = bit_offset - jump_delta;
+        is_first_offset = false;
+      } else {
+        // Subsequent offsets are forward from the target of the first offset.
+        uint32 is_long_jump;
+        if (!reader.Read(1, &is_long_jump)) {
+          return false;
+        }
+
+        uint32 jump_delta;
+        if (!is_long_jump) {
+          if (!reader.Read(7, &jump_delta)) {
+            return false;
+          }
+        } else {
+          uint32 jump_delta_bits;
+          if (!reader.Read(4, &jump_delta_bits) ||
+              !reader.Read(jump_delta_bits + 8, &jump_delta)) {
+            return false;
+          }
+        }
+
+        current_offset += jump_delta;
+        if (current_offset >= bit_offset) {
+          return false;
+        }
+      }
+
+      DCHECK_LT(0u, hostname_offset);
+      if (hostname[hostname_offset - 1] == c) {
+        bit_offset = current_offset;
+        hostname_offset--;
+        break;
       }
     }
   }
+}
 
-  return NULL;
+bool DecodeHSTSPreload(const std::string& hostname,
+                       PreloadResult* out) {
+  bool found;
+  if (!DecodeHSTSPreloadRaw(hostname, &found, out)) {
+    LOG(ERROR) << "Internal error in DecodeHSTSPreloadRaw for hostname "
+               << hostname;
+    return false;
+  }
+
+  return found;
 }
 
 bool TransportSecurityState::AddHSTSHeader(const std::string& host,
@@ -732,31 +700,23 @@ bool TransportSecurityState::AddHPKP(const std::string& host,
 
 // static
 bool TransportSecurityState::IsGooglePinnedProperty(const std::string& host) {
-  std::string canonicalized_host = CanonicalizeHost(host);
-  const struct HSTSPreload* entry =
-      GetHSTSPreload(canonicalized_host, kPreloadedSTS, kNumPreloadedSTS);
-
-  return entry && entry->pins.required_hashes == kGoogleAcceptableCerts;
+  PreloadResult result;
+  return DecodeHSTSPreload(host, &result) && result.has_pins &&
+         kPinsets[result.pinset_id].accepted_pins == kGoogleAcceptableCerts;
 }
 
 // static
 void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
-  std::string canonicalized_host = CanonicalizeHost(host);
-
-  const struct HSTSPreload* entry =
-      GetHSTSPreload(canonicalized_host, kPreloadedSTS, kNumPreloadedSTS);
-
-  if (!entry) {
-    // We don't care to report pin failures for dynamic pins.
+  PreloadResult result;
+  if (!DecodeHSTSPreload(host, &result) ||
+      !result.has_pins) {
     return;
   }
 
-  DCHECK(entry);
-  DCHECK(entry->pins.required_hashes);
-  DCHECK(entry->second_level_domain_name != DOMAIN_NOT_PINNED);
+  DCHECK(result.domain_id != DOMAIN_NOT_PINNED);
 
-  UMA_HISTOGRAM_ENUMERATION("Net.PublicKeyPinFailureDomain",
-                            entry->second_level_domain_name, DOMAIN_NUM_EVENTS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.PublicKeyPinFailureDomain", result.domain_id, DOMAIN_NUM_EVENTS);
 }
 
 // static
@@ -787,31 +747,52 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
                                                   DomainState* out) const {
   DCHECK(CalledOnValidThread());
 
-  const std::string canonicalized_host = CanonicalizeHost(host);
-
   out->sts.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
   out->sts.include_subdomains = false;
   out->pkp.include_subdomains = false;
 
-  const bool is_build_timely = IsBuildTimely();
+  if (!IsBuildTimely())
+    return false;
 
-  for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
-    std::string host_sub_chunk(&canonicalized_host[i],
-                               canonicalized_host.size() - i);
-    out->domain = DNSDomainToString(host_sub_chunk);
-    bool ret;
-    if (is_build_timely && HasPreload(kPreloadedSTS,
-                                      kNumPreloadedSTS,
-                                      canonicalized_host,
-                                      i,
-                                      enable_static_pins_,
-                                      out,
-                                      &ret)) {
-      return ret;
+  PreloadResult result;
+  if (!DecodeHSTSPreload(host, &result))
+    return false;
+
+  out->domain = host.substr(result.hostname_offset);
+  out->sts.include_subdomains = result.include_subdomains;
+  out->sts.last_observed = base::GetBuildTime();
+  out->sts.upgrade_mode =
+      TransportSecurityState::DomainState::MODE_DEFAULT;
+  if (result.force_https) {
+    out->sts.upgrade_mode =
+        TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
+  }
+
+  if (enable_static_pins_ && result.has_pins) {
+    out->pkp.include_subdomains = result.include_subdomains;
+    out->pkp.last_observed = base::GetBuildTime();
+
+    if (result.pinset_id >= arraysize(kPinsets))
+      return false;
+    const Pinset *pinset = &kPinsets[result.pinset_id];
+
+    if (pinset->accepted_pins) {
+      const char* const* sha1_hash = pinset->accepted_pins;
+      while (*sha1_hash) {
+        AddHash(*sha1_hash, &out->pkp.spki_hashes);
+        sha1_hash++;
+      }
+    }
+    if (pinset->rejected_pins) {
+      const char* const* sha1_hash = pinset->rejected_pins;
+      while (*sha1_hash) {
+        AddHash(*sha1_hash, &out->pkp.bad_spki_hashes);
+        sha1_hash++;
+      }
     }
   }
 
-  return false;
+  return true;
 }
 
 bool TransportSecurityState::GetDynamicDomainState(const std::string& host,
