@@ -280,9 +280,18 @@ void NotifyTimezoneChangeOnThisThread() {
 
 class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
  public:
+  RenderFrameSetupImpl()
+      : routing_id_highmark_(-1) {
+  }
+
   virtual void GetServiceProviderForFrame(
       int32_t frame_routing_id,
       mojo::InterfaceRequest<mojo::ServiceProvider> request) OVERRIDE {
+    // TODO(morrita): This is for investigating http://crbug.com/415059 and
+    // should be removed once it is fixed.
+    CHECK_LT(routing_id_highmark_, frame_routing_id);
+    routing_id_highmark_ = frame_routing_id;
+
     RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_routing_id);
     // We can receive a GetServiceProviderForFrame message for a frame not yet
     // created due to a race between the message and a ViewMsg_New IPC that
@@ -295,6 +304,9 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
 
     frame->BindServiceRegistry(request.PassMessagePipe());
   }
+
+ private:
+  int32_t routing_id_highmark_;
 };
 
 void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
