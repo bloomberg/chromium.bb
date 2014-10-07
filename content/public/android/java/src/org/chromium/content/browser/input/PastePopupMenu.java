@@ -111,9 +111,9 @@ public class PastePopupMenu implements OnClickListener {
         mRawPositionX = x;
         mRawPositionY = y;
 
-        View contentView = mContainer.getContentView();
-        int width = contentView.getMeasuredWidth();
-        int height = contentView.getMeasuredHeight();
+        final View contentView = mContainer.getContentView();
+        final int width = contentView.getMeasuredWidth();
+        final int height = contentView.getMeasuredHeight();
 
         mPositionX = (int) (x - width / 2.0f);
         mPositionY = y - height - mLineOffsetY;
@@ -130,11 +130,6 @@ public class PastePopupMenu implements OnClickListener {
 
         final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
         if (coords[1] < minOffsetY) {
-            // Update dimensions from new view
-            contentView = mContainer.getContentView();
-            width = contentView.getMeasuredWidth();
-            height = contentView.getMeasuredHeight();
-
             // Vertical clipping, move under edited line and to the side of insertion cursor
             // TODO bottom clipping in case there is no system bar
             coords[1] += height;
