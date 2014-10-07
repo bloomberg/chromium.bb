@@ -2089,7 +2089,6 @@ internal_notest_paladin.add_config('urara-paladin',
 internal_notest_paladin.add_config('veyron_pinky-paladin',
   boards=['veyron_pinky'],
   paladin_builder_name='veyron_pinky paladin',
-  important=False,
 )
 
 internal_notest_paladin.add_config('nyan_freon-paladin',
