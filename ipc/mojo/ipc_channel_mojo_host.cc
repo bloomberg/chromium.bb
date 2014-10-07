@@ -20,9 +20,9 @@ class ChannelMojoHost::ChannelDelegate : public ChannelMojo::Delegate {
   virtual ~ChannelDelegate();
 
   // ChannelMojo::Delegate
-  virtual base::WeakPtr<Delegate> ToWeakPtr() OVERRIDE;
-  virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) OVERRIDE;
-  virtual scoped_refptr<base::TaskRunner> GetIOTaskRunner() OVERRIDE;
+  virtual base::WeakPtr<Delegate> ToWeakPtr() override;
+  virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) override;
+  virtual scoped_refptr<base::TaskRunner> GetIOTaskRunner() override;
 
   // Returns an weak ptr of ChannelDelegate instead of Delegate
   base::WeakPtr<ChannelDelegate> GetWeakPtr();

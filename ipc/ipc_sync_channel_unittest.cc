@@ -64,7 +64,7 @@ class Worker : public Listener, public Sender {
   }
   void AddRef() { }
   void Release() { }
-  virtual bool Send(Message* msg) OVERRIDE { return channel_->Send(msg); }
+  virtual bool Send(Message* msg) override { return channel_->Send(msg); }
   void WaitForChannelCreation() { channel_created_->Wait(); }
   void CloseChannel() {
     DCHECK(base::MessageLoop::current() == ListenerThread()->message_loop());
@@ -200,7 +200,7 @@ class Worker : public Listener, public Sender {
     listener_event->Signal();
   }
 
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(Worker, message)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_Double, OnDoubleDelay)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_AnswerToLife,
@@ -274,7 +274,7 @@ class SimpleServer : public Worker {
   explicit SimpleServer(bool pump_during_send)
       : Worker(Channel::MODE_SERVER, "simpler_server"),
         pump_during_send_(pump_during_send) { }
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     SendAnswerToLife(pump_during_send_, true);
     Done();
   }
@@ -286,7 +286,7 @@ class SimpleClient : public Worker {
  public:
   SimpleClient() : Worker(Channel::MODE_CLIENT, "simple_client") { }
 
-  virtual void OnAnswer(int* answer) OVERRIDE {
+  virtual void OnAnswer(int* answer) override {
     *answer = 42;
     Done();
   }
@@ -316,12 +316,12 @@ class TwoStepServer : public Worker {
       : Worker(Channel::MODE_SERVER, "simpler_server"),
         create_pipe_now_(create_pipe_now) { }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     SendAnswerToLife(false, true);
     Done();
   }
 
-  virtual SyncChannel* CreateChannel() OVERRIDE {
+  virtual SyncChannel* CreateChannel() override {
     SyncChannel* channel =
         SyncChannel::Create(channel_name(), mode(), this,
                             ipc_thread().message_loop_proxy().get(),
@@ -339,12 +339,12 @@ class TwoStepClient : public Worker {
       : Worker(Channel::MODE_CLIENT, "simple_client"),
         create_pipe_now_(create_pipe_now) { }
 
-  virtual void OnAnswer(int* answer) OVERRIDE {
+  virtual void OnAnswer(int* answer) override {
     *answer = 42;
     Done();
   }
 
-  virtual SyncChannel* CreateChannel() OVERRIDE {
+  virtual SyncChannel* CreateChannel() override {
     SyncChannel* channel =
         SyncChannel::Create(channel_name(), mode(), this,
                             ipc_thread().message_loop_proxy().get(),
@@ -378,7 +378,7 @@ class DelayClient : public Worker {
  public:
   DelayClient() : Worker(Channel::MODE_CLIENT, "delay_client") { }
 
-  virtual void OnAnswerDelay(Message* reply_msg) OVERRIDE {
+  virtual void OnAnswerDelay(Message* reply_msg) override {
     SyncChannelTestMsg_AnswerToLife::WriteReplyParams(reply_msg, 42);
     Send(reply_msg);
     Done();
@@ -406,7 +406,7 @@ class NoHangServer : public Worker {
       : Worker(Channel::MODE_SERVER, "no_hang_server"),
         got_first_reply_(got_first_reply),
         pump_during_send_(pump_during_send) { }
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     SendAnswerToLife(pump_during_send_, true);
     got_first_reply_->Signal();
 
@@ -424,7 +424,7 @@ class NoHangClient : public Worker {
     : Worker(Channel::MODE_CLIENT, "no_hang_client"),
       got_first_reply_(got_first_reply) { }
 
-  virtual void OnAnswerDelay(Message* reply_msg) OVERRIDE {
+  virtual void OnAnswerDelay(Message* reply_msg) override {
     // Use the DELAY_REPLY macro so that we can force the reply to be sent
     // before this function returns (when the channel will be reset).
     SyncChannelTestMsg_AnswerToLife::WriteReplyParams(reply_msg, 42);
@@ -459,7 +459,7 @@ class UnblockServer : public Worker {
     : Worker(Channel::MODE_SERVER, "unblock_server"),
       pump_during_send_(pump_during_send),
       delete_during_send_(delete_during_send) { }
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     if (delete_during_send_) {
       // Use custom code since race conditions mean the answer may or may not be
       // available.
@@ -474,7 +474,7 @@ class UnblockServer : public Worker {
     Done();
   }
 
-  virtual void OnDoubleDelay(int in, Message* reply_msg) OVERRIDE {
+  virtual void OnDoubleDelay(int in, Message* reply_msg) override {
     SyncChannelTestMsg_Double::WriteReplyParams(reply_msg, in * 2);
     Send(reply_msg);
     if (delete_during_send_)
@@ -491,7 +491,7 @@ class UnblockClient : public Worker {
     : Worker(Channel::MODE_CLIENT, "unblock_client"),
       pump_during_send_(pump_during_send) { }
 
-  virtual void OnAnswer(int* answer) OVERRIDE {
+  virtual void OnAnswer(int* answer) override {
     SendDouble(pump_during_send_, true);
     *answer = 42;
     Done();
@@ -533,12 +533,12 @@ class RecursiveServer : public Worker {
       : Worker(Channel::MODE_SERVER, "recursive_server"),
         expected_send_result_(expected_send_result),
         pump_first_(pump_first), pump_second_(pump_second) {}
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     SendDouble(pump_first_, expected_send_result_);
     Done();
   }
 
-  virtual void OnDouble(int in, int* out) OVERRIDE {
+  virtual void OnDouble(int in, int* out) override {
     *out = in * 2;
     SendAnswerToLife(pump_second_, expected_send_result_);
   }
@@ -552,7 +552,7 @@ class RecursiveClient : public Worker {
       : Worker(Channel::MODE_CLIENT, "recursive_client"),
         pump_during_send_(pump_during_send), close_channel_(close_channel) {}
 
-  virtual void OnDoubleDelay(int in, Message* reply_msg) OVERRIDE {
+  virtual void OnDoubleDelay(int in, Message* reply_msg) override {
     SendDouble(pump_during_send_, !close_channel_);
     if (close_channel_) {
       delete reply_msg;
@@ -563,7 +563,7 @@ class RecursiveClient : public Worker {
     Done();
   }
 
-  virtual void OnAnswerDelay(Message* reply_msg) OVERRIDE {
+  virtual void OnAnswerDelay(Message* reply_msg) override {
     if (close_channel_) {
       delete reply_msg;
       CloseChannel();
@@ -629,7 +629,7 @@ class MultipleServer1 : public Worker {
     : Worker("test_channel1", Channel::MODE_SERVER),
       pump_during_send_(pump_during_send) { }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     SendDouble(pump_during_send_, true);
     Done();
   }
@@ -645,7 +645,7 @@ class MultipleClient1 : public Worker {
       client1_msg_received_(client1_msg_received),
       client1_can_reply_(client1_can_reply) { }
 
-  virtual void OnDouble(int in, int* out) OVERRIDE {
+  virtual void OnDouble(int in, int* out) override {
     client1_msg_received_->Signal();
     *out = in * 2;
     client1_can_reply_->Wait();
@@ -660,7 +660,7 @@ class MultipleServer2 : public Worker {
  public:
   MultipleServer2() : Worker("test_channel2", Channel::MODE_SERVER) { }
 
-  virtual void OnAnswer(int* result) OVERRIDE {
+  virtual void OnAnswer(int* result) override {
     *result = 42;
     Done();
   }
@@ -676,7 +676,7 @@ class MultipleClient2 : public Worker {
       client1_can_reply_(client1_can_reply),
       pump_during_send_(pump_during_send) { }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     client1_msg_received_->Wait();
     SendAnswerToLife(pump_during_send_, true);
     client1_can_reply_->Signal();
@@ -746,7 +746,7 @@ class QueuedReplyServer : public Worker {
     Worker::OverrideThread(listener_thread);
   }
 
-  virtual void OnNestedTestMsg(Message* reply_msg) OVERRIDE {
+  virtual void OnNestedTestMsg(Message* reply_msg) override {
     VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
     SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
     Send(reply_msg);
@@ -775,7 +775,7 @@ class QueuedReplyClient : public Worker {
     Worker::OverrideThread(listener_thread);
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     std::string response;
     SyncMessage* msg = new SyncChannelNestedTestMsg_String(&response);
     if (pump_during_send_)
@@ -848,7 +848,7 @@ class ChattyClient : public Worker {
   ChattyClient() :
       Worker(Channel::MODE_CLIENT, "chatty_client") { }
 
-  virtual void OnAnswer(int* answer) OVERRIDE {
+  virtual void OnAnswer(int* answer) override {
     // The PostMessage limit is 10k.  Send 20% more than that.
     const int kMessageLimit = 10000;
     const int kMessagesToSend = kMessageLimit * 120 / 100;
@@ -895,7 +895,7 @@ class DoneEventRaceServer : public Worker {
   DoneEventRaceServer()
       : Worker(Channel::MODE_SERVER, "done_event_race_server") { }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(&NestedCallback, this));
     base::MessageLoop::current()->PostDelayedTask(
@@ -934,7 +934,7 @@ class TestSyncMessageFilter : public SyncMessageFilter {
         message_loop_(message_loop) {
   }
 
-  virtual void OnFilterAdded(Sender* sender) OVERRIDE {
+  virtual void OnFilterAdded(Sender* sender) override {
     SyncMessageFilter::OnFilterAdded(sender);
     message_loop_->PostTask(
         FROM_HERE,
@@ -969,7 +969,7 @@ class SyncMessageFilterServer : public Worker {
                                         thread_.message_loop_proxy());
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     channel()->AddFilter(filter_.get());
   }
 
@@ -998,12 +998,12 @@ class ServerSendAfterClose : public Worker {
   }
 
  private:
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     CloseChannel();
     Done();
   }
 
-  virtual bool Send(Message* msg) OVERRIDE {
+  virtual bool Send(Message* msg) override {
     send_result_ = Worker::Send(msg);
     Done();
     return send_result_;
@@ -1065,7 +1065,7 @@ class RestrictedDispatchServer : public Worker {
   base::Thread* ListenerThread() { return Worker::ListenerThread(); }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchServer, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_PingTTL, OnPingTTL)
@@ -1098,7 +1098,7 @@ class NonRestrictedDispatchServer : public Worker {
   }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(NonRestrictedDispatchServer, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, Done)
@@ -1123,7 +1123,7 @@ class RestrictedDispatchClient : public Worker {
         success_(success),
         sent_ping_event_(sent_ping_event) {}
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     // Incoming messages from our channel should only be dispatched when we
     // send a message on that same channel.
     channel()->SetRestrictDispatchChannelGroup(1);
@@ -1187,7 +1187,7 @@ class RestrictedDispatchClient : public Worker {
   }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchClient, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Ping, OnPing)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_PingTTL, OnPingTTL)
@@ -1281,7 +1281,7 @@ class RestrictedDispatchDeadlockServer : public Worker {
     SendMessageToClient();
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     channel()->SetRestrictDispatchChannelGroup(1);
     server_ready_event_->Signal();
   }
@@ -1289,7 +1289,7 @@ class RestrictedDispatchDeadlockServer : public Worker {
   base::Thread* ListenerThread() { return Worker::ListenerThread(); }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchDeadlockServer, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, Done)
@@ -1329,7 +1329,7 @@ class RestrictedDispatchDeadlockClient2 : public Worker {
         received_noarg_reply_(false),
         done_issued_(false) {}
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     server_ready_event_->Wait();
   }
 
@@ -1347,7 +1347,7 @@ class RestrictedDispatchDeadlockClient2 : public Worker {
 
   base::Thread* ListenerThread() { return Worker::ListenerThread(); }
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchDeadlockClient2, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
     IPC_END_MESSAGE_MAP()
@@ -1390,7 +1390,7 @@ class RestrictedDispatchDeadlockClient1 : public Worker {
         received_noarg_reply_(false),
         done_issued_(false) {}
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     server_ready_event_->Wait();
     server_->ListenerThread()->message_loop()->PostTask(
         FROM_HERE,
@@ -1410,7 +1410,7 @@ class RestrictedDispatchDeadlockClient1 : public Worker {
   }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchDeadlockClient1, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
     IPC_END_MESSAGE_MAP()
@@ -1523,7 +1523,7 @@ class RestrictedDispatchPipeWorker : public Worker {
     Done();
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     channel()->SetRestrictDispatchChannelGroup(group_);
     if (is_first())
       event1_->Signal();
@@ -1556,7 +1556,7 @@ class RestrictedDispatchPipeWorker : public Worker {
   bool is_first() { return !!success_; }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchPipeWorker, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_PingTTL, OnPingTTL)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, OnDone)
@@ -1607,7 +1607,7 @@ class ReentrantReplyServer1 : public Worker {
       : Worker("reentrant_reply1", Channel::MODE_SERVER),
         server_ready_(server_ready) { }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     server2_channel_ =
         SyncChannel::Create("reentrant_reply2",
                             IPC::Channel::MODE_CLIENT,
@@ -1623,7 +1623,7 @@ class ReentrantReplyServer1 : public Worker {
   }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(ReentrantReplyServer1, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Reentrant2, OnReentrant2)
      IPC_REPLY_HANDLER(OnReply)
@@ -1653,7 +1653,7 @@ class ReentrantReplyServer2 : public Worker {
         reply_(NULL) { }
 
  private:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(ReentrantReplyServer2, message)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(
          SyncChannelTestMsg_Reentrant1, OnReentrant1)
@@ -1685,7 +1685,7 @@ class ReentrantReplyClient : public Worker {
       : Worker("reentrant_reply1", Channel::MODE_CLIENT),
         server_ready_(server_ready) { }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     server_ready_->Wait();
     Send(new SyncChannelTestMsg_Reentrant2());
     Done();
@@ -1718,7 +1718,7 @@ class VerifiedServer : public Worker {
     Worker::OverrideThread(listener_thread);
   }
 
-  virtual void OnNestedTestMsg(Message* reply_msg) OVERRIDE {
+  virtual void OnNestedTestMsg(Message* reply_msg) override {
     VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
     SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
     Send(reply_msg);
@@ -1740,7 +1740,7 @@ class VerifiedClient : public Worker {
     Worker::OverrideThread(listener_thread);
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     std::string response;
     SyncMessage* msg = new SyncChannelNestedTestMsg_String(&response);
     bool result = Send(msg);

@@ -27,11 +27,11 @@ class MojoChannelFactory : public ChannelFactory {
                      Channel::Mode mode)
       : delegate_(delegate), channel_handle_(channel_handle), mode_(mode) {}
 
-  virtual std::string GetName() const OVERRIDE {
+  virtual std::string GetName() const override {
     return channel_handle_.name;
   }
 
-  virtual scoped_ptr<Channel> BuildChannel(Listener* listener) OVERRIDE {
+  virtual scoped_ptr<Channel> BuildChannel(Listener* listener) override {
     return ChannelMojo::Create(delegate_, channel_handle_, mode_, listener)
         .PassAs<Channel>();
   }

@@ -98,7 +98,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
   // Send a message asynchronously.  The message is routed to the background
   // thread where it is passed to the IPC::Channel's Send method.
-  virtual bool Send(Message* message) OVERRIDE;
+  virtual bool Send(Message* message) override;
 
   // Used to intercept messages as they are received on the background thread.
   //
@@ -155,9 +155,9 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     virtual ~Context();
 
     // IPC::Listener methods:
-    virtual bool OnMessageReceived(const Message& message) OVERRIDE;
-    virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-    virtual void OnChannelError() OVERRIDE;
+    virtual bool OnMessageReceived(const Message& message) override;
+    virtual void OnChannelConnected(int32 peer_pid) override;
+    virtual void OnChannelError() override;
 
     // Like OnMessageReceived but doesn't try the filters.
     bool OnMessageReceivedNoFilter(const Message& message);

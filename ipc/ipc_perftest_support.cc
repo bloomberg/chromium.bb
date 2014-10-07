@@ -91,7 +91,7 @@ class ChannelReflectorListener : public Listener {
     channel_ = channel;
   }
 
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     CHECK(channel_);
 
     PickleIterator iter(message);
@@ -160,7 +160,7 @@ class PerformanceChannelListener : public Listener {
     payload_ = std::string(msg_size_, 'a');
   }
 
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const Message& message) override {
     CHECK(sender_);
 
     PickleIterator iter(message);

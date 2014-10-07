@@ -32,11 +32,11 @@ class ChannelWin : public Channel,
   ~ChannelWin();
 
   // Channel implementation
-  virtual bool Connect() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual bool Send(Message* message) OVERRIDE;
-  virtual base::ProcessId GetPeerPID() const OVERRIDE;
-  virtual base::ProcessId GetSelfPID() const OVERRIDE;
+  virtual bool Connect() override;
+  virtual void Close() override;
+  virtual bool Send(Message* message) override;
+  virtual base::ProcessId GetPeerPID() const override;
+  virtual base::ProcessId GetSelfPID() const override;
 
   static bool IsNamedServerInitialized(const std::string& channel_id);
 
@@ -45,10 +45,10 @@ class ChannelWin : public Channel,
   // ChannelReader implementation.
   virtual ReadState ReadData(char* buffer,
                              int buffer_len,
-                             int* bytes_read) OVERRIDE;
-  virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
-  bool DidEmptyInputBuffers() OVERRIDE;
-  virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
+                             int* bytes_read) override;
+  virtual bool WillDispatchInputMessage(Message* msg) override;
+  bool DidEmptyInputBuffers() override;
+  virtual void HandleInternalMessage(const Message& msg) override;
 
   static const base::string16 PipeName(const std::string& channel_id,
                                        int32* secret);

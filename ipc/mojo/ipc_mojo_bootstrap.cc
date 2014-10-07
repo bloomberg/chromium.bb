@@ -20,15 +20,15 @@ class IPC_MOJO_EXPORT MojoServerBootstrap : public MojoBootstrap {
  public:
   MojoServerBootstrap();
 
-  virtual void OnClientLaunched(base::ProcessHandle process) OVERRIDE;
+  virtual void OnClientLaunched(base::ProcessHandle process) override;
 
  private:
   void SendClientPipe();
   void SendClientPipeIfReady();
 
   // Listener implementations
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual bool OnMessageReceived(const Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
 
   mojo::embedder::ScopedPlatformHandle server_pipe_;
   base::ProcessHandle client_process_;
@@ -103,12 +103,12 @@ class IPC_MOJO_EXPORT MojoClientBootstrap : public MojoBootstrap {
  public:
   MojoClientBootstrap();
 
-  virtual void OnClientLaunched(base::ProcessHandle process) OVERRIDE;
+  virtual void OnClientLaunched(base::ProcessHandle process) override;
 
  private:
   // Listener implementations
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual bool OnMessageReceived(const Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
 
   DISALLOW_COPY_AND_ASSIGN(MojoClientBootstrap);
 };

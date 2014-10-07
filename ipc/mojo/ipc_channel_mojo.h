@@ -90,15 +90,15 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   void OnClientLaunched(base::ProcessHandle handle);
 
   // Channel implementation
-  virtual bool Connect() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual bool Send(Message* message) OVERRIDE;
-  virtual base::ProcessId GetPeerPID() const OVERRIDE;
-  virtual base::ProcessId GetSelfPID() const OVERRIDE;
+  virtual bool Connect() override;
+  virtual void Close() override;
+  virtual bool Send(Message* message) override;
+  virtual base::ProcessId GetPeerPID() const override;
+  virtual base::ProcessId GetSelfPID() const override;
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
-  virtual int GetClientFileDescriptor() const OVERRIDE;
-  virtual int TakeClientFileDescriptor() OVERRIDE;
+  virtual int GetClientFileDescriptor() const override;
+  virtual int TakeClientFileDescriptor() override;
 
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
@@ -112,8 +112,8 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
 
   // MojoBootstrapDelegate implementation
   virtual void OnPipeAvailable(
-      mojo::embedder::ScopedPlatformHandle handle) OVERRIDE;
-  virtual void OnBootstrapError() OVERRIDE;
+      mojo::embedder::ScopedPlatformHandle handle) override;
+  virtual void OnBootstrapError() override;
 
   // Called from MessagePipeReader implementations
   void OnMessageReceived(Message& message);

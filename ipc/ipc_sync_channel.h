@@ -93,7 +93,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
   virtual ~SyncChannel();
 
-  virtual bool Send(Message* message) OVERRIDE;
+  virtual bool Send(Message* message) override;
 
   // Sets the dispatch group for this channel, to only allow re-entrant dispatch
   // of messages to other channels in the same group.
@@ -174,13 +174,13 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     // ChannelProxy methods that we override.
 
     // Called on the listener thread.
-    virtual void Clear() OVERRIDE;
+    virtual void Clear() override;
 
     // Called on the IPC thread.
-    virtual bool OnMessageReceived(const Message& msg) OVERRIDE;
-    virtual void OnChannelError() OVERRIDE;
-    virtual void OnChannelOpened() OVERRIDE;
-    virtual void OnChannelClosed() OVERRIDE;
+    virtual bool OnMessageReceived(const Message& msg) override;
+    virtual void OnChannelError() override;
+    virtual void OnChannelOpened() override;
+    virtual void OnChannelClosed() override;
 
     // Cancels all pending Send calls.
     void CancelPendingSends();

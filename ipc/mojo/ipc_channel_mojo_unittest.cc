@@ -29,7 +29,7 @@ class ListenerThatExpectsOK : public IPC::Listener {
 
   virtual ~ListenerThatExpectsOK() {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     PickleIterator iter(message);
     std::string should_be_ok;
     EXPECT_TRUE(iter.ReadString(&should_be_ok));
@@ -39,7 +39,7 @@ class ListenerThatExpectsOK : public IPC::Listener {
     return true;
   }
 
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     // The connection should be healthy while the listener is waiting
     // message.  An error can occur after that because the peer
     // process dies.
@@ -81,13 +81,13 @@ class IPCChannelMojoTest : public IPCTestBase {
  protected:
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
-      base::TaskRunner* runner) OVERRIDE {
+      base::TaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
                                                  handle);
   }
 
-  virtual bool DidStartClient() OVERRIDE {
+  virtual bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
     host_->OnClientLaunched(client_process());
@@ -106,7 +106,7 @@ class TestChannelListenerWithExtraExpectations
       : is_connected_called_(false) {
   }
 
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  virtual void OnChannelConnected(int32 peer_pid) override {
     IPC::TestChannelListener::OnChannelConnected(peer_pid);
     EXPECT_TRUE(base::kNullProcessId != peer_pid);
     is_connected_called_ = true;
@@ -165,15 +165,15 @@ class ListenerExpectingErrors : public IPC::Listener {
       : has_error_(false) {
   }
 
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  virtual void OnChannelConnected(int32 peer_pid) override {
     base::MessageLoop::current()->Quit();
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     return true;
   }
 
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     has_error_ = true;
     base::MessageLoop::current()->Quit();
   }
@@ -189,13 +189,13 @@ class IPCChannelMojoErrorTest : public IPCTestBase {
  protected:
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
-      base::TaskRunner* runner) OVERRIDE {
+      base::TaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
                                                  handle);
   }
 
-  virtual bool DidStartClient() OVERRIDE {
+  virtual bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
     host_->OnClientLaunched(client_process());
@@ -211,11 +211,11 @@ class ListenerThatQuits : public IPC::Listener {
   ListenerThatQuits() {
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     return true;
   }
 
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  virtual void OnChannelConnected(int32 peer_pid) override {
     base::MessageLoop::current()->Quit();
   }
 };
@@ -268,7 +268,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
 
   virtual ~ListenerThatExpectsFile() {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     PickleIterator iter(message);
 
     base::ScopedFD fd;
@@ -282,7 +282,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
     return true;
   }
 
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     NOTREACHED();
   }
 

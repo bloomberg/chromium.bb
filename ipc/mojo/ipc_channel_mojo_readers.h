@@ -33,9 +33,9 @@ class MessageReader : public MessagePipeReader {
   bool Send(scoped_ptr<Message> message);
 
   // MessagePipeReader implementation
-  virtual void OnMessageReceived() OVERRIDE;
-  virtual void OnPipeClosed() OVERRIDE;
-  virtual void OnPipeError(MojoResult error) OVERRIDE;
+  virtual void OnMessageReceived() override;
+  virtual void OnPipeClosed() override;
+  virtual void OnPipeError(MojoResult error) override;
 
  private:
   ChannelMojo* owner_;
@@ -52,8 +52,8 @@ class ControlReader : public MessagePipeReader {
   virtual bool Connect();
 
   // MessagePipeReader implementation
-  virtual void OnPipeClosed() OVERRIDE;
-  virtual void OnPipeError(MojoResult error) OVERRIDE;
+  virtual void OnPipeClosed() override;
+  virtual void OnPipeError(MojoResult error) override;
 
  protected:
   ChannelMojo* owner_;
@@ -68,10 +68,10 @@ class ServerControlReader : public ControlReader {
   virtual ~ServerControlReader();
 
   // ControlReader override
-  virtual bool Connect() OVERRIDE;
+  virtual bool Connect() override;
 
   // MessagePipeReader implementation
-  virtual void OnMessageReceived() OVERRIDE;
+  virtual void OnMessageReceived() override;
 
  private:
   MojoResult SendHelloRequest();
@@ -88,7 +88,7 @@ class ClientControlReader : public ControlReader {
   ClientControlReader(mojo::ScopedMessagePipeHandle pipe, ChannelMojo* owner);
 
   // MessagePipeReader implementation
-  virtual void OnMessageReceived() OVERRIDE;
+  virtual void OnMessageReceived() override;
 
  private:
   MojoResult RespondHelloRequest(MojoHandle message_channel);

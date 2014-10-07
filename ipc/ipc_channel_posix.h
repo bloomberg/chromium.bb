@@ -59,13 +59,13 @@ class IPC_EXPORT ChannelPosix : public Channel,
   virtual ~ChannelPosix();
 
   // Channel implementation
-  virtual bool Connect() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual bool Send(Message* message) OVERRIDE;
-  virtual base::ProcessId GetPeerPID() const OVERRIDE;
-  virtual base::ProcessId GetSelfPID() const OVERRIDE;
-  virtual int GetClientFileDescriptor() const OVERRIDE;
-  virtual int TakeClientFileDescriptor() OVERRIDE;
+  virtual bool Connect() override;
+  virtual void Close() override;
+  virtual bool Send(Message* message) override;
+  virtual base::ProcessId GetPeerPID() const override;
+  virtual base::ProcessId GetSelfPID() const override;
+  virtual int GetClientFileDescriptor() const override;
+  virtual int TakeClientFileDescriptor() override;
 
   // Returns true if the channel supports listening for connections.
   bool AcceptsConnections() const;
@@ -104,10 +104,10 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // ChannelReader implementation.
   virtual ReadState ReadData(char* buffer,
                              int buffer_len,
-                             int* bytes_read) OVERRIDE;
-  virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
-  virtual bool DidEmptyInputBuffers() OVERRIDE;
-  virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
+                             int* bytes_read) override;
+  virtual bool WillDispatchInputMessage(Message* msg) override;
+  virtual bool DidEmptyInputBuffers() override;
+  virtual void HandleInternalMessage(const Message& msg) override;
 
 #if defined(IPC_USES_READWRITE)
   // Reads the next message from the fd_pipe_ and appends them to the
@@ -129,8 +129,8 @@ class IPC_EXPORT ChannelPosix : public Channel,
   void ClearInputFDs();
 
   // MessageLoopForIO::Watcher implementation.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   Mode mode_;
 

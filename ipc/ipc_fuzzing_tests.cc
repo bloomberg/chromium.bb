@@ -135,7 +135,7 @@ class FuzzerServerListener : public SimpleListener {
  public:
   FuzzerServerListener() : message_count_(2), pending_messages_(0) {
   }
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& msg) override {
     if (msg.routing_id() == MSG_ROUTING_CONTROL) {
       ++pending_messages_;
       IPC_BEGIN_MESSAGE_MAP(FuzzerServerListener, msg)
@@ -199,7 +199,7 @@ class FuzzerClientListener : public SimpleListener {
   FuzzerClientListener() : last_msg_(NULL) {
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& msg) override {
     last_msg_ = new IPC::Message(msg);
     base::MessageLoop::current()->Quit();
     return true;

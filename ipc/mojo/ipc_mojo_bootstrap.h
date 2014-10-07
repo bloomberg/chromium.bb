@@ -67,8 +67,8 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   void Init(scoped_ptr<Channel> channel, Delegate* delegate);
 
   // Listener implementations
-  virtual void OnBadMessageReceived(const Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual void OnBadMessageReceived(const Message& message) override;
+  virtual void OnChannelError() override;
 
   scoped_ptr<Channel> channel_;
   Delegate* delegate_;

@@ -45,7 +45,7 @@ class IPC_EXPORT ForwardingMessageFilter : public MessageFilter {
   void RemoveRoute(int routing_id);
 
   // MessageFilter methods:
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const Message& message) override;
 
  private:
   virtual ~ForwardingMessageFilter();

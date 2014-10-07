@@ -148,7 +148,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::TestChannelListener {
   ChannelListenerWithOnConnectedSend() {}
   virtual ~ChannelListenerWithOnConnectedSend() {}
 
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  virtual void OnChannelConnected(int32 peer_pid) override {
     SendNextMessage();
   }
 };

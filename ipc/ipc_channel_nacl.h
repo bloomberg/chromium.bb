@@ -41,11 +41,11 @@ class ChannelNacl : public Channel,
   virtual ~ChannelNacl();
 
   // Channel implementation.
-  virtual base::ProcessId GetPeerPID() const OVERRIDE;
-  virtual base::ProcessId GetSelfPID() const OVERRIDE;
-  virtual bool Connect() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual bool Send(Message* message) OVERRIDE;
+  virtual base::ProcessId GetPeerPID() const override;
+  virtual base::ProcessId GetSelfPID() const override;
+  virtual bool Connect() override;
+  virtual void Close() override;
+  virtual bool Send(Message* message) override;
 
   // Posted to the main thread by ReaderThreadRunner.
   void DidRecvMsg(scoped_ptr<MessageContents> contents);
@@ -61,10 +61,10 @@ class ChannelNacl : public Channel,
   // ChannelReader implementation.
   virtual ReadState ReadData(char* buffer,
                              int buffer_len,
-                             int* bytes_read) OVERRIDE;
-  virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
-  virtual bool DidEmptyInputBuffers() OVERRIDE;
-  virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
+                             int* bytes_read) override;
+  virtual bool WillDispatchInputMessage(Message* msg) override;
+  virtual bool DidEmptyInputBuffers() override;
+  virtual void HandleInternalMessage(const Message& msg) override;
 
   Mode mode_;
   bool waiting_connect_;

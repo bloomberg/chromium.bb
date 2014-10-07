@@ -34,7 +34,7 @@ class IPCTestBase : public base::MultiProcessTest {
   IPCTestBase();
   virtual ~IPCTestBase();
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // Initializes the test to use the given client and creates an IO message loop
   // on the current thread.

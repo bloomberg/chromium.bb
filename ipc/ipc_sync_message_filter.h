@@ -31,13 +31,13 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
 
   // MessageSender implementation.
-  virtual bool Send(Message* message) OVERRIDE;
+  virtual bool Send(Message* message) override;
 
   // MessageFilter implementation.
-  virtual void OnFilterAdded(Sender* sender) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE;
+  virtual void OnFilterAdded(Sender* sender) override;
+  virtual void OnChannelError() override;
+  virtual void OnChannelClosing() override;
+  virtual bool OnMessageReceived(const Message& message) override;
 
  protected:
   virtual ~SyncMessageFilter();

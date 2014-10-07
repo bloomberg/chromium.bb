@@ -22,8 +22,8 @@ class TestChannelListener : public Listener {
   TestChannelListener() : sender_(NULL), messages_left_(50) {}
   virtual ~TestChannelListener() {}
 
-  virtual bool OnMessageReceived(const Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const Message& message) override;
+  virtual void OnChannelError() override;
 
   void Init(Sender* s) {
     sender_ = s;
