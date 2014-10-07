@@ -589,10 +589,11 @@ class HeapDoesNotContainCache {
 public:
     HeapDoesNotContainCache()
         : m_entries(adoptArrayPtr(new Address[HeapDoesNotContainCache::numberOfEntries]))
-        , m_hasEntries(true)
+        , m_hasEntries(false)
     {
         // Start by flushing the cache in a non-empty state to initialize all the cache entries.
-        flush();
+        for (int i = 0; i < numberOfEntries; i++)
+            m_entries[i] = 0;
     }
 
     void flush();
@@ -998,7 +999,6 @@ public:
 #endif
 
     static void flushHeapDoesNotContainCache();
-    static bool heapDoesNotContainCacheIsEmpty() { return s_heapDoesNotContainCache->isEmpty(); }
 
     // Return true if the last GC found a pointer into a heap page
     // during conservative scanning.

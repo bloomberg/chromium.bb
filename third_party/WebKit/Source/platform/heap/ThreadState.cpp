@@ -301,6 +301,7 @@ ThreadState::ThreadState()
     , m_noAllocationCount(0)
     , m_inGC(false)
     , m_isTerminating(false)
+    , m_shouldFlushHeapDoesNotContainCache(false)
     , m_lowCollectionRate(false)
     , m_numberOfSweeperTasks(0)
 #if defined(ADDRESS_SANITIZER)
@@ -848,6 +849,14 @@ void ThreadState::prepareRegionTree()
     m_allocatedRegionsSinceLastGC.clear();
 }
 
+void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
+{
+    if (m_shouldFlushHeapDoesNotContainCache) {
+        Heap::flushHeapDoesNotContainCache();
+        m_shouldFlushHeapDoesNotContainCache = false;
+    }
+}
+
 void ThreadState::prepareForGC()
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
@@ -864,6 +873,7 @@ void ThreadState::prepareForGC()
     }
     prepareRegionTree();
     setSweepRequested();
+    flushHeapDoesNotContainCacheIfNeeded();
 }
 
 void ThreadState::setupHeapsForTermination()

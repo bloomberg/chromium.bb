@@ -459,6 +459,7 @@ public:
     bool isSweepInProgress() const { return m_sweepInProgress; }
 
     void prepareRegionTree();
+    void flushHeapDoesNotContainCacheIfNeeded();
     void prepareForGC();
 
     // Safepoint related functionality.
@@ -695,6 +696,8 @@ public:
 
     Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
 
+    void shouldFlushHeapDoesNotContainCache() { m_shouldFlushHeapDoesNotContainCache = true; }
+
 private:
     explicit ThreadState();
     ~ThreadState();
@@ -776,6 +779,7 @@ private:
     Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
     bool m_isTerminating;
 
+    bool m_shouldFlushHeapDoesNotContainCache;
     bool m_lowCollectionRate;
 
     OwnPtr<blink::WebThread> m_sweeperThread;

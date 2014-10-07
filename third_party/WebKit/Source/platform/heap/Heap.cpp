@@ -143,7 +143,6 @@ public:
 
     WARN_UNUSED_RETURN bool commit()
     {
-        ASSERT(Heap::heapDoesNotContainCacheIsEmpty());
 #if OS(POSIX)
         return !mprotect(m_base, m_size, PROT_READ | PROT_WRITE);
 #else
@@ -248,8 +247,6 @@ private:
 
     static PageMemoryRegion* allocate(size_t size, unsigned numPages)
     {
-        ASSERT(Heap::heapDoesNotContainCacheIsEmpty());
-
         // Compute a random blink page aligned address for the page memory
         // region and attempt to get the memory there.
         Address randomAddress = reinterpret_cast<Address>(WTF::getRandomPageBase());
@@ -981,9 +978,9 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 #if defined(ADDRESS_SANITIZER)
     allocationSize += allocationGranularity;
 #endif
-    if (threadState()->shouldGC())
-        threadState()->setGCRequested();
-    Heap::flushHeapDoesNotContainCache();
+    if (m_threadState->shouldGC())
+        m_threadState->setGCRequested();
+    m_threadState->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
     m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());
     Address largeObjectAddress = pageMemory->writableStart();
@@ -1251,7 +1248,7 @@ void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
 template<typename Header>
 void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
 {
-    Heap::flushHeapDoesNotContainCache();
+    m_threadState->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = Heap::freePagePool()->takeFreePage(m_index);
     // We continue allocating page memory until we succeed in committing one.
     while (!pageMemory) {
@@ -1840,6 +1837,8 @@ void LargeHeapObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotI
 
 void HeapDoesNotContainCache::flush()
 {
+    ASSERT(ThreadState::isAnyThreadInGC());
+
     if (m_hasEntries) {
         for (int i = 0; i < numberOfEntries; i++)
             m_entries[i] = 0;
@@ -1858,6 +1857,8 @@ size_t HeapDoesNotContainCache::hash(Address address)
 
 bool HeapDoesNotContainCache::lookup(Address address)
 {
+    ASSERT(ThreadState::isAnyThreadInGC());
+
     size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
@@ -1870,6 +1871,8 @@ bool HeapDoesNotContainCache::lookup(Address address)
 
 void HeapDoesNotContainCache::addEntry(Address address)
 {
+    ASSERT(ThreadState::isAnyThreadInGC());
+
     m_hasEntries = true;
     size_t index = hash(address);
     ASSERT(!(index & 1));
