@@ -4,36 +4,29 @@
 
 #include "extensions/browser/test_extension_registry_observer.h"
 
-#include "content/public/test/test_utils.h"
+#include "base/run_loop.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
 class TestExtensionRegistryObserver::Waiter {
  public:
-  explicit Waiter(const std::string& extension_id)
-      : observed_(false), runner_(NULL) {}
+  explicit Waiter(const std::string& extension_id) : observed_(false) {}
 
   void Wait() {
     if (observed_)
       return;
-
-    runner_ = new content::MessageLoopRunner();
-    runner_->Run();
+    run_loop_.Run();
   }
 
   void OnObserved() {
     observed_ = true;
-
-    if (runner_.get()) {
-      runner_->Quit();
-      runner_ = NULL;
-    }
+    run_loop_.Quit();
   }
 
  private:
   bool observed_;
-  scoped_refptr<content::MessageLoopRunner> runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(Waiter);
 };

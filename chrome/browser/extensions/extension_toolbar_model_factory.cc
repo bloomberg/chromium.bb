@@ -45,7 +45,7 @@ KeyedService* ExtensionToolbarModelFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* ExtensionToolbarModelFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
+  return context;
 }
 
 bool ExtensionToolbarModelFactory::ServiceIsCreatedWithBrowserContext() const {

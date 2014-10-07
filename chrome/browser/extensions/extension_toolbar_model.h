@@ -93,7 +93,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   void RemoveObserver(Observer* observer);
 
   // Moves the given |extension|'s icon to the given |index|.
-  void MoveExtensionIcon(const Extension* extension, int index);
+  void MoveExtensionIcon(const Extension* extension, size_t index);
 
   // Sets the number of extension icons that should be visible.
   // If count == size(), this will set the visible icon count to -1, meaning
@@ -110,11 +110,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   }
 
   bool is_highlighting() const { return is_highlighting_; }
-
-  // Utility functions for converting between an index into the list of
-  // incognito-enabled browser actions, and the list of all browser actions.
-  int IncognitoIndexToOriginal(int incognito_index);
-  int OriginalIndexToIncognito(int original_index);
 
   void OnExtensionToolbarPrefChange();
 
@@ -173,11 +168,13 @@ class ExtensionToolbarModel : public content::NotificationObserver,
       content::BrowserContext* browser_context) override;
 
   // To be called after the extension service is ready; gets loaded extensions
-  // from the extension service and their saved order from the pref service
-  // and constructs |toolbar_items_| from these data.
-  void InitializeExtensionList(const ExtensionSet& extensions);
-  void Populate(const ExtensionIdList& positions,
-                const ExtensionSet& extensions);
+  // from the ExtensionRegistry and their saved order from the pref service
+  // and constructs |toolbar_items_| from these data. IncognitoPopulate()
+  // takes the shortcut - looking at the regular model's content and modifying
+  // it.
+  void InitializeExtensionList();
+  void Populate(const ExtensionIdList& positions);
+  void IncognitoPopulate();
 
   // Save the model to prefs.
   void UpdatePrefs();
@@ -199,6 +196,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // Adds or removes the given |extension| from the toolbar model.
   void AddExtension(const Extension* extension);
   void RemoveExtension(const Extension* extension);
+
+  // Removes all current items (because we're going to [re]Populate()).
+  void ClearItems();
 
   // Our observers.
   ObserverList<Observer> observers_;

@@ -109,7 +109,7 @@ class ExtensionActionIconFactoryBridge
     [cell setTabId:tabId];
     ExtensionAction* browser_action =
         extensions::ExtensionActionManager::Get(browser->profile())->
-        GetBrowserAction(*extension);
+        GetExtensionAction(*extension);
     CHECK(browser_action)
         << "Don't create a BrowserActionButton if there is no browser action.";
     [cell setExtensionAction:browser_action];

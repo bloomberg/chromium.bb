@@ -321,8 +321,6 @@ int ChevronMenuButton::MenuController::OnPerformDrop(
           enabled_extensions().GetByID(drop_data.id());
   extensions::ExtensionToolbarModel* toolbar_model =
       extensions::ExtensionToolbarModel::Get(profile);
-  if (profile->IsOffTheRecord())
-    drop_index = toolbar_model->IncognitoIndexToOriginal(drop_index);
   toolbar_model->MoveExtensionIcon(extension, drop_index);
 
   // If the extension was moved to the overflow menu from the main bar, notify

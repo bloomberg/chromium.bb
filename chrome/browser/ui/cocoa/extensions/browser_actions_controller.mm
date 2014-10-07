@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -140,10 +139,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 - (BOOL)browserActionClicked:(BrowserActionButton*)button
                  shouldGrant:(BOOL)shouldGrant;
 - (BOOL)browserActionClicked:(BrowserActionButton*)button;
-
-// Returns whether the given extension should be displayed. Only displays
-// incognito-enabled extensions in incognito mode. Otherwise returns YES.
-- (BOOL)shouldDisplayBrowserAction:(const Extension*)extension;
 
 // The reason |frame| is specified in these chevron functions is because the
 // container may be animating and the end frame of the animation should be
@@ -494,9 +489,6 @@ class ExtensionServiceObserverBridge
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    if (![self shouldDisplayBrowserAction:iter->get()])
-      continue;
-
     [self createActionButtonForExtension:iter->get() withIndex:i++];
   }
 
@@ -506,16 +498,6 @@ class ExtensionServiceObserverBridge
 
 - (void)createActionButtonForExtension:(const Extension*)extension
                              withIndex:(NSUInteger)index {
-  if (!extensions::ExtensionActionManager::Get(profile_)->
-      GetBrowserAction(*extension))
-    return;
-
-  if (![self shouldDisplayBrowserAction:extension])
-    return;
-
-  if (profile_->IsOffTheRecord())
-    index = toolbarModel_->OriginalIndexToIncognito(index);
-
   // Show the container if it's the first button. Otherwise it will be shown
   // already.
   if ([self buttonCount] == 0)
@@ -551,18 +533,11 @@ class ExtensionServiceObserverBridge
 }
 
 - (void)removeActionButtonForExtension:(const Extension*)extension {
-  if (!extensions::ActionInfo::GetBrowserActionInfo(extension))
-    return;
-
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
   if (!buttonKey)
     return;
 
   BrowserActionButton* button = [buttons_ objectForKey:buttonKey];
-  // This could be the case in incognito, where only a subset of extensions are
-  // shown.
-  if (!button)
-    return;
 
   [button removeFromSuperview];
   // It may or may not be hidden, but it won't matter to NSMutableArray either
@@ -586,8 +561,6 @@ class ExtensionServiceObserverBridge
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    if (![self shouldDisplayBrowserAction:iter->get()])
-      continue;
     BrowserActionButton* button = [self buttonForExtension:(iter->get())];
     if (!button)
       continue;
@@ -697,8 +670,7 @@ class ExtensionServiceObserverBridge
   }
   [self updateGrippyCursors];
 
-  if (!profile_->IsOffTheRecord())
-    toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
+  toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragFinishedNotification
@@ -786,12 +758,6 @@ class ExtensionServiceObserverBridge
 - (BOOL)browserActionClicked:(BrowserActionButton*)button {
   return [self browserActionClicked:button
                         shouldGrant:YES];
-}
-
-- (BOOL)shouldDisplayBrowserAction:(const Extension*)extension {
-  // Only display incognito-enabled extensions while in incognito mode.
-  return !profile_->IsOffTheRecord() ||
-      extensions::util::IsIncognitoEnabled(extension->id(), profile_);
 }
 
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame animate:(BOOL)animate {
@@ -887,8 +853,6 @@ class ExtensionServiceObserverBridge
 #pragma mark Testing Methods
 
 - (NSButton*)buttonWithIndex:(NSUInteger)index {
-  if (profile_->IsOffTheRecord())
-    index = toolbarModel_->IncognitoIndexToOriginal(index);
   const extensions::ExtensionList& toolbar_items =
       toolbarModel_->toolbar_items();
   if (index < toolbar_items.size()) {

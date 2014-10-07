@@ -330,11 +330,6 @@ class BrowserActionsContainer
   // the target size).
   void Animate(gfx::Tween::Type type, size_t num_visible_icons);
 
-  // Returns true if this extension should be shown in this toolbar. This can
-  // return false if we are in an incognito window and the extension is disabled
-  // for incognito.
-  bool ShouldDisplayBrowserAction(const extensions::Extension* extension) const;
-
   // Returns the number of icons that this container should draw. This differs
   // from the model's GetVisibleIconCount if this container is for the overflow.
   size_t GetIconCount() const;

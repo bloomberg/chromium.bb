@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -22,8 +23,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/result_catcher.h"
 #include "grit/theme_resources.h"
@@ -471,6 +474,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   // Open an incognito window and test that the browser action isn't there by
   // default.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  base::RunLoop().RunUntilIdle();  // Wait for profile initialization.
   Browser* incognito_browser =
       new Browser(Browser::CreateParams(incognito_profile,
                                         browser()->host_desktop_type()));
@@ -479,98 +483,20 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
             BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
 
   // Now enable the extension in incognito mode, and test that the browser
-  // action shows up. Note that we don't update the existing window at the
-  // moment, so we just create a new one.
-  extensions::ExtensionPrefs::Get(browser()->profile())
-      ->SetIsIncognitoEnabled(extension->id(), true);
+  // action shows up.
+  // SetIsIncognitoEnabled() requires a reload of the extension, so we have to
+  // wait for it.
+  TestExtensionRegistryObserver registry_observer(
+      ExtensionRegistry::Get(profile()), extension->id());
+  extensions::util::SetIsIncognitoEnabled(
+      extension->id(), browser()->profile(), true);
+  registry_observer.WaitForExtensionLoaded();
 
-  chrome::CloseWindow(incognito_browser);
-  incognito_browser =
-      new Browser(Browser::CreateParams(incognito_profile,
-                                        browser()->host_desktop_type()));
   ASSERT_EQ(1,
             BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
 
   // TODO(mpcomplete): simulate a click and have it do the right thing in
   // incognito.
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-
-  // The tooltips for each respective browser action.
-  const char kTooltipA[] = "Alpha";
-  const char kTooltipB[] = "Beta";
-  const char kTooltipC[] = "Gamma";
-
-  const size_t size_before = service->extensions()->size();
-
-  base::FilePath test_dir = test_data_dir_.AppendASCII("browser_action");
-  const Extension* extension_a = InstallExtension(
-      test_dir.AppendASCII("empty_browser_action_alpha.crx"), 1);
-  const Extension* extension_b = InstallExtension(
-      test_dir.AppendASCII("empty_browser_action_beta.crx"), 1);
-  const Extension* extension_c = InstallExtension(
-      test_dir.AppendASCII("empty_browser_action_gamma.crx"), 1);
-  ASSERT_TRUE(extension_a);
-  ASSERT_TRUE(extension_b);
-  ASSERT_TRUE(extension_c);
-
-  // Test that there are 3 browser actions in the toolbar.
-  ASSERT_EQ(size_before + 3, service->extensions()->size());
-  ASSERT_EQ(3, GetBrowserActionsBar().NumberOfBrowserActions());
-
-  // Now enable 2 of the extensions in incognito mode, and test that the browser
-  // actions show up.
-  extensions::ExtensionPrefs* prefs =
-      extensions::ExtensionPrefs::Get(browser()->profile());
-  prefs->SetIsIncognitoEnabled(extension_a->id(), true);
-  prefs->SetIsIncognitoEnabled(extension_c->id(), true);
-
-  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
-  Browser* incognito_browser =
-      new Browser(Browser::CreateParams(incognito_profile,
-                                        browser()->host_desktop_type()));
-  BrowserActionTestUtil incognito_bar(incognito_browser);
-
-  // Navigate just to have a tab in this window, otherwise wonky things happen.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
-
-  ASSERT_EQ(2, incognito_bar.NumberOfBrowserActions());
-
-  // Ensure that the browser actions are in the right order (ABC).
-  EXPECT_EQ(kTooltipA, GetBrowserActionsBar().GetTooltip(0));
-  EXPECT_EQ(kTooltipB, GetBrowserActionsBar().GetTooltip(1));
-  EXPECT_EQ(kTooltipC, GetBrowserActionsBar().GetTooltip(2));
-
-  EXPECT_EQ(kTooltipA, incognito_bar.GetTooltip(0));
-  EXPECT_EQ(kTooltipC, incognito_bar.GetTooltip(1));
-
-  // Now rearrange them and ensure that they are rearranged correctly in both
-  // regular and incognito mode.
-
-  // ABC -> CAB
-  ExtensionToolbarModel* toolbar_model = ExtensionToolbarModel::Get(
-      browser()->profile());
-  toolbar_model->MoveExtensionIcon(extension_c, 0);
-
-  EXPECT_EQ(kTooltipC, GetBrowserActionsBar().GetTooltip(0));
-  EXPECT_EQ(kTooltipA, GetBrowserActionsBar().GetTooltip(1));
-  EXPECT_EQ(kTooltipB, GetBrowserActionsBar().GetTooltip(2));
-
-  EXPECT_EQ(kTooltipC, incognito_bar.GetTooltip(0));
-  EXPECT_EQ(kTooltipA, incognito_bar.GetTooltip(1));
-
-  // CAB -> CBA
-  toolbar_model->MoveExtensionIcon(extension_b, 1);
-
-  EXPECT_EQ(kTooltipC, GetBrowserActionsBar().GetTooltip(0));
-  EXPECT_EQ(kTooltipB, GetBrowserActionsBar().GetTooltip(1));
-  EXPECT_EQ(kTooltipA, GetBrowserActionsBar().GetTooltip(2));
-
-  EXPECT_EQ(kTooltipC, incognito_bar.GetTooltip(0));
-  EXPECT_EQ(kTooltipA, incognito_bar.GetTooltip(1));
 }
 
 // Tests that events are dispatched to the correct profile for split mode
@@ -587,6 +513,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
   Browser* incognito_browser =
       new Browser(Browser::CreateParams(incognito_profile,
                                         browser()->host_desktop_type()));
+  base::RunLoop().RunUntilIdle();  // Wait for profile initialization.
   // Navigate just to have a tab in this window, otherwise wonky things happen.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
   ASSERT_EQ(1,

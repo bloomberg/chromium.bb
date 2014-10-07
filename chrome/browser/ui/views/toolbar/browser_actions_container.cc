@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,7 +93,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       owner_view_(owner_view),
       main_container_(main_container),
       popup_owner_(NULL),
-      model_(NULL),
+      model_(extensions::ExtensionToolbarModel::Get(browser->profile())),
       container_width_(0),
       resize_area_(NULL),
       chevron_(NULL),
@@ -102,9 +101,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       resize_amount_(0),
       animation_target_size_(0) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
-
-  model_ = extensions::ExtensionToolbarModel::Get(browser->profile());
-  if (model_)
+  if (model_)  // |model_| can be NULL in views unittests.
     model_->AddObserver(this);
 
   bool overflow_experiment =
@@ -187,9 +184,6 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
   for (extensions::ExtensionList::const_iterator i(toolbar_items.begin());
        i != toolbar_items.end(); ++i) {
-    if (!ShouldDisplayBrowserAction(i->get()))
-      continue;
-
     BrowserActionView* view =
         new BrowserActionView(i->get(),
                               action_manager->GetExtensionAction(**i),
@@ -234,17 +228,14 @@ void BrowserActionsContainer::ExecuteExtensionCommand(
 void BrowserActionsContainer::NotifyActionMovedToOverflow() {
   // When an action is moved to overflow, we shrink the size of the container
   // by 1.
-  if (!profile_->IsOffTheRecord()) {
-    int icon_count = model_->GetVisibleIconCount();
-    // Since this happens when an icon moves from the main bar to overflow, we
-    // can't possibly have had no visible icons on the main bar.
-    DCHECK_NE(0, icon_count);
-    if (icon_count == -1)
-      icon_count = browser_action_views_.size();
-    model_->SetVisibleIconCount(icon_count - 1);
-  }
-  Animate(gfx::Tween::EASE_OUT,
-          VisibleBrowserActionsAfterAnimation() - 1);
+  int icon_count = model_->GetVisibleIconCount();
+  // Since this happens when an icon moves from the main bar to overflow, we
+  // can't possibly have had no visible icons on the main bar.
+  DCHECK_NE(0, icon_count);
+  if (icon_count == -1)
+    icon_count = browser_action_views_.size();
+  model_->SetVisibleIconCount(icon_count - 1);
+  Animate(gfx::Tween::EASE_OUT, icon_count - 1);
 }
 
 bool BrowserActionsContainer::ShownInsideMenu() const {
@@ -520,9 +511,6 @@ int BrowserActionsContainer::OnPerformDrop(
   if (i > data.index())
     --i;
 
-  if (profile_->IsOffTheRecord())
-    i = model_->IncognitoIndexToOriginal(i);
-
   // If this was a drag between containers, we will have to adjust the number of
   // visible icons.
   bool drag_between_containers =
@@ -537,7 +525,7 @@ int BrowserActionsContainer::OnPerformDrop(
     // Let the main container update the model.
     if (in_overflow_mode())
       main_container_->NotifyActionMovedToOverflow();
-    else if (!profile_->IsOffTheRecord())  // This is the main container.
+    else  // This is the main container.
       model_->SetVisibleIconCount(model_->GetVisibleIconCount() + 1);
 
     // The size changed, so we need to animate.
@@ -605,12 +593,8 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   // Save off the desired number of visible icons.  We do this now instead of at
   // the end of the animation so that even if the browser is shut down while
   // animating, the right value will be restored on next run.
-  // NOTE: Don't save the icon count in incognito because there may be fewer
-  // icons in that mode. The result is that the container in a normal window is
-  // always at least as wide as in an incognito window.
   int visible_icons = WidthToIconCount(container_width_);
-  if (!profile_->IsOffTheRecord())
-    model_->SetVisibleIconCount(visible_icons);
+  model_->SetVisibleIconCount(visible_icons);
   Animate(gfx::Tween::EASE_OUT, visible_icons);
 }
 
@@ -709,7 +693,6 @@ void BrowserActionsContainer::OnThemeChanged() {
 
 void BrowserActionsContainer::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  // No extensions (e.g., incognito).
   if (!model_)
     return;
 
@@ -758,12 +741,7 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
   if (chevron_)
     chevron_->CloseMenu();
 
-  if (!ShouldDisplayBrowserAction(extension))
-    return;
-
   // Add the new browser action to the vector and the view hierarchy.
-  if (profile_->IsOffTheRecord())
-    index = model_->OriginalIndexToIncognito(index);
   BrowserActionView* view =
       new BrowserActionView(extension,
                             extensions::ExtensionActionManager::Get(profile_)->
@@ -839,12 +817,6 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
 
 void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
                                                     int index) {
-  if (!ShouldDisplayBrowserAction(extension))
-    return;
-
-  if (profile_->IsOffTheRecord())
-    index = model_->OriginalIndexToIncognito(index);
-
   DCHECK(index >= 0 && index < static_cast<int>(browser_action_views_.size()));
 
   BrowserActionViews::iterator iter = browser_action_views_.begin();
@@ -1006,47 +978,25 @@ void BrowserActionsContainer::Animate(gfx::Tween::Type tween_type,
   }
 }
 
-bool BrowserActionsContainer::ShouldDisplayBrowserAction(
-    const Extension* extension) const {
-  // Only display incognito-enabled extensions while in incognito mode.
-  return !profile_->IsOffTheRecord() ||
-      extensions::util::IsIncognitoEnabled(extension->id(), profile_);
-}
-
 size_t BrowserActionsContainer::GetIconCount() const {
   if (!model_)
     return 0u;
 
-  const extensions::ExtensionList& extensions = model_->toolbar_items();
-
   // Find the absolute value for the model's visible count.
   int model_visible_size = model_->GetVisibleIconCount();
-  size_t absolute_model_visible_size =
-      model_visible_size == -1 ? extensions.size() : model_visible_size;
+  size_t absolute_model_visible_size = model_visible_size == -1 ?
+      model_->toolbar_items().size() : model_visible_size;
 
-  // Find the number of icons which could be displayed.
-  size_t displayable_icon_count = 0u;
-  size_t main_displayed = 0u;
-  for (size_t i = 0; i < extensions.size(); ++i) {
-    // Should there be an icon for this extension at all?
-    if (ShouldDisplayBrowserAction(extensions[i].get())) {
-      ++displayable_icon_count;
-      // Should we display it on the main bar? If this is an incognito window,
-      // icons have the same overflow status they do in a regular window.
-      main_displayed += i < absolute_model_visible_size ? 1u : 0u;
-    }
+  // Good time for some sanity checks: We should never try to display more
+  // icons than we have, and we should always have a view per item in the model.
+  // (The only exception is if this is in initialization.)
+  if (initialized_) {
+    DCHECK_LE(absolute_model_visible_size, browser_action_views_.size());
+    DCHECK_EQ(model_->toolbar_items().size(), browser_action_views_.size());
   }
 
-  // If this is an existing (initialized) container from an incognito profile,
-  // we can't trust the model (because the incognito bars don't adjust model
-  // settings). Instead, we go off what we currently have displayed.
-  if (initialized_ && profile_->IsOffTheRecord()) {
-    main_displayed = in_overflow_mode() ?
-        main_container_->VisibleBrowserActionsAfterAnimation() :
-        VisibleBrowserActionsAfterAnimation();
-  }
-
-  // The overflow displays any (displayable) icons not shown by the main bar.
+  // The overflow displays any icons not shown by the main bar.
   return in_overflow_mode() ?
-      displayable_icon_count - main_displayed : main_displayed;
+      model_->toolbar_items().size() - absolute_model_visible_size :
+      absolute_model_visible_size;
 }

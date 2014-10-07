@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -25,6 +26,38 @@
 namespace extensions {
 
 namespace {
+
+// Creates a new ExtensionToolbarModel for the given |context|.
+KeyedService* BuildToolbarModel(content::BrowserContext* context) {
+  return new ExtensionToolbarModel(Profile::FromBrowserContext(context),
+                                   ExtensionPrefs::Get(context));
+}
+
+// Given a |profile|, assigns the testing keyed service function to
+// BuildToolbarModel() and uses it to create and initialize a new
+// ExtensionToolbarModel.
+ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile) {
+  ExtensionToolbarModel* model = ExtensionToolbarModel::Get(profile);
+  if (model)
+    return model;
+
+  // No existing model means it's a new profile (since we, by default, don't
+  // create the ToolbarModel in testing).
+  ExtensionToolbarModelFactory::GetInstance()->SetTestingFactory(
+      profile, &BuildToolbarModel);
+  model = ExtensionToolbarModel::Get(profile);
+  // Fake the extension system ready signal.
+  // HACK ALERT! In production, the ready task on ExtensionSystem (and most
+  // everything else on it, too) is shared between incognito and normal
+  // profiles, but a TestExtensionSystem doesn't have the concept of "shared".
+  // Because of this, we have to set any new profile's TestExtensionSystem's
+  // ready task, too.
+  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile))->SetReady();
+  // Run tasks posted to TestExtensionSystem.
+  base::RunLoop().RunUntilIdle();
+
+  return model;
+}
 
 // Create an extension. If |action_key| is non-NULL, it should point to either
 // kBrowserAction or kPageAction, and the extension will have the associated
@@ -137,9 +170,13 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
 
   // Returns the extension at the given index in the toolbar model, or NULL
   // if one does not exist.
+  // If |model| is specified, it is used. Otherwise, this defaults to
+  // |toolbar_model_|.
+  const Extension* GetExtensionAtIndex(
+      size_t index, const ExtensionToolbarModel* model) const;
   const Extension* GetExtensionAtIndex(size_t index) const;
 
-  ExtensionToolbarModel* toolbar_model() { return toolbar_model_.get(); }
+  ExtensionToolbarModel* toolbar_model() { return toolbar_model_; }
 
   const ExtensionToolbarModelTestObserver* observer() const {
     return model_observer_.get();
@@ -161,8 +198,8 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
   testing::AssertionResult AddAndVerifyExtensions(
       const ExtensionList& extensions);
 
-  // The associated (and owned) toolbar model.
-  scoped_ptr<ExtensionToolbarModel> toolbar_model_;
+  // The toolbar model associated with the testing profile.
+  ExtensionToolbarModel* toolbar_model_;
 
   // The test observer to track events. Must come after toolbar_model_ so that
   // it is destroyed and removes itself as an observer first.
@@ -181,14 +218,8 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
 
 void ExtensionToolbarModelUnitTest::Init() {
   InitializeEmptyExtensionService();
-  toolbar_model_.reset(
-      new ExtensionToolbarModel(profile(), ExtensionPrefs::Get(profile())));
-  model_observer_.reset(
-      new ExtensionToolbarModelTestObserver(toolbar_model_.get()));
-  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))->
-      SetReady();
-  // Run tasks posted to TestExtensionSystem.
-  base::RunLoop().RunUntilIdle();
+  toolbar_model_ = CreateToolbarModelForProfile(profile());
+  model_observer_.reset(new ExtensionToolbarModelTestObserver(toolbar_model_));
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::AddExtension(
@@ -253,10 +284,15 @@ ExtensionToolbarModelUnitTest::AddBrowserActionExtensions() {
 }
 
 const Extension* ExtensionToolbarModelUnitTest::GetExtensionAtIndex(
-    size_t index) const {
-  return index < toolbar_model_->toolbar_items().size()
-             ? toolbar_model_->toolbar_items()[index].get()
+    size_t index, const ExtensionToolbarModel* model) const {
+  return index < model->toolbar_items().size()
+             ? model->toolbar_items()[index].get()
              : NULL;
+}
+
+const Extension* ExtensionToolbarModelUnitTest::GetExtensionAtIndex(
+    size_t index) const {
+  return GetExtensionAtIndex(index, toolbar_model_);
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::AddAndVerifyExtensions(
@@ -737,6 +773,77 @@ TEST_F(ExtensionToolbarModelUnitTest,
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
+}
+
+TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
+  Init();
+  ASSERT_TRUE(AddBrowserActionExtensions());
+
+  // Give two extensions incognito access.
+  // Note: We use ExtensionPrefs::SetIsIncognitoEnabled instead of
+  // util::SetIsIncognitoEnabled because the latter tries to reload the
+  // extension, which can cause problems in our unittest set up (and reloading
+  // the extension is irrelevant to us).
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
+  extension_prefs->SetIsIncognitoEnabled(browser_action_b()->id(), true);
+  extension_prefs->SetIsIncognitoEnabled(browser_action_c()->id(), true);
+
+  // Move C to the second index.
+  toolbar_model()->MoveExtensionIcon(browser_action_c(), 1u);
+  // Set visible count to 2 so that c is overflowed. State is A C [B].
+  toolbar_model()->SetVisibleIconCount(2);
+  EXPECT_EQ(1u, observer()->moved_count());
+
+  // Get an incognito profile and toolbar.
+  ExtensionToolbarModel* incognito_model =
+      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile());
+
+  ExtensionToolbarModelTestObserver incognito_observer(incognito_model);
+  EXPECT_EQ(0u, incognito_observer.moved_count());
+
+  // We should have two items, C and B, and the order should be preserved from
+  // the original model.
+  EXPECT_EQ(2u, incognito_model->toolbar_items().size());
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(0u, incognito_model));
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u, incognito_model));
+
+  // Extensions in the overflow menu in the regular toolbar should remain in
+  // overflow in the incognito toolbar. So, we should have C [B].
+  EXPECT_EQ(1, incognito_model->GetVisibleIconCount());
+  // The regular model should still have two icons visible.
+  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+
+  // Changing the incognito model size should not affect the regular model.
+  incognito_model->SetVisibleIconCount(0);
+  EXPECT_EQ(0, incognito_model->GetVisibleIconCount());
+  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+
+  // Expanding the incognito model to 2 should register as "all icons" (-1),
+  // since it is all of the incognito-enabled extensions.
+  incognito_model->SetVisibleIconCount(2u);
+  EXPECT_EQ(-1, incognito_model->GetVisibleIconCount());
+
+  // Moving icons in the incognito toolbar should not affect the regular
+  // toolbar. Incognito currently has C B...
+  incognito_model->MoveExtensionIcon(browser_action_b(), 0u);
+  // So now it should be B C...
+  EXPECT_EQ(1u, incognito_observer.moved_count());
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(0u, incognito_model));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(1u, incognito_model));
+  // ... and the regular toolbar should be unaffected.
+  EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(2u));
+
+  // Similarly, the observer for the regular model should not have received
+  // any updates.
+  EXPECT_EQ(1u, observer()->moved_count());
+
+  // And performing moves on the regular model should have no effect on the
+  // incognito model or its observers.
+  toolbar_model()->MoveExtensionIcon(browser_action_c(), 2u);
+  EXPECT_EQ(2u, observer()->moved_count());
+  EXPECT_EQ(1u, incognito_observer.moved_count());
 }
 
 // Test that hiding actions on the toolbar results in sending them to the
