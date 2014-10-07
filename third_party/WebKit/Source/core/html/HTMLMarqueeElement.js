@@ -29,16 +29,10 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         'width',
     ];
 
-    var pixelLengthRegexp = /^\s*([\d.]+)\s*$/;
-    var percentageLengthRegexp = /^\s*([\d.]+)\s*%\s*$/;
-
     function convertHTMLLengthToCSSLength(value) {
-        var pixelMatch = value.match(pixelLengthRegexp);
-        if (pixelMatch)
-            return pixelMatch[1] + 'px';
-        var percentageMatch = value.match(percentageLengthRegexp);
-        if (percentageMatch)
-            return percentageMatch[1] + '%';
+        var match = value.match(/^\s*([\d.]+)(%)?\s*/);
+        if (match)
+            return match[2] === '%' ? match[1] + '%' : match[1] + 'px';
         return null;
     }
 
@@ -148,8 +142,6 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         case 'scrollDelay':
         case 'trueSpeed':
             // FIXME: Not implemented.
-            this.stop();
-            this.start();
             break;
         }
     };
