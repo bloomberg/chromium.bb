@@ -18,28 +18,26 @@
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 
-#define MOJO_LOG_STREAM(level) \
-    ::mojo::internal::LogMessage(__FILE__, __LINE__, \
-                                 MOJO_LOG_LEVEL_ ## level).stream()
+#define MOJO_LOG_STREAM(level)                                             \
+  ::mojo::internal::LogMessage(__FILE__, __LINE__, MOJO_LOG_LEVEL_##level) \
+      .stream()
 
 #define MOJO_LAZY_LOG_STREAM(level, condition) \
-    !(condition) ? \
-        (void) 0 : \
-        ::mojo::internal::VoidifyOstream() & MOJO_LOG_STREAM(level)
+  !(condition) ? (void)0                       \
+               : ::mojo::internal::VoidifyOstream() & MOJO_LOG_STREAM(level)
 
 #define MOJO_SHOULD_LOG(level) \
-    (MOJO_LOG_LEVEL_ ## level >= \
-     ::mojo::Environment::GetDefaultLogger()->GetMinimumLogLevel())
+  (MOJO_LOG_LEVEL_##level >=   \
+   ::mojo::Environment::GetDefaultLogger()->GetMinimumLogLevel())
 
-#define MOJO_LOG(level) \
-    MOJO_LAZY_LOG_STREAM(level, MOJO_SHOULD_LOG(level))
+#define MOJO_LOG(level) MOJO_LAZY_LOG_STREAM(level, MOJO_SHOULD_LOG(level))
 
 #define MOJO_LOG_IF(level, condition) \
-    MOJO_LAZY_LOG_STREAM(level, MOJO_SHOULD_LOG(level) && (condition))
+  MOJO_LAZY_LOG_STREAM(level, MOJO_SHOULD_LOG(level) && (condition))
 
-#define MOJO_CHECK(condition) \
-    MOJO_LAZY_LOG_STREAM(FATAL, !(condition)) \
-        << "Check failed: " #condition ". "
+#define MOJO_CHECK(condition)                                                  \
+  MOJO_LAZY_LOG_STREAM(FATAL, !(condition)) << "Check failed: " #condition "." \
+                                                                           " "
 
 // Note: For non-debug builds, |MOJO_DLOG_IF()| *eliminates* (i.e., doesn't
 // compile) the condition, whereas |MOJO_DCHECK()| "neuters" the condition

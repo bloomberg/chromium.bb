@@ -76,9 +76,10 @@ void RunLoop::AddHandler(RunLoopHandler* handler,
   HandlerData handler_data;
   handler_data.handler = handler;
   handler_data.handle_signals = handle_signals;
-  handler_data.deadline = (deadline == MOJO_DEADLINE_INDEFINITE) ?
-      kInvalidTimeTicks :
-      GetTimeTicksNow() + static_cast<MojoTimeTicks>(deadline);
+  handler_data.deadline =
+      (deadline == MOJO_DEADLINE_INDEFINITE)
+          ? kInvalidTimeTicks
+          : GetTimeTicksNow() + static_cast<MojoTimeTicks>(deadline);
   handler_data.id = next_handler_id_++;
   handler_data_[handle] = handler_data;
 }
@@ -148,9 +149,8 @@ bool RunLoop::Wait(bool non_blocking) {
     return false;
   }
 
-  const MojoResult result = WaitMany(wait_state.handles,
-                                     wait_state.handle_signals,
-                                     wait_state.deadline);
+  const MojoResult result = WaitMany(
+      wait_state.handles, wait_state.handle_signals, wait_state.deadline);
   if (result >= 0) {
     const size_t index = static_cast<size_t>(result);
     assert(handler_data_.find(wait_state.handles[index]) !=
@@ -180,10 +180,11 @@ bool RunLoop::NotifyHandlers(MojoResult error, CheckDeadline check) {
   const HandleToHandlerData cloned_handlers(handler_data_);
   const MojoTimeTicks now(GetTimeTicksNow());
   for (HandleToHandlerData::const_iterator i = cloned_handlers.begin();
-       i != cloned_handlers.end(); ++i) {
+       i != cloned_handlers.end();
+       ++i) {
     // Only check deadline exceeded if that's what we're notifying.
-    if (check == CHECK_DEADLINE && (i->second.deadline == kInvalidTimeTicks ||
-                                    i->second.deadline > now)) {
+    if (check == CHECK_DEADLINE &&
+        (i->second.deadline == kInvalidTimeTicks || i->second.deadline > now)) {
       continue;
     }
 
@@ -205,16 +206,15 @@ bool RunLoop::NotifyHandlers(MojoResult error, CheckDeadline check) {
 
 bool RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
   for (size_t i = 0; i < wait_state.handles.size(); ++i) {
-    const MojoResult result =
-        mojo::Wait(wait_state.handles[i], wait_state.handle_signals[i],
-                   static_cast<MojoDeadline>(0));
+    const MojoResult result = mojo::Wait(wait_state.handles[i],
+                                         wait_state.handle_signals[i],
+                                         static_cast<MojoDeadline>(0));
     if (result == MOJO_RESULT_INVALID_ARGUMENT ||
         result == MOJO_RESULT_FAILED_PRECONDITION) {
       // Remove the handle first, this way if OnHandleError() tries to remove
       // the handle our iterator isn't invalidated.
       assert(handler_data_.find(wait_state.handles[i]) != handler_data_.end());
-      RunLoopHandler* handler =
-          handler_data_[wait_state.handles[i]].handler;
+      RunLoopHandler* handler = handler_data_[wait_state.handles[i]].handler;
       handler_data_.erase(wait_state.handles[i]);
       handler->OnHandleError(wait_state.handles[i], result);
       return true;
@@ -228,7 +228,8 @@ RunLoop::WaitState RunLoop::GetWaitState(bool non_blocking) const {
   WaitState wait_state;
   MojoTimeTicks min_time = kInvalidTimeTicks;
   for (HandleToHandlerData::const_iterator i = handler_data_.begin();
-       i != handler_data_.end(); ++i) {
+       i != handler_data_.end();
+       ++i) {
     wait_state.handles.push_back(i->first);
     wait_state.handle_signals.push_back(i->second.handle_signals);
     if (!non_blocking && i->second.deadline != kInvalidTimeTicks &&

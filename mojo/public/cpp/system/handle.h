@@ -93,8 +93,7 @@ class ScopedHandleBase {
 
   template <class CompatibleHandleType>
   explicit ScopedHandleBase(ScopedHandleBase<CompatibleHandleType> other)
-      : handle_(other.release()) {
-  }
+      : handle_(other.release()) {}
 
   // Move-only constructor and operator=.
   ScopedHandleBase(RValue other) : handle_(other.object->release()) {}
@@ -118,9 +117,7 @@ class ScopedHandleBase {
         static_cast<HandleType>(other.release().value()));
   }
 
-  void swap(ScopedHandleBase& other) {
-    handle_.swap(other.handle_);
-  }
+  void swap(ScopedHandleBase& other) { handle_.swap(other.handle_); }
 
   HandleType release() MOJO_WARN_UNUSED_RESULT {
     HandleType rv;
@@ -133,9 +130,7 @@ class ScopedHandleBase {
     handle_ = handle;
   }
 
-  bool is_valid() const {
-    return handle_.is_valid();
-  }
+  bool is_valid() const { return handle_.is_valid(); }
 
  private:
   void CloseIfNecessary() {
@@ -170,9 +165,7 @@ class Handle {
     other.value_ = temp;
   }
 
-  bool is_valid() const {
-    return value_ != kInvalidHandleValue;
-  }
+  bool is_valid() const { return value_ != kInvalidHandleValue; }
 
   const MojoHandle& value() const { return value_; }
   MojoHandle* mutable_value() { return &value_; }
@@ -228,7 +221,8 @@ inline MojoResult WaitMany(const HandleVectorType& handles,
 // Note: There's nothing to do, since the argument will be destroyed when it
 // goes out of scope.
 template <class HandleType>
-inline void Close(ScopedHandleBase<HandleType> /*handle*/) {}
+inline void Close(ScopedHandleBase<HandleType> /*handle*/) {
+}
 
 // Most users should typically use |Close()| (above) instead.
 inline MojoResult CloseRaw(Handle handle) {

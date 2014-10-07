@@ -20,11 +20,11 @@ const MojoLogger* g_default_logger = nullptr;
 
 void Init(const MojoAsyncWaiter* default_async_waiter,
           const MojoLogger* default_logger) {
-  g_default_async_waiter =
-      default_async_waiter ? default_async_waiter :
-                             &internal::kDefaultAsyncWaiter;
-  g_default_logger = default_logger ? default_logger :
-                                      &internal::kDefaultLogger;
+  g_default_async_waiter = default_async_waiter
+                               ? default_async_waiter
+                               : &internal::kDefaultAsyncWaiter;
+  g_default_logger =
+      default_logger ? default_logger : &internal::kDefaultLogger;
 
   RunLoop::SetUp();
 }

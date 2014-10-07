@@ -13,24 +13,24 @@ TEST(LoggerTest, Basic) {
   Environment environment;
   const MojoLogger* const logger = Environment::GetDefaultLogger();
 
-  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE-1, "Logged at VERBOSE-1 level");
+  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, "Logged at VERBOSE-1 level");
   logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, "Logged at VERBOSE level");
   logger->LogMessage(MOJO_LOG_LEVEL_INFO, "Logged at INFO level");
   logger->LogMessage(MOJO_LOG_LEVEL_WARNING, "Logged at WARNING level");
   logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
 
   // This should kill us:
-  EXPECT_DEATH_IF_SUPPORTED({
-    logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level");
-  }, "");
+  EXPECT_DEATH_IF_SUPPORTED(
+      { logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level"); },
+      "");
 }
 
 TEST(LoggerTest, LogLevels) {
   Environment environment;
   const MojoLogger* const logger = Environment::GetDefaultLogger();
 
-  for (MojoLogLevel log_level = MOJO_LOG_LEVEL_VERBOSE-1;
-       log_level <= MOJO_LOG_LEVEL_FATAL+1;
+  for (MojoLogLevel log_level = MOJO_LOG_LEVEL_VERBOSE - 1;
+       log_level <= MOJO_LOG_LEVEL_FATAL + 1;
        log_level++) {
     logger->SetMinimumLogLevel(log_level);
 
@@ -39,16 +39,16 @@ TEST(LoggerTest, LogLevels) {
     else
       EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, logger->GetMinimumLogLevel());
 
-    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE-1, "Logged at VERBOSE-1 level");
+    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, "Logged at VERBOSE-1 level");
     logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, "Logged at VERBOSE level");
     logger->LogMessage(MOJO_LOG_LEVEL_INFO, "Logged at INFO level");
     logger->LogMessage(MOJO_LOG_LEVEL_WARNING, "Logged at WARNING level");
     logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
 
     // This should kill us:
-    EXPECT_DEATH_IF_SUPPORTED({
-      logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level");
-    }, "");
+    EXPECT_DEATH_IF_SUPPORTED(
+        { logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level"); },
+        "");
   }
 }
 

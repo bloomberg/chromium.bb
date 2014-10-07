@@ -8,18 +8,11 @@
 
 namespace mojo {
 
-Thread::Thread()
-    : options_(),
-      thread_(),
-      started_(false),
-      joined_(false) {
+Thread::Thread() : options_(), thread_(), started_(false), joined_(false) {
 }
 
 Thread::Thread(const Options& options)
-    : options_(options),
-      thread_(),
-      started_(false),
-      joined_(false) {
+    : options_(options), thread_(), started_(false), joined_(false) {
 }
 
 Thread::~Thread() {

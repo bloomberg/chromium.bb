@@ -68,9 +68,7 @@ class LoggingTest : public testing::Test {
     last_message_ = message;
   }
 
-  static MojoLogLevel MockGetMinimumLogLevel() {
-    return minimum_log_level_;
-  }
+  static MojoLogLevel MockGetMinimumLogLevel() { return minimum_log_level_; }
 
   static void MockSetMinimumLogLevel(MojoLogLevel minimum_log_level) {
     minimum_log_level_ = minimum_log_level;
@@ -90,10 +88,9 @@ class LoggingTest : public testing::Test {
 
 // static
 const MojoLogger LoggingTest::kMockLogger = {
-  &LoggingTest::MockLogMessage,
-  &LoggingTest::MockGetMinimumLogLevel,
-  &LoggingTest::MockSetMinimumLogLevel
-};
+    &LoggingTest::MockLogMessage,
+    &LoggingTest::MockGetMinimumLogLevel,
+    &LoggingTest::MockSetMinimumLogLevel};
 
 // static
 MojoLogLevel LoggingTest::minimum_log_level_ = MOJO_LOG_LEVEL_INFO;
@@ -117,8 +114,8 @@ std::string ExpectedLogMessage(int line, const char* message) {
 }
 
 TEST_F(LoggingTest, InternalLogMessage) {
-  internal::LogMessage("foo.cc", 123, MOJO_LOG_LEVEL_INFO).stream()
-      << "hello " << "world";
+  internal::LogMessage("foo.cc", 123, MOJO_LOG_LEVEL_INFO).stream() << "hello "
+                                                                    << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
@@ -126,7 +123,8 @@ TEST_F(LoggingTest, InternalLogMessage) {
   ResetMockLogger();
 
   internal::LogMessage("./path/to/foo.cc", 123, MOJO_LOG_LEVEL_WARNING).stream()
-      << "hello " << "world";
+      << "hello "
+      << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_WARNING, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
@@ -134,7 +132,8 @@ TEST_F(LoggingTest, InternalLogMessage) {
   ResetMockLogger();
 
   internal::LogMessage("/path/to/foo.cc", 123, MOJO_LOG_LEVEL_ERROR).stream()
-      << "hello " << "world";
+      << "hello "
+      << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
@@ -142,7 +141,8 @@ TEST_F(LoggingTest, InternalLogMessage) {
   ResetMockLogger();
 
   internal::LogMessage("path/to/foo.cc", 123, MOJO_LOG_LEVEL_FATAL).stream()
-      << "hello " << "world";
+      << "hello "
+      << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
@@ -150,31 +150,35 @@ TEST_F(LoggingTest, InternalLogMessage) {
   ResetMockLogger();
 
   internal::LogMessage(".\\xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE).stream()
-      << "hello " << "world";
+      << "hello "
+      << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE-1).stream()
-      << "hello " << "world";
+  internal::LogMessage("xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE - 1).stream()
+      << "hello "
+      << "world";
   EXPECT_TRUE(log_message_was_called());
-  EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE-1, last_log_level());
+  EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE - 1, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("C:\\xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE-9).stream()
-      << "hello " << "world";
+  internal::LogMessage("C:\\xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE - 9)
+          .stream()
+      << "hello "
+      << "world";
   EXPECT_TRUE(log_message_was_called());
-  EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE-9, last_log_level());
+  EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE - 9, last_log_level());
   EXPECT_EQ("foo.cc(123): hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage(__FILE__, 123, MOJO_LOG_LEVEL_INFO).stream()
-      << "hello " << "world";
+  internal::LogMessage(__FILE__, 123, MOJO_LOG_LEVEL_INFO).stream() << "hello "
+                                                                    << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
   EXPECT_EQ(OUR_FILENAME "(123): hello world", last_message());
@@ -250,7 +254,8 @@ TEST_F(LoggingTest, ShouldLog) {
   EXPECT_TRUE(MOJO_SHOULD_LOG(ERROR));
   EXPECT_TRUE(MOJO_SHOULD_LOG(FATAL));
 
-  Environment::GetDefaultLogger()->SetMinimumLogLevel(MOJO_LOG_LEVEL_VERBOSE-1);
+  Environment::GetDefaultLogger()->SetMinimumLogLevel(MOJO_LOG_LEVEL_VERBOSE -
+                                                      1);
   EXPECT_TRUE(MOJO_SHOULD_LOG(VERBOSE));
   EXPECT_TRUE(MOJO_SHOULD_LOG(INFO));
   EXPECT_TRUE(MOJO_SHOULD_LOG(WARNING));
@@ -416,7 +421,7 @@ TEST_F(LoggingTest, DlogIf) {
 
   ResetMockLogger();
 
-  // |MOJO_DLOG_IF()| shouldn't compile its condition for non-debug builds.
+// |MOJO_DLOG_IF()| shouldn't compile its condition for non-debug builds.
 #ifndef NDEBUG
   bool debug_only = true;
 #endif

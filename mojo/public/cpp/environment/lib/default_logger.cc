@@ -18,12 +18,12 @@ namespace {
 MojoLogLevel g_minimum_log_level = MOJO_LOG_LEVEL_INFO;
 
 const char* GetLogLevelString(MojoLogLevel log_level) {
-  if (log_level <= MOJO_LOG_LEVEL_VERBOSE-3)
+  if (log_level <= MOJO_LOG_LEVEL_VERBOSE - 3)
     return "VERBOSE4+";
   switch (log_level) {
-    case MOJO_LOG_LEVEL_VERBOSE-2:
+    case MOJO_LOG_LEVEL_VERBOSE - 2:
       return "VERBOSE3";
-    case MOJO_LOG_LEVEL_VERBOSE-1:
+    case MOJO_LOG_LEVEL_VERBOSE - 1:
       return "VERBOSE2";
     case MOJO_LOG_LEVEL_VERBOSE:
       return "VERBOSE1";
@@ -60,11 +60,9 @@ void SetMinimumLogLevel(MojoLogLevel minimum_log_level) {
 
 namespace internal {
 
-const MojoLogger kDefaultLogger = {
-  LogMessage,
-  GetMinimumLogLevel,
-  SetMinimumLogLevel
-};
+const MojoLogger kDefaultLogger = {LogMessage,
+                                   GetMinimumLogLevel,
+                                   SetMinimumLogLevel};
 
 }  // namespace internal
 

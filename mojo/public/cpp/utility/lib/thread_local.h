@@ -32,24 +32,17 @@ struct ThreadLocalPlatform {
 template <typename P>
 class ThreadLocalPointer {
  public:
-  ThreadLocalPointer() : slot_() {
-  }
+  ThreadLocalPointer() : slot_() {}
 
-  void Allocate() {
-    ThreadLocalPlatform::AllocateSlot(&slot_);
-  }
+  void Allocate() { ThreadLocalPlatform::AllocateSlot(&slot_); }
 
-  void Free() {
-    ThreadLocalPlatform::FreeSlot(slot_);
-  }
+  void Free() { ThreadLocalPlatform::FreeSlot(slot_); }
 
   P* Get() {
     return static_cast<P*>(ThreadLocalPlatform::GetValueFromSlot(slot_));
   }
 
-  void Set(P* value) {
-    ThreadLocalPlatform::SetValueInSlot(slot_, value);
-  }
+  void Set(P* value) { ThreadLocalPlatform::SetValueInSlot(slot_, value); }
 
  private:
   ThreadLocalPlatform::SlotType slot_;

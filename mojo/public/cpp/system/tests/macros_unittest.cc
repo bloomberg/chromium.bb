@@ -61,12 +61,12 @@ TEST(MacrosCppTest, DisallowCopyAndAssign) {
 }
 
 // Test that |MOJO_ARRAYSIZE()| works in a |static_assert()|.
-const int kGlobalArray[5] = { 1, 2, 3, 4, 5 };
+const int kGlobalArray[5] = {1, 2, 3, 4, 5};
 static_assert(MOJO_ARRAYSIZE(kGlobalArray) == 5u,
               "MOJO_ARRAY_SIZE() failed in static_assert()");
 
 TEST(MacrosCppTest, ArraySize) {
-  double local_array[4] = { 6.7, 7.8, 8.9, 9.0 };
+  double local_array[4] = {6.7, 7.8, 8.9, 9.0};
   EXPECT_EQ(4u, MOJO_ARRAYSIZE(local_array));
 }
 

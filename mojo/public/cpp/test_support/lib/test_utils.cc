@@ -59,7 +59,11 @@ bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
 }
 
 bool DiscardMessage(const MessagePipeHandle& handle) {
-  MojoResult rv = ReadMessageRaw(handle, nullptr, nullptr, nullptr, nullptr,
+  MojoResult rv = ReadMessageRaw(handle,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr,
                                  MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
   return rv == MOJO_RESULT_OK;
 }

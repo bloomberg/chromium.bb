@@ -17,8 +17,7 @@ namespace {
 
 class TestAsyncWaitCallback {
  public:
-  TestAsyncWaitCallback() : result_count_(0), last_result_(MOJO_RESULT_OK) {
-  }
+  TestAsyncWaitCallback() : result_count_(0), last_result_(MOJO_RESULT_OK) {}
   virtual ~TestAsyncWaitCallback() {}
 
   int result_count() const { return result_count_; }
@@ -71,9 +70,8 @@ TEST_F(AsyncWaiterTest, CallbackNotified) {
   MessagePipe test_pipe;
   EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
-  CallAsyncWait(test_pipe.handle0.get(),
-                MOJO_HANDLE_SIGNAL_READABLE,
-                &callback);
+  CallAsyncWait(
+      test_pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback);
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback.result_count());
   EXPECT_EQ(MOJO_RESULT_OK, callback.last_result());
@@ -88,12 +86,10 @@ TEST_F(AsyncWaiterTest, TwoCallbacksNotified) {
   EXPECT_TRUE(test::WriteTextMessage(test_pipe1.handle1.get(), std::string()));
   EXPECT_TRUE(test::WriteTextMessage(test_pipe2.handle1.get(), std::string()));
 
-  CallAsyncWait(test_pipe1.handle0.get(),
-                MOJO_HANDLE_SIGNAL_READABLE,
-                &callback1);
-  CallAsyncWait(test_pipe2.handle0.get(),
-                MOJO_HANDLE_SIGNAL_READABLE,
-                &callback2);
+  CallAsyncWait(
+      test_pipe1.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback1);
+  CallAsyncWait(
+      test_pipe2.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback2);
 
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback1.result_count());
@@ -108,10 +104,8 @@ TEST_F(AsyncWaiterTest, CancelCallback) {
   MessagePipe test_pipe;
   EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
-  CallCancelWait(
-      CallAsyncWait(test_pipe.handle0.get(),
-                    MOJO_HANDLE_SIGNAL_READABLE,
-                    &callback));
+  CallCancelWait(CallAsyncWait(
+      test_pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback));
   RunLoop::current()->Run();
   EXPECT_EQ(0, callback.result_count());
 }

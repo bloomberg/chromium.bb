@@ -23,14 +23,9 @@ class RunLoopHandlerImpl : public RunLoopHandler {
   RunLoopHandlerImpl(const Handle& handle,
                      MojoAsyncWaitCallback callback,
                      void* closure)
-      : handle_(handle),
-        callback_(callback),
-        closure_(closure) {
-  }
+      : handle_(handle), callback_(callback), closure_(closure) {}
 
-  virtual ~RunLoopHandlerImpl() {
-    RunLoop::current()->RemoveHandler(handle_);
-  }
+  virtual ~RunLoopHandlerImpl() { RunLoop::current()->RemoveHandler(handle_); }
 
   // RunLoopHandler:
   virtual void OnHandleReady(const Handle& handle) override {
@@ -83,10 +78,7 @@ void CancelWait(MojoAsyncWaitID wait_id) {
 
 namespace internal {
 
-const MojoAsyncWaiter kDefaultAsyncWaiter = {
-  AsyncWait,
-  CancelWait
-};
+const MojoAsyncWaiter kDefaultAsyncWaiter = {AsyncWait, CancelWait};
 
 }  // namespace internal
 

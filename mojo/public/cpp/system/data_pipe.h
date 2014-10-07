@@ -55,7 +55,8 @@ inline MojoResult CreateDataPipe(
   assert(data_pipe_consumer);
   DataPipeProducerHandle producer_handle;
   DataPipeConsumerHandle consumer_handle;
-  MojoResult rv = MojoCreateDataPipe(options, producer_handle.mutable_value(),
+  MojoResult rv = MojoCreateDataPipe(options,
+                                     producer_handle.mutable_value(),
                                      consumer_handle.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
   // will be used).
@@ -75,8 +76,8 @@ inline MojoResult BeginWriteDataRaw(DataPipeProducerHandle data_pipe_producer,
                                     void** buffer,
                                     uint32_t* buffer_num_bytes,
                                     MojoWriteDataFlags flags) {
-  return MojoBeginWriteData(data_pipe_producer.value(), buffer,
-                            buffer_num_bytes, flags);
+  return MojoBeginWriteData(
+      data_pipe_producer.value(), buffer, buffer_num_bytes, flags);
 }
 
 inline MojoResult EndWriteDataRaw(DataPipeProducerHandle data_pipe_producer,
@@ -95,8 +96,8 @@ inline MojoResult BeginReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
                                    const void** buffer,
                                    uint32_t* buffer_num_bytes,
                                    MojoReadDataFlags flags) {
-  return MojoBeginReadData(data_pipe_consumer.value(), buffer, buffer_num_bytes,
-                           flags);
+  return MojoBeginReadData(
+      data_pipe_consumer.value(), buffer, buffer_num_bytes, flags);
 }
 
 inline MojoResult EndReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,

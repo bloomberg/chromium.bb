@@ -37,9 +37,8 @@ inline MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
   assert(message_pipe1);
   MessagePipeHandle handle0;
   MessagePipeHandle handle1;
-  MojoResult rv = MojoCreateMessagePipe(options,
-                                        handle0.mutable_value(),
-                                        handle1.mutable_value());
+  MojoResult rv = MojoCreateMessagePipe(
+      options, handle0.mutable_value(), handle1.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
   // will be used).
   message_pipe0->reset(handle0);
@@ -56,8 +55,8 @@ inline MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
                                   const MojoHandle* handles,
                                   uint32_t num_handles,
                                   MojoWriteMessageFlags flags) {
-  return MojoWriteMessage(message_pipe.value(), bytes, num_bytes, handles,
-                          num_handles, flags);
+  return MojoWriteMessage(
+      message_pipe.value(), bytes, num_bytes, handles, num_handles, flags);
 }
 
 inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
@@ -66,8 +65,8 @@ inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
                                  MojoHandle* handles,
                                  uint32_t* num_handles,
                                  MojoReadMessageFlags flags) {
-  return MojoReadMessage(message_pipe.value(), bytes, num_bytes, handles,
-                         num_handles, flags);
+  return MojoReadMessage(
+      message_pipe.value(), bytes, num_bytes, handles, num_handles, flags);
 }
 
 // A wrapper class that automatically creates a message pipe and owns both

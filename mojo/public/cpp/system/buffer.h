@@ -27,8 +27,7 @@ static_assert(sizeof(SharedBufferHandle) == sizeof(Handle),
               "Bad size for C++ SharedBufferHandle");
 
 typedef ScopedHandleBase<SharedBufferHandle> ScopedSharedBufferHandle;
-static_assert(sizeof(ScopedSharedBufferHandle) ==
-                  sizeof(SharedBufferHandle),
+static_assert(sizeof(ScopedSharedBufferHandle) == sizeof(SharedBufferHandle),
               "Bad size for C++ ScopedSharedBufferHandle");
 
 inline MojoResult CreateSharedBuffer(
@@ -37,8 +36,8 @@ inline MojoResult CreateSharedBuffer(
     ScopedSharedBufferHandle* shared_buffer) {
   assert(shared_buffer);
   SharedBufferHandle handle;
-  MojoResult rv = MojoCreateSharedBuffer(options, num_bytes,
-                                         handle.mutable_value());
+  MojoResult rv =
+      MojoCreateSharedBuffer(options, num_bytes, handle.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
   // will be used).
   shared_buffer->reset(handle);

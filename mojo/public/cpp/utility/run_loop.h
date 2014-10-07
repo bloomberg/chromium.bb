@@ -78,16 +78,10 @@ class RunLoop {
 
   // Used for NotifyHandlers to specify whether HandlerData's |deadline|
   // should be checked prior to notifying.
-  enum CheckDeadline {
-    CHECK_DEADLINE,
-    IGNORE_DEADLINE
-  };
+  enum CheckDeadline { CHECK_DEADLINE, IGNORE_DEADLINE };
 
   // Mode of operation of the run loop.
-  enum RunMode {
-    UNTIL_EMPTY,
-    UNTIL_IDLE
-  };
+  enum RunMode { UNTIL_EMPTY, UNTIL_IDLE };
 
   // Runs the loop servicing any handles and tasks that are ready. If
   // |run_mode| is |UNTIL_IDLE|, does not wait for handles or tasks to become
