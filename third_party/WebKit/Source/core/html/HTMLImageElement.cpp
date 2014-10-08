@@ -302,7 +302,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         if (!sizes.isNull())
             UseCounter::count(document(), UseCounter::Sizes);
         SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
-        unsigned effectiveSize = parser.length();
+        float effectiveSize = parser.length();
         m_effectiveSizeViewportDependant = parser.viewportDependant();
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));
         if (candidate.isEmpty())
@@ -630,7 +630,7 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     }
 
     if (!foundURL) {
-        unsigned effectiveSize = 0;
+        float effectiveSize = 0;
         if (RuntimeEnabledFeatures::pictureSizesEnabled()) {
             String sizes = fastGetAttribute(sizesAttr);
             if (!sizes.isNull())

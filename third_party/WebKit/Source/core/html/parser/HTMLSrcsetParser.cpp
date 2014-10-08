@@ -276,7 +276,7 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sour
     // http://picture.responsiveimages.org/#normalize-source-densities
     for (Vector<ImageCandidate>::iterator it = imageCandidates.begin(); it != imageCandidates.end(); ++it) {
         if (it->resourceWidth() > 0) {
-            it->setDensity((float)it->resourceWidth() / (float)sourceSize);
+            it->setDensity((float)it->resourceWidth() / sourceSize);
             ignoreSrc = true;
         } else if (it->density() < 0) {
             it->setDensity(defaultDensityValue);
