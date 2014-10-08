@@ -379,7 +379,7 @@ void AwContentsClientBridge::HandleErrorInClientCertificateResponse(
     int request_id) {
   SelectCertificateCallback* callback =
       pending_client_cert_request_callbacks_.Lookup(request_id);
-  callback->Run(scoped_refptr<net::X509Certificate>());
+  callback->Run(nullptr);
   pending_client_cert_request_callbacks_.Remove(request_id);
 }
 
