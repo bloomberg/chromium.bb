@@ -505,15 +505,17 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->Init(aura::WINDOW_LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
 
-  aura::Window* root = popup_parent_host_view_->window_->GetRootWindow();
-  aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
   // Setting the transient child allows for the popup to get mouse events when
-  // in a system modal dialog.
+  // in a system modal dialog. Do this before calling ParentWindowWithContext
+  // below so that the transient parent is visible to WindowTreeClient.
   // This fixes crbug.com/328593.
   if (transient_window_client) {
     transient_window_client->AddTransientChild(
         popup_parent_host_view_->window_, window_);
   }
+
+  aura::Window* root = popup_parent_host_view_->window_->GetRootWindow();
+  aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
 
   SetBounds(bounds_in_screen);
   Show();
