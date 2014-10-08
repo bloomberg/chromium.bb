@@ -90,6 +90,8 @@ fullscreenchange
 fullscreenerror
 gamepadconnected
 gamepaddisconnected
+geofenceenter
+geofenceleave
 gesturescrollend
 gesturescrollstart
 gesturescrollupdate

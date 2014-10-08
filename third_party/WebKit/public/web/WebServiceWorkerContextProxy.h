@@ -31,10 +31,12 @@
 #ifndef WebServiceWorkerContextProxy_h
 #define WebServiceWorkerContextProxy_h
 
+#include "public/platform/WebGeofencingEventType.h"
 #include "public/platform/WebMessagePortChannel.h"
 
 namespace blink {
 
+struct WebCircularGeofencingRegion;
 class WebServiceWorkerRequest;
 class WebString;
 
@@ -48,6 +50,8 @@ public:
     // FIXME: This needs to pass the active service worker info.
     virtual void dispatchInstallEvent(int installEventID) = 0;
     virtual void dispatchFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
+
+    virtual void dispatchGeofencingEvent(int eventId, WebGeofencingEventType, const WebString& regionId, const WebCircularGeofencingRegion&) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;
 

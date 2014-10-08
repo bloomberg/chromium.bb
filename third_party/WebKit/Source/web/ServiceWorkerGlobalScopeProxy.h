@@ -70,6 +70,7 @@ public:
     virtual void dispatchActivateEvent(int) override;
     virtual void dispatchInstallEvent(int) override;
     virtual void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
+    virtual void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
     virtual void dispatchPushEvent(int, const WebString& data) override;
     virtual void dispatchSyncEvent(int) override;
