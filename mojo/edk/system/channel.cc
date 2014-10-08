@@ -21,8 +21,7 @@ namespace system {
 Channel::Channel(embedder::PlatformSupport* platform_support)
     : platform_support_(platform_support),
       is_running_(false),
-      is_shutting_down_(false),
-      next_local_id_(ChannelEndpointId::GetBootstrap()) {
+      is_shutting_down_(false) {
 }
 
 bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
@@ -99,13 +98,10 @@ ChannelEndpointId Channel::AttachEndpoint(
     DLOG_IF(WARNING, is_shutting_down_)
         << "AttachEndpoint() while shutting down";
 
-    while (!next_local_id_.is_valid() ||
-           local_id_to_endpoint_map_.find(next_local_id_) !=
-               local_id_to_endpoint_map_.end())
-      next_local_id_.value++;
-
-    local_id = next_local_id_;
-    next_local_id_.value++;
+    do {
+      local_id = local_id_generator_.GetNext();
+    } while (local_id_to_endpoint_map_.find(local_id) !=
+             local_id_to_endpoint_map_.end());
     local_id_to_endpoint_map_[local_id] = endpoint;
   }
 
@@ -146,8 +142,8 @@ void Channel::RunRemoteMessagePipeEndpoint(ChannelEndpointId local_id,
     HandleLocalError(base::StringPrintf(
         "Failed to send message to run remote message pipe endpoint (local ID "
         "%u, remote ID %u)",
-        static_cast<unsigned>(local_id.value),
-        static_cast<unsigned>(remote_id.value)));
+        static_cast<unsigned>(local_id.value()),
+        static_cast<unsigned>(remote_id.value())));
   }
 }
 
@@ -206,8 +202,8 @@ void Channel::DetachEndpoint(ChannelEndpoint* endpoint,
     HandleLocalError(base::StringPrintf(
         "Failed to send message to remove remote message pipe endpoint (local "
         "ID %u, remote ID %u)",
-        static_cast<unsigned>(local_id.value),
-        static_cast<unsigned>(remote_id.value)));
+        static_cast<unsigned>(local_id.value()),
+        static_cast<unsigned>(remote_id.value())));
   }
 }
 
@@ -311,7 +307,7 @@ void Channel::OnReadMessageForDownstream(
   if (!endpoint.get()) {
     HandleRemoteError(base::StringPrintf(
         "Received a message for nonexistent local destination ID %u",
-        static_cast<unsigned>(local_id.value)));
+        static_cast<unsigned>(local_id.value())));
     // This is strongly indicative of some problem. However, it's not a fatal
     // error, since it may indicate a buggy (or hostile) remote process. Don't
     // die even for Debug builds, since handling this properly needs to be
@@ -323,7 +319,7 @@ void Channel::OnReadMessageForDownstream(
   if (!endpoint->OnReadMessage(message_view, platform_handles.Pass())) {
     HandleLocalError(
         base::StringPrintf("Failed to enqueue message to local ID %u",
-                           static_cast<unsigned>(local_id.value)));
+                           static_cast<unsigned>(local_id.value())));
     return;
   }
 }
@@ -429,8 +425,8 @@ bool Channel::OnRemoveMessagePipeEndpoint(ChannelEndpointId local_id,
     HandleLocalError(base::StringPrintf(
         "Failed to send message to remove remote message pipe endpoint ack "
         "(local ID %u, remote ID %u)",
-        static_cast<unsigned>(local_id.value),
-        static_cast<unsigned>(remote_id.value)));
+        static_cast<unsigned>(local_id.value()),
+        static_cast<unsigned>(remote_id.value())));
   }
 
   endpoint->OnDisconnect();
