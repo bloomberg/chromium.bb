@@ -121,7 +121,7 @@ SessionStorage status=stable
 SharedWorker status=stable
 Stream status=experimental
 SubpixelFontScaling status=stable
-SubresourceIntegrity status=test
+SubresourceIntegrity status=experimental
 SVGFontsOnNonGDIPlatforms
 TextBlob
 ThemeColor status=stable
