@@ -72,27 +72,27 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // ClientStub implementation.
   virtual void SetCapabilities(
-      const protocol::Capabilities& capabilities) OVERRIDE;
+      const protocol::Capabilities& capabilities) override;
   virtual void SetPairingResponse(
-      const protocol::PairingResponse& pairing_response) OVERRIDE;
+      const protocol::PairingResponse& pairing_response) override;
   virtual void DeliverHostMessage(
-      const protocol::ExtensionMessage& message) OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
 
   // ClipboardStub implementation for receiving clipboard data from host.
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
 
   // CursorShapeStub implementation for receiving cursor shape updates.
   virtual void SetCursorShape(
-      const protocol::CursorShapeInfo& cursor_shape) OVERRIDE;
+      const protocol::CursorShapeInfo& cursor_shape) override;
 
   // ConnectionToHost::HostEventCallback implementation.
   virtual void OnConnectionState(
       protocol::ConnectionToHost::State state,
-      protocol::ErrorCode error) OVERRIDE;
-  virtual void OnConnectionReady(bool ready) OVERRIDE;
+      protocol::ErrorCode error) override;
+  virtual void OnConnectionReady(bool ready) override;
   virtual void OnRouteChanged(const std::string& channel_name,
-                              const protocol::TransportRoute& route) OVERRIDE;
+                              const protocol::TransportRoute& route) override;
 
  private:
   // Called when the connection is authenticated.

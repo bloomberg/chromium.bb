@@ -122,8 +122,8 @@ class ClientSessionTest : public testing::Test {
  public:
   ClientSessionTest() : client_jid_("user@domain/rest-of-jid") {}
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Creates the client session.
   void CreateClientSession();

@@ -40,7 +40,7 @@ class ServiceClient::Core
                       ServiceClient::Delegate* delegate);
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;

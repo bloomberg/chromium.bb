@@ -71,10 +71,10 @@ class CastSetSessionDescriptionObserver
   static CastSetSessionDescriptionObserver* Create() {
     return new rtc::RefCountedObject<CastSetSessionDescriptionObserver>();
   }
-  virtual void OnSuccess() OVERRIDE {
+  virtual void OnSuccess() override {
     VLOG(1) << "Setting session description succeeded.";
   }
-  virtual void OnFailure(const std::string& error) OVERRIDE {
+  virtual void OnFailure(const std::string& error) override {
     LOG(ERROR) << "Setting session description failed: " << error;
   }
 
@@ -95,7 +95,7 @@ class CastCreateSessionDescriptionObserver
     return new rtc::RefCountedObject<CastCreateSessionDescriptionObserver>(
         session);
   }
-  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) OVERRIDE {
+  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     if (cast_extension_session_ == NULL) {
       LOG(ERROR)
           << "No CastExtensionSession. Creating session description succeeded.";
@@ -103,7 +103,7 @@ class CastCreateSessionDescriptionObserver
     }
     cast_extension_session_->OnCreateSessionDescription(desc);
   }
-  virtual void OnFailure(const std::string& error) OVERRIDE {
+  virtual void OnFailure(const std::string& error) override {
     if (cast_extension_session_ == NULL) {
       LOG(ERROR)
           << "No CastExtensionSession. Creating session description failed.";
@@ -135,7 +135,7 @@ class CastStatsObserver : public webrtc::StatsObserver {
   }
 
   virtual void OnComplete(
-      const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
+      const std::vector<webrtc::StatsReport>& reports) override {
     typedef webrtc::StatsReport::Values::iterator ValuesIterator;
 
     VLOG(1) << "Received " << reports.size() << " new StatsReports.";

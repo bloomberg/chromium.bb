@@ -43,14 +43,14 @@ class MockDesktopEnvironment : public DesktopEnvironment {
       protocol::ClientStub* client_stub));
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;
-  virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
-  virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
+  virtual scoped_ptr<ScreenControls> CreateScreenControls() override;
+  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
   virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) OVERRIDE;
+      protocol::ClientStub* client_stub) override;
   virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
-      OVERRIDE;
+      override;
 };
 
 class MockClientSessionControl : public ClientSessionControl {
@@ -96,7 +96,7 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   MOCK_CONST_METHOD0(SupportsAudioCapture, bool());
 
   virtual scoped_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);

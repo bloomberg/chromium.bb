@@ -71,7 +71,7 @@ class BreakpadWinDeathTest : public testing::Test {
   BreakpadWinDeathTest();
   virtual ~BreakpadWinDeathTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   scoped_ptr<google_breakpad::CrashGenerationServer> crash_server_;

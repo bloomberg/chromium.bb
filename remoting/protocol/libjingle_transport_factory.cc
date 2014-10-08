@@ -48,10 +48,10 @@ class LibjingleTransport
   virtual void Connect(
       const std::string& name,
       Transport::EventHandler* event_handler,
-      const Transport::ConnectedCallback& callback) OVERRIDE;
-  virtual void AddRemoteCandidate(const cricket::Candidate& candidate) OVERRIDE;
-  virtual const std::string& name() const OVERRIDE;
-  virtual bool is_connected() const OVERRIDE;
+      const Transport::ConnectedCallback& callback) override;
+  virtual void AddRemoteCandidate(const cricket::Candidate& candidate) override;
+  virtual const std::string& name() const override;
+  virtual bool is_connected() const override;
 
  private:
   void DoStart();

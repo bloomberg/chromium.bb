@@ -52,7 +52,7 @@ class It2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
 
   // DesktopEnvironmentFactory interface.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(It2MeDesktopEnvironmentFactory);

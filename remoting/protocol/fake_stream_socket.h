@@ -67,27 +67,27 @@ class FakeStreamSocket : public net::StreamSocket {
 
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual int SetReceiveBufferSize(int32 size) override;
+  virtual int SetSendBufferSize(int32 size) override;
 
   // net::StreamSocket interface.
-  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual bool IsConnected() const OVERRIDE;
-  virtual bool IsConnectedAndIdle() const OVERRIDE;
-  virtual int GetPeerAddress(net::IPEndPoint* address) const OVERRIDE;
-  virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE;
-  virtual const net::BoundNetLog& NetLog() const OVERRIDE;
-  virtual void SetSubresourceSpeculation() OVERRIDE;
-  virtual void SetOmniboxSpeculation() OVERRIDE;
-  virtual bool WasEverUsed() const OVERRIDE;
-  virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual bool WasNpnNegotiated() const OVERRIDE;
-  virtual net::NextProto GetNegotiatedProtocol() const OVERRIDE;
-  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) OVERRIDE;
+  virtual int Connect(const net::CompletionCallback& callback) override;
+  virtual void Disconnect() override;
+  virtual bool IsConnected() const override;
+  virtual bool IsConnectedAndIdle() const override;
+  virtual int GetPeerAddress(net::IPEndPoint* address) const override;
+  virtual int GetLocalAddress(net::IPEndPoint* address) const override;
+  virtual const net::BoundNetLog& NetLog() const override;
+  virtual void SetSubresourceSpeculation() override;
+  virtual void SetOmniboxSpeculation() override;
+  virtual bool WasEverUsed() const override;
+  virtual bool UsingTCPFastOpen() const override;
+  virtual bool WasNpnNegotiated() const override;
+  virtual net::NextProto GetNegotiatedProtocol() const override;
+  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) override;
 
  private:
   void DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
@@ -133,8 +133,8 @@ class FakeStreamChannelFactory : public StreamChannelFactory {
 
   // ChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) OVERRIDE;
-  virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
+                             const ChannelCreatedCallback& callback) override;
+  virtual void CancelChannelCreation(const std::string& name) override;
 
  private:
   void NotifyChannelCreated(scoped_ptr<FakeStreamSocket> owned_channel,

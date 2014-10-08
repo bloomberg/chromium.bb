@@ -43,7 +43,7 @@ class AuthenticatorTestBase : public testing::Test {
                                        Authenticator* receiver,
                                        bool sender_started,
                                        bool receiver_srated);
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
   void RunAuthExchange();
   void RunHostInitiatedAuthExchange();
   void RunChannelAuth(bool expected_fail);

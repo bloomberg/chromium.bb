@@ -31,12 +31,12 @@ class VideoFrameRecorderHostExtensionSession : public HostExtensionSession {
   virtual ~VideoFrameRecorderHostExtensionSession();
 
   // remoting::HostExtensionSession interface.
-  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) OVERRIDE;
-  virtual bool ModifiesVideoPipeline() const OVERRIDE;
+  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) override;
+  virtual bool ModifiesVideoPipeline() const override;
   virtual bool OnExtensionMessage(
       ClientSessionControl* client_session_control,
       protocol::ClientStub* client_stub,
-      const protocol::ExtensionMessage& message) OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
 
  private:
   // Handlers for the different frame recorder extension message types.

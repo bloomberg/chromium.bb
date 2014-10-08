@@ -112,7 +112,7 @@ class SasInjectorWin : public SasInjector {
   virtual ~SasInjectorWin();
 
   // SasInjector implementation.
-  virtual bool InjectSas() OVERRIDE;
+  virtual bool InjectSas() override;
 
  private:
   base::ScopedNativeLibrary sas_dll_;
@@ -128,7 +128,7 @@ class SasInjectorXp : public SasInjector {
   virtual ~SasInjectorXp();
 
   // SasInjector implementation.
-  virtual bool InjectSas() OVERRIDE;
+  virtual bool InjectSas() override;
 };
 
 SasInjectorWin::SasInjectorWin() : send_sas_(NULL) {

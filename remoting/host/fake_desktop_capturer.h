@@ -34,8 +34,8 @@ class FakeDesktopCapturer : public webrtc::DesktopCapturer {
   void set_frame_generator(const FrameGenerator& frame_generator);
 
   // webrtc::DesktopCapturer interface.
-  virtual void Start(Callback* callback) OVERRIDE;
-  virtual void Capture(const webrtc::DesktopRegion& rect) OVERRIDE;
+  virtual void Start(Callback* callback) override;
+  virtual void Capture(const webrtc::DesktopRegion& rect) override;
 
  private:
   FrameGenerator frame_generator_;

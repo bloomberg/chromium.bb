@@ -31,7 +31,7 @@ class AudioReader : public ChannelDispatcherBase {
   void set_audio_stub(AudioStub* audio_stub) { audio_stub_ = audio_stub; }
 
  protected:
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   explicit AudioReader(AudioPacket::Encoding encoding);

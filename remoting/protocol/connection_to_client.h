@@ -101,9 +101,9 @@ class ConnectionToClient : public base::NonThreadSafe,
   virtual InputStub* input_stub();
 
   // Session::EventHandler interface.
-  virtual void OnSessionStateChange(Session::State state) OVERRIDE;
+  virtual void OnSessionStateChange(Session::State state) override;
   virtual void OnSessionRouteChange(const std::string& channel_name,
-                                    const TransportRoute& route) OVERRIDE;
+                                    const TransportRoute& route) override;
 
  private:
   // Callback for channel initialization.

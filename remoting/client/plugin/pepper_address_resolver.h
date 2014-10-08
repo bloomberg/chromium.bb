@@ -19,11 +19,11 @@ class PepperAddressResolver : public rtc::AsyncResolverInterface {
   virtual ~PepperAddressResolver();
 
   // rtc::AsyncResolverInterface.
-  virtual void Start(const rtc::SocketAddress& addr) OVERRIDE;
+  virtual void Start(const rtc::SocketAddress& addr) override;
   virtual bool GetResolvedAddress(int family,
-                                  rtc::SocketAddress* addr) const OVERRIDE;
-  virtual int GetError() const OVERRIDE;
-  virtual void Destroy(bool wait) OVERRIDE;
+                                  rtc::SocketAddress* addr) const override;
+  virtual int GetError() const override;
+  virtual void Destroy(bool wait) override;
 
  private:
   void OnResolved(int32_t result);

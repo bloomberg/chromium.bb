@@ -56,8 +56,8 @@ class RdpClient::Core
   void InjectSas();
 
   // RdpClientWindow::EventHandler interface.
-  virtual void OnConnected() OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
+  virtual void OnConnected() override;
+  virtual void OnDisconnected() override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;

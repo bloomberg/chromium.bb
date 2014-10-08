@@ -54,21 +54,21 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   // gaia::GaiaOAuthClient::Delegate
   virtual void OnGetTokensResponse(const std::string& refresh_token,
                                    const std::string& access_token,
-                                   int expires_in_seconds) OVERRIDE;
+                                   int expires_in_seconds) override;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) OVERRIDE;
-  virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
+                                      int expires_in_seconds) override;
+  virtual void OnGetUserEmailResponse(const std::string& user_email) override;
 
   // remoting::ServiceClient::Delegate
-  virtual void OnHostRegistered(const std::string& authorization_code) OVERRIDE;
-  virtual void OnHostUnregistered() OVERRIDE;
+  virtual void OnHostRegistered(const std::string& authorization_code) override;
+  virtual void OnHostUnregistered() override;
 
   // TODO(sergeyu): Following methods are members of all three delegate
   // interfaces implemented in this class. Fix ServiceClient and
   // GaiaUserEmailFetcher so that Delegate interfaces do not overlap (ideally
   // they should be changed to use Callback<>).
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
+  virtual void OnOAuthError() override;
+  virtual void OnNetworkError(int response_code) override;
 
  private:
   HostStarter(scoped_ptr<gaia::GaiaOAuthClient> oauth_client,

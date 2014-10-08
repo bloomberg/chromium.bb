@@ -112,65 +112,65 @@ class ChannelMultiplexer::MuxSocket : public net::StreamSocket,
 
   // net::StreamSocket interface.
   virtual int Read(net::IOBuffer* buffer, int buffer_len,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int Write(net::IOBuffer* buffer, int buffer_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual int SetReceiveBufferSize(int32 size) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual int SetSendBufferSize(int32 size) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual int Connect(const net::CompletionCallback& callback) OVERRIDE {
+  virtual int Connect(const net::CompletionCallback& callback) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  virtual void Disconnect() OVERRIDE {
+  virtual void Disconnect() override {
     NOTIMPLEMENTED();
   }
-  virtual bool IsConnected() const OVERRIDE {
+  virtual bool IsConnected() const override {
     NOTIMPLEMENTED();
     return true;
   }
-  virtual bool IsConnectedAndIdle() const OVERRIDE {
+  virtual bool IsConnectedAndIdle() const override {
     NOTIMPLEMENTED();
     return false;
   }
-  virtual int GetPeerAddress(net::IPEndPoint* address) const OVERRIDE {
+  virtual int GetPeerAddress(net::IPEndPoint* address) const override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE {
+  virtual int GetLocalAddress(net::IPEndPoint* address) const override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  virtual const net::BoundNetLog& NetLog() const OVERRIDE {
+  virtual const net::BoundNetLog& NetLog() const override {
     NOTIMPLEMENTED();
     return net_log_;
   }
-  virtual void SetSubresourceSpeculation() OVERRIDE {
+  virtual void SetSubresourceSpeculation() override {
     NOTIMPLEMENTED();
   }
-  virtual void SetOmniboxSpeculation() OVERRIDE {
+  virtual void SetOmniboxSpeculation() override {
     NOTIMPLEMENTED();
   }
-  virtual bool WasEverUsed() const OVERRIDE {
+  virtual bool WasEverUsed() const override {
     return true;
   }
-  virtual bool UsingTCPFastOpen() const OVERRIDE {
+  virtual bool UsingTCPFastOpen() const override {
     return false;
   }
-  virtual bool WasNpnNegotiated() const OVERRIDE {
+  virtual bool WasNpnNegotiated() const override {
     return false;
   }
-  virtual net::NextProto GetNegotiatedProtocol() const OVERRIDE {
+  virtual net::NextProto GetNegotiatedProtocol() const override {
     return net::kProtoUnknown;
   }
-  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) OVERRIDE {
+  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) override {
     NOTIMPLEMENTED();
     return false;
   }

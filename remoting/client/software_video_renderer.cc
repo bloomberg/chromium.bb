@@ -37,16 +37,16 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
       : parent_(parent.Pass()) {
   }
 
-  virtual void Initialize(const webrtc::DesktopSize& screen_size) OVERRIDE {
+  virtual void Initialize(const webrtc::DesktopSize& screen_size) override {
     parent_->Initialize(screen_size);
   }
 
-  virtual bool DecodePacket(const VideoPacket& packet) OVERRIDE {
+  virtual bool DecodePacket(const VideoPacket& packet) override {
     return parent_->DecodePacket(packet);
   }
 
   virtual void Invalidate(const webrtc::DesktopSize& view_size,
-                          const webrtc::DesktopRegion& region) OVERRIDE {
+                          const webrtc::DesktopRegion& region) override {
     return parent_->Invalidate(view_size, region);
   }
 
@@ -54,7 +54,7 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
                            const webrtc::DesktopRect& clip_area,
                            uint8* image_buffer,
                            int image_stride,
-                           webrtc::DesktopRegion* output_region) OVERRIDE {
+                           webrtc::DesktopRegion* output_region) override {
     parent_->RenderFrame(view_size, clip_area, image_buffer, image_stride,
                          output_region);
 
@@ -68,7 +68,7 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
     }
   }
 
-  virtual const webrtc::DesktopRegion* GetImageShape() OVERRIDE {
+  virtual const webrtc::DesktopRegion* GetImageShape() override {
     return parent_->GetImageShape();
   }
 

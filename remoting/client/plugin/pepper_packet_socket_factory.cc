@@ -95,20 +95,20 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
             int max_port);
 
   // rtc::AsyncPacketSocket interface.
-  virtual rtc::SocketAddress GetLocalAddress() const OVERRIDE;
-  virtual rtc::SocketAddress GetRemoteAddress() const OVERRIDE;
+  virtual rtc::SocketAddress GetLocalAddress() const override;
+  virtual rtc::SocketAddress GetRemoteAddress() const override;
   virtual int Send(const void* data, size_t data_size,
-                   const rtc::PacketOptions& options) OVERRIDE;
+                   const rtc::PacketOptions& options) override;
   virtual int SendTo(const void* data,
                      size_t data_size,
                      const rtc::SocketAddress& address,
-                     const rtc::PacketOptions& options) OVERRIDE;
-  virtual int Close() OVERRIDE;
-  virtual State GetState() const OVERRIDE;
-  virtual int GetOption(rtc::Socket::Option opt, int* value) OVERRIDE;
-  virtual int SetOption(rtc::Socket::Option opt, int value) OVERRIDE;
-  virtual int GetError() const OVERRIDE;
-  virtual void SetError(int error) OVERRIDE;
+                     const rtc::PacketOptions& options) override;
+  virtual int Close() override;
+  virtual State GetState() const override;
+  virtual int GetOption(rtc::Socket::Option opt, int* value) override;
+  virtual int SetOption(rtc::Socket::Option opt, int value) override;
+  virtual int GetError() const override;
+  virtual void SetError(int error) override;
 
  private:
   struct PendingPacket {

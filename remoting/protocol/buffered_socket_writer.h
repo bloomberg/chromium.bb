@@ -107,9 +107,9 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
   virtual ~BufferedSocketWriter();
 
  protected:
-  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) OVERRIDE;
-  virtual base::Closure AdvanceBufferPosition(int written) OVERRIDE;
-  virtual void OnError(int result) OVERRIDE;
+  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) override;
+  virtual base::Closure AdvanceBufferPosition(int written) override;
+  virtual void OnError(int result) override;
 
  private:
   scoped_refptr<net::DrainableIOBuffer> current_buf_;
@@ -121,9 +121,9 @@ class BufferedDatagramWriter : public BufferedSocketWriterBase {
   virtual ~BufferedDatagramWriter();
 
  protected:
-  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) OVERRIDE;
-  virtual base::Closure AdvanceBufferPosition(int written) OVERRIDE;
-  virtual void OnError(int result) OVERRIDE;
+  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) override;
+  virtual base::Closure AdvanceBufferPosition(int written) override;
+  virtual void OnError(int result) override;
 };
 
 }  // namespace protocol

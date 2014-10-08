@@ -70,7 +70,7 @@ class DaemonComInstallerWin : public DaemonInstallerWin {
                         const CompletionCallback& done);
 
   // DaemonInstallerWin implementation.
-  virtual void Install() OVERRIDE;
+  virtual void Install() override;
 
  private:
   // Polls the installation status performing state-specific actions (such as
@@ -95,10 +95,10 @@ class DaemonCommandLineInstallerWin
   ~DaemonCommandLineInstallerWin();
 
   // DaemonInstallerWin implementation.
-  virtual void Install() OVERRIDE;
+  virtual void Install() override;
 
   // base::win::ObjectWatcher::Delegate implementation.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+  virtual void OnObjectSignaled(HANDLE object) override;
 
  private:
   // Handle of the launched process.

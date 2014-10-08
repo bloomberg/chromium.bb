@@ -54,7 +54,7 @@ class PolicyWatcherWin :
   virtual ~PolicyWatcherWin() {
   }
 
-  virtual void StartWatchingInternal() OVERRIDE {
+  virtual void StartWatchingInternal() override {
     DCHECK(OnPolicyWatcherThread());
 
     if (!RegisterGPNotification(user_policy_changed_event_.handle(), false)) {
@@ -70,7 +70,7 @@ class PolicyWatcherWin :
     Reload();
   }
 
-  virtual void StopWatchingInternal() OVERRIDE {
+  virtual void StopWatchingInternal() override {
     DCHECK(OnPolicyWatcherThread());
 
     if (!UnregisterGPNotification(user_policy_changed_event_.handle())) {

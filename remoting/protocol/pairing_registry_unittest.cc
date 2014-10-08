@@ -62,7 +62,7 @@ namespace protocol {
 
 class PairingRegistryTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     callback_count_ = 0;
   }
 

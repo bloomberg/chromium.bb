@@ -19,7 +19,7 @@ class VideoEncoderVerbatim : public VideoEncoder {
 
   // VideoEncoder interface.
   virtual scoped_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) OVERRIDE;
+      const webrtc::DesktopFrame& frame) override;
 
  private:
   VideoEncoderHelper helper_;

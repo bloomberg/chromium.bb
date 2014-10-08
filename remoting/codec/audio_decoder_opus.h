@@ -22,7 +22,7 @@ class AudioDecoderOpus : public AudioDecoder {
 
   // AudioDecoder interface.
   virtual scoped_ptr<AudioPacket> Decode(
-      scoped_ptr<AudioPacket> packet) OVERRIDE;
+      scoped_ptr<AudioPacket> packet) override;
 
  private:
   void InitDecoder();

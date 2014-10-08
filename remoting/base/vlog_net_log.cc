@@ -19,7 +19,7 @@ class VlogNetLog::Observer : public net::NetLog::ThreadSafeObserver {
   virtual ~Observer();
 
   // NetLog::ThreadSafeObserver overrides:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Observer);

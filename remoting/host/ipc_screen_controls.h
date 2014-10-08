@@ -21,7 +21,7 @@ class IpcScreenControls : public ScreenControls {
   virtual ~IpcScreenControls();
 
   // SessionController interface.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
 
  private:
   // Wraps the IPC channel to the desktop session agent.

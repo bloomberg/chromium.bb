@@ -55,7 +55,7 @@ class FakeDaemonSender : public IPC::Sender {
   virtual ~FakeDaemonSender() {}
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   MOCK_METHOD3(ConnectTerminal, void(int, const ScreenResolution&, bool));
   MOCK_METHOD1(DisconnectTerminal, void(int));
@@ -73,7 +73,7 @@ class MockDaemonListener : public IPC::Listener {
   MockDaemonListener() {}
   virtual ~MockDaemonListener() {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   MOCK_METHOD1(OnDesktopAttached, void(IPC::PlatformFileForTransit));
   MOCK_METHOD1(OnChannelConnected, void(int32));
@@ -123,7 +123,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   IpcDesktopEnvironmentTest();
   virtual ~IpcDesktopEnvironmentTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void ConnectTerminal(int terminal_id,
                        const ScreenResolution& resolution,

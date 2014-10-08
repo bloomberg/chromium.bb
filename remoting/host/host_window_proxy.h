@@ -29,7 +29,7 @@ class HostWindowProxy : public HostWindow {
   // HostWindow overrides.
   virtual void Start(
       const base::WeakPtr<ClientSessionControl>& client_session_control)
-      OVERRIDE;
+      override;
 
  private:
   // All thread switching logic is implemented in the ref-counted |Core| class.

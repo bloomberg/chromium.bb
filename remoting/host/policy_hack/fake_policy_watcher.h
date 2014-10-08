@@ -19,9 +19,9 @@ class FakePolicyWatcher : public PolicyWatcher {
   void SetPolicies(const base::DictionaryValue* policies);
 
  protected:
-  virtual void StartWatchingInternal() OVERRIDE;
-  virtual void StopWatchingInternal() OVERRIDE;
-  virtual void Reload() OVERRIDE;
+  virtual void StartWatchingInternal() override;
+  virtual void StopWatchingInternal() override;
+  virtual void Reload() override;
 };
 
 }  // namespace policy_hack

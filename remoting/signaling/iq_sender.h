@@ -56,9 +56,9 @@ class IqSender : public SignalStrategy::Listener {
 
   // SignalStrategy::Listener implementation.
   virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) OVERRIDE;
+      SignalStrategy::State state) override;
   virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) OVERRIDE;
+      const buzz::XmlElement* stanza) override;
 
  private:
   typedef std::map<std::string, IqRequest*> IqRequestMap;

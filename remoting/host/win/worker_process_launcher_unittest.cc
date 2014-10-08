@@ -76,7 +76,7 @@ class MockWorkerListener : public IPC::Listener {
   MOCK_METHOD3(OnCrash, void(const std::string&, const std::string&, int));
 
   // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWorkerListener);
@@ -103,13 +103,13 @@ class WorkerProcessLauncherTest
   WorkerProcessLauncherTest();
   virtual ~WorkerProcessLauncherTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   // WorkerProcessLauncher::Delegate mocks
   void LaunchProcess(

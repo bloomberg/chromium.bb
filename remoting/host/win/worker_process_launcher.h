@@ -102,7 +102,7 @@ class WorkerProcessLauncher
 
   // base::win::ObjectWatcher::Delegate implementation used to watch for
   // the worker process exiting.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+  virtual void OnObjectSignaled(HANDLE object) override;
 
   // Returns true when the object is being destroyed.
   bool stopping() const { return ipc_handler_ == NULL; }

@@ -108,10 +108,10 @@ class CompoundBufferInputStream
   int position() const { return position_; }
 
   // google::protobuf::io::ZeroCopyInputStream interface.
-  virtual bool Next(const void** data, int* size) OVERRIDE;
-  virtual void BackUp(int count) OVERRIDE;
-  virtual bool Skip(int count) OVERRIDE;
-  virtual int64 ByteCount() const OVERRIDE;
+  virtual bool Next(const void** data, int* size) override;
+  virtual void BackUp(int count) override;
+  virtual bool Skip(int count) override;
+  virtual int64 ByteCount() const override;
 
  private:
   const CompoundBuffer* buffer_;

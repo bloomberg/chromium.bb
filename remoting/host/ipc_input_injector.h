@@ -23,16 +23,16 @@ class IpcInputInjector : public InputInjector {
 
   // ClipboardStub interface.
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
 
   // InputStub interface.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
   // InputInjector interface.
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   // Wraps the IPC channel to the desktop process.

@@ -23,14 +23,14 @@ class PamAuthorizer : public protocol::Authenticator {
   virtual ~PamAuthorizer();
 
   // protocol::Authenticator interface.
-  virtual State state() const OVERRIDE;
-  virtual bool started() const OVERRIDE;
-  virtual RejectionReason rejection_reason() const OVERRIDE;
+  virtual State state() const override;
+  virtual bool started() const override;
+  virtual RejectionReason rejection_reason() const override;
   virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) OVERRIDE;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+                              const base::Closure& resume_callback) override;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
   virtual scoped_ptr<protocol::ChannelAuthenticator>
-      CreateChannelAuthenticator() const OVERRIDE;
+      CreateChannelAuthenticator() const override;
 
  private:
   void MaybeCheckLocalLogin();

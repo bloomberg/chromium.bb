@@ -21,13 +21,13 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
   virtual ~ClientEventDispatcher();
 
   // InputStub implementation.
-  virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const KeyEvent& event) override;
+  virtual void InjectTextEvent(const TextEvent& event) override;
+  virtual void InjectMouseEvent(const MouseEvent& event) override;
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   BufferedSocketWriter writer_;

@@ -29,7 +29,7 @@ class ClipboardFilter : public ClipboardStub {
   bool enabled() const { return enabled_; }
 
   // ClipboardStub interface.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
  private:
   ClipboardStub* clipboard_stub_;

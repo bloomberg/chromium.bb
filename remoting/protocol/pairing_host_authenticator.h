@@ -27,17 +27,17 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
   virtual ~PairingHostAuthenticator();
 
   // Authenticator interface.
-  virtual State state() const OVERRIDE;
-  virtual RejectionReason rejection_reason() const OVERRIDE;
+  virtual State state() const override;
+  virtual RejectionReason rejection_reason() const override;
   virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) OVERRIDE;
+                              const base::Closure& resume_callback) override;
 
  private:
   // PairingAuthenticatorBase interface.
   virtual void CreateV2AuthenticatorWithPIN(
       State initial_state,
-      const SetAuthenticatorCallback& callback) OVERRIDE;
-  virtual void AddPairingElements(buzz::XmlElement* message) OVERRIDE;
+      const SetAuthenticatorCallback& callback) override;
+  virtual void AddPairingElements(buzz::XmlElement* message) override;
 
   // Continue processing a protocol message once the pairing information for
   // the client id has been received.

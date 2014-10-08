@@ -18,10 +18,10 @@ class PepperAudioPlayer : public AudioPlayer {
   explicit PepperAudioPlayer(pp::Instance* instance);
   virtual ~PepperAudioPlayer();
 
-  virtual uint32 GetSamplesPerFrame() OVERRIDE;
+  virtual uint32 GetSamplesPerFrame() override;
 
   virtual bool ResetAudioPlayer(AudioPacket::SamplingRate sampling_rate)
-      OVERRIDE;
+      override;
 
  private:
   pp::Instance* instance_;

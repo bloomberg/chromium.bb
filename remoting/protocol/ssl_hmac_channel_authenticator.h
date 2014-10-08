@@ -58,7 +58,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // ChannelAuthenticator interface.
   virtual void SecureAndAuthenticate(
       scoped_ptr<net::StreamSocket> socket,
-      const DoneCallback& done_callback) OVERRIDE;
+      const DoneCallback& done_callback) override;
 
  private:
   SslHmacChannelAuthenticator(const std::string& auth_key);

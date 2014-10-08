@@ -30,7 +30,7 @@ class ClipboardThreadProxy : public ClipboardStub {
       scoped_refptr<base::TaskRunner> clipboard_stub_task_runner);
 
   // ClipboardStub implementation.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
  private:
   // Injects a clipboard event into a stub, if the given weak pointer to the

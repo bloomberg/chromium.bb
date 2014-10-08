@@ -96,24 +96,24 @@ class ChromotingJniInstance
   // ClientUserInterface implementation.
   virtual void OnConnectionState(
       protocol::ConnectionToHost::State state,
-      protocol::ErrorCode error) OVERRIDE;
-  virtual void OnConnectionReady(bool ready) OVERRIDE;
+      protocol::ErrorCode error) override;
+  virtual void OnConnectionReady(bool ready) override;
   virtual void OnRouteChanged(const std::string& channel_name,
-                              const protocol::TransportRoute& route) OVERRIDE;
-  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
+                              const protocol::TransportRoute& route) override;
+  virtual void SetCapabilities(const std::string& capabilities) override;
   virtual void SetPairingResponse(
-      const protocol::PairingResponse& response) OVERRIDE;
+      const protocol::PairingResponse& response) override;
   virtual void DeliverHostMessage(
-      const protocol::ExtensionMessage& message) OVERRIDE;
-  virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
-  virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
+  virtual protocol::ClipboardStub* GetClipboardStub() override;
+  virtual protocol::CursorShapeStub* GetCursorShapeStub() override;
 
   // CursorShapeStub implementation.
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
 
   // ClipboardStub implementation.
-  virtual void SetCursorShape(const protocol::CursorShapeInfo& shape) OVERRIDE;
+  virtual void SetCursorShape(const protocol::CursorShapeInfo& shape) override;
 
  private:
   // This object is ref-counted, so it cleans itself up.

@@ -21,7 +21,7 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
   // ChannelAuthenticator interface.
   virtual void SecureAndAuthenticate(
       scoped_ptr<net::StreamSocket> socket,
-      const DoneCallback& done_callback) OVERRIDE;
+      const DoneCallback& done_callback) override;
 
  private:
   void OnAuthBytesWritten(int result);
@@ -65,14 +65,14 @@ class FakeAuthenticator : public Authenticator {
   void set_messages_till_started(int messages);
 
   // Authenticator interface.
-  virtual State state() const OVERRIDE;
-  virtual bool started() const OVERRIDE;
-  virtual RejectionReason rejection_reason() const OVERRIDE;
+  virtual State state() const override;
+  virtual bool started() const override;
+  virtual RejectionReason rejection_reason() const override;
   virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) OVERRIDE;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+                              const base::Closure& resume_callback) override;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
   virtual scoped_ptr<ChannelAuthenticator>
-      CreateChannelAuthenticator() const OVERRIDE;
+      CreateChannelAuthenticator() const override;
 
  protected:
   Type type_;
@@ -100,7 +100,7 @@ class FakeHostAuthenticatorFactory : public AuthenticatorFactory {
   virtual scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid,
-      const buzz::XmlElement* first_message) OVERRIDE;
+      const buzz::XmlElement* first_message) override;
 
  private:
   int round_trips_;

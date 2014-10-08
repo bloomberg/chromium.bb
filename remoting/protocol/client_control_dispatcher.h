@@ -31,16 +31,16 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   virtual ~ClientControlDispatcher();
 
   // ClipboardStub implementation.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
   // HostStub implementation.
   virtual void NotifyClientResolution(
-      const ClientResolution& resolution) OVERRIDE;
-  virtual void ControlVideo(const VideoControl& video_control) OVERRIDE;
-  virtual void ControlAudio(const AudioControl& audio_control) OVERRIDE;
-  virtual void SetCapabilities(const Capabilities& capabilities) OVERRIDE;
-  virtual void RequestPairing(const PairingRequest& pairing_request) OVERRIDE;
-  virtual void DeliverClientMessage(const ExtensionMessage& message) OVERRIDE;
+      const ClientResolution& resolution) override;
+  virtual void ControlVideo(const VideoControl& video_control) override;
+  virtual void ControlAudio(const AudioControl& audio_control) override;
+  virtual void SetCapabilities(const Capabilities& capabilities) override;
+  virtual void RequestPairing(const PairingRequest& pairing_request) override;
+  virtual void DeliverClientMessage(const ExtensionMessage& message) override;
 
   // Sets the ClientStub that will be called for each incoming control
   // message. |client_stub| must outlive this object.
@@ -54,7 +54,7 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   void OnMessageReceived(scoped_ptr<ControlMessage> message,

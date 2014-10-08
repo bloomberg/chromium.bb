@@ -27,8 +27,8 @@ class FakePortAllocatorSession
   virtual ~FakePortAllocatorSession();
 
   // cricket::HttpPortAllocatorBase overrides.
-  virtual void ConfigReady(cricket::PortConfiguration* config) OVERRIDE;
-  virtual void SendSessionRequest(const std::string& host, int port) OVERRIDE;
+  virtual void ConfigReady(cricket::PortConfiguration* config) override;
+  virtual void SendSessionRequest(const std::string& host, int port) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePortAllocatorSession);

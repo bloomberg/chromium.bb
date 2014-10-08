@@ -24,8 +24,8 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   // PairingAuthenticatorBase interface.
   virtual void CreateV2AuthenticatorWithPIN(
       State initial_state,
-      const SetAuthenticatorCallback& callback) OVERRIDE;
-  virtual void AddPairingElements(buzz::XmlElement* message) OVERRIDE;
+      const SetAuthenticatorCallback& callback) override;
+  virtual void AddPairingElements(buzz::XmlElement* message) override;
 
   void OnPinFetched(State initial_state,
                     const SetAuthenticatorCallback& callback,

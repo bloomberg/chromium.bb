@@ -19,7 +19,7 @@ class PepperPluginThreadDelegate : public PluginThreadTaskRunner::Delegate {
   virtual ~PepperPluginThreadDelegate();
 
   virtual bool RunOnPluginThread(
-      base::TimeDelta delay, void(CDECL function)(void*), void* data) OVERRIDE;
+      base::TimeDelta delay, void(CDECL function)(void*), void* data) override;
 
  private:
   pp::Core* core_;

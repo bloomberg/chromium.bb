@@ -21,8 +21,8 @@ class ContinueWindowGtk : public ContinueWindow {
 
  protected:
   // ContinueWindow overrides.
-  virtual void ShowUi() OVERRIDE;
-  virtual void HideUi() OVERRIDE;
+  virtual void ShowUi() override;
+  virtual void HideUi() override;
 
  private:
   void CreateWindow();

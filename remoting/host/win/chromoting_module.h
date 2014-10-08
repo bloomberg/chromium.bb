@@ -47,7 +47,7 @@ class ChromotingModule : public ATL::CAtlModuleT<ChromotingModule> {
   bool Run();
 
   // ATL::CAtlModuleT<> overrides
-  virtual LONG Unlock() OVERRIDE;
+  virtual LONG Unlock() override;
 
   DECLARE_LIBID(LIBID_ChromotingLib)
 

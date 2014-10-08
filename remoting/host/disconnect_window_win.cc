@@ -40,7 +40,7 @@ class DisconnectWindowWin : public HostWindow {
   // HostWindow overrides.
   virtual void Start(
       const base::WeakPtr<ClientSessionControl>& client_session_control)
-      OVERRIDE;
+      override;
 
  protected:
   static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wparam,

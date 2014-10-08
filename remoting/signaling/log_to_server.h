@@ -34,9 +34,9 @@ class LogToServer : public base::NonThreadSafe,
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) OVERRIDE;
+      SignalStrategy::State state) override;
   virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) OVERRIDE;
+      const buzz::XmlElement* stanza) override;
 
   void Log(const ServerLogEntry& entry);
 

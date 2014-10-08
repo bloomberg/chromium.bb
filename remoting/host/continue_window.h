@@ -19,7 +19,7 @@ class ContinueWindow : public HostWindow {
   // HostWindow override.
   virtual void Start(
       const base::WeakPtr<ClientSessionControl>& client_session_control)
-      OVERRIDE;
+      override;
 
   // Resumes paused client session.
   void ContinueSession();

@@ -229,7 +229,7 @@ class CurtainModeMac : public CurtainMode {
   virtual ~CurtainModeMac();
 
   // Overriden from CurtainMode.
-  virtual bool Activate() OVERRIDE;
+  virtual bool Activate() override;
 
  private:
   scoped_refptr<SessionWatcher> session_watcher_;

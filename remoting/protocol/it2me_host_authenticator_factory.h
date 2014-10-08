@@ -33,7 +33,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   virtual scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid,
-      const buzz::XmlElement* first_message) OVERRIDE;
+      const buzz::XmlElement* first_message) override;
 
  private:
   std::string local_cert_;

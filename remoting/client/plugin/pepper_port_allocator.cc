@@ -40,9 +40,9 @@ class PepperPortAllocatorSession
   virtual ~PepperPortAllocatorSession();
 
   // cricket::HttpPortAllocatorBase overrides.
-  virtual void ConfigReady(cricket::PortConfiguration* config) OVERRIDE;
-  virtual void GetPortConfigurations() OVERRIDE;
-  virtual void SendSessionRequest(const std::string& host, int port) OVERRIDE;
+  virtual void ConfigReady(cricket::PortConfiguration* config) override;
+  virtual void GetPortConfigurations() override;
+  virtual void SendSessionRequest(const std::string& host, int port) override;
 
  private:
   void OnUrlOpened(int32_t result);

@@ -63,16 +63,16 @@ class InputInjectorMac : public InputInjector {
   virtual ~InputInjectorMac();
 
   // ClipboardStub interface.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
   // InputStub interface.
-  virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const KeyEvent& event) override;
+  virtual void InjectTextEvent(const TextEvent& event) override;
+  virtual void InjectMouseEvent(const MouseEvent& event) override;
 
   // InputInjector interface.
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   // The actual implementation resides in InputInjectorMac::Core class.

@@ -33,9 +33,9 @@ class RemoteInputFilter : public protocol::InputStub {
   void SetExpectLocalEcho(bool expect_local_echo);
 
   // InputStub overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
   bool ShouldIgnoreInput() const;

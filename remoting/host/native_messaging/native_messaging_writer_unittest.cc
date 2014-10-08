@@ -19,7 +19,7 @@ class NativeMessagingWriterTest : public testing::Test {
   NativeMessagingWriterTest();
   virtual ~NativeMessagingWriterTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   scoped_ptr<NativeMessagingWriter> writer_;

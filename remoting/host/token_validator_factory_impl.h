@@ -33,7 +33,7 @@ class TokenValidatorFactoryImpl : public protocol::TokenValidatorFactory {
   // TokenValidatorFactory interface.
   virtual scoped_ptr<protocol::TokenValidator> CreateTokenValidator(
       const std::string& local_jid,
-      const std::string& remote_jid) OVERRIDE;
+      const std::string& remote_jid) override;
 
  private:
   ThirdPartyAuthConfig third_party_auth_config_;

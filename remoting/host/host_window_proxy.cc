@@ -37,12 +37,12 @@ class HostWindowProxy::Core
   void StopOnUiThread();
 
   // ClientSessionControl interface.
-  virtual const std::string& client_jid() const OVERRIDE;
-  virtual void DisconnectSession() OVERRIDE;
+  virtual const std::string& client_jid() const override;
+  virtual void DisconnectSession() override;
   virtual void OnLocalMouseMoved(
-      const webrtc::DesktopVector& position) OVERRIDE;
-  virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
-  virtual void ResetVideoPipeline() OVERRIDE;
+      const webrtc::DesktopVector& position) override;
+  virtual void SetDisableInputs(bool disable_inputs) override;
+  virtual void ResetVideoPipeline() override;
 
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;

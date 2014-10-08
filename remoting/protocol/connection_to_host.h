@@ -121,20 +121,20 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   // SignalStrategy::StatusObserver interface.
   virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) OVERRIDE;
+      SignalStrategy::State state) override;
   virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) OVERRIDE;
+      const buzz::XmlElement* stanza) override;
 
   // SessionManager::Listener interface.
-  virtual void OnSessionManagerReady() OVERRIDE;
+  virtual void OnSessionManagerReady() override;
   virtual void OnIncomingSession(
       Session* session,
-      SessionManager::IncomingSessionResponse* response) OVERRIDE;
+      SessionManager::IncomingSessionResponse* response) override;
 
   // Session::EventHandler interface.
-  virtual void OnSessionStateChange(Session::State state) OVERRIDE;
+  virtual void OnSessionStateChange(Session::State state) override;
   virtual void OnSessionRouteChange(const std::string& channel_name,
-                                    const TransportRoute& route) OVERRIDE;
+                                    const TransportRoute& route) override;
 
   // MonitoredVideoStub::EventHandler interface.
   virtual void OnVideoChannelStatus(bool active);

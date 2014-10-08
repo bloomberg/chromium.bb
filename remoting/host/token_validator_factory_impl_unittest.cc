@@ -42,7 +42,7 @@ class FakeProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   }
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request, net::NetworkDelegate* network_delegate) const
-      OVERRIDE {
+      override {
     return new net::URLRequestTestJob(
         request, network_delegate, headers_, response_, true);
   }
@@ -88,7 +88,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     scoped_ptr<net::TestURLRequestContext> context(
         new SetResponseURLRequestContext());

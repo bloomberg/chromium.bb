@@ -36,10 +36,10 @@ class AudioWriter : public ChannelDispatcherBase,
 
   // AudioStub interface.
   virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
-                                  const base::Closure& done) OVERRIDE;
+                                  const base::Closure& done) override;
 
  protected:
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   AudioWriter();

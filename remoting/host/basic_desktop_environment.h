@@ -30,16 +30,16 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   virtual ~BasicDesktopEnvironment();
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;
-  virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
-  virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
+  virtual scoped_ptr<ScreenControls> CreateScreenControls() override;
+  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
   virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
-      OVERRIDE;
-  virtual std::string GetCapabilities() const OVERRIDE;
-  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
+      override;
+  virtual std::string GetCapabilities() const override;
+  virtual void SetCapabilities(const std::string& capabilities) override;
   virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) OVERRIDE;
+      protocol::ClientStub* client_stub) override;
 
  protected:
   friend class BasicDesktopEnvironmentFactory;
@@ -96,7 +96,7 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   virtual ~BasicDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory implementation.
-  virtual bool SupportsAudioCapture() const OVERRIDE;
+  virtual bool SupportsAudioCapture() const override;
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {

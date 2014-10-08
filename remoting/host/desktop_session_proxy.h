@@ -87,9 +87,9 @@ class DesktopSessionProxy
   void SetCapabilities(const std::string& capabilities);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   // Connects to the desktop session agent.
   bool AttachToDesktop(base::ProcessHandle desktop_process,

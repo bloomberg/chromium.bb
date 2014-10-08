@@ -54,9 +54,9 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
 
   // HostStatusObserver implementation.
   virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) OVERRIDE;
+      SignalStrategy::State state) override;
   virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) OVERRIDE;
+      const buzz::XmlElement* stanza) override;
 
  private:
   void DoSend();

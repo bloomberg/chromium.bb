@@ -29,11 +29,11 @@ class FakeAudioPlayer : public AudioPlayer {
   FakeAudioPlayer() {
   }
 
-  virtual bool ResetAudioPlayer(AudioPacket::SamplingRate) OVERRIDE {
+  virtual bool ResetAudioPlayer(AudioPacket::SamplingRate) override {
     return true;
   }
 
-  virtual uint32 GetSamplesPerFrame() OVERRIDE {
+  virtual uint32 GetSamplesPerFrame() override {
     return kAudioSamplesPerFrame;
   }
 };

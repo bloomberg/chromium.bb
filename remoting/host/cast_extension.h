@@ -35,10 +35,10 @@ class CastExtension : public HostExtension {
   virtual ~CastExtension();
 
   // HostExtension interface.
-  virtual std::string capability() const OVERRIDE;
+  virtual std::string capability() const override;
   virtual scoped_ptr<HostExtensionSession> CreateExtensionSession(
       ClientSessionControl* client_session_control,
-      protocol::ClientStub* client_stub) OVERRIDE;
+      protocol::ClientStub* client_stub) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;

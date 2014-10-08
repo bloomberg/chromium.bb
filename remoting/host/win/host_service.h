@@ -38,9 +38,9 @@ class HostService : public WtsTerminalMonitor {
 
   // WtsTerminalMonitor implementation
   virtual bool AddWtsTerminalObserver(const std::string& terminal_id,
-                                      WtsTerminalObserver* observer) OVERRIDE;
+                                      WtsTerminalObserver* observer) override;
   virtual void RemoveWtsTerminalObserver(
-      WtsTerminalObserver* observer) OVERRIDE;
+      WtsTerminalObserver* observer) override;
 
  private:
   HostService();

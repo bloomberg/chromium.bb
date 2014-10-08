@@ -62,8 +62,8 @@ class LocalInputMonitorLinux : public base::NonThreadSafe,
     void StopOnInputThread();
 
     // base::MessagePumpLibevent::Watcher interface.
-    virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-    virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+    virtual void OnFileCanReadWithoutBlocking(int fd) override;
+    virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
     // Processes key and mouse events.
     void ProcessXEvent(xEvent* event);

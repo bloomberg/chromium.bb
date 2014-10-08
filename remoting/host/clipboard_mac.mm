@@ -32,10 +32,10 @@ class ClipboardMac : public Clipboard {
 
   // Must be called on the UI thread.
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
+  virtual void Stop() override;
 
  private:
   void CheckClipboardForChanges();

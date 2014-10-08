@@ -41,7 +41,7 @@ const char kTestExitCodeString[] = "INVALID_HOST_CONFIGURATION";
 class HostStatusSenderTest
     : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
 
@@ -49,7 +49,7 @@ class HostStatusSenderTest
         kHostId, &signal_strategy_, key_pair_, kTestBotJid));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     host_status_sender_.reset();
   }
 

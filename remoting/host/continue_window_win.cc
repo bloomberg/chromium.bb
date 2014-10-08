@@ -26,8 +26,8 @@ class ContinueWindowWin : public ContinueWindow {
 
  protected:
   // ContinueWindow overrides.
-  virtual void ShowUi() OVERRIDE;
-  virtual void HideUi() OVERRIDE;
+  virtual void ShowUi() override;
+  virtual void HideUi() override;
 
  private:
   static BOOL CALLBACK DialogProc(HWND hwmd, UINT msg, WPARAM wParam,

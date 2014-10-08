@@ -64,7 +64,7 @@ class PepperInputHandler : public pp::MouseLock {
   };
 
   // pp::MouseLock interface.
-  virtual void MouseLockLost() OVERRIDE;
+  virtual void MouseLockLost() override;
 
   // Requests the browser to lock the mouse and hides the cursor.
   void RequestMouseLock();

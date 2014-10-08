@@ -31,7 +31,7 @@ class ResizingHostObserver : public ScreenControls {
   virtual ~ResizingHostObserver();
 
   // ScreenControls interface.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
 
   // Provide a replacement for base::Time::Now so that this class can be
   // unit-tested in a timely manner. This function will be called exactly

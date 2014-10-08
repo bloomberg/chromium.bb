@@ -24,7 +24,7 @@ class SingleWindowDesktopEnvironmentFactory
 
   // DesktopEnvironmentFactory interface.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:
   webrtc::WindowId window_id_;

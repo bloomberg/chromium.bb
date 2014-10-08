@@ -19,8 +19,8 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
   virtual ~SingleWindowDesktopEnvironment();
 
   // DesktopEnvironment interface.
-  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() OVERRIDE;
-  virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
+  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
 
  protected:
   friend class SingleWindowDesktopEnvironmentFactory;

@@ -54,7 +54,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
   virtual ~SslHmacChannelAuthenticatorTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 
     base::FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");

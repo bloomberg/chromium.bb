@@ -175,8 +175,8 @@ class LocalInputMonitorMac::Core
 
   // EventHandler interface.
   virtual void OnLocalMouseMoved(
-      const webrtc::DesktopVector& position) OVERRIDE;
-  virtual void OnDisconnectShortcut() OVERRIDE;
+      const webrtc::DesktopVector& position) override;
+  virtual void OnDisconnectShortcut() override;
 
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;

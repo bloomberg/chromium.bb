@@ -28,11 +28,11 @@ class SingleWindowInputInjectorMac : public SingleWindowInputInjector {
 
   // InputInjector interface.
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  virtual void InjectKeyEvent(const KeyEvent& event) override;
+  virtual void InjectTextEvent(const TextEvent& event) override;
+  virtual void InjectMouseEvent(const MouseEvent& event) override;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
  private:
   CGRect FindCGRectOfWindow();

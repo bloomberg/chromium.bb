@@ -14,8 +14,8 @@ class FakeMouseCursorMonitor : public webrtc::MouseCursorMonitor {
   FakeMouseCursorMonitor();
   virtual ~FakeMouseCursorMonitor();
 
-  virtual void Init(Callback* callback, Mode mode) OVERRIDE;
-  virtual void Capture() OVERRIDE;
+  virtual void Init(Callback* callback, Mode mode) override;
+  virtual void Capture() override;
 
  private:
   Callback* callback_;

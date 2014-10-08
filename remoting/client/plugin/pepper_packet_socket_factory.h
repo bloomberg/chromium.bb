@@ -18,19 +18,19 @@ class PepperPacketSocketFactory : public rtc::PacketSocketFactory {
 
   virtual rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port, int max_port) OVERRIDE;
+      int min_port, int max_port) override;
   virtual rtc::AsyncPacketSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
       int min_port,
       int max_port,
-      int opts) OVERRIDE;
+      int opts) override;
   virtual rtc::AsyncPacketSocket* CreateClientTcpSocket(
       const rtc::SocketAddress& local_address,
       const rtc::SocketAddress& remote_address,
       const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      int opts) OVERRIDE;
-  virtual rtc::AsyncResolverInterface* CreateAsyncResolver() OVERRIDE;
+      int opts) override;
+  virtual rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
  private:
   const pp::InstanceHandle pp_instance_;

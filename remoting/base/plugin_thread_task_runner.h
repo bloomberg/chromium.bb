@@ -49,12 +49,12 @@ class PluginThreadTaskRunner : public base::SingleThreadTaskRunner {
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) override;
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+      base::TimeDelta delay) override;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
  protected:
   virtual ~PluginThreadTaskRunner();

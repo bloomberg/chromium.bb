@@ -39,7 +39,7 @@ class KeyEventMapper : public protocol::InputFilter {
   void RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode);
 
   // InputFilter overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
 
  private:
   std::map<uint32,uint32> mapped_keys;

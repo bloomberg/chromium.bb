@@ -138,21 +138,21 @@ class MockDaemonControllerDelegate : public DaemonController::Delegate {
   virtual ~MockDaemonControllerDelegate();
 
   // DaemonController::Delegate interface.
-  virtual DaemonController::State GetState() OVERRIDE;
-  virtual scoped_ptr<base::DictionaryValue> GetConfig() OVERRIDE;
+  virtual DaemonController::State GetState() override;
+  virtual scoped_ptr<base::DictionaryValue> GetConfig() override;
   virtual void InstallHost(
-      const DaemonController::CompletionCallback& done) OVERRIDE;
+      const DaemonController::CompletionCallback& done) override;
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
-      const DaemonController::CompletionCallback& done) OVERRIDE;
+      const DaemonController::CompletionCallback& done) override;
   virtual void UpdateConfig(
       scoped_ptr<base::DictionaryValue> config,
-      const DaemonController::CompletionCallback& done) OVERRIDE;
-  virtual void Stop(const DaemonController::CompletionCallback& done) OVERRIDE;
-  virtual void SetWindow(void* window_handle) OVERRIDE;
-  virtual std::string GetVersion() OVERRIDE;
-  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() OVERRIDE;
+      const DaemonController::CompletionCallback& done) override;
+  virtual void Stop(const DaemonController::CompletionCallback& done) override;
+  virtual void SetWindow(void* window_handle) override;
+  virtual std::string GetVersion() override;
+  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDaemonControllerDelegate);
@@ -226,8 +226,8 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
   Me2MeNativeMessagingHostTest();
   virtual ~Me2MeNativeMessagingHostTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
 

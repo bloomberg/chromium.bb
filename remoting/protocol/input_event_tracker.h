@@ -34,9 +34,9 @@ class InputEventTracker : public InputStub {
   void ReleaseAll();
 
   // InputStub interface.
-  virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const KeyEvent& event) override;
+  virtual void InjectTextEvent(const TextEvent& event) override;
+  virtual void InjectMouseEvent(const MouseEvent& event) override;
 
  private:
   protocol::InputStub* input_stub_;

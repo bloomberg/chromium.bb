@@ -47,18 +47,18 @@ class TokenValidatorBase
   virtual void ValidateThirdPartyToken(
       const std::string& token,
       const base::Callback<void(
-          const std::string& shared_secret)>& on_token_validated) OVERRIDE;
+          const std::string& shared_secret)>& on_token_validated) override;
 
-  virtual const GURL& token_url() const OVERRIDE;
-  virtual const std::string& token_scope() const OVERRIDE;
+  virtual const GURL& token_url() const override;
+  virtual const std::string& token_scope() const override;
 
   // URLRequest::Delegate interface.
-  virtual void OnResponseStarted(net::URLRequest* source) OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* source) override;
   virtual void OnReadCompleted(net::URLRequest* source,
-                               int bytes_read) OVERRIDE;
+                               int bytes_read) override;
   virtual void OnCertificateRequested(
       net::URLRequest* source,
-      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
+      net::SSLCertRequestInfo* cert_request_info) override;
 
  protected:
   void OnCertificatesSelected(net::CertificateList* selected_certs,

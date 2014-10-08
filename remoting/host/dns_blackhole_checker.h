@@ -28,7 +28,7 @@ class DnsBlackholeChecker : public net::URLFetcherDelegate {
   virtual ~DnsBlackholeChecker();
 
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Initiates a check the verify that the host talkgadget has not been "DNS
   // blackholed" to prevent connections. If this is called again before the

@@ -43,7 +43,7 @@ class DesktopSesssionClipboardStub : public protocol::ClipboardStub {
 
   // protocol::ClipboardStub implementation.
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
 
  private:
   scoped_refptr<DesktopSessionAgent> desktop_session_agent_;

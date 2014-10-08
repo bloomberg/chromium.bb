@@ -32,15 +32,15 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
 
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
+  virtual void OnClientAuthenticated(const std::string& jid) override;
+  virtual void OnClientDisconnected(const std::string& jid) override;
+  virtual void OnAccessDenied(const std::string& jid) override;
   virtual void OnClientRouteChange(
       const std::string& jid,
       const std::string& channel_name,
-      const protocol::TransportRoute& route) OVERRIDE;
-  virtual void OnStart(const std::string& xmpp_login) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+      const protocol::TransportRoute& route) override;
+  virtual void OnStart(const std::string& xmpp_login) override;
+  virtual void OnShutdown() override;
 
  private:
   void LogString(WORD type, DWORD event_id, const std::string& string);

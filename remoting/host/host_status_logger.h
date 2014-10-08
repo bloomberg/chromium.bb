@@ -34,12 +34,12 @@ class HostStatusLogger : public HostStatusObserver,
   void LogSessionStateChange(const std::string& jid, bool connected);
 
   // HostStatusObserver interface.
-  virtual void OnClientConnected(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
+  virtual void OnClientConnected(const std::string& jid) override;
+  virtual void OnClientDisconnected(const std::string& jid) override;
   virtual void OnClientRouteChange(
       const std::string& jid,
       const std::string& channel_name,
-      const protocol::TransportRoute& route) OVERRIDE;
+      const protocol::TransportRoute& route) override;
 
   // Allows test code to fake SignalStrategy state change events.
   void SetSignalingStateForTest(SignalStrategy::State state);

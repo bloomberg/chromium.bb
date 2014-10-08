@@ -39,8 +39,8 @@ class ContinueWindowMac : public ContinueWindow {
 
  protected:
   // ContinueWindow overrides.
-  virtual void ShowUi() OVERRIDE;
-  virtual void HideUi() OVERRIDE;
+  virtual void ShowUi() override;
+  virtual void HideUi() override;
 
  private:
   base::scoped_nsobject<ContinueWindowMacController> controller_;

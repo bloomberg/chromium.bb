@@ -46,8 +46,8 @@ class LibjingleTransportFactory : public TransportFactory {
   virtual ~LibjingleTransportFactory();
 
   // TransportFactory interface.
-  virtual void PrepareTokens() OVERRIDE;
-  virtual scoped_ptr<Transport> CreateTransport() OVERRIDE;
+  virtual void PrepareTokens() override;
+  virtual scoped_ptr<Transport> CreateTransport() override;
 
  private:
   void EnsureFreshJingleInfo();

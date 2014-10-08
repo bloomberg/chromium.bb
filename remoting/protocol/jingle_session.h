@@ -46,29 +46,29 @@ class JingleSession : public base::NonThreadSafe,
   virtual ~JingleSession();
 
   // Session interface.
-  virtual void SetEventHandler(Session::EventHandler* event_handler) OVERRIDE;
-  virtual ErrorCode error() OVERRIDE;
-  virtual const std::string& jid() OVERRIDE;
-  virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
-  virtual const SessionConfig& config() OVERRIDE;
-  virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual StreamChannelFactory* GetTransportChannelFactory() OVERRIDE;
-  virtual StreamChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void SetEventHandler(Session::EventHandler* event_handler) override;
+  virtual ErrorCode error() override;
+  virtual const std::string& jid() override;
+  virtual const CandidateSessionConfig* candidate_config() override;
+  virtual const SessionConfig& config() override;
+  virtual void set_config(const SessionConfig& config) override;
+  virtual StreamChannelFactory* GetTransportChannelFactory() override;
+  virtual StreamChannelFactory* GetMultiplexedChannelFactory() override;
+  virtual void Close() override;
 
   // DatagramChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) OVERRIDE;
-  virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
+                             const ChannelCreatedCallback& callback) override;
+  virtual void CancelChannelCreation(const std::string& name) override;
 
   // Transport::EventHandler interface.
   virtual void OnTransportCandidate(
       Transport* transport,
-      const cricket::Candidate& candidate) OVERRIDE;
+      const cricket::Candidate& candidate) override;
   virtual void OnTransportRouteChange(Transport* transport,
-                                      const TransportRoute& route) OVERRIDE;
-  virtual void OnTransportFailed(Transport* transport) OVERRIDE;
-  virtual void OnTransportDeleted(Transport* transport) OVERRIDE;
+                                      const TransportRoute& route) override;
+  virtual void OnTransportFailed(Transport* transport) override;
+  virtual void OnTransportDeleted(Transport* transport) override;
 
  private:
   friend class JingleSessionManager;

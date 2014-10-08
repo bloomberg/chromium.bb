@@ -52,12 +52,12 @@ class PairingRegistryDelegateWin
   bool SetRootKeys(HKEY privileged, HKEY unprivileged);
 
   // PairingRegistry::Delegate interface
-  virtual scoped_ptr<base::ListValue> LoadAll() OVERRIDE;
-  virtual bool DeleteAll() OVERRIDE;
+  virtual scoped_ptr<base::ListValue> LoadAll() override;
+  virtual bool DeleteAll() override;
   virtual protocol::PairingRegistry::Pairing Load(
-      const std::string& client_id) OVERRIDE;
-  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) OVERRIDE;
-  virtual bool Delete(const std::string& client_id) OVERRIDE;
+      const std::string& client_id) override;
+  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) override;
+  virtual bool Delete(const std::string& client_id) override;
 
  private:
   base::win::RegKey privileged_;

@@ -107,34 +107,34 @@ class ChromotingInstance :
   virtual ~ChromotingInstance();
 
   // pp::Instance interface.
-  virtual void DidChangeFocus(bool has_focus) OVERRIDE;
-  virtual void DidChangeView(const pp::View& view) OVERRIDE;
+  virtual void DidChangeFocus(bool has_focus) override;
+  virtual void DidChangeView(const pp::View& view) override;
   virtual bool Init(uint32_t argc, const char* argn[],
-                    const char* argv[]) OVERRIDE;
-  virtual void HandleMessage(const pp::Var& message) OVERRIDE;
-  virtual bool HandleInputEvent(const pp::InputEvent& event) OVERRIDE;
+                    const char* argv[]) override;
+  virtual void HandleMessage(const pp::Var& message) override;
+  virtual bool HandleInputEvent(const pp::InputEvent& event) override;
 
   // ClientUserInterface interface.
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
-                                 protocol::ErrorCode error) OVERRIDE;
-  virtual void OnConnectionReady(bool ready) OVERRIDE;
+                                 protocol::ErrorCode error) override;
+  virtual void OnConnectionReady(bool ready) override;
   virtual void OnRouteChanged(const std::string& channel_name,
-                              const protocol::TransportRoute& route) OVERRIDE;
-  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
+                              const protocol::TransportRoute& route) override;
+  virtual void SetCapabilities(const std::string& capabilities) override;
   virtual void SetPairingResponse(
-      const protocol::PairingResponse& pairing_response) OVERRIDE;
+      const protocol::PairingResponse& pairing_response) override;
   virtual void DeliverHostMessage(
-      const protocol::ExtensionMessage& message) OVERRIDE;
-  virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
-  virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
+  virtual protocol::ClipboardStub* GetClipboardStub() override;
+  virtual protocol::CursorShapeStub* GetCursorShapeStub() override;
 
   // protocol::ClipboardStub interface.
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
 
   // protocol::CursorShapeStub interface.
   virtual void SetCursorShape(
-      const protocol::CursorShapeInfo& cursor_shape) OVERRIDE;
+      const protocol::CursorShapeInfo& cursor_shape) override;
 
   // Called by PepperView.
   void SetDesktopSize(const webrtc::DesktopSize& size,
@@ -245,11 +245,11 @@ class ChromotingInstance :
 
   // MediaSourceVideoRenderer::Delegate implementation.
   virtual void OnMediaSourceSize(const webrtc::DesktopSize& size,
-                                 const webrtc::DesktopVector& dpi) OVERRIDE;
-  virtual void OnMediaSourceShape(const webrtc::DesktopRegion& shape) OVERRIDE;
-  virtual void OnMediaSourceReset(const std::string& format) OVERRIDE;
+                                 const webrtc::DesktopVector& dpi) override;
+  virtual void OnMediaSourceShape(const webrtc::DesktopRegion& shape) override;
+  virtual void OnMediaSourceReset(const std::string& format) override;
   virtual void OnMediaSourceData(uint8_t* buffer, size_t buffer_size,
-                                 bool keyframe) OVERRIDE;
+                                 bool keyframe) override;
 
   bool initialized_;
 

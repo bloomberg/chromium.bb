@@ -38,8 +38,8 @@ class PipeMessagingChannel : public extensions::NativeMessagingChannel,
   virtual ~PipeMessagingChannel();
 
   // extensions::NativeMessagingChannel implementation.
-  virtual void Start(EventHandler* event_handler) OVERRIDE;
-  virtual void SendMessage(scoped_ptr<base::Value> message) OVERRIDE;
+  virtual void Start(EventHandler* event_handler) override;
+  virtual void SendMessage(scoped_ptr<base::Value> message) override;
 
  private:
   // Processes a message received from the client app.

@@ -62,31 +62,31 @@ class CastExtensionSession : public HostExtensionSession,
 
   // HostExtensionSession interface.
   virtual void OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer>* capturer) OVERRIDE;
-  virtual bool ModifiesVideoPipeline() const OVERRIDE;
+      scoped_ptr<webrtc::DesktopCapturer>* capturer) override;
+  virtual bool ModifiesVideoPipeline() const override;
   virtual bool OnExtensionMessage(
       ClientSessionControl* client_session_control,
       protocol::ClientStub* client_stub,
-      const protocol::ExtensionMessage& message) OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
 
   // webrtc::PeerConnectionObserver interface.
-  virtual void OnError() OVERRIDE;
+  virtual void OnError() override;
   virtual void OnSignalingChange(
-      webrtc::PeerConnectionInterface::SignalingState new_state) OVERRIDE;
+      webrtc::PeerConnectionInterface::SignalingState new_state) override;
   virtual void OnStateChange(
-      webrtc::PeerConnectionObserver::StateType state_changed) OVERRIDE;
-  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
-  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
+      webrtc::PeerConnectionObserver::StateType state_changed) override;
+  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) override;
+  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
   virtual void OnDataChannel(
-      webrtc::DataChannelInterface* data_channel) OVERRIDE;
-  virtual void OnRenegotiationNeeded() OVERRIDE;
+      webrtc::DataChannelInterface* data_channel) override;
+  virtual void OnRenegotiationNeeded() override;
   virtual void OnIceConnectionChange(
-      webrtc::PeerConnectionInterface::IceConnectionState new_state) OVERRIDE;
+      webrtc::PeerConnectionInterface::IceConnectionState new_state) override;
   virtual void OnIceGatheringChange(
-      webrtc::PeerConnectionInterface::IceGatheringState new_state) OVERRIDE;
+      webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
   virtual void OnIceCandidate(
-      const webrtc::IceCandidateInterface* candidate) OVERRIDE;
-  virtual void OnIceComplete() OVERRIDE;
+      const webrtc::IceCandidateInterface* candidate) override;
+  virtual void OnIceComplete() override;
 
  private:
   CastExtensionSession(

@@ -15,11 +15,11 @@ class ResourcesTest : public testing::Test {
   ResourcesTest(): resources_available_(false) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     resources_available_ = LoadResources("en-US");
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     UnloadResources();
   }
 

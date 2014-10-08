@@ -81,8 +81,8 @@ class RdpClientTest : public testing::Test {
   RdpClientTest();
   virtual ~RdpClientTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Caaled when an RDP connection is established.
   void OnRdpConnected();

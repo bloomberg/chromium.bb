@@ -29,10 +29,10 @@ class VideoEncoderVpx : public VideoEncoder {
   virtual ~VideoEncoderVpx();
 
   // VideoEncoder interface.
-  virtual void SetLosslessEncode(bool want_lossless) OVERRIDE;
-  virtual void SetLosslessColor(bool want_lossless) OVERRIDE;
+  virtual void SetLosslessEncode(bool want_lossless) override;
+  virtual void SetLosslessColor(bool want_lossless) override;
   virtual scoped_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) OVERRIDE;
+      const webrtc::DesktopFrame& frame) override;
 
  private:
   explicit VideoEncoderVpx(bool use_vp9);

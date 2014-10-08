@@ -83,7 +83,7 @@ class AutoThread : base::PlatformThread::Delegate {
   void JoinAndDeleteThread();
 
   // base::PlatformThread::Delegate methods:
-  virtual void ThreadMain() OVERRIDE;
+  virtual void ThreadMain() override;
 
   // Used to pass data to ThreadMain.
   struct StartupData;

@@ -25,7 +25,7 @@ class JsonHostConfig : public InMemoryHostConfig {
   virtual bool Read();
 
   // MutableHostConfig interface.
-  virtual bool Save() OVERRIDE;
+  virtual bool Save() override;
 
   std::string GetSerializedData();
 

@@ -48,7 +48,7 @@ class NormalizingInputFilterMac : public protocol::InputFilter {
   virtual ~NormalizingInputFilterMac();
 
   // InputFilter overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
 
  private:
   typedef std::map<int, protocol::KeyEvent> KeyPressedMap;

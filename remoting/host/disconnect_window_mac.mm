@@ -34,7 +34,7 @@ class DisconnectWindowMac : public HostWindow {
   // HostWindow overrides.
   virtual void Start(
       const base::WeakPtr<ClientSessionControl>& client_session_control)
-      OVERRIDE;
+      override;
 
  private:
   DisconnectWindowController* window_controller_;

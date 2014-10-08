@@ -26,17 +26,17 @@ class InMemoryHostConfig : public MutableHostConfig,
 
   // MutableHostConfig interface.
   virtual bool GetString(const std::string& path,
-                         std::string* out_value) const OVERRIDE;
+                         std::string* out_value) const override;
   virtual bool GetBoolean(const std::string& path,
-                          bool* out_value) const OVERRIDE;
+                          bool* out_value) const override;
 
   virtual void SetString(const std::string& path,
-                         const std::string& in_value) OVERRIDE;
-  virtual void SetBoolean(const std::string& path, bool in_value) OVERRIDE;
+                         const std::string& in_value) override;
+  virtual void SetBoolean(const std::string& path, bool in_value) override;
 
-  virtual bool CopyFrom(const base::DictionaryValue* dictionary) OVERRIDE;
+  virtual bool CopyFrom(const base::DictionaryValue* dictionary) override;
 
-  virtual bool Save() OVERRIDE;
+  virtual bool Save() override;
 
  protected:
   scoped_ptr<base::DictionaryValue> values_;

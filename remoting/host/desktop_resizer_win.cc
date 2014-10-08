@@ -35,11 +35,11 @@ class DesktopResizerWin : public DesktopResizer {
   virtual ~DesktopResizerWin();
 
   // DesktopResizer interface.
-  virtual ScreenResolution GetCurrentResolution() OVERRIDE;
+  virtual ScreenResolution GetCurrentResolution() override;
   virtual std::list<ScreenResolution> GetSupportedResolutions(
-      const ScreenResolution& preferred) OVERRIDE;
-  virtual void SetResolution(const ScreenResolution& resolution) OVERRIDE;
-  virtual void RestoreResolution(const ScreenResolution& original) OVERRIDE;
+      const ScreenResolution& preferred) override;
+  virtual void SetResolution(const ScreenResolution& resolution) override;
+  virtual void RestoreResolution(const ScreenResolution& original) override;
 
  private:
   static bool IsResizeSupported();

@@ -55,11 +55,11 @@ class FakeDatagramSocket : public net::Socket {
 
   // net::Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) OVERRIDE;
+                   const net::CompletionCallback& callback) override;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+                    const net::CompletionCallback& callback) override;
+  virtual int SetReceiveBufferSize(int32 size) override;
+  virtual int SetSendBufferSize(int32 size) override;
 
  private:
   int CopyReadData(net::IOBuffer* buf, int buf_len);
@@ -103,8 +103,8 @@ class FakeDatagramChannelFactory : public DatagramChannelFactory {
 
   // DatagramChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) OVERRIDE;
-  virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
+                             const ChannelCreatedCallback& callback) override;
+  virtual void CancelChannelCreation(const std::string& name) override;
 
  private:
   typedef std::map<std::string, base::WeakPtr<FakeDatagramSocket> > ChannelsMap;

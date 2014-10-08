@@ -60,18 +60,18 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   virtual ~XmppSignalStrategy();
 
   // SignalStrategy interface.
-  virtual void Connect() OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual State GetState() const OVERRIDE;
-  virtual Error GetError() const OVERRIDE;
-  virtual std::string GetLocalJid() const OVERRIDE;
-  virtual void AddListener(Listener* listener) OVERRIDE;
-  virtual void RemoveListener(Listener* listener) OVERRIDE;
-  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) OVERRIDE;
-  virtual std::string GetNextId() OVERRIDE;
+  virtual void Connect() override;
+  virtual void Disconnect() override;
+  virtual State GetState() const override;
+  virtual Error GetError() const override;
+  virtual std::string GetLocalJid() const override;
+  virtual void AddListener(Listener* listener) override;
+  virtual void RemoveListener(Listener* listener) override;
+  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  virtual std::string GetNextId() override;
 
   // buzz::XmppStanzaHandler interface.
-  virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
+  virtual bool HandleStanza(const buzz::XmlElement* stanza) override;
 
   // This method is used to update the auth info (for example when the OAuth
   // access token is renewed). It is OK to call this even when we are in the

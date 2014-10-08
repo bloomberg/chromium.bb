@@ -21,13 +21,13 @@ class FakeExtension::Session : public HostExtensionSession {
 
   // HostExtensionSession interface.
   virtual void OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer>* encoder) OVERRIDE;
-  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) OVERRIDE;
-  virtual bool ModifiesVideoPipeline() const OVERRIDE;
+      scoped_ptr<webrtc::DesktopCapturer>* encoder) override;
+  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) override;
+  virtual bool ModifiesVideoPipeline() const override;
   virtual bool OnExtensionMessage(
       ClientSessionControl* client_session_control,
       protocol::ClientStub* client_stub,
-      const protocol::ExtensionMessage& message) OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
 
  private:
   FakeExtension* extension_;

@@ -39,15 +39,15 @@ class FakeSignalStrategy : public SignalStrategy,
   void ConnectTo(FakeSignalStrategy* peer);
 
   // SignalStrategy interface.
-  virtual void Connect() OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual State GetState() const OVERRIDE;
-  virtual Error GetError() const OVERRIDE;
-  virtual std::string GetLocalJid() const OVERRIDE;
-  virtual void AddListener(Listener* listener) OVERRIDE;
-  virtual void RemoveListener(Listener* listener) OVERRIDE;
-  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) OVERRIDE;
-  virtual std::string GetNextId() OVERRIDE;
+  virtual void Connect() override;
+  virtual void Disconnect() override;
+  virtual State GetState() const override;
+  virtual Error GetError() const override;
+  virtual std::string GetLocalJid() const override;
+  virtual void AddListener(Listener* listener) override;
+  virtual void RemoveListener(Listener* listener) override;
+  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  virtual std::string GetNextId() override;
 
  private:
   typedef base::Callback<void(scoped_ptr<buzz::XmlElement> message)>

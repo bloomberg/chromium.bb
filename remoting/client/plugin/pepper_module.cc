@@ -12,7 +12,7 @@ namespace remoting {
 
 class ChromotingModule : public pp::Module {
  protected:
-  virtual pp::Instance* CreateInstance(PP_Instance instance) OVERRIDE {
+  virtual pp::Instance* CreateInstance(PP_Instance instance) override {
     pp::Instance* result = new ChromotingInstance(instance);
     return result;
   }

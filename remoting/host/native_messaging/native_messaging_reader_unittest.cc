@@ -20,7 +20,7 @@ class NativeMessagingReaderTest : public testing::Test {
   NativeMessagingReaderTest();
   virtual ~NativeMessagingReaderTest();
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Starts the reader and runs the MessageLoop to completion.
   void Run();

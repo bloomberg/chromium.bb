@@ -43,7 +43,7 @@ class FakeDesktopSession : public DesktopSession {
   virtual ~FakeDesktopSession();
 
   virtual void SetScreenResolution(
-      const ScreenResolution& resolution) OVERRIDE {}
+      const ScreenResolution& resolution) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopSession);
@@ -60,10 +60,10 @@ class MockDaemonProcess : public DaemonProcess {
   virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
       const ScreenResolution& resolution,
-      bool virtual_terminal) OVERRIDE;
+      bool virtual_terminal) override;
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendToNetwork(IPC::Message* message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void SendToNetwork(IPC::Message* message) override;
 
   MOCK_METHOD1(Received, void(const IPC::Message&));
   MOCK_METHOD1(Sent, void(const IPC::Message&));
@@ -124,8 +124,8 @@ class DaemonProcessTest : public testing::Test {
   DaemonProcessTest();
   virtual ~DaemonProcessTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // DaemonProcess mocks
   DesktopSession* DoCreateDesktopSession(int terminal_id);

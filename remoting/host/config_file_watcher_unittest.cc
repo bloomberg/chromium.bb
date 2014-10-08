@@ -42,8 +42,8 @@ class ConfigFileWatcherTest : public testing::Test {
   virtual ~ConfigFileWatcherTest();
 
   // testing::Test overrides
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Stops the config file watcher.
   void StopWatcher();

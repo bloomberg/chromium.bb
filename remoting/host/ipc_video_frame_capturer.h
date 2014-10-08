@@ -23,8 +23,8 @@ class IpcVideoFrameCapturer : public webrtc::DesktopCapturer {
   virtual ~IpcVideoFrameCapturer();
 
   // webrtc::DesktopCapturer interface.
-  virtual void Start(Callback* callback) OVERRIDE;
-  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE;
+  virtual void Start(Callback* callback) override;
+  virtual void Capture(const webrtc::DesktopRegion& region) override;
 
   // Called when a video |frame| has been captured.
   void OnCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);

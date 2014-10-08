@@ -33,7 +33,7 @@ class ConfigFileWatcher : public ConfigWatcher {
   virtual ~ConfigFileWatcher();
 
   // Inherited from ConfigWatcher.
-  virtual void Watch(Delegate* delegate) OVERRIDE;
+  virtual void Watch(Delegate* delegate) override;
 
  private:
   scoped_refptr<ConfigFileWatcherImpl> impl_;

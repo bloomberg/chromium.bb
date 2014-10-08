@@ -56,16 +56,16 @@ class SessionInputInjectorWin::Core
 
   // InputInjector implementation.
   virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
   // protocol::ClipboardStub implementation.
   virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
+      const protocol::ClipboardEvent& event) override;
 
   // protocol::InputStub implementation.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;

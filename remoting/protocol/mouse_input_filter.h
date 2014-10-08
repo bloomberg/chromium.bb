@@ -28,7 +28,7 @@ class MouseInputFilter : public InputFilter {
   void set_output_size(const webrtc::DesktopSize& size);
 
   // InputStub overrides.
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
   webrtc::DesktopSize input_max_;

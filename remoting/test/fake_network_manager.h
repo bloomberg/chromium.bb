@@ -19,9 +19,9 @@ class FakeNetworkManager : public rtc::NetworkManager {
   virtual ~FakeNetworkManager();
 
   // rtc::NetworkManager interface.
-  virtual void StartUpdating() OVERRIDE;
-  virtual void StopUpdating() OVERRIDE;
-  virtual void GetNetworks(NetworkList* networks) const OVERRIDE;
+  virtual void StartUpdating() override;
+  virtual void StopUpdating() override;
+  virtual void GetNetworks(NetworkList* networks) const override;
 
  protected:
   void SendNetworksChangedSignal();

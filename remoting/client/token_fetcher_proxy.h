@@ -28,7 +28,7 @@ class TokenFetcherProxy
   virtual void FetchThirdPartyToken(
       const GURL& token_url,
       const std::string& scope,
-      const TokenFetchedCallback& token_fetched_callback) OVERRIDE;
+      const TokenFetchedCallback& token_fetched_callback) override;
 
   // Called by the token fetching implementation when the token is fetched.
   void OnTokenFetched(const std::string& token,

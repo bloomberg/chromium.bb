@@ -23,21 +23,21 @@ class DaemonControllerDelegateWin : public DaemonController::Delegate {
   virtual ~DaemonControllerDelegateWin();
 
   // DaemonController::Delegate interface.
-  virtual DaemonController::State GetState() OVERRIDE;
-  virtual scoped_ptr<base::DictionaryValue> GetConfig() OVERRIDE;
+  virtual DaemonController::State GetState() override;
+  virtual scoped_ptr<base::DictionaryValue> GetConfig() override;
   virtual void InstallHost(
-      const DaemonController::CompletionCallback& done) OVERRIDE;
+      const DaemonController::CompletionCallback& done) override;
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
-      const DaemonController::CompletionCallback& done) OVERRIDE;
+      const DaemonController::CompletionCallback& done) override;
   virtual void UpdateConfig(
       scoped_ptr<base::DictionaryValue> config,
-      const DaemonController::CompletionCallback& done) OVERRIDE;
-  virtual void Stop(const DaemonController::CompletionCallback& done) OVERRIDE;
-  virtual void SetWindow(void* window_handle) OVERRIDE;
-  virtual std::string GetVersion() OVERRIDE;
-  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() OVERRIDE;
+      const DaemonController::CompletionCallback& done) override;
+  virtual void Stop(const DaemonController::CompletionCallback& done) override;
+  virtual void SetWindow(void* window_handle) override;
+  virtual std::string GetVersion() override;
+  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
  private:
   // Activates an unprivileged instance of the daemon controller and caches it.

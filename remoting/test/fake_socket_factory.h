@@ -52,27 +52,27 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
   // rtc::PacketSocketFactory interface.
   virtual rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port, int max_port) OVERRIDE;
+      int min_port, int max_port) override;
   virtual rtc::AsyncPacketSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
       int min_port, int max_port,
-      int opts) OVERRIDE;
+      int opts) override;
   virtual rtc::AsyncPacketSocket* CreateClientTcpSocket(
       const rtc::SocketAddress& local_address,
       const rtc::SocketAddress& remote_address,
       const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      int opts) OVERRIDE;
-  virtual rtc::AsyncResolverInterface* CreateAsyncResolver() OVERRIDE;
+      int opts) override;
+  virtual rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
   // FakeNetworkDispatcher::Node interface.
   virtual const scoped_refptr<base::SingleThreadTaskRunner>& GetThread()
-      const OVERRIDE;
-  virtual const rtc::IPAddress& GetAddress() const OVERRIDE;
+      const override;
+  virtual const rtc::IPAddress& GetAddress() const override;
   virtual void ReceivePacket(const rtc::SocketAddress& from,
                              const rtc::SocketAddress& to,
                              const scoped_refptr<net::IOBuffer>& data,
-                             int data_size) OVERRIDE;
+                             int data_size) override;
 
  private:
   struct PendingPacket {

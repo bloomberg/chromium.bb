@@ -106,41 +106,41 @@ class ClientSession
 
   // protocol::HostStub interface.
   virtual void NotifyClientResolution(
-      const protocol::ClientResolution& resolution) OVERRIDE;
+      const protocol::ClientResolution& resolution) override;
   virtual void ControlVideo(
-      const protocol::VideoControl& video_control) OVERRIDE;
+      const protocol::VideoControl& video_control) override;
   virtual void ControlAudio(
-      const protocol::AudioControl& audio_control) OVERRIDE;
+      const protocol::AudioControl& audio_control) override;
   virtual void SetCapabilities(
-      const protocol::Capabilities& capabilities) OVERRIDE;
+      const protocol::Capabilities& capabilities) override;
   virtual void RequestPairing(
-      const remoting::protocol::PairingRequest& pairing_request) OVERRIDE;
+      const remoting::protocol::PairingRequest& pairing_request) override;
   virtual void DeliverClientMessage(
-      const protocol::ExtensionMessage& message) OVERRIDE;
+      const protocol::ExtensionMessage& message) override;
 
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionAuthenticating(
-      protocol::ConnectionToClient* connection) OVERRIDE;
+      protocol::ConnectionToClient* connection) override;
   virtual void OnConnectionAuthenticated(
-      protocol::ConnectionToClient* connection) OVERRIDE;
+      protocol::ConnectionToClient* connection) override;
   virtual void OnConnectionChannelsConnected(
-      protocol::ConnectionToClient* connection) OVERRIDE;
+      protocol::ConnectionToClient* connection) override;
   virtual void OnConnectionClosed(protocol::ConnectionToClient* connection,
-                                  protocol::ErrorCode error) OVERRIDE;
+                                  protocol::ErrorCode error) override;
   virtual void OnSequenceNumberUpdated(
-      protocol::ConnectionToClient* connection, int64 sequence_number) OVERRIDE;
+      protocol::ConnectionToClient* connection, int64 sequence_number) override;
   virtual void OnRouteChange(
       protocol::ConnectionToClient* connection,
       const std::string& channel_name,
-      const protocol::TransportRoute& route) OVERRIDE;
+      const protocol::TransportRoute& route) override;
 
   // ClientSessionControl interface.
-  virtual const std::string& client_jid() const OVERRIDE;
-  virtual void DisconnectSession() OVERRIDE;
+  virtual const std::string& client_jid() const override;
+  virtual void DisconnectSession() override;
   virtual void OnLocalMouseMoved(
-      const webrtc::DesktopVector& position) OVERRIDE;
-  virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
-  virtual void ResetVideoPipeline() OVERRIDE;
+      const webrtc::DesktopVector& position) override;
+  virtual void SetDisableInputs(bool disable_inputs) override;
+  virtual void ResetVideoPipeline() override;
 
   void SetGnubbyAuthHandlerForTesting(GnubbyAuthHandler* gnubby_auth_handler);
 

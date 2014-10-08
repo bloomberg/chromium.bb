@@ -20,10 +20,10 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
   virtual ~Me2MeDesktopEnvironment();
 
   // DesktopEnvironment interface.
-  virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual std::string GetCapabilities() const OVERRIDE;
+  virtual scoped_ptr<ScreenControls> CreateScreenControls() override;
+  virtual std::string GetCapabilities() const override;
   virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
-      protocol::ClientStub* client_stub) OVERRIDE;
+      protocol::ClientStub* client_stub) override;
 
  protected:
   friend class Me2MeDesktopEnvironmentFactory;
@@ -68,9 +68,9 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
 
   // DesktopEnvironmentFactory interface.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
-  virtual void SetEnableCurtaining(bool enable) OVERRIDE;
-  virtual void SetEnableGnubbyAuth(bool enable) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) override;
+  virtual void SetEnableCurtaining(bool enable) override;
+  virtual void SetEnableGnubbyAuth(bool enable) override;
 
  protected:
   bool curtain_enabled() const { return curtain_enabled_; }

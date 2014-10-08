@@ -28,12 +28,12 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
   int64_t last_frame_timestamp() { return timecode_ - kFrameIntervalNs; }
 
   // IMkvWriter interface.
-  virtual mkvmuxer::int32 Write(const void* buf, mkvmuxer::uint32 len) OVERRIDE;
-  virtual mkvmuxer::int64 Position() const OVERRIDE;
-  virtual mkvmuxer::int32 Position(mkvmuxer::int64 position) OVERRIDE;
-  virtual bool Seekable() const OVERRIDE;
+  virtual mkvmuxer::int32 Write(const void* buf, mkvmuxer::uint32 len) override;
+  virtual mkvmuxer::int64 Position() const override;
+  virtual mkvmuxer::int32 Position(mkvmuxer::int64 position) override;
+  virtual bool Seekable() const override;
   virtual void ElementStartNotify(mkvmuxer::uint64 element_id,
-                                  mkvmuxer::int64 position) OVERRIDE;
+                                  mkvmuxer::int64 position) override;
 
   scoped_ptr<DataBuffer> OnVideoFrame(const std::string& video_data,
                                       bool keyframe);

@@ -152,19 +152,19 @@ class HostProcess
               int* exit_code_out);
 
   // ConfigWatcher::Delegate interface.
-  virtual void OnConfigUpdated(const std::string& serialized_config) OVERRIDE;
-  virtual void OnConfigWatcherError() OVERRIDE;
+  virtual void OnConfigUpdated(const std::string& serialized_config) override;
+  virtual void OnConfigWatcherError() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   // HeartbeatSender::Listener overrides.
-  virtual void OnHeartbeatSuccessful() OVERRIDE;
-  virtual void OnUnknownHostIdError() OVERRIDE;
+  virtual void OnHeartbeatSuccessful() override;
+  virtual void OnUnknownHostIdError() override;
 
   // HostChangeNotificationListener::Listener overrides.
-  virtual void OnHostDeleted() OVERRIDE;
+  virtual void OnHostDeleted() override;
 
   // Initializes the pairing registry on Windows.
   void OnInitializePairingRegistry(

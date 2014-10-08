@@ -39,21 +39,21 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
   virtual ~CastVideoCapturerAdapter();
 
   // webrtc::DesktopCapturer::Callback implementation.
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
+  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   // Converts |frame| to a cricket::CapturedFrame and emits that via
   // SignalFrameCaptured for the base::VideoCapturer implementation to process.
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
+  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // cricket::VideoCapturer implementation.
   virtual bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
-                                  cricket::VideoFormat* best_format) OVERRIDE;
+                                  cricket::VideoFormat* best_format) override;
   virtual cricket::CaptureState Start(
-      const cricket::VideoFormat& capture_format) OVERRIDE;
-  virtual bool Pause(bool pause) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual bool IsRunning() OVERRIDE;
-  virtual bool IsScreencast() const OVERRIDE;
-  virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) OVERRIDE;
+      const cricket::VideoFormat& capture_format) override;
+  virtual bool Pause(bool pause) override;
+  virtual void Stop() override;
+  virtual bool IsRunning() override;
+  virtual bool IsScreencast() const override;
+  virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) override;
 
  private:
   // Kicks off the next frame capture using |desktop_capturer_|.

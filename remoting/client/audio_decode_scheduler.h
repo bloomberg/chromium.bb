@@ -36,7 +36,7 @@ class AudioDecodeScheduler : public protocol::AudioStub {
 
   // AudioStub implementation.
   virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
-                                  const base::Closure& done) OVERRIDE;
+                                  const base::Closure& done) override;
 
  private:
   class Core;

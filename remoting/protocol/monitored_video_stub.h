@@ -41,7 +41,7 @@ class MonitoredVideoStub : public VideoStub {
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                  const base::Closure& done) OVERRIDE;
+                                  const base::Closure& done) override;
 
  private:
   void OnConnectivityCheckTimeout();

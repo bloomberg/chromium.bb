@@ -63,11 +63,11 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   virtual ~NegotiatingAuthenticatorBase();
 
   // Authenticator interface.
-  virtual State state() const OVERRIDE;
-  virtual bool started() const OVERRIDE;
-  virtual RejectionReason rejection_reason() const OVERRIDE;
+  virtual State state() const override;
+  virtual bool started() const override;
+  virtual RejectionReason rejection_reason() const override;
   virtual scoped_ptr<ChannelAuthenticator>
-      CreateChannelAuthenticator() const OVERRIDE;
+      CreateChannelAuthenticator() const override;
 
   // Calls |current_authenticator_| to process |message|, passing the supplied
   // |resume_callback|.

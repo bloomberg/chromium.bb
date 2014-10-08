@@ -70,7 +70,7 @@ class ChannelMultiplexerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create pair of multiplexers and connect them to each other.
     host_mux_.reset(new ChannelMultiplexer(
         host_session_.GetTransportChannelFactory(), kMuxChannelName));

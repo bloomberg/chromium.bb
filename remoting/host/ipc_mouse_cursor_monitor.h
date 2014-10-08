@@ -24,8 +24,8 @@ class IpcMouseCursorMonitor : public webrtc::MouseCursorMonitor {
   virtual ~IpcMouseCursorMonitor();
 
   // webrtc::MouseCursorMonitor interface.
-  virtual void Init(Callback* callback, Mode mode) OVERRIDE;
-  virtual void Capture() OVERRIDE;
+  virtual void Init(Callback* callback, Mode mode) override;
+  virtual void Capture() override;
 
   // Called when the cursor shape has changed.
   void OnMouseCursor(scoped_ptr<webrtc::MouseCursor> cursor);

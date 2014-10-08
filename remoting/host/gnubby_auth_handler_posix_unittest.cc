@@ -42,7 +42,7 @@ class MockStreamListenSocket : public net::StreamListenSocket {
   explicit MockStreamListenSocket(net::StreamListenSocket::Delegate* delegate)
       : StreamListenSocket(net::kInvalidSocket, delegate) {}
 
-  virtual void Accept() OVERRIDE { NOTREACHED(); }
+  virtual void Accept() override { NOTREACHED(); }
 
  private:
   virtual ~MockStreamListenSocket() {}
@@ -54,7 +54,7 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
  public:
   GnubbyAuthHandlerPosixTest() {}
 
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   // Object under test.

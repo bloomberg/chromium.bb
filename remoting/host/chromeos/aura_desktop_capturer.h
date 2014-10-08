@@ -28,8 +28,8 @@ class AuraDesktopCapturer : public webrtc::DesktopCapturer {
   virtual ~AuraDesktopCapturer();
 
   // webrtc::DesktopCapturer implementation.
-  virtual void Start(webrtc::DesktopCapturer::Callback* callback) OVERRIDE;
-  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE;
+  virtual void Start(webrtc::DesktopCapturer::Callback* callback) override;
+  virtual void Capture(const webrtc::DesktopRegion& region) override;
 
  private:
   friend class AuraDesktopCapturerTest;

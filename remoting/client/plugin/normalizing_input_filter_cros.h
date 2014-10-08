@@ -26,8 +26,8 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
   virtual ~NormalizingInputFilterCros();
 
   // InputFilter overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
   void ProcessKeyDown(const protocol::KeyEvent& event);

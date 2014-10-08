@@ -34,17 +34,17 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   virtual ~HostControlDispatcher();
 
   // ClientStub implementation.
-  virtual void SetCapabilities(const Capabilities& capabilities) OVERRIDE;
+  virtual void SetCapabilities(const Capabilities& capabilities) override;
   virtual void SetPairingResponse(
-      const PairingResponse& pairing_response) OVERRIDE;
+      const PairingResponse& pairing_response) override;
   virtual void DeliverHostMessage(
-      const ExtensionMessage& message) OVERRIDE;
+      const ExtensionMessage& message) override;
 
   // ClipboardStub implementation for sending clipboard data to client.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
 
   // CursorShapeStub implementation for sending cursor shape to client.
-  virtual void SetCursorShape(const CursorShapeInfo& cursor_shape) OVERRIDE;
+  virtual void SetCursorShape(const CursorShapeInfo& cursor_shape) override;
 
   // Sets the ClipboardStub that will be called for each incoming clipboard
   // message. |clipboard_stub| must outlive this object.
@@ -58,7 +58,7 @@ class HostControlDispatcher : public ChannelDispatcherBase,
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   void OnMessageReceived(scoped_ptr<ControlMessage> message,

@@ -18,8 +18,8 @@ class FakeHostStatusMonitor
   virtual ~FakeHostStatusMonitor() {}
 
   // HostStatusMonitor interface.
-  virtual void AddStatusObserver(HostStatusObserver* observer) OVERRIDE {}
-  virtual void RemoveStatusObserver(HostStatusObserver* observer) OVERRIDE {}
+  virtual void AddStatusObserver(HostStatusObserver* observer) override {}
+  virtual void RemoveStatusObserver(HostStatusObserver* observer) override {}
 };
 
 }  // namespace remoting

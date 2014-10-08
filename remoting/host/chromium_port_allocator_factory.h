@@ -28,7 +28,7 @@ class ChromiumPortAllocatorFactory
   // webrtc::PortAllocatorFactoryInterface implementation.
   virtual cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
-      const std::vector<TurnConfiguration>& turn_configurations) OVERRIDE;
+      const std::vector<TurnConfiguration>& turn_configurations) override;
 
  protected:
   ChromiumPortAllocatorFactory(

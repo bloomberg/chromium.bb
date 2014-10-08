@@ -22,7 +22,7 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   ProtobufMessageReader<VideoPacket> reader_;

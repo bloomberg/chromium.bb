@@ -38,13 +38,13 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   virtual ~DesktopProcess();
 
   // DesktopSessionAgent::Delegate implementation.
-  virtual DesktopEnvironmentFactory& desktop_environment_factory() OVERRIDE;
-  virtual void OnNetworkProcessDisconnected() OVERRIDE;
+  virtual DesktopEnvironmentFactory& desktop_environment_factory() override;
+  virtual void OnNetworkProcessDisconnected() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   // Injects Secure Attention Sequence.
   void InjectSas();

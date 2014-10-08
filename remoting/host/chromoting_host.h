@@ -90,8 +90,8 @@ class ChromotingHost : public base::NonThreadSafe,
   void Start(const std::string& host_owner);
 
   // HostStatusMonitor interface.
-  virtual void AddStatusObserver(HostStatusObserver* observer) OVERRIDE;
-  virtual void RemoveStatusObserver(HostStatusObserver* observer) OVERRIDE;
+  virtual void AddStatusObserver(HostStatusObserver* observer) override;
+  virtual void RemoveStatusObserver(HostStatusObserver* observer) override;
 
   // Registers a host extension.
   void AddExtension(scoped_ptr<HostExtension> extension);
@@ -120,21 +120,21 @@ class ChromotingHost : public base::NonThreadSafe,
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
-  virtual void OnSessionAuthenticating(ClientSession* client) OVERRIDE;
-  virtual bool OnSessionAuthenticated(ClientSession* client) OVERRIDE;
-  virtual void OnSessionChannelsConnected(ClientSession* client) OVERRIDE;
-  virtual void OnSessionAuthenticationFailed(ClientSession* client) OVERRIDE;
-  virtual void OnSessionClosed(ClientSession* session) OVERRIDE;
+  virtual void OnSessionAuthenticating(ClientSession* client) override;
+  virtual bool OnSessionAuthenticated(ClientSession* client) override;
+  virtual void OnSessionChannelsConnected(ClientSession* client) override;
+  virtual void OnSessionAuthenticationFailed(ClientSession* client) override;
+  virtual void OnSessionClosed(ClientSession* session) override;
   virtual void OnSessionRouteChange(
       ClientSession* session,
       const std::string& channel_name,
-      const protocol::TransportRoute& route) OVERRIDE;
+      const protocol::TransportRoute& route) override;
 
   // SessionManager::Listener implementation.
-  virtual void OnSessionManagerReady() OVERRIDE;
+  virtual void OnSessionManagerReady() override;
   virtual void OnIncomingSession(
       protocol::Session* session,
-      protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
+      protocol::SessionManager::IncomingSessionResponse* response) override;
 
   // Gets the candidate configuration for the protocol.
   const protocol::CandidateSessionConfig* protocol_config() const {

@@ -25,8 +25,8 @@ class ChannelMultiplexer : public StreamChannelFactory {
 
   // StreamChannelFactory interface.
   virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) OVERRIDE;
-  virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
+                             const ChannelCreatedCallback& callback) override;
+  virtual void CancelChannelCreation(const std::string& name) override;
 
  private:
   struct PendingChannel;

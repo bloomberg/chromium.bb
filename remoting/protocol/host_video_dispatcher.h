@@ -22,11 +22,11 @@ class HostVideoDispatcher : public ChannelDispatcherBase, public VideoStub {
 
   // VideoStub interface.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                  const base::Closure& done) OVERRIDE;
+                                  const base::Closure& done) override;
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   BufferedSocketWriter writer_;

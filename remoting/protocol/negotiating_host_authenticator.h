@@ -47,8 +47,8 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
 
   // Overriden from Authenticator.
   virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) OVERRIDE;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+                              const base::Closure& resume_callback) override;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
   NegotiatingHostAuthenticator(

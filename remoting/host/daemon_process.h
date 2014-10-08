@@ -58,17 +58,17 @@ class DaemonProcess
       const base::Closure& stopped_callback);
 
   // ConfigWatcher::Delegate
-  virtual void OnConfigUpdated(const std::string& serialized_config) OVERRIDE;
-  virtual void OnConfigWatcherError() OVERRIDE;
+  virtual void OnConfigUpdated(const std::string& serialized_config) override;
+  virtual void OnConfigWatcherError() override;
 
   // HostStatusMonitor interface.
-  virtual void AddStatusObserver(HostStatusObserver* observer) OVERRIDE;
-  virtual void RemoveStatusObserver(HostStatusObserver* observer) OVERRIDE;
+  virtual void AddStatusObserver(HostStatusObserver* observer) override;
+  virtual void RemoveStatusObserver(HostStatusObserver* observer) override;
 
   // WorkerProcessIpcDelegate implementation.
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnPermanentError(int exit_code) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnPermanentError(int exit_code) override;
 
   // Sends an IPC message to the network process. The message will be dropped
   // unless the network process is connected over the IPC channel.

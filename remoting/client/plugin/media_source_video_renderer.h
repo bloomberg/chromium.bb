@@ -46,10 +46,10 @@ class MediaSourceVideoRenderer : public VideoRenderer {
   virtual ~MediaSourceVideoRenderer();
 
   // VideoRenderer interface.
-  virtual void Initialize(const protocol::SessionConfig& config) OVERRIDE;
-  virtual ChromotingStats* GetStats() OVERRIDE;
+  virtual void Initialize(const protocol::SessionConfig& config) override;
+  virtual ChromotingStats* GetStats() override;
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                  const base::Closure& done) OVERRIDE;
+                                  const base::Closure& done) override;
 
  private:
   // Helper class used to generate WebM stream.

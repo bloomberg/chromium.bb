@@ -20,7 +20,7 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
   virtual ~SessionDesktopEnvironment();
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
+  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
 
  private:
   friend class SessionDesktopEnvironmentFactory;
@@ -48,7 +48,7 @@ class SessionDesktopEnvironmentFactory : public Me2MeDesktopEnvironmentFactory {
 
   // DesktopEnvironmentFactory implementation.
   virtual scoped_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) OVERRIDE;
+      base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:
   // Used to ask the daemon to inject Secure Attention Sequence.

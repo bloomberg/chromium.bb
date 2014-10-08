@@ -34,15 +34,15 @@ class FakeSession : public Session {
   FakeStreamChannelFactory& fake_channel_factory() { return channel_factory_; }
 
   // Session interface.
-  virtual void SetEventHandler(EventHandler* event_handler) OVERRIDE;
-  virtual ErrorCode error() OVERRIDE;
-  virtual const std::string& jid() OVERRIDE;
-  virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
-  virtual const SessionConfig& config() OVERRIDE;
-  virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual StreamChannelFactory* GetTransportChannelFactory() OVERRIDE;
-  virtual StreamChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void SetEventHandler(EventHandler* event_handler) override;
+  virtual ErrorCode error() override;
+  virtual const std::string& jid() override;
+  virtual const CandidateSessionConfig* candidate_config() override;
+  virtual const SessionConfig& config() override;
+  virtual void set_config(const SessionConfig& config) override;
+  virtual StreamChannelFactory* GetTransportChannelFactory() override;
+  virtual StreamChannelFactory* GetMultiplexedChannelFactory() override;
+  virtual void Close() override;
 
  public:
   EventHandler* event_handler_;

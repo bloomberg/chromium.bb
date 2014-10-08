@@ -27,8 +27,8 @@ class PepperNetworkManager : public rtc::NetworkManagerBase {
   virtual ~PepperNetworkManager();
 
   // NetworkManager interface.
-  virtual void StartUpdating() OVERRIDE;
-  virtual void StopUpdating() OVERRIDE;
+  virtual void StartUpdating() override;
+  virtual void StopUpdating() override;
 
  private:
   static void OnNetworkListCallbackHandler(void* user_data,

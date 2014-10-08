@@ -85,13 +85,13 @@ class DesktopSessionWin
   virtual void InjectSas() = 0;
 
   // WorkerProcessIpcDelegate implementation.
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnPermanentError(int exit_code) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnPermanentError(int exit_code) override;
 
   // WtsTerminalObserver implementation.
-  virtual void OnSessionAttached(uint32 session_id) OVERRIDE;
-  virtual void OnSessionDetached() OVERRIDE;
+  virtual void OnSessionAttached(uint32 session_id) override;
+  virtual void OnSessionDetached() override;
 
  private:
   // ChromotingDesktopDaemonMsg_DesktopAttached handler.

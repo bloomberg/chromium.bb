@@ -68,7 +68,7 @@ class FakeCursorShapeStub : public protocol::CursorShapeStub {
 
   // protocol::CursorShapeStub interface.
   virtual void SetCursorShape(
-      const protocol::CursorShapeInfo& cursor_shape) OVERRIDE {};
+      const protocol::CursorShapeInfo& cursor_shape) override {};
 };
 
 class ProtocolPerfTest
@@ -98,34 +98,34 @@ class ProtocolPerfTest
 
   // ClientUserInterface interface.
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
-                                 protocol::ErrorCode error) OVERRIDE {
+                                 protocol::ErrorCode error) override {
     if (state == protocol::ConnectionToHost::CONNECTED) {
       client_connected_ = true;
       if (host_connected_)
         connecting_loop_->Quit();
     }
   }
-  virtual void OnConnectionReady(bool ready) OVERRIDE {}
+  virtual void OnConnectionReady(bool ready) override {}
   virtual void OnRouteChanged(const std::string& channel_name,
-                              const protocol::TransportRoute& route) OVERRIDE {
+                              const protocol::TransportRoute& route) override {
   }
-  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE {}
+  virtual void SetCapabilities(const std::string& capabilities) override {}
   virtual void SetPairingResponse(
-      const protocol::PairingResponse& pairing_response) OVERRIDE {}
+      const protocol::PairingResponse& pairing_response) override {}
   virtual void DeliverHostMessage(
-      const protocol::ExtensionMessage& message) OVERRIDE {}
-  virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE {
+      const protocol::ExtensionMessage& message) override {}
+  virtual protocol::ClipboardStub* GetClipboardStub() override {
     return NULL;
   }
-  virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE {
+  virtual protocol::CursorShapeStub* GetCursorShapeStub() override {
     return &cursor_shape_stub_;
   }
 
   // VideoRenderer interface.
-  virtual void Initialize(const protocol::SessionConfig& config) OVERRIDE {}
-  virtual ChromotingStats* GetStats() OVERRIDE { return NULL; }
+  virtual void Initialize(const protocol::SessionConfig& config) override {}
+  virtual ChromotingStats* GetStats() override { return NULL; }
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
-                                  const base::Closure& done) OVERRIDE {
+                                  const base::Closure& done) override {
     if (video_packet->data().empty()) {
       // Ignore keep-alive packets
       done.Run();
@@ -141,7 +141,7 @@ class ProtocolPerfTest
   }
 
   // HostStatusObserver interface.
-  virtual void OnClientConnected(const std::string& jid) OVERRIDE {
+  virtual void OnClientConnected(const std::string& jid) override {
     message_loop_.PostTask(
         FROM_HERE,
         base::Bind(&ProtocolPerfTest::OnHostConnectedMainThread,

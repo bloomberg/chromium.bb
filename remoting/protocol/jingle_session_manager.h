@@ -48,20 +48,20 @@ class JingleSessionManager : public SessionManager,
 
   // SessionManager interface.
   virtual void Init(SignalStrategy* signal_strategy,
-                    SessionManager::Listener* listener) OVERRIDE;
+                    SessionManager::Listener* listener) override;
   virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config) OVERRIDE;
-  virtual void Close() OVERRIDE;
+      scoped_ptr<CandidateSessionConfig> config) override;
+  virtual void Close() override;
   virtual void set_authenticator_factory(
-      scoped_ptr<AuthenticatorFactory> authenticator_factory) OVERRIDE;
+      scoped_ptr<AuthenticatorFactory> authenticator_factory) override;
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) OVERRIDE;
+      SignalStrategy::State state) override;
   virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) OVERRIDE;
+      const buzz::XmlElement* stanza) override;
 
  private:
   friend class JingleSession;

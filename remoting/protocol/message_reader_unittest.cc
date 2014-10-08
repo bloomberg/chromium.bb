@@ -67,11 +67,11 @@ class MessageReaderTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     reader_.reset(new MessageReader());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     STLDeleteElements(&messages_);
   }
 

@@ -32,14 +32,14 @@ class PolicyWatcherMac : public PolicyWatcher {
   }
 
  protected:
-  virtual void StartWatchingInternal() OVERRIDE {
+  virtual void StartWatchingInternal() override {
     Reload();
   }
 
-  virtual void StopWatchingInternal() OVERRIDE {
+  virtual void StopWatchingInternal() override {
   }
 
-  virtual void Reload() OVERRIDE {
+  virtual void Reload() override {
     DCHECK(OnPolicyWatcherThread());
     base::DictionaryValue policy;
 

@@ -96,10 +96,10 @@ class ConsoleSession : public DesktopSessionWin {
 
  protected:
   // DesktopSession overrides.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
 
   // DesktopSessionWin overrides.
-  virtual void InjectSas() OVERRIDE;
+  virtual void InjectSas() override;
 
  private:
   scoped_ptr<SasInjector> sas_injector_;
@@ -131,10 +131,10 @@ class RdpSession : public DesktopSessionWin {
 
  protected:
   // DesktopSession overrides.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
 
   // DesktopSessionWin overrides.
-  virtual void InjectSas() OVERRIDE;
+  virtual void InjectSas() override;
 
  private:
   // An implementation of IRdpDesktopSessionEventHandler interface that forwards
@@ -145,13 +145,13 @@ class RdpSession : public DesktopSessionWin {
     virtual ~EventHandler();
 
     // IUnknown interface.
-    STDMETHOD_(ULONG, AddRef)() OVERRIDE;
-    STDMETHOD_(ULONG, Release)() OVERRIDE;
-    STDMETHOD(QueryInterface)(REFIID riid, void** ppv) OVERRIDE;
+    STDMETHOD_(ULONG, AddRef)() override;
+    STDMETHOD_(ULONG, Release)() override;
+    STDMETHOD(QueryInterface)(REFIID riid, void** ppv) override;
 
     // IRdpDesktopSessionEventHandler interface.
-    STDMETHOD(OnRdpConnected)() OVERRIDE;
-    STDMETHOD(OnRdpClosed)() OVERRIDE;
+    STDMETHOD(OnRdpConnected)() override;
+    STDMETHOD(OnRdpClosed)() override;
 
    private:
     ULONG ref_count_;

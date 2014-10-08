@@ -58,22 +58,22 @@ class FakeDesktopResizer : public DesktopResizer {
   int set_resolution_call_count() { return set_resolution_call_count_; }
 
   // remoting::DesktopResizer interface
-  virtual ScreenResolution GetCurrentResolution() OVERRIDE {
+  virtual ScreenResolution GetCurrentResolution() override {
     return current_resolution_;
   }
   virtual std::list<ScreenResolution> GetSupportedResolutions(
-      const ScreenResolution& preferred) OVERRIDE {
+      const ScreenResolution& preferred) override {
     std::list<ScreenResolution> result = supported_resolutions_;
     if (exact_size_supported_) {
       result.push_back(preferred);
     }
     return result;
   }
-  virtual void SetResolution(const ScreenResolution& resolution) OVERRIDE {
+  virtual void SetResolution(const ScreenResolution& resolution) override {
     current_resolution_ = resolution;
     ++set_resolution_call_count_;
   }
-  virtual void RestoreResolution(const ScreenResolution& resolution) OVERRIDE {
+  virtual void RestoreResolution(const ScreenResolution& resolution) override {
     current_resolution_ = resolution;
     if (restore_resolution_call_count_)
       ++(*restore_resolution_call_count_);

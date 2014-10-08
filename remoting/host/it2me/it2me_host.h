@@ -80,9 +80,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   virtual void RequestNatPolicy();
 
   // remoting::HostStatusObserver implementation.
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
+  virtual void OnAccessDenied(const std::string& jid) override;
+  virtual void OnClientAuthenticated(const std::string& jid) override;
+  virtual void OnClientDisconnected(const std::string& jid) override;
 
   void SetStateForTesting(It2MeHostState state) { SetState(state); }
 

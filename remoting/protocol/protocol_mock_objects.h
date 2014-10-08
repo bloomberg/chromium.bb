@@ -221,12 +221,12 @@ class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
   virtual ~MockPairingRegistryDelegate();
 
   // PairingRegistry::Delegate implementation.
-  virtual scoped_ptr<base::ListValue> LoadAll() OVERRIDE;
-  virtual bool DeleteAll() OVERRIDE;
+  virtual scoped_ptr<base::ListValue> LoadAll() override;
+  virtual bool DeleteAll() override;
   virtual protocol::PairingRegistry::Pairing Load(
-      const std::string& client_id) OVERRIDE;
-  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) OVERRIDE;
-  virtual bool Delete(const std::string& client_id) OVERRIDE;
+      const std::string& client_id) override;
+  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) override;
+  virtual bool Delete(const std::string& client_id) override;
 
  private:
   typedef std::map<std::string, protocol::PairingRegistry::Pairing> Pairings;
@@ -244,7 +244,7 @@ class SynchronousPairingRegistry : public PairingRegistry {
   virtual void PostTask(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE;
+      const base::Closure& task) override;
 };
 
 }  // namespace protocol

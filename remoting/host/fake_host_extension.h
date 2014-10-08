@@ -27,10 +27,10 @@ class FakeExtension : public HostExtension {
   virtual ~FakeExtension();
 
   // HostExtension interface.
-  virtual std::string capability() const OVERRIDE;
+  virtual std::string capability() const override;
   virtual scoped_ptr<HostExtensionSession> CreateExtensionSession(
       ClientSessionControl* client_session_control,
-      protocol::ClientStub* client_stub) OVERRIDE;
+      protocol::ClientStub* client_stub) override;
 
   // Controls for testing.
   void set_steal_video_capturer(bool steal_video_capturer) {

@@ -34,16 +34,16 @@ class IpcHostEventLogger
   virtual ~IpcHostEventLogger();
 
   // HostStatusObserver interface.
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientConnected(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
+  virtual void OnAccessDenied(const std::string& jid) override;
+  virtual void OnClientAuthenticated(const std::string& jid) override;
+  virtual void OnClientConnected(const std::string& jid) override;
+  virtual void OnClientDisconnected(const std::string& jid) override;
   virtual void OnClientRouteChange(
       const std::string& jid,
       const std::string& channel_name,
-      const protocol::TransportRoute& route) OVERRIDE;
-  virtual void OnStart(const std::string& xmpp_login) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+      const protocol::TransportRoute& route) override;
+  virtual void OnStart(const std::string& xmpp_login) override;
+  virtual void OnShutdown() override;
 
  private:
   // Used to report host status events to the daemon.

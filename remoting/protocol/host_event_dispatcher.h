@@ -36,7 +36,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnInitialized() override;
 
  private:
   void OnMessageReceived(scoped_ptr<EventMessage> message,

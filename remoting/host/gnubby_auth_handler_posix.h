@@ -41,17 +41,17 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   typedef std::map<int, GnubbySocket*> ActiveSockets;
 
   // GnubbyAuthHandler interface.
-  virtual void DeliverClientMessage(const std::string& message) OVERRIDE;
+  virtual void DeliverClientMessage(const std::string& message) override;
   virtual void DeliverHostDataMessage(int connection_id,
-                                      const std::string& data) const OVERRIDE;
+                                      const std::string& data) const override;
 
   // StreamListenSocket::Delegate interface.
   virtual void DidAccept(net::StreamListenSocket* server,
-                         scoped_ptr<net::StreamListenSocket> socket) OVERRIDE;
+                         scoped_ptr<net::StreamListenSocket> socket) override;
   virtual void DidRead(net::StreamListenSocket* socket,
                        const char* data,
-                       int len) OVERRIDE;
-  virtual void DidClose(net::StreamListenSocket* socket) OVERRIDE;
+                       int len) override;
+  virtual void DidClose(net::StreamListenSocket* socket) override;
 
   // Create socket for authorization.
   void CreateAuthorizationSocket();

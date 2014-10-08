@@ -49,11 +49,11 @@ class PepperView : public FrameConsumer {
                            const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
                            const webrtc::DesktopRegion& region,
-                           const webrtc::DesktopRegion& shape) OVERRIDE;
-  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
+                           const webrtc::DesktopRegion& shape) override;
+  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
   virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
-                             const webrtc::DesktopVector& dpi) OVERRIDE;
-  virtual PixelFormat GetPixelFormat() OVERRIDE;
+                             const webrtc::DesktopVector& dpi) override;
+  virtual PixelFormat GetPixelFormat() override;
 
   // Updates the PepperView's size & clipping area, taking into account the
   // DIP-to-device scale factor.
