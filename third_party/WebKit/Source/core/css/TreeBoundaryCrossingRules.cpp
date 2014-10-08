@@ -73,6 +73,8 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
     // When comparing rules declared in inner treescopes, inner's rules win.
     CascadeOrder innerCascadeOrder = size();
 
+    ASSERT(!collector.scopeContainsLastMatchedElement());
+    collector.setScopeContainsLastMatchedElement(true);
     for (DocumentOrderedList::iterator it = m_scopingNodes.begin(); it != m_scopingNodes.end(); ++it) {
         const ContainerNode* scopingNode = toContainerNode(*it);
         CSSStyleSheetRuleSubSet* ruleSubSet = m_treeBoundaryCrossingRuleSetMap.get(scopingNode);
@@ -81,11 +83,12 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
         for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it) {
             MatchRequest request((*it)->ruleSet.get(), includeEmptyRules, scopingNode, (*it)->parentStyleSheet, (*it)->parentIndex);
-            collector.collectMatchingRules(request, ruleRange, true, ignoreCascadeScope, cascadeOrder, true);
+            collector.collectMatchingRules(request, ruleRange, ignoreCascadeScope, cascadeOrder, true);
         }
         ++innerCascadeOrder;
         --outerCascadeOrder;
     }
+    collector.setScopeContainsLastMatchedElement(false);
 }
 
 void TreeBoundaryCrossingRules::reset(const ContainerNode* scopingNode)
