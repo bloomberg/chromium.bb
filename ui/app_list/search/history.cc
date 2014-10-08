@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/history.h"
+#include "ui/app_list/search/history.h"
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/app_list/search/history_data.h"
-#include "chrome/browser/ui/app_list/search/history_data_store.h"
+#include "ui/app_list/search/history_data.h"
+#include "ui/app_list/search/history_data_store.h"
 #include "ui/app_list/search/tokenized_string.h"
 
 namespace app_list {
@@ -23,8 +23,7 @@ std::string NormalizeString(const std::string& utf8) {
 }  // namespace
 
 History::History(scoped_refptr<HistoryDataStore> store)
-    : store_(store),
-      data_loaded_(false) {
+    : store_(store), data_loaded_(false) {
   const size_t kMaxQueryEntries = 1000;
   const size_t kMaxSecondaryQueries = 5;
 

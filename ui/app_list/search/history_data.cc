@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/history_data.h"
+#include "ui/app_list/search/history_data.h"
 
 #include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
-#include "chrome/browser/ui/app_list/search/history_data_observer.h"
-#include "chrome/browser/ui/app_list/search/history_data_store.h"
+#include "ui/app_list/search/history_data_observer.h"
+#include "ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 
@@ -18,11 +18,8 @@ namespace {
 // A struct used to sort query entries by time.
 struct EntrySortData {
   EntrySortData() : query(NULL), update_time(NULL) {}
-  EntrySortData(const std::string* query,
-                const base::Time* update_time)
-      : query(query),
-        update_time(update_time) {
-  }
+  EntrySortData(const std::string* query, const base::Time* update_time)
+      : query(query), update_time(update_time) {}
 
   const std::string* query;
   const base::Time* update_time;
@@ -35,19 +32,20 @@ bool EntrySortByTimeAscending(const EntrySortData& entry1,
 
 }  // namespace
 
-HistoryData::Data::Data() {}
-HistoryData::Data::~Data() {}
+HistoryData::Data::Data() {
+}
+HistoryData::Data::~Data() {
+}
 
 HistoryData::HistoryData(HistoryDataStore* store,
                          size_t max_primary,
                          size_t max_secondary)
-    : store_(store),
-      max_primary_(max_primary),
-      max_secondary_(max_secondary) {
+    : store_(store), max_primary_(max_primary), max_secondary_(max_secondary) {
   store_->Load(base::Bind(&HistoryData::OnStoreLoaded, AsWeakPtr()));
 }
 
-HistoryData::~HistoryData() {}
+HistoryData::~HistoryData() {
+}
 
 void HistoryData::Add(const std::string& query, const std::string& result_id) {
   Associations::iterator assoc_it = associations_.find(query);
@@ -101,15 +99,12 @@ void HistoryData::Add(const std::string& query, const std::string& result_id) {
 scoped_ptr<KnownResults> HistoryData::GetKnownResults(
     const std::string& query) const {
   scoped_ptr<KnownResults> results(new KnownResults);
-  for (Associations::const_iterator assoc_it =
-           associations_.lower_bound(query);
+  for (Associations::const_iterator assoc_it = associations_.lower_bound(query);
        assoc_it != associations_.end();
        ++assoc_it) {
     // Break out of the loop if |query| is no longer a prefix.
     if (assoc_it->first.size() < query.size() ||
-        strncmp(assoc_it->first.c_str(),
-                query.c_str(),
-                query.length()) != 0) {
+        strncmp(assoc_it->first.c_str(), query.c_str(), query.length()) != 0) {
       break;
     }
 
@@ -149,8 +144,8 @@ void HistoryData::OnStoreLoaded(scoped_ptr<Associations> loaded_data) {
   if (loaded_data)
     loaded_data->swap(associations_);
 
-  FOR_EACH_OBSERVER(HistoryDataObserver, observers_,
-                    OnHistoryDataLoadedFromStore());
+  FOR_EACH_OBSERVER(
+      HistoryDataObserver, observers_, OnHistoryDataLoadedFromStore());
 }
 
 void HistoryData::TrimEntries() {
@@ -159,7 +154,8 @@ void HistoryData::TrimEntries() {
 
   std::vector<EntrySortData> entries;
   for (Associations::const_iterator it = associations_.begin();
-       it != associations_.end(); ++it) {
+       it != associations_.end();
+       ++it) {
     entries.push_back(EntrySortData(&it->first, &it->second.update_time));
   }
 

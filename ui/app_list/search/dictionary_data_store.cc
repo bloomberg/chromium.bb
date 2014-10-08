@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
+#include "ui/app_list/search/dictionary_data_store.h"
 
 #include "base/callback.h"
 #include "base/json/json_file_value_serializer.h"
@@ -69,10 +69,8 @@ scoped_ptr<base::DictionaryValue> DictionaryDataStore::LoadOnBlockingPool() {
   JSONFileValueSerializer serializer(data_file_);
   base::Value* value = serializer.Deserialize(&error_code, &error_message);
   base::DictionaryValue* dict_value = NULL;
-  if (error_code != JSONFileValueSerializer::JSON_NO_ERROR ||
-      !value ||
-      !value->GetAsDictionary(&dict_value) ||
-      !dict_value) {
+  if (error_code != JSONFileValueSerializer::JSON_NO_ERROR || !value ||
+      !value->GetAsDictionary(&dict_value) || !dict_value) {
     return scoped_ptr<base::DictionaryValue>();
   }
 

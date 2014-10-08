@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_MIXER_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_MIXER_H_
+#ifndef UI_APP_LIST_SEARCH_MIXER_H_
+#define UI_APP_LIST_SEARCH_MIXER_H_
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/ui/app_list/search/history_types.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/search/history_types.h"
 
 namespace app_list {
 
@@ -26,7 +27,7 @@ class SearchResult;
 // (local apps and contacts), omnibox group and web store group. The
 // main group takes no more than 4 slots. The web store takes no more than 2
 // slots. The omnibox group takes all the remaining slots.
-class Mixer {
+class APP_LIST_EXPORT Mixer {
  public:
   // The enum represents mixer groups. Note this must matches the order
   // of group creation in Init().
@@ -53,7 +54,7 @@ class Mixer {
   FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
 
   // Used for sorting and mixing results.
-  struct SortData {
+  struct APP_LIST_EXPORT SortData {
     SortData();
     SortData(SearchResult* result, double score);
 
@@ -86,4 +87,4 @@ class Mixer {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_MIXER_H_
+#endif  // UI_APP_LIST_SEARCH_MIXER_H_

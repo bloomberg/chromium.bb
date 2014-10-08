@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
+#ifndef UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
+#define UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
 
 #include <string>
 #include <vector>
@@ -12,8 +12,9 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
-#include "chrome/browser/ui/app_list/search/history_data.h"
+#include "ui/app_list/app_list_export.h"
+#include "ui/app_list/search/dictionary_data_store.h"
+#include "ui/app_list/search/history_data.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,7 +28,8 @@ class HistoryDataStoreTest;
 }
 
 // A simple json store to persist HistoryData.
-class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore> {
+class APP_LIST_EXPORT HistoryDataStore
+    : public base::RefCountedThreadSafe<HistoryDataStore> {
  public:
   typedef base::Callback<void(scoped_ptr<HistoryData::Associations>)>
       OnLoadedCallback;
@@ -82,4 +84,4 @@ class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore> {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
+#endif  // UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_

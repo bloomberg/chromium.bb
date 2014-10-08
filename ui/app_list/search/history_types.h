@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_TYPES_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_TYPES_H_
+#ifndef UI_APP_LIST_SEARCH_HISTORY_TYPES_H_
+#define UI_APP_LIST_SEARCH_HISTORY_TYPES_H_
 
 #include <map>
 #include <string>
@@ -24,4 +24,4 @@ typedef std::map<std::string, KnownResultType> KnownResults;
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_TYPES_H_
+#endif  // UI_APP_LIST_SEARCH_HISTORY_TYPES_H_

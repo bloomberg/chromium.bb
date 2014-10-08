@@ -10,13 +10,13 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
-#include "chrome/browser/ui/app_list/search/history.h"
-#include "chrome/browser/ui/app_list/search/history_data.h"
-#include "chrome/browser/ui/app_list/search/history_data_observer.h"
-#include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/search/dictionary_data_store.h"
+#include "ui/app_list/search/history.h"
+#include "ui/app_list/search/history_data.h"
+#include "ui/app_list/search/history_data_observer.h"
+#include "ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 namespace test {

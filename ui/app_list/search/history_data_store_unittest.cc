@@ -10,10 +10,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
-#include "chrome/browser/ui/app_list/search/history_data.h"
-#include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/search/dictionary_data_store.h"
+#include "ui/app_list/search/history_data.h"
+#include "ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 namespace test {
@@ -24,7 +24,8 @@ std::string GetDataContent(const HistoryData::Data& data) {
   std::string str = std::string("p:") + data.primary + ";s:";
   bool first = true;
   for (HistoryData::SecondaryDeque::const_iterator it = data.secondary.begin();
-       it != data.secondary.end(); ++it) {
+       it != data.secondary.end();
+       ++it) {
     if (first)
       first = false;
     else
@@ -60,20 +61,17 @@ class HistoryDataStoreTest : public testing::Test {
     Load();
   }
 
-  void Flush() {
-    store_->Flush(DictionaryDataStore::OnFlushedCallback());
-  }
+  void Flush() { store_->Flush(DictionaryDataStore::OnFlushedCallback()); }
 
   void Load() {
-    store_->Load(base::Bind(&HistoryDataStoreTest::OnRead,
-                            base::Unretained(this)));
+    store_->Load(
+        base::Bind(&HistoryDataStoreTest::OnRead, base::Unretained(this)));
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
     run_loop_.reset();
   }
 
-  void WriteDataFile(const std::string& file_name,
-                     const std::string& data) {
+  void WriteDataFile(const std::string& file_name, const std::string& data) {
     base::WriteFile(
         temp_dir_.path().AppendASCII(file_name), data.c_str(), data.size());
   }
@@ -120,15 +118,16 @@ TEST_F(HistoryDataStoreTest, BadFile) {
 
 TEST_F(HistoryDataStoreTest, GoodFile) {
   const char kDataFile[] = "good_data_file.json";
-  const char kGoodJson[] = "{"
+  const char kGoodJson[] =
+      "{"
       "\"version\": \"1\","
       "\"associations\": {"
-          "\"query\": {"
-             "\"p\": \"primary\","
-             "\"s\": [\"secondary1\",\"secondary2\"],"
-             "\"t\": \"123\""
-          "}"
-        "}"
+      "\"query\": {"
+      "\"p\": \"primary\","
+      "\"s\": [\"secondary1\",\"secondary2\"],"
+      "\"t\": \"123\""
+      "}"
+      "}"
       "}";
   WriteDataFile(kDataFile, kGoodJson);
 

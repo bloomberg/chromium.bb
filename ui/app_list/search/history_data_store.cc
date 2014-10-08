@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/history_data_store.h"
+#include "ui/app_list/search/history_data_store.h"
 
 #include "base/callback.h"
 #include "base/json/json_file_value_serializer.h"
@@ -26,8 +26,8 @@ const char kKeyUpdateTime[] = "t";
 void GetSecondary(const base::ListValue* list,
                   HistoryData::SecondaryDeque* secondary) {
   HistoryData::SecondaryDeque results;
-  for (base::ListValue::const_iterator it = list->begin();
-       it != list->end(); ++it) {
+  for (base::ListValue::const_iterator it = list->begin(); it != list->end();
+       ++it) {
     std::string str;
     if (!(*it)->GetAsString(&str))
       return;
@@ -63,15 +63,14 @@ scoped_ptr<HistoryData::Associations> Parse(
   }
 
   const base::DictionaryValue* assoc_dict = NULL;
-  if (!dict->GetDictionaryWithoutPathExpansion(kKeyAssociations,
-                                               &assoc_dict) ||
+  if (!dict->GetDictionaryWithoutPathExpansion(kKeyAssociations, &assoc_dict) ||
       !assoc_dict) {
     return scoped_ptr<HistoryData::Associations>();
   }
 
   scoped_ptr<HistoryData::Associations> data(new HistoryData::Associations);
-  for (base::DictionaryValue::Iterator it(*assoc_dict);
-       !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*assoc_dict); !it.IsAtEnd();
+       it.Advance()) {
     const base::DictionaryValue* entry_dict = NULL;
     if (!it.value().GetAsDictionary(&entry_dict))
       continue;
@@ -136,12 +135,11 @@ void HistoryDataStore::Flush(
 void HistoryDataStore::Load(
     const HistoryDataStore::OnLoadedCallback& on_loaded) {
   if (data_store_.get()) {
-    data_store_->Load(base::Bind(&HistoryDataStore::OnDictionaryLoadedCallback,
-                                 this,
-                                 on_loaded));
+    data_store_->Load(base::Bind(
+        &HistoryDataStore::OnDictionaryLoadedCallback, this, on_loaded));
   } else {
-    OnDictionaryLoadedCallback(
-        on_loaded, make_scoped_ptr(cached_dict_->DeepCopy()));
+    OnDictionaryLoadedCallback(on_loaded,
+                               make_scoped_ptr(cached_dict_->DeepCopy()));
   }
 }
 
@@ -158,7 +156,7 @@ void HistoryDataStore::SetSecondary(
     const std::string& query,
     const HistoryData::SecondaryDeque& results) {
   scoped_ptr<base::ListValue> results_list(new base::ListValue);
-  for (size_t i = 0; i< results.size(); ++i)
+  for (size_t i = 0; i < results.size(); ++i)
     results_list->AppendString(results[i]);
 
   base::DictionaryValue* entry_dict = GetEntryDict(query);
@@ -211,7 +209,8 @@ base::DictionaryValue* HistoryDataStore::GetEntryDict(
 }
 
 void HistoryDataStore::OnDictionaryLoadedCallback(
-    OnLoadedCallback callback, scoped_ptr<base::DictionaryValue> dict) {
+    OnLoadedCallback callback,
+    scoped_ptr<base::DictionaryValue> dict) {
   if (!dict) {
     callback.Run(scoped_ptr<HistoryData::Associations>());
   } else {

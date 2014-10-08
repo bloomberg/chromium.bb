@@ -8,10 +8,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/app_list/search/history_types.h"
-#include "chrome/browser/ui/app_list/search/mixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/search/history_types.h"
+#include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 
@@ -54,8 +54,7 @@ int TestSearchResult::instantiation_count = 0;
 class TestSearchProvider : public SearchProvider {
  public:
   explicit TestSearchProvider(const std::string& prefix)
-      : prefix_(prefix),
-        count_(0) {}
+      : prefix_(prefix), count_(0) {}
   virtual ~TestSearchProvider() {}
 
   // SearchProvider overrides:
@@ -146,19 +145,19 @@ TEST_F(MixerTest, Basic) {
     const size_t webstore_results;
     const char* expected;
   } kTestCases[] = {
-    {0, 0, 0, ""},
-    {4, 6, 2, "app0,app1,app2,app3,omnibox0,webstore0"},
-    {10, 10, 10, "app0,app1,app2,app3,omnibox0,webstore0"},
-    {0, 10, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5"},
-    {0, 10, 1, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0"},
-    {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-    {1, 10, 0, "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4"},
-    {2, 10, 0, "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3"},
-    {2, 10, 1, "app0,app1,omnibox0,omnibox1,omnibox2,webstore0"},
-    {2, 10, 2, "app0,app1,omnibox0,omnibox1,webstore0,webstore1"},
-    {2, 0, 2, "app0,app1,webstore0,webstore1"},
-    {0, 0, 0, ""},
-  };
+        {0, 0, 0, ""},
+        {4, 6, 2, "app0,app1,app2,app3,omnibox0,webstore0"},
+        {10, 10, 10, "app0,app1,app2,app3,omnibox0,webstore0"},
+        {0, 10, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5"},
+        {0, 10, 1, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0"},
+        {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
+        {1, 10, 0, "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4"},
+        {2, 10, 0, "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3"},
+        {2, 10, 1, "app0,app1,omnibox0,omnibox1,omnibox2,webstore0"},
+        {2, 10, 2, "app0,app1,omnibox0,omnibox1,webstore0,webstore1"},
+        {2, 0, 2, "app0,app1,webstore0,webstore1"},
+        {0, 0, 0, ""},
+    };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);

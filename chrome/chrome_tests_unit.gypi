@@ -2090,8 +2090,6 @@
           'sources': [
             'browser/ui/app_list/search/app_search_provider_unittest.cc',
             'browser/ui/app_list/search/history_unittest.cc',
-            'browser/ui/app_list/search/history_data_store_unittest.cc',
-            'browser/ui/app_list/search/mixer_unittest.cc',
           ],
           'dependencies': [
             '../ash/ash.gyp:ash_test_support',

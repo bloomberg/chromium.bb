@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/app_list/search/dictionary_data_store.h"
 
 namespace base {
 class DictionaryValue;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/mixer.h"
+#include "ui/app_list/search/mixer.h"
 
 #include <algorithm>
 #include <map>
@@ -51,14 +51,10 @@ bool Mixer::SortData::operator<(const SortData& other) const {
 class Mixer::Group {
  public:
   Group(size_t max_results, double boost)
-      : max_results_(max_results),
-        boost_(boost) {
-  }
+      : max_results_(max_results), boost_(boost) {}
   ~Group() {}
 
-  void AddProvider(SearchProvider* provider) {
-    providers_.push_back(provider);
-  }
+  void AddProvider(SearchProvider* provider) { providers_.push_back(provider); }
 
   void FetchResults(const KnownResults& known_results) {
     results_.clear();
@@ -66,10 +62,10 @@ class Mixer::Group {
     for (Providers::const_iterator provider_it = providers_.begin();
          provider_it != providers_.end();
          ++provider_it) {
-      for (SearchProvider::Results::const_iterator
-               result_it = (*provider_it)->results().begin();
-               result_it != (*provider_it)->results().end();
-               ++result_it) {
+      for (SearchProvider::Results::const_iterator result_it =
+               (*provider_it)->results().begin();
+           result_it != (*provider_it)->results().end();
+           ++result_it) {
         DCHECK_GE((*result_it)->relevance(), 0.0);
         DCHECK_LE((*result_it)->relevance(), 1.0);
         DCHECK(!(*result_it)->id().empty());
@@ -121,8 +117,10 @@ class Mixer::Group {
 };
 
 Mixer::Mixer(AppListModel::SearchResults* ui_results)
-    : ui_results_(ui_results) {}
-Mixer::~Mixer() {}
+    : ui_results_(ui_results) {
+}
+Mixer::~Mixer() {
+}
 
 void Mixer::Init() {
   groups_.push_back(new Group(kMaxMainGroupResults, 3.0));
@@ -249,8 +247,7 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 }
 
 void Mixer::FetchResults(const KnownResults& known_results) {
-  for (Groups::iterator group_it = groups_.begin();
-       group_it != groups_.end();
+  for (Groups::iterator group_it = groups_.begin(); group_it != groups_.end();
        ++group_it) {
     (*group_it)->FetchResults(known_results);
   }
