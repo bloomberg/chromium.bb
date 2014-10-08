@@ -427,6 +427,8 @@
       'system/tray/tray_notification_view.h',
       'system/tray/tray_popup_header_button.cc',
       'system/tray/tray_popup_header_button.h',
+      'system/tray/tray_popup_item_container.cc',
+      'system/tray/tray_popup_item_container.h',
       'system/tray/tray_popup_label_button.cc',
       'system/tray/tray_popup_label_button.h',
       'system/tray/tray_popup_label_button_border.cc',

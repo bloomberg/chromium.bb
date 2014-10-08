@@ -9,6 +9,7 @@
 #include "ash/system/tray/view_click_listener.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -130,6 +131,19 @@ void HoverHighlightView::SetExpandable(bool expandable) {
   }
 }
 
+void HoverHighlightView::SetHoverHighlight(bool hover) {
+  if (hover_ == hover)
+    return;
+  hover_ = hover;
+  if (!text_label_)
+    return;
+  if (hover_ && text_highlight_color_)
+    text_label_->SetEnabledColor(text_highlight_color_);
+  if (!hover_ && text_default_color_)
+    text_label_->SetEnabledColor(text_default_color_);
+  SchedulePaint();
+}
+
 bool HoverHighlightView::PerformAction(const ui::Event& event) {
   if (!listener_)
     return false;
@@ -159,17 +173,23 @@ int HoverHighlightView::GetHeightForWidth(int width) const {
 }
 
 void HoverHighlightView::OnMouseEntered(const ui::MouseEvent& event) {
-  hover_ = true;
-  if (text_highlight_color_ && text_label_)
-    text_label_->SetEnabledColor(text_highlight_color_);
-  SchedulePaint();
+  SetHoverHighlight(true);
 }
 
 void HoverHighlightView::OnMouseExited(const ui::MouseEvent& event) {
-  hover_ = false;
-  if (text_default_color_ && text_label_)
-    text_label_->SetEnabledColor(text_default_color_);
-  SchedulePaint();
+  SetHoverHighlight(false);
+}
+
+void HoverHighlightView::OnGestureEvent(ui::GestureEvent* event) {
+  if (switches::IsTouchFeedbackEnabled()) {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      SetHoverHighlight(true);
+    } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+               event->type() == ui::ET_GESTURE_TAP) {
+      SetHoverHighlight(false);
+    }
+  }
+  ActionableView::OnGestureEvent(event);
 }
 
 void HoverHighlightView::OnEnabledChanged() {

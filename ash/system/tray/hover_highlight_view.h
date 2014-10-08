@@ -64,6 +64,9 @@ class HoverHighlightView : public ActionableView {
   virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
+  // Sets the highlighted color on a text label if |hover| is set.
+  void SetHoverHighlight(bool hover);
+
   // Overridden from ActionableView:
   virtual bool PerformAction(const ui::Event& event) override;
 
@@ -72,6 +75,7 @@ class HoverHighlightView : public ActionableView {
   virtual int GetHeightForWidth(int width) const override;
   virtual void OnMouseEntered(const ui::MouseEvent& event) override;
   virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
   virtual void OnEnabledChanged() override;
   virtual void OnPaintBackground(gfx::Canvas* canvas) override;
   virtual void OnFocus() override;

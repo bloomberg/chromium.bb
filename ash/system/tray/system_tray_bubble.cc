@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_item_container.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -36,73 +37,6 @@ const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
 // Duration of swipe animation used when transitioning from a default to
 // detailed view or vice versa.
 const int kSwipeDelayMS = 150;
-
-// A view with some special behaviour for tray items in the popup:
-// - optionally changes background color on hover.
-class TrayPopupItemContainer : public views::View {
- public:
-  TrayPopupItemContainer(views::View* view,
-                         bool change_background,
-                         bool draw_border)
-      : hover_(false),
-        change_background_(change_background) {
-    set_notify_enter_exit_on_child(true);
-    if (draw_border) {
-      SetBorder(
-          views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kBorderLightColor));
-    }
-    views::BoxLayout* layout = new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 0);
-    layout->SetDefaultFlex(1);
-    SetLayoutManager(layout);
-    SetPaintToLayer(view->layer() != NULL);
-    if (view->layer())
-      SetFillsBoundsOpaquely(view->layer()->fills_bounds_opaquely());
-    AddChildView(view);
-    SetVisible(view->visible());
-  }
-
-  virtual ~TrayPopupItemContainer() {}
-
- private:
-  // Overridden from views::View.
-  virtual void ChildVisibilityChanged(View* child) override {
-    if (visible() == child->visible())
-      return;
-    SetVisible(child->visible());
-    PreferredSizeChanged();
-  }
-
-  virtual void ChildPreferredSizeChanged(View* child) override {
-    PreferredSizeChanged();
-  }
-
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override {
-    hover_ = true;
-    SchedulePaint();
-  }
-
-  virtual void OnMouseExited(const ui::MouseEvent& event) override {
-    hover_ = false;
-    SchedulePaint();
-  }
-
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override {
-    if (child_count() == 0)
-      return;
-
-    views::View* view = child_at(0);
-    if (!view->background()) {
-      canvas->FillRect(gfx::Rect(size()), (hover_ && change_background_) ?
-          kHoverBackgroundColor : kBackgroundColor);
-    }
-  }
-
-  bool hover_;
-  bool change_background_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayPopupItemContainer);
-};
 
 // Implicit animation observer that deletes itself and the layer at the end of
 // the animation.

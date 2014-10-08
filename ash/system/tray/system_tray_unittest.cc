@@ -12,16 +12,21 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_item_container.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -157,7 +162,20 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-typedef AshTestBase SystemTrayTest;
+class SystemTrayTest : public AshTestBase {
+ public:
+  SystemTrayTest() {}
+  virtual ~SystemTrayTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableTouchFeedback);
+    test::AshTestBase::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayTest);
+};
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   SystemTray* tray = GetSystemTray();
@@ -504,6 +522,59 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
   EXPECT_TRUE(tray->visible());
   EXPECT_EQ(1.0f, tray->layer()->GetTargetOpacity());
 }
+
+#if defined(OS_CHROMEOS)
+// Tests that touch on an item in the system bubble triggers it to become
+// active.
+TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
+  SystemTray* tray = GetSystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+
+  TrayPopupItemContainer* view =
+      static_cast<TrayPopupItemContainer*>(tray->GetSystemBubble()->
+          bubble_view()->child_at(0));
+  EXPECT_FALSE(view->active());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(view->GetBoundsInScreen().CenterPoint());
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(view->active());
+
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(view->active());
+}
+
+// Tests that touch events on an item in the system bubble cause it to stop
+// being active.
+TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
+  SystemTray* tray = GetSystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+
+  TrayPopupItemContainer* view =
+      static_cast<TrayPopupItemContainer*>(tray->GetSystemBubble()->
+          bubble_view()->child_at(0));
+  EXPECT_FALSE(view->active());
+
+  gfx::Rect view_bounds = view->GetBoundsInScreen();
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(view_bounds.CenterPoint());
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(view->active());
+
+  gfx::Point move_point(view_bounds.x(), view_bounds.CenterPoint().y());
+  generator.MoveTouch(move_point);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(view->active());
+
+  generator.set_current_location(move_point);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(view->active());
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace test
 }  // namespace ash
