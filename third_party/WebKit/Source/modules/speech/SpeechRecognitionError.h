@@ -38,7 +38,7 @@ struct SpeechRecognitionErrorInit : public EventInit {
     String message;
 };
 
-class SpeechRecognitionError FINAL : public Event {
+class SpeechRecognitionError final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
@@ -62,9 +62,9 @@ public:
     const String& error() { return m_error; }
     const String& message() { return m_message; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         Event::trace(visitor);
     }

@@ -161,13 +161,13 @@ public:
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() OVERRIDE
+    virtual void complete() override
     {
         ASSERT_NOT_REACHED();
         completeWithDOMException(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) OVERRIDE
+    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         if (status != WebContentDecryptionModuleResult::NewSession) {
             ASSERT_NOT_REACHED();
@@ -179,7 +179,7 @@ public:
         m_resolver.clear();
     }
 
-    virtual void completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage) OVERRIDE
+    virtual void completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage) override
     {
         completeWithDOMException(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
     }

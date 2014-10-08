@@ -35,7 +35,7 @@ class DeviceAcceleration;
 class DeviceMotionData;
 class DeviceRotationRate;
 
-class DeviceMotionEvent FINAL : public Event {
+class DeviceMotionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DeviceMotionEvent();
@@ -57,9 +57,9 @@ public:
     DeviceRotationRate* rotationRate();
     double interval(bool& isNull) const;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     DeviceMotionEvent();

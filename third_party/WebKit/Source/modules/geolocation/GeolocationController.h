@@ -40,7 +40,7 @@ class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
 
-class GeolocationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
+class GeolocationController final : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
@@ -64,13 +64,13 @@ public:
     GeolocationClient* client() { return m_client; }
 
     // Inherited from PageLifecycleObserver.
-    virtual void pageVisibilityChanged() OVERRIDE;
+    virtual void pageVisibilityChanged() override;
 
     static const char* supplementName();
     static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
     // Inherited from Supplement.
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     GeolocationController(LocalFrame&, GeolocationClient*);

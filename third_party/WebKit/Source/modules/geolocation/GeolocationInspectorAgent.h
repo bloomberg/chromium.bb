@@ -43,16 +43,16 @@ class GeolocationController;
 
 typedef String ErrorString;
 
-class GeolocationInspectorAgent FINAL : public InspectorBaseAgent<GeolocationInspectorAgent>, public InspectorBackendDispatcher::GeolocationCommandHandler {
+class GeolocationInspectorAgent final : public InspectorBaseAgent<GeolocationInspectorAgent>, public InspectorBackendDispatcher::GeolocationCommandHandler {
     WTF_MAKE_NONCOPYABLE(GeolocationInspectorAgent);
 public:
     static PassOwnPtrWillBeRawPtr<GeolocationInspectorAgent> create();
     virtual ~GeolocationInspectorAgent();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     // Protocol methods.
-    virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*) OVERRIDE;
-    virtual void clearGeolocationOverride(ErrorString*) OVERRIDE;
+    virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*) override;
+    virtual void clearGeolocationOverride(ErrorString*) override;
 
     // Instrumentation method.
     GeolocationPosition* overrideGeolocationPosition(GeolocationPosition*);

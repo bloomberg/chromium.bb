@@ -44,7 +44,7 @@ public:
 
     unsigned short length();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit AesKeyAlgorithm(const WebCryptoKeyAlgorithm&);

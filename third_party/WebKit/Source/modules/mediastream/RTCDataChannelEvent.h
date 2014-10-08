@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class RTCDataChannelEvent FINAL : public Event {
+class RTCDataChannelEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~RTCDataChannelEvent();
@@ -41,9 +41,9 @@ public:
 
     RTCDataChannel* channel() const;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCDataChannelEvent();

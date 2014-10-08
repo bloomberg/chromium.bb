@@ -50,7 +50,7 @@ class DOMError;
 class ExceptionState;
 class ExecutionContext;
 
-class IDBDatabase FINAL
+class IDBDatabase final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<IDBDatabase>
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
@@ -60,7 +60,7 @@ class IDBDatabase FINAL
 public:
     static IDBDatabase* create(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);
     virtual ~IDBDatabase();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
@@ -92,12 +92,12 @@ public:
     void onComplete(int64_t);
 
     // ActiveDOMObject
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     bool isClosePending() const { return m_closePending; }
     void forceClose();
@@ -105,7 +105,7 @@ public:
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     int64_t findObjectStoreId(const String& name) const;
     bool containsObjectStore(const String& name) const

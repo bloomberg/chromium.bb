@@ -33,7 +33,7 @@ namespace blink {
 
 class ExceptionState;
 
-class AnalyserNode FINAL : public AudioBasicInspectorNode {
+class AnalyserNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AnalyserNode* create(AudioContext* context, float sampleRate)
@@ -44,8 +44,8 @@ public:
     virtual ~AnalyserNode();
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
 
     // Javascript bindings
     unsigned fftSize() const { return m_analyser.fftSize(); }
@@ -67,8 +67,8 @@ public:
     void getFloatTimeDomainData(Float32Array* array) { m_analyser.getFloatTimeDomainData(array); }
     void getByteTimeDomainData(Uint8Array* array) { m_analyser.getByteTimeDomainData(array); }
 private:
-    virtual double tailTime() const OVERRIDE { return 0; }
-    virtual double latencyTime() const OVERRIDE { return 0; }
+    virtual double tailTime() const override { return 0; }
+    virtual double latencyTime() const override { return 0; }
 
     AnalyserNode(AudioContext*, float sampleRate);
 

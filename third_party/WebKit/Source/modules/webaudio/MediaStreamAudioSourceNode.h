@@ -39,7 +39,7 @@ namespace blink {
 
 class AudioContext;
 
-class MediaStreamAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
+class MediaStreamAudioSourceNode final : public AudioSourceNode, public AudioSourceProviderClient {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 public:
@@ -50,21 +50,21 @@ public:
     MediaStream* mediaStream() { return m_mediaStream.get(); }
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
 
     // AudioSourceProviderClient
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;
+    virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
 
     AudioSourceProvider* audioSourceProvider() const { return m_audioSourceProvider.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaStreamAudioSourceNode(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 
     // As an audio source, we will never propagate silence.
-    virtual bool propagatesSilence() const OVERRIDE { return false; }
+    virtual bool propagatesSilence() const override { return false; }
 
     Member<MediaStream> m_mediaStream;
     Member<MediaStreamTrack> m_audioTrack;

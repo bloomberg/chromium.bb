@@ -40,7 +40,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class StorageQuota FINAL : public GarbageCollected<StorageQuota>, public ScriptWrappable {
+class StorageQuota final : public GarbageCollected<StorageQuota>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static StorageQuota* create()

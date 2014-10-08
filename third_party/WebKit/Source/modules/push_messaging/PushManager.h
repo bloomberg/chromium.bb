@@ -15,7 +15,7 @@ class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
 
-class PushManager FINAL : public GarbageCollected<PushManager>, public ScriptWrappable {
+class PushManager final : public GarbageCollected<PushManager>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PushManager* create()

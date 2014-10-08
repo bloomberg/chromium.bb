@@ -33,7 +33,7 @@ namespace blink {
 
 class DynamicsCompressor;
 
-class DynamicsCompressorNode FINAL : public AudioNode {
+class DynamicsCompressorNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DynamicsCompressorNode* create(AudioContext* context, float sampleRate)
@@ -44,10 +44,10 @@ public:
     virtual ~DynamicsCompressorNode();
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
-    virtual void initialize() OVERRIDE;
-    virtual void uninitialize() OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
+    virtual void initialize() override;
+    virtual void uninitialize() override;
 
     // Static compression curve parameters.
     AudioParam* threshold() { return m_threshold.get(); }
@@ -59,11 +59,11 @@ public:
     // Amount by which the compressor is currently compressing the signal in decibels.
     AudioParam* reduction() { return m_reduction.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
-    virtual double tailTime() const OVERRIDE;
-    virtual double latencyTime() const OVERRIDE;
+    virtual double tailTime() const override;
+    virtual double latencyTime() const override;
 
     DynamicsCompressorNode(AudioContext*, float sampleRate);
 

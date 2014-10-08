@@ -849,14 +849,14 @@ void Database::runTransaction(
 
 // This object is constructed in a database thread, and destructed in the
 // context thread.
-class DeliverPendingCallbackTask FINAL : public ExecutionContextTask {
+class DeliverPendingCallbackTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<DeliverPendingCallbackTask> create(SQLTransaction* transaction)
     {
         return adoptPtr(new DeliverPendingCallbackTask(transaction));
     }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE
+    virtual void performTask(ExecutionContext*) override
     {
         m_transaction->performPendingCallback();
     }

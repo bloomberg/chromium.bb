@@ -35,7 +35,7 @@ namespace blink {
 
 class AudioBus;
 
-class RealtimeAnalyser FINAL {
+class RealtimeAnalyser final {
     WTF_MAKE_NONCOPYABLE(RealtimeAnalyser);
 public:
     RealtimeAnalyser();

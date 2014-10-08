@@ -38,19 +38,19 @@
 
 namespace blink {
 
-class DirectoryReader::EntriesCallbackHelper FINAL : public EntriesCallback {
+class DirectoryReader::EntriesCallbackHelper final : public EntriesCallback {
 public:
     explicit EntriesCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
     {
     }
 
-    virtual void handleEvent(const EntryHeapVector& entries) OVERRIDE
+    virtual void handleEvent(const EntryHeapVector& entries) override
     {
         m_reader->addEntries(entries);
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_reader);
         EntriesCallback::trace(visitor);
@@ -61,19 +61,19 @@ private:
     Member<DirectoryReader> m_reader;
 };
 
-class DirectoryReader::ErrorCallbackHelper FINAL : public ErrorCallback {
+class DirectoryReader::ErrorCallbackHelper final : public ErrorCallback {
 public:
     explicit ErrorCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
     {
     }
 
-    virtual void handleEvent(FileError* error) OVERRIDE
+    virtual void handleEvent(FileError* error) override
     {
         m_reader->onError(error);
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_reader);
         ErrorCallback::trace(visitor);

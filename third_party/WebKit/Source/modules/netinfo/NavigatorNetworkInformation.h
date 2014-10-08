@@ -13,7 +13,7 @@ namespace blink {
 class Navigator;
 class NetworkInformation;
 
-class NavigatorNetworkInformation FINAL
+class NavigatorNetworkInformation final
     : public NoBaseWillBeGarbageCollected<NavigatorNetworkInformation>
     , public WillBeHeapSupplement<Navigator>
     , DOMWindowProperty {
@@ -26,7 +26,7 @@ public:
 
     static NetworkInformation* connection(Navigator&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit NavigatorNetworkInformation(Navigator&);

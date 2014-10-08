@@ -32,14 +32,14 @@ namespace blink {
 
 class DelayProcessor;
 
-class DelayDSPKernel FINAL : public AudioDelayDSPKernel {
+class DelayDSPKernel final : public AudioDelayDSPKernel {
 public:
     explicit DelayDSPKernel(DelayProcessor*);
 
 protected:
-    virtual bool hasSampleAccurateValues() OVERRIDE;
-    virtual void calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess) OVERRIDE;
-    virtual double delayTime(float sampleRate) OVERRIDE;
+    virtual bool hasSampleAccurateValues() override;
+    virtual void calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess) override;
+    virtual double delayTime(float sampleRate) override;
 
 private:
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }

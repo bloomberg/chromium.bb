@@ -40,7 +40,7 @@ namespace blink {
 class Dictionary;
 class ExceptionState;
 
-class RTCIceCandidate FINAL : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
+class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCIceCandidate* create(const Dictionary&, ExceptionState&);

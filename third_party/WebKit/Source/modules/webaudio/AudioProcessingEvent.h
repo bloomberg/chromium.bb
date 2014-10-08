@@ -34,7 +34,7 @@ namespace blink {
 
 class AudioBuffer;
 
-class AudioProcessingEvent FINAL : public Event {
+class AudioProcessingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AudioProcessingEvent> create();
@@ -46,9 +46,9 @@ public:
     AudioBuffer* outputBuffer() { return m_outputBuffer.get(); }
     double playbackTime() const { return m_playbackTime; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     AudioProcessingEvent();

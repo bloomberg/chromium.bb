@@ -43,7 +43,7 @@ public:
     Member<SpeechRecognitionResultList> results;
 };
 
-class SpeechRecognitionEvent FINAL : public Event {
+class SpeechRecognitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create();
@@ -61,9 +61,9 @@ public:
     Document* emma() { return 0; }
 
     // Event
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     SpeechRecognitionEvent();

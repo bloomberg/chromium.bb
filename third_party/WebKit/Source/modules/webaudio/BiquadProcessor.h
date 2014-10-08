@@ -36,7 +36,7 @@ namespace blink {
 
 // BiquadProcessor is an AudioDSPKernelProcessor which uses Biquad objects to implement several common filters.
 
-class BiquadProcessor FINAL : public AudioDSPKernelProcessor {
+class BiquadProcessor final : public AudioDSPKernelProcessor {
 public:
     enum FilterType {
         LowPass = 0,
@@ -51,11 +51,11 @@ public:
 
     BiquadProcessor(AudioContext*, float sampleRate, size_t numberOfChannels, bool autoInitialize);
     virtual ~BiquadProcessor();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual PassOwnPtr<AudioDSPKernel> createKernel() OVERRIDE;
+    virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 
-    virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) OVERRIDE;
+    virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 
     // Get the magnitude and phase response of the filter at the given
     // set of frequencies (in Hz). The phase response is in radians.

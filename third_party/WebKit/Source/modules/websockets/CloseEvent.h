@@ -45,7 +45,7 @@ struct CloseEventInit : public EventInit {
     String reason;
 };
 
-class CloseEvent FINAL : public Event {
+class CloseEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CloseEvent> create()
@@ -68,9 +68,9 @@ public:
     String reason() const { return m_reason; }
 
     // Event function.
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::CloseEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::CloseEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { Event::trace(visitor); }
 
 private:
     CloseEvent()

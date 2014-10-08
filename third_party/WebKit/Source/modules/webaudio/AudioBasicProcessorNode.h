@@ -40,24 +40,24 @@ class AudioBasicProcessorNode : public AudioNode {
 public:
     AudioBasicProcessorNode(AudioContext*, float sampleRate);
     virtual ~AudioBasicProcessorNode();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     // AudioNode
-    virtual void dispose() OVERRIDE FINAL;
-    virtual void process(size_t framesToProcess) OVERRIDE FINAL;
-    virtual void pullInputs(size_t framesToProcess) OVERRIDE FINAL;
-    virtual void initialize() OVERRIDE FINAL;
-    virtual void uninitialize() OVERRIDE FINAL;
+    virtual void dispose() override final;
+    virtual void process(size_t framesToProcess) override final;
+    virtual void pullInputs(size_t framesToProcess) override final;
+    virtual void initialize() override final;
+    virtual void uninitialize() override final;
 
     // Called in the main thread when the number of channels for the input may have changed.
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) OVERRIDE FINAL;
+    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override final;
 
     // Returns the number of channels for both the input and the output.
     unsigned numberOfChannels();
 
 protected:
-    virtual double tailTime() const OVERRIDE FINAL;
-    virtual double latencyTime() const OVERRIDE FINAL;
+    virtual double tailTime() const override final;
+    virtual double latencyTime() const override final;
 
     AudioProcessor* processor() { return m_processor.get(); }
     Member<AudioProcessor> m_processor;

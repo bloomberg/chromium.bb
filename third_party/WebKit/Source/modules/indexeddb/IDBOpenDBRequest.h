@@ -33,29 +33,29 @@ namespace blink {
 
 class IDBDatabaseCallbacks;
 
-class IDBOpenDBRequest FINAL : public IDBRequest {
+class IDBOpenDBRequest final : public IDBRequest {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBOpenDBRequest* create(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
     virtual ~IDBOpenDBRequest();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     using IDBRequest::onSuccess;
 
-    virtual void onBlocked(int64_t existingVersion) OVERRIDE;
-    virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) OVERRIDE;
-    virtual void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) OVERRIDE;
-    virtual void onSuccess(int64_t oldVersion) OVERRIDE;
+    virtual void onBlocked(int64_t existingVersion) override;
+    virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) override;
+    virtual void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) override;
+    virtual void onSuccess(int64_t oldVersion) override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded);
 
 protected:
-    virtual bool shouldEnqueueEvent() const OVERRIDE;
+    virtual bool shouldEnqueueEvent() const override;
 
 private:
     IDBOpenDBRequest(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);

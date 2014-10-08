@@ -13,7 +13,7 @@ class ScreenOrientation;
 class Screen;
 class ScriptState;
 
-class ScreenScreenOrientation FINAL
+class ScreenScreenOrientation final
     : public NoBaseWillBeGarbageCollectedFinalized<ScreenScreenOrientation>
     , public WillBeHeapSupplement<Screen> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
@@ -23,7 +23,7 @@ public:
 
     static ScreenOrientation* orientation(ScriptState*, Screen&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     static const char* supplementName();

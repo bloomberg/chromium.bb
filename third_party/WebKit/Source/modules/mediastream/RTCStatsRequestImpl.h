@@ -38,21 +38,21 @@ class MediaStreamTrack;
 class RTCPeerConnection;
 class RTCStatsCallback;
 
-class RTCStatsRequestImpl FINAL : public RTCStatsRequest, public ActiveDOMObject {
+class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject {
 public:
     static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
     virtual ~RTCStatsRequestImpl();
 
-    virtual RTCStatsResponseBase* createResponse() OVERRIDE;
-    virtual bool hasSelector() OVERRIDE;
-    virtual MediaStreamComponent* component() OVERRIDE;
+    virtual RTCStatsResponseBase* createResponse() override;
+    virtual bool hasSelector() override;
+    virtual MediaStreamComponent* component() override;
 
-    virtual void requestSucceeded(RTCStatsResponseBase*) OVERRIDE;
+    virtual void requestSucceeded(RTCStatsResponseBase*) override;
 
     // ActiveDOMObject
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);

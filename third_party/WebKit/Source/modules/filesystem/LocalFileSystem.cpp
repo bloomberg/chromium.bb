@@ -57,7 +57,7 @@ void reportFailure(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callb
 
 } // namespace
 
-class CallbackWrapper FINAL : public GarbageCollectedFinalized<CallbackWrapper> {
+class CallbackWrapper final : public GarbageCollectedFinalized<CallbackWrapper> {
 public:
     CallbackWrapper(PassOwnPtr<AsyncFileSystemCallbacks> c)
         : m_callbacks(c)

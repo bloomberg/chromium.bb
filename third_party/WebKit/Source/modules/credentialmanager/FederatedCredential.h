@@ -15,7 +15,7 @@ namespace blink {
 
 class WebFederatedCredential;
 
-class FederatedCredential FINAL : public Credential {
+class FederatedCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static FederatedCredential* create(WebFederatedCredential*);

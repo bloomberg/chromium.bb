@@ -40,7 +40,7 @@ namespace blink {
 class Crypto;
 class LocalDOMWindow;
 
-class DOMWindowCrypto FINAL : public NoBaseWillBeGarbageCollected<DOMWindowCrypto>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class DOMWindowCrypto final : public NoBaseWillBeGarbageCollected<DOMWindowCrypto>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowCrypto);
 public:

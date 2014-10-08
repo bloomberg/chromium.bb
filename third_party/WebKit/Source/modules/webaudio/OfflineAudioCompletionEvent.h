@@ -34,7 +34,7 @@ namespace blink {
 
 class AudioBuffer;
 
-class OfflineAudioCompletionEvent FINAL : public Event {
+class OfflineAudioCompletionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create();
@@ -44,9 +44,9 @@ public:
 
     AudioBuffer* renderedBuffer() { return m_renderedBuffer.get(); }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     OfflineAudioCompletionEvent();

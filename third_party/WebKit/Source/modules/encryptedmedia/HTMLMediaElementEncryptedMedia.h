@@ -20,7 +20,7 @@ class MediaKeys;
 class ScriptPromise;
 class ScriptState;
 
-class HTMLMediaElementEncryptedMedia FINAL : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement> {
+class HTMLMediaElementEncryptedMedia final : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
 public:
@@ -51,7 +51,7 @@ public:
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
     static const char* supplementName();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     friend class SetMediaKeysHandler;

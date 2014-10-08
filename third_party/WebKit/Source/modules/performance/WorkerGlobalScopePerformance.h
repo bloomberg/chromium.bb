@@ -39,7 +39,7 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerGlobalScopePerformance FINAL : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
+class WorkerGlobalScopePerformance final : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 public:
     static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);

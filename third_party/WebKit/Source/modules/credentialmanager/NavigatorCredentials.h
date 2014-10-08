@@ -15,7 +15,7 @@ namespace blink {
 class CredentialsContainer;
 class Navigator;
 
-class NavigatorCredentials FINAL : public NoBaseWillBeGarbageCollected<NavigatorCredentials>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorCredentials final : public NoBaseWillBeGarbageCollected<NavigatorCredentials>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorCredentials);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorCredentials);
 public:

@@ -63,7 +63,7 @@ public:
 
 // A helper template for FileSystemSync implementation.
 template <typename SuccessCallback, typename CallbackArg, typename ResultType>
-class SyncCallbackHelper FINAL : public GarbageCollected<SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> > {
+class SyncCallbackHelper final : public GarbageCollected<SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> > {
 public:
     typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> HelperType;
     typedef HelperResultType<ResultType, CallbackArg> ResultTypeTrait;
@@ -98,7 +98,7 @@ private:
     {
     }
 
-    class SuccessCallbackImpl FINAL : public SuccessCallback {
+    class SuccessCallbackImpl final : public SuccessCallback {
     public:
         static SuccessCallbackImpl* create(HelperType* helper)
         {
@@ -123,14 +123,14 @@ private:
         Persistent<HelperType> m_helper;
     };
 
-    class ErrorCallbackImpl FINAL : public ErrorCallback {
+    class ErrorCallbackImpl final : public ErrorCallback {
     public:
         static ErrorCallbackImpl* create(HelperType* helper)
         {
             return new ErrorCallbackImpl(helper);
         }
 
-        virtual void handleEvent(FileError* error) OVERRIDE
+        virtual void handleEvent(FileError* error) override
         {
             ASSERT(error);
             m_helper->setError(error->code());

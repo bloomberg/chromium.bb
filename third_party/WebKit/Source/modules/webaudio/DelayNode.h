@@ -34,7 +34,7 @@ namespace blink {
 class AudioParam;
 class ExceptionState;
 
-class DelayNode FINAL : public AudioBasicProcessorNode {
+class DelayNode final : public AudioBasicProcessorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DelayNode* create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)

@@ -83,13 +83,13 @@ public:
     static void requestPermission(ExecutionContext*, NotificationPermissionCallback* = nullptr);
 
     // EventTarget interface.
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE FINAL;
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const override final { return ActiveDOMObject::executionContext(); }
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override final;
+    virtual const AtomicString& interfaceName() const override;
 
     // ActiveDOMObject interface.
-    virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() override;
+    virtual bool hasPendingActivity() const override;
 
 private:
     Notification(const String& title, ExecutionContext*, NotificationClient*);

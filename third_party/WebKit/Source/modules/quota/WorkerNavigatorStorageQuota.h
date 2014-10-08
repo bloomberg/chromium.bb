@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class WorkerNavigatorStorageQuota FINAL : public NoBaseWillBeGarbageCollected<WorkerNavigatorStorageQuota>, public WillBeHeapSupplement<WorkerNavigator> {
+class WorkerNavigatorStorageQuota final : public NoBaseWillBeGarbageCollected<WorkerNavigatorStorageQuota>, public WillBeHeapSupplement<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 public:
     static WorkerNavigatorStorageQuota& from(WorkerNavigator&);

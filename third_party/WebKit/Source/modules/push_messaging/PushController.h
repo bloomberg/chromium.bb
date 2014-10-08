@@ -15,7 +15,7 @@ namespace blink {
 
 class WebPushClient;
 
-class PushController FINAL : public NoBaseWillBeGarbageCollected<PushController>, public WillBeHeapSupplement<Page> {
+class PushController final : public NoBaseWillBeGarbageCollected<PushController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PushController);
     WTF_MAKE_NONCOPYABLE(PushController);
 
@@ -27,7 +27,7 @@ public:
 
     WebPushClient* client() const { return m_client; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit PushController(WebPushClient*);

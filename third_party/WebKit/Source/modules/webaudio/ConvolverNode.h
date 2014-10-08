@@ -36,7 +36,7 @@ class AudioBuffer;
 class ExceptionState;
 class Reverb;
 
-class ConvolverNode FINAL : public AudioNode {
+class ConvolverNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ConvolverNode* create(AudioContext* context, float sampleRate)
@@ -47,10 +47,10 @@ public:
     virtual ~ConvolverNode();
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
-    virtual void initialize() OVERRIDE;
-    virtual void uninitialize() OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
+    virtual void initialize() override;
+    virtual void uninitialize() override;
 
     // Impulse responses
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -59,13 +59,13 @@ public:
     bool normalize() const { return m_normalize; }
     void setNormalize(bool normalize) { m_normalize = normalize; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     ConvolverNode(AudioContext*, float sampleRate);
 
-    virtual double tailTime() const OVERRIDE;
-    virtual double latencyTime() const OVERRIDE;
+    virtual double tailTime() const override;
+    virtual double latencyTime() const override;
 
     OwnPtr<Reverb> m_reverb;
     Member<AudioBuffer> m_buffer;

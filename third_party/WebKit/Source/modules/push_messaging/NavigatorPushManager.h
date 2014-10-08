@@ -13,7 +13,7 @@ namespace blink {
 class Navigator;
 class PushManager;
 
-class NavigatorPushManager FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorPushManager>, public WillBeHeapSupplement<Navigator> {
+class NavigatorPushManager final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorPushManager>, public WillBeHeapSupplement<Navigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorPushManager);
 public:
     virtual ~NavigatorPushManager();

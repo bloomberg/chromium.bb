@@ -55,7 +55,7 @@ class RTCSessionDescriptionCallback;
 class RTCStatsCallback;
 class VoidCallback;
 
-class RTCPeerConnection FINAL
+class RTCPeerConnection final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCPeerConnection>
     , public WebRTCPeerConnectionHandlerClient
     , public EventTargetWithInlineData
@@ -121,32 +121,32 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel);
 
     // WebRTCPeerConnectionHandlerClient
-    virtual void negotiationNeeded() OVERRIDE;
-    virtual void didGenerateICECandidate(const WebRTCICECandidate&) OVERRIDE;
-    virtual void didChangeSignalingState(SignalingState) OVERRIDE;
-    virtual void didChangeICEGatheringState(ICEGatheringState) OVERRIDE;
-    virtual void didChangeICEConnectionState(ICEConnectionState) OVERRIDE;
-    virtual void didAddRemoteStream(const WebMediaStream&) OVERRIDE;
-    virtual void didRemoveRemoteStream(const WebMediaStream&) OVERRIDE;
-    virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) OVERRIDE;
-    virtual void releasePeerConnectionHandler() OVERRIDE;
-    virtual void closePeerConnection() OVERRIDE;
+    virtual void negotiationNeeded() override;
+    virtual void didGenerateICECandidate(const WebRTCICECandidate&) override;
+    virtual void didChangeSignalingState(SignalingState) override;
+    virtual void didChangeICEGatheringState(ICEGatheringState) override;
+    virtual void didChangeICEConnectionState(ICEConnectionState) override;
+    virtual void didAddRemoteStream(const WebMediaStream&) override;
+    virtual void didRemoveRemoteStream(const WebMediaStream&) override;
+    virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) override;
+    virtual void releasePeerConnectionHandler() override;
+    virtual void closePeerConnection() override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual void suspend() override;
+    virtual void resume() override;
+    virtual void stop() override;
     // We keep the this object alive until either stopped or closed.
-    virtual bool hasPendingActivity() const OVERRIDE
+    virtual bool hasPendingActivity() const override
     {
         return !m_closed && !m_stopped;
     }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);

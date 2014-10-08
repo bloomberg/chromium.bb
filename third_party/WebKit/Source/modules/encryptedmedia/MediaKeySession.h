@@ -58,7 +58,7 @@ class WebString;
 // Because this object controls the lifetime of the WebContentDecryptionModuleSession,
 // it may outlive any JavaScript references as long as the MediaKeys object is alive.
 // The WebContentDecryptionModuleSession has the same lifetime as this object.
-class MediaKeySession FINAL
+class MediaKeySession final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaKeySession>, public ActiveDOMObject, public EventTargetWithInlineData
     , private WebContentDecryptionModuleSession::Client {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaKeySession>);
@@ -85,14 +85,14 @@ public:
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     class PendingAction;
@@ -103,11 +103,11 @@ private:
     void actionTimerFired(Timer<MediaKeySession>*);
 
     // WebContentDecryptionModuleSession::Client
-    virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) OVERRIDE;
-    virtual void ready() OVERRIDE;
-    virtual void close() OVERRIDE;
-    virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
-    virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) OVERRIDE;
+    virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) override;
+    virtual void ready() override;
+    virtual void close() override;
+    virtual void error(MediaKeyErrorCode, unsigned long systemCode) override;
+    virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) override;
 
     ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<ArrayBuffer> initData);
     ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);

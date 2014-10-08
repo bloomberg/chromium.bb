@@ -39,7 +39,7 @@ namespace blink {
 class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
-class SpeechSynthesis FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class SpeechSynthesis final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesis>);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
@@ -62,21 +62,21 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SpeechSynthesis(ExecutionContext*);
 
     // PlatformSpeechSynthesizerClient override methods.
-    virtual void voicesDidChange() OVERRIDE;
-    virtual void didStartSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
-    virtual void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
-    virtual void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
-    virtual void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
-    virtual void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) OVERRIDE;
-    virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) OVERRIDE;
+    virtual void voicesDidChange() override;
+    virtual void didStartSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    virtual void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    virtual void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    virtual void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    virtual void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) override;
+    virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) override;
 
     void startSpeakingImmediately();
     void handleSpeakingCompleted(SpeechSynthesisUtterance*, bool errorOccurred);
@@ -91,7 +91,7 @@ private:
     bool m_isPaused;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 };
 
 } // namespace blink

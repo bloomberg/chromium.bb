@@ -15,7 +15,7 @@ namespace blink {
 class BatteryManager;
 class Navigator;
 
-class NavigatorBattery FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorBattery>, public WillBeHeapSupplement<Navigator> {
+class NavigatorBattery final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorBattery>, public WillBeHeapSupplement<Navigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorBattery);
 public:
     virtual ~NavigatorBattery();

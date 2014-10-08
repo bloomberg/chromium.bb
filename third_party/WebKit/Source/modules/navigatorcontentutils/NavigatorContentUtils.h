@@ -39,7 +39,7 @@ class ExceptionState;
 class Navigator;
 class Page;
 
-class NavigatorContentUtils FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorContentUtils>, public WillBeHeapSupplement<Page> {
+class NavigatorContentUtils final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorContentUtils>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 public:
     virtual ~NavigatorContentUtils();
@@ -53,7 +53,7 @@ public:
 
     static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<Page>::trace(visitor); }
 
     void setClientForTest(PassOwnPtr<NavigatorContentUtilsClient> client) { m_client = client; }
 

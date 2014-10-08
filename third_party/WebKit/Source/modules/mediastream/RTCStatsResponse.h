@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class RTCStatsResponse FINAL : public RTCStatsResponseBase, public ScriptWrappable {
+class RTCStatsResponse final : public RTCStatsResponseBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCStatsResponse* create();
@@ -44,10 +44,10 @@ public:
 
     RTCStatsReport* namedItem(const AtomicString& name);
 
-    virtual size_t addReport(const String& id, const String& type, double timestamp) OVERRIDE;
-    virtual void addStatistic(size_t report, const String& name, const String& value) OVERRIDE;
+    virtual size_t addReport(const String& id, const String& type, double timestamp) override;
+    virtual void addStatistic(size_t report, const String& name, const String& value) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCStatsResponse();

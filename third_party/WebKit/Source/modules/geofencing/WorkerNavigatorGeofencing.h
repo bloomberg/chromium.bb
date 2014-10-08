@@ -13,7 +13,7 @@ namespace blink {
 class Geofencing;
 class WorkerNavigator;
 
-class WorkerNavigatorGeofencing FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerNavigatorGeofencing>, public WillBeHeapSupplement<WorkerNavigator> {
+class WorkerNavigatorGeofencing final : public NoBaseWillBeGarbageCollectedFinalized<WorkerNavigatorGeofencing>, public WillBeHeapSupplement<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorGeofencing);
     WTF_MAKE_NONCOPYABLE(WorkerNavigatorGeofencing);
 public:
@@ -23,7 +23,7 @@ public:
     static Geofencing* geofencing(WorkerNavigator&);
     Geofencing* geofencing();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     WorkerNavigatorGeofencing();

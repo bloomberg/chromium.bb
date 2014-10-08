@@ -37,27 +37,27 @@ namespace blink {
 
 class AudioContext;
 
-class MediaStreamAudioDestinationNode FINAL : public AudioBasicInspectorNode {
+class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStreamAudioDestinationNode* create(AudioContext*, size_t numberOfChannels);
     virtual ~MediaStreamAudioDestinationNode();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     MediaStream* stream() { return m_stream.get(); }
 
     // AudioNode.
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
 
 private:
     MediaStreamAudioDestinationNode(AudioContext*, size_t numberOfChannels);
 
-    virtual double tailTime() const OVERRIDE { return 0; }
-    virtual double latencyTime() const OVERRIDE { return 0; }
+    virtual double tailTime() const override { return 0; }
+    virtual double latencyTime() const override { return 0; }
 
     // As an audio source, we will never propagate silence.
-    virtual bool propagatesSilence() const OVERRIDE { return false; }
+    virtual bool propagatesSilence() const override { return false; }
 
     Member<MediaStream> m_stream;
     Member<MediaStreamSource> m_source;

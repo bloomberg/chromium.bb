@@ -60,7 +60,7 @@ public:
     void trace(Visitor*);
 
     // ContextLifecycleObserver
-    virtual void contextDestroyed() OVERRIDE;
+    virtual void contextDestroyed() override;
 
 private:
     friend class MediaKeysInitializer;

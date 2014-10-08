@@ -37,7 +37,7 @@ namespace blink {
 
 class ExceptionState;
 
-class MediaStream FINAL
+class MediaStream final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>
     , public URLRegistrable
     , public MediaStreamDescriptorClient
@@ -77,29 +77,29 @@ public:
     void trackEnded();
 
     // MediaStreamDescriptorClient
-    virtual void streamEnded() OVERRIDE;
+    virtual void streamEnded() override;
 
     MediaStreamDescriptor* descriptor() const { return m_descriptor.get(); }
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // URLRegistrable
-    virtual URLRegistry& registry() const OVERRIDE;
+    virtual URLRegistry& registry() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaStream(ExecutionContext*, MediaStreamDescriptor*);
     MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
 
     // ContextLifecycleObserver
-    virtual void contextDestroyed() OVERRIDE;
+    virtual void contextDestroyed() override;
 
     // MediaStreamDescriptorClient
-    virtual void addRemoteTrack(MediaStreamComponent*) OVERRIDE;
-    virtual void removeRemoteTrack(MediaStreamComponent*) OVERRIDE;
+    virtual void addRemoteTrack(MediaStreamComponent*) override;
+    virtual void removeRemoteTrack(MediaStreamComponent*) override;
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<MediaStream>*);

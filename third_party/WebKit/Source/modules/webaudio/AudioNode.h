@@ -180,12 +180,12 @@ public:
     AudioBus::ChannelInterpretation internalChannelInterpretation() const { return m_channelInterpretation; }
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE FINAL;
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
+    virtual const AtomicString& interfaceName() const override final;
+    virtual ExecutionContext* executionContext() const override final;
 
     void updateChannelCountMode();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.

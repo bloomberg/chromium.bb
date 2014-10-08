@@ -31,7 +31,7 @@ namespace blink {
 class LocalFrame;
 class Navigator;
 
-class NavigatorVibration FINAL
+class NavigatorVibration final
     : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVibration>
     , public WillBeHeapSupplement<Page>
     , public PageLifecycleObserver {
@@ -47,8 +47,8 @@ public:
     void timerStopFired(Timer<NavigatorVibration>*);
 
     // Inherited from PageLifecycleObserver
-    virtual void pageVisibilityChanged() OVERRIDE;
-    virtual void didCommitLoad(LocalFrame*) OVERRIDE;
+    virtual void pageVisibilityChanged() override;
+    virtual void didCommitLoad(LocalFrame*) override;
 
     static bool vibrate(Navigator&, unsigned time);
     static bool vibrate(Navigator&, const VibrationPattern&);
@@ -58,7 +58,7 @@ public:
 
     VibrationPattern pattern() const { return m_pattern; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit NavigatorVibration(Page&);

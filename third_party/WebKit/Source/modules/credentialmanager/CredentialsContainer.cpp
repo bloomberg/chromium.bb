@@ -44,12 +44,12 @@ public:
     explicit NotificationCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
     virtual ~NotificationCallbacks() { }
 
-    virtual void onSuccess() OVERRIDE
+    virtual void onSuccess() override
     {
         m_resolver->resolve();
     }
 
-    virtual void onError(WebCredentialManagerError* reason) OVERRIDE
+    virtual void onError(WebCredentialManagerError* reason) override
     {
         rejectDueToCredentialManagerError(m_resolver, reason);
     }
@@ -64,7 +64,7 @@ public:
     explicit RequestCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
     virtual ~RequestCallbacks() { }
 
-    virtual void onSuccess(WebCredential* credential) OVERRIDE
+    virtual void onSuccess(WebCredential* credential) override
     {
         if (!credential) {
             m_resolver->resolve();
@@ -78,7 +78,7 @@ public:
             m_resolver->resolve(FederatedCredential::create(static_cast<WebFederatedCredential*>(credential)));
     }
 
-    virtual void onError(WebCredentialManagerError* reason) OVERRIDE
+    virtual void onError(WebCredentialManagerError* reason) override
     {
         rejectDueToCredentialManagerError(m_resolver, reason);
     }

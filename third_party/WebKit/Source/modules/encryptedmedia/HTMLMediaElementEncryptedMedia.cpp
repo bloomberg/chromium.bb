@@ -74,7 +74,7 @@ typedef Function<void(ExceptionCode, const String&)> FailureCallback;
 
 // Represents the result used when setContentDecryptionModule() is called.
 // Calls |success| if result is resolved, |failure| is result is rejected.
-class SetContentDecryptionModuleResult FINAL : public ContentDecryptionModuleResult {
+class SetContentDecryptionModuleResult final : public ContentDecryptionModuleResult {
 public:
     SetContentDecryptionModuleResult(SuccessCallback success, FailureCallback failure)
         : m_successCallback(success)
@@ -83,18 +83,18 @@ public:
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() OVERRIDE
+    virtual void complete() override
     {
         m_successCallback();
     }
 
-    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status) OVERRIDE
+    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status) override
     {
         ASSERT_NOT_REACHED();
         m_failureCallback(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) OVERRIDE
+    virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) override
     {
         m_failureCallback(WebCdmExceptionToExceptionCode(code), message);
     }

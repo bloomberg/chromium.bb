@@ -40,7 +40,7 @@ namespace blink {
 class SourceBuffer;
 class GenericEventQueue;
 
-class SourceBufferList FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBufferList>, public EventTargetWithInlineData {
+class SourceBufferList final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBufferList>, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBufferList>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
@@ -62,10 +62,10 @@ public:
     void clear();
 
     // EventTarget interface
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     SourceBufferList(ExecutionContext*, GenericEventQueue*);

@@ -19,7 +19,7 @@ class FrameView;
 class ScreenOrientation;
 class WebScreenOrientationClient;
 
-class ScreenOrientationController FINAL
+class ScreenOrientationController final
     : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>
     , public WillBeHeapSupplement<LocalFrame>
     , public FrameDestructionObserver
@@ -39,18 +39,18 @@ public:
     static ScreenOrientationController* from(LocalFrame&);
     static const char* supplementName();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
     static WebScreenOrientationType computeOrientation(FrameView*);
 
     // Inherited from PlatformEventController.
-    virtual void didUpdateData() OVERRIDE;
-    virtual void registerWithDispatcher() OVERRIDE;
-    virtual void unregisterWithDispatcher() OVERRIDE;
-    virtual bool hasLastData() OVERRIDE;
-    virtual void pageVisibilityChanged() OVERRIDE;
+    virtual void didUpdateData() override;
+    virtual void registerWithDispatcher() override;
+    virtual void unregisterWithDispatcher() override;
+    virtual bool hasLastData() override;
+    virtual void pageVisibilityChanged() override;
 
     void notifyDispatcher();
 

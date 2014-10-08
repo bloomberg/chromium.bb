@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class WebSocketExtensionDeflateFrame FINAL : public WebSocketExtensionProcessor {
+class WebSocketExtensionDeflateFrame final : public WebSocketExtensionProcessor {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<WebSocketExtensionDeflateFrame> create(WebSocketDeflateFramer* framer)
@@ -47,9 +47,9 @@ public:
     }
     virtual ~WebSocketExtensionDeflateFrame() { }
 
-    virtual String handshakeString() OVERRIDE;
-    virtual bool processResponse(const HashMap<String, String>&) OVERRIDE;
-    virtual String failureReason() OVERRIDE { return m_failureReason; }
+    virtual String handshakeString() override;
+    virtual bool processResponse(const HashMap<String, String>&) override;
+    virtual String failureReason() override { return m_failureReason; }
 
 private:
     WebSocketExtensionDeflateFrame(WebSocketDeflateFramer*);

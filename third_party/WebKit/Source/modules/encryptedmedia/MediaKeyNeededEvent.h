@@ -38,7 +38,7 @@ struct MediaKeyNeededEventInit : public EventInit {
     RefPtr<Uint8Array> initData;
 };
 
-class MediaKeyNeededEvent FINAL : public Event {
+class MediaKeyNeededEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MediaKeyNeededEvent();
@@ -53,12 +53,12 @@ public:
         return adoptRefWillBeNoop(new MediaKeyNeededEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     String contentType() const { return m_contentType; }
     Uint8Array* initData() const { return m_initData.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaKeyNeededEvent();

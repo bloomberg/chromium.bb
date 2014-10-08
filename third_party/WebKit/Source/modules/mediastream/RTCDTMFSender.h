@@ -38,7 +38,7 @@ class MediaStreamTrack;
 class WebRTCDTMFSenderHandler;
 class WebRTCPeerConnectionHandler;
 
-class RTCDTMFSender FINAL
+class RTCDTMFSender final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDTMFSender>
     , public EventTargetWithInlineData
     , public WebRTCDTMFSenderHandlerClient
@@ -63,13 +63,13 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<WebRTCDTMFSenderHandler>);
@@ -78,7 +78,7 @@ private:
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
     // WebRTCDTMFSenderHandlerClient
-    virtual void didPlayTone(const WebString&) OVERRIDE;
+    virtual void didPlayTone(const WebString&) override;
 
     Member<MediaStreamTrack> m_track;
     long m_duration;

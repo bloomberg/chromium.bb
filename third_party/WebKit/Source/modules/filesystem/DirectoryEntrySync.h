@@ -41,21 +41,21 @@ class ExceptionState;
 class FileEntrySync;
 class FileSystemFlags;
 
-class DirectoryEntrySync FINAL : public EntrySync {
+class DirectoryEntrySync final : public EntrySync {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
         return new DirectoryEntrySync(fileSystem, fullPath);
     }
-    virtual bool isDirectory() const OVERRIDE { return true; }
+    virtual bool isDirectory() const override { return true; }
 
     DirectoryReaderSync* createReader();
     FileEntrySync* getFile(const String& path, const FileSystemFlags&, ExceptionState&);
     DirectoryEntrySync* getDirectory(const String& path, const FileSystemFlags&, ExceptionState&);
     void removeRecursively(ExceptionState&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     DirectoryEntrySync(DOMFileSystemBase*, const String& fullPath);

@@ -15,7 +15,7 @@ class Dictionary;
 class ScriptPromise;
 class ScriptState;
 
-class CredentialsContainer FINAL : public GarbageCollected<CredentialsContainer>, public ScriptWrappable {
+class CredentialsContainer final : public GarbageCollected<CredentialsContainer>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static CredentialsContainer* create();

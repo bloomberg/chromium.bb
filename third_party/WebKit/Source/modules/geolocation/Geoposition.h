@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class Geoposition FINAL : public GarbageCollected<Geoposition>, public ScriptWrappable {
+class Geoposition final : public GarbageCollected<Geoposition>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Geoposition* create(Coordinates* coordinates, DOMTimeStamp timestamp)

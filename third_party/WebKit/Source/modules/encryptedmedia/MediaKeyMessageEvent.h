@@ -40,7 +40,7 @@ struct MediaKeyMessageEventInit : public EventInit {
     String destinationURL;
 };
 
-class MediaKeyMessageEvent FINAL : public Event {
+class MediaKeyMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MediaKeyMessageEvent();
@@ -55,12 +55,12 @@ public:
         return adoptRefWillBeNoop(new MediaKeyMessageEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     ArrayBuffer* message() const { return m_message.get(); }
     String destinationURL() const { return m_destinationURL; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaKeyMessageEvent();

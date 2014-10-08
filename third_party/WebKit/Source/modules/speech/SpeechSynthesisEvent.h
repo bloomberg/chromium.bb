@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class SpeechSynthesisEvent FINAL : public Event {
+class SpeechSynthesisEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> create();
@@ -40,9 +40,9 @@ public:
     float elapsedTime() const { return m_elapsedTime; }
     const String& name() const { return m_name; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::SpeechSynthesisEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::SpeechSynthesisEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         Event::trace(visitor);
     }

@@ -18,7 +18,7 @@ struct PushEventInit : public EventInit {
     String data;
 };
 
-class PushEvent FINAL : public Event {
+class PushEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PushEvent> create()
@@ -36,7 +36,7 @@ public:
 
     virtual ~PushEvent();
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     String data() const { return m_data; }
 

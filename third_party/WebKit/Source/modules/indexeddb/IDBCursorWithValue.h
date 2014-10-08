@@ -38,7 +38,7 @@ class IDBAny;
 class IDBRequest;
 class IDBTransaction;
 
-class IDBCursorWithValue FINAL : public IDBCursor {
+class IDBCursorWithValue final : public IDBCursor {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBCursorWithValue* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
@@ -47,8 +47,8 @@ public:
     // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
     // its IDL). This is to make the implementation more simple while matching what the spec says.
 
-    virtual bool isKeyCursor() const OVERRIDE { return false; }
-    virtual bool isCursorWithValue() const OVERRIDE { return true; }
+    virtual bool isKeyCursor() const override { return false; }
+    virtual bool isCursorWithValue() const override { return true; }
 
 private:
     IDBCursorWithValue(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);

@@ -49,7 +49,7 @@ class GeolocationError;
 class GeolocationPosition;
 class ExecutionContext;
 
-class Geolocation FINAL
+class Geolocation final
     : public GarbageCollectedFinalized<Geolocation>
     , public ScriptWrappable
     , public ActiveDOMObject {
@@ -59,7 +59,7 @@ public:
     virtual ~Geolocation();
     void trace(Visitor*);
 
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
     Document* document() const;
     LocalFrame* frame() const;
 

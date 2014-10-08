@@ -32,7 +32,7 @@ namespace blink {
 
 class MediaStreamTrack;
 
-class MediaStreamTrackEvent FINAL : public Event {
+class MediaStreamTrackEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MediaStreamTrackEvent();
@@ -43,9 +43,9 @@ public:
     MediaStreamTrack* track() const;
 
     // Event
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaStreamTrackEvent();

@@ -40,7 +40,7 @@ class DatabaseThread;
 class ExecutionContext;
 class SecurityOrigin;
 
-class DatabaseContext FINAL
+class DatabaseContext final
     : public GarbageCollectedFinalized<DatabaseContext>
     , public ActiveDOMObject {
 public:
@@ -52,8 +52,8 @@ public:
     void trace(Visitor*);
 
     // For life-cycle management (inherited from ActiveDOMObject):
-    virtual void contextDestroyed() OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual void contextDestroyed() override;
+    virtual void stop() override;
 
     DatabaseContext* backend();
     DatabaseThread* databaseThread();

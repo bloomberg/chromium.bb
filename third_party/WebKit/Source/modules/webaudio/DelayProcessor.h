@@ -34,13 +34,13 @@ namespace blink {
 
 class AudioDSPKernel;
 
-class DelayProcessor FINAL : public AudioDSPKernelProcessor {
+class DelayProcessor final : public AudioDSPKernelProcessor {
 public:
     DelayProcessor(AudioContext*, float sampleRate, unsigned numberOfChannels, double maxDelayTime);
     virtual ~DelayProcessor();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual PassOwnPtr<AudioDSPKernel> createKernel() OVERRIDE;
+    virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 
     AudioParam* delayTime() const { return m_delayTime.get(); }
 

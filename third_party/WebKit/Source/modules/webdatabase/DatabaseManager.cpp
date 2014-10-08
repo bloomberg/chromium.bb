@@ -63,19 +63,19 @@ DatabaseManager::~DatabaseManager()
 {
 }
 
-class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
+class DatabaseCreationCallbackTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<DatabaseCreationCallbackTask> create(Database* database, DatabaseCallback* creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE
+    virtual void performTask(ExecutionContext*) override
     {
         m_creationCallback->handleEvent(m_database.get());
     }
 
-    virtual String taskNameForInstrumentation() const OVERRIDE
+    virtual String taskNameForInstrumentation() const override
     {
         return "openDatabase";
     }

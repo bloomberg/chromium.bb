@@ -33,7 +33,7 @@ namespace blink {
 
 class DeviceOrientationData;
 
-class DeviceOrientationEvent FINAL : public Event {
+class DeviceOrientationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DeviceOrientationEvent();
@@ -55,9 +55,9 @@ public:
     double gamma(bool& isNull) const;
     bool absolute(bool& isNull) const;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     DeviceOrientationEvent();

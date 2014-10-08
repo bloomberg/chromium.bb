@@ -21,7 +21,7 @@ class ExceptionState;
 class ExecutionContext;
 class KURL;
 
-class NavigatorBeacon FINAL : public NoBaseWillBeGarbageCollected<NavigatorBeacon>, public WillBeHeapSupplement<Navigator> {
+class NavigatorBeacon final : public NoBaseWillBeGarbageCollected<NavigatorBeacon>, public WillBeHeapSupplement<Navigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
 public:
     static NavigatorBeacon& from(Navigator&);

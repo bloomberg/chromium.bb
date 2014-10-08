@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class Presentation FINAL
+class Presentation final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Presentation>
     , public EventTargetWithInlineData
     , public ContextLifecycleObserver {
@@ -21,10 +21,10 @@ public:
     virtual ~Presentation();
 
     // EventTarget implementation.
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(availablechange);
 

@@ -13,7 +13,7 @@ class ExecutionContext;
 class NetworkInformation;
 class WorkerNavigator;
 
-class WorkerNavigatorNetworkInformation FINAL
+class WorkerNavigatorNetworkInformation final
     : public NoBaseWillBeGarbageCollectedFinalized<WorkerNavigatorNetworkInformation>
     , public WillBeHeapSupplement<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
@@ -26,7 +26,7 @@ public:
 
     static NetworkInformation* connection(ExecutionContext*, WorkerNavigator&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);

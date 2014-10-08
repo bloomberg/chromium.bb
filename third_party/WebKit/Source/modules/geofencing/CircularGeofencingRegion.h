@@ -12,7 +12,7 @@ namespace blink {
 
 class Dictionary;
 
-class CircularGeofencingRegion FINAL : public GeofencingRegion {
+class CircularGeofencingRegion final : public GeofencingRegion {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CircularGeofencingRegion);
 public:
@@ -26,9 +26,9 @@ public:
 
     WebCircularGeofencingRegion webRegion() const;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { GeofencingRegion::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { GeofencingRegion::trace(visitor); }
 
-    virtual bool isCircularGeofencingRegion() const OVERRIDE { return true; }
+    virtual bool isCircularGeofencingRegion() const override { return true; }
 
 private:
     explicit CircularGeofencingRegion(const String& id, const WebCircularGeofencingRegion&);

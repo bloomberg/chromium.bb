@@ -105,19 +105,19 @@ void DatabaseTracker::addOpenDatabase(Database* database)
     databaseSet->add(database);
 }
 
-class NotifyDatabaseObserverOnCloseTask FINAL : public ExecutionContextTask {
+class NotifyDatabaseObserverOnCloseTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(Database* database)
     {
         return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
     }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE
+    virtual void performTask(ExecutionContext*) override
     {
         databaseClosed(m_database.get());
     }
 
-    virtual bool isCleanupTask() const OVERRIDE
+    virtual bool isCleanupTask() const override
     {
         return true;
     }
@@ -198,14 +198,14 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* databa
 }
 
 // FIXME: This can be removed by createCrossThreadTask().
-class DatabaseTracker::CloseOneDatabaseImmediatelyTask FINAL : public ExecutionContextTask {
+class DatabaseTracker::CloseOneDatabaseImmediatelyTask final : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, Database* database)
     {
         return adoptPtr(new CloseOneDatabaseImmediatelyTask(originIdentifier, name, database));
     }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE
+    virtual void performTask(ExecutionContext*) override
     {
         DatabaseTracker::tracker().closeOneDatabaseImmediately(m_originIdentifier, m_name, m_database);
     }

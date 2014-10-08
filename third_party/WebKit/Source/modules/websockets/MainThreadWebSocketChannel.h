@@ -56,7 +56,7 @@ class SocketStreamHandle;
 class SocketStreamError;
 class WebSocketChannelClient;
 
-class MainThreadWebSocketChannel FINAL : public WebSocketChannel, public SocketStreamHandleClient, public FileReaderLoaderClient {
+class MainThreadWebSocketChannel final : public WebSocketChannel, public SocketStreamHandleClient, public FileReaderLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MainThreadWebSocketChannel);
 public:
     // You can specify the source file and the line number information
@@ -70,34 +70,34 @@ public:
     virtual ~MainThreadWebSocketChannel();
 
     // WebSocketChannel functions.
-    virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
-    virtual void send(const String& message) OVERRIDE;
-    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual void send(PassRefPtr<BlobDataHandle>) OVERRIDE;
-    virtual void send(PassOwnPtr<Vector<char> > data) OVERRIDE;
+    virtual bool connect(const KURL&, const String& protocol) override;
+    virtual void send(const String& message) override;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    virtual void send(PassRefPtr<BlobDataHandle>) override;
+    virtual void send(PassOwnPtr<Vector<char> > data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
-    virtual void close(int code, const String& reason) OVERRIDE;
-    virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) OVERRIDE;
-    virtual void disconnect() OVERRIDE;
+    virtual void close(int code, const String& reason) override;
+    virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
+    virtual void disconnect() override;
 
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
+    virtual void suspend() override;
+    virtual void resume() override;
 
     // SocketStreamHandleClient functions.
-    virtual void didOpenSocketStream(SocketStreamHandle*) OVERRIDE;
-    virtual void didCloseSocketStream(SocketStreamHandle*) OVERRIDE;
-    virtual void didReceiveSocketStreamData(SocketStreamHandle*, const char*, int) OVERRIDE;
-    virtual void didConsumeBufferedAmount(SocketStreamHandle*, size_t consumed) OVERRIDE;
-    virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) OVERRIDE;
+    virtual void didOpenSocketStream(SocketStreamHandle*) override;
+    virtual void didCloseSocketStream(SocketStreamHandle*) override;
+    virtual void didReceiveSocketStreamData(SocketStreamHandle*, const char*, int) override;
+    virtual void didConsumeBufferedAmount(SocketStreamHandle*, size_t consumed) override;
+    virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) override;
 
     // FileReaderLoaderClient functions.
-    virtual void didStartLoading() OVERRIDE;
-    virtual void didReceiveData() OVERRIDE;
-    virtual void didFinishLoading() OVERRIDE;
-    virtual void didFail(FileError::ErrorCode) OVERRIDE;
+    virtual void didStartLoading() override;
+    virtual void didReceiveData() override;
+    virtual void didFinishLoading() override;
+    virtual void didFail(FileError::ErrorCode) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned);

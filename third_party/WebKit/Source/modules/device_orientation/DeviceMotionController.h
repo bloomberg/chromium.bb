@@ -13,7 +13,7 @@ namespace blink {
 class DeviceMotionData;
 class Event;
 
-class DeviceMotionController FINAL : public DeviceSingleWindowEventController, public DocumentSupplement {
+class DeviceMotionController final : public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 public:
     virtual ~DeviceMotionController();
@@ -21,20 +21,20 @@ public:
     static const char* supplementName();
     static DeviceMotionController& from(Document&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit DeviceMotionController(Document&);
 
     // Inherited from DeviceEventControllerBase.
-    virtual void registerWithDispatcher() OVERRIDE;
-    virtual void unregisterWithDispatcher() OVERRIDE;
-    virtual bool hasLastData() OVERRIDE;
+    virtual void registerWithDispatcher() override;
+    virtual void unregisterWithDispatcher() override;
+    virtual bool hasLastData() override;
 
     // Inherited from DeviceSingleWindowEventController.
-    virtual PassRefPtrWillBeRawPtr<Event> lastEvent() const OVERRIDE;
-    virtual const AtomicString& eventTypeName() const OVERRIDE;
-    virtual bool isNullEvent(Event*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Event> lastEvent() const override;
+    virtual const AtomicString& eventTypeName() const override;
+    virtual bool isNullEvent(Event*) const override;
 };
 
 } // namespace blink

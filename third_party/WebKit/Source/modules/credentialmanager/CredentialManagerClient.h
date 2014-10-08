@@ -19,7 +19,7 @@ class WebURL;
 
 // CredentialManagerClient lives as a supplement to Page, and wraps the embedder-provided
 // WebCredentialManagerClient's methods to make them visible to the bindings code.
-class CredentialManagerClient FINAL : public NoBaseWillBeGarbageCollectedFinalized<CredentialManagerClient>, public WillBeHeapSupplement<Page> {
+class CredentialManagerClient final : public NoBaseWillBeGarbageCollectedFinalized<CredentialManagerClient>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CredentialManagerClient);
 public:
     explicit CredentialManagerClient(WebCredentialManagerClient*);

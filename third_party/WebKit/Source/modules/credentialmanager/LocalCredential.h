@@ -15,7 +15,7 @@ namespace blink {
 
 class WebLocalCredential;
 
-class LocalCredential FINAL : public Credential {
+class LocalCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static LocalCredential* create(WebLocalCredential*);

@@ -67,7 +67,7 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
     requestCallback->sendSuccess(nullptr, nullptr, errorObject.release());
 }
 
-class StatementCallback FINAL : public SQLStatementCallback {
+class StatementCallback final : public SQLStatementCallback {
 public:
     static StatementCallback* create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -82,7 +82,7 @@ public:
         SQLStatementCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLTransaction*, SQLResultSet* resultSet) OVERRIDE
+    virtual bool handleEvent(SQLTransaction*, SQLResultSet* resultSet) override
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
@@ -111,7 +111,7 @@ private:
     RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
-class StatementErrorCallback FINAL : public SQLStatementErrorCallback {
+class StatementErrorCallback final : public SQLStatementErrorCallback {
 public:
     static StatementErrorCallback* create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -120,13 +120,13 @@ public:
 
     virtual ~StatementErrorCallback() { }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_requestCallback);
         SQLStatementErrorCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLTransaction*, SQLError* error) OVERRIDE
+    virtual bool handleEvent(SQLTransaction*, SQLError* error) override
     {
         reportTransactionFailed(m_requestCallback.get(), error);
         return true;
@@ -138,7 +138,7 @@ private:
     RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionCallback FINAL : public SQLTransactionCallback {
+class TransactionCallback final : public SQLTransactionCallback {
 public:
     static TransactionCallback* create(const String& sqlStatement, PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -147,13 +147,13 @@ public:
 
     virtual ~TransactionCallback() { }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_requestCallback);
         SQLTransactionCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLTransaction* transaction) OVERRIDE
+    virtual bool handleEvent(SQLTransaction* transaction) override
     {
         if (!m_requestCallback->isActive())
             return true;
@@ -172,7 +172,7 @@ private:
     RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionErrorCallback FINAL : public SQLTransactionErrorCallback {
+class TransactionErrorCallback final : public SQLTransactionErrorCallback {
 public:
     static TransactionErrorCallback* create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -181,13 +181,13 @@ public:
 
     virtual ~TransactionErrorCallback() { }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_requestCallback);
         SQLTransactionErrorCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLError* error) OVERRIDE
+    virtual bool handleEvent(SQLError* error) override
     {
         reportTransactionFailed(m_requestCallback.get(), error);
         return true;
@@ -198,7 +198,7 @@ private:
     RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionSuccessCallback FINAL : public VoidCallback {
+class TransactionSuccessCallback final : public VoidCallback {
 public:
     static TransactionSuccessCallback* create()
     {
@@ -207,7 +207,7 @@ public:
 
     virtual ~TransactionSuccessCallback() { }
 
-    virtual void handleEvent() OVERRIDE { }
+    virtual void handleEvent() override { }
 
 private:
     TransactionSuccessCallback() { }

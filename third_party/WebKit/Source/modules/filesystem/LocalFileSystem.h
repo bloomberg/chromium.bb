@@ -46,7 +46,7 @@ class KURL;
 class LocalFrame;
 class WebFileSystem;
 
-class LocalFileSystem FINAL : public NoBaseWillBeGarbageCollectedFinalized<LocalFileSystem>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
+class LocalFileSystem final : public NoBaseWillBeGarbageCollectedFinalized<LocalFileSystem>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
@@ -62,7 +62,7 @@ public:
     static const char* supplementName();
     static LocalFileSystem* from(ExecutionContext&);
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         WillBeHeapSupplement<LocalFrame>::trace(visitor);
         WillBeHeapSupplement<WorkerClients>::trace(visitor);

@@ -52,7 +52,7 @@ class ThreadableWebSocketChannelSyncHelper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 
-class WorkerThreadableWebSocketChannel FINAL : public WebSocketChannel {
+class WorkerThreadableWebSocketChannel final : public WebSocketChannel {
     WTF_MAKE_NONCOPYABLE(WorkerThreadableWebSocketChannel);
 public:
     static WebSocketChannel* create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
@@ -62,25 +62,25 @@ public:
     virtual ~WorkerThreadableWebSocketChannel();
 
     // WebSocketChannel functions.
-    virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
-    virtual void send(const String& message) OVERRIDE;
-    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual void send(PassRefPtr<BlobDataHandle>) OVERRIDE;
-    virtual void send(PassOwnPtr<Vector<char> >) OVERRIDE
+    virtual bool connect(const KURL&, const String& protocol) override;
+    virtual void send(const String& message) override;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    virtual void send(PassRefPtr<BlobDataHandle>) override;
+    virtual void send(PassOwnPtr<Vector<char> >) override
     {
         ASSERT_NOT_REACHED();
     }
-    virtual void close(int code, const String& reason) OVERRIDE;
-    virtual void fail(const String& reason, MessageLevel, const String&, unsigned) OVERRIDE;
-    virtual void disconnect() OVERRIDE; // Will suppress didClose().
-    virtual void suspend() OVERRIDE { }
-    virtual void resume() OVERRIDE { }
+    virtual void close(int code, const String& reason) override;
+    virtual void fail(const String& reason, MessageLevel, const String&, unsigned) override;
+    virtual void disconnect() override; // Will suppress didClose().
+    virtual void suspend() override { }
+    virtual void resume() override { }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     class Bridge;
     // Allocated in the worker thread, but used in the main thread.
-    class Peer FINAL : public GarbageCollectedFinalized<Peer>, public WebSocketChannelClient {
+    class Peer final : public GarbageCollectedFinalized<Peer>, public WebSocketChannelClient {
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
@@ -103,16 +103,16 @@ public:
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
         void disconnect();
 
-        virtual void trace(Visitor*) OVERRIDE;
+        virtual void trace(Visitor*) override;
 
         // WebSocketChannelClient functions.
-        virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
-        virtual void didReceiveTextMessage(const String& payload) OVERRIDE;
-        virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) OVERRIDE;
-        virtual void didConsumeBufferedAmount(unsigned long) OVERRIDE;
-        virtual void didStartClosingHandshake() OVERRIDE;
-        virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
-        virtual void didError() OVERRIDE;
+        virtual void didConnect(const String& subprotocol, const String& extensions) override;
+        virtual void didReceiveTextMessage(const String& payload) override;
+        virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
+        virtual void didConsumeBufferedAmount(unsigned long) override;
+        virtual void didStartClosingHandshake() override;
+        virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
+        virtual void didError() override;
 
     private:
         void initializeInternal(ExecutionContext*, const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
@@ -124,7 +124,7 @@ public:
     };
 
     // Bridge for Peer. Running on the worker thread.
-    class Bridge FINAL : public GarbageCollectedFinalized<Bridge> {
+    class Bridge final : public GarbageCollectedFinalized<Bridge> {
         WTF_MAKE_NONCOPYABLE(Bridge);
     public:
         Bridge(WebSocketChannelClient*, WorkerGlobalScope&);

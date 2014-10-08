@@ -42,7 +42,7 @@ class MediaStreamTrack;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class SpeechRecognition FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechRecognition>, public ActiveDOMObject, public EventTargetWithInlineData {
+class SpeechRecognition final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechRecognition>, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechRecognition>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
@@ -84,12 +84,12 @@ public:
     void didEnd();
 
     // EventTarget.
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject.
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart);
@@ -103,7 +103,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SpeechRecognition(ExecutionContext*);

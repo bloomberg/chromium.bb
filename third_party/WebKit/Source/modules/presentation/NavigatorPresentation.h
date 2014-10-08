@@ -13,7 +13,7 @@ namespace blink {
 class Navigator;
 class Presentation;
 
-class NavigatorPresentation FINAL
+class NavigatorPresentation final
     : public NoBaseWillBeGarbageCollectedFinalized<NavigatorPresentation>
     , public WillBeHeapSupplement<Navigator>
     , public DOMWindowProperty {
@@ -24,7 +24,7 @@ public:
     static NavigatorPresentation& from(Navigator&);
     static Presentation* presentation(Navigator&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     static const char* supplementName();

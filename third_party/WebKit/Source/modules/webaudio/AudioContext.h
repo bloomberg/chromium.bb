@@ -82,14 +82,14 @@ public:
 
     virtual ~AudioContext();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     bool isInitialized() const { return m_isInitialized; }
     bool isOfflineContext() { return m_isOfflineContext; }
 
     // Document notification
-    virtual void stop() OVERRIDE FINAL;
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() override final;
+    virtual bool hasPendingActivity() const override;
 
     AudioDestinationNode* destination() { return m_destinationNode.get(); }
     size_t currentSampleFrame() const { return m_destinationNode->currentSampleFrame(); }
@@ -220,8 +220,8 @@ public:
     void disposeOutputs(AudioNode&);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE FINAL;
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
+    virtual const AtomicString& interfaceName() const override final;
+    virtual ExecutionContext* executionContext() const override final;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
 

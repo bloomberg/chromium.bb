@@ -36,15 +36,15 @@ class MediaStreamTrackSourcesCallback;
 class WebSourceInfo;
 template<typename T> class WebVector;
 
-class MediaStreamTrackSourcesRequestImpl FINAL : public MediaStreamTrackSourcesRequest {
+class MediaStreamTrackSourcesRequestImpl final : public MediaStreamTrackSourcesRequest {
 public:
     static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, MediaStreamTrackSourcesCallback*);
     ~MediaStreamTrackSourcesRequestImpl();
 
-    virtual String origin() OVERRIDE;
-    virtual void requestSucceeded(const WebVector<WebSourceInfo>&) OVERRIDE;
+    virtual String origin() override;
+    virtual void requestSucceeded(const WebVector<WebSourceInfo>&) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MediaStreamTrackSourcesRequestImpl(ExecutionContext&, MediaStreamTrackSourcesCallback*);

@@ -43,7 +43,7 @@ namespace blink {
 // A cone effect will attenuate the gain as the orientation moves away from the listener.
 // All of these effects follow the OpenAL specification very closely.
 
-class PannerNode FINAL : public AudioNode {
+class PannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // These enums are used to distinguish what cached values of panner are dirty.
@@ -61,11 +61,11 @@ public:
     virtual ~PannerNode();
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
-    virtual void pullInputs(size_t framesToProcess) OVERRIDE;
-    virtual void initialize() OVERRIDE;
-    virtual void uninitialize() OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
+    virtual void pullInputs(size_t framesToProcess) override;
+    virtual void initialize() override;
+    virtual void uninitialize() override;
 
     // Panning model
     String panningModel() const;
@@ -104,13 +104,13 @@ public:
     // It must be called on audio thread, currently called only process() in AudioBufferSourceNode.
     double dopplerRate();
 
-    virtual double tailTime() const OVERRIDE { return m_panner ? m_panner->tailTime() : 0; }
-    virtual double latencyTime() const OVERRIDE { return m_panner ? m_panner->latencyTime() : 0; }
+    virtual double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
+    virtual double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
 
-    virtual void setChannelCount(unsigned long, ExceptionState&) FINAL;
-    virtual void setChannelCountMode(const String&, ExceptionState&) FINAL;
+    virtual void setChannelCount(unsigned long, ExceptionState&) final;
+    virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     PannerNode(AudioContext*, float sampleRate);

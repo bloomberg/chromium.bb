@@ -14,7 +14,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class NetworkInformation FINAL
+class NetworkInformation final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<NetworkInformation>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
@@ -28,18 +28,18 @@ public:
 
     String type() const;
 
-    virtual void connectionTypeChange(WebConnectionType) OVERRIDE;
+    virtual void connectionTypeChange(WebConnectionType) override;
 
     // EventTarget overrides.
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
-    virtual void removeAllEventListeners() OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
+    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    virtual void removeAllEventListeners() override;
 
     // ActiveDOMObject overrides.
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange);
 

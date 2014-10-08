@@ -40,7 +40,7 @@ class PeriodicWave;
 
 // OscillatorNode is an audio generator of periodic waveforms.
 
-class OscillatorNode FINAL : public AudioScheduledSourceNode {
+class OscillatorNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // The waveform type.
@@ -58,8 +58,8 @@ public:
     virtual ~OscillatorNode();
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
 
     String type() const;
 
@@ -70,7 +70,7 @@ public:
 
     void setPeriodicWave(PeriodicWave*);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     OscillatorNode(AudioContext*, float sampleRate);
@@ -80,7 +80,7 @@ private:
     // Returns true if there are sample-accurate timeline parameter changes.
     bool calculateSampleAccuratePhaseIncrements(size_t framesToProcess);
 
-    virtual bool propagatesSilence() const OVERRIDE;
+    virtual bool propagatesSilence() const override;
 
     // One of the waveform types defined in the enum.
     unsigned short m_type;

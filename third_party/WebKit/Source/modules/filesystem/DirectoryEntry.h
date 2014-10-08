@@ -44,21 +44,21 @@ class ErrorCallback;
 class FileSystemFlags;
 class VoidCallback;
 
-class DirectoryEntry FINAL : public Entry {
+class DirectoryEntry final : public Entry {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
         return new DirectoryEntry(fileSystem, fullPath);
     }
-    virtual bool isDirectory() const OVERRIDE { return true; }
+    virtual bool isDirectory() const override { return true; }
 
     DirectoryReader* createReader();
     void getFile(const String& path, const FileSystemFlags&, EntryCallback* = nullptr, ErrorCallback* = nullptr);
     void getDirectory(const String& path, const FileSystemFlags&, EntryCallback* = nullptr, ErrorCallback* = nullptr);
     void removeRecursively(VoidCallback* successCallback = nullptr, ErrorCallback* = nullptr) const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     DirectoryEntry(DOMFileSystemBase*, const String& fullPath);

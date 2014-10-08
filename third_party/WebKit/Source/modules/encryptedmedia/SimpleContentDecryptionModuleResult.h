@@ -29,9 +29,9 @@ public:
     virtual ~SimpleContentDecryptionModuleResult();
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() OVERRIDE;
-    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) OVERRIDE;
-    virtual void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) OVERRIDE;
+    virtual void complete() override;
+    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) override;
+    virtual void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) override;
 
     // It is only valid to call this before completion.
     ScriptPromise promise();

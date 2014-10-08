@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class NavigatorUserMediaError FINAL : public GarbageCollectedFinalized<NavigatorUserMediaError>, public ScriptWrappable {
+class NavigatorUserMediaError final : public GarbageCollectedFinalized<NavigatorUserMediaError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Name {

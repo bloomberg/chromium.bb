@@ -18,14 +18,14 @@ class ScriptPromiseResolver;
 // LockOrientationCallback is an implementation of WebLockOrientationCallback
 // that will resolve the underlying promise depending on the result passed to
 // the callback.
-class LockOrientationCallback FINAL : public WebLockOrientationCallback {
+class LockOrientationCallback final : public WebLockOrientationCallback {
     WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 public:
     explicit LockOrientationCallback(PassRefPtr<ScriptPromiseResolver>);
     virtual ~LockOrientationCallback();
 
-    virtual void onSuccess() OVERRIDE;
-    virtual void onError(WebLockOrientationError) OVERRIDE;
+    virtual void onSuccess() override;
+    virtual void onError(WebLockOrientationError) override;
 
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;

@@ -42,7 +42,7 @@ namespace blink {
 
 class AudioNodeOutput;
 
-class AudioParam FINAL : public AudioSummingJunction, public ScriptWrappable {
+class AudioParam final : public AudioSummingJunction, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static const double DefaultSmoothingConstant;
@@ -54,7 +54,7 @@ public:
     }
 
     // AudioSummingJunction
-    virtual void didUpdate() OVERRIDE { }
+    virtual void didUpdate() override { }
 
     // Intrinsic value.
     float value();

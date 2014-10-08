@@ -36,7 +36,7 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
-class IDBKeyRange FINAL : public GarbageCollected<IDBKeyRange>, public ScriptWrappable {
+class IDBKeyRange final : public GarbageCollected<IDBKeyRange>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum LowerBoundType {

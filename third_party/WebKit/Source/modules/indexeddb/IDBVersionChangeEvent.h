@@ -46,7 +46,7 @@ struct IDBVersionChangeEventInit : public EventInit {
     String dataLoss;
 };
 
-class IDBVersionChangeEvent FINAL : public Event {
+class IDBVersionChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create()
@@ -68,9 +68,9 @@ public:
     const AtomicString& dataLoss() const;
     const String& dataLossMessage() const { return m_dataLossMessage; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     IDBVersionChangeEvent();

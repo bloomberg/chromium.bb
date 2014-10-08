@@ -101,28 +101,28 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
 
     // EventTarget functions.
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject functions.
-    virtual void contextDestroyed() OVERRIDE;
+    virtual void contextDestroyed() override;
     // Prevent this instance from being collected while it's not in CLOSED
     // state.
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void suspend() override;
+    virtual void resume() override;
+    virtual void stop() override;
 
     // WebSocketChannelClient functions.
-    virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
-    virtual void didReceiveTextMessage(const String& message) OVERRIDE;
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) OVERRIDE;
-    virtual void didError() OVERRIDE;
-    virtual void didConsumeBufferedAmount(unsigned long) OVERRIDE;
-    virtual void didStartClosingHandshake() OVERRIDE;
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
+    virtual void didConnect(const String& subprotocol, const String& extensions) override;
+    virtual void didReceiveTextMessage(const String& message) override;
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
+    virtual void didError() override;
+    virtual void didConsumeBufferedAmount(unsigned long) override;
+    virtual void didStartClosingHandshake() override;
+    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     static bool isValidSubprotocolString(const String&);
 
@@ -131,7 +131,7 @@ protected:
 
 private:
     // FIXME: This should inherit blink::EventQueue.
-    class EventQueue FINAL : public GarbageCollectedFinalized<EventQueue> {
+    class EventQueue final : public GarbageCollectedFinalized<EventQueue> {
     public:
         static EventQueue* create(EventTarget* target)
         {

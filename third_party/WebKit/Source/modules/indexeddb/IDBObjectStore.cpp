@@ -334,14 +334,14 @@ namespace {
 // the objectStore. It only needs to be kept alive by virtue of being
 // a listener on an IDBRequest object, in the same way that JavaScript
 // cursor success handlers are kept alive.
-class IndexPopulator FINAL : public EventListener {
+class IndexPopulator final : public EventListener {
 public:
     static PassRefPtr<IndexPopulator> create(ScriptState* scriptState, IDBDatabase* database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
     {
         return adoptRef(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
 
-    virtual bool operator==(const EventListener& other) OVERRIDE
+    virtual bool operator==(const EventListener& other) override
     {
         return this == &other;
     }
@@ -357,7 +357,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext* executionContext, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext* executionContext, Event* event) override
     {
         ASSERT(m_scriptState->executionContext() == executionContext);
         ASSERT(event->type() == EventTypeNames::success);

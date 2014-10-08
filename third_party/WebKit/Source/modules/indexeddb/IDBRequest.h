@@ -63,7 +63,7 @@ class IDBRequest
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     ScriptState* scriptState() { return m_scriptState.get(); }
     ScriptValue result(ExceptionState&);
@@ -110,16 +110,16 @@ public:
     virtual void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) { ASSERT_NOT_REACHED(); }
 
     // ActiveDOMObject
-    virtual bool hasPendingActivity() const OVERRIDE FINAL;
-    virtual void stop() OVERRIDE FINAL;
+    virtual bool hasPendingActivity() const override final;
+    virtual void stop() override final;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
-    virtual void uncaughtExceptionInEventHandler() OVERRIDE FINAL;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override final;
+    virtual void uncaughtExceptionInEventHandler() override final;
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     // Called by a version change transaction that has finished to set this
     // request back from DONE (following "upgradeneeded") back to PENDING (for

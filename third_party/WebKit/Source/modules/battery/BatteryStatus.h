@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class BatteryStatus FINAL : public GarbageCollected<BatteryStatus> {
+class BatteryStatus final : public GarbageCollected<BatteryStatus> {
 public:
     static BatteryStatus* create();
     static BatteryStatus* create(bool charging, double chargingTime, double dischargingTime, double level);

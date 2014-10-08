@@ -32,10 +32,10 @@ namespace blink {
 
 class WebDeviceMotionData;
 
-class DeviceMotionData FINAL : public GarbageCollected<DeviceMotionData> {
+class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
 public:
 
-    class Acceleration FINAL : public GarbageCollected<DeviceMotionData::Acceleration> {
+    class Acceleration final : public GarbageCollected<DeviceMotionData::Acceleration> {
     public:
         static Acceleration* create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
         void trace(Visitor*) { }
@@ -60,7 +60,7 @@ public:
         bool m_canProvideZ;
     };
 
-    class RotationRate FINAL : public GarbageCollected<DeviceMotionData::RotationRate> {
+    class RotationRate final : public GarbageCollected<DeviceMotionData::RotationRate> {
     public:
         static RotationRate* create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
         void trace(Visitor*) { }

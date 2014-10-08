@@ -34,7 +34,7 @@ namespace blink {
 class MediaDevicesRequest;
 class UserMediaRequest;
 
-class UserMediaController FINAL : public NoBaseWillBeGarbageCollected<UserMediaController>, public WillBeHeapSupplement<LocalFrame> {
+class UserMediaController final : public NoBaseWillBeGarbageCollected<UserMediaController>, public WillBeHeapSupplement<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController);
 public:
@@ -53,7 +53,7 @@ public:
     static const char* supplementName();
     static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
 
 protected:
     explicit UserMediaController(UserMediaClient*);

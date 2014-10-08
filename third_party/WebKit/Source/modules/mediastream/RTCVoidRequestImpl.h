@@ -41,19 +41,19 @@ class RTCErrorCallback;
 class RTCPeerConnection;
 class VoidCallback;
 
-class RTCVoidRequestImpl FINAL : public RTCVoidRequest, public ActiveDOMObject {
+class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
 public:
     static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);
     virtual ~RTCVoidRequestImpl();
 
     // RTCVoidRequest
-    virtual void requestSucceeded() OVERRIDE;
-    virtual void requestFailed(const String& error) OVERRIDE;
+    virtual void requestSucceeded() override;
+    virtual void requestFailed(const String& error) override;
 
     // ActiveDOMObject
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);

@@ -35,7 +35,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class SpeechGrammar FINAL : public GarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
+class SpeechGrammar final : public GarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SpeechGrammar* create(); // FIXME: The spec is not clear on what the constructor should look like.

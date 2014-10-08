@@ -53,7 +53,7 @@ public:
 
     MOCK_METHOD2(didConnect, void(const String&, const String&));
     MOCK_METHOD1(didReceiveTextMessage, void(const String&));
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload) OVERRIDE
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload) override
     {
         didReceiveBinaryMessageMock(*payload);
     }
@@ -63,7 +63,7 @@ public:
     MOCK_METHOD0(didStartClosingHandshake, void());
     MOCK_METHOD3(didClose, void(ClosingHandshakeCompletionStatus, unsigned short, const String&));
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         WebSocketChannelClient::trace(visitor);
     }

@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class StorageInfo FINAL : public GarbageCollected<StorageInfo>, public ScriptWrappable {
+class StorageInfo final : public GarbageCollected<StorageInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static StorageInfo* create(unsigned long long usage, unsigned long long quota)

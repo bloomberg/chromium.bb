@@ -47,7 +47,7 @@ class SQLTransactionErrorCallback;
 class SQLValue;
 class VoidCallback;
 
-class SQLTransaction FINAL
+class SQLTransaction final
     : public GarbageCollectedFinalized<SQLTransaction>
     , public SQLTransactionStateMachine<SQLTransaction>
     , public ScriptWrappable {
@@ -82,7 +82,7 @@ private:
     void clearCallbacks();
 
     // State Machine functions:
-    virtual StateFunction stateFunctionFor(SQLTransactionState) OVERRIDE;
+    virtual StateFunction stateFunctionFor(SQLTransactionState) override;
     bool computeNextStateAndCleanupIfNeeded();
 
     // State functions:

@@ -55,16 +55,16 @@ public:
     int numberOfPendingPermissionRequests() const;
 
     // GeolocationClient
-    virtual void startUpdating() OVERRIDE;
-    virtual void stopUpdating() OVERRIDE;
-    virtual void setEnableHighAccuracy(bool) OVERRIDE;
-    virtual GeolocationPosition* lastPosition() OVERRIDE;
-    virtual void requestPermission(Geolocation*) OVERRIDE;
-    virtual void cancelPermissionRequest(Geolocation*) OVERRIDE;
-    void controllerForTestAdded(GeolocationController*) OVERRIDE;
-    void controllerForTestRemoved(GeolocationController*) OVERRIDE;
+    virtual void startUpdating() override;
+    virtual void stopUpdating() override;
+    virtual void setEnableHighAccuracy(bool) override;
+    virtual GeolocationPosition* lastPosition() override;
+    virtual void requestPermission(Geolocation*) override;
+    virtual void cancelPermissionRequest(Geolocation*) override;
+    void controllerForTestAdded(GeolocationController*) override;
+    void controllerForTestRemoved(GeolocationController*) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     void asyncUpdateController();

@@ -58,7 +58,7 @@ class WebSocketHandshakeRequestInfo;
 class WebSocketHandshakeResponseInfo;
 
 // This class may replace MainThreadWebSocketChannel.
-class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
+class NewWebSocketChannelImpl final : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
@@ -72,21 +72,21 @@ public:
     virtual ~NewWebSocketChannelImpl();
 
     // WebSocketChannel functions.
-    virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
-    virtual void send(const String& message) OVERRIDE;
-    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual void send(PassRefPtr<BlobDataHandle>) OVERRIDE;
-    virtual void send(PassOwnPtr<Vector<char> > data) OVERRIDE;
+    virtual bool connect(const KURL&, const String& protocol) override;
+    virtual void send(const String& message) override;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    virtual void send(PassRefPtr<BlobDataHandle>) override;
+    virtual void send(PassOwnPtr<Vector<char> > data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
-    virtual void close(int code, const String& reason) OVERRIDE;
-    virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) OVERRIDE;
-    virtual void disconnect() OVERRIDE;
+    virtual void close(int code, const String& reason) override;
+    virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
+    virtual void disconnect() override;
 
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
+    virtual void suspend() override;
+    virtual void resume() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     enum MessageType {
@@ -130,21 +130,21 @@ private:
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
-    virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) OVERRIDE;
-    virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) OVERRIDE;
-    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) OVERRIDE;
-    virtual void didFail(WebSocketHandle*, const WebString& message) OVERRIDE;
-    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
-    virtual void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) OVERRIDE;
-    virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) OVERRIDE;
-    virtual void didStartClosingHandshake(WebSocketHandle*) OVERRIDE;
+    virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) override;
+    virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) override;
+    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) override;
+    virtual void didFail(WebSocketHandle*, const WebString& message) override;
+    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) override;
+    virtual void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) override;
+    virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
+    virtual void didStartClosingHandshake(WebSocketHandle*) override;
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
     void didFailLoadingBlob(FileError::ErrorCode);
 
     // LifecycleObserver functions.
-    virtual void contextDestroyed() OVERRIDE
+    virtual void contextDestroyed() override
     {
         // In oilpan we cannot assume this channel's finalizer has been called
         // before the document it is observing is dead and finalized since there

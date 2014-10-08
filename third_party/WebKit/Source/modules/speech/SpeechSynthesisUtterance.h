@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class SpeechSynthesisUtterance FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class SpeechSynthesisUtterance final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesisUtterance>);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
@@ -72,17 +72,17 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const override;
 
     PlatformSpeechSynthesisUtterance* platformUtterance() const { return m_platformUtterance; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     SpeechSynthesisUtterance(ExecutionContext*, const String&);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
     Member<SpeechSynthesisVoice> m_voice;

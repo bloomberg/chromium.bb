@@ -28,8 +28,8 @@ private:
     ScreenOrientationDispatcher();
 
     // Inherited from PlatformEventDispatcher.
-    virtual void startListening() OVERRIDE;
-    virtual void stopListening() OVERRIDE;
+    virtual void startListening() override;
+    virtual void stopListening() override;
 };
 
 } // namespace blink

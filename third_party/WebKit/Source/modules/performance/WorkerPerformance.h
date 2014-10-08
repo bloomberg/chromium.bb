@@ -41,7 +41,7 @@ namespace blink {
 class ExecutionContext;
 class MemoryInfo;
 
-class WorkerPerformance FINAL : public GarbageCollected<WorkerPerformance>, public ScriptWrappable {
+class WorkerPerformance final : public GarbageCollected<WorkerPerformance>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static WorkerPerformance* create()

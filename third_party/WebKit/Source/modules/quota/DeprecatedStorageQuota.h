@@ -42,7 +42,7 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageQuota FINAL : public GarbageCollected<DeprecatedStorageQuota>, public ScriptWrappable {
+class DeprecatedStorageQuota final : public GarbageCollected<DeprecatedStorageQuota>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Type {

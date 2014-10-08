@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class DeprecatedStorageQuotaCallbacksImpl FINAL : public StorageQuotaCallbacks {
+class DeprecatedStorageQuotaCallbacksImpl final : public StorageQuotaCallbacks {
 public:
     static PassOwnPtrWillBeRawPtr<DeprecatedStorageQuotaCallbacksImpl> create(StorageUsageCallback* success, StorageErrorCallback* error)
     {
@@ -54,11 +54,11 @@ public:
     }
 
     virtual ~DeprecatedStorageQuotaCallbacksImpl();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
-    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
-    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) OVERRIDE;
-    virtual void didFail(WebStorageQuotaError) OVERRIDE;
+    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) override;
+    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) override;
+    virtual void didFail(WebStorageQuotaError) override;
 
 private:
     DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback*, StorageErrorCallback*);

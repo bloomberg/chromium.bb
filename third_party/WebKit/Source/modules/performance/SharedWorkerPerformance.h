@@ -38,7 +38,7 @@ namespace blink {
 class ExecutionContext;
 class SharedWorker;
 
-class SharedWorkerPerformance FINAL : public NoBaseWillBeGarbageCollected<SharedWorkerPerformance>, public WillBeHeapSupplement<SharedWorker> {
+class SharedWorkerPerformance final : public NoBaseWillBeGarbageCollected<SharedWorkerPerformance>, public WillBeHeapSupplement<SharedWorker> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerPerformance);
 public:
     static SharedWorkerPerformance& from(SharedWorker&);
@@ -46,7 +46,7 @@ public:
     static double workerStart(ExecutionContext*, SharedWorker&);
     double getWorkerStart(ExecutionContext*, SharedWorker&) const;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<SharedWorker>::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<SharedWorker>::trace(visitor); }
 
 private:
     SharedWorkerPerformance();

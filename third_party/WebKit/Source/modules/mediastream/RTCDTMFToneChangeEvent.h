@@ -35,7 +35,7 @@ struct RTCDTMFToneChangeEventInit : public EventInit {
     String tone;
 };
 
-class RTCDTMFToneChangeEvent FINAL : public Event {
+class RTCDTMFToneChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~RTCDTMFToneChangeEvent();
@@ -46,9 +46,9 @@ public:
 
     const String& tone() const;
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     RTCDTMFToneChangeEvent();

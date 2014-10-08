@@ -116,11 +116,11 @@ public:
         EXPECT_TRUE(m_closeCalled);
     }
 
-    virtual void close() OVERRIDE
+    virtual void close() override
     {
         m_closeCalled = true;
     }
-    virtual void abort(long long transactionId) OVERRIDE { }
+    virtual void abort(long long transactionId) override { }
 
 private:
     MockWebIDBDatabase()

@@ -48,14 +48,14 @@ public:
     virtual void trace(Visitor*) { }
     virtual void handleEvent(DOMError*) = 0;
 
-    class CallbackTask FINAL : public ExecutionContextTask {
+    class CallbackTask final : public ExecutionContextTask {
     public:
         static PassOwnPtr<CallbackTask> create(StorageErrorCallback* callback, ExceptionCode ec)
         {
             return adoptPtr(new CallbackTask(callback, ec));
         }
 
-        virtual void performTask(ExecutionContext*) OVERRIDE;
+        virtual void performTask(ExecutionContext*) override;
 
     private:
         CallbackTask(StorageErrorCallback*, ExceptionCode);

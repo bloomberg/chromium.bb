@@ -43,7 +43,7 @@ class FileEntrySync;
 class FileWriterSync;
 class ExceptionState;
 
-class DOMFileSystemSync FINAL : public DOMFileSystemBase, public ScriptWrappable {
+class DOMFileSystemSync final : public DOMFileSystemBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMFileSystemSync* create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
@@ -55,7 +55,7 @@ public:
 
     virtual ~DOMFileSystemSync();
 
-    virtual void reportError(ErrorCallback*, FileError*) OVERRIDE;
+    virtual void reportError(ErrorCallback*, FileError*) override;
 
     DirectoryEntrySync* root();
 

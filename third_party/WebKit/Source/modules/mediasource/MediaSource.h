@@ -47,7 +47,7 @@ class ExceptionState;
 class GenericEventQueue;
 class WebSourceBuffer;
 
-class MediaSource FINAL
+class MediaSource final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaSource>
     , public HTMLMediaSource
     , public ActiveDOMObject
@@ -75,27 +75,27 @@ public:
     static bool isTypeSupported(const String& type);
 
     // HTMLMediaSource
-    virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
-    virtual void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) OVERRIDE;
-    virtual void close() OVERRIDE;
-    virtual bool isClosed() const OVERRIDE;
-    virtual double duration() const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<TimeRanges> buffered() const OVERRIDE;
+    virtual bool attachToElement(HTMLMediaElement*) override;
+    virtual void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) override;
+    virtual void close() override;
+    virtual bool isClosed() const override;
+    virtual double duration() const override;
+    virtual PassRefPtrWillBeRawPtr<TimeRanges> buffered() const override;
 #if !ENABLE(OILPAN)
-    virtual void refHTMLMediaSource() OVERRIDE { ref(); }
-    virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
+    virtual void refHTMLMediaSource() override { ref(); }
+    virtual void derefHTMLMediaSource() override { deref(); }
 #endif
 
     // EventTarget interface
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject interface
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
     // URLRegistrable interface
-    virtual URLRegistry& registry() const OVERRIDE;
+    virtual URLRegistry& registry() const override;
 
     // Used by SourceBuffer.
     void openIfInEndedState();

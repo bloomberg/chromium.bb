@@ -15,7 +15,7 @@ class Page;
 
 typedef String ErrorString;
 
-class DeviceOrientationInspectorAgent FINAL : public InspectorBaseAgent<DeviceOrientationInspectorAgent>, public InspectorBackendDispatcher::DeviceOrientationCommandHandler {
+class DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent>, public InspectorBackendDispatcher::DeviceOrientationCommandHandler {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
     static void provideTo(Page&);
@@ -23,13 +23,13 @@ public:
     virtual ~DeviceOrientationInspectorAgent();
 
     // Protocol methods.
-    virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) OVERRIDE;
-    virtual void clearDeviceOrientationOverride(ErrorString*) OVERRIDE;
+    virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) override;
+    virtual void clearDeviceOrientationOverride(ErrorString*) override;
 
     // Inspector Controller API.
-    virtual void clearFrontend() OVERRIDE;
-    virtual void restore() OVERRIDE;
-    virtual void didCommitLoadForMainFrame() OVERRIDE;
+    virtual void clearFrontend() override;
+    virtual void restore() override;
+    virtual void didCommitLoadForMainFrame() override;
 
 private:
     explicit DeviceOrientationInspectorAgent(Page&);

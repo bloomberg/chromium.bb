@@ -60,7 +60,7 @@ using blink::WebSocketHandle;
 
 namespace blink {
 
-class NewWebSocketChannelImpl::BlobLoader FINAL : public GarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
+class NewWebSocketChannelImpl::BlobLoader final : public GarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
     virtual ~BlobLoader() { }
@@ -68,10 +68,10 @@ public:
     void cancel();
 
     // FileReaderLoaderClient functions.
-    virtual void didStartLoading() OVERRIDE { }
-    virtual void didReceiveData() OVERRIDE { }
-    virtual void didFinishLoading() OVERRIDE;
-    virtual void didFail(FileError::ErrorCode) OVERRIDE;
+    virtual void didStartLoading() override { }
+    virtual void didReceiveData() override { }
+    virtual void didFinishLoading() override;
+    virtual void didFail(FileError::ErrorCode) override;
 
     void trace(Visitor* visitor)
     {

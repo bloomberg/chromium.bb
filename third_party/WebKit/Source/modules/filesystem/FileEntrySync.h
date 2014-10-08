@@ -41,7 +41,7 @@ class ExceptionState;
 class File;
 class FileWriterSync;
 
-class FileEntrySync FINAL : public EntrySync {
+class FileEntrySync final : public EntrySync {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static FileEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
@@ -49,12 +49,12 @@ public:
         return new FileEntrySync(fileSystem, fullPath);
     }
 
-    virtual bool isFile() const OVERRIDE { return true; }
+    virtual bool isFile() const override { return true; }
 
     File* file(ExceptionState&);
     FileWriterSync* createWriter(ExceptionState&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     FileEntrySync(DOMFileSystemBase*, const String& fullPath);

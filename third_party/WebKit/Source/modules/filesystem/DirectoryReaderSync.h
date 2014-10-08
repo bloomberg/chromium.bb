@@ -66,7 +66,7 @@ public:
         m_errorCode = code;
     }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     class EntriesCallbackHelper;

@@ -30,7 +30,7 @@ class LocalFrame;
 class Geolocation;
 class Navigator;
 
-class NavigatorGeolocation FINAL : public NoBaseWillBeGarbageCollected<NavigatorGeolocation>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorGeolocation final : public NoBaseWillBeGarbageCollected<NavigatorGeolocation>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorGeolocation);
 public:

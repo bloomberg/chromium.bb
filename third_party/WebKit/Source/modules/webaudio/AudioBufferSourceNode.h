@@ -42,7 +42,7 @@ class AudioContext;
 // AudioBufferSourceNode is an AudioNode representing an audio source from an in-memory audio asset represented by an AudioBuffer.
 // It generally will be used for short sounds which require a high degree of scheduling flexibility (can playback in rhythmically perfect ways).
 
-class AudioBufferSourceNode FINAL : public AudioScheduledSourceNode {
+class AudioBufferSourceNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
@@ -50,8 +50,8 @@ public:
     virtual ~AudioBufferSourceNode();
 
     // AudioNode
-    virtual void dispose() OVERRIDE;
-    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void dispose() override;
+    virtual void process(size_t framesToProcess) override;
 
     // setBuffer() is called on the main thread. This is the buffer we use for playback.
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -86,12 +86,12 @@ public:
     void clearPannerNode();
 
     // If we are no longer playing, propogate silence ahead to downstream nodes.
-    virtual bool propagatesSilence() const OVERRIDE;
+    virtual bool propagatesSilence() const override;
 
     // AudioScheduledSourceNode
-    virtual void finish() OVERRIDE;
+    virtual void finish() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);

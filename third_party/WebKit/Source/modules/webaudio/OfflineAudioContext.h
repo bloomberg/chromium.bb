@@ -31,7 +31,7 @@ namespace blink {
 
 class ExceptionState;
 
-class OfflineAudioContext FINAL : public AudioContext {
+class OfflineAudioContext final : public AudioContext {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OfflineAudioContext* create(ExecutionContext*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);

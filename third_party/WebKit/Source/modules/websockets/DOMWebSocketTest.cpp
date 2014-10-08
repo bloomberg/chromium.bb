@@ -63,7 +63,7 @@ public:
     }
 };
 
-class DOMWebSocketWithMockChannel FINAL : public DOMWebSocket {
+class DOMWebSocketWithMockChannel final : public DOMWebSocket {
 public:
     static DOMWebSocketWithMockChannel* create(ExecutionContext* context)
     {
@@ -74,14 +74,14 @@ public:
 
     MockWebSocketChannel* channel() { return m_channel.get(); }
 
-    virtual WebSocketChannel* createChannel(ExecutionContext*, WebSocketChannelClient*) OVERRIDE
+    virtual WebSocketChannel* createChannel(ExecutionContext*, WebSocketChannelClient*) override
     {
         ASSERT(!m_hasCreatedChannel);
         m_hasCreatedChannel = true;
         return m_channel.get();
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_channel);
         DOMWebSocket::trace(visitor);

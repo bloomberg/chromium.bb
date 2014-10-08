@@ -42,15 +42,15 @@ namespace blink {
 class KURL;
 class MediaSource;
 
-class MediaSourceRegistry FINAL : public URLRegistry {
+class MediaSourceRegistry final : public URLRegistry {
 public:
     // Returns a single instance of MediaSourceRegistry.
     static MediaSourceRegistry& registry();
 
     // Registers a blob URL referring to the specified media source.
-    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
-    virtual void unregisterURL(const KURL&) OVERRIDE;
-    virtual URLRegistrable* lookup(const String&) OVERRIDE;
+    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+    virtual void unregisterURL(const KURL&) override;
+    virtual URLRegistrable* lookup(const String&) override;
 
 private:
     MediaSourceRegistry();

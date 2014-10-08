@@ -40,7 +40,7 @@ class DOMFileSystemBase;
 class FileCallback;
 class FileWriterCallback;
 
-class FileEntry FINAL : public Entry {
+class FileEntry final : public Entry {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static FileEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
@@ -51,9 +51,9 @@ public:
     void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
     void file(FileCallback*, ErrorCallback* = nullptr);
 
-    virtual bool isFile() const OVERRIDE { return true; }
+    virtual bool isFile() const override { return true; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     FileEntry(DOMFileSystemBase*, const String& fullPath);

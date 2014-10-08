@@ -46,7 +46,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter FINAL : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebFileWriterClient {
+class FileWriter final : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileWriterBase>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
@@ -67,17 +67,17 @@ public:
     FileError* error() const { return m_error.get(); }
 
     // WebFileWriterClient
-    virtual void didWrite(long long bytes, bool complete) OVERRIDE;
-    virtual void didTruncate() OVERRIDE;
-    virtual void didFail(WebFileError) OVERRIDE;
+    virtual void didWrite(long long bytes, bool complete) override;
+    virtual void didTruncate() override;
+    virtual void didFail(WebFileError) override;
 
     // ActiveDOMObject
-    virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() override;
+    virtual bool hasPendingActivity() const override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual const AtomicString& interfaceName() const override;
+    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
@@ -86,7 +86,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(writeend);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     enum Operation {

@@ -71,25 +71,25 @@ private:
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
 };
 
-class FakeWebIDBDatabase FINAL : public WebIDBDatabase {
+class FakeWebIDBDatabase final : public WebIDBDatabase {
 public:
     static PassOwnPtr<FakeWebIDBDatabase> create() { return adoptPtr(new FakeWebIDBDatabase()); }
 
-    virtual void commit(long long transactionId) OVERRIDE { }
-    virtual void abort(long long transactionId) OVERRIDE { }
-    virtual void close() OVERRIDE { }
+    virtual void commit(long long transactionId) override { }
+    virtual void abort(long long transactionId) override { }
+    virtual void close() override { }
 
 private:
     FakeWebIDBDatabase() { }
 };
 
-class FakeIDBDatabaseCallbacks FINAL : public IDBDatabaseCallbacks {
+class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
 public:
     static FakeIDBDatabaseCallbacks* create() { return new FakeIDBDatabaseCallbacks(); }
-    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) OVERRIDE { }
-    virtual void onForcedClose() OVERRIDE { }
-    virtual void onAbort(int64_t transactionId, DOMError* error) OVERRIDE { }
-    virtual void onComplete(int64_t transactionId) OVERRIDE { }
+    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) override { }
+    virtual void onForcedClose() override { }
+    virtual void onAbort(int64_t transactionId, DOMError* error) override { }
+    virtual void onComplete(int64_t transactionId) override { }
 private:
     FakeIDBDatabaseCallbacks() { }
 };

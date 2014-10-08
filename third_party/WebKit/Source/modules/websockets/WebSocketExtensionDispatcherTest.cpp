@@ -37,15 +37,15 @@ namespace {
 
 class WebSocketExtensionDispatcherTest;
 
-class MockWebSocketExtensionProcessor FINAL : public WebSocketExtensionProcessor {
+class MockWebSocketExtensionProcessor final : public WebSocketExtensionProcessor {
 public:
     MockWebSocketExtensionProcessor(const String& name, WebSocketExtensionDispatcherTest* test)
         : WebSocketExtensionProcessor(name)
         , m_test(test)
     {
     }
-    virtual String handshakeString() OVERRIDE { return extensionToken(); }
-    virtual bool processResponse(const HashMap<String, String>&) OVERRIDE;
+    virtual String handshakeString() override { return extensionToken(); }
+    virtual bool processResponse(const HashMap<String, String>&) override;
 
 private:
     WebSocketExtensionDispatcherTest* m_test;
