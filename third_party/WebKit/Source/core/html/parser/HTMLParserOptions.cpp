@@ -43,12 +43,11 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
     // We force the main-thread parser for three cases:
     // - about:blank and javascript (which uses about:blank) for compatibility
     //   with historical synchronous loading/parsing behavior.
-    // - HTML imports (FIXME: enable off-thread parser for this case)
     // - inspector/DOMPatchSupport replacing the whole document.
     //   (DOMPatchSupport calls in |DocumentParser::pinToMainThread()| for this case)
     // FIXME: Gecko does not load javascript: urls synchronously, why do we?
     // See LayoutTests/loader/iframe-sync-loads.html
-    useThreading = document && !document->importsController() && !document->url().isAboutBlankURL();
+    useThreading = document && !document->url().isAboutBlankURL();
 }
 
 }

@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
-setTimeout(function(){
+window.addEventListener('DOMContentLoaded', function() {
     document.querySelector("link").import.querySelector("p").scrollLeft;
-}, 0);
+});
 </script>
 <p></p>
 <link rel="stylesheet" href="style.css">
