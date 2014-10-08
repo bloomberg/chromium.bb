@@ -3172,18 +3172,10 @@ blink::WebScreenOrientationClient*
   return screen_orientation_dispatcher_;
 }
 
-bool RenderFrameImpl::isControlledByServiceWorker() {
-  // If we're in the middle of committing a load, the data source we need
-  // will still be provisional.
-  DCHECK(frame_);
-  WebDataSource* data_source = NULL;
-  if (frame_->provisionalDataSource())
-    data_source = frame_->provisionalDataSource();
-  else
-    data_source = frame_->dataSource();
+bool RenderFrameImpl::isControlledByServiceWorker(WebDataSource& data_source) {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(data_source));
+          DocumentState::FromDataSource(&data_source));
   return provider->context()->controller_handle_id() !=
       kInvalidServiceWorkerHandleId;
 }

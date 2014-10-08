@@ -452,7 +452,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                    int arb_robustness_status_code);
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
-  virtual bool isControlledByServiceWorker();
+  virtual bool isControlledByServiceWorker(blink::WebDataSource&);
   virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
                                       blink::WebAXEvent event);
   virtual void didChangeManifest(blink::WebLocalFrame*);
