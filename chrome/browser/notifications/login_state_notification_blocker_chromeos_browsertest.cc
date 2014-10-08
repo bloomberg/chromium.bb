@@ -80,8 +80,9 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
+ // Disabled due to flakiness. See: http://crbug.com/421325.
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
-                       BaseTest) {
+                       DISABLED_BaseTest) {
   CreateBlocker();
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-notifier");
