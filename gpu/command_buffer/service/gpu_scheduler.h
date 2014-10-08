@@ -83,11 +83,11 @@ class GPU_EXPORT GpuScheduler
   void SetSchedulingChangedCallback(const SchedulingChangedCallback& callback);
 
   // Implementation of CommandBufferEngine.
-  virtual scoped_refptr<Buffer> GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
-  virtual void set_token(int32 token) OVERRIDE;
-  virtual bool SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
-  virtual bool SetGetOffset(int32 offset) OVERRIDE;
-  virtual int32 GetGetOffset() OVERRIDE;
+  virtual scoped_refptr<Buffer> GetSharedMemoryBuffer(int32 shm_id) override;
+  virtual void set_token(int32 token) override;
+  virtual bool SetGetBuffer(int32 transfer_buffer_id) override;
+  virtual bool SetGetOffset(int32 offset) override;
+  virtual int32 GetGetOffset() override;
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 

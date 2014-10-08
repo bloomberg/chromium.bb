@@ -19,43 +19,43 @@ class ErrorStateImpl : public ErrorState {
   explicit ErrorStateImpl(ErrorStateClient* client, Logger* logger);
   virtual ~ErrorStateImpl();
 
-  virtual uint32 GetGLError() OVERRIDE;
+  virtual uint32 GetGLError() override;
 
   virtual void SetGLError(
       const char* filename,
       int line,
       unsigned int error,
       const char* function_name,
-      const char* msg) OVERRIDE;
+      const char* msg) override;
   virtual void SetGLErrorInvalidEnum(
       const char* filename,
       int line,
       const char* function_name,
       unsigned int value,
-      const char* label) OVERRIDE;
+      const char* label) override;
   virtual void SetGLErrorInvalidParami(
       const char* filename,
       int line,
       unsigned int error,
       const char* function_name,
       unsigned int pname,
-      int param) OVERRIDE;
+      int param) override;
   virtual void SetGLErrorInvalidParamf(
       const char* filename,
       int line,
       unsigned int error,
       const char* function_name,
       unsigned int pname,
-      float param) OVERRIDE;
+      float param) override;
 
   virtual unsigned int PeekGLError(
-      const char* filename, int line, const char* function_name) OVERRIDE;
+      const char* filename, int line, const char* function_name) override;
 
   virtual void CopyRealGLErrorsToWrapper(
-      const char* filename, int line, const char* function_name) OVERRIDE;
+      const char* filename, int line, const char* function_name) override;
 
   virtual void ClearRealGLErrors(
-      const char* filename, int line, const char* function_name) OVERRIDE;
+      const char* filename, int line, const char* function_name) override;
 
  private:
   // The last error message set.

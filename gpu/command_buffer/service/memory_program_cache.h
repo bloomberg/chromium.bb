@@ -33,7 +33,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       Shader* shader_b,
       const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
-      const ShaderCacheCallback& shader_callback) OVERRIDE;
+      const ShaderCacheCallback& shader_callback) override;
   virtual void SaveLinkedProgram(
       GLuint program,
       const Shader* shader_a,
@@ -41,12 +41,12 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       const Shader* shader_b,
       const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
-      const ShaderCacheCallback& shader_callback) OVERRIDE;
+      const ShaderCacheCallback& shader_callback) override;
 
-  virtual void LoadProgram(const std::string& program) OVERRIDE;
+  virtual void LoadProgram(const std::string& program) override;
 
  private:
-  virtual void ClearBackend() OVERRIDE;
+  virtual void ClearBackend() override;
 
   class ProgramCacheValue : public base::RefCounted<ProgramCacheValue> {
    public:

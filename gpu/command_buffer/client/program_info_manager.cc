@@ -19,22 +19,22 @@ class NonCachedProgramInfoManager : public ProgramInfoManager {
   NonCachedProgramInfoManager();
   virtual ~NonCachedProgramInfoManager();
 
-  virtual void CreateInfo(GLuint program) OVERRIDE;
+  virtual void CreateInfo(GLuint program) override;
 
-  virtual void DeleteInfo(GLuint program) OVERRIDE;
+  virtual void DeleteInfo(GLuint program) override;
 
   virtual bool GetProgramiv(GLES2Implementation* gl,
                             GLuint program,
                             GLenum pname,
-                            GLint* params) OVERRIDE;
+                            GLint* params) override;
 
   virtual GLint GetAttribLocation(GLES2Implementation* gl,
                                   GLuint program,
-                                  const char* name) OVERRIDE;
+                                  const char* name) override;
 
   virtual GLint GetUniformLocation(GLES2Implementation* gl,
                                    GLuint program,
-                                   const char* name) OVERRIDE;
+                                   const char* name) override;
 
   virtual bool GetActiveAttrib(GLES2Implementation* gl,
                                GLuint program,
@@ -43,7 +43,7 @@ class NonCachedProgramInfoManager : public ProgramInfoManager {
                                GLsizei* length,
                                GLint* size,
                                GLenum* type,
-                               char* name) OVERRIDE;
+                               char* name) override;
 
   virtual bool GetActiveUniform(GLES2Implementation* gl,
                                 GLuint program,
@@ -52,7 +52,7 @@ class NonCachedProgramInfoManager : public ProgramInfoManager {
                                 GLsizei* length,
                                 GLint* size,
                                 GLenum* type,
-                                char* name) OVERRIDE;
+                                char* name) override;
 
 };
 
@@ -107,22 +107,22 @@ class CachedProgramInfoManager : public ProgramInfoManager {
   CachedProgramInfoManager();
   virtual ~CachedProgramInfoManager();
 
-  virtual void CreateInfo(GLuint program) OVERRIDE;
+  virtual void CreateInfo(GLuint program) override;
 
-  virtual void DeleteInfo(GLuint program) OVERRIDE;
+  virtual void DeleteInfo(GLuint program) override;
 
   virtual bool GetProgramiv(GLES2Implementation* gl,
                             GLuint program,
                             GLenum pname,
-                            GLint* params) OVERRIDE;
+                            GLint* params) override;
 
   virtual GLint GetAttribLocation(GLES2Implementation* gl,
                                   GLuint program,
-                                  const char* name) OVERRIDE;
+                                  const char* name) override;
 
   virtual GLint GetUniformLocation(GLES2Implementation* gl,
                                    GLuint program,
-                                   const char* name) OVERRIDE;
+                                   const char* name) override;
 
   virtual bool GetActiveAttrib(GLES2Implementation* gl,
                                GLuint program,
@@ -131,7 +131,7 @@ class CachedProgramInfoManager : public ProgramInfoManager {
                                GLsizei* length,
                                GLint* size,
                                GLenum* type,
-                               char* name) OVERRIDE;
+                               char* name) override;
 
   virtual bool GetActiveUniform(GLES2Implementation* gl,
                                 GLuint program,
@@ -140,7 +140,7 @@ class CachedProgramInfoManager : public ProgramInfoManager {
                                 GLsizei* length,
                                 GLint* size,
                                 GLenum* type,
-                                char* name) OVERRIDE;
+                                char* name) override;
 
  private:
   class Program {

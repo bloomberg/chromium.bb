@@ -45,23 +45,23 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   virtual ~CommandBufferService();
 
   // CommandBuffer implementation:
-  virtual bool Initialize() OVERRIDE;
-  virtual State GetLastState() OVERRIDE;
-  virtual int32 GetLastToken() OVERRIDE;
-  virtual void Flush(int32 put_offset) OVERRIDE;
-  virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
-  virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual State GetLastState() override;
+  virtual int32 GetLastToken() override;
+  virtual void Flush(int32 put_offset) override;
+  virtual void WaitForTokenInRange(int32 start, int32 end) override;
+  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  virtual void SetGetBuffer(int32 transfer_buffer_id) override;
   virtual scoped_refptr<Buffer> CreateTransferBuffer(size_t size,
-                                                     int32* id) OVERRIDE;
-  virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
+                                                     int32* id) override;
+  virtual void DestroyTransferBuffer(int32 id) override;
 
   // CommandBufferServiceBase implementation:
-  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
-  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) OVERRIDE;
-  virtual void SetToken(int32 token) OVERRIDE;
-  virtual void SetParseError(error::Error error) OVERRIDE;
-  virtual void SetContextLostReason(error::ContextLostReason) OVERRIDE;
+  virtual void SetGetOffset(int32 get_offset) override;
+  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
+  virtual void SetToken(int32 token) override;
+  virtual void SetParseError(error::Error error) override;
+  virtual void SetContextLostReason(error::ContextLostReason) override;
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress

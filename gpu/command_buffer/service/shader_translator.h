@@ -117,7 +117,7 @@ class GPU_EXPORT ShaderTranslator
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
-      ShCompileOptions driver_bug_workarounds) OVERRIDE;
+      ShCompileOptions driver_bug_workarounds) override;
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Translate(const std::string& shader_source,
@@ -126,10 +126,10 @@ class GPU_EXPORT ShaderTranslator
                          VariableMap* attrib_map,
                          VariableMap* uniform_map,
                          VariableMap* varying_map,
-                         NameMap* name_map) const OVERRIDE;
+                         NameMap* name_map) const override;
 
   virtual std::string GetStringForOptionsThatWouldAffectCompilation() const
-      OVERRIDE;
+      override;
 
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);

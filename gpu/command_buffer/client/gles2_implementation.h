@@ -212,23 +212,23 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // this file instead of having to edit some template or the code generator.
   #include "gpu/command_buffer/client/gles2_implementation_autogen.h"
 
-  virtual void DisableVertexAttribArray(GLuint index) OVERRIDE;
-  virtual void EnableVertexAttribArray(GLuint index) OVERRIDE;
+  virtual void DisableVertexAttribArray(GLuint index) override;
+  virtual void EnableVertexAttribArray(GLuint index) override;
   virtual void GetVertexAttribfv(
-      GLuint index, GLenum pname, GLfloat* params) OVERRIDE;
+      GLuint index, GLenum pname, GLfloat* params) override;
   virtual void GetVertexAttribiv(
-      GLuint index, GLenum pname, GLint* params) OVERRIDE;
+      GLuint index, GLenum pname, GLint* params) override;
 
   // ContextSupport implementation.
-  virtual void Swap() OVERRIDE;
-  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
+  virtual void Swap() override;
+  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
   virtual void ScheduleOverlayPlane(int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
-                                    const gfx::RectF& uv_rect) OVERRIDE;
-  virtual GLuint InsertFutureSyncPointCHROMIUM() OVERRIDE;
-  virtual void RetireSyncPointCHROMIUM(GLuint sync_point) OVERRIDE;
+                                    const gfx::RectF& uv_rect) override;
+  virtual GLuint InsertFutureSyncPointCHROMIUM() override;
+  virtual void RetireSyncPointCHROMIUM(GLuint sync_point) override;
 
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
@@ -245,10 +245,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // ContextSupport implementation.
   virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) OVERRIDE;
+                               const base::Closure& callback) override;
   virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) OVERRIDE;
-  virtual void SetSurfaceVisible(bool visible) OVERRIDE;
+                           const base::Closure& callback) override;
+  virtual void SetSurfaceVisible(bool visible) override;
 
   void SetErrorMessageCallback(
       GLES2ImplementationErrorMessageCallback* callback) {

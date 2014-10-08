@@ -1082,7 +1082,7 @@ class GpuControlListEntryDualGPUTest : public GpuControlListEntryTest {
   GpuControlListEntryDualGPUTest() { }
   virtual ~GpuControlListEntryDualGPUTest() { }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Set up a NVIDIA/Intel dual, with NVIDIA as primary and Intel as
     // secondary, and initially Intel is active.
     gpu_info_.gpu.vendor_id = 0x10de;

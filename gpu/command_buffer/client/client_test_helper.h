@@ -28,19 +28,19 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   MockCommandBufferBase();
   virtual ~MockCommandBufferBase();
 
-  virtual bool Initialize() OVERRIDE;
-  virtual State GetLastState() OVERRIDE;
-  virtual int32 GetLastToken() OVERRIDE;
-  virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
-  virtual void SetGetBuffer(int transfer_buffer_id) OVERRIDE;
-  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual State GetLastState() override;
+  virtual int32 GetLastToken() override;
+  virtual void WaitForTokenInRange(int32 start, int32 end) override;
+  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  virtual void SetGetBuffer(int transfer_buffer_id) override;
+  virtual void SetGetOffset(int32 get_offset) override;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                          int32* id) OVERRIDE;
-  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) OVERRIDE;
-  virtual void SetToken(int32 token) OVERRIDE;
-  virtual void SetParseError(error::Error error) OVERRIDE;
-  virtual void SetContextLostReason(error::ContextLostReason reason) OVERRIDE;
+                                                          int32* id) override;
+  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) override;
+  virtual void SetToken(int32 token) override;
+  virtual void SetParseError(error::Error error) override;
+  virtual void SetContextLostReason(error::ContextLostReason reason) override;
 
   // Get's the Id of the next transfer buffer that will be returned
   // by CreateTransferBuffer. This is useful for testing expected ids.
@@ -67,7 +67,7 @@ class MockClientCommandBuffer : public MockCommandBufferBase {
   MOCK_METHOD0(OnFlush, void());
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 id));
 
-  virtual void Flush(int32 put_offset) OVERRIDE;
+  virtual void Flush(int32 put_offset) override;
 
   void DelegateToFake();
 };

@@ -63,17 +63,17 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
       unsigned int min_buffer_size,
       unsigned int max_buffer_size,
       unsigned int alignment,
-      unsigned int size_to_flush) OVERRIDE;
-  virtual int GetShmId() OVERRIDE;
-  virtual void* GetResultBuffer() OVERRIDE;
-  virtual int GetResultOffset() OVERRIDE;
-  virtual void Free() OVERRIDE;
-  virtual bool HaveBuffer() const OVERRIDE;
+      unsigned int size_to_flush) override;
+  virtual int GetShmId() override;
+  virtual void* GetResultBuffer() override;
+  virtual int GetResultOffset() override;
+  virtual void Free() override;
+  virtual bool HaveBuffer() const override;
   virtual void* AllocUpTo(
-      unsigned int size, unsigned int* size_allocated) OVERRIDE;
-  virtual void* Alloc(unsigned int size) OVERRIDE;
-  virtual RingBuffer::Offset GetOffset(void* pointer) const OVERRIDE;
-  virtual void FreePendingToken(void* p, unsigned int token) OVERRIDE;
+      unsigned int size, unsigned int* size_allocated) override;
+  virtual void* Alloc(unsigned int size) override;
+  virtual RingBuffer::Offset GetOffset(void* pointer) const override;
+  virtual void FreePendingToken(void* p, unsigned int token) override;
 
   // These are for testing.
   unsigned int GetCurrentMaxAllocationWithoutRealloc() const;

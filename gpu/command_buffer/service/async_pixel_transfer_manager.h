@@ -94,8 +94,8 @@ class GPU_EXPORT AsyncPixelTransferManager
 
   // gles2::TextureRef::DestructionObserver implementation:
   virtual void OnTextureManagerDestroying(gles2::TextureManager* manager)
-      OVERRIDE;
-  virtual void OnTextureRefDestroying(gles2::TextureRef* texture) OVERRIDE;
+      override;
+  virtual void OnTextureRefDestroying(gles2::TextureRef* texture) override;
 
  protected:
   AsyncPixelTransferManager();

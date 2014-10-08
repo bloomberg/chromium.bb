@@ -2169,12 +2169,12 @@ class CountingMemoryTracker : public MemoryTracker {
 
   virtual void TrackMemoryAllocatedChange(size_t old_size,
                                           size_t new_size,
-                                          Pool pool)  OVERRIDE {
+                                          Pool pool)  override {
     DCHECK_LT(static_cast<size_t>(pool), arraysize(current_size_));
     current_size_[pool] += new_size - old_size;
   }
 
-  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) OVERRIDE {
+  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) override {
     return true;
   }
 

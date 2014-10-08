@@ -19,12 +19,12 @@ class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
   virtual void AsyncTexImage2D(
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
-      const base::Closure& bind_callback) OVERRIDE;
+      const base::Closure& bind_callback) override;
   virtual void AsyncTexSubImage2D(
       const AsyncTexSubImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) OVERRIDE;
-  virtual bool TransferIsInProgress() OVERRIDE;
-  virtual void WaitForTransferCompletion() OVERRIDE;
+      const AsyncMemoryParams& mem_params) override;
+  virtual bool TransferIsInProgress() override;
+  virtual void WaitForTransferCompletion() override;
 
  private:
   // Safe to hold a raw pointer because SharedState is owned by the Manager

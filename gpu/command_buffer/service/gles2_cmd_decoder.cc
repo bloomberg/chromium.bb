@@ -511,7 +511,7 @@ class AsyncUploadTokenCompletionObserver
       : async_upload_token_(async_upload_token) {
   }
 
-  virtual void DidComplete(const AsyncMemoryParams& mem_params) OVERRIDE {
+  virtual void DidComplete(const AsyncMemoryParams& mem_params) override {
     DCHECK(mem_params.buffer().get());
     void* data = mem_params.GetDataAddress();
     AsyncUploadSync* sync = static_cast<AsyncUploadSync*>(data);
@@ -563,12 +563,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Overridden from AsyncAPIInterface.
   virtual Error DoCommand(unsigned int command,
                           unsigned int arg_count,
-                          const void* args) OVERRIDE;
+                          const void* args) override;
 
   virtual error::Error DoCommands(unsigned int num_commands,
                                   const void* buffer,
                                   int num_entries,
-                                  int* entries_processed) OVERRIDE;
+                                  int* entries_processed) override;
 
   template <bool DebugImpl>
   error::Error DoCommandsImpl(unsigned int num_commands,
@@ -577,7 +577,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                               int* entries_processed);
 
   // Overridden from AsyncAPIInterface.
-  virtual const char* GetCommandName(unsigned int command_id) const OVERRIDE;
+  virtual const char* GetCommandName(unsigned int command_id) const override;
 
   // Overridden from GLES2Decoder.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
@@ -585,96 +585,96 @@ class GLES2DecoderImpl : public GLES2Decoder,
                           bool offscreen,
                           const gfx::Size& size,
                           const DisallowedFeatures& disallowed_features,
-                          const std::vector<int32>& attribs) OVERRIDE;
-  virtual void Destroy(bool have_context) OVERRIDE;
+                          const std::vector<int32>& attribs) override;
+  virtual void Destroy(bool have_context) override;
   virtual void SetSurface(
-      const scoped_refptr<gfx::GLSurface>& surface) OVERRIDE;
-  virtual void ProduceFrontBuffer(const Mailbox& mailbox) OVERRIDE;
-  virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) OVERRIDE;
+      const scoped_refptr<gfx::GLSurface>& surface) override;
+  virtual void ProduceFrontBuffer(const Mailbox& mailbox) override;
+  virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) override;
   void UpdateParentTextureInfo();
-  virtual bool MakeCurrent() OVERRIDE;
-  virtual GLES2Util* GetGLES2Util() OVERRIDE { return &util_; }
-  virtual gfx::GLContext* GetGLContext() OVERRIDE { return context_.get(); }
-  virtual ContextGroup* GetContextGroup() OVERRIDE { return group_.get(); }
-  virtual Capabilities GetCapabilities() OVERRIDE;
-  virtual void RestoreState(const ContextState* prev_state) OVERRIDE;
+  virtual bool MakeCurrent() override;
+  virtual GLES2Util* GetGLES2Util() override { return &util_; }
+  virtual gfx::GLContext* GetGLContext() override { return context_.get(); }
+  virtual ContextGroup* GetContextGroup() override { return group_.get(); }
+  virtual Capabilities GetCapabilities() override;
+  virtual void RestoreState(const ContextState* prev_state) override;
 
-  virtual void RestoreActiveTexture() const OVERRIDE {
+  virtual void RestoreActiveTexture() const override {
     state_.RestoreActiveTexture();
   }
   virtual void RestoreAllTextureUnitBindings(
-      const ContextState* prev_state) const OVERRIDE {
+      const ContextState* prev_state) const override {
     state_.RestoreAllTextureUnitBindings(prev_state);
   }
   virtual void RestoreActiveTextureUnitBinding(
-      unsigned int target) const OVERRIDE {
+      unsigned int target) const override {
     state_.RestoreActiveTextureUnitBinding(target);
   }
-  virtual void RestoreBufferBindings() const OVERRIDE {
+  virtual void RestoreBufferBindings() const override {
     state_.RestoreBufferBindings();
   }
-  virtual void RestoreGlobalState() const OVERRIDE {
+  virtual void RestoreGlobalState() const override {
     state_.RestoreGlobalState(NULL);
   }
-  virtual void RestoreProgramBindings() const OVERRIDE {
+  virtual void RestoreProgramBindings() const override {
     state_.RestoreProgramBindings();
   }
-  virtual void RestoreTextureUnitBindings(unsigned unit) const OVERRIDE {
+  virtual void RestoreTextureUnitBindings(unsigned unit) const override {
     state_.RestoreTextureUnitBindings(unit, NULL);
   }
-  virtual void RestoreFramebufferBindings() const OVERRIDE;
-  virtual void RestoreRenderbufferBindings() OVERRIDE;
-  virtual void RestoreTextureState(unsigned service_id) const OVERRIDE;
+  virtual void RestoreFramebufferBindings() const override;
+  virtual void RestoreRenderbufferBindings() override;
+  virtual void RestoreTextureState(unsigned service_id) const override;
 
-  virtual void ClearAllAttributes() const OVERRIDE;
-  virtual void RestoreAllAttributes() const OVERRIDE;
+  virtual void ClearAllAttributes() const override;
+  virtual void RestoreAllAttributes() const override;
 
-  virtual QueryManager* GetQueryManager() OVERRIDE {
+  virtual QueryManager* GetQueryManager() override {
     return query_manager_.get();
   }
-  virtual VertexArrayManager* GetVertexArrayManager() OVERRIDE {
+  virtual VertexArrayManager* GetVertexArrayManager() override {
     return vertex_array_manager_.get();
   }
-  virtual ImageManager* GetImageManager() OVERRIDE {
+  virtual ImageManager* GetImageManager() override {
     return image_manager_.get();
   }
-  virtual bool ProcessPendingQueries() OVERRIDE;
-  virtual bool HasMoreIdleWork() OVERRIDE;
-  virtual void PerformIdleWork() OVERRIDE;
+  virtual bool ProcessPendingQueries() override;
+  virtual bool HasMoreIdleWork() override;
+  virtual void PerformIdleWork() override;
 
-  virtual void WaitForReadPixels(base::Closure callback) OVERRIDE;
+  virtual void WaitForReadPixels(base::Closure callback) override;
 
   virtual void SetResizeCallback(
-      const base::Callback<void(gfx::Size, float)>& callback) OVERRIDE;
+      const base::Callback<void(gfx::Size, float)>& callback) override;
 
-  virtual Logger* GetLogger() OVERRIDE;
+  virtual Logger* GetLogger() override;
 
-  virtual void BeginDecoding() OVERRIDE;
-  virtual void EndDecoding() OVERRIDE;
+  virtual void BeginDecoding() override;
+  virtual void EndDecoding() override;
 
-  virtual ErrorState* GetErrorState() OVERRIDE;
-  virtual const ContextState* GetContextState() OVERRIDE { return &state_; }
+  virtual ErrorState* GetErrorState() override;
+  virtual const ContextState* GetContextState() override { return &state_; }
 
   virtual void SetShaderCacheCallback(
-      const ShaderCacheCallback& callback) OVERRIDE;
+      const ShaderCacheCallback& callback) override;
   virtual void SetWaitSyncPointCallback(
-      const WaitSyncPointCallback& callback) OVERRIDE;
+      const WaitSyncPointCallback& callback) override;
 
   virtual AsyncPixelTransferManager*
-      GetAsyncPixelTransferManager() OVERRIDE;
-  virtual void ResetAsyncPixelTransferManagerForTest() OVERRIDE;
+      GetAsyncPixelTransferManager() override;
+  virtual void ResetAsyncPixelTransferManagerForTest() override;
   virtual void SetAsyncPixelTransferManagerForTest(
-      AsyncPixelTransferManager* manager) OVERRIDE;
-  virtual void SetIgnoreCachedStateForTest(bool ignore) OVERRIDE;
+      AsyncPixelTransferManager* manager) override;
+  virtual void SetIgnoreCachedStateForTest(bool ignore) override;
   void ProcessFinishedAsyncTransfers();
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
-                                   uint32* service_texture_id) OVERRIDE;
+                                   uint32* service_texture_id) override;
 
-  virtual uint32 GetTextureUploadCount() OVERRIDE;
-  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual base::TimeDelta GetTotalProcessingCommandsTime() OVERRIDE;
-  virtual void AddProcessingCommandsTime(base::TimeDelta) OVERRIDE;
+  virtual uint32 GetTextureUploadCount() override;
+  virtual base::TimeDelta GetTotalTextureUploadTime() override;
+  virtual base::TimeDelta GetTotalProcessingCommandsTime() override;
+  virtual void AddProcessingCommandsTime(base::TimeDelta) override;
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -690,14 +690,14 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool BoundFramebufferHasDepthAttachment();
   bool BoundFramebufferHasStencilAttachment();
 
-  virtual error::ContextLostReason GetContextLostReason() OVERRIDE;
+  virtual error::ContextLostReason GetContextLostReason() override;
 
   // Overridden from FramebufferManager::TextureDetachObserver:
   virtual void OnTextureRefDetachedFromFramebuffer(
-      TextureRef* texture) OVERRIDE;
+      TextureRef* texture) override;
 
   // Overriden from ErrorStateClient.
-  virtual void OnOutOfMemoryError() OVERRIDE;
+  virtual void OnOutOfMemoryError() override;
 
   // Ensure Renderbuffer corresponding to last DoBindRenderbuffer() is bound.
   void EnsureRenderbufferBound();
@@ -1164,7 +1164,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                           unsigned type,
                           int width,
                           int height,
-                          bool is_texture_immutable) OVERRIDE;
+                          bool is_texture_immutable) override;
 
   // Restore all GL state that affects clearing.
   void RestoreClearState();
@@ -1567,9 +1567,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
       error::Error* error, GLint* real_location, GLuint* service_id,
       void** result, GLenum* result_type);
 
-  virtual bool WasContextLost() OVERRIDE;
-  virtual bool WasContextLostByRobustnessExtension() OVERRIDE;
-  virtual void LoseContext(uint32 reset_status) OVERRIDE;
+  virtual bool WasContextLost() override;
+  virtual bool WasContextLostByRobustnessExtension() override;
+  virtual void LoseContext(uint32 reset_status) override;
 
 #if defined(OS_MACOSX)
   void ReleaseIOSurfaceForTexture(GLuint texture_id);

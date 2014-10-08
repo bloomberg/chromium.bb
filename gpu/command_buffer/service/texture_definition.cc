@@ -30,20 +30,20 @@ class GLImageSync : public gfx::GLImage {
                        const gfx::Size& size);
 
   // Implement GLImage.
-  virtual void Destroy(bool have_context) OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual bool BindTexImage(unsigned target) OVERRIDE;
-  virtual void ReleaseTexImage(unsigned target) OVERRIDE;
-  virtual bool CopyTexImage(unsigned target) OVERRIDE;
-  virtual void WillUseTexImage() OVERRIDE;
-  virtual void WillModifyTexImage() OVERRIDE;
-  virtual void DidModifyTexImage() OVERRIDE;
-  virtual void DidUseTexImage() OVERRIDE;
+  virtual void Destroy(bool have_context) override;
+  virtual gfx::Size GetSize() override;
+  virtual bool BindTexImage(unsigned target) override;
+  virtual void ReleaseTexImage(unsigned target) override;
+  virtual bool CopyTexImage(unsigned target) override;
+  virtual void WillUseTexImage() override;
+  virtual void WillModifyTexImage() override;
+  virtual void DidModifyTexImage() override;
+  virtual void DidUseTexImage() override;
   virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                     int z_order,
                                     gfx::OverlayTransform transform,
                                     const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) OVERRIDE;
+                                    const gfx::RectF& crop_rect) override;
 
  protected:
   virtual ~GLImageSync();
@@ -124,14 +124,14 @@ class NativeImageBufferEGL : public NativeImageBuffer {
  private:
   NativeImageBufferEGL(EGLDisplay display, EGLImageKHR image);
   virtual ~NativeImageBufferEGL();
-  virtual void AddClient(gfx::GLImage* client) OVERRIDE;
-  virtual void RemoveClient(gfx::GLImage* client) OVERRIDE;
-  virtual bool IsClient(gfx::GLImage* client) OVERRIDE;
-  virtual void BindToTexture(GLenum target) OVERRIDE;
-  virtual void WillRead(gfx::GLImage* client) OVERRIDE;
-  virtual void WillWrite(gfx::GLImage* client) OVERRIDE;
-  virtual void DidRead(gfx::GLImage* client) OVERRIDE;
-  virtual void DidWrite(gfx::GLImage* client) OVERRIDE;
+  virtual void AddClient(gfx::GLImage* client) override;
+  virtual void RemoveClient(gfx::GLImage* client) override;
+  virtual bool IsClient(gfx::GLImage* client) override;
+  virtual void BindToTexture(GLenum target) override;
+  virtual void WillRead(gfx::GLImage* client) override;
+  virtual void WillWrite(gfx::GLImage* client) override;
+  virtual void DidRead(gfx::GLImage* client) override;
+  virtual void DidWrite(gfx::GLImage* client) override;
 
   EGLDisplay egl_display_;
   EGLImageKHR egl_image_;
@@ -307,14 +307,14 @@ class NativeImageBufferStub : public NativeImageBuffer {
 
  private:
   virtual ~NativeImageBufferStub() {}
-  virtual void AddClient(gfx::GLImage* client) OVERRIDE {}
-  virtual void RemoveClient(gfx::GLImage* client) OVERRIDE {}
-  virtual bool IsClient(gfx::GLImage* client) OVERRIDE { return true; }
-  virtual void BindToTexture(GLenum target) OVERRIDE {}
-  virtual void WillRead(gfx::GLImage* client) OVERRIDE {}
-  virtual void WillWrite(gfx::GLImage* client) OVERRIDE {}
-  virtual void DidRead(gfx::GLImage* client) OVERRIDE {}
-  virtual void DidWrite(gfx::GLImage* client) OVERRIDE {}
+  virtual void AddClient(gfx::GLImage* client) override {}
+  virtual void RemoveClient(gfx::GLImage* client) override {}
+  virtual bool IsClient(gfx::GLImage* client) override { return true; }
+  virtual void BindToTexture(GLenum target) override {}
+  virtual void WillRead(gfx::GLImage* client) override {}
+  virtual void WillWrite(gfx::GLImage* client) override {}
+  virtual void DidRead(gfx::GLImage* client) override {}
+  virtual void DidWrite(gfx::GLImage* client) override {}
 
   DISALLOW_COPY_AND_ASSIGN(NativeImageBufferStub);
 };

@@ -19,9 +19,9 @@ class ForwardRenderSimulator : public RenderModelSimulator {
   explicit ForwardRenderSimulator(RenderNode* root,
                                   int window_width,
                                   int window_height);
-  virtual ~ForwardRenderSimulator() OVERRIDE;
-  virtual void Update() OVERRIDE;
-  virtual void Resize(int width, int height) OVERRIDE;
+  virtual ~ForwardRenderSimulator() override;
+  virtual void Update() override;
+  virtual void Resize(int width, int height) override;
 
  private:
   scoped_ptr<ForwardRenderNodeVisitor> visitor_;

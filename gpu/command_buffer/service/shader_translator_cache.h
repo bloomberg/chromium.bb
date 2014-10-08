@@ -29,7 +29,7 @@ class GPU_EXPORT ShaderTranslatorCache
   ShaderTranslatorCache();
 
   // ShaderTranslator::DestructionObserver implementation
-  virtual void OnDestruct(ShaderTranslator* translator) OVERRIDE;
+  virtual void OnDestruct(ShaderTranslator* translator) override;
 
   scoped_refptr<ShaderTranslator> GetTranslator(
       sh::GLenum shader_type,

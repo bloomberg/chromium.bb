@@ -29,8 +29,8 @@ class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
   SharedMemoryBufferBacking(scoped_ptr<base::SharedMemory> shared_memory,
                             size_t size);
   virtual ~SharedMemoryBufferBacking();
-  virtual void* GetMemory() const OVERRIDE;
-  virtual size_t GetSize() const OVERRIDE;
+  virtual void* GetMemory() const override;
+  virtual size_t GetSize() const override;
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
  private:

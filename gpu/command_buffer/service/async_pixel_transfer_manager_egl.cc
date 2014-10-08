@@ -97,7 +97,7 @@ class TransferThread : public base::Thread {
     Stop();
   }
 
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     gfx::GLShareGroup* share_group = NULL;
     surface_ = new gfx::PbufferGLSurfaceEGL(gfx::Size(1, 1));
     surface_->Initialize();
@@ -107,7 +107,7 @@ class TransferThread : public base::Thread {
     DCHECK(is_current);
   }
 
-  virtual void CleanUp() OVERRIDE {
+  virtual void CleanUp() override {
     surface_ = NULL;
     context_->ReleaseCurrent(surface_.get());
     context_ = NULL;
@@ -409,12 +409,12 @@ class AsyncPixelTransferDelegateEGL
   virtual void AsyncTexImage2D(
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
-      const base::Closure& bind_callback) OVERRIDE;
+      const base::Closure& bind_callback) override;
   virtual void AsyncTexSubImage2D(
       const AsyncTexSubImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) OVERRIDE;
-  virtual bool TransferIsInProgress() OVERRIDE;
-  virtual void WaitForTransferCompletion() OVERRIDE;
+      const AsyncMemoryParams& mem_params) override;
+  virtual bool TransferIsInProgress() override;
+  virtual void WaitForTransferCompletion() override;
 
  private:
   // Returns true if a work-around was used.

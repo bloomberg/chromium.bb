@@ -122,17 +122,17 @@ class MockTransferBuffer : public TransferBufferInterface {
       unsigned int /* min_buffer_size */,
       unsigned int /* max_buffer_size */,
       unsigned int alignment,
-      unsigned int size_to_flush) OVERRIDE;
-  virtual int GetShmId() OVERRIDE;
-  virtual void* GetResultBuffer() OVERRIDE;
-  virtual int GetResultOffset() OVERRIDE;
-  virtual void Free() OVERRIDE;
-  virtual bool HaveBuffer() const OVERRIDE;
+      unsigned int size_to_flush) override;
+  virtual int GetShmId() override;
+  virtual void* GetResultBuffer() override;
+  virtual int GetResultOffset() override;
+  virtual void Free() override;
+  virtual bool HaveBuffer() const override;
   virtual void* AllocUpTo(
-      unsigned int size, unsigned int* size_allocated) OVERRIDE;
-  virtual void* Alloc(unsigned int size) OVERRIDE;
-  virtual RingBuffer::Offset GetOffset(void* pointer) const OVERRIDE;
-  virtual void FreePendingToken(void* p, unsigned int /* token */) OVERRIDE;
+      unsigned int size, unsigned int* size_allocated) override;
+  virtual void* Alloc(unsigned int size) override;
+  virtual RingBuffer::Offset GetOffset(void* pointer) const override;
+  virtual void FreePendingToken(void* p, unsigned int /* token */) override;
 
   size_t MaxTransferBufferSize() {
     return size_ - result_size_;
@@ -506,8 +506,8 @@ class GLES2ImplementationTest : public testing::Test {
 
   GLES2ImplementationTest() : commands_(NULL) {}
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   bool NoCommandsWritten() {
     scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
@@ -630,12 +630,12 @@ void GLES2ImplementationTest::TearDown() {
 
 class GLES2ImplementationManualInitTest : public GLES2ImplementationTest {
  protected:
-  virtual void SetUp() OVERRIDE {}
+  virtual void SetUp() override {}
 };
 
 class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   template <class ResApi>
   void FlushGenerationTest() {

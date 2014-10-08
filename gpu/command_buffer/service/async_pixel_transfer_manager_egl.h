@@ -19,15 +19,15 @@ class AsyncPixelTransferManagerEGL : public AsyncPixelTransferManager {
   virtual ~AsyncPixelTransferManagerEGL();
 
   // AsyncPixelTransferManager implementation:
-  virtual void BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void BindCompletedAsyncTransfers() override;
   virtual void AsyncNotifyCompletion(
       const AsyncMemoryParams& mem_params,
-      AsyncPixelTransferCompletionObserver* observer) OVERRIDE;
-  virtual uint32 GetTextureUploadCount() OVERRIDE;
-  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual void ProcessMorePendingTransfers() OVERRIDE;
-  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
-  virtual void WaitAllAsyncTexImage2D() OVERRIDE;
+      AsyncPixelTransferCompletionObserver* observer) override;
+  virtual uint32 GetTextureUploadCount() override;
+  virtual base::TimeDelta GetTotalTextureUploadTime() override;
+  virtual void ProcessMorePendingTransfers() override;
+  virtual bool NeedsProcessMorePendingTransfers() override;
+  virtual void WaitAllAsyncTexImage2D() override;
 
   // State shared between Managers and Delegates.
   struct SharedState {
@@ -46,7 +46,7 @@ class AsyncPixelTransferManagerEGL : public AsyncPixelTransferManager {
   // AsyncPixelTransferManager implementation:
   virtual AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
       gles2::TextureRef* ref,
-      const AsyncTexImage2DParams& define_params) OVERRIDE;
+      const AsyncTexImage2DParams& define_params) override;
 
   SharedState shared_state_;
 

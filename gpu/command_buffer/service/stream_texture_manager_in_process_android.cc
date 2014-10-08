@@ -23,20 +23,20 @@ class GLImageImpl : public gfx::GLImage {
               const base::Closure& release_callback);
 
   // implement gfx::GLImage
-  virtual void Destroy(bool have_context) OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual bool BindTexImage(unsigned target) OVERRIDE;
-  virtual void ReleaseTexImage(unsigned target) OVERRIDE;
-  virtual bool CopyTexImage(unsigned target) OVERRIDE;
-  virtual void WillUseTexImage() OVERRIDE;
-  virtual void DidUseTexImage() OVERRIDE {}
-  virtual void WillModifyTexImage() OVERRIDE {}
-  virtual void DidModifyTexImage() OVERRIDE {}
+  virtual void Destroy(bool have_context) override;
+  virtual gfx::Size GetSize() override;
+  virtual bool BindTexImage(unsigned target) override;
+  virtual void ReleaseTexImage(unsigned target) override;
+  virtual bool CopyTexImage(unsigned target) override;
+  virtual void WillUseTexImage() override;
+  virtual void DidUseTexImage() override {}
+  virtual void WillModifyTexImage() override {}
+  virtual void DidModifyTexImage() override {}
   virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                     int z_order,
                                     gfx::OverlayTransform transform,
                                     const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) OVERRIDE;
+                                    const gfx::RectF& crop_rect) override;
 
  private:
   virtual ~GLImageImpl();

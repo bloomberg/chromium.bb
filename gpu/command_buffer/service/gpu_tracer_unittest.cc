@@ -207,14 +207,14 @@ class BaseGpuTracerTest : public GpuServiceTest {
 
 class GpuARBTimerTracerTest : public BaseGpuTracerTest {
  protected:
-  virtual GpuTracerType GetTracerType() OVERRIDE {
+  virtual GpuTracerType GetTracerType() override {
     return kTracerTypeARBTimer;
   }
 };
 
 class GpuDisjointTimerTracerTest : public BaseGpuTracerTest {
  protected:
-  virtual GpuTracerType GetTracerType() OVERRIDE {
+  virtual GpuTracerType GetTracerType() override {
     return kTracerTypeDisjointTimer;
   }
 };

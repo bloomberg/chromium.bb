@@ -34,9 +34,9 @@ class GPU_EXPORT TransferBufferManager
   bool Initialize();
   virtual bool RegisterTransferBuffer(int32 id,
                                       scoped_ptr<BufferBacking> buffer_backing)
-      OVERRIDE;
-  virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) OVERRIDE;
+      override;
+  virtual void DestroyTransferBuffer(int32 id) override;
+  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
 
  private:
   virtual ~TransferBufferManager();

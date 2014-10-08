@@ -117,7 +117,7 @@ class TraceOutputter : public Outputter {
   static scoped_refptr<TraceOutputter> Create(const std::string& name);
   virtual void Trace(const std::string& name,
                      int64 start_time,
-                     int64 end_time) OVERRIDE;
+                     int64 end_time) override;
 
  protected:
   friend class base::RefCounted<Outputter>;

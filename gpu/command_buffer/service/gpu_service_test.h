@@ -26,8 +26,8 @@ class GpuServiceTest : public testing::Test {
 
  protected:
   void SetUpWithGLVersion(const char* gl_version, const char* gl_extensions);
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
 

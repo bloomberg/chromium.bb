@@ -90,22 +90,22 @@ class GLManager : private GpuControl {
   const gpu::gles2::FeatureInfo::Workarounds& workarounds() const;
 
   // GpuControl implementation.
-  virtual Capabilities GetCapabilities() OVERRIDE;
+  virtual Capabilities GetCapabilities() override;
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
                                                       size_t height,
                                                       unsigned internalformat,
                                                       unsigned usage,
-                                                      int32* id) OVERRIDE;
-  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
-  virtual uint32 InsertFutureSyncPoint() OVERRIDE;
-  virtual void RetireSyncPoint(uint32 sync_point) OVERRIDE;
+                                                      int32* id) override;
+  virtual void DestroyGpuMemoryBuffer(int32 id) override;
+  virtual uint32 InsertSyncPoint() override;
+  virtual uint32 InsertFutureSyncPoint() override;
+  virtual void RetireSyncPoint(uint32 sync_point) override;
   virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) OVERRIDE;
+                               const base::Closure& callback) override;
   virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) OVERRIDE;
-  virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
+                           const base::Closure& callback) override;
+  virtual void SetSurfaceVisible(bool visible) override;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) override;
 
  private:
   void PumpCommands();

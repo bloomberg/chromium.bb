@@ -69,8 +69,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     engine_->ClearSharedMemory();
   }
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {
@@ -557,21 +557,21 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     virtual ~MockCommandBufferEngine();
 
     virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id)
-        OVERRIDE;
+        override;
 
     void ClearSharedMemory() {
       memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    virtual void set_token(int32 token) OVERRIDE;
+    virtual void set_token(int32 token) override;
 
-    virtual bool SetGetBuffer(int32 /* transfer_buffer_id */) OVERRIDE;
-
-    // Overridden from CommandBufferEngine.
-    virtual bool SetGetOffset(int32 offset) OVERRIDE;
+    virtual bool SetGetBuffer(int32 /* transfer_buffer_id */) override;
 
     // Overridden from CommandBufferEngine.
-    virtual int32 GetGetOffset() OVERRIDE;
+    virtual bool SetGetOffset(int32 offset) override;
+
+    // Overridden from CommandBufferEngine.
+    virtual int32 GetGetOffset() override;
 
    private:
     scoped_refptr<gpu::Buffer> valid_buffer_;
@@ -628,8 +628,8 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
 };
 

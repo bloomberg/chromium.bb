@@ -19,7 +19,7 @@ namespace gles2 {
 class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
  public:
   GLES2DecoderTestWithCHROMIUMPathRendering() {}
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InitState init;
     init.gl_version = "opengl es 3.1";
     init.has_alpha = true;

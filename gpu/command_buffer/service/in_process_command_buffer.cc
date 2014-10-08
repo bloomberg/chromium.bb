@@ -62,18 +62,18 @@ class GpuInProcessThread
  public:
   GpuInProcessThread();
 
-  virtual void AddRef() const OVERRIDE {
+  virtual void AddRef() const override {
     base::RefCountedThreadSafe<GpuInProcessThread>::AddRef();
   }
-  virtual void Release() const OVERRIDE {
+  virtual void Release() const override {
     base::RefCountedThreadSafe<GpuInProcessThread>::Release();
   }
 
-  virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
-  virtual void ScheduleIdleWork(const base::Closure& callback) OVERRIDE;
-  virtual bool UseVirtualizedGLContexts() OVERRIDE { return false; }
+  virtual void ScheduleTask(const base::Closure& task) override;
+  virtual void ScheduleIdleWork(const base::Closure& callback) override;
+  virtual bool UseVirtualizedGLContexts() override { return false; }
   virtual scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
-      OVERRIDE;
+      override;
 
  private:
   virtual ~GpuInProcessThread();

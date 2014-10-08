@@ -95,7 +95,7 @@ class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
   virtual ~GPUTestBotConfig();
 
   // This should only be called when no gpu_vendor is added.
-  virtual void AddGPUVendor(uint32 gpu_vendor) OVERRIDE;
+  virtual void AddGPUVendor(uint32 gpu_vendor) override;
 
   // Return false if gpu_info does not have valid vendor_id and device_id.
   bool SetGPUInfo(const GPUInfo& gpu_info);
@@ -103,7 +103,7 @@ class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
   // Check if the bot config is valid, i.e., if it is one valid test-bot
   // environment. For example, if a field is unknown, or if OS is not one
   // fully defined OS, then it's valid.
-  virtual bool IsValid() const OVERRIDE;
+  virtual bool IsValid() const override;
 
   // Check if a bot config matches a test config, i.e., the test config is a
   // superset of the bot config.

@@ -56,16 +56,16 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
         mapped_(false) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() OVERRIDE {
+  virtual void* Map() override {
     mapped_ = true;
     return &bytes_->data().front();
   }
-  virtual void Unmap() OVERRIDE { mapped_ = false; }
-  virtual bool IsMapped() const OVERRIDE { return mapped_; }
-  virtual uint32 GetStride() const OVERRIDE {
+  virtual void Unmap() override { mapped_ = false; }
+  virtual bool IsMapped() const override { return mapped_; }
+  virtual uint32 GetStride() const override {
     return size_.width() * BytesPerPixel(internalformat_);
   }
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE {
+  virtual gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }

@@ -71,7 +71,7 @@ class TransferThread : public base::Thread {
     wait_for_init.Wait();
   }
 
-  virtual void CleanUp() OVERRIDE {
+  virtual void CleanUp() override {
     surface_ = NULL;
     context_ = NULL;
   }
@@ -385,12 +385,12 @@ class AsyncPixelTransferDelegateShareGroup
   virtual void AsyncTexImage2D(
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
-      const base::Closure& bind_callback) OVERRIDE;
+      const base::Closure& bind_callback) override;
   virtual void AsyncTexSubImage2D(
       const AsyncTexSubImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) OVERRIDE;
-  virtual bool TransferIsInProgress() OVERRIDE;
-  virtual void WaitForTransferCompletion() OVERRIDE;
+      const AsyncMemoryParams& mem_params) override;
+  virtual bool TransferIsInProgress() override;
+  virtual void WaitForTransferCompletion() override;
 
  private:
   // A raw pointer is safe because the SharedState is owned by the Manager,
