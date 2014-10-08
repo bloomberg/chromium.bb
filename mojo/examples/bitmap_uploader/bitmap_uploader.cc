@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/view_manager/lib/bitmap_uploader.h"
+#include "mojo/examples/bitmap_uploader/bitmap_uploader.h"
 
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES
@@ -15,6 +15,8 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "mojo/public/c/gles2/gles2.h"
+#include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 #include "mojo/services/public/cpp/surfaces/surfaces_utils.h"
@@ -34,17 +36,23 @@ uint32_t TextureFormat() {
 }
 }
 
-BitmapUploader::BitmapUploader(ViewManagerClientImpl* client,
-                               Id view_id,
-                               SurfacesServicePtr surfaces_service,
-                               GpuPtr gpu_service)
-    : client_(client),
-      view_id_(view_id),
-      surfaces_service_(surfaces_service.Pass()),
-      gpu_service_(gpu_service.Pass()),
+BitmapUploader::BitmapUploader(View* view)
+    : view_(view),
       color_(SK_ColorTRANSPARENT),
       next_resource_id_(1u),
       weak_factory_(this) {
+}
+
+void BitmapUploader::Init(Shell* shell) {
+  ServiceProviderPtr surfaces_service_provider;
+  shell->ConnectToApplication("mojo:mojo_surfaces_service",
+                              GetProxy(&surfaces_service_provider));
+  ConnectToService(surfaces_service_provider.get(), &surfaces_service_);
+  ServiceProviderPtr gpu_service_provider;
+  shell->ConnectToApplication("mojo:mojo_native_viewport_service",
+                              GetProxy(&gpu_service_provider));
+  ConnectToService(gpu_service_provider.get(), &gpu_service_);
+
   surfaces_service_->CreateSurfaceConnection(base::Bind(
       &BitmapUploader::OnSurfaceConnectionCreated, weak_factory_.GetWeakPtr()));
   CommandBufferPtr gles2_client;
@@ -61,12 +69,6 @@ BitmapUploader::~BitmapUploader() {
   MojoGLES2DestroyContext(gles2_context_);
 }
 
-void BitmapUploader::SetSize(const gfx::Size& size) {
-  if (size_ == size)
-    return;
-  size_ = size;
-}
-
 void BitmapUploader::SetColor(SkColor color) {
   if (color_ == color)
     return;
@@ -75,37 +77,36 @@ void BitmapUploader::SetColor(SkColor color) {
     Upload();
 }
 
-void BitmapUploader::SetBitmap(SkBitmap bitmap) {
+void BitmapUploader::SetBitmap(const SkBitmap& bitmap) {
   bitmap_ = bitmap;
   if (surface_)
     Upload();
 }
 
 void BitmapUploader::Upload() {
-  if (size_.width() == 0 || size_.height() == 0) {
-    client_->SetSurfaceId(view_id_, SurfaceId::New());
+  const gfx::Size& size(view_->bounds().size());
+  if (size.IsEmpty()) {
+    view_->SetSurfaceId(SurfaceId::New());
     return;
   }
-  if (!surface_) {  // Can't upload yet, store for later.
-    done_callback_ = done_callback_;
+  if (!surface_)  // Can't upload yet, store for later.
     return;
-  }
-  if (id_.is_null() || size_ != surface_size_) {
+  if (id_.is_null() || size != surface_size_) {
     if (!id_.is_null())
       surface_->DestroySurface(SurfaceId::From(id_));
     id_ = id_allocator_->GenerateId();
-    surface_->CreateSurface(SurfaceId::From(id_), Size::From(size_));
-    client_->SetSurfaceId(view_id_, SurfaceId::From(id_));
-    surface_size_ = size_;
+    surface_->CreateSurface(SurfaceId::From(id_), Size::From(size));
+    view_->SetSurfaceId(SurfaceId::From(id_));
+    surface_size_ = size;
   }
 
-  gfx::Rect bounds(size_);
+  gfx::Rect bounds(size);
   PassPtr pass = CreateDefaultPass(1, bounds);
   FramePtr frame = Frame::New();
   frame->resources.resize(0u);
 
   pass->quads.resize(0u);
-  pass->shared_quad_states.push_back(CreateDefaultSQS(size_));
+  pass->shared_quad_states.push_back(CreateDefaultSQS(size));
 
   MojoGLES2MakeCurrent(gles2_context_);
   if (!bitmap_.isNull()) {

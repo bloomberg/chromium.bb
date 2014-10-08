@@ -5,8 +5,6 @@
 # GYP version: mojo/mojo_services.gypi:mojo_view_manager_lib
 source_set("view_manager") {
   sources = [
-    "lib/bitmap_uploader.cc",
-    "lib/bitmap_uploader.h",
     "lib/view.cc",
     "lib/view_manager_client_factory.cc",
     "lib/view_manager_client_impl.cc",
@@ -26,12 +24,9 @@ source_set("view_manager") {
 
   public_deps = [
     ":common",
-    "//skia",
   ]
   deps = [
     "//base",
-    "//cc/surfaces",
-    "//gpu",
     "//mojo/application",
     "//mojo/public/c/gles2",
     "//mojo/public/cpp/bindings:bindings",
@@ -39,16 +34,10 @@ source_set("view_manager") {
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/geometry",
-    "//mojo/services/public/interfaces/gpu",
     "//mojo/services/public/interfaces/input_events:input_events",
-    "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/surfaces:surface_id",
-    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
-    "//skia",
-    "//ui/events",
-    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 }

@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/examples/bitmap_uploader/bitmap_uploader.h"
 #include "mojo/examples/wm_flow/app/embedder.mojom.h"
 #include "mojo/examples/wm_flow/embedded/embeddee.mojom.h"
 #include "mojo/public/c/system/main.h"
@@ -51,12 +55,15 @@ class WMFlowApp : public mojo::ApplicationDelegate,
                   public mojo::ViewManagerDelegate,
                   public mojo::ViewObserver {
  public:
-  WMFlowApp() : embed_count_(0) {}
-  virtual ~WMFlowApp() {}
+  WMFlowApp() : shell_(nullptr), embed_count_(0) {}
+  virtual ~WMFlowApp() { STLDeleteValues(&uploaders_); }
 
  private:
+  typedef std::map<mojo::View*, mojo::BitmapUploader*> ViewToUploader;
+
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
         new mojo::ViewManagerClientFactory(app->shell(), this));
     view_manager_context_.reset(new mojo::ViewManagerContext(app));
@@ -79,7 +86,10 @@ class WMFlowApp : public mojo::ApplicationDelegate,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) override {
     root->AddObserver(this);
-    root->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
+    mojo::BitmapUploader* uploader = new mojo::BitmapUploader(root);
+    uploaders_[root] = uploader;
+    uploader->Init(shell_);
+    uploader->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
 
     mojo::View* embed = mojo::View::Create(view_manager);
     root->AddChild(embed);
@@ -98,7 +108,9 @@ class WMFlowApp : public mojo::ApplicationDelegate,
                                     base::Unretained(this)));
   }
   virtual void OnViewManagerDisconnected(
-      mojo::ViewManager* view_manager) override {}
+      mojo::ViewManager* view_manager) override {
+    STLDeleteValues(&uploaders_);
+  }
 
   // Overridden from mojo::ViewObserver:
   virtual void OnViewInputEvent(mojo::View* view,
@@ -109,6 +121,10 @@ class WMFlowApp : public mojo::ApplicationDelegate,
     }
   }
   virtual void OnViewDestroyed(mojo::View* view) override {
+    if (uploaders_.find(view) != uploaders_.end()) {
+      delete uploaders_[view];
+      uploaders_.erase(view);
+    }
     --embed_count_;
     view->RemoveObserver(this);
   }
@@ -121,11 +137,13 @@ class WMFlowApp : public mojo::ApplicationDelegate,
     view_manager_context_->Embed("mojo:mojo_wm_flow_app");
   }
 
+  mojo::Shell* shell_;
   int embed_count_;
   scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
   mojo::InterfaceFactoryImpl<EmbedderImpl> embedder_factory_;
   scoped_ptr<mojo::ViewManagerContext> view_manager_context_;
   EmbeddeePtr embeddee_;
+  ViewToUploader uploaders_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowApp);
 };

@@ -12,10 +12,8 @@ shared_library("nesting_app") {
 
   deps = [
     "//base",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//url",
     "//mojo/application",
+    "//mojo/examples/bitmap_uploader",
     "//mojo/examples/window_manager:bindings",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",
@@ -23,5 +21,8 @@ shared_library("nesting_app") {
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/navigation",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//url",
   ]
 }

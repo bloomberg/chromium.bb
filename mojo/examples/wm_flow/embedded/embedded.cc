@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/examples/bitmap_uploader/bitmap_uploader.h"
 #include "mojo/examples/wm_flow/app/embedder.mojom.h"
 #include "mojo/examples/wm_flow/embedded/embeddee.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -41,12 +42,13 @@ class EmbeddeeImpl : public mojo::InterfaceImpl<Embeddee> {
 class WMFlowEmbedded : public mojo::ApplicationDelegate,
                        public mojo::ViewManagerDelegate {
  public:
-  WMFlowEmbedded() {}
+  WMFlowEmbedded() : shell_(nullptr) {}
   virtual ~WMFlowEmbedded() {}
 
  private:
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
         new mojo::ViewManagerClientFactory(app->shell(), this));
   }
@@ -62,7 +64,9 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
       mojo::View* root,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) override {
-    root->SetColor(SK_ColorMAGENTA);
+    bitmap_uploader_.reset(new mojo::BitmapUploader(root));
+    bitmap_uploader_->Init(shell_);
+    bitmap_uploader_->SetColor(SK_ColorMAGENTA);
 
     exported_services->AddService(&embeddee_factory_);
     mojo::ConnectToService(imported_services.get(), &embedder_);
@@ -76,9 +80,11 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
     printf("HelloWorld() ack'ed\n");
   }
 
+  mojo::Shell* shell_;
   scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
   EmbedderPtr embedder_;
   mojo::InterfaceFactoryImpl<EmbeddeeImpl> embeddee_factory_;
+  scoped_ptr<mojo::BitmapUploader> bitmap_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowEmbedded);
 };

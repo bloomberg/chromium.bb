@@ -14,14 +14,10 @@
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
-
-class SkBitmap;
 
 namespace mojo {
 
-class BitmapUploader;
 class ServiceProviderImpl;
 class View;
 class ViewManager;
@@ -79,10 +75,6 @@ class View {
 
   void SetSurfaceId(SurfaceIdPtr id);
 
-  // TODO(beng): temporary only.
-  void SetContents(const SkBitmap& contents);
-  void SetColor(SkColor color);
-
   // Focus.
   void SetFocus();
 
@@ -110,7 +102,6 @@ class View {
   bool LocalReorder(View* relative, OrderDirection direction);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
   void LocalSetDrawn(bool drawn);
-  void CreateBitmapUploader();
 
   ViewManager* manager_;
   Id id_;
@@ -126,10 +117,6 @@ class View {
   // Drawn state is derived from the visible state and the parent's visible
   // state. This field is only used if the view has no parent (eg it's a root).
   bool drawn_;
-
-  // TODO(jamesr): Temporary, remove when all clients are using surfaces
-  // directly.
-  scoped_ptr<BitmapUploader> bitmap_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

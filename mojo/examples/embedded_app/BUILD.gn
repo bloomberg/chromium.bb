@@ -12,6 +12,7 @@ shared_library("embedded_app") {
   deps = [
     "//base",
     "//mojo/application",
+    "//mojo/examples/bitmap_uploader",
     "//mojo/examples/window_manager:bindings",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",

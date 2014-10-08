@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/examples/bitmap_uploader/bitmap_uploader.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -31,11 +32,18 @@ const SkColor kColors[] = {SK_ColorYELLOW, SK_ColorRED, SK_ColorGREEN,
                            SK_ColorMAGENTA};
 
 struct Window {
-  Window(View* root, scoped_ptr<ServiceProvider> embedder_service_provider)
+  Window(View* root,
+         scoped_ptr<ServiceProvider> embedder_service_provider,
+         Shell* shell)
       : root(root),
-        embedder_service_provider(embedder_service_provider.Pass()) {}
+        embedder_service_provider(embedder_service_provider.Pass()),
+        bitmap_uploader(root) {
+    bitmap_uploader.Init(shell);
+  }
+
   View* root;
   scoped_ptr<ServiceProvider> embedder_service_provider;
+  BitmapUploader bitmap_uploader;
 };
 
 class EmbeddedApp
@@ -43,13 +51,14 @@ class EmbeddedApp
       public ViewManagerDelegate,
       public ViewObserver {
  public:
-  EmbeddedApp() { url::AddStandardScheme("mojo"); }
+  EmbeddedApp() : shell_(nullptr) { url::AddStandardScheme("mojo"); }
   virtual ~EmbeddedApp() {}
 
  private:
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }
@@ -66,8 +75,10 @@ class EmbeddedApp
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) override {
     root->AddObserver(this);
-    windows_[root->id()] = new Window(root, imported_services.Pass());
-    root->SetColor(kColors[next_color_++ % arraysize(kColors)]);
+    Window* window = new Window(root, imported_services.Pass(), shell_);
+    windows_[root->id()] = window;
+    window->bitmap_uploader.SetColor(
+        kColors[next_color_++ % arraysize(kColors)]);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {
     base::MessageLoop::current()->Quit();
@@ -91,6 +102,7 @@ class EmbeddedApp
     }
   }
 
+  Shell* shell_;
   scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   typedef std::map<Id, Window*> WindowMap;

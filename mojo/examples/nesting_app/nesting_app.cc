@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/examples/bitmap_uploader/bitmap_uploader.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -37,12 +38,13 @@ class NestingApp
       public ViewManagerDelegate,
       public ViewObserver {
  public:
-  NestingApp() : nested_(NULL) {}
+  NestingApp() : nested_(nullptr), shell_(nullptr) {}
   virtual ~NestingApp() {}
 
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) override {
+    shell_ = app->shell();
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }
@@ -61,7 +63,9 @@ class NestingApp
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) override {
     root->AddObserver(this);
-    root->SetColor(SK_ColorCYAN);
+    bitmap_uploader_.reset(new BitmapUploader(root));
+    bitmap_uploader_->Init(shell_);
+    bitmap_uploader_->SetColor(SK_ColorCYAN);
 
     nested_ = View::Create(view_manager);
     root->AddChild(nested_);
@@ -85,7 +89,9 @@ class NestingApp
   scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   View* nested_;
+  Shell* shell_;
   IWindowManagerPtr window_manager_;
+  scoped_ptr<BitmapUploader> bitmap_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(NestingApp);
 };

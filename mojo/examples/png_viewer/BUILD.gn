@@ -12,6 +12,7 @@ shared_library("png_viewer") {
 
   deps = [
     "//mojo/application",
+    "//mojo/examples/bitmap_uploader",
     "//mojo/examples/media_viewer:bindings",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings",

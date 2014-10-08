@@ -207,7 +207,6 @@
         'cpp/application/application_delegate.h',
         'cpp/application/application_impl.h',
         'cpp/application/connect.h',
-        'cpp/application/service_provider_impl.h',
         'cpp/application/interface_factory.h',
         'cpp/application/interface_factory_impl.h',
         'cpp/application/lib/application_connection.cc',
@@ -220,6 +219,7 @@
         'cpp/application/lib/service_registry.h',
         'cpp/application/lib/weak_service_provider.cc',
         'cpp/application/lib/weak_service_provider.h',
+        'cpp/application/service_provider_impl.h',
       ],
       'dependencies': [
         'mojo_application_bindings',

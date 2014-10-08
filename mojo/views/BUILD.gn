@@ -17,18 +17,21 @@ source_set("views") {
     "views_init.h",
   ]
 
+  public_deps = [
+    "//mojo/aura",
+    "//mojo/services/public/cpp/view_manager",
+    "//skia",
+    "//ui/base",
+    "//ui/views",
+  ]
+
   deps = [
     ":views_internal",
     "//base",
     "//base:i18n",
-    "//skia",
     "//third_party/icu",
     "//ui/aura",
-    "//ui/base",
-    "//ui/views",
     "//ui/wm",
-    "//mojo/aura",
-    "//mojo/services/public/cpp/view_manager",
   ]
 }
 

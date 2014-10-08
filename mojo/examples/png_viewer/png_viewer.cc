@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/examples/bitmap_uploader/bitmap_uploader.h"
 #include "mojo/examples/media_viewer/media_viewer.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -59,7 +60,8 @@ class PNGView : public ViewManagerDelegate, public ViewObserver {
           scoped_ptr<ServiceProvider> imported_services,
           Shell* shell)
       : imported_services_(imported_services.Pass()),
-        root_(NULL),
+        shell_(shell),
+        root_(nullptr),
         view_manager_client_factory_(shell, this),
         zoom_percentage_(kDefaultZoomPercentage) {
     exported_services->AddService(&view_manager_client_factory_);
@@ -78,7 +80,9 @@ class PNGView : public ViewManagerDelegate, public ViewObserver {
                        scoped_ptr<ServiceProvider> imported_services) override {
     root_ = root;
     root_->AddObserver(this);
-    root_->SetColor(SK_ColorGRAY);
+    bitmap_uploader_.reset(new BitmapUploader(root_));
+    bitmap_uploader_->Init(shell_);
+    bitmap_uploader_->SetColor(SK_ColorGRAY);
     if (!bitmap_.isNull())
       DrawBitmap();
   }
@@ -138,7 +142,8 @@ class PNGView : public ViewManagerDelegate, public ViewObserver {
         SkFloatToScalar(zoom_percentage_ * 1.0f / kDefaultZoomPercentage);
     canvas->scale(scale, scale);
     canvas->drawBitmap(bitmap_, 0, 0, &paint);
-    root_->SetContents(skia::GetTopDevice(*canvas)->accessBitmap(true));
+    bitmap_uploader_->SetBitmap(
+        skia::GetTopDevice(*canvas)->accessBitmap(true));
   }
 
   void ZoomIn() {
@@ -179,9 +184,11 @@ class PNGView : public ViewManagerDelegate, public ViewObserver {
 
   SkBitmap bitmap_;
   scoped_ptr<ServiceProvider> imported_services_;
+  Shell* shell_;
   View* root_;
   ViewManagerClientFactory view_manager_client_factory_;
   uint16_t zoom_percentage_;
+  scoped_ptr<BitmapUploader> bitmap_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(PNGView);
 };

@@ -16,8 +16,6 @@
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
 
-class SkBitmap;
-
 namespace mojo {
 class Shell;
 class ViewManager;
@@ -72,8 +70,6 @@ class ViewManagerClientImpl : public ViewManager,
   // ViewManager::GetViewById.
   void AddView(View* view);
   void RemoveView(Id view_id);
-
-  Shell* shell() { return shell_; }
 
  private:
   friend class RootObserver;
@@ -131,8 +127,6 @@ class ViewManagerClientImpl : public ViewManager,
   void OnActionCompleted(bool success);
   void OnActionCompletedWithErrorCode(ErrorCode code);
 
-  BitmapUploader* BitmapUploaderForView(Id view_id);
-
   base::Callback<void(bool)> ActionCompletedCallback();
   base::Callback<void(ErrorCode)> ActionCompletedCallbackWithErrorCode();
 
@@ -154,10 +148,6 @@ class ViewManagerClientImpl : public ViewManager,
   ViewManagerService* service_;
 
   WindowManagerServicePtr window_manager_;
-
-  // TODO(jamesr): Remove once all callers switch from SetContents to
-  // SetSurfaceId.
-  Shell* shell_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
