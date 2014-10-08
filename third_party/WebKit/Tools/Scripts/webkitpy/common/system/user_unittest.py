@@ -126,14 +126,3 @@ class UserTest(unittest.TestCase):
             result = User().confirm(default=inputs[0],
                                     raw_input=mock_raw_input)
             self.assertEqual(expected[1], result)
-
-    def test_warn_if_application_is_xcode(self):
-        output = OutputCapture()
-        user = User()
-        output.assert_outputs(self, user._warn_if_application_is_xcode, ["TextMate"])
-        output.assert_outputs(self, user._warn_if_application_is_xcode, ["/Applications/TextMate.app"])
-        output.assert_outputs(self, user._warn_if_application_is_xcode, ["XCode"])  # case sensitive matching
-
-        xcode_warning = "Instead of using Xcode.app, consider using EDITOR=\"xed --wait\".\n"
-        output.assert_outputs(self, user._warn_if_application_is_xcode, ["Xcode"], expected_stdout=xcode_warning)
-        output.assert_outputs(self, user._warn_if_application_is_xcode, ["/Developer/Applications/Xcode.app"], expected_stdout=xcode_warning)

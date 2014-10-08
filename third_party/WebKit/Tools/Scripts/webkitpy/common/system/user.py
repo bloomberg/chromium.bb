@@ -43,14 +43,6 @@ from webkitpy.common.system.platforminfo import PlatformInfo
 _log = logging.getLogger(__name__)
 
 
-try:
-    import readline
-except ImportError:
-    if sys.platform != "win32":
-        # There is no readline module for win32, not much to do except cry.
-        _log.warn("Unable to import readline.")
-
-
 class User(object):
     DEFAULT_NO = 'n'
     DEFAULT_YES = 'y'
@@ -127,22 +119,6 @@ class User(object):
         args = shlex.split(editor)
         # Note: Not thread safe: http://bugs.python.org/issue2320
         subprocess.call(args + files)
-
-    def _warn_if_application_is_xcode(self, edit_application):
-        if "Xcode" in edit_application:
-            print "Instead of using Xcode.app, consider using EDITOR=\"xed --wait\"."
-
-    def edit_changelog(self, files):
-        edit_application = os.environ.get("CHANGE_LOG_EDIT_APPLICATION")
-        if edit_application and self._platforminfo.is_mac():
-            # On Mac we support editing ChangeLogs using an application.
-            args = shlex.split(edit_application)
-            print "Using editor in the CHANGE_LOG_EDIT_APPLICATION environment variable."
-            print "Please quit the editor application when done editing."
-            self._warn_if_application_is_xcode(edit_application)
-            subprocess.call(["open", "-W", "-n", "-a"] + args + files)
-            return
-        self.edit(files)
 
     def page(self, message):
         pager = os.environ.get("PAGER") or "less"

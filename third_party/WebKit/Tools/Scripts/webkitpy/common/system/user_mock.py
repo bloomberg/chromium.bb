@@ -47,9 +47,6 @@ class MockUser(object):
     def edit(self, files):
         pass
 
-    def edit_changelog(self, files):
-        pass
-
     def page(self, message):
         pass
 
