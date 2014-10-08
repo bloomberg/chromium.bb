@@ -15,7 +15,7 @@
 namespace ui {
 
 class DeviceManager;
-class GpuPlatformSupportHostGbm;
+class DriGpuPlatformSupportHost;
 
 struct DisplaySnapshot_Params;
 
@@ -23,7 +23,7 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
                                    public DeviceEventObserver,
                                    public GpuPlatformSupportHost {
  public:
-  NativeDisplayDelegateProxy(GpuPlatformSupportHostGbm* proxy,
+  NativeDisplayDelegateProxy(DriGpuPlatformSupportHost* proxy,
                              DeviceManager* device_manager);
   virtual ~NativeDisplayDelegateProxy();
 
@@ -68,7 +68,7 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
   void OnUpdateNativeDisplays(
       const std::vector<DisplaySnapshot_Params>& displays);
 
-  GpuPlatformSupportHostGbm* proxy_;  // Not owned.
+  DriGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
   ScopedVector<DisplaySnapshot> displays_;
   ObserverList<NativeDisplayObserver> observers_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/gpu_platform_support_gbm.h"
+#include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 
 #include "ipc/ipc_message_macros.h"
 #include "ui/display/types/display_mode.h"
@@ -33,7 +33,7 @@ class FindDisplayById {
 
 }  // namespace
 
-GpuPlatformSupportGbm::GpuPlatformSupportGbm(
+DriGpuPlatformSupport::DriGpuPlatformSupport(
     DriSurfaceFactory* dri,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager,
@@ -45,23 +45,24 @@ GpuPlatformSupportGbm::GpuPlatformSupportGbm(
       ndd_(ndd.Pass()) {
 }
 
-GpuPlatformSupportGbm::~GpuPlatformSupportGbm() {}
+DriGpuPlatformSupport::~DriGpuPlatformSupport() {
+}
 
-void GpuPlatformSupportGbm::AddHandler(scoped_ptr<GpuPlatformSupport> handler) {
+void DriGpuPlatformSupport::AddHandler(scoped_ptr<GpuPlatformSupport> handler) {
   handlers_.push_back(handler.release());
 }
 
-void GpuPlatformSupportGbm::OnChannelEstablished(IPC::Sender* sender) {
+void DriGpuPlatformSupport::OnChannelEstablished(IPC::Sender* sender) {
   sender_ = sender;
 
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->OnChannelEstablished(sender);
 }
 
-bool GpuPlatformSupportGbm::OnMessageReceived(const IPC::Message& message) {
+bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
-  IPC_BEGIN_MESSAGE_MAP(GpuPlatformSupportGbm, message)
+  IPC_BEGIN_MESSAGE_MAP(DriGpuPlatformSupport, message)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_CreateWindowDelegate, OnCreateWindowDelegate)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_DestroyWindowDelegate,
                       OnDestroyWindowDelegate)
@@ -87,7 +88,7 @@ bool GpuPlatformSupportGbm::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void GpuPlatformSupportGbm::OnCreateWindowDelegate(
+void DriGpuPlatformSupport::OnCreateWindowDelegate(
     gfx::AcceleratedWidget widget) {
   // Due to how the GPU process starts up this IPC call may happen after the IPC
   // to create a surface. Since a surface wants to know the window associated
@@ -101,35 +102,35 @@ void GpuPlatformSupportGbm::OnCreateWindowDelegate(
   }
 }
 
-void GpuPlatformSupportGbm::OnDestroyWindowDelegate(
+void DriGpuPlatformSupport::OnDestroyWindowDelegate(
     gfx::AcceleratedWidget widget) {
   scoped_ptr<DriWindowDelegate> delegate =
       window_manager_->RemoveWindowDelegate(widget);
   delegate->Shutdown();
 }
 
-void GpuPlatformSupportGbm::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
+void DriGpuPlatformSupport::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
                                                   const gfx::Rect& bounds) {
   window_manager_->GetWindowDelegate(widget)->OnBoundsChanged(bounds);
 }
 
-void GpuPlatformSupportGbm::OnCursorSet(gfx::AcceleratedWidget widget,
+void DriGpuPlatformSupport::OnCursorSet(gfx::AcceleratedWidget widget,
                                         const std::vector<SkBitmap>& bitmaps,
                                         const gfx::Point& location,
                                         int frame_delay_ms) {
   dri_->SetHardwareCursor(widget, bitmaps, location, frame_delay_ms);
 }
 
-void GpuPlatformSupportGbm::OnCursorMove(gfx::AcceleratedWidget widget,
+void DriGpuPlatformSupport::OnCursorMove(gfx::AcceleratedWidget widget,
                                          const gfx::Point& location) {
   dri_->MoveHardwareCursor(widget, location);
 }
 
-void GpuPlatformSupportGbm::OnForceDPMSOn() {
+void DriGpuPlatformSupport::OnForceDPMSOn() {
   ndd_->ForceDPMSOn();
 }
 
-void GpuPlatformSupportGbm::OnRefreshNativeDisplays(
+void DriGpuPlatformSupport::OnRefreshNativeDisplays(
     const std::vector<DisplaySnapshot_Params>& cached_displays) {
   std::vector<DisplaySnapshot_Params> displays;
   std::vector<DisplaySnapshot*> native_displays = ndd_->GetDisplays();
@@ -157,7 +158,7 @@ void GpuPlatformSupportGbm::OnRefreshNativeDisplays(
   sender_->Send(new OzoneHostMsg_UpdateNativeDisplays(displays));
 }
 
-void GpuPlatformSupportGbm::OnConfigureNativeDisplay(
+void DriGpuPlatformSupport::OnConfigureNativeDisplay(
     int64_t id,
     const DisplayMode_Params& mode_param,
     const gfx::Point& origin) {
@@ -195,7 +196,7 @@ void GpuPlatformSupportGbm::OnConfigureNativeDisplay(
   ndd_->Configure(*display, mode, origin);
 }
 
-void GpuPlatformSupportGbm::OnDisableNativeDisplay(int64_t id) {
+void DriGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {
   DisplaySnapshot* display = ndd_->FindDisplaySnapshot(id);
   if (display)
     ndd_->Configure(*display, NULL, gfx::Point());

@@ -35,6 +35,7 @@
         'OZONE_IMPLEMENTATION',
       ],
       'sources': [
+        'channel_observer.h',
         'crtc_controller.cc',
         'crtc_controller.h',
         'display_mode_dri.cc',
@@ -47,6 +48,10 @@
         'dri_buffer.h',
         'dri_cursor.cc',
         'dri_cursor.h',
+        'dri_gpu_platform_support.cc',
+        'dri_gpu_platform_support.h',
+        'dri_gpu_platform_support_host.cc',
+        'dri_gpu_platform_support_host.h',
         'dri_surface.cc',
         'dri_surface.h',
         'dri_surface_factory.cc',

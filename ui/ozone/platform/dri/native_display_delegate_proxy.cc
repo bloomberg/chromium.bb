@@ -12,12 +12,12 @@
 #include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/dri/gpu_platform_support_host_gbm.h"
+#include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 
 namespace ui {
 
 NativeDisplayDelegateProxy::NativeDisplayDelegateProxy(
-    GpuPlatformSupportHostGbm* proxy,
+    DriGpuPlatformSupportHost* proxy,
     DeviceManager* device_manager)
     : proxy_(proxy), device_manager_(device_manager) {
   proxy_->RegisterHandler(this);

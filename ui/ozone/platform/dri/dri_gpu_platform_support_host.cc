@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/dri/gpu_platform_support_host_gbm.h"
+#include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 
 #include "base/debug/trace_event.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
@@ -11,22 +11,23 @@
 
 namespace ui {
 
-GpuPlatformSupportHostGbm::GpuPlatformSupportHostGbm()
+DriGpuPlatformSupportHost::DriGpuPlatformSupportHost()
     : host_id_(-1), sender_(NULL) {
 }
 
-GpuPlatformSupportHostGbm::~GpuPlatformSupportHostGbm() {}
+DriGpuPlatformSupportHost::~DriGpuPlatformSupportHost() {
+}
 
-bool GpuPlatformSupportHostGbm::IsConnected() const {
+bool DriGpuPlatformSupportHost::IsConnected() const {
   return sender_ != NULL;
 }
 
-void GpuPlatformSupportHostGbm::RegisterHandler(
+void DriGpuPlatformSupportHost::RegisterHandler(
     GpuPlatformSupportHost* handler) {
   handlers_.push_back(handler);
 }
 
-void GpuPlatformSupportHostGbm::UnregisterHandler(
+void DriGpuPlatformSupportHost::UnregisterHandler(
     GpuPlatformSupportHost* handler) {
   std::vector<GpuPlatformSupportHost*>::iterator it =
       std::find(handlers_.begin(), handlers_.end(), handler);
@@ -34,22 +35,22 @@ void GpuPlatformSupportHostGbm::UnregisterHandler(
     handlers_.erase(it);
 }
 
-void GpuPlatformSupportHostGbm::AddChannelObserver(ChannelObserver* observer) {
+void DriGpuPlatformSupportHost::AddChannelObserver(ChannelObserver* observer) {
   channel_observers_.AddObserver(observer);
 
   if (sender_)
     observer->OnChannelEstablished();
 }
 
-void GpuPlatformSupportHostGbm::RemoveChannelObserver(
+void DriGpuPlatformSupportHost::RemoveChannelObserver(
     ChannelObserver* observer) {
   channel_observers_.RemoveObserver(observer);
 }
 
-void GpuPlatformSupportHostGbm::OnChannelEstablished(int host_id,
+void DriGpuPlatformSupportHost::OnChannelEstablished(int host_id,
                                                      IPC::Sender* sender) {
   TRACE_EVENT1("dri",
-               "GpuPlatformSupportHostGbm::OnChannelEstablished",
+               "DriGpuPlatformSupportHost::OnChannelEstablished",
                "host_id",
                host_id);
   host_id_ = host_id;
@@ -67,9 +68,9 @@ void GpuPlatformSupportHostGbm::OnChannelEstablished(int host_id,
       ChannelObserver, channel_observers_, OnChannelEstablished());
 }
 
-void GpuPlatformSupportHostGbm::OnChannelDestroyed(int host_id) {
+void DriGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
   TRACE_EVENT1("dri",
-               "GpuPlatformSupportHostGbm::OnChannelDestroyed",
+               "DriGpuPlatformSupportHost::OnChannelDestroyed",
                "host_id",
                host_id);
   if (host_id_ == host_id) {
@@ -84,7 +85,7 @@ void GpuPlatformSupportHostGbm::OnChannelDestroyed(int host_id) {
     handlers_[i]->OnChannelDestroyed(host_id);
 }
 
-bool GpuPlatformSupportHostGbm::OnMessageReceived(const IPC::Message& message) {
+bool DriGpuPlatformSupportHost::OnMessageReceived(const IPC::Message& message) {
   for (size_t i = 0; i < handlers_.size(); ++i)
     if (handlers_[i]->OnMessageReceived(message))
       return true;
@@ -92,7 +93,7 @@ bool GpuPlatformSupportHostGbm::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-bool GpuPlatformSupportHostGbm::Send(IPC::Message* message) {
+bool DriGpuPlatformSupportHost::Send(IPC::Message* message) {
   if (sender_)
     return sender_->Send(message);
 
@@ -100,7 +101,7 @@ bool GpuPlatformSupportHostGbm::Send(IPC::Message* message) {
   return true;
 }
 
-void GpuPlatformSupportHostGbm::SetHardwareCursor(
+void DriGpuPlatformSupportHost::SetHardwareCursor(
     gfx::AcceleratedWidget widget,
     const std::vector<SkBitmap>& bitmaps,
     const gfx::Point& location,
@@ -108,7 +109,7 @@ void GpuPlatformSupportHostGbm::SetHardwareCursor(
   Send(new OzoneGpuMsg_CursorSet(widget, bitmaps, location, frame_delay_ms));
 }
 
-void GpuPlatformSupportHostGbm::MoveHardwareCursor(
+void DriGpuPlatformSupportHost::MoveHardwareCursor(
     gfx::AcceleratedWidget widget,
     const gfx::Point& location) {
   Send(new OzoneGpuMsg_CursorMove(widget, location));

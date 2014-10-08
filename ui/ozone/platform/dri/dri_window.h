@@ -9,23 +9,24 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/dri/channel_observer.h"
 #include "ui/platform_window/platform_window.h"
 
 namespace ui {
 
 class DriWindowDelegate;
-class DriWindowDelegateManager;
 class DriWindowManager;
 class EventFactoryEvdev;
+class DriGpuPlatformSupportHost;
 
 class DriWindow : public PlatformWindow,
-                  public PlatformEventDispatcher {
+                  public PlatformEventDispatcher,
+                  public ChannelObserver {
  public:
   DriWindow(PlatformWindowDelegate* delegate,
             const gfx::Rect& bounds,
-            scoped_ptr<DriWindowDelegate> dri_window_delegate,
+            DriGpuPlatformSupportHost* sender,
             EventFactoryEvdev* event_factory,
-            DriWindowDelegateManager* window_delegate_manager,
             DriWindowManager* window_manager);
   virtual ~DriWindow();
 
@@ -50,14 +51,18 @@ class DriWindow : public PlatformWindow,
   virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
   virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
 
+  // ChannelObserver:
+  virtual void OnChannelEstablished() OVERRIDE;
+  virtual void OnChannelDestroyed() OVERRIDE;
+
  private:
-  PlatformWindowDelegate* delegate_;
+  PlatformWindowDelegate* delegate_;   // Not owned.
+  DriGpuPlatformSupportHost* sender_;  // Not owned.
+  EventFactoryEvdev* event_factory_;   // Not owned.
+  DriWindowManager* window_manager_;   // Not owned.
+
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;
-  DriWindowDelegate* dri_window_delegate_;
-  EventFactoryEvdev* event_factory_;
-  DriWindowDelegateManager* window_delegate_manager_;
-  DriWindowManager* window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindow);
 };

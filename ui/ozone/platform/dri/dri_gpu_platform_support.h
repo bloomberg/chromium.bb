@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_GBM_H_
-#define UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_GBM_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DRI_GPU_PLATFORM_SUPPORT_H_
+#define UI_OZONE_PLATFORM_DRI_DRI_GPU_PLATFORM_SUPPORT_H_
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,13 +29,13 @@ class ScreenManager;
 struct DisplayMode_Params;
 struct DisplaySnapshot_Params;
 
-class GpuPlatformSupportGbm : public GpuPlatformSupport {
+class DriGpuPlatformSupport : public GpuPlatformSupport {
  public:
-  GpuPlatformSupportGbm(DriSurfaceFactory* dri,
+  DriGpuPlatformSupport(DriSurfaceFactory* dri,
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager,
                         scoped_ptr<NativeDisplayDelegateDri> ndd);
-  virtual ~GpuPlatformSupportGbm();
+  virtual ~DriGpuPlatformSupport();
 
   void AddHandler(scoped_ptr<GpuPlatformSupport> handler);
 
@@ -76,4 +76,4 @@ class GpuPlatformSupportGbm : public GpuPlatformSupport {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_GBM_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DRI_GPU_PLATFORM_SUPPORT_H_

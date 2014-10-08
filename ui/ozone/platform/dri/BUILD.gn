@@ -11,6 +11,7 @@ pkg_config("libdrm") {
 
 source_set("dri_common") {
   sources = [
+    "channel_observer.h",
     "crtc_controller.cc",
     "crtc_controller.h",
     "display_mode_dri.cc",
@@ -23,6 +24,10 @@ source_set("dri_common") {
     "dri_cursor.h",
     "dri_buffer.cc",
     "dri_buffer.h",
+    "dri_gpu_platform_support.cc",
+    "dri_gpu_platform_support_.h",
+    "dri_gpu_platform_support_host.cc",
+    "dri_gpu_platform_support_host.h",
     "dri_surface.cc",
     "dri_surface.h",
     "dri_surface_factory.cc",
@@ -115,9 +120,6 @@ if (ozone_platform_gbm) {
 
   source_set("gbm") {
     sources = [
-      "channel_observer.h",
-      "dri_window_delegate_proxy.cc",
-      "dri_window_delegate_proxy.h",
       "gbm_buffer.cc",
       "gbm_buffer.h",
       "gbm_buffer_base.cc",
@@ -128,10 +130,6 @@ if (ozone_platform_gbm) {
       "gbm_surfaceless.h",
       "gbm_surface_factory.cc",
       "gbm_surface_factory.h",
-      "gpu_platform_support_gbm.cc",
-      "gpu_platform_support_gbm.h",
-      "gpu_platform_support_host_gbm.cc",
-      "gpu_platform_support_host_gbm.h",
       "native_display_delegate_proxy.cc",
       "native_display_delegate_proxy.h",
       "ozone_platform_gbm.cc",
