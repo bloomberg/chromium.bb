@@ -9,7 +9,7 @@ To make a release follow these steps.
   3.  git tag -am 1.5.0 1.5.0
 
   4.  scp tarballs to /srv/wayland.freedesktop.org/www/releases on
-      people.freedesktop.org
+      annarchy.freedesktop.org
 
   5.  Put SHA1 for tarballs and tagged commits in release announcement
 
