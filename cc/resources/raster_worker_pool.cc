@@ -196,7 +196,7 @@ void RasterWorkerPool::InsertNodesForRasterTask(
 
 // static
 void RasterWorkerPool::AcquireBitmapForBuffer(SkBitmap* bitmap,
-                                              uint8_t* buffer,
+                                              void* buffer,
                                               ResourceFormat buffer_format,
                                               const gfx::Size& size,
                                               int stride) {
@@ -224,7 +224,7 @@ void RasterWorkerPool::AcquireBitmapForBuffer(SkBitmap* bitmap,
 
 // static
 void RasterWorkerPool::ReleaseBitmapForBuffer(SkBitmap* bitmap,
-                                              uint8_t* buffer,
+                                              void* buffer,
                                               ResourceFormat buffer_format) {
   SkColorType buffer_color_type = ResourceFormatToSkColorType(buffer_format);
   if (buffer_color_type != bitmap->colorType()) {

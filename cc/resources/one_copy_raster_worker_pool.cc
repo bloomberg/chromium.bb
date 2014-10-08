@@ -28,24 +28,17 @@ class RasterBufferImpl : public RasterBuffer {
         resource_pool_(resource_pool),
         resource_(resource),
         raster_resource_(resource_pool->AcquireResource(resource->size())),
-        buffer_(NULL),
-        stride_(0) {
-    // Acquire and map image for raster resource.
-    resource_provider_->AcquireImage(raster_resource_->id());
-    buffer_ = resource_provider_->MapImage(raster_resource_->id(), &stride_);
-  }
+        lock_(new ResourceProvider::ScopedWriteLockGpuMemoryBuffer(
+            resource_provider_,
+            raster_resource_->id())),
+        buffer_(NULL) {}
 
   virtual ~RasterBufferImpl() {
-    // First unmap image for raster resource.
-    resource_provider_->UnmapImage(raster_resource_->id());
+    // First unlock raster resource.
+    lock_.reset();
 
     // Copy contents of raster resource to |resource_|.
     resource_provider_->CopyResource(raster_resource_->id(), resource_->id());
-
-    // This RasterBuffer implementation provides direct access to the memory
-    // used by the GPU. Read lock fences are required to ensure that we're not
-    // trying to map a resource that is currently in-use by the GPU.
-    resource_provider_->EnableReadLockFences(raster_resource_->id());
 
     // Return raster resource to pool so it can be used by another RasterBuffer
     // instance.
@@ -54,11 +47,15 @@ class RasterBufferImpl : public RasterBuffer {
 
   // Overridden from RasterBuffer:
   virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
+    buffer_ = lock_->gpu_memory_buffer();
     if (!buffer_)
       return skia::AdoptRef(SkCreateNullCanvas());
 
-    RasterWorkerPool::AcquireBitmapForBuffer(
-        &bitmap_, buffer_, resource_->format(), resource_->size(), stride_);
+    RasterWorkerPool::AcquireBitmapForBuffer(&bitmap_,
+                                             buffer_,
+                                             resource_->format(),
+                                             resource_->size(),
+                                             lock_->stride());
     return skia::AdoptRef(new SkCanvas(bitmap_));
   }
   virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
@@ -74,8 +71,8 @@ class RasterBufferImpl : public RasterBuffer {
   ResourcePool* resource_pool_;
   const Resource* resource_;
   scoped_ptr<ScopedResource> raster_resource_;
-  uint8_t* buffer_;
-  int stride_;
+  scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> lock_;
+  void* buffer_;
   SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);

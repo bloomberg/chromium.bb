@@ -303,6 +303,41 @@ class CC_EXPORT ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
   };
 
+  class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
+   public:
+    ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
+                                   ResourceProvider::ResourceId resource_id);
+    ~ScopedWriteLockGpuMemoryBuffer();
+
+    void* gpu_memory_buffer() { return gpu_memory_buffer_; }
+    int stride() const { return stride_; }
+
+   private:
+    ResourceProvider* resource_provider_;
+    ResourceProvider::ResourceId resource_id_;
+    unsigned image_id_;
+    void* gpu_memory_buffer_;
+    int stride_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
+  };
+
+  class CC_EXPORT ScopedWriteLockGr {
+   public:
+    ScopedWriteLockGr(ResourceProvider* resource_provider,
+                      ResourceProvider::ResourceId resource_id);
+    ~ScopedWriteLockGr();
+
+    SkSurface* sk_surface() { return sk_surface_; }
+
+   private:
+    ResourceProvider* resource_provider_;
+    ResourceProvider::ResourceId resource_id_;
+    SkSurface* sk_surface_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
+  };
+
   class Fence : public base::RefCounted<Fence> {
    public:
     Fence() {}
@@ -330,22 +365,6 @@ class CC_EXPORT ResourceProvider {
   void ForceSetPixelsToComplete(ResourceId id);
   bool DidSetPixelsComplete(ResourceId id);
 
-  // Acquire and release an image. The image allows direct
-  // manipulation of texture memory.
-  void AcquireImage(ResourceId id);
-  void ReleaseImage(ResourceId id);
-  // Maps the acquired image so that its pixels could be modified.
-  // Unmap is called when all pixels are set.
-  uint8_t* MapImage(ResourceId id, int* stride);
-  void UnmapImage(ResourceId id);
-
-  // Acquire and release a SkSurface.
-  void AcquireSkSurface(ResourceId id);
-  void ReleaseSkSurface(ResourceId id);
-  // Lock/unlock resource for writing to SkSurface.
-  SkSurface* LockForWriteToSkSurface(ResourceId id);
-  void UnlockForWriteToSkSurface(ResourceId id);
-
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);
@@ -359,9 +378,6 @@ class CC_EXPORT ResourceProvider {
   // and has read fences enabled, the resource will not allow writes
   // until this fence has passed.
   void SetReadLockFence(Fence* fence) { current_read_lock_fence_ = fence; }
-
-  // Enable read lock fences for a specific resource.
-  void EnableReadLockFences(ResourceId id);
 
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
@@ -480,6 +496,11 @@ class CC_EXPORT ResourceProvider {
   void UnlockForRead(ResourceId id);
   const Resource* LockForWrite(ResourceId id);
   void UnlockForWrite(ResourceId id);
+  const Resource* LockForWriteToGpuMemoryBuffer(ResourceId id);
+  void UnlockForWriteToGpuMemoryBuffer(ResourceId id);
+  const Resource* LockForWriteToSkSurface(ResourceId id);
+  void UnlockForWriteToSkSurface(ResourceId id);
+
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                            const Resource* resource);
 

@@ -27,17 +27,13 @@ class RasterBufferImpl : public RasterBuffer {
   RasterBufferImpl(ResourceProvider* resource_provider,
                    const Resource* resource,
                    SkMultiPictureDraw* multi_picture_draw)
-      : resource_provider_(resource_provider),
+      : lock_(resource_provider, resource->id()),
         resource_(resource),
-        surface_(resource_provider->LockForWriteToSkSurface(resource->id())),
         multi_picture_draw_(multi_picture_draw) {}
-  virtual ~RasterBufferImpl() {
-    resource_provider_->UnlockForWriteToSkSurface(resource_->id());
-  }
 
   // Overridden from RasterBuffer:
   virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
-    if (!surface_)
+    if (!lock_.sk_surface())
       return skia::AdoptRef(SkCreateNullCanvas());
 
     skia::RefPtr<SkCanvas> canvas = skia::SharePtr(recorder_.beginRecording(
@@ -49,7 +45,7 @@ class RasterBufferImpl : public RasterBuffer {
     return canvas;
   }
   virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
-    if (!surface_)
+    if (!lock_.sk_surface())
       return;
 
     // Balanced with save() call in AcquireSkCanvas.
@@ -57,13 +53,12 @@ class RasterBufferImpl : public RasterBuffer {
 
     // Add the canvas and recorded picture to |multi_picture_draw_|.
     skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder_.endRecording());
-    multi_picture_draw_->add(surface_->getCanvas(), picture.get());
+    multi_picture_draw_->add(lock_.sk_surface()->getCanvas(), picture.get());
   }
 
  private:
-  ResourceProvider* resource_provider_;
+  ResourceProvider::ScopedWriteLockGr lock_;
   const Resource* resource_;
-  SkSurface* surface_;
   SkMultiPictureDraw* multi_picture_draw_;
   SkPictureRecorder recorder_;
 
@@ -198,10 +193,6 @@ void GpuRasterWorkerPool::CheckForCompletedTasks() {
 
 scoped_ptr<RasterBuffer> GpuRasterWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
-  // RasterBuffer implementation depends on a SkSurface having been acquired for
-  // the resource.
-  resource_provider_->AcquireSkSurface(resource->id());
-
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource, &multi_picture_draw_));
 }

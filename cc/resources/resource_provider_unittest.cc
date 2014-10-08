@@ -632,10 +632,11 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
 
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
-  child_resource_provider_->AcquireImage(id3);
-  int stride;
-  child_resource_provider_->MapImage(id3, &stride);
-  child_resource_provider_->UnmapImage(id3);
+  {
+    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+        child_resource_provider_.get(), id3);
+    EXPECT_TRUE(!!lock.gpu_memory_buffer());
+  }
 
   GLuint external_texture_id = child_context_->createExternalTexture();
   child_context_->bindTexture(GL_TEXTURE_EXTERNAL_OES, external_texture_id);
@@ -3311,30 +3312,29 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
-  const int kStride = 4;
-  void* dummy_mapped_buffer_address = NULL;
+  const int kStride = 8;
+  uint8 buffer_data[kStride * kHeight];
   EXPECT_CALL(
       *context,
       createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
       .WillOnce(Return(kImageId))
       .RetiresOnSaturation();
-  resource_provider->AcquireImage(id);
-
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
+      .WillOnce(Return(buffer_data))
+      .RetiresOnSaturation();
   EXPECT_CALL(*context, getImageParameterivCHROMIUM(kImageId,
                                                     GL_IMAGE_ROWBYTES_CHROMIUM,
                                                     _))
       .WillOnce(SetArgPointee<2>(kStride))
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
-      .WillOnce(Return(dummy_mapped_buffer_address))
-      .RetiresOnSaturation();
-  int stride;
-  resource_provider->MapImage(id, &stride);
-
   EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
       .Times(1)
       .RetiresOnSaturation();
-  resource_provider->UnmapImage(id);
+  {
+    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+        resource_provider.get(), id);
+    EXPECT_TRUE(!!lock.gpu_memory_buffer());
+  }
 
   EXPECT_CALL(*context, NextTextureId())
       .WillOnce(Return(kTextureId))
@@ -3351,20 +3351,22 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
     EXPECT_EQ(kTextureId, lock_gl.texture_id());
   }
 
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
+      .WillOnce(Return(buffer_data))
+      .RetiresOnSaturation();
   EXPECT_CALL(
       *context,
       getImageParameterivCHROMIUM(kImageId, GL_IMAGE_ROWBYTES_CHROMIUM, _))
       .WillOnce(SetArgPointee<2>(kStride))
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
-      .WillOnce(Return(dummy_mapped_buffer_address))
-      .RetiresOnSaturation();
-  resource_provider->MapImage(id, &stride);
-
   EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
       .Times(1)
       .RetiresOnSaturation();
-  resource_provider->UnmapImage(id);
+  {
+    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+        resource_provider.get(), id);
+    EXPECT_TRUE(!!lock.gpu_memory_buffer());
+  }
 
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
       .RetiresOnSaturation();
@@ -3423,28 +3425,29 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   source_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
-  const int kStride = 4;
-  void* dummy_mapped_buffer_address = NULL;
+  const int kStride = 8;
+  uint8 buffer_data[kStride * kHeight];
   EXPECT_CALL(
       *context,
       createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
       .WillOnce(Return(kImageId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
+      .WillOnce(Return(buffer_data))
       .RetiresOnSaturation();
   EXPECT_CALL(
       *context,
       getImageParameterivCHROMIUM(kImageId, GL_IMAGE_ROWBYTES_CHROMIUM, _))
       .WillOnce(SetArgPointee<2>(kStride))
       .RetiresOnSaturation();
-  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId))
-      .WillOnce(Return(dummy_mapped_buffer_address))
-      .RetiresOnSaturation();
-  resource_provider->AcquireImage(source_id);
-  int stride;
-  resource_provider->MapImage(source_id, &stride);
   EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
       .Times(1)
       .RetiresOnSaturation();
-  resource_provider->UnmapImage(source_id);
+  {
+    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+        resource_provider.get(), source_id);
+    EXPECT_TRUE(!!lock.gpu_memory_buffer());
+  }
   Mock::VerifyAndClearExpectations(context);
 
   dest_id = resource_provider->CreateResource(

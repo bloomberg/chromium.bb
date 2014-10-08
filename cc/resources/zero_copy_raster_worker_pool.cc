@@ -21,27 +21,21 @@ class RasterBufferImpl : public RasterBuffer {
  public:
   RasterBufferImpl(ResourceProvider* resource_provider,
                    const Resource* resource)
-      : resource_provider_(resource_provider),
+      : lock_(resource_provider, resource->id()),
         resource_(resource),
-        stride_(0),
-        buffer_(resource_provider->MapImage(resource->id(), &stride_)) {}
-
-  virtual ~RasterBufferImpl() {
-    resource_provider_->UnmapImage(resource_->id());
-
-    // This RasterBuffer implementation provides direct access to the memory
-    // used by the GPU. Read lock fences are required to ensure that we're not
-    // trying to map a resource that is currently in-use by the GPU.
-    resource_provider_->EnableReadLockFences(resource_->id());
-  }
+        buffer_(NULL) {}
 
   // Overridden from RasterBuffer:
   virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
+    buffer_ = lock_.gpu_memory_buffer();
     if (!buffer_)
       return skia::AdoptRef(SkCreateNullCanvas());
 
-    RasterWorkerPool::AcquireBitmapForBuffer(
-        &bitmap_, buffer_, resource_->format(), resource_->size(), stride_);
+    RasterWorkerPool::AcquireBitmapForBuffer(&bitmap_,
+                                             buffer_,
+                                             resource_->format(),
+                                             resource_->size(),
+                                             lock_.stride());
     return skia::AdoptRef(new SkCanvas(bitmap_));
   }
   virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
@@ -53,10 +47,9 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
  private:
-  ResourceProvider* resource_provider_;
+  ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock_;
   const Resource* resource_;
-  int stride_;
-  uint8_t* buffer_;
+  void* buffer_;
   SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
@@ -190,10 +183,6 @@ void ZeroCopyRasterWorkerPool::CheckForCompletedTasks() {
 
 scoped_ptr<RasterBuffer> ZeroCopyRasterWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
-  // RasterBuffer implementation depends on an image having been acquired for
-  // the resource.
-  resource_provider_->AcquireImage(resource->id());
-
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource));
 }

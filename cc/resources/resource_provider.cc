@@ -896,12 +896,7 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
 const ResourceProvider::Resource* ResourceProvider::LockForWrite(
     ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->locked_for_write);
-  DCHECK(!resource->lock_for_read_count);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK(!resource->lost);
-  DCHECK(ReadLockFenceHasPassed(resource));
+  DCHECK(CanLockForWrite(id));
   LazyAllocate(resource);
 
   resource->locked_for_write = true;
@@ -920,6 +915,87 @@ void ResourceProvider::UnlockForWrite(ResourceId id) {
   DCHECK(resource->locked_for_write);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(resource->origin == Resource::Internal);
+  resource->locked_for_write = false;
+}
+
+const ResourceProvider::Resource*
+ResourceProvider::LockForWriteToGpuMemoryBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK_EQ(GLTexture, resource->type);
+  DCHECK(CanLockForWrite(id));
+
+  if (!resource->image_id) {
+    resource->allocated = true;
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    resource->image_id =
+        gl->CreateImageCHROMIUM(resource->size.width(),
+                                resource->size.height(),
+                                TextureToStorageFormat(resource->format),
+                                GL_IMAGE_MAP_CHROMIUM);
+    DCHECK(resource->image_id);
+  }
+
+  resource->locked_for_write = true;
+  return resource;
+}
+
+void ResourceProvider::UnlockForWriteToGpuMemoryBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource->locked_for_write);
+  DCHECK_EQ(resource->exported_count, 0);
+  DCHECK(resource->origin == Resource::Internal);
+  DCHECK_EQ(GLTexture, resource->type);
+
+  resource->locked_for_write = false;
+  resource->dirty_image = true;
+
+  // GpuMemoryBuffer provides direct access to the memory used by the GPU.
+  // Read lock fences are required to ensure that we're not trying to map a
+  // buffer that is currently in-use by the GPU.
+  resource->read_lock_fences_enabled = true;
+}
+
+const ResourceProvider::Resource* ResourceProvider::LockForWriteToSkSurface(
+    ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK_EQ(GLTexture, resource->type);
+  DCHECK(CanLockForWrite(id));
+
+  resource->locked_for_write = true;
+  if (!resource->sk_surface) {
+    class GrContext* gr_context = GrContext();
+    // TODO(alokp): Implement TestContextProvider::GrContext().
+    if (!gr_context)
+      return resource;
+
+    LazyAllocate(resource);
+
+    GrBackendTextureDesc desc;
+    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+    desc.fWidth = resource->size.width();
+    desc.fHeight = resource->size.height();
+    desc.fConfig = ToGrPixelConfig(resource->format);
+    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+    desc.fTextureHandle = resource->gl_id;
+    skia::RefPtr<GrTexture> gr_texture =
+        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+    SkSurface::TextRenderMode text_render_mode =
+        use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
+                                 : SkSurface::kStandard_TextRenderMode;
+    resource->sk_surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+        gr_texture->asRenderTarget(), text_render_mode));
+  }
+
+  return resource;
+}
+
+void ResourceProvider::UnlockForWriteToSkSurface(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource->locked_for_write);
+  DCHECK_EQ(resource->exported_count, 0);
+  DCHECK(resource->origin == Resource::Internal);
+  DCHECK_EQ(GLTexture, resource->type);
   resource->locked_for_write = false;
 }
 
@@ -1006,6 +1082,38 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
 
 ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
   resource_provider_->UnlockForWrite(resource_id_);
+}
+
+ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
+    ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
+                                   ResourceProvider::ResourceId resource_id)
+    : resource_provider_(resource_provider),
+      resource_id_(resource_id),
+      image_id_(resource_provider->LockForWriteToGpuMemoryBuffer(resource_id)
+                    ->image_id),
+      gpu_memory_buffer_(
+          resource_provider->ContextGL()->MapImageCHROMIUM(image_id_)) {
+  resource_provider->ContextGL()->GetImageParameterivCHROMIUM(
+      image_id_, GL_IMAGE_ROWBYTES_CHROMIUM, &stride_);
+}
+
+ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
+    ~ScopedWriteLockGpuMemoryBuffer() {
+  resource_provider_->ContextGL()->UnmapImageCHROMIUM(image_id_);
+  resource_provider_->UnlockForWriteToGpuMemoryBuffer(resource_id_);
+}
+
+ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
+    ResourceProvider* resource_provider,
+    ResourceProvider::ResourceId resource_id)
+    : resource_provider_(resource_provider),
+      resource_id_(resource_id),
+      sk_surface_(resource_provider->LockForWriteToSkSurface(resource_id)
+                      ->sk_surface.get()) {
+}
+
+ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
+  resource_provider_->UnlockForWriteToSkSurface(resource_id_);
 }
 
 ResourceProvider::ResourceProvider(
@@ -1761,6 +1869,11 @@ bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {
   resource->pending_set_pixels = false;
   UnlockForWrite(id);
 
+  // Async set pixels commands are not necessarily processed in-sequence with
+  // drawing commands. Read lock fences are required to ensure that async
+  // commands don't access the resource while used for drawing.
+  resource->read_lock_fences_enabled = true;
+
   return true;
 }
 
@@ -1865,138 +1978,6 @@ void ResourceProvider::BindImageForSampling(Resource* resource) {
   gl->BindTexImage2DCHROMIUM(resource->target, resource->image_id);
   resource->bound_image_id = resource->image_id;
   resource->dirty_image = false;
-}
-
-void ResourceProvider::EnableReadLockFences(ResourceId id) {
-  Resource* resource = GetResource(id);
-  resource->read_lock_fences_enabled = true;
-}
-
-void ResourceProvider::AcquireImage(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK_EQ(GLTexture, resource->type);
-
-  if (resource->image_id)
-    return;
-
-  resource->allocated = true;
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  resource->image_id =
-      gl->CreateImageCHROMIUM(resource->size.width(),
-                              resource->size.height(),
-                              TextureToStorageFormat(resource->format),
-                              GL_IMAGE_MAP_CHROMIUM);
-  DCHECK(resource->image_id);
-}
-
-void ResourceProvider::ReleaseImage(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK_EQ(GLTexture, resource->type);
-
-  if (!resource->image_id)
-    return;
-
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  gl->DestroyImageCHROMIUM(resource->image_id);
-  resource->image_id = 0;
-  resource->bound_image_id = 0;
-  resource->dirty_image = false;
-  resource->allocated = false;
-}
-
-uint8_t* ResourceProvider::MapImage(ResourceId id, int* stride) {
-  Resource* resource = GetResource(id);
-  DCHECK(ReadLockFenceHasPassed(resource));
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(resource->image_id);
-
-  LockForWrite(id);
-
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  // MapImageCHROMIUM should be called prior to GetImageParameterivCHROMIUM.
-  uint8_t* pixels =
-      static_cast<uint8_t*>(gl->MapImageCHROMIUM(resource->image_id));
-  gl->GetImageParameterivCHROMIUM(
-      resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, stride);
-  return pixels;
-}
-
-void ResourceProvider::UnmapImage(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(resource->image_id);
-  DCHECK(resource->locked_for_write);
-
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  gl->UnmapImageCHROMIUM(resource->image_id);
-  resource->dirty_image = true;
-
-  UnlockForWrite(id);
-}
-
-void ResourceProvider::AcquireSkSurface(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK_EQ(GLTexture, resource->type);
-
-  if (resource->sk_surface)
-    return;
-
-  class GrContext* gr_context = GrContext();
-  // TODO(alokp): Implement TestContextProvider::GrContext().
-  if (!gr_context)
-    return;
-
-  LazyAllocate(resource);
-
-  GrBackendTextureDesc desc;
-  desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-  desc.fWidth = resource->size.width();
-  desc.fHeight = resource->size.height();
-  desc.fConfig = ToGrPixelConfig(resource->format);
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  desc.fTextureHandle = resource->gl_id;
-  skia::RefPtr<GrTexture> gr_texture =
-      skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-  SkSurface::TextRenderMode text_render_mode =
-      use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
-                               : SkSurface::kStandard_TextRenderMode;
-  resource->sk_surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-      gr_texture->asRenderTarget(), text_render_mode));
-}
-
-void ResourceProvider::ReleaseSkSurface(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK_EQ(GLTexture, resource->type);
-
-  resource->sk_surface.clear();
-}
-
-SkSurface* ResourceProvider::LockForWriteToSkSurface(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK_EQ(GLTexture, resource->type);
-
-  LockForWrite(id);
-  return resource->sk_surface.get();
-}
-
-void ResourceProvider::UnlockForWriteToSkSurface(ResourceId id) {
-  UnlockForWrite(id);
 }
 
 void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
