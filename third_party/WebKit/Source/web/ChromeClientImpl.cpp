@@ -62,7 +62,6 @@
 #include "platform/FileChooser.h"
 #include "platform/NotImplemented.h"
 #include "platform/PlatformScreen.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
@@ -582,10 +581,8 @@ void ChromeClientImpl::print(LocalFrame* frame)
 PassOwnPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
     OwnPtr<ColorChooserUIController> controller;
-    if (RuntimeEnabledFeatures::pagePopupEnabled())
-        controller = adoptPtr(new ColorChooserPopupUIController(frame, this, chooserClient));
-    else
-        controller = adoptPtr(new ColorChooserUIController(frame, chooserClient));
+
+    controller = adoptPtr(new ColorChooserPopupUIController(frame, this, chooserClient));
     controller->openUI();
     return controller.release();
 }
