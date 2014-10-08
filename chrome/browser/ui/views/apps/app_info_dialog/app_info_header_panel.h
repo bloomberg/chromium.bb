@@ -48,13 +48,17 @@ class AppInfoHeaderPanel : public AppInfoPanel,
 
   // Opens the app in the web store. Must only be called if
   // CanShowAppInWebStore() returns true.
-  void ShowAppInWebStore() const;
+  void ShowAppInWebStore();
   bool CanShowAppInWebStore() const;
 
   // Displays the licenses for the app. Must only be called if
   // CanDisplayLicenses() returns true.
   void DisplayLicenses();
-  bool CanDisplayLicenses();
+  bool CanDisplayLicenses() const;
+  const GURL& GetLicenseUrl() const;
+
+  // Opens the given URL in a new browser tab, and closes the dialog.
+  void OpenLink(const GURL& url);
 
   // UI elements on the dialog. Elements are NULL if they are not displayed.
   views::ImageView* app_icon_;

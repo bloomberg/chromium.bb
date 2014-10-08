@@ -164,17 +164,12 @@ void AppInfoHeaderPanel::OnAppImageLoaded(const gfx::Image& image) {
   app_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
 }
 
-void AppInfoHeaderPanel::ShowAppInWebStore() const {
+void AppInfoHeaderPanel::ShowAppInWebStore() {
   DCHECK(CanShowAppInWebStore());
-  const GURL url = extensions::ManifestURL::GetDetailsURL(app_);
-  DCHECK_NE(url, GURL::EmptyGURL());
-  chrome::NavigateParams params(
-      profile_,
-      net::AppendQueryParameter(url,
-                                extension_urls::kWebstoreSourceField,
-                                extension_urls::kLaunchSourceAppListInfoDialog),
-      ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
+  OpenLink(net::AppendQueryParameter(
+      extensions::ManifestURL::GetDetailsURL(app_),
+      extension_urls::kWebstoreSourceField,
+      extension_urls::kLaunchSourceAppListInfoDialog));
 }
 
 bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
@@ -182,29 +177,21 @@ bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
 }
 
 void AppInfoHeaderPanel::DisplayLicenses() {
-  // Find the first shared module for this app, and display it's options page
-  // as an 'about' link.
-  // TODO(sashab): Revisit UI layout once shared module usage becomes more
-  // common.
   DCHECK(CanDisplayLicenses());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(service);
-  const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
-      extensions::SharedModuleInfo::GetImports(app_);
-  const extensions::Extension* imported_module =
-      service->GetExtensionById(imports[0].extension_id, true);
-  DCHECK(imported_module);
-  GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
-  DCHECK(about_page != GURL::EmptyGURL());
-  chrome::NavigateParams params(
-      profile_, about_page, ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
+  OpenLink(GetLicenseUrl());
 }
 
-bool AppInfoHeaderPanel::CanDisplayLicenses() {
+bool AppInfoHeaderPanel::CanDisplayLicenses() const {
+  return !GetLicenseUrl().is_empty();
+}
+
+const GURL& AppInfoHeaderPanel::GetLicenseUrl() const {
+  // Find the first shared module for this app, and return its URL.
+  // TODO(sashab): Support multiple shared modules with licenses once shared
+  // module usage becomes more common.
   if (!extensions::SharedModuleInfo::ImportsModules(app_))
-    return false;
+    return GURL::EmptyGURL();
+
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(service);
@@ -213,8 +200,12 @@ bool AppInfoHeaderPanel::CanDisplayLicenses() {
   const extensions::Extension* imported_module =
       service->GetExtensionById(imports[0].extension_id, true);
   DCHECK(imported_module);
-  GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
-  if (about_page == GURL::EmptyGURL())
-    return false;
-  return true;
+  return extensions::ManifestURL::GetAboutPage(imported_module);
+}
+
+void AppInfoHeaderPanel::OpenLink(const GURL& url) {
+  DCHECK(!url.is_empty());
+  chrome::NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
+  chrome::Navigate(&params);
+  Close();
 }
