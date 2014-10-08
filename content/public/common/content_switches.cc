@@ -459,6 +459,9 @@ const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
+// Enable experimental text blob rendering.
+const char kEnableTextBlobs[]               = "enable-text-blobs";
+
 // Enabled threaded compositing for layout tests.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
