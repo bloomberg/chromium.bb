@@ -1312,7 +1312,9 @@ bool Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
 
 void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
                                              bool visible) {
-  for (Window* window = this; window; window = window->parent()) {
+  // Start with the parent as we already notified |this|
+  // in NotifyWindowVisibilityChangedDown.
+  for (Window* window = parent(); window; window = window->parent()) {
     bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
     DCHECK(ret);
   }

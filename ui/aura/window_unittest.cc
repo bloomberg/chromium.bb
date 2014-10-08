@@ -1665,6 +1665,7 @@ class WindowObserverTest : public WindowTest,
   struct VisibilityInfo {
     bool window_visible;
     bool visible_param;
+    int changed_count;
   };
 
   WindowObserverTest()
@@ -1730,9 +1731,13 @@ class WindowObserverTest : public WindowTest,
 
   virtual void OnWindowVisibilityChanged(Window* window,
                                          bool visible) OVERRIDE {
-    visibility_info_.reset(new VisibilityInfo);
+    if (!visibility_info_) {
+      visibility_info_.reset(new VisibilityInfo);
+      visibility_info_->changed_count = 0;
+    }
     visibility_info_->window_visible = window->IsVisible();
     visibility_info_->visible_param = visible;
+    visibility_info_->changed_count++;
   }
 
   virtual void OnWindowDestroyed(Window* window) OVERRIDE {
@@ -1804,6 +1809,7 @@ TEST_F(WindowObserverTest, WindowVisibility) {
     return;
   EXPECT_FALSE(GetVisibilityInfo()->window_visible);
   EXPECT_FALSE(GetVisibilityInfo()->visible_param);
+  EXPECT_EQ(1, GetVisibilityInfo()->changed_count);
 
   // If parent isn't visible, showing window won't make the window visible, but
   // passed visible value must be true.
@@ -1816,6 +1822,7 @@ TEST_F(WindowObserverTest, WindowVisibility) {
     return;
   EXPECT_FALSE(GetVisibilityInfo()->window_visible);
   EXPECT_TRUE(GetVisibilityInfo()->visible_param);
+  EXPECT_EQ(1, GetVisibilityInfo()->changed_count);
 
   // If parent is visible, showing window will make the window
   // visible and the passed visible value is true.
@@ -1828,6 +1835,15 @@ TEST_F(WindowObserverTest, WindowVisibility) {
     return;
   EXPECT_TRUE(GetVisibilityInfo()->window_visible);
   EXPECT_TRUE(GetVisibilityInfo()->visible_param);
+  EXPECT_EQ(1, GetVisibilityInfo()->changed_count);
+
+  // Verify that the OnWindowVisibilityChanged only once
+  // per visibility change.
+  w2->Hide();
+  EXPECT_EQ(2, GetVisibilityInfo()->changed_count);
+
+  w2->Hide();
+  EXPECT_EQ(2, GetVisibilityInfo()->changed_count);
 }
 
 // Test if OnWindowDestroyed is invoked as expected.
