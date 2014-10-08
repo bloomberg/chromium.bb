@@ -338,11 +338,7 @@ std::string FilePathToString(const base::FilePath& file_path) {
 }
 
 base::FilePath ChromiumEnv::CreateFilePath(const std::string& file_path) {
-#if defined(OS_WIN)
-  return base::FilePath(base::UTF8ToUTF16(file_path));
-#else
-  return base::FilePath(file_path);
-#endif
+  return base::FilePath::FromUTF8Unsafe(file_path);
 }
 
 bool ChromiumEnv::MakeBackup(const std::string& fname) {
