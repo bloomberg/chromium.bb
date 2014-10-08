@@ -74,7 +74,7 @@
                 },
                 'mac_bundle_resources': [
                   '<(ios_unittest_info_plist_path)',
-                  '<(DEPTH)/testing/gtest_ios/Default-568h@2x.png',
+                  '<(DEPTH)/testing/gtest_ios/Default.png',
                 ],
                 'mac_bundle_resources!': [
                   '<(ios_unittest_info_plist_path)',
