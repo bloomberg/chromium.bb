@@ -41,6 +41,11 @@ public:
     String buttonValue();
     String fileTextValue() const;
 
+    HTMLInputElement* uploadButton() const;
+    int uploadButtonWidth();
+
+    static const int afterButtonSpacing = 4;
+
 private:
     virtual const char* renderName() const OVERRIDE { return "RenderFileUploadControl"; }
 
@@ -52,8 +57,6 @@ private:
     int maxFilenameWidth() const;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
-
-    HTMLInputElement* uploadButton() const;
 
     bool m_canReceiveDroppedFiles;
 };

@@ -28,6 +28,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/paint/FileUploadControlPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
 #include "core/rendering/RenderTheme.h"
@@ -42,9 +43,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-const int afterButtonSpacing = 4;
 const int defaultWidthNumChars = 34;
-const int buttonShadowHeight = 2;
 
 RenderFileUploadControl::RenderFileUploadControl(HTMLInputElement* input)
     : RenderBlockFlow(input)
@@ -77,72 +76,15 @@ void RenderFileUploadControl::updateFromElement()
         setShouldDoFullPaintInvalidation();
 }
 
-static int nodeWidth(Node* node)
-{
-    return (node && node->renderBox()) ? node->renderBox()->pixelSnappedWidth() : 0;
-}
-
 int RenderFileUploadControl::maxFilenameWidth() const
 {
-    return std::max(0, contentBoxRect().pixelSnappedWidth() - nodeWidth(uploadButton()) - afterButtonSpacing);
+    int uploadButtonWidth = (uploadButton() && uploadButton()->renderBox()) ? uploadButton()->renderBox()->pixelSnappedWidth() : 0;
+    return std::max(0, contentBoxRect().pixelSnappedWidth() - uploadButtonWidth - afterButtonSpacing);
 }
 
 void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (style()->visibility() != VISIBLE)
-        return;
-
-    // Push a clip.
-    GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-    if (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseChildBlockBackgrounds) {
-        IntRect clipRect = enclosingIntRect(LayoutRect(paintOffset.x() + borderLeft(), paintOffset.y() + borderTop(),
-                         width() - borderLeft() - borderRight(), height() - borderBottom() - borderTop() + buttonShadowHeight));
-        if (clipRect.isEmpty())
-            return;
-        stateSaver.save();
-        paintInfo.context->clip(clipRect);
-    }
-
-    if (paintInfo.phase == PaintPhaseForeground) {
-        const String& displayedFilename = fileTextValue();
-        const Font& font = style()->font();
-        TextRun textRun = constructTextRun(this, font, displayedFilename, style(), TextRun::AllowTrailingExpansion, RespectDirection | RespectDirectionOverride);
-
-        // Determine where the filename should be placed
-        LayoutUnit contentLeft = paintOffset.x() + borderLeft() + paddingLeft();
-        HTMLInputElement* button = uploadButton();
-        if (!button)
-            return;
-
-        LayoutUnit buttonWidth = nodeWidth(button);
-        LayoutUnit buttonAndSpacingWidth = buttonWidth + afterButtonSpacing;
-        float textWidth = font.width(textRun);
-        LayoutUnit textX;
-        if (style()->isLeftToRightDirection())
-            textX = contentLeft + buttonAndSpacingWidth;
-        else
-            textX = contentLeft + contentWidth() - buttonAndSpacingWidth - textWidth;
-
-        LayoutUnit textY = 0;
-        // We want to match the button's baseline
-        // FIXME: Make this work with transforms.
-        if (RenderButton* buttonRenderer = toRenderButton(button->renderer()))
-            textY = paintOffset.y() + borderTop() + paddingTop() + buttonRenderer->baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
-        else
-            textY = baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
-        TextRunPaintInfo textRunPaintInfo(textRun);
-        // FIXME: Shouldn't these offsets be rounded? crbug.com/350474
-        textRunPaintInfo.bounds = FloatRect(textX.toFloat(), textY.toFloat() - style()->fontMetrics().ascent(),
-            textWidth, style()->fontMetrics().height());
-
-        paintInfo.context->setFillColor(resolveColor(CSSPropertyColor));
-
-        // Draw the filename
-        paintInfo.context->drawBidiText(font, textRunPaintInfo, IntPoint(roundToInt(textX), roundToInt(textY)));
-    }
-
-    // Paint the children.
-    RenderBlockFlow::paintObject(paintInfo, paintOffset);
+    FileUploadControlPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
 void RenderFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
