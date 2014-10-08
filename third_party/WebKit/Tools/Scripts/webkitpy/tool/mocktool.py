@@ -67,6 +67,3 @@ class MockTool(MockHost):
 
     def path(self):
         return "echo"
-
-    def buildbot_for_builder_name(self, name):
-        return MockBuildBot()

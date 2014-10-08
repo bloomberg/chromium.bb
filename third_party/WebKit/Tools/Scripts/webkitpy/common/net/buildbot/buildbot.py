@@ -54,12 +54,10 @@ class Builder(object):
         return self._name
 
     def results_url(self):
-        return "%s/results/%s" % (self._buildbot.buildbot_url, self.url_encoded_name())
+        return config_urls.chromium_results_url_base_for_builder(self._name)
 
-    # In addition to per-build results, the build.chromium.org builders also
-    # keep a directory that accumulates test results over many runs.
     def accumulated_results_url(self):
-        return None
+        return config_urls.chromium_accumulated_results_url_base_for_builder(self._name)
 
     def latest_layout_test_results_url(self):
         return self.accumulated_results_url() or self.latest_cached_build().results_url();
@@ -217,7 +215,7 @@ class Build(object):
 
 class BuildBot(object):
     _builder_factory = Builder
-    _default_url = config_urls.buildbot_url
+    _default_url = config_urls.chromium_buildbot_url
 
     def __init__(self, url=None):
         self.buildbot_url = url if url else self._default_url

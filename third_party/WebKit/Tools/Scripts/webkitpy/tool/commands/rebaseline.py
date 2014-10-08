@@ -186,7 +186,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
     help_text = "Rebaseline a single test from a buildbot. Only intended for use by other webkit-patch commands."
 
     def _results_url(self, builder_name):
-        return self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name).latest_layout_test_results_url()
+        return self._tool.buildbot.builder_with_name(builder_name).latest_layout_test_results_url()
 
     def _save_baseline(self, data, target_baseline, baseline_directory, test_name, suffix):
         if not data:
@@ -322,7 +322,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def builder_data(self):
         if not self._builder_data:
             for builder_name in self._release_builders():
-                builder = self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name)
+                builder = self._tool.buildbot.builder_with_name(builder_name)
                 self._builder_data[builder_name] = builder.latest_layout_test_results()
         return self._builder_data
 
@@ -617,7 +617,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
         return [self._builder_with_name(name) for name in chosen_names]
 
     def _builder_with_name(self, name):
-        return self._tool.buildbot_for_builder_name(name).builder_with_name(name)
+        return self._tool.buildbot.builder_with_name(name)
 
     def execute(self, options, args, tool):
         if not args:

@@ -34,7 +34,6 @@ import sys
 from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net import buildbot, web
-from webkitpy.common.net.buildbot.chromiumbuildbot import ChromiumBuildBot
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.layout_tests.port.factory import PortFactory
 
@@ -135,12 +134,3 @@ class Host(SystemHost):
         if sys.platform == "win32":
             self._engage_awesome_windows_hacks()
         return SCMDetector(self.filesystem, self.executive).detect_scm_system(path)
-
-    def buildbot_for_builder_name(self, name):
-        if self.port_factory.get_from_builder_name(name).is_chromium():
-            return self.chromium_buildbot()
-        return self.buildbot
-
-    @memoized
-    def chromium_buildbot(self):
-        return ChromiumBuildBot()
