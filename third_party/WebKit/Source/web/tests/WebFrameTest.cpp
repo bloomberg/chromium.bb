@@ -150,8 +150,8 @@ public:
 class WebFrameTest : public testing::Test {
 protected:
     WebFrameTest()
-        : m_baseURL("http://www.test.com/")
-        , m_notBaseURL("http://www.nottest.com/")
+        : m_baseURL("http://internal.test/")
+        , m_notBaseURL("http://external.test/")
         , m_chromeURL("chrome://")
     {
     }
@@ -348,7 +348,7 @@ TEST_F(WebFrameTest, LocationSetHostWithMissingPort)
 {
     std::string fileName = "print-location-href.html";
     registerMockedHttpURLLoad(fileName);
-    URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com:0/" + fileName), WebString::fromUTF8(fileName));
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://internal.test:0/" + fileName), WebString::fromUTF8(fileName));
 
     FrameTestHelpers::WebViewHelper webViewHelper;
 
@@ -356,19 +356,19 @@ TEST_F(WebFrameTest, LocationSetHostWithMissingPort)
     webViewHelper.initializeAndLoad(m_baseURL + fileName, true);
 
     // Setting host to "hostname:" should be treated as "hostname:0".
-    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:location.host = 'www.test.com:'; void 0;");
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:location.host = 'internal.test:'; void 0;");
 
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.textContent = location.href; void 0;");
 
     std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
-    EXPECT_EQ("http://www.test.com:0/" + fileName, content);
+    EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
 TEST_F(WebFrameTest, LocationSetEmptyPort)
 {
     std::string fileName = "print-location-href.html";
     registerMockedHttpURLLoad(fileName);
-    URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com:0/" + fileName), WebString::fromUTF8(fileName));
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://internal.test:0/" + fileName), WebString::fromUTF8(fileName));
 
     FrameTestHelpers::WebViewHelper webViewHelper;
 
@@ -380,7 +380,7 @@ TEST_F(WebFrameTest, LocationSetEmptyPort)
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.textContent = location.href; void 0;");
 
     std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
-    EXPECT_EQ("http://www.test.com:0/" + fileName, content);
+    EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
 class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -3109,7 +3109,7 @@ TEST_F(WebFrameTest, ReloadWhileProvisional)
 TEST_F(WebFrameTest, AppendRedirects)
 {
     const std::string firstURL = "about:blank";
-    const std::string secondURL = "http://www.test.com";
+    const std::string secondURL = "http://internal.test";
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(firstURL, true);
@@ -3143,7 +3143,7 @@ TEST_F(WebFrameTest, IframeRedirect)
     iframeDataSource->redirectChain(redirects);
     ASSERT_EQ(2U, redirects.size());
     EXPECT_EQ(toKURL("about:blank"), toKURL(redirects[0].spec().data()));
-    EXPECT_EQ(toKURL("http://www.test.com/visible_iframe.html"), toKURL(redirects[1].spec().data()));
+    EXPECT_EQ(toKURL("http://internal.test/visible_iframe.html"), toKURL(redirects[1].spec().data()));
 }
 
 TEST_F(WebFrameTest, ClearFocusedNodeTest)
@@ -5406,8 +5406,8 @@ TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
     WTF::String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
     filePath.append("/Source/web/tests/data/first_party.html");
 
-    WebURL testURL(toKURL("http://www.test.com/first_party_redirect.html"));
-    char redirect[] = "http://www.test.com/first_party.html";
+    WebURL testURL(toKURL("http://internal.test/first_party_redirect.html"));
+    char redirect[] = "http://internal.test/first_party.html";
     WebURL redirectURL(toKURL(redirect));
     WebURLResponse redirectResponse;
     redirectResponse.initialize();
@@ -6702,12 +6702,12 @@ TEST_F(WebFrameTest, NavigationTransitionCallbacks)
         "<div id='foo'>";
 
     // Initial document load should not be a transition.
-    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("http://www.test.com"));
+    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("http://internal.test"));
     EXPECT_EQ(1u, frameClient.provisionalLoadCount());
     EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
     EXPECT_EQ(0u, frameClient.navigationalDataReceivedCount());
 
-    // Going from www.test.com containing transition elements to about:blank, should be a transition.
+    // Going from internal.test containing transition elements to about:blank, should be a transition.
     FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("about:blank"));
     EXPECT_EQ(2u, frameClient.provisionalLoadCount());
     EXPECT_TRUE(frameClient.wasLastProvisionalLoadATransition());
