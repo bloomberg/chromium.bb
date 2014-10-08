@@ -285,6 +285,12 @@ function main() {
   Generic wildcards such as <code>https:</code>, <code>https://*</code> and
   <code>https://*.com</code> are not allowed; subdomain wildcards such as
   <code>https://*.example.com</code> are allowed.
+  Domains in the <a href="https://publicsuffix.org/list/">Public Suffix list</a>
+  are also viewed as generic top-level domains. To load a resource from these
+  domains, the subdomain must explicitly be listed. For example,
+  <code>https://*.googleapis.com</code> is invalid, but
+  <code>https://ajax.googleapis.com</code> and
+  <code>https://*.ajax.googleapis.com</code> can be whitelisted.
 </p>
 
 <p>
