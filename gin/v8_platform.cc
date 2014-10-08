@@ -39,4 +39,9 @@ void V8Platform::CallOnForegroundThread(v8::Isolate* isolate, v8::Task* task) {
       FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)));
 }
 
+double V8Platform::MonotonicallyIncreasingTime() {
+  return base::TimeTicks::Now().ToInternalValue() /
+      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+}
+
 }  // namespace gin
