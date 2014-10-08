@@ -79,6 +79,11 @@ void GuestViewManager::AttachGuest(
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(embedder_render_process_id,
                                       embedder_routing_id);
+  // We need to check that rvh is not NULL because there may be a race between
+  // AttachGuest and destroying the embedder (i.e. when the embedder is
+  // destroyed immediately after the guest is created).
+  if (!rvh)
+    return;
   content::WebContents* embedder_web_contents =
       content::WebContents::FromRenderViewHost(rvh);
   if (!embedder_web_contents)
