@@ -371,6 +371,8 @@ GCMDriverDesktop::~GCMDriverDesktop() {
 
 void GCMDriverDesktop::Shutdown() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  Stop();
   GCMDriver::Shutdown();
 
   // Dispose the syncer in order to release the reference to

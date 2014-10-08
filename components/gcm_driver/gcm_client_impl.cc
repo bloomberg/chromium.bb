@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
@@ -583,13 +584,18 @@ void GCMClientImpl::DefaultStoreCallback(bool success) {
 }
 
 void GCMClientImpl::Stop() {
+  DVLOG(1) << "Stopping the GCM Client";
   weak_ptr_factory_.InvalidateWeakPtrs();
   device_checkin_info_.Reset();
   connection_factory_.reset();
   delegate_->OnDisconnected();
   mcs_client_.reset();
   checkin_request_.reset();
-  pending_registration_requests_.clear();
+  // Delete all of the pending registration requests, whithout telling the
+  // consumers.
+  // TODO(fgorski): Perhaps we should make a distinction between a Stop and a
+  // Shutdown.
+  STLDeleteValues(&pending_registration_requests_);
   state_ = INITIALIZED;
   gcm_store_->Close();
 }

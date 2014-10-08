@@ -252,6 +252,7 @@ class GCMClientImplTest : public testing::Test,
                        const std::map<std::string, std::string>& settings);
   void CompleteRegistration(const std::string& registration_id);
   void CompleteUnregistration(const std::string& app_id);
+  void VerifyPendingRequestFetcherDeleted();
 
   bool ExistsRegistration(const std::string& app_id) const;
   void AddRegistration(const std::string& app_id,
@@ -369,6 +370,7 @@ void GCMClientImplTest::SetUp() {
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
   StartGCMClient();
+  url_fetcher_factory_.set_remove_fetcher_on_delete(true);
   CompleteCheckin(kDeviceAndroidId,
                   kDeviceSecurityToken,
                   std::string(),
@@ -435,7 +437,6 @@ void GCMClientImplTest::CompleteCheckin(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response_string);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  url_fetcher_factory_.RemoveFetcherFromMap(0);
 }
 
 void GCMClientImplTest::CompleteRegistration(
@@ -447,7 +448,6 @@ void GCMClientImplTest::CompleteRegistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  url_fetcher_factory_.RemoveFetcherFromMap(0);
 }
 
 void GCMClientImplTest::CompleteUnregistration(
@@ -459,7 +459,11 @@ void GCMClientImplTest::CompleteUnregistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  url_fetcher_factory_.RemoveFetcherFromMap(0);
+}
+
+void GCMClientImplTest::VerifyPendingRequestFetcherDeleted() {
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  EXPECT_FALSE(fetcher);
 }
 
 bool GCMClientImplTest::ExistsRegistration(const std::string& app_id) const {
@@ -640,6 +644,18 @@ TEST_F(GCMClientImplTest, UnregisterApp) {
   EXPECT_EQ(kAppId, last_app_id());
   EXPECT_EQ(GCMClient::SUCCESS, last_result());
   EXPECT_FALSE(ExistsRegistration(kAppId));
+}
+
+// Tests that stopping the GCMClient also deletes pending registration requests.
+// This is tested by checking that url fetcher contained in the request was
+// deleted.
+TEST_F(GCMClientImplTest, DeletePendingRequestsWhenStopping) {
+  std::vector<std::string> senders;
+  senders.push_back("sender");
+  gcm_client()->Register(kAppId, senders);
+
+  gcm_client()->Stop();
+  VerifyPendingRequestFetcherDeleted();
 }
 
 TEST_F(GCMClientImplTest, DispatchDownstreamMessage) {
