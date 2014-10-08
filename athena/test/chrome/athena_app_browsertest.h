@@ -27,7 +27,7 @@ class AthenaAppBrowserTest : public extensions::PlatformAppBrowserTest {
   const std::string& GetTestAppID();
 
   // BrowserTestBase:
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
  private:
   // Our created app id - after it got created and installed.

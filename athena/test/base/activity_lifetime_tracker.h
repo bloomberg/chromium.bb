@@ -18,10 +18,10 @@ class ActivityLifetimeTracker : public ActivityManagerObserver {
   virtual ~ActivityLifetimeTracker();
 
   // Called after an |activity| got created.
-  virtual void OnActivityStarted(Activity* activity) OVERRIDE;
+  virtual void OnActivityStarted(Activity* activity) override;
 
   // Called before an |activity| gets destroyed.
-  virtual void OnActivityEnding(Activity* activity) OVERRIDE;
+  virtual void OnActivityEnding(Activity* activity) override;
 
   // Returns the newly created activity (if any) and resets its reference.
   Activity* GetNewActivityAndReset();
