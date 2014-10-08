@@ -383,7 +383,7 @@ void GinJavaBridgeDispatcherHost::OnGetMethods(
   DCHECK(!HasPendingReply(render_frame_host));
   pending_replies_[render_frame_host] = reply_msg;
   base::PostTaskAndReplyWithResult(
-      g_background_thread.Get().message_loop()->message_loop_proxy(),
+      g_background_thread.Get().message_loop()->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&GinJavaBoundObject::GetMethodNames, object),
       base::Bind(&GinJavaBridgeDispatcherHost::SendMethods,
@@ -419,7 +419,7 @@ void GinJavaBridgeDispatcherHost::OnHasMethod(
   DCHECK(!HasPendingReply(render_frame_host));
   pending_replies_[render_frame_host] = reply_msg;
   base::PostTaskAndReplyWithResult(
-      g_background_thread.Get().message_loop()->message_loop_proxy(),
+      g_background_thread.Get().message_loop()->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&GinJavaBoundObject::HasMethod, object, method_name),
       base::Bind(&GinJavaBridgeDispatcherHost::SendHasMethodReply,

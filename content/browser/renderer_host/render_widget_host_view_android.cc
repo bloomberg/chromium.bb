@@ -1160,7 +1160,7 @@ scoped_ptr<TouchHandleDrawable> RenderWidgetHostViewAndroid::CreateDrawable() {
     return content_view_core_->CreatePopupTouchHandleDrawable();
 
   return scoped_ptr<TouchHandleDrawable>(new CompositedTouchHandleDrawable(
-      content_view_core_->GetLayer(),
+      content_view_core_->GetLayer().get(),
       content_view_core_->GetDpiScale(),
       base::android::GetApplicationContext()));
 }
@@ -1518,7 +1518,7 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
 
   if (overscroll_effect_ &&
       overscroll_effect_->OnOverscrolled(
-          content_view_core_->GetLayer(),
+          content_view_core_->GetLayer().get(),
           base::TimeTicks::Now(),
           gfx::ScaleVector2d(params.accumulated_overscroll,
                              device_scale_factor),

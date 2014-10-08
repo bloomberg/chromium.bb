@@ -140,7 +140,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       has_size_info_(false),
       // Compositor thread does not exist in layout tests.
       compositor_loop_(
-          RenderThreadImpl::current()->compositor_message_loop_proxy()
+          RenderThreadImpl::current()->compositor_message_loop_proxy().get()
               ? RenderThreadImpl::current()->compositor_message_loop_proxy()
               : base::MessageLoopProxy::current()),
       stream_texture_factory_(factory),
