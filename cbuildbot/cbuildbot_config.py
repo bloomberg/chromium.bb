@@ -2112,6 +2112,13 @@ internal_notest_paladin.add_config('urara-paladin',
   usepkg_toolchain=False,
 )
 
+internal_notest_paladin.add_config('whirlwind-paladin',
+  brillo_non_testable,
+  boards=['whirlwind'],
+  paladin_builder_name='whirlwind paladin',
+  important=False
+)
+
 internal_notest_paladin.add_config('veyron_pinky-paladin',
   boards=['veyron_pinky'],
   paladin_builder_name='veyron_pinky paladin',
@@ -2548,6 +2555,15 @@ _non_testable_brillo_release.add_config('urara-release',
   # TODO(benchan): Re-enable 'usepkg_toolchain' when the pre-built toolchain
   # for MIPS is available (crbug.com/380329).
   usepkg_toolchain=False,
+)
+
+_non_testable_brillo_release.add_config('whirlwind-release',
+  boards=['whirlwind'],
+
+  # Hw Lab can't test whirlwind, yet.
+  paygen_skip_testing=True,
+  important=False,
+  signer_tests=False
 )
 
 _release.add_config('mipsel-o32-generic-release',
