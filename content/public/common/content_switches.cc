@@ -114,9 +114,6 @@ const char kDisableDatabases[]              = "disable-databases";
 // Disables delegated renderer.
 const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
 
-// Disables desktop notifications (default enabled on windows).
-const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
-
 // Handles URL requests by NPAPI plugins through the renderer.
 const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 

@@ -1095,7 +1095,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisablePreferCompositingToLCDText,
     switches::kDisableCompositingForTransition,
     switches::kDisableDatabases,
-    switches::kDisableDesktopNotifications,
     switches::kDisableDirectNPAPIRequests,
     switches::kDisableDisplayList2dCanvas,
     switches::kDisableDistanceFieldText,
