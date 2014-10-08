@@ -1979,8 +1979,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             // If this dialog attempts to open file(s) and the selection is a
             // directory, the selection should be the current directory.
             if (DialogType.isOpenFileDialog(this.dialogType) &&
-                inEntry.isDirectory)
+                inEntry.isDirectory) {
               nextCurrentDirEntry = inEntry;
+            }
 
             // By default, the selection should be selected entry and the
             // parent directory of it should be the current directory.
@@ -2025,6 +2026,45 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
+    // Check if the next current directory is not a virtual directory which is
+    // not available in UI. This may happen to shared on Drive.
+    queue.run(function(callback) {
+      if (!nextCurrentDirEntry) {
+        callback();
+        return;
+      }
+      var locationInfo = this.volumeManager_.getLocationInfo(
+          nextCurrentDirEntry);
+      // If we can't check, assume that the directory is illegal.
+      if (!locationInfo) {
+        nextCurrentDirEntry = null;
+        callback();
+        return;
+      }
+      // Having root directory of DRIVE_OTHER here should be only for shared
+      // with me files. Fallback to Drive root in such case.
+      if (locationInfo.isRootEntry && locationInfo.rootType ===
+              VolumeManagerCommon.RootType.DRIVE_OTHER) {
+        var volumeInfo = this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
+        if (!volumeInfo) {
+          nextCurrentDirEntry = null;
+          callback();
+          return;
+        }
+        volumeInfo.resolveDisplayRoot().then(
+            function(entry) {
+              nextCurrentDirEntry = entry;
+              callback();
+            }).catch(function(error) {
+              console.error(error.stack || error);
+              nextCurrentDirEntry = null;
+              callback();
+            });
+      } else {
+        callback();
+      }
+    }.bind(this));
+
     // If the directory to be changed to is still not resolved, then fallback
     // to the default display root.
     queue.run(function(callback) {
@@ -2067,7 +2107,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                 });
           }.bind(this));
     }.bind(this));
-
 
     // Finalize.
     queue.run(function(callback) {
