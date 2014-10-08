@@ -53,7 +53,7 @@ layer at (0,0) size 785x1349
             RenderTableCell {TD} at (57,130) size 710x74 [border: (1px solid #EEEEEE)] [r=3 c=1 rs=1 cs=1]
               RenderText {#text} at (2,8) size 407x19
                 text run at (2,8) width 407: "'cept nut'in safari\x{2019}s \x{2018}sure\x{2019} nai\x{308}ve r\x{E9}sum\x{E9}\x{2014}h\x{E1}c\x{30C}ek full\x{2010}time one-to-one"
-              RenderBR {BR} at (409,23) size 0x0
+              RenderBR {BR} at (408,23) size 1x0
               RenderText {#text} at (2,32) size 298x19
                 text run at (2,32) width 298: "\"newcastle\x{2011}upon\x{2011}tyne\" washington\x{2011}on\x{2011}the\x{2011}brazos"
               RenderBR {BR} at (300,47) size 0x0
@@ -253,9 +253,9 @@ layer at (0,0) size 785x1349
               RenderText {#text} at (18,2) size 17x19
                 text run at (18,2) width 17: "en"
             RenderTableCell {TD} at (57,130) size 710x74 [border: (1px solid #EEEEEE)] [r=3 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,8) size 459x19
-                text run at (2,8) width 459: "'Cept Nut'in Safari\x{2019}s \x{2018}Sure\x{2019} Nai\x{308}ve R\x{E9}sum\x{E9}\x{2014}H\x{E1}c\x{30C}ek Full\x{2010}Time One-To-One"
-              RenderBR {BR} at (461,23) size 0x0
+              RenderText {#text} at (2,8) size 457x19
+                text run at (2,8) width 457: "'Cept Nut'in Safari\x{2019}s \x{2018}Sure\x{2019} Nai\x{308}ve R\x{E9}sum\x{E9}\x{2014}H\x{E1}c\x{30C}ek Full\x{2010}Time One-To-One"
+              RenderBR {BR} at (458,23) size 1x0
               RenderText {#text} at (2,32) size 327x19
                 text run at (2,32) width 327: "\"Newcastle\x{2011}Upon\x{2011}Tyne\" Washington\x{2011}On\x{2011}The\x{2011}Brazos"
               RenderBR {BR} at (329,47) size 0x0

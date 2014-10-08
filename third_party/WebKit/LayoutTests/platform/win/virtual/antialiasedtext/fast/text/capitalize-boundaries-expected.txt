@@ -50,9 +50,9 @@ layer at (0,0) size 785x1279
               RenderText {#text} at (19,2) size 16x17
                 text run at (19,2) width 16: "en"
             RenderTableCell {TD} at (58,117) size 709x72 [border: (1px solid #EEEEEE)] [r=3 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,6) size 438x17
-                text run at (2,6) width 438: "'cept nut'in safari\x{2019}s \x{2018}sure\x{2019} nai\x{308}ve r\x{E9}sum\x{E9}\x{2014}h\x{E1}c\x{30C}ek full\x{2010}time one-to-one"
-              RenderBR {BR} at (439,20) size 1x0
+              RenderText {#text} at (2,6) size 437x17
+                text run at (2,6) width 437: "'cept nut'in safari\x{2019}s \x{2018}sure\x{2019} nai\x{308}ve r\x{E9}sum\x{E9}\x{2014}h\x{E1}c\x{30C}ek full\x{2010}time one-to-one"
+              RenderBR {BR} at (438,20) size 1x0
               RenderText {#text} at (2,31) size 317x17
                 text run at (2,31) width 317: "\"newcastle\x{2011}upon\x{2011}tyne\" washington\x{2011}on\x{2011}the\x{2011}brazos"
               RenderBR {BR} at (318,45) size 1x0
@@ -252,9 +252,9 @@ layer at (0,0) size 785x1279
               RenderText {#text} at (19,2) size 16x17
                 text run at (19,2) width 16: "en"
             RenderTableCell {TD} at (58,117) size 709x72 [border: (1px solid #EEEEEE)] [r=3 c=1 rs=1 cs=1]
-              RenderText {#text} at (2,6) size 484x17
-                text run at (2,6) width 484: "'Cept Nut'in Safari\x{2019}s \x{2018}Sure\x{2019} Nai\x{308}ve R\x{E9}sum\x{E9}\x{2014}H\x{E1}c\x{30C}ek Full\x{2010}Time One-To-One"
-              RenderBR {BR} at (485,20) size 1x0
+              RenderText {#text} at (2,6) size 481x17
+                text run at (2,6) width 481: "'Cept Nut'in Safari\x{2019}s \x{2018}Sure\x{2019} Nai\x{308}ve R\x{E9}sum\x{E9}\x{2014}H\x{E1}c\x{30C}ek Full\x{2010}Time One-To-One"
+              RenderBR {BR} at (482,20) size 1x0
               RenderText {#text} at (2,31) size 345x17
                 text run at (2,31) width 345: "\"Newcastle\x{2011}Upon\x{2011}Tyne\" Washington\x{2011}On\x{2011}The\x{2011}Brazos"
               RenderBR {BR} at (346,45) size 1x0
