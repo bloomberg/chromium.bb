@@ -73,6 +73,7 @@ HttpNetworkSession::Params::Params()
       host_mapping_rules(NULL),
       enable_ssl_connect_job_waiting(false),
       ignore_certificate_errors(false),
+      use_stale_while_revalidate(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       enable_tcp_fast_open_for_ssl(false),

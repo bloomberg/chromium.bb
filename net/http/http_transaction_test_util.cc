@@ -277,8 +277,13 @@ bool MockNetworkTransaction::IsReadyToRestartForAuth() {
   if (!request_)
     return false;
 
-  // Only mock auth when the test asks for it.
-  return request_->extra_headers.HasHeader("X-Require-Mock-Auth");
+  if (!request_->extra_headers.HasHeader("X-Require-Mock-Auth"))
+    return false;
+
+  // Allow the mock server to decide whether authentication is required or not.
+  std::string status_line = response_.headers->GetStatusLine();
+  return status_line.find(" 401 ") != std::string::npos ||
+      status_line.find(" 407 ") != std::string::npos;
 }
 
 int MockNetworkTransaction::Read(net::IOBuffer* buf, int buf_len,

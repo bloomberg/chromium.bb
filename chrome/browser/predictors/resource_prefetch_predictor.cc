@@ -246,8 +246,8 @@ bool ResourcePrefetchPredictor::IsCacheable(const net::URLRequest* response) {
     return false;
   base::Time response_time(response_info.response_time);
   response_time += base::TimeDelta::FromSeconds(1);
-  base::TimeDelta freshness = response_info.headers->GetFreshnessLifetime(
-      response_time);
+  base::TimeDelta freshness =
+      response_info.headers->GetFreshnessLifetimes(response_time).fresh;
   return freshness > base::TimeDelta();
 }
 

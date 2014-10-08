@@ -1149,6 +1149,13 @@ const Experiment kExperiments[] = {
                               switches::kDisableTouchEditing)
   },
   {
+    "enable-stale-while-revalidate",
+    IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME,
+    IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableStaleWhileRevalidate)
+  },
+  {
     "enable-suggestions-service",
     IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_NAME,
     IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_DESCRIPTION,

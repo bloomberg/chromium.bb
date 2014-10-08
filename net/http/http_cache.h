@@ -15,6 +15,7 @@
 #define NET_HTTP_HTTP_CACHE_H_
 
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 
@@ -201,6 +202,16 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     bypass_lock_for_test_ = true;
   }
 
+  bool use_stale_while_revalidate() const {
+    return use_stale_while_revalidate_;
+  }
+
+  // Enable stale_while_revalidate functionality for testing purposes.
+  void set_use_stale_while_revalidate_for_testing(
+      bool use_stale_while_revalidate) {
+    use_stale_while_revalidate_ = use_stale_while_revalidate;
+  }
+
   // HttpTransactionFactory implementation:
   virtual int CreateTransaction(RequestPriority priority,
                                 scoped_ptr<HttpTransaction>* trans) OVERRIDE;
@@ -237,9 +248,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   friend class Transaction;
   friend class ViewCacheHelper;
   struct PendingOp;  // Info for an entry under construction.
+  class AsyncValidation;  // Encapsulates a single async revalidation.
 
   typedef std::list<Transaction*> TransactionList;
   typedef std::list<WorkItem*> WorkItemList;
+  typedef std::map<std::string, AsyncValidation*> AsyncValidationMap;
 
   struct ActiveEntry {
     explicit ActiveEntry(disk_cache::Entry* entry);
@@ -374,6 +387,15 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Resumes processing the pending list of |entry|.
   void ProcessPendingQueue(ActiveEntry* entry);
 
+  // Called by Transaction to perform an asynchronous revalidation. Creates a
+  // new independent transaction as a copy of the original.
+  void PerformAsyncValidation(const HttpRequestInfo& original_request,
+                              const BoundNetLog& net_log);
+
+  // Remove the AsyncValidation with url |url| from the |async_validations_| set
+  // and delete it.
+  void DeleteAsyncValidation(const std::string& url);
+
   // Events (called via PostTask) ---------------------------------------------
 
   void OnProcessPendingQueue(ActiveEntry* entry);
@@ -405,6 +427,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   bool building_backend_;
   bool bypass_lock_for_test_;
 
+  // true if the implementation of Cache-Control: stale-while-revalidate
+  // directive is enabled (either via command-line flag or experiment).
+  bool use_stale_while_revalidate_;
+
   Mode mode_;
 
   scoped_ptr<QuicServerInfoFactoryAdaptor> quic_server_info_factory_;
@@ -425,6 +451,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   PendingOpsMap pending_ops_;
 
   scoped_ptr<PlaybackCacheMap> playback_cache_map_;
+
+  // The async validations currently in progress, keyed by URL.
+  AsyncValidationMap async_validations_;
 
   base::WeakPtrFactory<HttpCache> weak_factory_;
 

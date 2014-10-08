@@ -16,6 +16,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
 
@@ -311,8 +312,9 @@ class HttpCache::Transaction : public HttpTransaction {
   // Returns network error code.
   int RestartNetworkRequestWithAuth(const AuthCredentials& credentials);
 
-  // Called to determine if we need to validate the cache entry before using it.
-  bool RequiresValidation();
+  // Called to determine if we need to validate the cache entry before using it,
+  // and whether the validation should be synchronous or asynchronous.
+  ValidationType RequiresValidation();
 
   // Called to make the request conditional (to ask the server if the cached
   // copy is valid).  Returns true if able to make the request conditional.
@@ -328,6 +330,9 @@ class HttpCache::Transaction : public HttpTransaction {
 
   // Removes content-length and byte range related info if needed.
   void FixHeadersForHead();
+
+  // Launches an asynchronous revalidation based on this transaction.
+  void TriggerAsyncValidation();
 
   // Changes the response code of a range request to be 416 (Requested range not
   // satisfiable).

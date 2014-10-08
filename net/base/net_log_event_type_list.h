@@ -835,6 +835,29 @@ EVENT_TYPE(HTTP_CACHE_WRITE_INFO)
 EVENT_TYPE(HTTP_CACHE_READ_DATA)
 EVENT_TYPE(HTTP_CACHE_WRITE_DATA)
 
+// Identifies the NetLog::Source() for the asynchronous HttpCache::Transaction
+// that will revalidate this entry.
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for the async Transaction>
+//   }
+EVENT_TYPE(HTTP_CACHE_VALIDATE_RESOURCE_ASYNC)
+
+// The start/end of performing an async revalidation.
+// For the BEGIN phase, the event parameters are:
+//   {
+//      "source_dependency": <Source identifier for the Request>
+//      "url": <String of URL being loaded>,
+//      "method": <Method of request>
+//   }
+//
+// For the END phase, if there was an error, the following parameters are
+// attached:
+//   {
+//      "net_error": <Net error code of the failure>,
+//   }
+EVENT_TYPE(ASYNC_REVALIDATION)
+
 // ------------------------------------------------------------------------
 // Disk Cache / Memory Cache
 // ------------------------------------------------------------------------

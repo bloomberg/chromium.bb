@@ -9871,6 +9871,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    The time spent performing an asynchronous revalidation that was triggered by
+    a Cache-Control: stale-while-revalidate directive. This is recorded when the
+    asynchronous revalidation completes, either after the response was
+    completely read or an error occurred. One entry is recorded for each
+    asynchronous revalidation that is performed.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.EntryLockWait" units="milliseconds">
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -45949,6 +45960,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1723601083" label="enable-app-window-controls"/>
   <int value="1730236697" label="force-device-scale-factor"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
+  <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1783293530" label="disallow-autofill-sync-credential"/>

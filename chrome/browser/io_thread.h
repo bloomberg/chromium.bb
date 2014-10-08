@@ -166,6 +166,7 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     bool enable_ssl_connect_job_waiting;
     bool ignore_certificate_errors;
+    bool use_stale_while_revalidate;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
     Optional<bool> enable_tcp_fast_open_for_ssl;

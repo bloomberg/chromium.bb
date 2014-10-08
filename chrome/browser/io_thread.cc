@@ -136,6 +136,9 @@ const char kSpdyFieldTrialHoldbackControlGroupName[] = "Control";
 const char kSpdyFieldTrialSpdy4GroupName[] = "Spdy4Enabled";
 const char kSpdyFieldTrialSpdy4ControlGroupName[] = "Spdy4Control";
 
+// Field trial for Cache-Control: stale-while-revalidate directive.
+const char kStaleWhileRevalidateFieldTrialName[] = "StaleWhileRevalidate";
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -425,6 +428,7 @@ IOThread::Globals::Globals()
     : system_request_context_leak_checker(this),
       enable_ssl_connect_job_waiting(false),
       ignore_certificate_errors(false),
+      use_stale_while_revalidate(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       enable_user_alternate_protocol_ports(false) {
@@ -656,6 +660,11 @@ void IOThread::InitAsync() {
     globals_->enable_ssl_connect_job_waiting = true;
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     globals_->ignore_certificate_errors = true;
+  if (command_line.HasSwitch(switches::kEnableStaleWhileRevalidate))
+    globals_->use_stale_while_revalidate = true;
+  if (base::FieldTrialList::FindFullName(kStaleWhileRevalidateFieldTrialName) ==
+      "Enabled")
+    globals_->use_stale_while_revalidate = true;
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
     globals_->testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
@@ -985,6 +994,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->enable_ssl_connect_job_waiting =
       globals.enable_ssl_connect_job_waiting;
   params->ignore_certificate_errors = globals.ignore_certificate_errors;
+  params->use_stale_while_revalidate = globals.use_stale_while_revalidate;
   params->testing_fixed_http_port = globals.testing_fixed_http_port;
   params->testing_fixed_https_port = globals.testing_fixed_https_port;
   globals.enable_tcp_fast_open_for_ssl.CopyToIfSet(

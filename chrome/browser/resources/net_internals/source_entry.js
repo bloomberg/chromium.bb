@@ -81,6 +81,7 @@ var SourceEntry = (function() {
         case EventSourceType.URL_REQUEST:
         case EventSourceType.SOCKET_STREAM:
         case EventSourceType.HTTP_STREAM_JOB:
+        case EventSourceType.ASYNC_REVALIDATION:
           this.description_ = e.params.url;
           break;
         case EventSourceType.CONNECT_JOB:

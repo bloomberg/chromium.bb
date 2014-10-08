@@ -28,6 +28,12 @@ namespace net {
 
 class HttpByteRange;
 
+enum ValidationType {
+  VALIDATION_NONE = 0,      // The resource is fresh.
+  VALIDATION_ASYNCHRONOUS,  // The resource requires async revalidation.
+  VALIDATION_SYNCHRONOUS    // The resource requires sync revalidation.
+};
+
 // HttpResponseHeaders: parses and holds HTTP response headers.
 class NET_EXPORT HttpResponseHeaders
     : public base::RefCountedThreadSafe<HttpResponseHeaders> {
@@ -42,6 +48,14 @@ class NET_EXPORT HttpResponseHeaders
   static const PersistOptions PERSIST_SANS_NON_CACHEABLE = 1 << 3;
   static const PersistOptions PERSIST_SANS_RANGES = 1 << 4;
   static const PersistOptions PERSIST_SANS_SECURITY_STATE = 1 << 5;
+
+  struct FreshnessLifetimes {
+    // How long the resource will be fresh for.
+    base::TimeDelta fresh;
+    // How long after becoming not fresh that the resource will be stale but
+    // usable (if async revalidation is enabled).
+    base::TimeDelta stale;
+  };
 
   static const char kContentRange[];
 
@@ -201,19 +215,28 @@ class NET_EXPORT HttpResponseHeaders
   // redirect.
   static bool IsRedirectResponseCode(int response_code);
 
-  // Returns true if the response cannot be reused without validation.  The
-  // result is relative to the current_time parameter, which is a parameter to
-  // support unit testing.  The request_time parameter indicates the time at
-  // which the request was made that resulted in this response, which was
-  // received at response_time.
-  bool RequiresValidation(const base::Time& request_time,
-                          const base::Time& response_time,
-                          const base::Time& current_time) const;
+  // Returns VALIDATION_NONE if the response can be reused without
+  // validation. VALIDATION_ASYNCHRONOUS means the response can be re-used, but
+  // asynchronous revalidation must be performed. VALIDATION_SYNCHRONOUS means
+  // that the result cannot be reused without revalidation.
+  // The result is relative to the current_time parameter, which is
+  // a parameter to support unit testing.  The request_time parameter indicates
+  // the time at which the request was made that resulted in this response,
+  // which was received at response_time.
+  ValidationType RequiresValidation(const base::Time& request_time,
+                                    const base::Time& response_time,
+                                    const base::Time& current_time) const;
 
-  // Returns the amount of time the server claims the response is fresh from
+  // Calculates the amount of time the server claims the response is fresh from
   // the time the response was generated.  See section 13.2.4 of RFC 2616.  See
-  // RequiresValidation for a description of the response_time parameter.
-  base::TimeDelta GetFreshnessLifetime(const base::Time& response_time) const;
+  // RequiresValidation for a description of the response_time parameter.  Sets
+  // |FreshnessLifetimes.fresh| to the length of time the response may be used
+  // without revalidation, and |FreshnessLifetimes.stale| to the length of time
+  // the response may be used stale with asynchronous revalidation if
+  // stale-while-revalidate support is enabled.  See RFC 5861 section 3 for the
+  // definition of stale-while-revalidate.
+  FreshnessLifetimes GetFreshnessLifetimes(
+      const base::Time& response_time) const;
 
   // Returns the age of the response.  See section 13.2.3 of RFC 2616.
   // See RequiresValidation for a description of this method's parameters.

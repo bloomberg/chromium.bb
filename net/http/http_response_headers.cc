@@ -956,15 +956,28 @@ bool HttpResponseHeaders::IsRedirectResponseCode(int response_code) {
 // Of course, there are other factors that can force a response to always be
 // validated or re-fetched.
 //
-bool HttpResponseHeaders::RequiresValidation(const Time& request_time,
-                                             const Time& response_time,
-                                             const Time& current_time) const {
-  TimeDelta lifetime =
-      GetFreshnessLifetime(response_time);
-  if (lifetime == TimeDelta())
-    return true;
+// From RFC 5861 section 3, a stale response may be used while revalidation is
+// performed in the background if
+//
+//   freshness_lifetime + stale_while_revalidate > current_age
+//
+ValidationType HttpResponseHeaders::RequiresValidation(
+    const Time& request_time,
+    const Time& response_time,
+    const Time& current_time) const {
+  FreshnessLifetimes lifetimes = GetFreshnessLifetimes(response_time);
+  if (lifetimes.fresh == TimeDelta() && lifetimes.stale == TimeDelta())
+    return VALIDATION_SYNCHRONOUS;
 
-  return lifetime <= GetCurrentAge(request_time, response_time, current_time);
+  TimeDelta age = GetCurrentAge(request_time, response_time, current_time);
+
+  if (lifetimes.fresh > age)
+    return VALIDATION_NONE;
+
+  if (lifetimes.fresh + lifetimes.stale > age)
+    return VALIDATION_ASYNCHRONOUS;
+
+  return VALIDATION_SYNCHRONOUS;
 }
 
 // From RFC 2616 section 13.2.4:
@@ -987,25 +1000,35 @@ bool HttpResponseHeaders::RequiresValidation(const Time& request_time,
 //
 //   freshness_lifetime = (date_value - last_modified_value) * 0.10
 //
-TimeDelta HttpResponseHeaders::GetFreshnessLifetime(
-    const Time& response_time) const {
+// If the stale-while-revalidate directive is present, then it is used to set
+// the |stale| time, unless it overridden by another directive.
+//
+HttpResponseHeaders::FreshnessLifetimes
+HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
+  FreshnessLifetimes lifetimes;
   // Check for headers that force a response to never be fresh.  For backwards
   // compat, we treat "Pragma: no-cache" as a synonym for "Cache-Control:
   // no-cache" even though RFC 2616 does not specify it.
   if (HasHeaderValue("cache-control", "no-cache") ||
       HasHeaderValue("cache-control", "no-store") ||
       HasHeaderValue("pragma", "no-cache") ||
-      HasHeaderValue("vary", "*"))  // see RFC 2616 section 13.6
-    return TimeDelta();  // not fresh
+      // Vary: * is never usable: see RFC 2616 section 13.6.
+      HasHeaderValue("vary", "*")) {
+    return lifetimes;
+  }
+
+  // Cache-Control directive must_revalidate overrides stale-while-revalidate.
+  bool must_revalidate = HasHeaderValue("cache-control", "must-revalidate");
+
+  if (must_revalidate || !GetStaleWhileRevalidateValue(&lifetimes.stale))
+    DCHECK(lifetimes.stale == TimeDelta());
 
   // NOTE: "Cache-Control: max-age" overrides Expires, so we only check the
-  // Expires header after checking for max-age in GetFreshnessLifetime.  This
+  // Expires header after checking for max-age in GetFreshnessLifetimes.  This
   // is important since "Expires: <date in the past>" means not fresh, but
   // it should not trump a max-age value.
-
-  TimeDelta max_age_value;
-  if (GetMaxAgeValue(&max_age_value))
-    return max_age_value;
+  if (GetMaxAgeValue(&lifetimes.fresh))
+    return lifetimes;
 
   // If there is no Date header, then assume that the server response was
   // generated at the time when we received the response.
@@ -1016,10 +1039,13 @@ TimeDelta HttpResponseHeaders::GetFreshnessLifetime(
   Time expires_value;
   if (GetExpiresValue(&expires_value)) {
     // The expires value can be a date in the past!
-    if (expires_value > date_value)
-      return expires_value - date_value;
+    if (expires_value > date_value) {
+      lifetimes.fresh = expires_value - date_value;
+      return lifetimes;
+    }
 
-    return TimeDelta();  // not fresh
+    DCHECK(lifetimes.fresh == TimeDelta());
+    return lifetimes;
   }
 
   // From RFC 2616 section 13.4:
@@ -1047,24 +1073,31 @@ TimeDelta HttpResponseHeaders::GetFreshnessLifetime(
   // experimental RFC that adds 308 permanent redirect as well, for which "any
   // future references ... SHOULD use one of the returned URIs."
   if ((response_code_ == 200 || response_code_ == 203 ||
-       response_code_ == 206) &&
-      !HasHeaderValue("cache-control", "must-revalidate")) {
+       response_code_ == 206) && !must_revalidate) {
     // TODO(darin): Implement a smarter heuristic.
     Time last_modified_value;
     if (GetLastModifiedValue(&last_modified_value)) {
-      // The last-modified value can be a date in the past!
-      if (last_modified_value <= date_value)
-        return (date_value - last_modified_value) / 10;
+      // The last-modified value can be a date in the future!
+      if (last_modified_value <= date_value) {
+        lifetimes.fresh = (date_value - last_modified_value) / 10;
+        return lifetimes;
+      }
     }
   }
 
   // These responses are implicitly fresh (unless otherwise overruled):
   if (response_code_ == 300 || response_code_ == 301 || response_code_ == 308 ||
       response_code_ == 410) {
-    return TimeDelta::Max();
+    lifetimes.fresh = TimeDelta::Max();
+    lifetimes.stale = TimeDelta();  // It should never be stale.
+    return lifetimes;
   }
 
-  return TimeDelta();  // not fresh
+  // Our heuristic freshness estimate for this resource is 0 seconds, in
+  // accordance with common browser behaviour. However, stale-while-revalidate
+  // may still apply.
+  DCHECK(lifetimes.fresh == TimeDelta());
+  return lifetimes;
 }
 
 // From RFC 2616 section 13.2.3:

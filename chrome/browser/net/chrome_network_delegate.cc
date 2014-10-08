@@ -570,8 +570,10 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
           data_reduction_proxy::GetDataReductionProxyRequestType(request);
 
       base::TimeDelta freshness_lifetime =
-          request->response_info().headers->GetFreshnessLifetime(
-              request->response_info().response_time);
+          request->response_info()
+              .headers->GetFreshnessLifetimes(
+                            request->response_info().response_time)
+              .fresh;
       int64 adjusted_original_content_length =
           data_reduction_proxy::GetAdjustedOriginalContentLength(
               request_type, original_content_length,

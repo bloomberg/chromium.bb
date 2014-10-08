@@ -594,6 +594,11 @@ const char kEnableSpellingFeedbackFieldTrial[] =
 // minimize the number of full SSL handshakes completed.
 const char kEnableSSLConnectJobWaiting[] = "enable-ssl-connect-job-waiting";
 
+// Enables implementation of the Cache-Control: stale-while-revalidate directive
+// which permits servers to allow the use of stale resources while revalidation
+// proceeds in the background.
+const char kEnableStaleWhileRevalidate[]    = "enable-stale-while-revalidate";
+
 // Enables an experimental hosted app experience.
 const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 
