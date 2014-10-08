@@ -2587,7 +2587,7 @@ OMXResult omxSP_FFTInv_CToC_FC32_Sfs_vfp (
 
 #else
 /* Build-time non-ARM selection. */
-#define omxSP_FFTInv_RToCCS_F32 omxSP_FFTInv_RToCCS_F32_Sfs
+#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_RToCCS_F32_Sfs
 #define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_Sfs
 #endif  /* defined(__arm__) || defined(__aarch64__) */
 
