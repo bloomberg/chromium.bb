@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/gc_controller.h"
+#include "content/shell/renderer/layout_test/gc_controller.h"
 
 #include "gin/arguments.h"
 #include "gin/handle.h"

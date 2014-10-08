@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/leak_detector.h"
+#include "content/shell/renderer/layout_test/leak_detector.h"
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "content/shell/renderer/webkit_test_runner.h"
+#include "content/shell/renderer/layout_test/webkit_test_runner.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 using blink::WebLeakDetector;

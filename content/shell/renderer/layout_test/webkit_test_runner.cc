@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/webkit_test_runner.h"
+#include "content/shell/renderer/layout_test/webkit_test_runner.h"
 
 #include <algorithm>
 #include <clocale>
@@ -31,9 +31,9 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
-#include "content/shell/renderer/gc_controller.h"
+#include "content/shell/renderer/layout_test/gc_controller.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
-#include "content/shell/renderer/leak_detector.h"
+#include "content/shell/renderer/layout_test/leak_detector.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
