@@ -1,46 +1,46 @@
 <!DOCTYPE html>
-<html i18n-values="dir:textdirection">
+<html i18n-values="dir:textdirection;.style.fontSize:fontsize">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
                                  maximum-scale=1.0, user-scalable=no">
   <title i18n-content="title"></title>
-  <link rel="stylesheet" href="neterror.css">
+  <link rel="stylesheet" href="../security_warnings/interstitial_v2.css">
+  <link rel="stylesheet" href="../../../renderer/resources/neterror.css">
   <script src="../../../../ui/webui/resources/js/util.js"></script>
   <script src="neterror.js"></script>
+  <script src="../../../renderer/resources/offline.js"></script>
 </head>
-<body id="t">
-  <div id="main-frame-error">
-    <div id="box">
-      <div id="content-top">
-        <h1>
-          <div>
-            <img class="icon"
-                jseval="updateIconClass(this.classList, iconClass)">
-          </div>
-          <span i18n-content="heading"></span>
-        </h1>
-         <button id="reload-button" onclick="location = this.url"
+<body id="t" i18n-values=".style.fontFamily:fontfamily">
+  <div id="main-frame-error" class="interstitial-wrapper">
+    <img class="icon"
+        jseval="updateIconClass(this.classList, iconClass)">
+    <div id="main-message">
+      <h1 i18n-content="heading"></h1>
+      <p i18n-values=".innerHTML:primaryParagraph"></p>
+      <div id="buttons" class="nav-wrapper">
+        <button id="reload-button" onclick="location = this.url"
             jsselect="reload" jsvalues=".url:reloadUrl"
             jscontent="msg"></button>
-        <button id="more-less-button" onclick="toggleHelpBox()" jsdisplay="more"
+        <button id="details-button" class="text-button small-link"
+            onclick="toggleHelpBox()" jsdisplay="more"
             jsvalues=".moreText:more; .lessText:less;"
             jscontent="more"></button>
       </div>
-       <!-- Outer and inner divs are needed both for margins and sizing. -->
-      <div id="help-box-outer" class="hidden">
-        <div id="help-box-inner">
-          <div jsselect="summary">
-            <span jsvalues=".innerHTML:msg"></span>
-          </div>
-          <div class="suggestions" jsselect="suggestions">
-            <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
-            <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
-          </div>
-          <button id="diagnose-button" onclick="diagnoseErrors()"
-            jscontent="diagnose" jsdisplay="diagnose"></button>
-          <div class="error-code" jscontent="errorCode"></div>
+    </div>
+    <!-- Outer and inner divs are needed both for margins and sizing. -->
+    <div id="help-box-outer" class="hidden">
+      <div id="details">
+        <div jsselect="summary">
+          <span jsvalues=".innerHTML:msg"></span>
         </div>
+        <div class="suggestions" jsselect="suggestions">
+          <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
+          <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
+        </div>
+        <button id="diagnose-button" onclick="diagnoseErrors()"
+          jscontent="diagnose" jsdisplay="diagnose"></button>
+        <div class="error-code" jscontent="errorCode"></div>
       </div>
     </div>
   </div>
@@ -50,6 +50,31 @@
     <img class="icon" jseval="updateIconClass(this.classList, iconClass)"
         jsvalues=".title:errorDetails">
     <div id="sub-frame-error-details" jsvalues=".innerHTML:errorDetails"></div>
+  </div>
+  <div id="offline-resources">
+    <div id="offline-resources-1x">
+      <img id="1x-obstacle-large" src="../../../renderer/resources/default_100_percent/offline/100-obstacle-large-sprite.png">
+      <img id="1x-obstacle-small" src="../../../renderer/resources/default_100_percent/offline/100-obstacle-small-sprite.png">
+      <img id="1x-cloud" src="../../../renderer/resources/default_100_percent/offline/100-cloud.png">
+      <img id="1x-text" src="../../../renderer/resources/default_100_percent/offline/100-text-sprite.png">
+      <img id="1x-horizon" src="../../../renderer/resources/default_100_percent/offline/100-horizon.png">
+      <img id="1x-trex" src="../../../renderer/resources/default_100_percent/offline/100-offline-trex.png">
+      <img id="1x-restart" src="../../../renderer/resources/default_100_percent/offline/100-restart.png">
+    </div>
+    <div id="offline-resources-2x">
+      <img id="2x-obstacle-large" src="../../../renderer/resources/default_200_percent/offline/200-obstacle-large-sprite.png">
+      <img id="2x-obstacle-small" src="../../../renderer/resources/default_200_percent/offline/200-obstacle-small-sprite.png">
+      <img id="2x-cloud" src="../../../renderer/resources/default_200_percent/offline/200-cloud.png">
+      <img id="2x-text" src="../../../renderer/resources/default_200_percent/offline/200-text-sprite.png">
+      <img id="2x-horizon" src="../../../renderer/resources/default_200_percent/offline/200-horizon.png">
+      <img id="2x-trex" src="../../../renderer/resources/default_200_percent/offline/200-offline-trex.png">
+      <img id="2x-restart" src="../../../renderer/resources/default_200_percent/offline/200-restart.png">
+    </div>
+    <template id="audio-resources">
+      <audio id="offline-sound-press" src="../../../renderer/resources/sounds/button-press.mp3"></audio>
+      <audio id="offline-sound-hit" src="../../../renderer/resources/sounds/hit.mp3"></audio>
+      <audio id="offline-sound-reached" src="../../../renderer/resources/sounds/score-reached.mp3"></audio>
+    </template>
   </div>
 </body>
 </html>

@@ -5,7 +5,7 @@
 function toggleHelpBox() {
   var helpBoxOuter = $('help-box-outer');
   helpBoxOuter.classList.toggle('hidden');
-  var moreLessButton = $('more-less-button');
+  var moreLessButton = $('details-button');
   if (helpBoxOuter.classList.contains('hidden')) {
     moreLessButton.innerText = moreLessButton.moreText;
   } else {
@@ -47,4 +47,9 @@ function updateIconClass(classList, newClass) {
     classList.remove(oldClass);
 
   classList['last_icon_class'] = newClass;
+
+  if (newClass == 'icon-offline') {
+    document.body.classList.add('offline');
+    new Runner('.interstitial-wrapper');
+  }
 }
