@@ -5,8 +5,8 @@
 #include "{{namespace}}ElementFactory.h"
 
 #include "{{namespace}}Names.h"
-{% for tag in tags|sort %}
-#include "core/{{namespace|lower}}/{{tag.interface}}.h"
+{% for tag in tags|groupby('interface') %}
+#include "core/{{namespace|lower}}/{{tag[0]}}.h"
 {% endfor %}
 {% if fallback_interface %}
 #include "core/{{namespace|lower}}/{{fallback_interface}}.h"
