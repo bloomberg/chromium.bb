@@ -63,6 +63,8 @@ std::string VersionInfo::CreateVersionString() const {
 std::string VersionInfo::OSType() const {
 #if defined(OS_WIN)
   return "Windows";
+#elif defined(OS_IOS)
+  return "iOS";
 #elif defined(OS_MACOSX)
   return "Mac OS X";
 #elif defined(OS_CHROMEOS)
