@@ -93,7 +93,7 @@ class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
  public:
   DataReductionProxyConfigTracker(
       base::Callback<void(bool, const net::ProxyConfig&)> update_proxy_config,
-      base::TaskRunner* task_runner);
+      const scoped_refptr<base::TaskRunner>& task_runner);
   virtual ~DataReductionProxyConfigTracker();
 
   virtual void Enable(bool primary_restricted,

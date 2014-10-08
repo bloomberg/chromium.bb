@@ -117,7 +117,7 @@ void DataReductionProxyConfigService::RegisterObserver() {
 
 DataReductionProxyConfigTracker::DataReductionProxyConfigTracker(
     base::Callback<void(bool, const net::ProxyConfig&)> update_proxy_config,
-    base::TaskRunner* task_runner)
+    const scoped_refptr<base::TaskRunner>& task_runner)
     : update_proxy_config_(update_proxy_config),
       task_runner_(task_runner) {
 }
