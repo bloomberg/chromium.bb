@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/profiler/scoped_profile.h"
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,6 +79,10 @@ TabsWindowsAPI::GetFactoryInstance() {
 }
 
 void TabsWindowsAPI::OnListenerAdded(const EventListenerInfo& details) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("TabsWindowsAPI::OnListenerAdded"));
+
   // Initialize the event routers.
   tabs_event_router();
   windows_event_router();

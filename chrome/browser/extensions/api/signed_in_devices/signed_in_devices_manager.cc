@@ -11,6 +11,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -117,6 +118,11 @@ SignedInDevicesManager::~SignedInDevicesManager() {}
 
 void SignedInDevicesManager::OnListenerAdded(
     const EventListenerInfo& details) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "SignedInDevicesManager::OnListenerAdded"));
+
   for (ScopedVector<SignedInDevicesChangeObserver>::const_iterator it =
            change_observers_.begin();
            it != change_observers_.end();

@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -580,6 +581,10 @@ BrowserContextKeyedAPIFactory<CookiesAPI>* CookiesAPI::GetFactoryInstance() {
 
 void CookiesAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("CookiesAPI::OnListenerAdded"));
+
   cookies_event_router_.reset(new CookiesEventRouter(browser_context_));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }

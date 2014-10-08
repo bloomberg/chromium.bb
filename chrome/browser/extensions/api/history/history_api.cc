@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -230,6 +231,10 @@ void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies() {
 }
 
 void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("HistoryAPI::OnListenerAdded"));
+
   history_event_router_.reset(
       new HistoryEventRouter(Profile::FromBrowserContext(browser_context_)));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
