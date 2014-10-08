@@ -3162,16 +3162,16 @@ void Document::processReferrerPolicy(const String& policy)
 {
     ASSERT(!policy.isNull());
 
-    if (equalIgnoringCase(policy, "never")) {
+    if (equalIgnoringCase(policy, "no-referrer") || equalIgnoringCase(policy, "never")) {
         setReferrerPolicy(ReferrerPolicyNever);
-    } else if (equalIgnoringCase(policy, "always")) {
+    } else if (equalIgnoringCase(policy, "unsafe-url") || equalIgnoringCase(policy, "always")) {
         setReferrerPolicy(ReferrerPolicyAlways);
     } else if (equalIgnoringCase(policy, "origin")) {
         setReferrerPolicy(ReferrerPolicyOrigin);
-    } else if (equalIgnoringCase(policy, "default")) {
+    } else if (equalIgnoringCase(policy, "no-referrer-when-downgrade") || equalIgnoringCase(policy, "default")) {
         setReferrerPolicy(ReferrerPolicyDefault);
     } else {
-        addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policy + "' is not one of 'always', 'default', 'never', or 'origin'. Defaulting to 'never'."));
+        addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policy + "' is not one of 'no-referrer', 'origin', 'no-referrer-when-downgrade', or 'unsafe-url'. Defaulting to 'no-referrer'."));
         setReferrerPolicy(ReferrerPolicyNever);
     }
 }
