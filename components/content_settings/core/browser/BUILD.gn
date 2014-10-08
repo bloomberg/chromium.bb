@@ -14,6 +14,7 @@ static_library("browser") {
     "content_settings_origin_identifier_value_map.h",
     "content_settings_rule.cc",
     "content_settings_rule.h",
+    "local_shared_objects_counter.h",
   ]
 
   deps = [

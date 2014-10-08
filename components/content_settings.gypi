@@ -28,6 +28,7 @@
         'content_settings/core/browser/content_settings_origin_identifier_value_map.h',
         'content_settings/core/browser/content_settings_rule.cc',
         'content_settings/core/browser/content_settings_rule.h',
+        'content_settings/core/browser/local_shared_objects_counter.h',
       ],
     },
     {

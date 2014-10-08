@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/content_settings/local_shared_objects_counter.h"
+#include "components/content_settings/core/browser/local_shared_objects_counter.h"
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataChannelIDHelper;
