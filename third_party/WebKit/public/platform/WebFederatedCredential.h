@@ -18,7 +18,7 @@ public:
 
     BLINK_PLATFORM_EXPORT void assign(const WebFederatedCredential&);
 
-    BLINK_PLATFORM_EXPORT virtual bool isFederatedCredential() const OVERRIDE { return true; }
+    BLINK_PLATFORM_EXPORT virtual bool isFederatedCredential() const override { return true; }
 
     BLINK_PLATFORM_EXPORT WebURL federation() const;
 };

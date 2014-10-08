@@ -18,7 +18,7 @@ public:
 
     BLINK_PLATFORM_EXPORT void assign(const WebLocalCredential&);
 
-    BLINK_PLATFORM_EXPORT virtual bool isLocalCredential() const OVERRIDE { return true; }
+    BLINK_PLATFORM_EXPORT virtual bool isLocalCredential() const override { return true; }
 
     BLINK_PLATFORM_EXPORT WebString password() const;
 };
