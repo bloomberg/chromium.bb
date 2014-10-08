@@ -269,8 +269,9 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceMultiProfileTest,
   StartupUtils::MarkOobeCompleted();
 }
 
+// Hangs flakily. See http://crbug.com/421448.
 IN_PROC_BROWSER_TEST_F(EasyUnlockServiceMultiProfileTest,
-                       DisallowedOnSecondaryProfile) {
+                       DISABLED_DisallowedOnSecondaryProfile) {
   LoginUser(kTestUser1);
   chromeos::UserAddingScreen::Get()->Start();
   base::RunLoop().RunUntilIdle();
