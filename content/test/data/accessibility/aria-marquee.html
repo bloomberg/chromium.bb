@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <!--
 @MAC-ALLOW:AXSubrole=*
-@MAC-ALLOW:AXRoleDescription=*
+@MAC-ALLOW:AXRole*
+@MAC-ALLOW:AXARIALIVE*
 @WIN-ALLOW:xml-roles:*
+@WIN-ALLOW:live*
+@WIN-ALLOW:container*
 -->
 <html>
   <body>
-    <div role="marquee" aria-live="polite"></div>
+    <div tabindex=0 role="marquee" aria-live="off"></div>
+    <div tabindex=1 role="marquee" aria-live="polite"></div>
+    <div tabindex=2 role="marquee" aria-live="assertive"></div>
   </body>
 </html>

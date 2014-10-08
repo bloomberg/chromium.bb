@@ -3598,6 +3598,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
+    case ui::AX_ROLE_MARQUEE:
+      ia_role_ = ROLE_SYSTEM_ANIMATION;
+      break;
     case ui::AX_ROLE_MATH_ELEMENT:
       ia_role_ = ROLE_SYSTEM_EQUATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
@@ -3791,7 +3794,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_IGNORED:
     case ui::AX_ROLE_INCREMENTOR:
     case ui::AX_ROLE_LOG:
-    case ui::AX_ROLE_MARQUEE:
     case ui::AX_ROLE_MATTE:
     case ui::AX_ROLE_NONE:
     case ui::AX_ROLE_PRESENTATIONAL:

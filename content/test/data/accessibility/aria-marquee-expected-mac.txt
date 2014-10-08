@@ -1,2 +1,4 @@
 AXWebArea AXRoleDescription='HTML content'
     AXGroup AXSubrole=AXApplicationMarquee AXRoleDescription='marquee'
+    AXGroup AXSubrole=AXApplicationMarquee AXRoleDescription='marquee'
+    AXGroup AXSubrole=AXApplicationMarquee AXRoleDescription='marquee'
