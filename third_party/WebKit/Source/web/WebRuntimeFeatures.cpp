@@ -150,11 +150,6 @@ void WebRuntimeFeatures::enableMediaSource(bool enable)
     RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableMediaStream(bool enable)
-{
-    RuntimeEnabledFeatures::setMediaStreamEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableNotifications(bool enable)
 {
     RuntimeEnabledFeatures::setNotificationsEnabled(enable);
