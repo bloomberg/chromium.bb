@@ -6,6 +6,7 @@
 #define SizesAttributeParser_h
 
 #include "core/css/MediaValues.h"
+#include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "core/css/parser/MediaQueryParser.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -35,6 +36,7 @@ private:
     bool m_viewportDependant;
     Vector<MediaQueryToken> m_tokens;
     bool m_isValid;
+    MediaQueryBlockWatcher m_blockWatcher;
 };
 
 } // namespace

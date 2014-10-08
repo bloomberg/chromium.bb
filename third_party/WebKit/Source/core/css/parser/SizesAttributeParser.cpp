@@ -124,7 +124,8 @@ bool SizesAttributeParser::parse(Vector<MediaQueryToken>& tokens)
     MediaQueryTokenIterator endToken;
     // Split on a comma token, and send the result tokens to be parsed as (media-condition, length) pairs
     for (MediaQueryTokenIterator token = tokens.begin(); token != tokens.end(); ++token) {
-        if (token->type() == CommaToken) {
+        m_blockWatcher.handleToken(*token);
+        if (token->type() == CommaToken && !m_blockWatcher.blockLevel()) {
             endToken = token;
             if (parseMediaConditionAndLength(startToken, endToken))
                 return true;
