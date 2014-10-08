@@ -13,7 +13,6 @@ import datetime
 import os
 import string # pylint: disable=W0402
 import sys
-import unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
@@ -589,7 +588,6 @@ class UnmockedRemoveTest(cros_test_lib.TestCase):
       for p in files:
         self.assertFalse(ctx.Exists(os.path.join(tempuri, p)))
 
-  @unittest.skip('this gsutil version is broken b/17882592')
   @cros_test_lib.NetworkTest()
   def testGeneration(self):
     """Test conditional remove behavior."""
