@@ -42,8 +42,6 @@ class SANDBOX_EXPORT SyscallIterator {
   static bool IsValid(uint32_t num);
 
  private:
-  static bool IsArmPrivate(uint32_t num);
-
   bool invalid_only_;
   bool done_;
   uint32_t num_;

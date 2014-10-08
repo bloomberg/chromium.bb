@@ -4,10 +4,68 @@
 
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
 namespace sandbox {
+
+namespace {
+
+#if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
+// This is true for Mips O32 ABI.
+COMPILE_ASSERT(MIN_SYSCALL == __NR_Linux, min_syscall_should_be_4000);
+#else
+// This true for supported architectures (Intel and ARM EABI).
+COMPILE_ASSERT(MIN_SYSCALL == 0u, min_syscall_should_always_be_zero);
+#endif
+
+// SyscallRange represents an inclusive range of system call numbers.
+struct SyscallRange {
+  uint32_t first;
+  uint32_t last;
+};
+
+const SyscallRange kValidSyscallRanges[] = {
+    // First we iterate up to MAX_PUBLIC_SYSCALL, which is equal to MAX_SYSCALL
+    // on Intel architectures, but leaves room for private syscalls on ARM.
+    {MIN_SYSCALL, MAX_PUBLIC_SYSCALL},
+#if defined(__arm__)
+    // ARM EABI includes "ARM private" system calls starting at
+    // MIN_PRIVATE_SYSCALL, and a "ghost syscall private to the kernel" at
+    // MIN_GHOST_SYSCALL.
+    {MIN_PRIVATE_SYSCALL, MAX_PRIVATE_SYSCALL},
+    {MIN_GHOST_SYSCALL, MAX_SYSCALL},
+#endif
+};
+
+uint32_t NextSyscall(uint32_t cur, bool invalid_only) {
+  for (const SyscallRange& range : kValidSyscallRanges) {
+    if (range.first > 0 && cur < range.first - 1) {
+      return range.first - 1;
+    }
+    if (cur <= range.last) {
+      if (invalid_only && cur < range.last) {
+        return range.last;
+      }
+      return cur + 1;
+    }
+  }
+
+  // BPF programs only ever operate on unsigned quantities. So, that's how
+  // we iterate; we return values from 0..0xFFFFFFFFu. But there are places,
+  // where the kernel might interpret system call numbers as signed
+  // quantities, so the boundaries between signed and unsigned values are
+  // potential problem cases. We want to explicitly return these values from
+  // our iterator.
+  if (cur < 0x7FFFFFFFu)
+    return 0x7FFFFFFFu;
+  if (cur < 0x80000000u)
+    return 0x80000000u;
+
+  return 0xFFFFFFFFu;
+}
+
+}  // namespace
 
 uint32_t SyscallIterator::Next() {
   if (done_) {
@@ -16,64 +74,8 @@ uint32_t SyscallIterator::Next() {
 
   uint32_t val;
   do {
-#if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
-    // |num_| has been initialized to 4000, which we assume is also MIN_SYSCALL.
-    // This is true for Mips O32 ABI.
-    COMPILE_ASSERT(MIN_SYSCALL == __NR_Linux, min_syscall_should_be_4000);
-#else
-    // |num_| has been initialized to 0, which we assume is also MIN_SYSCALL.
-    // This true for supported architectures (Intel and ARM EABI).
-    COMPILE_ASSERT(MIN_SYSCALL == 0u, min_syscall_should_always_be_zero);
-#endif
     val = num_;
-
-    // The syscall iterator always starts at zero.
-    // If zero is not a valid system call, iterator first returns MIN_SYSCALL -1
-    // before continuing to iterate.
-    if (num_ == 0 && MIN_SYSCALL != num_) {
-      num_ = MIN_SYSCALL - 1;
-    // First we iterate up to MAX_PUBLIC_SYSCALL, which is equal to MAX_SYSCALL
-    // on Intel architectures, but leaves room for private syscalls on ARM.
-    } else if (num_ <= MAX_PUBLIC_SYSCALL) {
-      if (invalid_only_ && num_ < MAX_PUBLIC_SYSCALL) {
-        num_ = MAX_PUBLIC_SYSCALL;
-      } else {
-        ++num_;
-      }
-#if defined(__arm__)
-      // ARM EABI includes "ARM private" system calls starting at
-      // MIN_PRIVATE_SYSCALL, and a "ghost syscall private to the kernel" at
-      // MIN_GHOST_SYSCALL.
-    } else if (num_ < MIN_PRIVATE_SYSCALL - 1) {
-      num_ = MIN_PRIVATE_SYSCALL - 1;
-    } else if (num_ <= MAX_PRIVATE_SYSCALL) {
-      if (invalid_only_ && num_ < MAX_PRIVATE_SYSCALL) {
-        num_ = MAX_PRIVATE_SYSCALL;
-      } else {
-        ++num_;
-      }
-    } else if (num_ < MIN_GHOST_SYSCALL - 1) {
-      num_ = MIN_GHOST_SYSCALL - 1;
-    } else if (num_ <= MAX_SYSCALL) {
-      if (invalid_only_ && num_ < MAX_SYSCALL) {
-        num_ = MAX_SYSCALL;
-      } else {
-        ++num_;
-      }
-#endif
-      // BPF programs only ever operate on unsigned quantities. So, that's how
-      // we iterate; we return values from 0..0xFFFFFFFFu. But there are places,
-      // where the kernel might interpret system call numbers as signed
-      // quantities, so the boundaries between signed and unsigned values are
-      // potential problem cases. We want to explicitly return these values from
-      // our iterator.
-    } else if (num_ < 0x7FFFFFFFu) {
-      num_ = 0x7FFFFFFFu;
-    } else if (num_ < 0x80000000u) {
-      num_ = 0x80000000u;
-    } else if (num_ < 0xFFFFFFFFu) {
-      num_ = 0xFFFFFFFFu;
-    }
+    num_ = NextSyscall(num_, invalid_only_);
   } while (invalid_only_ && IsValid(val));
 
   done_ |= val == 0xFFFFFFFFu;
@@ -81,23 +83,12 @@ uint32_t SyscallIterator::Next() {
 }
 
 bool SyscallIterator::IsValid(uint32_t num) {
-  uint32_t min_syscall = MIN_SYSCALL;
-  if (num >= min_syscall && num <= MAX_PUBLIC_SYSCALL) {
-    return true;
-  }
-  if (IsArmPrivate(num)) {
-    return true;
+  for (const SyscallRange& range : kValidSyscallRanges) {
+    if (num >= range.first && num <= range.last) {
+      return true;
+    }
   }
   return false;
 }
-
-#if defined(__arm__) && (defined(__thumb__) || defined(__ARM_EABI__))
-bool SyscallIterator::IsArmPrivate(uint32_t num) {
-  return (num >= MIN_PRIVATE_SYSCALL && num <= MAX_PRIVATE_SYSCALL) ||
-         (num >= MIN_GHOST_SYSCALL && num <= MAX_SYSCALL);
-}
-#else
-bool SyscallIterator::IsArmPrivate(uint32_t) { return false; }
-#endif
 
 }  // namespace sandbox
