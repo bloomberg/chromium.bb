@@ -6396,12 +6396,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION" desc="Description of the flag to reset the app launcher install state.">
         Reset the App Launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the App Launcher install flow.
       </message>
-      <message name="IDS_FLAGS_ENABLE_APP_VIEW_NAME" desc="Name of the flag to enable the &lt;appview&gt; element.">
-        Enable the &lt;appview&gt; element in Chrome Apps.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_APP_VIEW_DESCRIPTION" desc="Description of the flag to enable the &lt;appview&gt; element.">
-        This will allow the use of the experimental &lt;appview&gt; element in Chrome Apps.
-      </message>
       <if expr="enable_app_list">
         <message name="IDS_FLAGS_ENABLE_APP_LIST_NAME" desc="Name of the flag to enable the app launcher.">
           Enable the App Launcher.

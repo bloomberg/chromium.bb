@@ -270,8 +270,7 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
     }
   }
 
-  if (extensions::FeatureSwitch::app_view()->IsEnabled() &&
-      context->GetAvailability("appViewEmbedderInternal").is_available()) {
+  if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
   } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
     module_system->Require("denyAppView");

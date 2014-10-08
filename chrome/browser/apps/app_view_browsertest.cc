@@ -132,7 +132,6 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
 
  private:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(extensions::switches::kEnableAppView);
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 

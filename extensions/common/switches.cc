@@ -16,9 +16,6 @@ const char kAllowHTTPBackgroundPage[] = "allow-http-background-page";
 const char kAllowLegacyExtensionManifests[] =
     "allow-legacy-extension-manifests";
 
-// Enables the <appview> tag in platform apps.
-const char kAppView[] = "app-view";
-
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
@@ -30,10 +27,6 @@ const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
 // later for heavy apps loading resources synchronously but it will be
 // insignificant for apps that load most of their resources asynchronously.
 const char kEnableAppsShowOnFirstPaint[] = "enable-apps-show-on-first-paint";
-
-// Hack so that feature switch can work with about_flags. See
-// kEnableScriptsRequireAction.
-const char kEnableAppView[] = "enable-app-view";
 
 // Enables the <window-controls> tag in platform apps.
 const char kEnableAppWindowControls[] = "enable-app-window-controls";

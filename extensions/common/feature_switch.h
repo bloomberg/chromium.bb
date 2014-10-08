@@ -27,7 +27,6 @@ class FeatureSwitch {
   static FeatureSwitch* extension_action_redesign();
   static FeatureSwitch* scripts_require_action();
   static FeatureSwitch* embedded_extension_options();
-  static FeatureSwitch* app_view();
   static FeatureSwitch* mime_handler_view();
 
   enum DefaultValue {

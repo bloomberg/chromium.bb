@@ -1472,15 +1472,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppList)
   },
 #endif
-#if defined(ENABLE_EXTENSIONS)
-  {
-    "enable-app-view",
-    IDS_FLAGS_ENABLE_APP_VIEW_NAME,
-    IDS_FLAGS_ENABLE_APP_VIEW_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(extensions::switches::kEnableAppView)
-  },
-#endif
   {
     "disable-app-list-app-info",
     IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST,
