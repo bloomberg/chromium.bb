@@ -5,4 +5,6 @@ include_rules = [
   "+content/public/test/android",
   # ContentShellActivity is needed for running ContentView.
   "+content/shell/android",
+  # Mojo is needed for Mojo service registry kept in the browser.
+  "+mojo/android",
 ]

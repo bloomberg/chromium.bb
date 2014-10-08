@@ -24,6 +24,10 @@ base::PlatformFile PlatformFileFromScopedPlatformHandle(
 }  // namespace
 
 MojoApplicationHost::MojoApplicationHost() : did_activate_(false) {
+#if defined(OS_ANDROID)
+  service_registry_android_.reset(
+      new ServiceRegistryAndroid(&service_registry_));
+#endif
 }
 
 MojoApplicationHost::~MojoApplicationHost() {

@@ -124,6 +124,8 @@
         'shell/browser/shell_javascript_dialog_win.cc',
         'shell/browser/shell_layout_tests_android.cc',
         'shell/browser/shell_layout_tests_android.h',
+        'shell/browser/shell_mojo_test_utils_android.cc',
+        'shell/browser/shell_mojo_test_utils_android.h',
         'shell/browser/shell_login_dialog.cc',
         'shell/browser/shell_login_dialog.h',
         'shell/browser/shell_login_dialog_mac.mm',
@@ -301,6 +303,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            '../mojo/mojo_base.gyp:libmojo_system_java',
             'content_shell_jni_headers',
           ],
           'dependencies!': [
@@ -965,6 +968,7 @@
           'sources': [
             'shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java',
             'shell/android/java/src/org/chromium/content_shell/ShellLayoutTestUtils.java',
+            'shell/android/java/src/org/chromium/content_shell/ShellMojoTestUtils.java',
             'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
             'shell/android/java/src/org/chromium/content_shell/Shell.java',
           ],

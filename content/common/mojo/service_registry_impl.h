@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
@@ -19,8 +20,9 @@
 
 namespace content {
 
-class ServiceRegistryImpl : public ServiceRegistry,
-                            public mojo::InterfaceImpl<mojo::ServiceProvider> {
+class CONTENT_EXPORT ServiceRegistryImpl
+    : public ServiceRegistry,
+      public NON_EXPORTED_BASE(mojo::InterfaceImpl<mojo::ServiceProvider>) {
  public:
   ServiceRegistryImpl();
   explicit ServiceRegistryImpl(mojo::ScopedMessagePipeHandle handle);

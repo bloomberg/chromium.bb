@@ -5,6 +5,7 @@ include_rules = [
   "+media/base",  # For Android JNI registration.
   "+media/midi",  # For Web MIDI API
   "+media/video",  # For Video Device monitoring in Mac.
+  "+mojo",
   "+sql",
   "+ui/webui",
   "+win8/util",

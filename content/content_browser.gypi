@@ -901,6 +901,8 @@
       'browser/mime_registry_message_filter.h',
       'browser/mojo/mojo_application_host.cc',
       'browser/mojo/mojo_application_host.h',
+      'browser/mojo/service_registry_android.cc',
+      'browser/mojo/service_registry_android.h',
       'browser/net/browser_online_state_observer.cc',
       'browser/net/browser_online_state_observer.h',
       'browser/net/sqlite_persistent_cookie_store.cc',
@@ -1779,6 +1781,7 @@
     ['OS=="android"', {
       'dependencies': [
         '../media/media.gyp:media',
+        '../mojo/mojo_base.gyp:libmojo_system_java',
         'content.gyp:content_jni_headers',
       ],
       'defines': ['APPCACHE_USE_SIMPLE_CACHE'],

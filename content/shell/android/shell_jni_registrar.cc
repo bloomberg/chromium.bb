@@ -8,12 +8,14 @@
 #include "base/android/jni_registrar.h"
 #include "content/shell/android/shell_manager.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_mojo_test_utils_android.h"
 
 namespace {
 
 static base::android::RegistrationMethod kShellRegistrationMethods[] = {
-  { "Shell", content::Shell::Register },
-  { "ShellManager", content::RegisterShellManager },
+    {"Shell", content::Shell::Register},
+    {"ShellManager", content::RegisterShellManager},
+    {"ShellMojoTestUtils", content::RegisterShellMojoTestUtils},
 };
 
 }  // namespace

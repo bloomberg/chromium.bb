@@ -5,10 +5,15 @@
 #ifndef CONTENT_BROWSER_MOJO_MOJO_APPLICATION_HOST_H_
 #define CONTENT_BROWSER_MOJO_MOJO_APPLICATION_HOST_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "mojo/edk/embedder/channel_init.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/mojo/service_registry_android.h"
+#endif
 
 namespace IPC {
 class Sender;
@@ -45,6 +50,10 @@ class MojoApplicationHost {
   bool did_activate_;
 
   ServiceRegistryImpl service_registry_;
+
+#if defined(OS_ANDROID)
+  scoped_ptr<ServiceRegistryAndroid> service_registry_android_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplicationHost);
 };

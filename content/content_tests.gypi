@@ -1770,6 +1770,7 @@
             '../base/base.gyp:base_java_test_support',
             '../media/media.gyp:media_java',
             '../media/media.gyp:media_test_support',
+            '../mojo/public/mojo_public.gyp:mojo_public_test_interfaces',
             '../net/net.gyp:net_java',
             '../net/net.gyp:net_javatests',
             '../net/net.gyp:net_java_test_support',

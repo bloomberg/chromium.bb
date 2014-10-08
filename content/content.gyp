@@ -422,6 +422,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../media/media.gyp:media_java',
+            '../mojo/mojo_base.gyp:mojo_system_java',
+            '../mojo/public/mojo_public.gyp:mojo_bindings_java',
             '../net/net.gyp:net',
             '../ui/android/ui_android.gyp:ui_java',
             'common_aidl',

@@ -18,6 +18,9 @@ LOCAL_SRC_FILES += \
     ../net/android/java/src/org/chromium/net/IRemoteAndroidKeyStore.aidl \
     $(call all-java-files-under, ../base/android/java/src) \
     $(call all-java-files-under, ../media/base/android/java/src) \
+    $(call all-java-files-under, ../mojo/android/system/src) \
+    $(call all-java-files-under, ../mojo/public/java/bindings/src) \
+    $(call all-java-files-under, ../mojo/public/java/system/src) \
     $(call all-java-files-under, ../net/android/java/src) \
     $(call all-java-files-under, ../ui/android/java/src) \
     $(call all-java-files-under, ../third_party/eyesfree/src/android/java/src) \

@@ -210,6 +210,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
                                       mojo::GetProxy(&service_provider));
     service_registry_.BindRemoteServiceProvider(
         service_provider.PassMessagePipe());
+
+#if defined(OS_ANDROID)
+    service_registry_android_.reset(
+        new ServiceRegistryAndroid(&service_registry_));
+#endif
   }
 
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(

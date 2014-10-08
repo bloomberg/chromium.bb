@@ -27,6 +27,10 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/page_transition_types.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/mojo/service_registry_android.h"
+#endif
+
 class GURL;
 struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_LocationChangeParams;
@@ -549,6 +553,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   scoped_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
 
   ServiceRegistryImpl service_registry_;
+
+#if defined(OS_ANDROID)
+  scoped_ptr<ServiceRegistryAndroid> service_registry_android_;
+#endif
 
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 

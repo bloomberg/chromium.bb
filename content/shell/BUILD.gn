@@ -72,6 +72,8 @@ static_library("content_shell_lib") {
     "browser/shell_javascript_dialog_win.cc",
     "browser/shell_layout_tests_android.cc",
     "browser/shell_layout_tests_android.h",
+    "browser/shell_mojo_test_utils_android.cc",
+    "browser/shell_mojo_test_utils_android.h",
     "browser/shell_login_dialog.cc",
     "browser/shell_login_dialog.h",
     "browser/shell_login_dialog_mac.mm",

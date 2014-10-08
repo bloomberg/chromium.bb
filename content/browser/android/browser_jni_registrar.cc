@@ -32,6 +32,7 @@
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/media/android/media_drm_credential_manager.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
+#include "content/browser/mojo/service_registry_android.h"
 #include "content/browser/power_save_blocker_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
@@ -41,6 +42,7 @@
 #include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/vibration/vibration_provider_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
+#include "mojo/android/system/core_impl.h"
 
 using content::SurfaceTexturePeerBrowserImpl;
 
@@ -60,6 +62,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentViewCore", content::RegisterContentViewCore},
     {"ContentViewRenderView",
      content::ContentViewRenderView::RegisterContentViewRenderView},
+    {"CoreImpl", mojo::android::RegisterCoreImpl},
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
     {"DownloadControllerAndroidImpl",
      content::DownloadControllerAndroidImpl::RegisterDownloadController},
@@ -86,6 +89,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ScreenOrientationProvider",
      content::ScreenOrientationDelegateAndroid::Register},
     {"SensorManagerAndroid", content::SensorManagerAndroid::Register},
+    {"ServiceRegistryAndroid", content::ServiceRegistryAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
     {"TimeZoneMonitorAndroid", content::TimeZoneMonitorAndroid::Register},

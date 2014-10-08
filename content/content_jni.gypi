@@ -32,6 +32,7 @@
     'public/android/java/src/org/chromium/content/browser/MediaDrmCredentialManager.java',
     'public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java',
     'public/android/java/src/org/chromium/content/browser/PowerSaveBlocker.java',
+    'public/android/java/src/org/chromium/content/browser/ServiceRegistry.java',
     'public/android/java/src/org/chromium/content/browser/ScreenOrientationProvider.java',
     'public/android/java/src/org/chromium/content/browser/SpeechRecognition.java',
     'public/android/java/src/org/chromium/content/browser/TimeZoneMonitor.java',

@@ -241,6 +241,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java',
+            'libmojo_system_java',
             'public/mojo_public.gyp:mojo_public_java',
           ],
           'variables': {
