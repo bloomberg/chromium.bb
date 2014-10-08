@@ -28,7 +28,6 @@ class URLRequestContextGetter;
 namespace suggestions {
 
 class ImageData;
-class ImageEncoder;
 class ImageFetcher;
 class SuggestionsProfile;
 
@@ -38,10 +37,7 @@ class ImageManager : public ImageFetcherDelegate {
  public:
   typedef std::vector<ImageData> ImageDataVector;
 
-  // This class takes ownership of |image_fetcher|, |image_encoder| and
-  // |database|.
   ImageManager(scoped_ptr<ImageFetcher> image_fetcher,
-               scoped_ptr<ImageEncoder> image_encoder,
                scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database,
                const base::FilePath& database_dir);
   virtual ~ImageManager();
@@ -123,6 +119,11 @@ class ImageManager : public ImageFetcherDelegate {
 
   void ServePendingCacheRequests();
 
+  // From SkBitmap to the vector of JPEG-encoded bytes, |dst|. Visible only for
+  // testing.
+  static bool EncodeImage(const SkBitmap& bitmap,
+                          std::vector<unsigned char>* dest);
+
   // Map from URL to image URL. Should be kept up to date when a new
   // SuggestionsProfile is available.
   std::map<GURL, GURL> image_url_map_;
@@ -135,8 +136,6 @@ class ImageManager : public ImageFetcherDelegate {
   ImageMap image_map_;
 
   scoped_ptr<ImageFetcher> image_fetcher_;
-
-  scoped_ptr<ImageEncoder> image_encoder_;
 
   scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database_;
 

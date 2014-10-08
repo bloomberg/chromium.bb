@@ -430,7 +430,6 @@
             '../google_apis/google_apis.gyp:google_apis_test_support',
 
             # Dependencies of suggestions
-            'components.gyp:jpeg_image_encoder',
             'components.gyp:suggestions',
 
             # Dependencies of sync_driver

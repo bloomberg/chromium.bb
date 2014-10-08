@@ -5,21 +5,28 @@
 #include "components/suggestions/image_manager.h"
 
 #include "base/bind.h"
-#include "components/suggestions/image_encoder.h"
 #include "components/suggestions/image_fetcher.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 using leveldb_proto::ProtoDatabase;
+
+namespace {
+
+// From JPEG-encoded bytes to SkBitmap.
+SkBitmap* DecodeImage(const std::vector<unsigned char>& encoded_data) {
+  return gfx::JPEGCodec::Decode(&encoded_data[0], encoded_data.size());
+}
+
+}  // namespace
 
 namespace suggestions {
 
 ImageManager::ImageManager() : weak_ptr_factory_(this) {}
 
 ImageManager::ImageManager(scoped_ptr<ImageFetcher> image_fetcher,
-                           scoped_ptr<ImageEncoder> image_encoder,
                            scoped_ptr<ProtoDatabase<ImageData> > database,
                            const base::FilePath& database_dir)
     : image_fetcher_(image_fetcher.Pass()),
-      image_encoder_(image_encoder.Pass()),
       database_(database.Pass()),
       database_ready_(false),
       weak_ptr_factory_(this) {
@@ -132,7 +139,7 @@ void ImageManager::SaveImage(const GURL& url, const SkBitmap& bitmap) {
   // Attempt to save a JPEG representation to the database. If not successful,
   // the fetched bitmap will still be inserted in the cache, above.
   std::vector<unsigned char> encoded_data;
-  if (image_encoder_->EncodeImage(bitmap, &encoded_data)) {
+  if (EncodeImage(bitmap, &encoded_data)) {
     // Save the resulting bitmap to the database.
     ImageData data;
     data.set_url(url.spec());
@@ -187,7 +194,7 @@ void ImageManager::LoadEntriesInCache(scoped_ptr<ImageDataVector> entries) {
     std::vector<unsigned char> encoded_data(it->data().begin(),
                                             it->data().end());
 
-    scoped_ptr<SkBitmap> bitmap(image_encoder_->DecodeImage(encoded_data));
+    scoped_ptr<SkBitmap> bitmap(DecodeImage(encoded_data));
     if (bitmap.get()) {
       image_map_.insert(std::make_pair(it->url(), *bitmap));
     }
@@ -203,6 +210,19 @@ void ImageManager::ServePendingCacheRequests() {
       ServeFromCacheOrNetwork(request.url, request.image_url, *callback_it);
     }
   }
+}
+
+// static
+bool ImageManager::EncodeImage(const SkBitmap& bitmap,
+                               std::vector<unsigned char>* dest) {
+  SkAutoLockPixels bitmap_lock(bitmap);
+  if (!bitmap.readyToDraw() || bitmap.isNull()) {
+    return false;
+  }
+  return gfx::JPEGCodec::Encode(
+      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
+      bitmap.rowBytes(), 100, dest);
 }
 
 }  // namespace suggestions

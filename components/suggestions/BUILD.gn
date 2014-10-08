@@ -6,7 +6,6 @@ static_library("suggestions") {
   sources = [
     "blacklist_store.cc",
     "blacklist_store.h",
-    "image_encoder.h",
     "image_fetcher.h",
     "image_fetcher_delegate.h",
     "image_manager.cc",
@@ -30,18 +29,5 @@ static_library("suggestions") {
     "//net",
     "//ui/gfx",
     "//url",
-  ]
-}
-
-static_library("jpeg_image_encoder") {
-  sources = [
-    "jpeg/jpeg_image_encoder.cc",
-    "jpeg/jpeg_image_encoder.h",
-  ]
-
-  deps = [
-    "//base",
-    "//ui/gfx",
-    ":suggestions",
   ]
 }

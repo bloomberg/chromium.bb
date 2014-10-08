@@ -2812,7 +2812,6 @@
         '../components/components.gyp:history_core_common',
         '../components/components.gyp:infobars_core',
         '../components/components.gyp:invalidation',
-        '../components/components.gyp:jpeg_image_encoder',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',

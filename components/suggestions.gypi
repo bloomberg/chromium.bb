@@ -24,7 +24,6 @@
       'sources': [
         'suggestions/blacklist_store.cc',
         'suggestions/blacklist_store.h',
-        'suggestions/image_encoder.h',
         'suggestions/image_fetcher.h',
         'suggestions/image_fetcher_delegate.h',
         'suggestions/image_manager.cc',
@@ -45,22 +44,5 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
-    # TODO(justincohen): iOS cannot depend on ui/gfx, so we should provide an
-    # implementation of the image encoder, and put this target in a block that
-    # excludes iOS.
-    {
-      # GN version: //components/suggestions:jpeg_image_encoder
-      'target_name': 'jpeg_image_encoder',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../ui/gfx/gfx.gyp:gfx',
-        'suggestions',
-      ],
-      'sources': [
-        'suggestions/jpeg/jpeg_image_encoder.cc',
-        'suggestions/jpeg/jpeg_image_encoder.h',
-      ],
-    }
-  ]
+  ],
 }
