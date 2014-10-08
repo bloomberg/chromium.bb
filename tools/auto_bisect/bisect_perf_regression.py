@@ -2265,19 +2265,14 @@ class BisectPerformanceMetrics(object):
     """
     if self.source_control.IsGit() and target_depot != 'cros':
       cwd = self.depot_registry.GetDepotDir(target_depot)
-
-      cmd = ['log', '--format=%ct', '-1', good_revision]
-      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-      good_commit_time = int(output)
-
-      cmd = ['log', '--format=%ct', '-1', bad_revision]
-      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-      bad_commit_time = int(output)
-
-      return good_commit_time <= bad_commit_time
+      good_position = self.source_control.GetCommitPosition(good_revision, cwd)
+      bad_position = self.source_control.GetCommitPosition(bad_revision, cwd)
     else:
       # CrOS and SVN use integers.
-      return int(good_revision) <= int(bad_revision)
+      good_position = int(good_revision)
+      bad_position = int(bad_revision)
+
+    return good_position <= bad_position
 
   def CanPerformBisect(self, good_revision, bad_revision):
     """Checks whether a given revision is bisectable.
