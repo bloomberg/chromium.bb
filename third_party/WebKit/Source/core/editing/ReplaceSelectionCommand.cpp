@@ -70,7 +70,7 @@ enum EFragmentType { EmptyFragment, SingleTextNodeFragment, TreeFragment };
 
 // --- ReplacementFragment helper class
 
-class ReplacementFragment FINAL {
+class ReplacementFragment final {
     WTF_MAKE_NONCOPYABLE(ReplacementFragment);
     STACK_ALLOCATED();
 public:

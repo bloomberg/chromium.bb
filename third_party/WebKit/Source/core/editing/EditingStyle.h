@@ -60,7 +60,7 @@ class RenderStyle;
 class StylePropertySet;
 class VisibleSelection;
 
-class EditingStyle FINAL : public RefCountedWillBeGarbageCollectedFinalized<EditingStyle> {
+class EditingStyle final : public RefCountedWillBeGarbageCollectedFinalized<EditingStyle> {
 public:
 
     enum PropertiesToInclude { AllProperties, OnlyEditingInheritableProperties, EditingPropertiesInEffect };

@@ -39,7 +39,7 @@ class HTMLElement;
 class HTMLSpanElement;
 
 // More accurately, this is ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
-class ReplaceNodeWithSpanCommand FINAL : public SimpleEditCommand {
+class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<ReplaceNodeWithSpanCommand> create(PassRefPtrWillBeRawPtr<HTMLElement> element)
     {
@@ -48,13 +48,13 @@ public:
 
     HTMLSpanElement* spanElement() { return m_spanElement.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HTMLElement>);
 
-    virtual void doApply() OVERRIDE;
-    virtual void doUnapply() OVERRIDE;
+    virtual void doApply() override;
+    virtual void doUnapply() override;
 
     RefPtrWillBeMember<HTMLElement> m_elementToReplace;
     RefPtrWillBeMember<HTMLSpanElement> m_spanElement;

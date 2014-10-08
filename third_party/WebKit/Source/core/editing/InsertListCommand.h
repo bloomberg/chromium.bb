@@ -33,7 +33,7 @@ namespace blink {
 class HTMLElement;
 class HTMLUListElement;
 
-class InsertListCommand FINAL : public CompositeEditCommand {
+class InsertListCommand final : public CompositeEditCommand {
 public:
     enum Type { OrderedList, UnorderedList };
 
@@ -42,15 +42,15 @@ public:
         return adoptRefWillBeNoop(new InsertListCommand(document, listType));
     }
 
-    virtual bool preservesTypingStyle() const OVERRIDE { return true; }
+    virtual bool preservesTypingStyle() const override { return true; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     InsertListCommand(Document&, Type);
 
-    virtual void doApply() OVERRIDE;
-    virtual EditAction editingAction() const OVERRIDE { return EditActionInsertList; }
+    virtual void doApply() override;
+    virtual EditAction editingAction() const override { return EditActionInsertList; }
 
     HTMLUListElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);

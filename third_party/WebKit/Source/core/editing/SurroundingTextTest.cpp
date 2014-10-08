@@ -26,7 +26,7 @@ protected:
     VisibleSelection select(int start, int end);
 
 private:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };

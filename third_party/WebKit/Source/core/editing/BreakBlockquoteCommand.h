@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class BreakBlockquoteCommand FINAL : public CompositeEditCommand {
+class BreakBlockquoteCommand final : public CompositeEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<BreakBlockquoteCommand> create(Document& document)
     {
@@ -39,7 +39,7 @@ public:
 
 private:
     explicit BreakBlockquoteCommand(Document&);
-    virtual void doApply() OVERRIDE;
+    virtual void doApply() override;
 };
 
 } // namespace blink

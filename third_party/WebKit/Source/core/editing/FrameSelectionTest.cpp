@@ -26,7 +26,7 @@ namespace {
 
 class FrameSelectionTest : public ::testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const;

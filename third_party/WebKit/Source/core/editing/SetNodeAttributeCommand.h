@@ -31,20 +31,20 @@
 
 namespace blink {
 
-class SetNodeAttributeCommand FINAL : public SimpleEditCommand {
+class SetNodeAttributeCommand final : public SimpleEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<SetNodeAttributeCommand> create(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
     {
         return adoptRefWillBeNoop(new SetNodeAttributeCommand(element, attribute, value));
     }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
 
-    virtual void doApply() OVERRIDE;
-    virtual void doUnapply() OVERRIDE;
+    virtual void doApply() override;
+    virtual void doUnapply() override;
 
     RefPtrWillBeMember<Element> m_element;
     QualifiedName m_attribute;

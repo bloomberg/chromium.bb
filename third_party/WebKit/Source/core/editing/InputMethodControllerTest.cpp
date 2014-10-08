@@ -25,7 +25,7 @@ protected:
     Element* insertHTMLElement(const char* elementCode, const char* elementId);
 
 private:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
     HTMLDocument* m_document;

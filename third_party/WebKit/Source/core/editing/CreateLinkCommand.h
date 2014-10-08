@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class CreateLinkCommand FINAL : public CompositeEditCommand {
+class CreateLinkCommand final : public CompositeEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<CreateLinkCommand> create(Document& document, const String& linkURL)
     {
@@ -40,8 +40,8 @@ public:
 private:
     CreateLinkCommand(Document&, const String& linkURL);
 
-    virtual void doApply() OVERRIDE;
-    virtual EditAction editingAction() const OVERRIDE { return EditActionCreateLink; }
+    virtual void doApply() override;
+    virtual EditAction editingAction() const override { return EditActionCreateLink; }
 
     String m_url;
 };

@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class RemoveFormatCommand FINAL : public CompositeEditCommand {
+class RemoveFormatCommand final : public CompositeEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<RemoveFormatCommand> create(Document& document)
     {
@@ -40,8 +40,8 @@ public:
 private:
     explicit RemoveFormatCommand(Document&);
 
-    virtual void doApply() OVERRIDE;
-    virtual EditAction editingAction() const OVERRIDE { return EditActionUnspecified; }
+    virtual void doApply() override;
+    virtual EditAction editingAction() const override { return EditActionUnspecified; }
 };
 
 } // namespace blink

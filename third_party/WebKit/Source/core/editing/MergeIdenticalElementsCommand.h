@@ -30,20 +30,20 @@
 
 namespace blink {
 
-class MergeIdenticalElementsCommand FINAL : public SimpleEditCommand {
+class MergeIdenticalElementsCommand final : public SimpleEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<MergeIdenticalElementsCommand> create(PassRefPtrWillBeRawPtr<Element> element1, PassRefPtrWillBeRawPtr<Element> element2)
     {
         return adoptRefWillBeNoop(new MergeIdenticalElementsCommand(element1, element2));
     }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>);
 
-    virtual void doApply() OVERRIDE;
-    virtual void doUnapply() OVERRIDE;
+    virtual void doApply() override;
+    virtual void doUnapply() override;
 
     RefPtrWillBeMember<Element> m_element1;
     RefPtrWillBeMember<Element> m_element2;

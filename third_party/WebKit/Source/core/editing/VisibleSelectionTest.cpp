@@ -24,7 +24,7 @@ namespace blink {
 
 class VisibleSelectionTest : public ::testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     // Oilpan: wrapper object needed to be able to trace VisibleSelection.
     class VisibleSelectionWrapper : public NoBaseWillBeGarbageCollectedFinalized<VisibleSelectionWrapper> {

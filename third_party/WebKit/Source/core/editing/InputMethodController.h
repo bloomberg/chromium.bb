@@ -38,7 +38,7 @@ class LocalFrame;
 class Range;
 class Text;
 
-class InputMethodController FINAL : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
+class InputMethodController final : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
     enum ConfirmCompositionBehavior {

@@ -42,7 +42,7 @@ class TextCheckerClient;
 class TextCheckingParagraph;
 struct TextCheckingResult;
 
-class SpellChecker FINAL : public NoBaseWillBeGarbageCollectedFinalized<SpellChecker> {
+class SpellChecker final : public NoBaseWillBeGarbageCollectedFinalized<SpellChecker> {
     WTF_MAKE_NONCOPYABLE(SpellChecker);
 public:
     static PassOwnPtrWillBeRawPtr<SpellChecker> create(LocalFrame&);

@@ -57,7 +57,7 @@ namespace {
 
 class TextIteratorTest : public ::testing::Test {
 protected:
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     HTMLDocument& document() const;
 

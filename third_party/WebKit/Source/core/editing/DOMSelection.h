@@ -47,7 +47,7 @@ class Range;
 class TreeScope;
 class VisibleSelection;
 
-class DOMSelection FINAL : public RefCountedWillBeGarbageCollected<DOMSelection>, public ScriptWrappable, public DOMWindowProperty {
+class DOMSelection final : public RefCountedWillBeGarbageCollected<DOMSelection>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);
 public:
@@ -96,7 +96,7 @@ public:
     // Microsoft Selection Object API
     void empty();
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit DOMSelection(const TreeScope*);

@@ -32,21 +32,21 @@ namespace blink {
 
 class HTMLSpanElement;
 
-class WrapContentsInDummySpanCommand FINAL : public SimpleEditCommand {
+class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
 public:
     static PassRefPtrWillBeRawPtr<WrapContentsInDummySpanCommand> create(PassRefPtrWillBeRawPtr<Element> element)
     {
         return adoptRefWillBeNoop(new WrapContentsInDummySpanCommand(element));
     }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element>);
 
-    virtual void doApply() OVERRIDE;
-    virtual void doUnapply() OVERRIDE;
-    virtual void doReapply() OVERRIDE;
+    virtual void doApply() override;
+    virtual void doUnapply() override;
+    virtual void doReapply() override;
     void executeApply();
 
     RefPtrWillBeMember<Element> m_element;

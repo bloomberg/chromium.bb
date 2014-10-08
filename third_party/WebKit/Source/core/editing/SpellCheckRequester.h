@@ -42,7 +42,7 @@ class LocalFrame;
 class SpellCheckRequester;
 class TextCheckerClient;
 
-class SpellCheckRequest FINAL : public TextCheckingRequest {
+class SpellCheckRequest final : public TextCheckingRequest {
 public:
     static PassRefPtrWillBeRawPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange, int requestNumber = 0);
     virtual ~SpellCheckRequest();
@@ -56,13 +56,13 @@ public:
     void requesterDestroyed();
 #endif
 
-    virtual const TextCheckingRequestData& data() const OVERRIDE;
-    virtual void didSucceed(const Vector<TextCheckingResult>&) OVERRIDE;
-    virtual void didCancel() OVERRIDE;
+    virtual const TextCheckingRequestData& data() const override;
+    virtual void didSucceed(const Vector<TextCheckingResult>&) override;
+    virtual void didCancel() override;
 
     int requestNumber() const { return m_requestNumber; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     SpellCheckRequest(PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
@@ -75,7 +75,7 @@ private:
     int m_requestNumber;
 };
 
-class SpellCheckRequester FINAL : public NoBaseWillBeGarbageCollectedFinalized<SpellCheckRequester> {
+class SpellCheckRequester final : public NoBaseWillBeGarbageCollectedFinalized<SpellCheckRequester> {
     WTF_MAKE_NONCOPYABLE(SpellCheckRequester); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<SpellCheckRequester> create(LocalFrame& frame)
