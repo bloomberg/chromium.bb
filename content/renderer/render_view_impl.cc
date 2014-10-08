@@ -724,7 +724,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   const std::string region_code =
       command_line.HasSwitch(switches::kNetworkCountryIso)
           ? command_line.GetSwitchValueASCII(switches::kNetworkCountryIso)
-          : net::android::GetTelephonyNetworkOperator();
+          : net::android::GetTelephonyNetworkCountryIso();
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new AddressDetector()));
   content_detectors_.push_back(linked_ptr<ContentDetector>(
