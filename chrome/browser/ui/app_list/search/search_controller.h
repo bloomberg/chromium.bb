@@ -13,30 +13,22 @@
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 
-class AppListControllerDelegate;
-class Profile;
-
 namespace app_list {
 
 class History;
 class SearchBoxModel;
 class SearchProvider;
 class SearchResult;
-class SpeechUIModel;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
 // results to the given SearchResults UI model.
-class SearchController : public SpeechUIModelObserver {
+class SearchController {
  public:
-  SearchController(Profile* profile,
-                   SearchBoxModel* search_box,
+  SearchController(SearchBoxModel* search_box,
                    AppListModel::SearchResults* results,
-                   SpeechUIModel* speech_ui,
-                   AppListControllerDelegate* list_controller);
+                   History* history);
   virtual ~SearchController();
-
-  void Init();
 
   void Start();
   void Stop();
@@ -46,24 +38,17 @@ class SearchController : public SpeechUIModelObserver {
                           int action_index,
                           int event_flags);
 
- private:
-  typedef ScopedVector<SearchProvider> Providers;
-
   // Takes ownership of |provider| and associates it with given mixer group.
   void AddProvider(Mixer::GroupId group,
                    scoped_ptr<SearchProvider> provider);
 
+ private:
+  typedef ScopedVector<SearchProvider> Providers;
+
   // Invoked when the search results are changed.
   void OnResultsChanged();
 
-  // SpeechUIModelObserver overrides:
-  virtual void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) override;
-
-  Profile* profile_;
   SearchBoxModel* search_box_;
-  SpeechUIModel* speech_ui_;
-  AppListControllerDelegate* list_controller_;
 
   bool dispatching_query_;
   Providers providers_;

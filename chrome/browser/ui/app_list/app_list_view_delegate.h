@@ -32,6 +32,7 @@ class CustomLauncherPageContents;
 
 namespace app_list {
 class SearchController;
+class SearchResourceManager;
 class SpeechUIModel;
 }
 
@@ -160,8 +161,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // if |profile_| changes.
   app_list::AppListModel* model_;
 
-  // Note: order ensures |search_controller_| is destroyed before |speech_ui_|.
+  // Note: order ensures |search_resource_manager_| is destroyed before
+  // |speech_ui_|.
   scoped_ptr<app_list::SpeechUIModel> speech_ui_;
+  scoped_ptr<app_list::SearchResourceManager> search_resource_manager_;
   scoped_ptr<app_list::SearchController> search_controller_;
 
   base::TimeDelta auto_launch_timeout_;

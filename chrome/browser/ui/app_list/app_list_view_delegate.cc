@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
+#include "chrome/browser/ui/app_list/search/search_controller_factory.h"
+#include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -205,8 +207,9 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     return;
 
   if (profile_) {
-    // Note: |search_controller_| has a reference to |speech_ui_| so must be
-    // destroyed first.
+    // Note: |search_resource_manager_| has a reference to |speech_ui_| so must
+    // be destroyed first.
+    search_resource_manager_.reset();
     search_controller_.reset();
     custom_page_contents_.clear();
     app_list::StartPageService* start_page_service =
@@ -250,11 +253,13 @@ void AppListViewDelegate::SetUpSearchUI() {
                                             ? start_page_service->state()
                                             : app_list::SPEECH_RECOGNITION_OFF);
 
-  search_controller_.reset(new app_list::SearchController(profile_,
-                                                          model_->search_box(),
-                                                          model_->results(),
-                                                          speech_ui_.get(),
-                                                          controller_));
+  search_resource_manager_.reset(new app_list::SearchResourceManager(
+      profile_,
+      model_->search_box(),
+      speech_ui_.get()));
+
+  search_controller_ = CreateSearchController(
+      profile_, model_->search_box(), model_->results(), controller_);
 }
 
 void AppListViewDelegate::SetUpProfileSwitcher() {
@@ -400,8 +405,10 @@ void AppListViewDelegate::GetShortcutPathForApp(
 }
 
 void AppListViewDelegate::StartSearch() {
-  if (search_controller_)
+  if (search_controller_) {
     search_controller_->Start();
+    controller_->OnSearchStarted();
+  }
 }
 
 void AppListViewDelegate::StopSearch() {
