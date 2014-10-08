@@ -84,9 +84,9 @@ component("ash") {
       #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
       # Ash #includes power_supply_properties.pb.h directly.
       #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
-      #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',  TODO(GYP)
-      #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',  TODO(GYP)
-      #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos',  TODO(GYP)
+      "//ui/chromeos/resources",
+      "//ui/chromeos/strings",
+      "//ui/chromeos:ui_chromeos",
     ]
   } else {
     sources -= [
