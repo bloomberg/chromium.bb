@@ -61,7 +61,7 @@ class AwSettingsUserData : public base::SupportsUserData::Data {
   static AwSettings* GetSettings(content::WebContents* web_contents) {
     if (!web_contents)
       return NULL;
-    AwSettingsUserData* data = reinterpret_cast<AwSettingsUserData*>(
+    AwSettingsUserData* data = static_cast<AwSettingsUserData*>(
         web_contents->GetUserData(kAwSettingsUserDataKey));
     return data ? data->settings_ : NULL;
   }

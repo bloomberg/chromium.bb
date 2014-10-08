@@ -56,7 +56,7 @@ void InterceptNavigationDelegate::Associate(
 // static
 InterceptNavigationDelegate* InterceptNavigationDelegate::Get(
     WebContents* web_contents) {
-  return reinterpret_cast<InterceptNavigationDelegate*>(
+  return static_cast<InterceptNavigationDelegate*>(
       web_contents->GetUserData(kInterceptNavigationDelegateUserDataKey));
 }
 

@@ -25,7 +25,7 @@ void AppCacheInterceptor::SetHandler(net::URLRequest* request,
 
 AppCacheRequestHandler* AppCacheInterceptor::GetHandler(
     net::URLRequest* request) {
-  return reinterpret_cast<AppCacheRequestHandler*>(
+  return static_cast<AppCacheRequestHandler*>(
       request->GetUserData(GetInstance()));
 }
 

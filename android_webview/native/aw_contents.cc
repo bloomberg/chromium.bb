@@ -113,7 +113,7 @@ class AwContentsUserData : public base::SupportsUserData::Data {
   static AwContents* GetContents(WebContents* web_contents) {
     if (!web_contents)
       return NULL;
-    AwContentsUserData* data = reinterpret_cast<AwContentsUserData*>(
+    AwContentsUserData* data = static_cast<AwContentsUserData*>(
         web_contents->GetUserData(kAwContentsUserDataKey));
     return data ? data->contents_ : NULL;
   }

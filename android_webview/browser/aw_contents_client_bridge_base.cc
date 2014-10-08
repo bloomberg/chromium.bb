@@ -25,7 +25,7 @@ class UserData : public base::SupportsUserData::Data {
       content::WebContents* web_contents) {
     if (!web_contents)
       return NULL;
-    UserData* data = reinterpret_cast<UserData*>(
+    UserData* data = static_cast<UserData*>(
         web_contents->GetUserData(kAwContentsClientBridgeBase));
     return data ? data->contents_ : NULL;
   }

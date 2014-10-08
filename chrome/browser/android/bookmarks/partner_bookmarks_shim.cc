@@ -53,7 +53,7 @@ PartnerBookmarksShim* PartnerBookmarksShim::BuildForBrowserContext(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PartnerBookmarksShim* data =
-      reinterpret_cast<PartnerBookmarksShim*>(
+      static_cast<PartnerBookmarksShim*>(
           browser_context->GetUserData(kPartnerBookmarksShimUserDataKey));
   if (data)
     return data;

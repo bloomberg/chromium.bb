@@ -103,7 +103,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
 
 ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
     net::URLRequest* request) {
-  return reinterpret_cast<ServiceWorkerRequestHandler*>(
+  return static_cast<ServiceWorkerRequestHandler*>(
       request->GetUserData(&kUserDataKey));
 }
 

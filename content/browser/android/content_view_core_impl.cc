@@ -193,7 +193,7 @@ class ContentViewCoreImpl::ContentViewUserData
 ContentViewCoreImpl* ContentViewCoreImpl::FromWebContents(
     content::WebContents* web_contents) {
   ContentViewCoreImpl::ContentViewUserData* data =
-      reinterpret_cast<ContentViewCoreImpl::ContentViewUserData*>(
+      static_cast<ContentViewCoreImpl::ContentViewUserData*>(
           web_contents->GetUserData(kContentViewUserDataKey));
   return data ? data->get() : NULL;
 }
