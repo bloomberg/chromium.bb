@@ -35,10 +35,6 @@ namespace media {
 class AudioOutputController;
 }
 
-namespace ui {
-struct SelectedFileInfo;
-}
-
 namespace content {
 
 class ChildProcessSecurityPolicy;
@@ -47,6 +43,7 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 struct DropData;
+struct FileChooserFileInfo;
 struct WebPreferences;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
@@ -163,7 +160,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // from a file chooser dialog for the form. |permissions| is the file
   // selection mode in which the chooser dialog was created.
   virtual void FilesSelectedInChooser(
-      const std::vector<ui::SelectedFileInfo>& files,
+      const std::vector<content::FileChooserFileInfo>& files,
       FileChooserParams::Mode permissions) = 0;
 
   virtual RenderViewHostDelegate* GetDelegate() const = 0;

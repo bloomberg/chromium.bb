@@ -44,7 +44,6 @@ class Range;
 
 namespace ui {
 class AXTree;
-struct SelectedFileInfo;
 }
 
 namespace content {
@@ -56,6 +55,7 @@ class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
+struct FileChooserFileInfo;
 struct FileChooserParams;
 
 #if defined(COMPILER_MSVC)
@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       const blink::WebPluginAction& action) override;
   virtual void ExitFullscreen() override;
   virtual void FilesSelectedInChooser(
-      const std::vector<ui::SelectedFileInfo>& files,
+      const std::vector<content::FileChooserFileInfo>& files,
       FileChooserParams::Mode permissions) override;
   virtual RenderViewHostDelegate* GetDelegate() const override;
   virtual int GetEnabledBindings() const override;

@@ -118,10 +118,6 @@ class WebHitTestResult;
 #endif
 }  // namespace blink
 
-namespace ui {
-struct SelectedFileInfo;
-}
-
 namespace content {
 
 class BrowserPluginManager;
@@ -144,6 +140,7 @@ class WebPluginDelegateProxy;
 struct DropData;
 struct FaviconURL;
 struct FileChooserParams;
+struct FileChooserFileInfo;
 struct RenderViewImplParams;
 
 #if defined(OS_ANDROID)
@@ -685,7 +682,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
   void OnFileChooserResponse(
-      const std::vector<ui::SelectedFileInfo>& files);
+      const std::vector<content::FileChooserFileInfo>& files);
   void OnFind(int request_id,
               const base::string16&,
               const blink::WebFindOptions&);

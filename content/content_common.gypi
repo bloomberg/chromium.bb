@@ -60,6 +60,8 @@
       'public/common/eme_constants.h',
       'public/common/favicon_url.cc',
       'public/common/favicon_url.h',
+      'public/common/file_chooser_file_info.cc',
+      'public/common/file_chooser_file_info.h',
       'public/common/file_chooser_params.cc',
       'public/common/file_chooser_params.h',
       'public/common/frame_navigate_params.cc',

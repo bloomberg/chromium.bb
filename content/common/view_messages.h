@@ -20,6 +20,7 @@
 #include "content/common/webplugin_geometry.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
@@ -55,7 +56,6 @@
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
@@ -172,6 +172,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
   IPC_STRUCT_TRAITS_MEMBER(icon_sizes)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(file_path)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
+  IPC_STRUCT_TRAITS_MEMBER(modification_time)
+  IPC_STRUCT_TRAITS_MEMBER(length)
+  IPC_STRUCT_TRAITS_MEMBER(is_directory)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(title)
@@ -248,12 +257,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(params)
   IPC_STRUCT_TRAITS_MEMBER(time)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ui::SelectedFileInfo)
-  IPC_STRUCT_TRAITS_MEMBER(file_path)
-  IPC_STRUCT_TRAITS_MEMBER(local_path)
-  IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
@@ -721,7 +724,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowHidden)
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
 
 IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
-                    std::vector<ui::SelectedFileInfo>)
+                    std::vector<content::FileChooserFileInfo>)
 
 // Provides the results of directory enumeration.
 IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,

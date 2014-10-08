@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
@@ -23,7 +24,6 @@
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace content {
 
@@ -100,10 +100,10 @@ TEST_F(PepperFileChooserHostTest, Show) {
 
   // Send a chooser reply to the render view. Note our reply path has to have a
   // path separator so we include both a Unix and a Windows one.
-  ui::SelectedFileInfo selected_info;
+  content::FileChooserFileInfo selected_info;
   selected_info.display_name = FILE_PATH_LITERAL("Hello, world");
-  selected_info.local_path = base::FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
-  std::vector<ui::SelectedFileInfo> selected_info_vector;
+  selected_info.file_path = base::FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
+  std::vector<content::FileChooserFileInfo> selected_info_vector;
   selected_info_vector.push_back(selected_info);
   RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);
   ViewMsg_RunFileChooserResponse response(view_impl->routing_id(),

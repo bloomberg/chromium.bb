@@ -19,10 +19,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/AwWebContentsDelegate_jni.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -102,7 +102,7 @@ void AwWebContentsDelegate::RunFileChooser(WebContents* web_contents,
   } else if (params.mode == FileChooserParams::Save) {
     // Save not supported, so cancel it.
     web_contents->GetRenderViewHost()->FilesSelectedInChooser(
-         std::vector<ui::SelectedFileInfo>(),
+         std::vector<content::FileChooserFileInfo>(),
          params.mode);
     return;
   } else {
@@ -243,14 +243,15 @@ static void FilesSelectedInChooser(
                                                      &file_path_str);
   base::android::AppendJavaStringArrayToStringVector(env, display_names,
                                                      &display_name_str);
-  std::vector<ui::SelectedFileInfo> files;
+  std::vector<content::FileChooserFileInfo> files;
   files.reserve(file_path_str.size());
   for (size_t i = 0; i < file_path_str.size(); ++i) {
     GURL url(file_path_str[i]);
     if (!url.is_valid())
       continue;
     base::FilePath path(url.SchemeIsFile() ? url.path() : file_path_str[i]);
-    ui::SelectedFileInfo file_info(path, base::FilePath());
+    content::FileChooserFileInfo file_info;
+    file_info.file_path = path;
     if (!display_name_str[i].empty())
       file_info.display_name = display_name_str[i];
     files.push_back(file_info);

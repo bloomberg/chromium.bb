@@ -66,6 +66,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/filename_util.h"
@@ -80,7 +82,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme_switches.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
@@ -721,17 +722,17 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::FilesSelectedInChooser(
-    const std::vector<ui::SelectedFileInfo>& files,
+    const std::vector<content::FileChooserFileInfo>& files,
     FileChooserParams::Mode permissions) {
   // Grant the security access requested to the given files.
   for (size_t i = 0; i < files.size(); ++i) {
-    const ui::SelectedFileInfo& file = files[i];
+    const content::FileChooserFileInfo& file = files[i];
     if (permissions == FileChooserParams::Save) {
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
-          GetProcess()->GetID(), file.local_path);
+          GetProcess()->GetID(), file.file_path);
     } else {
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-          GetProcess()->GetID(), file.local_path);
+          GetProcess()->GetID(), file.file_path);
     }
   }
   Send(new ViewMsg_RunFileChooserResponse(GetRoutingID(), files));

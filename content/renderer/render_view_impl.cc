@@ -57,6 +57,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -192,7 +193,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_ANDROID)
@@ -3004,7 +3004,7 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
 }
 
 void RenderViewImpl::OnFileChooserResponse(
-    const std::vector<ui::SelectedFileInfo>& files) {
+    const std::vector<content::FileChooserFileInfo>& files) {
   // This could happen if we navigated to a different page before the user
   // closed the chooser.
   if (file_chooser_completions_.empty())
@@ -3015,7 +3015,7 @@ void RenderViewImpl::OnFileChooserResponse(
       files.size());
   for (size_t i = 0; i < files.size(); ++i) {
     WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.path = files[i].local_path.AsUTF16Unsafe();
+    selected_file.path = files[i].file_path.AsUTF16Unsafe();
     selected_file.displayName =
         base::FilePath(files[i].display_name).AsUTF16Unsafe();
     selected_files[i] = selected_file;

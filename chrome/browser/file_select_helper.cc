@@ -26,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,10 +45,18 @@ namespace {
 // the renderer must start at 0 and increase.
 const int kFileSelectEnumerationId = -1;
 
-void NotifyRenderViewHost(RenderViewHost* render_view_host,
-                          const std::vector<ui::SelectedFileInfo>& files,
-                          FileChooserParams::Mode dialog_mode) {
-  render_view_host->FilesSelectedInChooser(files, dialog_mode);
+void NotifyRenderViewHost(
+    RenderViewHost* render_view_host,
+    const std::vector<ui::SelectedFileInfo>& files,
+    FileChooserParams::Mode dialog_mode) {
+  std::vector<content::FileChooserFileInfo> chooser_files;
+  for (size_t i = 0; i < files.size(); ++i) {
+    content::FileChooserFileInfo chooser_file;
+    chooser_file.file_path = files[i].local_path;
+    chooser_file.display_name = files[i].display_name;
+    chooser_files.push_back(chooser_file);
+  }
+  render_view_host->FilesSelectedInChooser(chooser_files, dialog_mode);
 }
 
 // Converts a list of FilePaths to a list of ui::SelectedFileInfo.
