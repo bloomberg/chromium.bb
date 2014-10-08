@@ -206,7 +206,7 @@ namespace blink {
 
         virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
 
-        virtual bool isControlledByServiceWorker() = 0;
+        virtual bool isControlledByServiceWorker(DocumentLoader&) = 0;
 
         virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
 

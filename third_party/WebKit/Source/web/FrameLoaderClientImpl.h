@@ -159,7 +159,7 @@ public:
     virtual void dispatchWillInsertBody() override;
 
     virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
-    virtual bool isControlledByServiceWorker() override;
+    virtual bool isControlledByServiceWorker(DocumentLoader&) override;
     virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() override;
 
     virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;
