@@ -813,11 +813,12 @@ class MainTest(TestCase):
             {'yo': 'dawg'},
           ),
         ])
-    main(
+    ret = main(
         [
           'query', '--swarming', 'https://localhost:1', 'bots/botid/tasks',
         ])
     self._check_output('{\n  "yo": "dawg"\n}\n', '')
+    self.assertEqual(0, ret)
 
   def test_query_cursor(self):
     self.expected_requests(
@@ -843,7 +844,7 @@ class MainTest(TestCase):
             },
           ),
         ])
-    main(
+    ret = main(
         [
           'query', '--swarming', 'https://localhost:1', 'bots/botid/tasks',
           '--limit', '2',
@@ -857,6 +858,45 @@ class MainTest(TestCase):
         '  ]\n'
         '}\n')
     self._check_output(expected, '')
+    self.assertEqual(0, ret)
+
+  def test_reproduce(self):
+    old_cwd = os.getcwd()
+    try:
+      os.chdir(self.tmpdir)
+
+      def call(cmd, env, cwd):
+        self.assertEqual(['foo'], cmd)
+        expected = os.environ.copy()
+        expected['aa'] = 'bb'
+        self.assertEqual(expected, env)
+        self.assertEqual('work', cwd)
+        return 0
+
+      self.mock(subprocess, 'call', call)
+
+      self.expected_requests(
+          [
+            (
+              'https://localhost:1/swarming/api/v1/client/task/123/request',
+              {},
+              {
+                'properties': {
+                  'commands': [['foo']],
+                  'data': [],
+                  'env': {'aa': 'bb'},
+                },
+              },
+            ),
+          ])
+      ret = main(
+          [
+            'reproduce', '--swarming', 'https://localhost:1', '123',
+          ])
+      self._check_output('', '')
+      self.assertEqual(0, ret)
+    finally:
+      os.chdir(old_cwd)
 
 
 class BotTestCase(TestCase):
@@ -993,7 +1033,7 @@ class BotTestCase(TestCase):
     }
 
   def test_bots(self):
-    main(['bots', '--swarming', 'https://localhost:1'])
+    ret = main(['bots', '--swarming', 'https://localhost:1'])
     expected = (
         u'swarm2\n'
         u'  {"cores": "8", "cpu": ["x86", "x86-64"], "cygwin": "0", "gpu": '
@@ -1011,13 +1051,15 @@ class BotTestCase(TestCase):
           '"Linux-12.04"]}\n'
         u'  task: 14856971a64c601\n')
     self._check_output(expected, '')
+    self.assertEqual(0, ret)
 
   def test_bots_bare(self):
-    main(['bots', '--swarming', 'https://localhost:1', '--bare'])
+    ret = main(['bots', '--swarming', 'https://localhost:1', '--bare'])
     self._check_output("swarm2\nswarm3\nswarm4\n", '')
+    self.assertEqual(0, ret)
 
   def test_bots_filter(self):
-    main(
+    ret = main(
         [
           'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Windows',
@@ -1028,9 +1070,10 @@ class BotTestCase(TestCase):
           'Adapter"], "hostname": "swarm2.example.com", "id": "swarm2", '
           '"integrity": "high", "os": ["Windows", "Windows-6.1"]}\n')
     self._check_output(expected, '')
+    self.assertEqual(0, ret)
 
   def test_bots_filter_keep_dead(self):
-    main(
+    ret = main(
         [
           'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Linux', '--keep-dead',
@@ -1045,9 +1088,10 @@ class BotTestCase(TestCase):
           '"Linux-12.04"]}\n'
         u'  task: 14856971a64c601\n')
     self._check_output(expected, '')
+    self.assertEqual(0, ret)
 
   def test_bots_filter_dead_only(self):
-    main(
+    ret = main(
         [
           'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Linux', '--dead-only',
@@ -1057,6 +1101,7 @@ class BotTestCase(TestCase):
           '"hostname": "swarm1.example.com", "id": "swarm1", "os": ["Linux", '
           '"Linux-12.04"]}\n')
     self._check_output(expected, '')
+    self.assertEqual(0, ret)
 
 
 def gen_run_isolated_out_hack_log(isolate_server, namespace, isolated_hash):

@@ -13,11 +13,14 @@ import logging
 import os
 import re
 import shutil
+import StringIO
 import subprocess
 import sys
 import threading
 import time
 import urllib
+import urlparse
+import zipfile
 
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
@@ -1106,6 +1109,61 @@ def CMDrun(parser, args):
   except Failure:
     on_error.report(None)
     return 1
+
+
+@subcommand.usage('task_id')
+def CMDreproduce(parser, args):
+  """Runs a task locally that was triggered on the server.
+
+  This running locally the same commands that have been run on the bot. The data
+  downloaded will be in a subdirectory named 'work' of the current working
+  directory.
+  """
+  options, args = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Must specify exactly one task id.')
+
+  auth.ensure_logged_in(options.swarming)
+  url = options.swarming + '/swarming/api/v1/client/task/%s/request' % args[0]
+  request = net.url_read_json(url)
+  if not request:
+    print >> sys.stderr, 'Failed to retrieve request data for the task'
+    return 1
+
+  if not os.path.isdir('work'):
+    os.mkdir('work')
+
+  swarming_host = urlparse.urlparse(options.swarming).netloc
+  properties = request['properties']
+  for data_url, _ in properties['data']:
+    assert data_url.startswith('https://'), data_url
+    data_host = urlparse.urlparse(data_url).netloc
+    if data_host != swarming_host:
+      auth.ensure_logged_in('https://' + data_host)
+
+    content = net.url_read(data_url)
+    if content is None:
+      print >> sys.stderr, 'Failed to download %s' % data_url
+      return 1
+    with zipfile.ZipFile(StringIO.StringIO(content)) as zip_file:
+      zip_file.extractall('work')
+
+  env = None
+  if properties['env']:
+    env = os.environ.copy()
+    env.update(properties['env'])
+
+  exit_code = 0
+  for cmd in properties['commands']:
+    try:
+      c = subprocess.call(cmd, env=env, cwd='work')
+    except OSError as e:
+      print >> sys.stderr, 'Failed to run: %s' % ' '.join(cmd)
+      print >> sys.stderr, str(e)
+      c = 1
+    if not exit_code:
+      exit_code = c
+  return exit_code
 
 
 @subcommand.usage("(hash|isolated) [-- extra_args]")
