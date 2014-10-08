@@ -243,9 +243,11 @@ void WindowManagerApp::OnTreeChanged(
   }
 }
 
-void WindowManagerApp::OnViewDestroyed(View* view) {
-  if (view != root_)
+void WindowManagerApp::OnViewDestroying(View* view) {
+  if (view != root_) {
+    Unregister(view);
     return;
+  }
   aura::Window* window = GetWindowForViewId(view->id());
   window->RemovePreTargetHandler(this);
   root_ = NULL;
@@ -324,14 +326,24 @@ void WindowManagerApp::RegisterSubtree(View* view, aura::Window* parent) {
 }
 
 void WindowManagerApp::UnregisterSubtree(View* view) {
-  view->RemoveObserver(this);
+  for (View* child : view->children())
+    UnregisterSubtree(child);
+  Unregister(view);
+}
+
+void WindowManagerApp::Unregister(View* view) {
   ViewIdToWindowMap::iterator it = view_id_to_window_map_.find(view->id());
+  if (it == view_id_to_window_map_.end()) {
+    // Because we unregister in OnViewDestroying() we can still get a subsequent
+    // OnTreeChanged for the same view. Ignore this one.
+    return;
+  }
+  view->RemoveObserver(this);
   DCHECK(it != view_id_to_window_map_.end());
-  scoped_ptr<aura::Window> window(it->second);
+  // Delete before we remove from map as destruction may want to look up view
+  // for window.
+  delete it->second;
   view_id_to_window_map_.erase(it);
-  View::Children::const_iterator child = view->children().begin();
-  for (; child != view->children().end(); ++child)
-    UnregisterSubtree(*child);
 }
 
 }  // namespace mojo

@@ -111,7 +111,7 @@ class WindowManagerApp
   // Overridden from ViewObserver:
   virtual void OnTreeChanged(
       const ViewObserver::TreeChangeParams& params) override;
-  virtual void OnViewDestroyed(View* view) override;
+  virtual void OnViewDestroying(View* view) override;
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) override;
@@ -132,9 +132,11 @@ class WindowManagerApp
   // GetWindowForViewId().
   // TODO(beng): perhaps View should have a property bag.
   void RegisterSubtree(View* view, aura::Window* parent);
+  // Recursively invokes Unregister() for |view| and all its descendants.
+  void UnregisterSubtree(View* view);
   // Deletes the aura::Windows associated with the hierarchy beneath |id|,
   // and removes from the registry.
-  void UnregisterSubtree(View* view);
+  void Unregister(View* view);
 
   Shell* shell_;
 
