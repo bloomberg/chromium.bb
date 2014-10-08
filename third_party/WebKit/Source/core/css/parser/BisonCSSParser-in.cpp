@@ -684,7 +684,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseKeywordValue(CSSPropertyID property
     if (!valueID)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSValue> value = nullptr;
     if (valueID == CSSValueInherit)
         return cssValuePool().createInheritedValue();
     if (valueID == CSSValueInitial)
