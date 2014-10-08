@@ -15,7 +15,6 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
 namespace {
@@ -64,9 +63,8 @@ class PictureImageLayerImplTest : public testing::Test {
         new TestablePictureImageLayerImpl(tree, id);
     layer->SetBounds(gfx::Size(100, 200));
     layer->SetContentBounds(gfx::Size(100, 200));
-    layer->tilings_.reset(
-        new PictureLayerTilingSet(&tiling_client_,
-                                  gfx::ToCeiledSize(layer->bounds())));
+    layer->tilings_.reset(new PictureLayerTilingSet(&tiling_client_,
+                                                    layer->bounds()));
     layer->pile_ = tiling_client_.GetPile();
     return make_scoped_ptr(layer);
   }
@@ -147,7 +145,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
 
   // Draw.
   active_layer->draw_properties().visible_content_rect =
-      gfx::Rect(gfx::ToCeiledSize(active_layer->bounds()));
+      gfx::Rect(active_layer->bounds());
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer->WillDraw(DRAW_MODE_SOFTWARE, NULL);

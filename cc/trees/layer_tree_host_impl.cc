@@ -2660,9 +2660,7 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
     if (!layer_impl->HasScrollbar(VERTICAL))
       continue;
 
-    float height = layer_impl->scroll_clip_layer()
-        ? layer_impl->scroll_clip_layer()->bounds().height()
-        : 0;
+    float height = layer_impl->clip_height();
 
     // These magical values match WebKit and are designed to scroll nearly the
     // entire visible content height but leave a bit of overlap.

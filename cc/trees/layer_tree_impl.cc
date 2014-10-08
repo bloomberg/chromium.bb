@@ -570,12 +570,12 @@ const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
   return render_surface_layer_list_;
 }
 
-gfx::SizeF LayerTreeImpl::ScrollableSize() const {
+gfx::Size LayerTreeImpl::ScrollableSize() const {
   LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
                                      ? OuterViewportScrollLayer()
                                      : InnerViewportScrollLayer();
   if (!root_scroll_layer || root_scroll_layer->children().empty())
-    return gfx::SizeF();
+    return gfx::Size();
   return root_scroll_layer->children()[0]->bounds();
 }
 

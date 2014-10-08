@@ -9,7 +9,6 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -47,8 +46,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     // TODO(ernstm): This DCHECK is only valid as long as the pile's tiling_rect
     // is identical to the layer_rect.
     // If update called, then pile size must match bounds pushed to impl layer.
-    DCHECK_EQ(gfx::ToCeiledSize(layer_impl->bounds()).ToString(),
-              pile_->tiling_size().ToString());
+    DCHECK_EQ(layer_impl->bounds().ToString(), pile_->tiling_size().ToString());
   }
 
   // Unlike other properties, invalidation must always be set on layer_impl.

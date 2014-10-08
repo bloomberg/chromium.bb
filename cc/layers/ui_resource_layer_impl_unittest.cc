@@ -15,7 +15,6 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -121,7 +120,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
                                   layer_size,
                                   opaque,
                                   uid);
-  expected_opaque_bounds = gfx::Rect(gfx::ToCeiledSize(layer->bounds()));
+  expected_opaque_bounds = gfx::Rect(layer->bounds());
   OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);
 }
 
@@ -143,7 +142,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   layer = GenerateUIResourceLayer(
       &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(true);
-  expected_opaque_bounds = gfx::Rect(gfx::ToCeiledSize(layer->bounds()));
+  expected_opaque_bounds = gfx::Rect(layer->bounds());
   OpaqueBoundsTest(layer.Pass(), expected_opaque_bounds);
 }
 

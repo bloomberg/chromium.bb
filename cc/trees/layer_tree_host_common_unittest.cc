@@ -30,7 +30,6 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/transform.h"
 
@@ -1159,10 +1158,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        translate,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), translate, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(translate, root->draw_properties().target_space_transform);
@@ -1177,10 +1173,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        scale,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), scale, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(scale, root->draw_properties().target_space_transform);
@@ -1195,10 +1188,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        rotate,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), rotate, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
@@ -1215,10 +1205,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        composite,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), composite, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(composite, root->draw_properties().target_space_transform);
@@ -1232,10 +1219,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        translate,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), translate, &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -1257,10 +1241,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        translate,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), translate, &render_surface_layer_list);
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
@@ -1281,10 +1262,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        composite,
-        &render_surface_layer_list);
+        root.get(), root->bounds(), composite, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform compositeSquared = composite;
@@ -4493,9 +4471,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
@@ -4538,9 +4514,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
@@ -4568,9 +4542,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
@@ -4595,9 +4567,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
@@ -4685,9 +4655,7 @@ TEST_F(LayerTreeHostCommonTest,
   float page_scale_factor = 1.f;
 
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = root.get(),
@@ -4769,9 +4737,7 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
@@ -4797,9 +4763,7 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
@@ -4920,9 +4884,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = root.get();
@@ -5123,9 +5085,7 @@ TEST_F(LayerTreeHostCommonTest,
   SkMScalar device_scale_factor = 5.0;
   SkMScalar page_scale_factor = 7.0;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = root.get();
@@ -5270,9 +5230,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -5288,9 +5246,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -5701,9 +5657,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -5913,9 +5867,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayer) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -5971,9 +5923,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6031,9 +5981,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayers) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6088,9 +6036,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6202,9 +6148,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6313,9 +6257,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6375,9 +6317,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7006,9 +6946,7 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     LayerImplList render_surface_layer_list;
     FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root.get());
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.can_render_to_separate_surface = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7018,9 +6956,7 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   {
     LayerImplList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     inputs.can_render_to_separate_surface = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7565,7 +7501,7 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
       root.get(),
-      gfx::ToCeiledSize(root->bounds()),
+      root->bounds(),
       identity_transform,
       &render_surface_layer_list);
 
@@ -7701,9 +7637,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotClobberSorting) {
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(),
-      gfx::ToCeiledSize(root->bounds()),
-      &render_surface_layer_list);
+      root.get(), root->bounds(), &render_surface_layer_list);
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7798,9 +7732,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
     LayerImplList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -7823,9 +7755,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
     LayerImplList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -7850,9 +7780,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
     LayerImplList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -7876,9 +7804,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
     LayerImplList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(),
-        gfx::ToCeiledSize(root->bounds()),
-        &render_surface_layer_list);
+        root.get(), root->bounds(), &render_surface_layer_list);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_VECTOR_EQ(
