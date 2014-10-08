@@ -42,8 +42,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
        (cpu_family == ANDROID_CPU_FAMILY_X86) ||
        (cpu_family == ANDROID_CPU_FAMILY_MIPS)));
 
-  // Android does not have support for PagePopup
-  WebRuntimeFeatures::enablePagePopup(false);
   // Android does not yet support the Web Notification API. crbug.com/115320
   WebRuntimeFeatures::enableNotifications(false);
   // Android does not yet support SharedWorker. crbug.com/154571
