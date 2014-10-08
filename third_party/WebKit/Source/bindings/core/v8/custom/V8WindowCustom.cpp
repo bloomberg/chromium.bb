@@ -41,6 +41,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8EventListenerList.h"
+#include "bindings/core/v8/V8GCForContextDispose.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
@@ -136,6 +137,13 @@ static void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info
         timerId = DOMWindowTimers::setTimeout(*impl, action.release(), timeout);
     else
         timerId = DOMWindowTimers::setInterval(*impl, action.release(), timeout);
+
+    // Try to do the idle notification before the timeout expires to get better
+    // use of any idle time. Aim for the middle of the interval for simplicity.
+    if (timeout >= 0) {
+        double maximumFireInterval = static_cast<double>(timeout) / 1000 / 2;
+        V8GCForContextDispose::instanceTemplate().notifyIdleSooner(maximumFireInterval);
+    }
 
     v8SetReturnValue(info, timerId);
 }

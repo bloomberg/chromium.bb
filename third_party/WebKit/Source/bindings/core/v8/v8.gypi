@@ -120,6 +120,8 @@
             'V8EventListenerList.h',
             'V8GCController.cpp',
             'V8GCController.h',
+            'V8GCForContextDispose.cpp',
+            'V8GCForContextDispose.h',
             'V8HiddenValue.cpp',
             'V8HiddenValue.h',
             'V8Initializer.cpp',
