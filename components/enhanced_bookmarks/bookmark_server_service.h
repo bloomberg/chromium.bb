@@ -64,7 +64,7 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   void TriggerTokenRequest(bool cancel_previous);
 
   // Build the query to send to the server. Returns a newly created url_fetcher.
-  virtual scoped_ptr<net::URLFetcher> CreateFetcher() = 0;
+  virtual net::URLFetcher* CreateFetcher() = 0;
 
   // Processes the response to the query. Returns true on successful parsing,
   // false on failure. The implementation can assume that |should_notify| is set
@@ -86,7 +86,6 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, SignOut);
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest,
                            ClearClusterMapOnRemoveAllBookmarks);
 
@@ -112,6 +111,8 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   // The fetcher used to query the server.
   scoped_ptr<net::URLFetcher> url_fetcher_;
+  // A map from stars.id to bookmark nodes. With no null entries.
+  std::map<std::string, const BookmarkNode*> starsid_to_bookmark_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkServerService);
 };

@@ -25,8 +25,6 @@
       'sources': [
         'enhanced_bookmarks/bookmark_image_service.cc',
         'enhanced_bookmarks/bookmark_image_service.h',
-        'enhanced_bookmarks/bookmark_server_cluster_service.cc',
-        'enhanced_bookmarks/bookmark_server_cluster_service.h',
         'enhanced_bookmarks/bookmark_server_search_service.cc',
         'enhanced_bookmarks/bookmark_server_search_service.h',
         'enhanced_bookmarks/bookmark_server_service.cc',
@@ -47,8 +45,6 @@
         'enhanced_bookmarks/metadata_accessor.h',
         'enhanced_bookmarks/persistent_image_store.cc',
         'enhanced_bookmarks/persistent_image_store.h',
-        'enhanced_bookmarks/pref_names.cc',
-        'enhanced_bookmarks/pref_names.h',
       ],
       'conditions': [
         ['OS=="ios"', {
@@ -77,7 +73,6 @@
       'target_name': 'enhanced_bookmarks_proto',
       'type': 'static_library',
       'sources': [
-        'enhanced_bookmarks/proto/cluster.proto',
         'enhanced_bookmarks/proto/metadata.proto',
         'enhanced_bookmarks/proto/search.proto',
       ],

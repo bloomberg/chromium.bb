@@ -48,7 +48,11 @@ void BookmarkServerService::RemoveObserver(
 
 const BookmarkNode* BookmarkServerService::BookmarkForRemoteId(
     const std::string& remote_id) const {
-  return model_->BookmarkForRemoteId(remote_id);
+  std::map<std::string, const BookmarkNode*>::const_iterator it =
+      starsid_to_bookmark_.find(remote_id);
+  if (it == starsid_to_bookmark_.end())
+    return NULL;
+  return it->second;
 }
 
 const std::string BookmarkServerService::RemoteIDForBookmark(
@@ -87,8 +91,7 @@ void BookmarkServerService::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  url_fetcher_ = CreateFetcher();
-
+  url_fetcher_.reset(CreateFetcher());
   // Free the token request.
   token_request_.reset();
 

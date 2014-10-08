@@ -127,9 +127,6 @@ class EnhancedBookmarkModel : public KeyedService,
   // Returns true if the enhanced bookmark model is done loading.
   bool loaded() { return loaded_; }
 
-  // Returns the version string to use when setting stars.version.
-  std::string GetVersionString();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(::EnhancedBookmarkModelTest, SetMultipleMetaInfo);
 
@@ -181,6 +178,9 @@ class EnhancedBookmarkModel : public KeyedService,
   // present.
   void SetMultipleMetaInfo(const BookmarkNode* node,
                            BookmarkNode::MetaInfoMap meta_info);
+
+  // Returns the version string to use when setting stars.version.
+  std::string GetVersionString();
 
   BookmarkModel* bookmark_model_;
   bool loaded_;

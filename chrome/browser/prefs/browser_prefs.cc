@@ -84,7 +84,6 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
-#include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -382,7 +381,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chrome_prefs::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
-  enhanced_bookmarks::BookmarkServerClusterService::RegisterPrefs(registry);
   gcm::GCMProfileService::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
