@@ -17,7 +17,7 @@ namespace blink {
 class Header;
 
 // http://fetch.spec.whatwg.org/#terminology-headers
-class FetchHeaderList FINAL : public GarbageCollectedFinalized<FetchHeaderList> {
+class FetchHeaderList final : public GarbageCollectedFinalized<FetchHeaderList> {
 public:
     typedef std::pair<String, String> Header;
     static FetchHeaderList* create();

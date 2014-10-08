@@ -21,11 +21,11 @@ class ScriptValue;
 
 // This class observes the service worker's handling of a FetchEvent and
 // notifies the client.
-class RespondWithObserver FINAL : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
+class RespondWithObserver final : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
 public:
     static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
 
-    virtual void contextDestroyed() OVERRIDE;
+    virtual void contextDestroyed() override;
 
     void didDispatchEvent();
 

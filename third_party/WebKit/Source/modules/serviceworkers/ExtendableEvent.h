@@ -48,8 +48,8 @@ public:
 
     void waitUntil(ScriptState*, const ScriptValue&);
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
+    virtual void trace(Visitor*) override;
 
 protected:
     ExtendableEvent();

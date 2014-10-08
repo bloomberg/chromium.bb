@@ -51,7 +51,7 @@ class WebServiceWorker;
 class WebServiceWorkerProvider;
 class WebServiceWorkerRegistration;
 
-class ServiceWorkerContainer FINAL
+class ServiceWorkerContainer final
     : public GarbageCollectedFinalized<ServiceWorkerContainer>
     , public ScriptWrappable
     , public ContextLifecycleObserver
@@ -73,9 +73,9 @@ public:
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);
 
     // WebServiceWorkerProviderClient overrides.
-    virtual void setController(WebServiceWorker*) OVERRIDE;
-    virtual void setReadyRegistration(WebServiceWorkerRegistration*) OVERRIDE;
-    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
+    virtual void setController(WebServiceWorker*) override;
+    virtual void setReadyRegistration(WebServiceWorkerRegistration*) override;
+    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
 
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);

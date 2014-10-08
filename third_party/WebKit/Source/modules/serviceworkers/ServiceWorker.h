@@ -46,7 +46,7 @@ namespace blink {
 class ScriptState;
 class ScriptPromiseResolver;
 
-class ServiceWorker FINAL : public AbstractWorker, public WebServiceWorkerProxy {
+class ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter
@@ -64,11 +64,11 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.
-    virtual bool isReady() OVERRIDE;
-    virtual void dispatchStateChangeEvent() OVERRIDE;
+    virtual bool isReady() override;
+    virtual void dispatchStateChangeEvent() override;
 
     // AbstractWorker overrides.
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
 private:
     class ThenFunction;
@@ -87,8 +87,8 @@ private:
     void waitOnPromise(ScriptPromiseResolver*);
 
     // ActiveDOMObject overrides.
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
     OwnPtr<WebServiceWorker> m_outerWorker;
     ProxyState m_proxyState;

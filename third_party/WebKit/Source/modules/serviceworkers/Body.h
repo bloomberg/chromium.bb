@@ -46,8 +46,8 @@ public:
     bool bodyUsed() const;
 
     // ActiveDOMObject override.
-    virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() override;
+    virtual bool hasPendingActivity() const override;
 
     virtual void trace(Visitor*) { }
 
@@ -64,10 +64,10 @@ private:
     void resolveJSON();
 
     // FileReaderLoaderClient functions.
-    virtual void didStartLoading() OVERRIDE;
-    virtual void didReceiveData() OVERRIDE;
-    virtual void didFinishLoading() OVERRIDE;
-    virtual void didFail(FileError::ErrorCode) OVERRIDE;
+    virtual void didStartLoading() override;
+    virtual void didReceiveData() override;
+    virtual void didFinishLoading() override;
+    virtual void didFail(FileError::ErrorCode) override;
 
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() = 0;
 

@@ -19,7 +19,7 @@
 
 namespace blink {
 
-class WaitUntilObserver::ThenFunction FINAL : public ScriptFunction {
+class WaitUntilObserver::ThenFunction final : public ScriptFunction {
 public:
     enum ResolveType {
         Fulfilled,
@@ -32,7 +32,7 @@ public:
         return self->bindToV8Function();
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_observer);
         ScriptFunction::trace(visitor);
@@ -46,7 +46,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue value) OVERRIDE
+    virtual ScriptValue call(ScriptValue value) override
     {
         ASSERT(m_observer);
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);

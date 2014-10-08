@@ -21,7 +21,7 @@ class ExceptionState;
 class ResponseInit;
 class WebServiceWorkerResponse;
 
-class Response FINAL : public Body {
+class Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Response() { }
@@ -48,14 +48,14 @@ public:
 
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit Response(const Response&);
     explicit Response(ExecutionContext*);
     Response(ExecutionContext*, FetchResponseData*);
 
-    virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
+    virtual PassRefPtr<BlobDataHandle> blobDataHandle() override;
 
     const Member<FetchResponseData> m_response;
     const Member<Headers> m_headers;

@@ -61,14 +61,14 @@ public:
         : m_resolver(resolver)
         , m_adapter(m_resolver) { }
     virtual ~GetRegistrationCallback() { }
-    virtual void onSuccess(WebServiceWorkerRegistration* registration) OVERRIDE
+    virtual void onSuccess(WebServiceWorkerRegistration* registration) override
     {
         if (registration)
             m_adapter.onSuccess(registration);
         else if (m_resolver->executionContext() && !m_resolver->executionContext()->activeDOMObjectsAreStopped())
             m_resolver->resolve();
     }
-    virtual void onError(WebServiceWorkerError* error) OVERRIDE { m_adapter.onError(error); }
+    virtual void onError(WebServiceWorkerError* error) override { m_adapter.onError(error); }
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
     CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError> m_adapter;

@@ -24,7 +24,7 @@ class SecurityOrigin;
 struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
-class FetchRequestData FINAL : public GarbageCollectedFinalized<FetchRequestData> {
+class FetchRequestData final : public GarbageCollectedFinalized<FetchRequestData> {
     WTF_MAKE_NONCOPYABLE(FetchRequestData);
 public:
     enum Mode { SameOriginMode, NoCORSMode, CORSMode, CORSWithForcedPreflight };
@@ -32,7 +32,7 @@ public:
     enum Context { ChildContext, ConnectContext, DownloadContext, FontContext, FormContext, ImageContext, ManifestContext, MediaContext, NavigateContext, ObjectContext, PingContext, PopupContext, PrefetchContext, ScriptContext, ServiceWorkerContext, SharedWorkerContext, StyleContext, WorkerContext, NullContext };
     enum Tainting { BasicTainting, CORSTainting, OpaqueTainting };
 
-    class Referrer FINAL {
+    class Referrer final {
     public:
         Referrer() : m_type(ClientReferrer) { }
         bool isNone() const { return m_type == NoneReferrer; }

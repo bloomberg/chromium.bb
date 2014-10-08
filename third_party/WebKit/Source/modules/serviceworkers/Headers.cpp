@@ -19,7 +19,7 @@ namespace blink {
 
 namespace {
 
-class HeadersIterator FINAL : public Iterator {
+class HeadersIterator final : public Iterator {
 public:
     // Only KeyValue is currently used; the other types are to support
     // Map-like iteration with entries(), keys() and values(), but this has
@@ -28,7 +28,7 @@ public:
 
     HeadersIterator(FetchHeaderList* headers, IterationType type) : m_headers(headers), m_type(type), m_current(0) { }
 
-    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exception) OVERRIDE
+    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exception) override
     {
         // FIXME: This simply advances an index and returns the next value if
         // any, so if the iterated object is mutated values may be skipped.
@@ -54,7 +54,7 @@ public:
         return ScriptValue();
     }
 
-    virtual ScriptValue next(ScriptState* scriptState, ScriptValue, ExceptionState& exceptionState) OVERRIDE
+    virtual ScriptValue next(ScriptState* scriptState, ScriptValue, ExceptionState& exceptionState) override
     {
         return next(scriptState, exceptionState);
     }

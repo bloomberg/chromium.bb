@@ -17,7 +17,7 @@ class ScriptState;
 class ScriptValue;
 
 // Created for each ExtendableEvent instance.
-class WaitUntilObserver FINAL : public GarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
+class WaitUntilObserver final : public GarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
 public:
     enum EventType {
         Activate,

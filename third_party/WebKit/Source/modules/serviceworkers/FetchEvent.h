@@ -20,7 +20,7 @@ class RespondWithObserver;
 // A fetch event is dispatched by the client to a service worker's script
 // context. RespondWithObserver can be used to notify the client about the
 // service worker's response.
-class FetchEvent FINAL : public Event {
+class FetchEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
@@ -31,11 +31,11 @@ public:
 
     void respondWith(ScriptState*, const ScriptValue&, ExceptionState&);
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     void setIsReload(bool);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 protected:
     FetchEvent();

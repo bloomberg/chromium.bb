@@ -19,7 +19,7 @@ class Iterator;
 class ScriptValue;
 
 // http://fetch.spec.whatwg.org/#headers-class
-class Headers FINAL : public GarbageCollected<Headers>, public ScriptWrappable {
+class Headers final : public GarbageCollected<Headers>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Guard { ImmutableGuard, RequestGuard, RequestNoCORSGuard, ResponseGuard, NoneGuard };

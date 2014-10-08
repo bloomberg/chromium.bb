@@ -15,7 +15,7 @@ class Document;
 class Navigator;
 class ServiceWorkerContainer;
 
-class NavigatorServiceWorker FINAL : public NoBaseWillBeGarbageCollected<NavigatorServiceWorker>, public WillBeHeapSupplement<Navigator>, DOMWindowProperty {
+class NavigatorServiceWorker final : public NoBaseWillBeGarbageCollected<NavigatorServiceWorker>, public WillBeHeapSupplement<Navigator>, DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorServiceWorker);
 public:
@@ -26,14 +26,14 @@ public:
 
     static ServiceWorkerContainer* serviceWorker(Navigator&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit NavigatorServiceWorker(Navigator&);
     ServiceWorkerContainer* serviceWorker();
 
     // DOMWindowProperty override.
-    virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
+    virtual void willDetachGlobalObjectFromFrame() override;
 
     PersistentWillBeMember<ServiceWorkerContainer> m_serviceWorker;
 };

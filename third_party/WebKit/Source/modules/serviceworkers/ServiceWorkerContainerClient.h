@@ -16,7 +16,7 @@ class WebServiceWorkerProvider;
 
 // This mainly exists to provide access to WebServiceWorkerProvider.
 // Owned by Document (or WorkerClients).
-class ServiceWorkerContainerClient FINAL
+class ServiceWorkerContainerClient final
     : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerContainerClient>
     , public DocumentSupplement
     , public WillBeHeapSupplement<WorkerClients> {
@@ -31,7 +31,7 @@ public:
     static const char* supplementName();
     static ServiceWorkerContainerClient* from(ExecutionContext*);
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         DocumentSupplement::trace(visitor);
         WillBeHeapSupplement<WorkerClients>::trace(visitor);

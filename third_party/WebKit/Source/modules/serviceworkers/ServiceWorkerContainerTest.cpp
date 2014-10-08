@@ -67,7 +67,7 @@ private:
         {
         }
 
-        virtual ScriptValue call(ScriptValue arg) OVERRIDE
+        virtual ScriptValue call(ScriptValue arg) override
         {
             m_owner.m_arg = arg;
             m_owner.m_callCount++;
@@ -108,9 +108,9 @@ public:
     {
     }
 
-    virtual ~ExpectDOMException() OVERRIDE { }
+    virtual ~ExpectDOMException() override { }
 
-    virtual void operator()(ScriptValue value) const OVERRIDE
+    virtual void operator()(ScriptValue value) const override
     {
         DOMException* exception = V8DOMException::toImplWithTypeCheck(value.isolate(), value.v8Value());
         EXPECT_TRUE(exception) << "the value should be a DOMException";
@@ -129,9 +129,9 @@ private:
 
 class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
 public:
-    virtual ~NotReachedWebServiceWorkerProvider() OVERRIDE { }
+    virtual ~NotReachedWebServiceWorkerProvider() override { }
 
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
+    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerRegistrationCallbacks* callbacks) override
     {
         ADD_FAILURE() << "the provider should not be called to register a Service Worker";
         delete callbacks;
@@ -275,9 +275,9 @@ private:
         {
         }
 
-        virtual ~WebServiceWorkerProviderImpl() OVERRIDE { }
+        virtual ~WebServiceWorkerProviderImpl() override { }
 
-        virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
+        virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerRegistrationCallbacks* callbacks) override
         {
             m_owner.m_registerCallCount++;
             m_owner.m_registerScope = pattern;
@@ -285,7 +285,7 @@ private:
             m_registrationCallbacksToDelete.append(adoptPtr(callbacks));
         }
 
-        virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks* callbacks) OVERRIDE
+        virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks* callbacks) override
         {
             m_owner.m_getRegistrationCallCount++;
             m_owner.m_getRegistrationURL = documentURL;

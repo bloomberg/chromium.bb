@@ -16,7 +16,7 @@ class BlobDataHandle;
 class FetchHeaderList;
 class WebServiceWorkerResponse;
 
-class FetchResponseData FINAL : public GarbageCollectedFinalized<FetchResponseData> {
+class FetchResponseData final : public GarbageCollectedFinalized<FetchResponseData> {
     WTF_MAKE_NONCOPYABLE(FetchResponseData);
 public:
     // "A response has an associated type which is one of basic, CORS, default,

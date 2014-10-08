@@ -23,7 +23,7 @@ class ResourceRequest;
 struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
-class Request FINAL : public Body {
+class Request final : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Request() { }
@@ -52,7 +52,7 @@ public:
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
 
-    virtual void trace(Visitor*)  OVERRIDE;
+    virtual void trace(Visitor*)  override;
 
 private:
     explicit Request(const Request&);
@@ -62,7 +62,7 @@ private:
     static Request* createRequestWithRequestData(ExecutionContext*, FetchRequestData*, const RequestInit&, FetchRequestData::Mode, FetchRequestData::Credentials, ExceptionState&);
     void clearHeaderList();
 
-    virtual PassRefPtr<BlobDataHandle> blobDataHandle() OVERRIDE;
+    virtual PassRefPtr<BlobDataHandle> blobDataHandle() override;
 
     const Member<FetchRequestData> m_request;
     const Member<Headers> m_headers;

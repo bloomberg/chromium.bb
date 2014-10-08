@@ -23,7 +23,7 @@ class Response;
 class Request;
 class ScriptState;
 
-class Cache FINAL : public GarbageCollectedFinalized<Cache>, public ScriptWrappable {
+class Cache final : public GarbageCollectedFinalized<Cache>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:

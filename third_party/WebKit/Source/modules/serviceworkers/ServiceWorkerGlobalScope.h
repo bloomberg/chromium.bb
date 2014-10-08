@@ -48,14 +48,14 @@ class ServiceWorkerClients;
 class ServiceWorkerThread;
 class WorkerThreadStartupData;
 
-class ServiceWorkerGlobalScope FINAL : public WorkerGlobalScope {
+class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 
     virtual ~ServiceWorkerGlobalScope();
-    virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return true; }
-    virtual void stopFetch() OVERRIDE;
+    virtual bool isServiceWorkerGlobalScope() const override { return true; }
+    virtual void stopFetch() override;
 
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
@@ -71,7 +71,7 @@ public:
     void close(ExceptionState&);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
@@ -79,12 +79,12 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(sync);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
-    virtual void importScripts(const Vector<String>& urls, ExceptionState&) OVERRIDE;
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
+    virtual void importScripts(const Vector<String>& urls, ExceptionState&) override;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
     OwnPtr<FetchManager> m_fetchManager;

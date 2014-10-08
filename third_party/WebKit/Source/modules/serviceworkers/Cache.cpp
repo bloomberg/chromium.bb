@@ -35,13 +35,13 @@ public:
     CacheMatchCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebServiceWorkerResponse* webResponse) OVERRIDE
+    virtual void onSuccess(WebServiceWorkerResponse* webResponse) override
     {
         m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), *webResponse));
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
+    virtual void onError(WebServiceWorkerCacheError* reason) override
     {
         m_resolver->reject(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
@@ -58,7 +58,7 @@ public:
     CacheWithResponsesCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) OVERRIDE
+    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
         HeapVector<Member<Response> > responses;
         for (size_t i = 0; i < webResponses->size(); ++i)
@@ -67,7 +67,7 @@ public:
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
+    virtual void onError(WebServiceWorkerCacheError* reason) override
     {
         m_resolver->reject(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
@@ -84,7 +84,7 @@ public:
     CacheWithOneResponseCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
         : CacheWithResponsesCallbacks(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) OVERRIDE
+    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
         ASSERT(webResponses->size() == 1);
         m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), (*webResponses)[0]));
@@ -99,13 +99,13 @@ public:
     CacheDeleteCallback(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) OVERRIDE
+    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
         m_resolver->resolve(true);
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
+    virtual void onError(WebServiceWorkerCacheError* reason) override
     {
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
@@ -125,7 +125,7 @@ public:
     CacheWithRequestsCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) OVERRIDE
+    virtual void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
     {
         HeapVector<Member<Request> > requests;
         for (size_t i = 0; i < webRequests->size(); ++i)
@@ -134,7 +134,7 @@ public:
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
+    virtual void onError(WebServiceWorkerCacheError* reason) override
     {
         m_resolver->reject(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
