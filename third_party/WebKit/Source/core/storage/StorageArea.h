@@ -48,7 +48,7 @@ enum StorageType {
     SessionStorage
 };
 
-class StorageArea FINAL : public NoBaseWillBeGarbageCollectedFinalized<StorageArea>, public FrameDestructionObserver {
+class StorageArea final : public NoBaseWillBeGarbageCollectedFinalized<StorageArea>, public FrameDestructionObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
 public:
     static PassOwnPtrWillBeRawPtr<StorageArea> create(PassOwnPtr<WebStorageArea>, StorageType);

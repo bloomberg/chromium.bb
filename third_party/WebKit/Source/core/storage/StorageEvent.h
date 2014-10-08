@@ -44,7 +44,7 @@ struct StorageEventInit : public EventInit {
     RefPtrWillBeMember<Storage> storageArea;
 };
 
-class StorageEvent FINAL : public Event {
+class StorageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<StorageEvent> create();
@@ -63,9 +63,9 @@ public:
     // Needed once we support init<blank>EventNS
     // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, Storage storageAreaArg);
 
-    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     StorageEvent();
