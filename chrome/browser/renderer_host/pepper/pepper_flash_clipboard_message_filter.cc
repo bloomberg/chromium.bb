@@ -47,10 +47,10 @@ ui::ClipboardType ConvertClipboardType(uint32_t type) {
 // arbitrary data so this change would require some reworking of the chrome
 // clipboard interface for custom data.
 bool JumpToFormatInPickle(const base::string16& format, PickleIterator* iter) {
-  uint64 size = 0;
-  if (!iter->ReadUInt64(&size))
+  size_t size = 0;
+  if (!iter->ReadSizeT(&size))
     return false;
-  for (uint64 i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     base::string16 stored_format;
     if (!iter->ReadString16(&stored_format))
       return false;
@@ -82,7 +82,7 @@ std::string ReadDataFromPickle(const base::string16& format,
 
 bool WriteDataToPickle(const std::map<base::string16, std::string>& data,
                        Pickle* pickle) {
-  pickle->WriteUInt64(data.size());
+  pickle->WriteSizeT(data.size());
   for (std::map<base::string16, std::string>::const_iterator it = data.begin();
        it != data.end();
        ++it) {

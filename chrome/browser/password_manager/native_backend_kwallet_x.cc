@@ -707,7 +707,7 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
 void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
                                           Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
-  pickle->WriteUInt64(forms.size());
+  pickle->WriteSizeT(forms.size());
   for (PasswordFormList::const_iterator it = forms.begin();
        it != forms.end(); ++it) {
     const PasswordForm* form = *it;
@@ -743,7 +743,7 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
                                                 PasswordFormList* forms) {
   PickleIterator iter = init_iter;
 
-  uint64_t count = 0;
+  size_t count = 0;
   if (size_32) {
     uint32_t count_32 = 0;
     if (!iter.ReadUInt32(&count_32)) {
@@ -753,7 +753,7 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
     }
     count = count_32;
   } else {
-    if (!iter.ReadUInt64(&count)) {
+    if (!iter.ReadSizeT(&count)) {
       LOG(ERROR) << "Failed to deserialize KWallet entry "
                  << "(realm: " << signon_realm << ")";
       return false;
@@ -775,7 +775,7 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
   }
 
   forms->reserve(forms->size() + count);
-  for (uint64_t i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     scoped_ptr<PasswordForm> form(new PasswordForm());
     form->signon_realm.assign(signon_realm);
 

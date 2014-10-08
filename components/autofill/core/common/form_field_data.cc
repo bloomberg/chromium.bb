@@ -46,15 +46,6 @@ bool ReadTextDirection(PickleIterator* iter,
   return true;
 }
 
-bool ReadSize(PickleIterator* iter, size_t* size) {
-  uint64 pickle_data;
-  if (!iter->ReadUInt64(&pickle_data))
-    return false;
-
-  *size = static_cast<size_t>(pickle_data);
-  return true;
-}
-
 }  // namespace
 
 namespace autofill {
@@ -101,7 +92,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.value);
   pickle->WriteString(field_data.form_control_type);
   pickle->WriteString(field_data.autocomplete_attribute);
-  pickle->WriteUInt64(static_cast<uint64>(field_data.max_length));
+  pickle->WriteSizeT(field_data.max_length);
   pickle->WriteBool(field_data.is_autofilled);
   pickle->WriteBool(field_data.is_checked);
   pickle->WriteBool(field_data.is_checkable);
@@ -127,7 +118,7 @@ bool DeserializeFormFieldData(PickleIterator* iter,
           !iter->ReadString16(&field_data->value) ||
           !iter->ReadString(&field_data->form_control_type) ||
           !iter->ReadString(&field_data->autocomplete_attribute) ||
-          !ReadSize(iter, &field_data->max_length) ||
+          !iter->ReadSizeT(&field_data->max_length) ||
           !iter->ReadBool(&field_data->is_autofilled) ||
           !iter->ReadBool(&field_data->is_checked) ||
           !iter->ReadBool(&field_data->is_checkable) ||

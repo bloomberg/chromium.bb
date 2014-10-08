@@ -12,15 +12,15 @@
 namespace IPC {
 
 void ParamTraits<gfx::Range>::Write(Message* m, const gfx::Range& r) {
-  m->WriteUInt64(r.start());
-  m->WriteUInt64(r.end());
+  m->WriteSizeT(r.start());
+  m->WriteSizeT(r.end());
 }
 
 bool ParamTraits<gfx::Range>::Read(const Message* m,
                                   PickleIterator* iter,
                                   gfx::Range* r) {
-  uint64 start, end;
-  if (!m->ReadUInt64(iter, &start) || !m->ReadUInt64(iter, &end))
+  size_t start, end;
+  if (!m->ReadSizeT(iter, &start) || !m->ReadSizeT(iter, &end))
     return false;
   r->set_start(start);
   r->set_end(end);

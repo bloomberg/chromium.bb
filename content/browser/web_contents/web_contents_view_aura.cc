@@ -309,7 +309,7 @@ const ui::OSExchangeData::CustomFormat& GetFileSystemFileCustomFormat() {
 void WriteFileSystemFilesToPickle(
     const std::vector<DropData::FileSystemFileInfo>& file_system_files,
     Pickle* pickle) {
-  pickle->WriteUInt64(file_system_files.size());
+  pickle->WriteSizeT(file_system_files.size());
   for (size_t i = 0; i < file_system_files.size(); ++i) {
     pickle->WriteString(file_system_files[i].url.spec());
     pickle->WriteInt64(file_system_files[i].size);
@@ -322,12 +322,12 @@ bool ReadFileSystemFilesFromPickle(
     std::vector<DropData::FileSystemFileInfo>* file_system_files) {
   PickleIterator iter(pickle);
 
-  uint64 num_files = 0;
-  if (!pickle.ReadUInt64(&iter, &num_files))
+  size_t num_files = 0;
+  if (!pickle.ReadSizeT(&iter, &num_files))
     return false;
   file_system_files->resize(num_files);
 
-  for (uint64 i = 0; i < num_files; ++i) {
+  for (size_t i = 0; i < num_files; ++i) {
     std::string url_string;
     int64 size = 0;
     if (!pickle.ReadString(&iter, &url_string) ||

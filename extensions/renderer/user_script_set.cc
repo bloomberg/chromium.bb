@@ -107,14 +107,14 @@ bool UserScriptSet::UpdateUserScripts(
     return false;
 
   // Unpickle scripts.
-  uint64 num_scripts = 0;
+  size_t num_scripts = 0;
   Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()), pickle_size);
   PickleIterator iter(pickle);
-  CHECK(pickle.ReadUInt64(&iter, &num_scripts));
+  CHECK(pickle.ReadSizeT(&iter, &num_scripts));
 
   scripts_.clear();
   scripts_.reserve(num_scripts);
-  for (uint64 i = 0; i < num_scripts; ++i) {
+  for (size_t i = 0; i < num_scripts; ++i) {
     scoped_ptr<UserScript> script(new UserScript());
     script->Unpickle(pickle, &iter);
 

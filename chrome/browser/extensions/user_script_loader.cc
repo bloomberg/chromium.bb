@@ -156,7 +156,7 @@ void LoadUserScripts(UserScriptList* user_scripts,
 // Pickle user scripts and return pointer to the shared memory.
 scoped_ptr<base::SharedMemory> Serialize(const UserScriptList& scripts) {
   Pickle pickle;
-  pickle.WriteUInt64(scripts.size());
+  pickle.WriteSizeT(scripts.size());
   for (UserScriptList::const_iterator script = scripts.begin();
        script != scripts.end();
        ++script) {
