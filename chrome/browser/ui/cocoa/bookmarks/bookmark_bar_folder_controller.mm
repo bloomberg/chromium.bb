@@ -526,14 +526,18 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
     newWindowTopLeft = NSMakePoint(
         buttonBottomLeftInScreen.x + bookmarks::kBookmarkBarButtonOffset,
         bookmarkBarBottomLeftInScreen.y + bookmarks::kBookmarkBarMenuOffset);
-    // Make sure the window is on-screen; if not, push left.  It is
-    // intentional that top level folders "push left" slightly
+    // Make sure the window is on-screen; if not, push left or right. It is
+    // intentional that top level folders "push left" or "push right" slightly
     // different than subfolders.
     NSRect screenFrame = [screen_ visibleFrame];
+    // Test if window goes off-screen on the right side.
     CGFloat spillOff = (newWindowTopLeft.x + windowWidth) - NSMaxX(screenFrame);
     if (spillOff > 0.0) {
       newWindowTopLeft.x = std::max(newWindowTopLeft.x - spillOff,
                                     NSMinX(screenFrame));
+    } else if (newWindowTopLeft.x < NSMinX(screenFrame)) {
+      // For left side.
+      newWindowTopLeft.x = NSMinX(screenFrame);
     }
     // The menu looks bad when it is squeezed up against the bottom of the
     // screen and ends up being only a few pixels tall. If it meets the
