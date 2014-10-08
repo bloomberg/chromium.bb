@@ -26,6 +26,10 @@ public class VSyncMonitor {
 
     private boolean mInsideVSync = false;
 
+    // Conservative guess about vsync's consecutivity.
+    // If true, next tick is guaranteed to be consecutive.
+    private boolean mConsecutiveVSync = false;
+
     /**
      * VSync listener class
      */
@@ -41,7 +45,7 @@ public class VSyncMonitor {
     private Listener mListener;
 
     // Display refresh rate as reported by the system.
-    private final long mRefreshPeriodNano;
+    private long mRefreshPeriodNano;
 
     private boolean mHaveRequestInFlight;
 
@@ -79,6 +83,8 @@ public class VSyncMonitor {
         mListener = listener;
         float refreshRate = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
                 .getDefaultDisplay().getRefreshRate();
+        final boolean useEstimatedRefreshPeriod = refreshRate < 30;
+
         if (refreshRate <= 0) refreshRate = 60;
         mRefreshPeriodNano = (long) (NANOSECONDS_PER_SECOND / refreshRate);
 
@@ -89,6 +95,15 @@ public class VSyncMonitor {
                 @Override
                 public void doFrame(long frameTimeNanos) {
                     TraceEvent.begin("VSync");
+                    if (useEstimatedRefreshPeriod && mConsecutiveVSync) {
+                        // Display.getRefreshRate() is unreliable on some platforms.
+                        // Adjust refresh period- initial value is based on Display.getRefreshRate()
+                        // after that it asymptotically approaches the real value.
+                        long lastRefreshDurationNano = frameTimeNanos - mGoodStartingPointNano;
+                        float lastRefreshDurationWeight = 0.1f;
+                        mRefreshPeriodNano += (long) (lastRefreshDurationWeight *
+                                (lastRefreshDurationNano - mRefreshPeriodNano));
+                    }
                     mGoodStartingPointNano = frameTimeNanos;
                     onVSyncCallback(frameTimeNanos, getCurrentNanoTime());
                     TraceEvent.end("VSync");
@@ -186,6 +201,7 @@ public class VSyncMonitor {
         mHaveRequestInFlight = true;
         if (postSyntheticVSync()) return;
         if (isVSyncSignalAvailable()) {
+            mConsecutiveVSync = mInsideVSync;
             mChoreographer.postFrameCallback(mVSyncFrameCallback);
         } else {
             postRunnableCallback();

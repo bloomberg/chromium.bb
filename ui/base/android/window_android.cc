@@ -17,10 +17,8 @@ namespace ui {
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj, jlong vsync_period)
-  : weak_java_window_(env, obj),
-    compositor_(NULL),
-    vsync_period_(base::TimeDelta::FromInternalValue(vsync_period)) {
+WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj)
+  : weak_java_window_(env, obj), compositor_(NULL) {
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -87,22 +85,27 @@ void WindowAndroid::Animate(base::TimeTicks begin_frame_time) {
       WindowAndroidObserver, observer_list_, OnAnimate(begin_frame_time));
 }
 
-void WindowAndroid::OnVSync(JNIEnv* env, jobject obj, jlong time_micros) {
+void WindowAndroid::OnVSync(JNIEnv* env,
+                            jobject obj,
+                            jlong time_micros,
+                            jlong period_micros) {
   base::TimeTicks frame_time(base::TimeTicks::FromInternalValue(time_micros));
+  base::TimeDelta vsync_period(
+      base::TimeDelta::FromMicroseconds(period_micros));
   FOR_EACH_OBSERVER(
       WindowAndroidObserver,
       observer_list_,
-      OnVSync(frame_time, vsync_period_));
+      OnVSync(frame_time, vsync_period));
   if (compositor_)
-    compositor_->OnVSync(frame_time, vsync_period_);
+    compositor_->OnVSync(frame_time, vsync_period);
 }
 
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env, jobject obj, jlong vsync_period) {
-  WindowAndroid* window = new WindowAndroid(env, obj, vsync_period);
+jlong Init(JNIEnv* env, jobject obj) {
+  WindowAndroid* window = new WindowAndroid(env, obj);
   return reinterpret_cast<intptr_t>(window);
 }
 

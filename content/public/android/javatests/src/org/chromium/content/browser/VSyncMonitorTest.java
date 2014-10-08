@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.view.WindowManager;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.ui.VSyncMonitor;
@@ -107,6 +108,17 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
             fail("Measured median frame period " + medianFramePeriod
                     + " differs by more than 10% from the reported frame period "
                     + reportedFramePeriod + " for requested frames");
+        }
+
+        if (enableJBVSync) {
+            Context context = getInstrumentation().getContext();
+            float refreshRate = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay().getRefreshRate();
+            if (refreshRate < 30.0f) {
+                // Reported refresh rate is most likely incorrect.
+                // Estimated vsync period is expected to be lower than (1000000 / 30) microseconds
+                assertTrue(monitor.getVSyncPeriodInMicroseconds() < 1000000 / 30);
+            }
         }
     }
 
