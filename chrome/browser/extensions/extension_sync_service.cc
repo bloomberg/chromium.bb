@@ -513,10 +513,6 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
       return false;
     }
   } else {
-    // TODO(akalin): Replace silent update with a list of enabled
-    // permissions.
-    const bool kInstallSilently = true;
-
     CHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
     extensions::PendingExtensionInfo::ShouldAllowInstallPredicate filter =
         (type == syncer::APPS) ? extensions::sync_helper::IsSyncableApp :
@@ -526,7 +522,6 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
             id,
             extension_sync_data.update_url(),
             filter,
-            kInstallSilently,
             extension_sync_data.remote_install(),
             extension_sync_data.installed_by_custodian())) {
       LOG(WARNING) << "Could not add pending extension for " << id;

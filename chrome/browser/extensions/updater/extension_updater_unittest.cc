@@ -410,7 +410,6 @@ void SetupPendingExtensionManagerForTest(
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install =
         (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
-    const bool kInstallSilently = true;
     const bool kMarkAcknowledged = false;
     const bool kRemoteInstall = false;
     std::string id =
@@ -423,7 +422,6 @@ void SetupPendingExtensionManagerForTest(
                              Version(),
                              should_allow_install,
                              kIsFromSync,
-                             kInstallSilently,
                              Manifest::INTERNAL,
                              Extension::NO_FLAGS,
                              kMarkAcknowledged,
@@ -1127,7 +1125,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     if (pending) {
       const bool kIsFromSync = true;
-      const bool kInstallSilently = true;
       const bool kMarkAcknowledged = false;
       const bool kRemoteInstall = false;
       PendingExtensionManager* pending_extension_manager =
@@ -1139,7 +1136,6 @@ class ExtensionUpdaterTest : public testing::Test {
                                version,
                                &ShouldAlwaysInstall,
                                kIsFromSync,
-                               kInstallSilently,
                                Manifest::INTERNAL,
                                Extension::NO_FLAGS,
                                kMarkAcknowledged,

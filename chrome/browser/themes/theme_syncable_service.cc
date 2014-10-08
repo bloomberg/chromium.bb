@@ -227,14 +227,12 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
       // No extension with this id exists -- we must install it; we do
       // so by adding it as a pending extension and then triggering an
       // auto-update cycle.
-      const bool kInstallSilently = true;
       const bool kRemoteInstall = false;
       const bool kInstalledByCustodian = false;
       if (!extensions_service->pending_extension_manager()->AddFromSync(
               id,
               update_url,
               &IsTheme,
-              kInstallSilently,
               kRemoteInstall,
               kInstalledByCustodian)) {
         LOG(WARNING) << "Could not add pending extension for " << id;

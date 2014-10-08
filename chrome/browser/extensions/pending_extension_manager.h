@@ -78,7 +78,6 @@ class PendingExtensionManager {
       const std::string& id,
       const GURL& update_url,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-      bool install_silently,
       bool remote_install,
       bool installed_by_custodian);
 
@@ -125,7 +124,6 @@ class PendingExtensionManager {
       const base::Version& version,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
-      bool install_silently,
       Manifest::Location install_source,
       int creation_flags,
       bool mark_acknowledged,
