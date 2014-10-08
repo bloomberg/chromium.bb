@@ -45,6 +45,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
 
   // SupervisedUserServiceObserver implementation.
   virtual void OnURLFilterChanged() override;
+  // TODO(treib): Also listen to OnCustodianInfoChanged and update as required.
 
   // Returns whether the blocked URL is now allowed. Called initially before the
   // interstitial is shown (to catch race conditions), or when the URL filtering

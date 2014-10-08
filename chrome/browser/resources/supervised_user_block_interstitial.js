@@ -33,9 +33,9 @@ function initialize() {
           makeImageSet(secondAvatarURL1x, secondAvatarURL2x);
       $('second-avatar-img').hidden = false;
       // The avatar images should overlap a bit.
-      $('avatar-img').style.left = '10px';
+      $('avatar-img').style.left = '6px';
       $('avatar-img').style.zIndex = '1';
-      $('second-avatar-img').style.left = '-10px';
+      $('second-avatar-img').style.left = '-6px';
     }
   }
   $('back-button').onclick = function(event) {
