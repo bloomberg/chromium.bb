@@ -31,9 +31,9 @@ public:
 
 private:
     void paintDecoration(GraphicsContext*, TextDecoration, const SVGTextFragment&);
-    void paintDecorationWithStyle(GraphicsContext*, TextDecoration, const SVGTextFragment&, RenderObject* decorationRenderer, RenderSVGResourceModeFlags);
-    void paintTextWithShadows(GraphicsContext*, RenderStyle*, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceModeFlags);
-    void paintText(GraphicsContext*, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&, RenderSVGResourceModeFlags, bool hasSelection, bool paintSelectedTextOnly);
+    void paintDecorationWithStyle(GraphicsContext*, TextDecoration, const SVGTextFragment&, RenderObject* decorationRenderer, RenderSVGResourceMode);
+    void paintTextWithShadows(GraphicsContext*, RenderStyle*, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceMode);
+    void paintText(GraphicsContext*, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool hasSelection, bool paintSelectedTextOnly);
 
     SVGInlineTextBox& m_svgInlineTextBox;
 };

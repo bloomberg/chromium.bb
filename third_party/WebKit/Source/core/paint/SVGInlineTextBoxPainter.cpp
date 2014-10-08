@@ -109,14 +109,14 @@ void SVGInlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& pai
                 // Fill text
                 if (hasFill) {
                     paintText(paintInfo.context, style, selectionStyle, fragment,
-                        ApplyToFillMode | ApplyToTextMode, hasSelection, paintSelectedTextOnly);
+                        ApplyToFillMode, hasSelection, paintSelectedTextOnly);
                 }
                 break;
             case PT_STROKE:
                 // Stroke text
                 if (hasVisibleStroke) {
                     paintText(paintInfo.context, style, selectionStyle, fragment,
-                        ApplyToStrokeMode | ApplyToTextMode, hasSelection, paintSelectedTextOnly);
+                        ApplyToStrokeMode, hasSelection, paintSelectedTextOnly);
                 }
                 break;
             case PT_MARKERS:
@@ -307,7 +307,7 @@ static inline float thicknessForDecoration(TextDecoration, const Font& font)
 }
 
 void SVGInlineTextBoxPainter::paintDecorationWithStyle(GraphicsContext* context, TextDecoration decoration,
-    const SVGTextFragment& fragment, RenderObject* decorationRenderer, RenderSVGResourceModeFlags resourceMode)
+    const SVGTextFragment& fragment, RenderObject* decorationRenderer, RenderSVGResourceMode resourceMode)
 {
     RenderStyle* decorationStyle = decorationRenderer->style();
     ASSERT(decorationStyle);
@@ -337,7 +337,7 @@ void SVGInlineTextBoxPainter::paintDecorationWithStyle(GraphicsContext* context,
 
 void SVGInlineTextBoxPainter::paintTextWithShadows(GraphicsContext* context, RenderStyle* style,
     TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition,
-    RenderSVGResourceModeFlags resourceMode)
+    RenderSVGResourceMode resourceMode)
 {
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(m_svgInlineTextBox.renderer());
 
@@ -364,8 +364,10 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(GraphicsContext* context, Ren
         context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha));
 
     PaintingResourceScope resourceScope(m_svgInlineTextBox.parent()->renderer());
-    if (resourceScope.acquirePaintingResource(context, style, resourceMode)) {
-        if (scalingFactor != 1 && resourceMode & ApplyToStrokeMode)
+    if (resourceScope.acquirePaintingResource(context, style, resourceMode | ApplyToTextMode)) {
+        context->setTextDrawingMode(resourceMode == ApplyToFillMode ? TextModeFill : TextModeStroke);
+
+        if (scalingFactor != 1 && resourceMode == ApplyToStrokeMode)
             context->setStrokeThickness(context->strokeThickness() * scalingFactor);
 
         TextRunPaintInfo textRunPaintInfo(textRun);
@@ -388,7 +390,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(GraphicsContext* context, Ren
 
 void SVGInlineTextBoxPainter::paintText(GraphicsContext* context, RenderStyle* style,
     RenderStyle* selectionStyle, const SVGTextFragment& fragment,
-    RenderSVGResourceModeFlags resourceMode, bool hasSelection, bool paintSelectedTextOnly)
+    RenderSVGResourceMode resourceMode, bool hasSelection, bool paintSelectedTextOnly)
 {
     ASSERT(style);
     ASSERT(selectionStyle);

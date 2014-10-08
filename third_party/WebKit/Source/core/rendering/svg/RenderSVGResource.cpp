@@ -142,8 +142,6 @@ void RenderSVGResource::updateGraphicsContext(GraphicsContext* context, const Re
         // When rendering the mask for a RenderSVGResourceClipper, the stroke code path is never hit.
         ASSERT(resourceMode == ApplyToFillMode);
         context->setAlphaAsFloat(1);
-        if (resourceModeFlags & ApplyToTextMode)
-            context->setTextDrawingMode(TextModeFill);
         return;
     }
 
@@ -156,9 +154,6 @@ void RenderSVGResource::updateGraphicsContext(GraphicsContext* context, const Re
         context->setAlphaAsFloat(svgStyle.strokeOpacity());
         SVGRenderSupport::applyStrokeStyleToContext(context, style, &renderer);
     }
-
-    if (resourceModeFlags & ApplyToTextMode)
-        context->setTextDrawingMode(resourceMode == ApplyToFillMode ? TextModeFill : TextModeStroke);
 }
 
 RenderSVGResourceSolidColor* RenderSVGResource::sharedSolidPaintingResource()
