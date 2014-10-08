@@ -105,11 +105,13 @@ bool FileSystemProviderGetAllFunction::RunSync() {
   std::vector<linked_ptr<FileSystemInfo> > items;
 
   for (size_t i = 0; i < file_systems.size(); ++i) {
-    linked_ptr<FileSystemInfo> item(new FileSystemInfo);
-    item->file_system_id = file_systems[i].file_system_id();
-    item->display_name = file_systems[i].display_name();
-    item->writable = file_systems[i].writable();
-    items.push_back(item);
+    if (file_systems[i].extension_id() == extension_id()) {
+      linked_ptr<FileSystemInfo> item(new FileSystemInfo);
+      item->file_system_id = file_systems[i].file_system_id();
+      item->display_name = file_systems[i].display_name();
+      item->writable = file_systems[i].writable();
+      items.push_back(item);
+    }
   }
 
   SetResultList(api::file_system_provider::GetAll::Results::Create(items));
