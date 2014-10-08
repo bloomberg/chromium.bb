@@ -8,6 +8,9 @@
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 
 namespace content {
+
+class RenderViewHostImpl;
+
 namespace devtools {
 namespace dom {
 
@@ -18,10 +21,13 @@ class DOMHandler {
   DOMHandler();
   virtual ~DOMHandler();
 
+  void SetRenderViewHost(RenderViewHostImpl* host);
+
   Response SetFileInputFiles(NodeId node_id,
                              const std::vector<std::string>& files);
 
  private:
+  RenderViewHostImpl* host_;
   DISALLOW_COPY_AND_ASSIGN(DOMHandler);
 };
 

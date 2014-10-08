@@ -109,6 +109,7 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
+      dom_handler_(new devtools::dom::DOMHandler()),
       input_handler_(new devtools::input::InputHandler()),
       page_handler_(new devtools::page::PageHandler()),
       power_handler_(new devtools::power::PowerHandler()),
@@ -117,6 +118,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       tracing_handler_(
           new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
       reattaching_(false) {
+  handler_impl_->SetDOMHandler(dom_handler_.get());
   handler_impl_->SetInputHandler(input_handler_.get());
   handler_impl_->SetPageHandler(page_handler_.get());
   handler_impl_->SetPowerHandler(power_handler_.get());
@@ -373,6 +375,7 @@ void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
 
   WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
   overrides_handler_->SetRenderViewHost(render_view_host_);
+  dom_handler_->SetRenderViewHost(render_view_host_);
   input_handler_->SetRenderViewHost(render_view_host_);
   page_handler_->SetRenderViewHost(render_view_host_);
 
@@ -388,10 +391,11 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(render_view_host_));
-  render_view_host_ = NULL;
+  render_view_host_ = nullptr;
   overrides_handler_->ClearRenderViewHost();
-  input_handler_->SetRenderViewHost(NULL);
-  page_handler_->SetRenderViewHost(NULL);
+  dom_handler_->SetRenderViewHost(nullptr);
+  input_handler_->SetRenderViewHost(nullptr);
+  page_handler_->SetRenderViewHost(nullptr);
 }
 
 void RenderViewDevToolsAgentHost::DisconnectWebContents() {

@@ -46,11 +46,6 @@ class CONTENT_EXPORT RendererOverridesHandler
   void ClearRenderViewHost();
 
  private:
-  // DOM domain.
-  scoped_refptr<DevToolsProtocol::Response>
-      GrantPermissionsForSetFileInputFiles(
-          scoped_refptr<DevToolsProtocol::Command> command);
-
   // Network domain.
   scoped_refptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
       scoped_refptr<DevToolsProtocol::Command> command);

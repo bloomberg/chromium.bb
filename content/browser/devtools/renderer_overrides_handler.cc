@@ -65,11 +65,6 @@ namespace content {
 RendererOverridesHandler::RendererOverridesHandler()
     : weak_factory_(this) {
   RegisterCommandHandler(
-      devtools::DOM::setFileInputFiles::kName,
-      base::Bind(
-          &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
-          base::Unretained(this)));
-  RegisterCommandHandler(
       devtools::Network::canEmulateNetworkConditions::kName,
       base::Bind(
           &RendererOverridesHandler::CanEmulateNetworkConditions,
@@ -104,31 +99,6 @@ void RendererOverridesHandler::SetRenderViewHost(
 void RendererOverridesHandler::ClearRenderViewHost() {
   host_ = NULL;
 }
-
-// DOM agent handlers  --------------------------------------------------------
-
-scoped_refptr<DevToolsProtocol::Response>
-RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
-    scoped_refptr<DevToolsProtocol::Command> command) {
-  base::DictionaryValue* params = command->params();
-  base::ListValue* file_list = NULL;
-  const char* param =
-      devtools::DOM::setFileInputFiles::kParamFiles;
-  if (!params || !params->GetList(param, &file_list))
-    return command->InvalidParamResponse(param);
-  if (!host_)
-    return NULL;
-
-  for (size_t i = 0; i < file_list->GetSize(); ++i) {
-    base::FilePath::StringType file;
-    if (!file_list->GetString(i, &file))
-      return command->InvalidParamResponse(param);
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        host_->GetProcess()->GetID(), base::FilePath(file));
-  }
-  return NULL;
-}
-
 
 // Network agent handlers  ----------------------------------------------------
 

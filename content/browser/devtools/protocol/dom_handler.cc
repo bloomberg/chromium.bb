@@ -4,20 +4,41 @@
 
 #include "content/browser/devtools/protocol/dom_handler.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+
 namespace content {
 namespace devtools {
 namespace dom {
 
 typedef DevToolsProtocolClient::Response Response;
 
-DOMHandler::DOMHandler() {
+DOMHandler::DOMHandler() : host_(nullptr) {
 }
 
 DOMHandler::~DOMHandler() {
 }
 
+void DOMHandler::SetRenderViewHost(RenderViewHostImpl* host) {
+  host_ = host;
+}
+
 Response DOMHandler::SetFileInputFiles(NodeId node_id,
                                        const std::vector<std::string>& files) {
+  if (host_) {
+    for (const auto& file : files) {
+#if defined(OS_WIN)
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+          host_->GetProcess()->GetID(),
+          base::FilePath(base::UTF8ToUTF16(file)));
+#else
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+          host_->GetProcess()->GetID(),
+          base::FilePath(file));
+#endif  // OS_WIN
+    }
+  }
   return Response::FallThrough();
 }
 
