@@ -39,7 +39,7 @@
         'build_pnacl_newlib': 0,
         'build_nonsfi_helper': 1,
         'conditions': [
-          ['target_arch=="ia32"', {
+          ['target_arch=="ia32" or target_arch=="x64"', {
             'extra_deps_newlib32_nonsfi': [
               '>(tc_lib_dir_nonsfi_helper32)/libgio.a',
               '>(tc_lib_dir_nonsfi_helper32)/libplatform.a',

@@ -545,7 +545,7 @@
         ],
       },
     }], # end x86 gcc nexe/nlib actions
-    ['target_arch=="ia32" and OS=="linux"', {
+    ['(target_arch=="ia32" or target_arch=="x64") and OS=="linux"', {
       'target_defaults': {
         'target_conditions': [
           # x86-32 non-SFI helper nexe build.
