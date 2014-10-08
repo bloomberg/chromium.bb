@@ -922,11 +922,7 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
 {
     ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
 
-    // FIXME: It would be good to move this to Font.cpp, if we're sure that none
-    // of the things in FontMac's setupPaint need to apply here.
-    // See also paintGlyphs.
     TextDrawingModeFlags textMode = gc->textDrawingMode();
-
     if (textMode & TextModeFill)
         gc->drawTextBlob(blob, origin, gc->fillPaint());
 
