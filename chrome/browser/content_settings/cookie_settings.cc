@@ -77,7 +77,7 @@ content::BrowserContext* CookieSettings::Factory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-scoped_refptr<RefcountedBrowserContextKeyedService>
+scoped_refptr<RefcountedKeyedService>
 CookieSettings::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);

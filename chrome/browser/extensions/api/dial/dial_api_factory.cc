@@ -31,9 +31,8 @@ DialAPIFactory::DialAPIFactory() : RefcountedBrowserContextKeyedServiceFactory(
 DialAPIFactory::~DialAPIFactory() {
 }
 
-scoped_refptr<RefcountedBrowserContextKeyedService>
-    DialAPIFactory::BuildServiceInstanceFor(
-        content::BrowserContext* profile) const {
+scoped_refptr<RefcountedKeyedService> DialAPIFactory::BuildServiceInstanceFor(
+    content::BrowserContext* profile) const {
   return scoped_refptr<DialAPI>(new DialAPI(static_cast<Profile*>(profile)));
 }
 

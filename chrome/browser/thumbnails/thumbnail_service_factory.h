@@ -23,7 +23,7 @@ class ThumbnailServiceFactory
   // ThumbnailService (for example, if |profile| is incognito).
   // Depending on the settings, the implementation of the service interface
   // can be provided either by TopSites (stored in the profile itself) or
-  // be an instance of a real RefcountedBrowserContextKeyedService
+  // be an instance of a real RefcountedKeyedService
   // implementation.
   static scoped_refptr<thumbnails::ThumbnailService> GetForProfile(
       Profile* profile);
@@ -37,8 +37,8 @@ class ThumbnailServiceFactory
   virtual ~ThumbnailServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* profile) const override;
+  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+      content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceFactory);
 };

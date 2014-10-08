@@ -14,8 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/refcounted_keyed_service.h"
 
 class ContentSettingsPattern;
 class CookieSettingsWrapper;
@@ -26,7 +26,7 @@ class Profile;
 // A frontend to the cookie settings of |HostContentSettingsMap|. Handles
 // cookie-specific logic such as blocking third-party cookies. Written on the UI
 // thread and read on any thread. One instance per profile.
-class CookieSettings : public RefcountedBrowserContextKeyedService {
+class CookieSettings : public RefcountedKeyedService {
  public:
   CookieSettings(
       HostContentSettingsMap* host_content_settings_map,
@@ -121,9 +121,8 @@ class CookieSettings : public RefcountedBrowserContextKeyedService {
         user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const OVERRIDE;
-    virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-        BuildServiceInstanceFor(
-            content::BrowserContext* context) const OVERRIDE;
+    virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+        content::BrowserContext* context) const OVERRIDE;
   };
 
  private:

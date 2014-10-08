@@ -26,13 +26,13 @@ class ShortcutsBackendFactory
   static ShortcutsBackendFactory* GetInstance();
 
   // Creates and returns a backend for testing purposes.
-  static scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildProfileForTesting(content::BrowserContext* profile);
+  static scoped_refptr<RefcountedKeyedService> BuildProfileForTesting(
+      content::BrowserContext* profile);
 
   // Creates and returns a backend but without creating its persistent database
   // for testing purposes.
-  static scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildProfileNoDatabaseForTesting(content::BrowserContext* profile);
+  static scoped_refptr<RefcountedKeyedService> BuildProfileNoDatabaseForTesting(
+      content::BrowserContext* profile);
 
  private:
   friend struct DefaultSingletonTraits<ShortcutsBackendFactory>;
@@ -41,8 +41,8 @@ class ShortcutsBackendFactory
   virtual ~ShortcutsBackendFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
+  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+      content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

@@ -26,8 +26,8 @@ class DialAPIFactory : public RefcountedBrowserContextKeyedServiceFactory {
   virtual ~DialAPIFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* profile) const override;
+  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+      content::BrowserContext* profile) const override;
   virtual bool ServiceIsCreatedWithBrowserContext() const override;
   virtual bool ServiceIsNULLWhileTesting() const override;
 

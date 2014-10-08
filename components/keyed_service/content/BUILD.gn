@@ -13,9 +13,8 @@ component("content") {
     "browser_context_keyed_base_factory.cc",
     "browser_context_keyed_service_factory.cc",
     "browser_context_keyed_service_factory.h",
-    "refcounted_browser_context_keyed_service.cc",
-    "refcounted_browser_context_keyed_service.h",
     "refcounted_browser_context_keyed_service_factory.cc",
+    "refcounted_browser_context_keyed_service_factory.h",
   ]
 
   defines = [ "KEYED_SERVICE_IMPLEMENTATION" ]

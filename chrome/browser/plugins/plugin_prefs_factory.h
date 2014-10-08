@@ -23,15 +23,15 @@ class PluginPrefsFactory : public RefcountedBrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<PluginPrefsFactory>;
 
   // Helper method for PluginPrefs::GetForTestingProfile.
-  static scoped_refptr<RefcountedBrowserContextKeyedService>
-      CreateForTestingProfile(content::BrowserContext* profile);
+  static scoped_refptr<RefcountedKeyedService> CreateForTestingProfile(
+      content::BrowserContext* profile);
 
   PluginPrefsFactory();
   virtual ~PluginPrefsFactory();
 
   // RefcountedBrowserContextKeyedServiceFactory methods:
-  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* context) const override;
+  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+      content::BrowserContext* context) const override;
 
   // BrowserContextKeyedServiceFactory methods:
   virtual void RegisterProfilePrefs(

@@ -33,9 +33,9 @@ ThumbnailServiceFactory* ThumbnailServiceFactory::GetInstance() {
   return Singleton<ThumbnailServiceFactory>::get();
 }
 
-scoped_refptr<RefcountedBrowserContextKeyedService>
-    ThumbnailServiceFactory::BuildServiceInstanceFor(
-        content::BrowserContext* profile) const {
-  return scoped_refptr<RefcountedBrowserContextKeyedService>(
+scoped_refptr<RefcountedKeyedService>
+ThumbnailServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* profile) const {
+  return scoped_refptr<RefcountedKeyedService>(
       new ThumbnailServiceImpl(static_cast<Profile*>(profile)));
 }

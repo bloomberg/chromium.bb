@@ -30,7 +30,7 @@ ShortcutsBackendFactory* ShortcutsBackendFactory::GetInstance() {
 }
 
 // static
-scoped_refptr<RefcountedBrowserContextKeyedService>
+scoped_refptr<RefcountedKeyedService>
 ShortcutsBackendFactory::BuildProfileForTesting(
     content::BrowserContext* profile) {
   scoped_refptr<ShortcutsBackend> backend(
@@ -41,7 +41,7 @@ ShortcutsBackendFactory::BuildProfileForTesting(
 }
 
 // static
-scoped_refptr<RefcountedBrowserContextKeyedService>
+scoped_refptr<RefcountedKeyedService>
 ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting(
     content::BrowserContext* profile) {
   scoped_refptr<ShortcutsBackend> backend(
@@ -59,7 +59,7 @@ ShortcutsBackendFactory::ShortcutsBackendFactory()
 
 ShortcutsBackendFactory::~ShortcutsBackendFactory() {}
 
-scoped_refptr<RefcountedBrowserContextKeyedService>
+scoped_refptr<RefcountedKeyedService>
 ShortcutsBackendFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<ShortcutsBackend> backend(

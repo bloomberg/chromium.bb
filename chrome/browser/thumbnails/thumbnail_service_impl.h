@@ -33,7 +33,7 @@ class ThumbnailServiceImpl : public ThumbnailService {
   virtual void AddForcedURL(const GURL& url) override;
   virtual bool ShouldAcquirePageThumbnail(const GURL& url) override;
 
-  // Implementation of RefcountedBrowserContextKeyedService.
+  // Implementation of RefcountedKeyedService.
   virtual void ShutdownOnUIThread() override;
 
  private:

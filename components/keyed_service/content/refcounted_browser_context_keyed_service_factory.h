@@ -9,10 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "components/keyed_service/core/keyed_service_export.h"
+#include "components/keyed_service/core/refcounted_keyed_service.h"
 
-class RefcountedBrowserContextKeyedService;
+class RefcountedKeyedService;
 
 namespace content {
 class BrowserContext;
@@ -24,17 +24,17 @@ class BrowserContext;
 // While the factory returns RefcountedThreadSafe<>s, the factory itself is a
 // base::NotThreadSafe. Only call methods on this object on the UI thread.
 //
-// Implementers of RefcountedBrowserContextKeyedService should note that
-// we guarantee that ShutdownOnUIThread() is called on the UI thread, but actual
-// object destruction can happen anywhere.
+// Implementers of RefcountedKeyedService should note that we guarantee that
+// ShutdownOnUIThread() is called on the UI thread, but actual object
+// destruction can happen anywhere.
 class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
     : public BrowserContextKeyedBaseFactory {
  public:
   // A function that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific mock into the BCKSF system.
-  typedef scoped_refptr<RefcountedBrowserContextKeyedService>(
-      *TestingFactoryFunction)(content::BrowserContext* context);
+  typedef scoped_refptr<RefcountedKeyedService>(*TestingFactoryFunction)(
+      content::BrowserContext* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the KeyedService when requested.  |factory| can be NULL to signal that
@@ -46,7 +46,7 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
   // Associates |factory| with |context| and immediately returns the created
   // KeyedService. Since the factory will be used immediately, it may not be
   // NULL.
-  scoped_refptr<RefcountedBrowserContextKeyedService> SetTestingFactoryAndUse(
+  scoped_refptr<RefcountedKeyedService> SetTestingFactoryAndUse(
       content::BrowserContext* context,
       TestingFactoryFunction factory);
 
@@ -56,20 +56,19 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
       BrowserContextDependencyManager* manager);
   virtual ~RefcountedBrowserContextKeyedServiceFactory();
 
-  scoped_refptr<RefcountedBrowserContextKeyedService>
-      GetServiceForBrowserContext(content::BrowserContext* context,
-                                  bool create);
+  scoped_refptr<RefcountedKeyedService> GetServiceForBrowserContext(
+      content::BrowserContext* context,
+      bool create);
 
   // Maps |context| to |service| with debug checks to prevent duplication.
-  void Associate(
-      content::BrowserContext* context,
-      const scoped_refptr<RefcountedBrowserContextKeyedService>& service);
+  void Associate(content::BrowserContext* context,
+                 const scoped_refptr<RefcountedKeyedService>& service);
 
   // All subclasses of RefcountedBrowserContextKeyedServiceFactory must return
-  // a RefcountedBrowserContextKeyedService instead of just
+  // a RefcountedKeyedService instead of just
   // a BrowserContextKeyedBase.
-  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* context) const = 0;
+  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+      content::BrowserContext* context) const = 0;
 
   virtual void BrowserContextShutdown(content::BrowserContext* context)
       override;
@@ -82,8 +81,7 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
 
  private:
   typedef std::map<content::BrowserContext*,
-                   scoped_refptr<RefcountedBrowserContextKeyedService> >
-      RefCountedStorage;
+                   scoped_refptr<RefcountedKeyedService>> RefCountedStorage;
   typedef std::map<content::BrowserContext*, TestingFactoryFunction>
       BrowserContextOverriddenTestingFunctions;
 

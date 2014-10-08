@@ -35,7 +35,8 @@ namespace extensions {
 namespace dial = api::dial;
 
 DialAPI::DialAPI(Profile* profile)
-    : RefcountedBrowserContextKeyedService(BrowserThread::IO),
+    : RefcountedKeyedService(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
       profile_(profile) {
   EventRouter::Get(profile)
       ->RegisterObserver(this, dial::OnDeviceList::kEventName);

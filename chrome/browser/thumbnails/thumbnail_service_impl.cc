@@ -13,6 +13,7 @@
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/search/search.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;

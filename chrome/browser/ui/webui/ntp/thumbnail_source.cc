@@ -15,8 +15,6 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
-
 // Set ThumbnailService now as Profile isn't thread safe.
 ThumbnailSource::ThumbnailSource(Profile* profile, bool capture_thumbnails)
     : thumbnail_service_(ThumbnailServiceFactory::GetForProfile(profile)),

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
@@ -31,7 +31,7 @@ void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
   testing_factories_[context] = testing_factory;
 }
 
-scoped_refptr<RefcountedBrowserContextKeyedService>
+scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
@@ -51,7 +51,7 @@ RefcountedBrowserContextKeyedServiceFactory::
   DCHECK(mapping_.empty());
 }
 
-scoped_refptr<RefcountedBrowserContextKeyedService>
+scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
     content::BrowserContext* context,
     bool create) {
@@ -72,7 +72,7 @@ RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
   // Create new object.
   // Check to see if we have a per-BrowserContext testing factory that we should
   // use instead of default behavior.
-  scoped_refptr<RefcountedBrowserContextKeyedService> service;
+  scoped_refptr<RefcountedKeyedService> service;
   BrowserContextOverriddenTestingFunctions::const_iterator jt =
       testing_factories_.find(context);
   if (jt != testing_factories_.end()) {
@@ -91,7 +91,7 @@ RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
 
 void RefcountedBrowserContextKeyedServiceFactory::Associate(
     content::BrowserContext* context,
-    const scoped_refptr<RefcountedBrowserContextKeyedService>& service) {
+    const scoped_refptr<RefcountedKeyedService>& service) {
   DCHECK(!ContainsKey(mapping_, context));
   mapping_.insert(std::make_pair(context, service));
 }

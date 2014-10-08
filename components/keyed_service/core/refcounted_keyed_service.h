@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_KEYED_SERVICE_CONTENT_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_H_
-#define COMPONENTS_KEYED_SERVICE_CONTENT_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_H_
+#ifndef COMPONENTS_KEYED_SERVICE_CORE_REFCOUNTED_KEYED_SERVICE_H_
+#define COMPONENTS_KEYED_SERVICE_CORE_REFCOUNTED_KEYED_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "components/keyed_service/core/keyed_service_export.h"
-#include "content/public/browser/browser_thread.h"
 
-class RefcountedBrowserContextKeyedService;
+class RefcountedKeyedService;
 
 namespace impl {
 
-struct KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceTraits {
-  static void Destruct(const RefcountedBrowserContextKeyedService* obj);
+struct KEYED_SERVICE_EXPORT RefcountedKeyedServiceTraits {
+  static void Destruct(const RefcountedKeyedService* obj);
 };
 
 }  // namespace impl
@@ -29,14 +29,12 @@ struct KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceTraits {
 // be after the corresponding BrowserContext has been destroyed.
 //
 // Optionally, if you initialize your service with the constructor that takes a
-// thread ID, your service will be deleted on that thread. We can't use
-// content::DeleteOnThread<> directly because
-// RefcountedBrowserContextKeyedService must be one type that
-// RefcountedBrowserContextKeyedServiceFactory can use.
-class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedService
-    : public base::RefCountedThreadSafe<
-          RefcountedBrowserContextKeyedService,
-          impl::RefcountedBrowserContextKeyedServiceTraits> {
+// single thread task runner, your service will be deleted on that thread. We
+// can't use content::DeleteOnThread<> directly because RefcountedKeyedService
+// must not depend on //content.
+class KEYED_SERVICE_EXPORT RefcountedKeyedService
+    : public base::RefCountedThreadSafe<RefcountedKeyedService,
+                                        impl::RefcountedKeyedServiceTraits> {
  public:
   // Unlike KeyedService, ShutdownOnUI is not optional. You must do something
   // to drop references during the first pass Shutdown() because this is the
@@ -48,28 +46,27 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedService
  protected:
   // If your service does not need to be deleted on a specific thread, use the
   // default constructor.
-  RefcountedBrowserContextKeyedService();
+  RefcountedKeyedService();
 
   // If you need your service to be deleted on a specific thread (for example,
   // you're converting a service that used content::DeleteOnThread<IO>), then
-  // use this constructor with the ID of the thread.
-  explicit RefcountedBrowserContextKeyedService(
-      const content::BrowserThread::ID thread_id);
+  // use this constructor with a reference to the SingleThreadTaskRunner (you
+  // can get it from content::BrowserThread::GetMessageLoopProxyForThread).
+  explicit RefcountedKeyedService(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // The second pass destruction can happen anywhere unless you specify which
   // thread this service must be destroyed on by using the second constructor.
-  virtual ~RefcountedBrowserContextKeyedService();
+  virtual ~RefcountedKeyedService();
 
  private:
-  friend struct impl::RefcountedBrowserContextKeyedServiceTraits;
-  friend class base::DeleteHelper<RefcountedBrowserContextKeyedService>;
-  friend class base::RefCountedThreadSafe<
-      RefcountedBrowserContextKeyedService,
-      impl::RefcountedBrowserContextKeyedServiceTraits>;
+  friend struct impl::RefcountedKeyedServiceTraits;
+  friend class base::DeleteHelper<RefcountedKeyedService>;
+  friend class base::RefCountedThreadSafe<RefcountedKeyedService,
+                                          impl::RefcountedKeyedServiceTraits>;
 
   // Do we have to delete this object on a specific thread?
-  bool requires_destruction_on_thread_;
-  content::BrowserThread::ID thread_id_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
-#endif  // COMPONENTS_KEYED_SERVICE_CONTENT_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_H_
+#endif  // COMPONENTS_KEYED_SERVICE_CORE_REFCOUNTED_KEYED_SERVICE_H_

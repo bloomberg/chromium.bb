@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
-#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/event_router.h"
 
@@ -21,7 +21,7 @@ class DialRegistry;
 // the DIAL registry. It takes care of creating the registry on the IO thread
 // and is an observer of the registry. It makes sure devices events are sent out
 // to extension listeners on the right thread.
-class DialAPI : public RefcountedBrowserContextKeyedService,
+class DialAPI : public RefcountedKeyedService,
                 public EventRouter::Observer,
                 public DialRegistry::Observer {
  public:
@@ -39,7 +39,7 @@ class DialAPI : public RefcountedBrowserContextKeyedService,
  private:
   virtual ~DialAPI();
 
-  // RefcountedBrowserContextKeyedService:
+  // RefcountedKeyedService:
   virtual void ShutdownOnUIThread() override;
 
   // EventRouter::Observer:

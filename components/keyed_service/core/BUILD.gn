@@ -11,6 +11,8 @@ component("core") {
     "keyed_service.cc",
     "keyed_service.h",
     "keyed_service_export.h",
+    "refcounted_keyed_service.cc",
+    "refcounted_keyed_service.h",
   ]
 
   defines = [ "KEYED_SERVICE_IMPLEMENTATION" ]
