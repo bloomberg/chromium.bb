@@ -154,8 +154,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
   // views::LabelButton:
   virtual void OnPaint(gfx::Canvas* canvas) override {
     if ((state() == STATE_PRESSED) ||
-        (state() == STATE_HOVERED) ||
-        HasFocus()) {
+        (state() == STATE_HOVERED)) {
       canvas->DrawColor(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_ButtonHoverBackgroundColor));
     }
@@ -712,12 +711,6 @@ bool ProfileChooserView::AcceleratorPressed(
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  // Disable button after clicking so that it doesn't get clicked twice and
-  // start a second action... which can crash Chrome.  But don't disable if it
-  // has no parent (like in tests) because that will also crash.
-  if (sender->parent())
-    sender->SetEnabled(false);
-
   if (sender == users_button_) {
     // If this is a guest session, close all the guest browser windows.
     if (browser_->profile()->IsGuestSession()) {
