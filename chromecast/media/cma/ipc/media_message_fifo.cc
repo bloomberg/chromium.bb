@@ -123,8 +123,8 @@ MediaMessageFifo::MediaMessageFifo(
     desc->size = size_;
     internal_rd_offset_ = 0;
     internal_wr_offset_ = 0;
-    base::subtle::Acquire_Store(rd_offset_, 0);
-    base::subtle::Acquire_Store(wr_offset_, 0);
+    base::subtle::Release_Store(rd_offset_, 0);
+    base::subtle::Release_Store(wr_offset_, 0);
   } else {
     size_ = desc->size;
     CHECK_LE(size_, max_size);
@@ -370,9 +370,10 @@ void MediaMessageFifo::CommitRead(size_t new_rd_offset) {
   // before updating the read offset.
   base::subtle::Release_Store(rd_offset_, new_rd_offset);
 
-  // Make sure the read pointer has been updated before sending a notification.
+  // Since rd_offset_ is updated by a release_store above, any thread that
+  // does acquire_load is guaranteed to see the new rd_offset_ set above.
+  // So it is safe to send the notification.
   if (!read_event_cb_.is_null()) {
-    base::subtle::MemoryBarrier();
     read_event_cb_.Run();
   }
 }
@@ -382,9 +383,10 @@ void MediaMessageFifo::CommitWrite(size_t new_wr_offset) {
   // before updating the write offset.
   base::subtle::Release_Store(wr_offset_, new_wr_offset);
 
-  // Make sure the write pointer has been updated before sending a notification.
+  // Since wr_offset_ is updated by a release_store above, any thread that
+  // does acquire_load is guaranteed to see the new wr_offset_ set above.
+  // So it is safe to send the notification.
   if (!write_event_cb_.is_null()) {
-    base::subtle::MemoryBarrier();
     write_event_cb_.Run();
   }
 }
