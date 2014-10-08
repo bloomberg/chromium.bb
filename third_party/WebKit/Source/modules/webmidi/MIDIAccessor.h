@@ -40,7 +40,7 @@ namespace blink {
 
 class MIDIAccessorClient;
 
-class MIDIAccessor FINAL : public WebMIDIAccessorClient {
+class MIDIAccessor final : public WebMIDIAccessorClient {
 public:
     static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 
@@ -54,10 +54,10 @@ public:
     void setClient(MIDIAccessorClient* client) { m_client = client; }
 
     // WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) OVERRIDE;
-    virtual void didStartSession(bool success, const WebString& error, const WebString& message) OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) override;
+    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) override;
+    virtual void didStartSession(bool success, const WebString& error, const WebString& message) override;
+    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
 
 private:
     explicit MIDIAccessor(MIDIAccessorClient*);

@@ -48,7 +48,7 @@ class MIDIInputMap;
 class MIDIOutput;
 class MIDIOutputMap;
 
-class MIDIAccess FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
+class MIDIAccess final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIAccess>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
@@ -70,27 +70,27 @@ public:
     bool sysexEnabled() const { return m_sysexEnabled; }
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIAccess; }
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual const AtomicString& interfaceName() const override { return EventTargetNames::MIDIAccess; }
+    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
-    virtual void stop() OVERRIDE;
+    virtual void stop() override;
 
     // MIDIAccessorClient
-    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
-    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
-    virtual void didStartSession(bool success, const String& error, const String& message) OVERRIDE
+    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) override;
+    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) override;
+    virtual void didStartSession(bool success, const String& error, const String& message) override
     {
         // This method is for MIDIAccess initialization: MIDIAccessInitializer
         // has the implementation.
         ASSERT_NOT_REACHED();
     }
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
 
     // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MIDIAccess(PassOwnPtr<MIDIAccessor>, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>&, ExecutionContext*);

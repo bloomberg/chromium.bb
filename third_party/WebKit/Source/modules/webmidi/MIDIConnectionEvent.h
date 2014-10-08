@@ -45,7 +45,7 @@ struct MIDIConnectionEventInit : public EventInit {
     Member<MIDIPort> port;
 };
 
-class MIDIConnectionEvent FINAL : public Event {
+class MIDIConnectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create();
@@ -54,9 +54,9 @@ public:
 
     MIDIPort* port() { return m_port; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::MIDIConnectionEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::MIDIConnectionEvent; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MIDIConnectionEvent();

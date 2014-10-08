@@ -44,7 +44,7 @@ struct MIDIMessageEventInit : public EventInit {
     RefPtr<Uint8Array> data;
 };
 
-class MIDIMessageEvent FINAL : public Event {
+class MIDIMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create()
@@ -65,9 +65,9 @@ public:
     double receivedTime() { return m_receivedTime; }
     PassRefPtr<Uint8Array> data() { return m_data; }
 
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::MIDIMessageEvent; }
+    virtual const AtomicString& interfaceName() const override { return EventNames::MIDIMessageEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { Event::trace(visitor); }
 
 private:
     MIDIMessageEvent()

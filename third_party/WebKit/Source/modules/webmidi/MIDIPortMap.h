@@ -67,7 +67,7 @@ private:
         {
         }
 
-        virtual ScriptValue next(ScriptState* scriptState, ExceptionState&) OVERRIDE
+        virtual ScriptValue next(ScriptState* scriptState, ExceptionState&) override
         {
             if (m_iterator == m_end)
                 return ScriptValue(scriptState, v8DoneIteratorResult(scriptState->isolate()));
@@ -76,12 +76,12 @@ private:
             return result;
         }
 
-        virtual ScriptValue next(ScriptState* scriptState, ScriptValue, ExceptionState& exceptionState) OVERRIDE
+        virtual ScriptValue next(ScriptState* scriptState, ScriptValue, ExceptionState& exceptionState) override
         {
             return next(scriptState, exceptionState);
         }
 
-        virtual void trace(Visitor* visitor) OVERRIDE
+        virtual void trace(Visitor* visitor) override
         {
             visitor->trace(m_map);
             Iterator::trace(visitor);

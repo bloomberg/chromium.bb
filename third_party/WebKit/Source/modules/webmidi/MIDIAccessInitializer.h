@@ -48,10 +48,10 @@ public:
     virtual ~MIDIAccessInitializer();
 
     // MIDIAccessorClient
-    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
-    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
-    virtual void didStartSession(bool success, const String& error, const String& message) OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE { }
+    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) override;
+    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) override;
+    virtual void didStartSession(bool success, const String& error, const String& message) override;
+    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override { }
 
     void resolveSysexPermission(bool allowed);
     SecurityOrigin* securityOrigin() const;

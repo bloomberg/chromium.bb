@@ -58,13 +58,13 @@ public:
 
     MIDIAccess* midiAccess() const { return m_access; }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIPort; }
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
+    virtual const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
+    virtual ExecutionContext* executionContext() const override final;
 
 protected:
     MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);

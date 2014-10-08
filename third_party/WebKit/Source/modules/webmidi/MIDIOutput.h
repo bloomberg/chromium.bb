@@ -39,7 +39,7 @@ namespace blink {
 class ExceptionState;
 class MIDIAccess;
 
-class MIDIOutput FINAL : public MIDIPort {
+class MIDIOutput final : public MIDIPort {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MIDIOutput* create(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version);
@@ -52,7 +52,7 @@ public:
     void send(Uint8Array*, ExceptionState&);
     void send(Vector<unsigned>, ExceptionState&);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     MIDIOutput(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version);
