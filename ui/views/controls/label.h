@@ -99,6 +99,12 @@ class VIEWS_EXPORT Label : public View {
   // default behavior, call this with an empty string.
   void SetTooltipText(const base::string16& tooltip_text);
 
+  // Get or set whether this label can act as a tooltip handler; the default is
+  // true.  Set to false whenever an ancestor view should handle tooltips
+  // instead.
+  bool handles_tooltips() const { return handles_tooltips_; }
+  void SetHandlesTooltips(bool enabled);
+
   // Resizes the label so its width is set to the width of the longest line and
   // its height deduced accordingly.
   // This is only intended for multi-line labels and is useful when the label's
@@ -206,6 +212,7 @@ class VIEWS_EXPORT Label : public View {
   gfx::ElideBehavior elide_behavior_;
   gfx::HorizontalAlignment horizontal_alignment_;
   base::string16 tooltip_text_;
+  bool handles_tooltips_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
   gfx::ShadowValues shadows_;

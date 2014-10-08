@@ -147,18 +147,39 @@ TEST_F(LabelTest, TooltipProperty) {
   Label label;
   label.SetText(ASCIIToUTF16("My cool string."));
 
+  // Initially, label has no bounds, its text does not fit, and therefore its
+  // text should be returned as the tooltip text.
   base::string16 tooltip;
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(label.text(), tooltip);
 
+  // While tooltip handling is disabled, GetTooltipText() should fail.
+  label.SetHandlesTooltips(false);
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
+  label.SetHandlesTooltips(true);
+
+  // When set, custom tooltip text should be returned instead of the label's
+  // text.
   base::string16 tooltip_text(ASCIIToUTF16("The tooltip!"));
   label.SetTooltipText(tooltip_text);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
 
+  // While tooltip handling is disabled, GetTooltipText() should fail.
+  label.SetHandlesTooltips(false);
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
+  label.SetHandlesTooltips(true);
+
+  // When the tooltip text is set to an empty string, the original behavior is
+  // restored.
   label.SetTooltipText(base::string16());
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(label.text(), tooltip);
+
+  // While tooltip handling is disabled, GetTooltipText() should fail.
+  label.SetHandlesTooltips(false);
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
+  label.SetHandlesTooltips(true);
 
   // Make the label big enough to hold the text
   // and expect there to be no tooltip.
@@ -895,8 +916,17 @@ TEST_F(LabelTest, GetTooltipHandlerForPoint) {
   label.SetBounds(0, 0, 10, 10);
   widget.SetContentsView(&label);
 
+  // By default, labels start out as tooltip handlers.
+  ASSERT_TRUE(label.handles_tooltips());
+
   // There's a default tooltip if the text is too big to fit.
   EXPECT_EQ(&label, label.GetTooltipHandlerForPoint(gfx::Point(2, 2)));
+
+  // If tooltip handling is disabled, the label should not provide a tooltip
+  // handler.
+  label.SetHandlesTooltips(false);
+  EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(2, 2)));
+  label.SetHandlesTooltips(true);
 
   // If there's no default tooltip, this should return NULL.
   label.SetBounds(0, 0, 500, 50);
@@ -911,6 +941,14 @@ TEST_F(LabelTest, GetTooltipHandlerForPoint) {
   // actually contains the point.
   EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(2, 51)));
   EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(-1, 20)));
+
+  // Again, if tooltip handling is disabled, the label should not provide a
+  // tooltip handler.
+  label.SetHandlesTooltips(false);
+  EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(2, 2)));
+  EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(2, 51)));
+  EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(-1, 20)));
+  label.SetHandlesTooltips(true);
 
   // GetTooltipHandlerForPoint works should work in child bounds.
   label.SetBounds(2, 2, 10, 10);

@@ -182,7 +182,12 @@ void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
 }
 
 void Label::SetTooltipText(const base::string16& tooltip_text) {
+  DCHECK(handles_tooltips_);
   tooltip_text_ = tooltip_text;
+}
+
+void Label::SetHandlesTooltips(bool enabled) {
+  handles_tooltips_ = enabled;
 }
 
 void Label::SizeToFit(int max_width) {
@@ -280,7 +285,8 @@ const char* Label::GetClassName() const {
 }
 
 View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  if (tooltip_text_.empty() && !ShouldShowDefaultTooltip())
+  if (!handles_tooltips_ ||
+      (tooltip_text_.empty() && !ShouldShowDefaultTooltip()))
     return NULL;
 
   return HitTestPoint(point) ? this : NULL;
@@ -298,6 +304,9 @@ void Label::GetAccessibleState(ui::AXViewState* state) {
 }
 
 bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
+  if (!handles_tooltips_)
+    return false;
+
   if (!tooltip_text_.empty()) {
     tooltip->assign(tooltip_text_);
     return true;
@@ -389,6 +398,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   obscured_ = false;
   allow_character_break_ = false;
   elide_behavior_ = gfx::ELIDE_TAIL;
+  handles_tooltips_ = true;
   collapse_when_hidden_ = false;
   cached_heights_.resize(kCachedSizeLimit);
   ResetCachedSize();
