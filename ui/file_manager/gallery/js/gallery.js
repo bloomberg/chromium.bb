@@ -370,10 +370,13 @@ Gallery.prototype.initDom_ = function() {
 
   this.prompt_ = new ImageEditor.Prompt(this.container_, strf);
 
+  this.errorBanner_ = new ErrorBanner(this.container_);
+
   this.modeButton_ = this.toolbar_.querySelector('button.mode');
   this.modeButton_.addEventListener('click', this.toggleMode_.bind(this, null));
 
   this.mosaicMode_ = new MosaicMode(content,
+                                    this.errorBanner_,
                                     this.dataModel_,
                                     this.selectionModel_,
                                     this.volumeManager_,
@@ -383,6 +386,7 @@ Gallery.prototype.initDom_ = function() {
                                   content,
                                   this.toolbar_,
                                   this.prompt_,
+                                  this.errorBanner_,
                                   this.dataModel_,
                                   this.selectionModel_,
                                   this.context_,

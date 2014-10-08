@@ -6,6 +6,7 @@
 
 /**
  * @param {Element} container Content container.
+ * @param {ErrorBanner} errorBanner Error banner.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
@@ -13,9 +14,10 @@
  * @constructor
  */
 function MosaicMode(
-    container, dataModel, selectionModel, volumeManager, toggleMode) {
-  this.mosaic_ = new Mosaic(
-      container.ownerDocument, dataModel, selectionModel, volumeManager);
+    container, errorBanner, dataModel, selectionModel, volumeManager,
+    toggleMode) {
+  this.mosaic_ = new Mosaic(container.ownerDocument, errorBanner,
+      dataModel, selectionModel, volumeManager);
   container.appendChild(this.mosaic_);
 
   this.toggleMode_ = toggleMode;
@@ -73,15 +75,17 @@ MosaicMode.prototype.onKeyDown = function(event) {
  * Mosaic control.
  *
  * @param {Document} document Document.
+ * @param {ErrorBanner} errorBanner Error banner.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @return {Element} Mosaic element.
  * @constructor
  */
-function Mosaic(document, dataModel, selectionModel, volumeManager) {
+function Mosaic(document, errorBanner, dataModel, selectionModel,
+    volumeManager) {
   var self = document.createElement('div');
-  Mosaic.decorate(self, dataModel, selectionModel, volumeManager);
+  Mosaic.decorate(self, errorBanner, dataModel, selectionModel, volumeManager);
   return self;
 }
 
@@ -109,18 +113,20 @@ Mosaic.ANIMATED_SCROLL_DURATION = 500;
  * Decorates a Mosaic instance.
  *
  * @param {Mosaic} self Self pointer.
+ * @param {ErrorBanner} errorBanner Error banner.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  */
 Mosaic.decorate = function(
-    self, dataModel, selectionModel, volumeManager) {
+    self, errorBanner, dataModel, selectionModel, volumeManager) {
   self.__proto__ = Mosaic.prototype;
   self.className = 'mosaic';
 
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
   self.volumeManager_ = volumeManager;
+  self.errorBanner_ = errorBanner;
 
   // Initialization is completed lazily on the first call to |init|.
 };
@@ -427,6 +433,11 @@ Mosaic.prototype.onSplice_ = function(event) {
     }
 
     this.tiles_.splice(index, event.removed.length);
+
+    // No items left, show the banner.
+    if (this.getItemCount_() === 0)
+      this.errorBanner_.show('GALLERY_NO_IMAGES');
+
     this.scheduleLayout(Mosaic.LAYOUT_DELAY);
   }
 
@@ -495,6 +506,10 @@ Mosaic.prototype.canZoom = function() {
  * Shows the mosaic.
  */
 Mosaic.prototype.show = function() {
+  // If the items are empty, just show the error message.
+  if (this.getItemCount_() === 0)
+    this.errorBanner_.show('GALLERY_NO_IMAGES');
+
   var duration = ImageView.MODE_TRANSITION_DURATION;
   if (this.canZoom()) {
     // Fade in in parallel with the zoom effect.
@@ -517,6 +532,8 @@ Mosaic.prototype.show = function() {
  * Hides the mosaic.
  */
 Mosaic.prototype.hide = function() {
+  this.errorBanner_.clear();
+
   if (this.showingTimeoutID_ !== null) {
     clearTimeout(this.showingTimeoutID_);
     this.showingTimeoutID_ = null;
@@ -631,6 +648,14 @@ Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
   } else {
     this.style.webkitTransform = '';
   }
+};
+
+/**
+ * @return {number} Item count
+ * @private
+ */
+Mosaic.prototype.getItemCount_ = function() {
+  return this.dataModel_.length;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

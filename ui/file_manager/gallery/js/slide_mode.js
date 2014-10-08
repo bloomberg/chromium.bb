@@ -12,6 +12,7 @@
  * @param {Element} content Content container element.
  * @param {Element} toolbar Toolbar element.
  * @param {ImageEditor.Prompt} prompt Prompt.
+ * @param {ErrorBanner} errorBanner Error banner.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {Object} context Context.
@@ -21,13 +22,14 @@
  *     function.
  * @constructor
  */
-function SlideMode(container, content, toolbar, prompt, dataModel,
+function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
     selectionModel, context, volumeManager, toggleMode, displayStringFunction) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.content = content;
   this.toolbar_ = toolbar;
   this.prompt_ = prompt;
+  this.errorBanner_ = errorBanner;
   this.dataModel_ = dataModel;
   this.selectionModel_ = selectionModel;
   this.context_ = context;
@@ -177,12 +179,6 @@ SlideMode.prototype.initDom_ = function() {
       this.document_, this.dataModel_, this.selectionModel_);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
-  // Error indicator.
-  var errorWrapper = util.createChild(this.container_, 'prompt-wrapper');
-  errorWrapper.setAttribute('pos', 'center');
-
-  this.errorBanner_ = util.createChild(errorWrapper, 'error-banner');
-
   util.createChild(this.container_, 'spinner');
 
   var slideShowButton = this.toolbar_.querySelector('button.slideshow');
@@ -275,7 +271,7 @@ SlideMode.prototype.enter = function(
     if (this.getItemCount_() === 0) {
       this.displayedIndex_ = -1;
       //TODO(hirono) Show this message in the grid mode too.
-      this.showErrorBanner_('GALLERY_NO_IMAGES');
+      this.errorBanner_.show('GALLERY_NO_IMAGES');
       fulfill();
       return;
     }
@@ -351,7 +347,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
 
   this.viewport_.resetView();
   if (this.getItemCount_() === 0) {
-    this.showErrorBanner_(false);
+    this.errorBanner_.clear();
     commitDone();
   } else {
     this.commitItem_(commitDone);
@@ -588,7 +584,7 @@ SlideMode.prototype.onSplice_ = function(event) {
       // No items left. Unload the image and show the banner.
       this.commitItem_(function() {
         this.unloadImage_();
-        this.showErrorBanner_('GALLERY_NO_IMAGES');
+        this.errorBanner_.show('GALLERY_NO_IMAGES');
       }.bind(this));
     }
   }.bind(this), 0);
@@ -690,13 +686,13 @@ SlideMode.prototype.loadItem_ = function(
     if (loadType === ImageView.LOAD_TYPE_ERROR) {
       // if we have a specific error, then display it
       if (error) {
-        this.showErrorBanner_(error);
+        this.errorBanner_.show(error);
       } else {
         // otherwise try to infer general error
-        this.showErrorBanner_('GALLERY_IMAGE_ERROR');
+        this.errorBanner_.show('GALLERY_IMAGE_ERROR');
       }
     } else if (loadType === ImageView.LOAD_TYPE_OFFLINE) {
-      this.showErrorBanner_('GALLERY_IMAGE_OFFLINE');
+      this.errorBanner_.show('GALLERY_IMAGE_OFFLINE');
     }
 
     ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
@@ -769,7 +765,7 @@ SlideMode.prototype.loadItem_ = function(
  */
 SlideMode.prototype.commitItem_ = function(callback) {
   this.showSpinner_(false);
-  this.showErrorBanner_(false);
+  this.errorBanner_.clear();
   this.editor_.getPrompt().hide();
   this.editor_.closeSession(callback);
 };
@@ -1275,18 +1271,6 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
 SlideMode.prototype.print_ = function() {
   cr.dispatchSimpleEvent(this, 'useraction');
   window.print();
-};
-
-/**
- * Displays the error banner.
- * @param {string} message Message.
- * @private
- */
-SlideMode.prototype.showErrorBanner_ = function(message) {
-  if (message) {
-    this.errorBanner_.textContent = this.displayStringFunction_(message);
-  }
-  ImageUtil.setAttribute(this.container_, 'error', !!message);
 };
 
 /**
