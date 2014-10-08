@@ -37,7 +37,6 @@
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitVector.h"
 
 namespace blink {
@@ -306,10 +305,10 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                     invalidationSet->addId(features.id);
                 if (!features.tagName.isEmpty())
                     invalidationSet->addTagName(features.tagName);
-                for (Vector<AtomicString>::const_iterator it = features.classes.begin(); it != features.classes.end(); ++it)
-                    invalidationSet->addClass(*it);
-                for (Vector<AtomicString>::const_iterator it = features.attributes.begin(); it != features.attributes.end(); ++it)
-                    invalidationSet->addAttribute(*it);
+                for (const auto& className : features.classes)
+                    invalidationSet->addClass(className);
+                for (const auto& attribute : features.attributes)
+                    invalidationSet->addAttribute(attribute);
                 if (features.customPseudoElement)
                     invalidationSet->setCustomPseudoInvalid();
             }
@@ -449,14 +448,14 @@ void RuleFeatureSet::FeatureMetadata::clear()
 
 void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
-    for (InvalidationSetMap::const_iterator it = other.m_classInvalidationSets.begin(); it != other.m_classInvalidationSets.end(); ++it)
-        ensureClassInvalidationSet(it->key).combine(*it->value);
-    for (InvalidationSetMap::const_iterator it = other.m_attributeInvalidationSets.begin(); it != other.m_attributeInvalidationSets.end(); ++it)
-        ensureAttributeInvalidationSet(it->key).combine(*it->value);
-    for (InvalidationSetMap::const_iterator it = other.m_idInvalidationSets.begin(); it != other.m_idInvalidationSets.end(); ++it)
-        ensureIdInvalidationSet(it->key).combine(*it->value);
-    for (PseudoTypeInvalidationSetMap::const_iterator it = other.m_pseudoInvalidationSets.begin(); it != other.m_pseudoInvalidationSets.end(); ++it)
-        ensurePseudoInvalidationSet(static_cast<CSSSelector::PseudoType>(it->key)).combine(*it->value);
+    for (const auto& invalidationSet : other.m_classInvalidationSets)
+        ensureClassInvalidationSet(invalidationSet.key).combine(*invalidationSet.value);
+    for (const auto& invalidationSet : other.m_attributeInvalidationSets)
+        ensureAttributeInvalidationSet(invalidationSet.key).combine(*invalidationSet.value);
+    for (const auto& invalidationSet : other.m_idInvalidationSets)
+        ensureIdInvalidationSet(invalidationSet.key).combine(*invalidationSet.value);
+    for (const auto& invalidationSet : other.m_pseudoInvalidationSets)
+        ensurePseudoInvalidationSet(static_cast<CSSSelector::PseudoType>(invalidationSet.key)).combine(*invalidationSet.value);
 
     m_metadata.add(other.m_metadata);
 

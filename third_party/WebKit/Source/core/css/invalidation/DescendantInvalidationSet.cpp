@@ -56,15 +56,15 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
 
     if (element.hasClass() && m_classes) {
         const SpaceSplitString& classNames = element.classNames();
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it) {
-            if (classNames.contains(*it))
+        for (const auto& className : *m_classes) {
+            if (classNames.contains(className))
                 return true;
         }
     }
 
     if (element.hasAttributes() && m_attributes) {
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it) {
-            if (element.hasAttribute(*it))
+        for (const auto& attribute : *m_attributes) {
+            if (element.hasAttribute(attribute))
                 return true;
         }
     }
@@ -90,27 +90,23 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
         setTreeBoundaryCrossing();
 
     if (other.m_classes) {
-        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_classes->end();
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_classes->begin(); it != end; ++it)
-            addClass(*it);
+        for (const auto& className : *other.m_classes)
+            addClass(className);
     }
 
     if (other.m_ids) {
-        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_ids->end();
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_ids->begin(); it != end; ++it)
-            addId(*it);
+        for (const auto& id : *other.m_ids)
+            addId(id);
     }
 
     if (other.m_tagNames) {
-        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_tagNames->end();
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_tagNames->begin(); it != end; ++it)
-            addTagName(*it);
+        for (const auto& tagName : *other.m_tagNames)
+            addTagName(tagName);
     }
 
     if (other.m_attributes) {
-        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_attributes->end();
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_attributes->begin(); it != end; ++it)
-            addAttribute(*it);
+        for (const auto& attribute : *other.m_attributes)
+            addAttribute(attribute);
     }
 }
 
@@ -204,20 +200,20 @@ void DescendantInvalidationSet::show() const
     if (m_treeBoundaryCrossing)
         fprintf(stderr, "::shadow/deep/ ");
     if (m_ids) {
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_ids->begin(); it != m_ids->end(); ++it)
-            fprintf(stderr, "#%s ", (*it).ascii().data());
+        for (const auto& id : *m_ids)
+            fprintf(stderr, "#%s ", id.ascii().data());
     }
     if (m_classes) {
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it)
-            fprintf(stderr, ".%s ", (*it).ascii().data());
+        for (const auto& className : *m_classes)
+            fprintf(stderr, ".%s ", className.ascii().data());
     }
     if (m_tagNames) {
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_tagNames->begin(); it != m_tagNames->end(); ++it)
-            fprintf(stderr, "<%s> ", (*it).ascii().data());
+        for (const auto& tagName : *m_tagNames)
+            fprintf(stderr, "<%s> ", tagName.ascii().data());
     }
     if (m_attributes) {
-        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it)
-            fprintf(stderr, "[%s] ", (*it).ascii().data());
+        for (const auto& attribute : *m_attributes)
+            fprintf(stderr, "[%s] ", attribute.ascii().data());
     }
     fprintf(stderr, "}\n");
 }

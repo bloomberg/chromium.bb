@@ -89,8 +89,8 @@ bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& el
     if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom)
         return true;
 
-    for (InvalidationSets::iterator it = m_invalidationSets.begin(); it != m_invalidationSets.end(); ++it) {
-        if ((*it)->invalidatesElement(element))
+    for (const auto& invalidationSet : m_invalidationSets) {
+        if (invalidationSet->invalidatesElement(element))
             return true;
     }
 
@@ -105,8 +105,8 @@ bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element, Sty
     }
     if (element.needsStyleInvalidation()) {
         if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
-            for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it)
-                recursionData.pushInvalidationSet(**it);
+            for (const auto& invalidationSet : *invalidationList)
+                recursionData.pushInvalidationSet(*invalidationSet);
             // FIXME: It's really only necessary to clone the render style for this element, not full style recalc.
             return true;
         }
