@@ -104,8 +104,6 @@ public:
     using InlineBox::hasEllipsisBox;
     EllipsisBox* ellipsisBox() const;
 
-    void paintEllipsisBox(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const;
-
     virtual void clearTruncation() OVERRIDE FINAL;
 
     virtual int baselinePosition(FontBaseline baselineType) const OVERRIDE FINAL;

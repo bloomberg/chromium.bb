@@ -22,6 +22,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
+#include "core/paint/RootInlineBoxPainter.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
@@ -151,17 +152,9 @@ float RootInlineBox::placeEllipsisBox(bool ltr, float blockLeftEdge, float block
     return result;
 }
 
-void RootInlineBox::paintEllipsisBox(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
-{
-    if (hasEllipsisBox() && paintInfo.shouldPaintWithinRoot(&renderer()) && renderer().style()->visibility() == VISIBLE
-            && paintInfo.phase == PaintPhaseForeground)
-        ellipsisBox()->paint(paintInfo, paintOffset, lineTop, lineBottom);
-}
-
 void RootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    InlineFlowBox::paint(paintInfo, paintOffset, lineTop, lineBottom);
-    paintEllipsisBox(paintInfo, paintOffset, lineTop, lineBottom);
+    RootInlineBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
 
 bool RootInlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)

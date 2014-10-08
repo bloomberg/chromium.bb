@@ -46,11 +46,11 @@ public:
     IntRect selectionRect();
 
     virtual float virtualLogicalHeight() const OVERRIDE { return m_height; }
-private:
-    void paintMarkupBox(PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle*);
     virtual RenderObject::SelectionState selectionState() const OVERRIDE { return m_selectionState; }
-    void paintSelection(GraphicsContext*, const FloatPoint&, RenderStyle*, const Font&);
+    const AtomicString& ellipsisStr() { return m_str; }
     InlineBox* markupBox() const;
+
+private:
 
     bool m_shouldPaintMarkupBox;
     int m_height;

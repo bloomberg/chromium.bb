@@ -20,52 +20,22 @@
 #include "config.h"
 #include "core/rendering/EllipsisBox.h"
 
+#include "core/paint/EllipsisBoxPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
-#include "core/rendering/TextPainter.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/TextRun.h"
 
 namespace blink {
 
 void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    GraphicsContext* context = paintInfo.context;
-    RenderStyle* style = renderer().style(isFirstLineStyle());
-    const Font& font = style->font();
-    FloatPoint boxOrigin = locationIncludingFlipping();
-    boxOrigin.moveBy(FloatPoint(paintOffset));
-    if (!isHorizontal())
-        boxOrigin.move(0, -virtualLogicalHeight());
-    FloatRect boxRect(boxOrigin, LayoutSize(logicalWidth(), virtualLogicalHeight()));
-    GraphicsContextStateSaver stateSaver(*context);
-    if (!isHorizontal())
-        context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
-    FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
-
-    bool isPrinting = renderer().document().printing();
-    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && selectionState() != RenderObject::SelectionNone;
-
-    if (haveSelection)
-        paintSelection(context, boxOrigin, style, font);
-    else if (paintInfo.phase == PaintPhaseSelection)
-        return;
-
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(renderer(), style, paintInfo.forceBlackText(), isPrinting);
-    if (haveSelection)
-        textStyle = TextPainter::selectionPaintingStyle(renderer(), true, paintInfo.forceBlackText(), isPrinting, textStyle);
-
-    TextRun textRun = constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
-    TextPainter textPainter(context, font, textRun, textOrigin, boxRect, isHorizontal());
-    textPainter.paint(0, m_str.length(), m_str.length(), textStyle);
-
-    paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
+    EllipsisBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
 
 InlineBox* EllipsisBox::markupBox() const
@@ -87,46 +57,11 @@ InlineBox* EllipsisBox::markupBox() const
     return anchorBox;
 }
 
-void EllipsisBox::paintMarkupBox(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
-{
-    InlineBox* markupBox = this->markupBox();
-    if (!markupBox)
-        return;
-
-    LayoutPoint adjustedPaintOffset = paintOffset;
-    adjustedPaintOffset.move(x() + m_logicalWidth - markupBox->x(),
-        y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().style(isFirstLineStyle())->fontMetrics().ascent()));
-    markupBox->paint(paintInfo, adjustedPaintOffset, lineTop, lineBottom);
-}
-
 IntRect EllipsisBox::selectionRect()
 {
     RenderStyle* style = renderer().style(isFirstLineStyle());
     const Font& font = style->font();
     return enclosingIntRect(font.selectionRectForText(constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
-}
-
-void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font)
-{
-    Color textColor = renderer().resolveColor(style, CSSPropertyColor);
-    Color c = renderer().selectionBackgroundColor();
-    if (!c.alpha())
-        return;
-
-    // If the text color ends up being the same as the selection background, invert the selection
-    // background.
-    if (textColor == c)
-        c = Color(0xff - c.red(), 0xff - c.green(), 0xff - c.blue());
-
-    GraphicsContextStateSaver stateSaver(*context);
-    LayoutUnit selectionBottom = root().selectionBottom();
-    LayoutUnit top = root().selectionTop();
-    LayoutUnit h = root().selectionHeight();
-    const int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - top);
-    const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
-    FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h.toFloat()));
-    context->clip(clipRect);
-    context->drawHighlightForText(font, constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
 }
 
 bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
