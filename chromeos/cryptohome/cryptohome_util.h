@@ -11,7 +11,8 @@
 
 namespace chromeos {
 
-// Wrappers of the D-Bus method calls for working with Tpm.
+// Wrappers of the D-Bus method calls for working with Tpm.  Note that all of
+// these are blocking and thus must not be called on the UI thread!
 namespace cryptohome_util {
 
 // Returns whether Tpm is presented and enabled.
