@@ -28,12 +28,12 @@ namespace {
 
 class FixedSource : public ImageSkiaSource {
  public:
-  FixedSource(const ImageSkiaRep& image) : image_(image) {}
+  explicit FixedSource(const ImageSkiaRep& image) : image_(image) {}
 
   virtual ~FixedSource() {
   }
 
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     return image_;
   }
 
@@ -43,16 +43,35 @@ class FixedSource : public ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(FixedSource);
 };
 
+class FixedScaleSource : public ImageSkiaSource {
+ public:
+  explicit FixedScaleSource(const ImageSkiaRep& image) : image_(image) {}
+
+  virtual ~FixedScaleSource() {
+  }
+
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
+    if (!image_.unscaled() && image_.scale() != scale)
+      return ImageSkiaRep();
+    return image_;
+  }
+
+ private:
+  ImageSkiaRep image_;
+
+  DISALLOW_COPY_AND_ASSIGN(FixedScaleSource);
+};
+
 class DynamicSource : public ImageSkiaSource {
  public:
-  DynamicSource(const gfx::Size& size)
+  explicit DynamicSource(const gfx::Size& size)
       : size_(size),
         last_requested_scale_(0.0f) {}
 
   virtual ~DynamicSource() {
   }
 
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     last_requested_scale_ = scale;
     return gfx::ImageSkiaRep(size_, scale);
   }
@@ -78,7 +97,7 @@ class NullSource: public ImageSkiaSource {
   virtual ~NullSource() {
   }
 
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     return gfx::ImageSkiaRep();
   }
 
@@ -98,7 +117,7 @@ class TestOnThread : public base::SimpleThread {
         can_modify_(false) {
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     can_read_ = image_skia_->CanRead();
     can_modify_ = image_skia_->CanModify();
     if (can_read_)
@@ -164,6 +183,60 @@ TEST_F(ImageSkiaTest, FixedSource) {
   EXPECT_EQ(100, result_200p.pixel_width());
   EXPECT_EQ(200, result_200p.pixel_height());
   EXPECT_EQ(1.0f, result_200p.scale());
+  EXPECT_EQ(1U, image_skia.image_reps().size());
+
+  // Get the representation again and make sure it doesn't
+  // generate new image skia rep.
+  image_skia.GetRepresentation(1.0f);
+  image_skia.GetRepresentation(2.0f);
+  EXPECT_EQ(1U, image_skia.image_reps().size());
+}
+
+TEST_F(ImageSkiaTest, FixedScaledSource) {
+  ImageSkiaRep image(Size(100, 200), 1.0f);
+  ImageSkia image_skia(new FixedScaleSource(image), Size(100, 200));
+  EXPECT_EQ(0U, image_skia.image_reps().size());
+
+  const ImageSkiaRep& result_100p = image_skia.GetRepresentation(1.0f);
+  EXPECT_EQ(100, result_100p.GetWidth());
+  EXPECT_EQ(200, result_100p.GetHeight());
+  EXPECT_EQ(1.0f, result_100p.scale());
+  EXPECT_EQ(1U, image_skia.image_reps().size());
+
+  // 2.0f data doesn't exist, then it falls back to 1.0f and rescale it.
+  const ImageSkiaRep& result_200p = image_skia.GetRepresentation(2.0f);
+
+  EXPECT_EQ(100, result_200p.GetWidth());
+  EXPECT_EQ(200, result_200p.GetHeight());
+  EXPECT_EQ(200, result_200p.pixel_width());
+  EXPECT_EQ(400, result_200p.pixel_height());
+  EXPECT_EQ(2.0f, result_200p.scale());
+  EXPECT_EQ(2U, image_skia.image_reps().size());
+
+  // Get the representation again and make sure it doesn't
+  // generate new image skia rep.
+  image_skia.GetRepresentation(1.0f);
+  image_skia.GetRepresentation(2.0f);
+  EXPECT_EQ(2U, image_skia.image_reps().size());
+}
+
+TEST_F(ImageSkiaTest, FixedUnscaledSource) {
+  ImageSkiaRep image(Size(100, 200), 0.0f);
+  ImageSkia image_skia(new FixedScaleSource(image), Size(100, 200));
+  EXPECT_EQ(0U, image_skia.image_reps().size());
+
+  const ImageSkiaRep& result_100p = image_skia.GetRepresentation(1.0f);
+  EXPECT_EQ(100, result_100p.pixel_width());
+  EXPECT_EQ(200, result_100p.pixel_height());
+  EXPECT_TRUE(result_100p.unscaled());
+  EXPECT_EQ(1U, image_skia.image_reps().size());
+
+  // 2.0f data doesn't exist, but unscaled ImageSkiaRep shouldn't be rescaled.
+  const ImageSkiaRep& result_200p = image_skia.GetRepresentation(2.0f);
+
+  EXPECT_EQ(100, result_200p.pixel_width());
+  EXPECT_EQ(200, result_200p.pixel_height());
+  EXPECT_TRUE(result_200p.unscaled());
   EXPECT_EQ(1U, image_skia.image_reps().size());
 
   // Get the representation again and make sure it doesn't
@@ -512,21 +585,22 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
 }
 
 TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
-  ImageSkia image(new FixedSource(
+  ImageSkia image(new FixedScaleSource(
       ImageSkiaRep(Size(100, 200), 1.0f)), Size(100, 200));
 
   // Requesting 1.5f -- falls back to 2.0f, but couldn't find. It should
-  // look up 1.0f and then rescale it.
+  // look up 1.0f and then rescale it. Note that the rescaled ImageSkiaRep will
+  // have 2.0f scale.
   const ImageSkiaRep& rep = image.GetRepresentation(1.5f);
   EXPECT_EQ(1.5f, rep.scale());
   EXPECT_EQ(2U, image.image_reps().size());
-  EXPECT_EQ(1.0f, image.image_reps()[0].scale());
+  EXPECT_EQ(2.0f, image.image_reps()[0].scale());
   EXPECT_EQ(1.5f, image.image_reps()[1].scale());
 }
 
 TEST_F(ImageSkiaTest, UnscaledImageForArbitraryScaleFactor) {
   // 0.0f means unscaled.
-  ImageSkia image(new FixedSource(
+  ImageSkia image(new FixedScaleSource(
       ImageSkiaRep(Size(100, 200), 0.0f)), Size(100, 200));
 
   // Requesting 2.0f, which should return 1.0f unscaled image.

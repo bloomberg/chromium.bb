@@ -55,6 +55,20 @@ class Matcher {
   float scale_;
 };
 
+ImageSkiaRep ScaleImageSkiaRep(const ImageSkiaRep& rep, float target_scale) {
+  DCHECK_NE(rep.scale(), target_scale);
+  if (rep.is_null())
+    return rep;
+
+  gfx::Size scaled_size = ToCeiledSize(
+      gfx::ScaleSize(rep.pixel_size(), target_scale / rep.scale()));
+  return ImageSkiaRep(skia::ImageOperations::Resize(
+      rep.sk_bitmap(),
+      skia::ImageOperations::RESIZE_LANCZOS3,
+      scaled_size.width(),
+      scaled_size.height()), target_scale);
+}
+
 }  // namespace
 
 // A helper class such that ImageSkia can be cheaply copied. ImageSkia holds a
@@ -191,27 +205,15 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
       if (scale != resource_scale) {
         std::vector<ImageSkiaRep>::iterator iter = FindRepresentation(
             resource_scale, fetch_new_image);
-
         DCHECK(iter != image_reps_.end());
-
-        if (!iter->unscaled()) {
-          SkBitmap scaled_image;
-          gfx::Size unscaled_size(iter->pixel_width(), iter->pixel_height());
-          gfx::Size scaled_size = ToCeiledSize(
-              gfx::ScaleSize(unscaled_size, scale / iter->scale()));
-
-          image = ImageSkiaRep(skia::ImageOperations::Resize(
-              iter->sk_bitmap(),
-              skia::ImageOperations::RESIZE_LANCZOS3,
-              scaled_size.width(),
-              scaled_size.height()), scale);
-          DCHECK_EQ(image.pixel_width(), scaled_size.width());
-          DCHECK_EQ(image.pixel_height(), scaled_size.height());
-        } else {
-          image = *iter;
-        }
+        image = iter->unscaled() ? (*iter) : ScaleImageSkiaRep(*iter, scale);
       } else {
         image = source_->GetImageForScale(scale);
+        // Image may be missing for the specified scale in some cases, such like
+        // looking up 2x resources but the 2x resource pack is missing. Falls
+        // back to 1x and re-scale it.
+        if (image.is_null() && scale != 1.0f)
+          image = ScaleImageSkiaRep(source_->GetImageForScale(1.0f), scale);
       }
 
       // If the source returned the new image, store it.
