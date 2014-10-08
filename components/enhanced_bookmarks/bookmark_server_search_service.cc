@@ -4,14 +4,14 @@
 
 #include "components/enhanced_bookmarks/bookmark_server_search_service.h"
 
+#include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 #include "components/enhanced_bookmarks/proto/search.pb.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace {
-const std::string kSearchUrl(
-    "https://www.google.com/stars/search");
+const char kSearchUrl[] = "https://www.google.com/stars/search";
 }  // namespace
 
 namespace enhanced_bookmarks {
@@ -56,15 +56,16 @@ std::vector<const BookmarkNode*> BookmarkServerSearchService::ResultForQuery(
   return result;
 }
 
-net::URLFetcher* BookmarkServerSearchService::CreateFetcher() {
+scoped_ptr<net::URLFetcher> BookmarkServerSearchService::CreateFetcher() {
   // Add the necessary arguments to the URI.
   GURL url(kSearchUrl);
   url = net::AppendQueryParameter(url, "output", "proto");
   url = net::AppendQueryParameter(url, "q", current_query_);
+  url = net::AppendQueryParameter(url, "v", model_->GetVersionString());
 
   // Build the URLFetcher to perform the request.
-  net::URLFetcher* url_fetcher =
-      net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+  scoped_ptr<net::URLFetcher> url_fetcher(
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this));
 
   return url_fetcher;
 }
