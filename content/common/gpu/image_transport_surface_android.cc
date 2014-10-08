@@ -131,15 +131,20 @@ bool DirectSurfaceAndroid::SwapBuffers() {
 }  // anonymous namespace
 
 // static
+scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateTransportSurface(
+    GpuChannelManager* manager,
+    GpuCommandBufferStub* stub,
+    const gfx::GLSurfaceHandle& handle) {
+  DCHECK_EQ(gfx::NULL_TRANSPORT, handle.transport_type);
+  return scoped_refptr<gfx::GLSurface>(
+      new ImageTransportSurfaceAndroid(manager, stub, handle));
+}
+
+// static
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
-  if (handle.transport_type == gfx::NULL_TRANSPORT) {
-    return scoped_refptr<gfx::GLSurface>(
-        new ImageTransportSurfaceAndroid(manager, stub, handle));
-  }
-
   DCHECK(GpuSurfaceLookup::GetInstance());
   DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
   ANativeWindow* window =

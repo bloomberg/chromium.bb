@@ -34,10 +34,15 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
-  if (handle.transport_type == gfx::NULL_TRANSPORT)
+  if (handle.transport_type == gfx::NULL_TRANSPORT) {
+#if defined(OS_ANDROID)
+    surface = CreateTransportSurface(manager, stub, handle);
+#else
     surface = new NullTransportSurface(manager, stub, handle);
-  else
+#endif
+  } else {
     surface = CreateNativeSurface(manager, stub, handle);
+  }
 
   if (!surface.get() || !surface->Initialize())
     return NULL;
@@ -278,7 +283,7 @@ gfx::Size PassThroughImageTransportSurface::GetSize() {
 }
 
 void PassThroughImageTransportSurface::WakeUpGpu() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}

@@ -92,6 +92,13 @@ class ImageTransportSurface {
       GpuCommandBufferStub* stub,
       const gfx::GLSurfaceHandle& handle);
 
+#if defined(OS_ANDROID)
+  static scoped_refptr<gfx::GLSurface> CreateTransportSurface(
+      GpuChannelManager* manager,
+      GpuCommandBufferStub* stub,
+      const gfx::GLSurfaceHandle& handle);
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
 
