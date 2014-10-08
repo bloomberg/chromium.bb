@@ -1032,14 +1032,14 @@ private:
     };
 
     // Dummy state that is used to signal serialization errors.
-    class ErrorState FINAL : public StateBase {
+    class ErrorState final : public StateBase {
     public:
         ErrorState()
             : StateBase(v8Undefined(), 0)
         {
         }
 
-        virtual StateBase* advance(Serializer&) OVERRIDE
+        virtual StateBase* advance(Serializer&) override
         {
             delete this;
             return 0;
@@ -1124,14 +1124,14 @@ private:
         bool m_nameDone;
     };
 
-    class ObjectState FINAL : public AbstractObjectState {
+    class ObjectState final : public AbstractObjectState {
     public:
         ObjectState(v8::Handle<v8::Object> object, StateBase* next)
             : AbstractObjectState(object, next)
         {
         }
 
-        virtual StateBase* advance(Serializer& serializer) OVERRIDE
+        virtual StateBase* advance(Serializer& serializer) override
         {
             if (m_propertyNames.IsEmpty()) {
                 m_propertyNames = composite()->GetPropertyNames();
@@ -1144,13 +1144,13 @@ private:
         }
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer& serializer) OVERRIDE
+        virtual StateBase* objectDone(unsigned numProperties, Serializer& serializer) override
         {
             return serializer.writeObject(numProperties, this);
         }
     };
 
-    class DenseArrayState FINAL : public AbstractObjectState {
+    class DenseArrayState final : public AbstractObjectState {
     public:
         DenseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
             : AbstractObjectState(array, next)
@@ -1160,7 +1160,7 @@ private:
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
-        virtual StateBase* advance(Serializer& serializer) OVERRIDE
+        virtual StateBase* advance(Serializer& serializer) override
         {
             while (m_arrayIndex < m_arrayLength) {
                 v8::Handle<v8::Value> value = composite().As<v8::Array>()->Get(m_arrayIndex);
@@ -1174,7 +1174,7 @@ private:
         }
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer& serializer) OVERRIDE
+        virtual StateBase* objectDone(unsigned numProperties, Serializer& serializer) override
         {
             return serializer.writeDenseArray(numProperties, m_arrayLength, this);
         }
@@ -1184,7 +1184,7 @@ private:
         uint32_t m_arrayLength;
     };
 
-    class SparseArrayState FINAL : public AbstractObjectState {
+    class SparseArrayState final : public AbstractObjectState {
     public:
         SparseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
             : AbstractObjectState(array, next)
@@ -1192,13 +1192,13 @@ private:
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
-        virtual StateBase* advance(Serializer& serializer) OVERRIDE
+        virtual StateBase* advance(Serializer& serializer) override
         {
             return serializeProperties(false, serializer);
         }
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer& serializer) OVERRIDE
+        virtual StateBase* objectDone(unsigned numProperties, Serializer& serializer) override
         {
             return serializer.writeSparseArray(numProperties, composite().As<v8::Array>()->Length(), this);
         }
@@ -2557,7 +2557,7 @@ private:
 
 typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
-class Deserializer FINAL : public CompositeCreator {
+class Deserializer final : public CompositeCreator {
 public:
     Deserializer(Reader& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents)
         : m_reader(reader)
@@ -2585,21 +2585,21 @@ public:
         return result;
     }
 
-    virtual bool newSparseArray(uint32_t) OVERRIDE
+    virtual bool newSparseArray(uint32_t) override
     {
         v8::Local<v8::Array> array = v8::Array::New(m_reader.scriptState()->isolate(), 0);
         openComposite(array);
         return true;
     }
 
-    virtual bool newDenseArray(uint32_t length) OVERRIDE
+    virtual bool newDenseArray(uint32_t length) override
     {
         v8::Local<v8::Array> array = v8::Array::New(m_reader.scriptState()->isolate(), length);
         openComposite(array);
         return true;
     }
 
-    virtual bool consumeTopOfStack(v8::Handle<v8::Value>* object) OVERRIDE
+    virtual bool consumeTopOfStack(v8::Handle<v8::Value>* object) override
     {
         if (stackDepth() < 1)
             return false;
@@ -2608,7 +2608,7 @@ public:
         return true;
     }
 
-    virtual bool newObject() OVERRIDE
+    virtual bool newObject() override
     {
         v8::Local<v8::Object> object = v8::Object::New(m_reader.scriptState()->isolate());
         if (object.IsEmpty())
@@ -2617,7 +2617,7 @@ public:
         return true;
     }
 
-    virtual bool completeObject(uint32_t numProperties, v8::Handle<v8::Value>* value) OVERRIDE
+    virtual bool completeObject(uint32_t numProperties, v8::Handle<v8::Value>* value) override
     {
         v8::Local<v8::Object> object;
         if (m_version > 0) {
@@ -2633,7 +2633,7 @@ public:
         return initializeObject(object, numProperties, value);
     }
 
-    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value) OVERRIDE
+    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value) override
     {
         v8::Local<v8::Array> array;
         if (m_version > 0) {
@@ -2649,7 +2649,7 @@ public:
         return initializeObject(array, numProperties, value);
     }
 
-    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value) OVERRIDE
+    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value) override
     {
         v8::Local<v8::Array> array;
         if (m_version > 0) {
@@ -2673,12 +2673,12 @@ public:
         return true;
     }
 
-    virtual void pushObjectReference(const v8::Handle<v8::Value>& object) OVERRIDE
+    virtual void pushObjectReference(const v8::Handle<v8::Value>& object) override
     {
         m_objectPool.append(object);
     }
 
-    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>* object) OVERRIDE
+    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>* object) override
     {
         if (!m_transferredMessagePorts)
             return false;
@@ -2689,7 +2689,7 @@ public:
         return true;
     }
 
-    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>* object) OVERRIDE
+    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>* object) override
     {
         if (!m_arrayBufferContents)
             return false;
@@ -2709,7 +2709,7 @@ public:
         return true;
     }
 
-    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>* object) OVERRIDE
+    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>* object) override
     {
         if (reference >= m_objectPool.size())
             return false;
@@ -2717,7 +2717,7 @@ public:
         return object;
     }
 
-    virtual uint32_t objectReferenceCount() OVERRIDE
+    virtual uint32_t objectReferenceCount() override
     {
         return m_objectPool.size();
     }

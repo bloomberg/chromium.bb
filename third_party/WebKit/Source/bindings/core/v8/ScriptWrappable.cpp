@@ -26,7 +26,7 @@ COMPILE_ASSERT(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), Scr
 
 namespace {
 
-class ScriptWrappableBaseProtector FINAL {
+class ScriptWrappableBaseProtector final {
     WTF_MAKE_NONCOPYABLE(ScriptWrappableBaseProtector);
 public:
     ScriptWrappableBaseProtector(ScriptWrappableBase* scriptWrappableBase, const WrapperTypeInfo* wrapperTypeInfo)

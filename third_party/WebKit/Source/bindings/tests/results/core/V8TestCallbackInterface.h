@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class V8TestCallbackInterface FINAL : public TestCallbackInterface, public ActiveDOMCallback {
+class V8TestCallbackInterface final : public TestCallbackInterface, public ActiveDOMCallback {
 public:
     static V8TestCallbackInterface* create(v8::Handle<v8::Function> callback, ScriptState* scriptState)
     {
@@ -23,17 +23,17 @@ public:
 
     virtual ~V8TestCallbackInterface();
 
-    virtual void voidMethod() OVERRIDE;
-    virtual bool booleanMethod() OVERRIDE;
-    virtual void voidMethodBooleanArg(bool boolArg) OVERRIDE;
-    virtual void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg) OVERRIDE;
-    virtual void voidMethodFloatArg(float floatArg) OVERRIDE;
-    virtual void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) OVERRIDE;
-    virtual void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) OVERRIDE;
-    virtual void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) OVERRIDE;
-    virtual void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) OVERRIDE;
-    virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg) OVERRIDE;
-    virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& arrayArg) OVERRIDE;
+    virtual void voidMethod() override;
+    virtual bool booleanMethod() override;
+    virtual void voidMethodBooleanArg(bool boolArg) override;
+    virtual void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg) override;
+    virtual void voidMethodFloatArg(float floatArg) override;
+    virtual void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+    virtual void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
+    virtual void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
+    virtual void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+    virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg) override;
+    virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& arrayArg) override;
 private:
     V8TestCallbackInterface(v8::Handle<v8::Function>, ScriptState*);
 

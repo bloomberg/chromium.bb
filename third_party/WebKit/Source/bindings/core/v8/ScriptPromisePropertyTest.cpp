@@ -43,7 +43,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue) OVERRIDE;
+    virtual ScriptValue call(ScriptValue) override;
 };
 
 ScriptValue NotReached::call(ScriptValue)
@@ -68,7 +68,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue arg) OVERRIDE
+    virtual ScriptValue call(ScriptValue arg) override
     {
         m_value = arg;
         m_callCount++;
@@ -89,7 +89,7 @@ public:
     Property* property() { return m_property; }
     GarbageCollectedScriptWrappable* toGarbageCollectedScriptWrappable() { return this; }
 
-    virtual void trace(Visitor *visitor) OVERRIDE
+    virtual void trace(Visitor *visitor) override
     {
         GarbageCollectedScriptWrappable::trace(visitor);
         visitor->trace(m_property);
@@ -186,7 +186,7 @@ public:
     Property* property() { return m_holder->property(); }
     ScriptPromise promise(DOMWrapperWorld& world) { return property()->promise(world); }
 
-    virtual void destroyContext() OVERRIDE
+    virtual void destroyContext() override
     {
         m_holder = nullptr;
         ScriptPromisePropertyTestBase::destroyContext();

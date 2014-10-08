@@ -43,32 +43,32 @@ class Node;
 
 // V8LazyEventListener is a wrapper for a JavaScript code string that is compiled and evaluated when an event is fired.
 // A V8LazyEventListener is either a HTML or SVG event handler.
-class V8LazyEventListener FINAL : public V8AbstractEventListener {
+class V8LazyEventListener final : public V8AbstractEventListener {
 public:
     static PassRefPtr<V8LazyEventListener> create(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String& sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
     {
         return adoptRef(new V8LazyEventListener(functionName, eventParameterName, code, sourceURL, position, node, isolate));
     }
 
-    virtual bool isLazy() const OVERRIDE { return true; }
+    virtual bool isLazy() const override { return true; }
     // V8LazyEventListener is always for the main world.
-    virtual DOMWrapperWorld& world() const OVERRIDE { return DOMWrapperWorld::mainWorld(); }
+    virtual DOMWrapperWorld& world() const override { return DOMWrapperWorld::mainWorld(); }
 
-    virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
+    virtual void handleEvent(ExecutionContext*, Event*) override;
 
 protected:
-    virtual void prepareListenerObject(ExecutionContext*) OVERRIDE;
+    virtual void prepareListenerObject(ExecutionContext*) override;
 
 private:
     V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition&, Node*, v8::Isolate*);
 
-    virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsEvent, Event*) OVERRIDE;
+    virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsEvent, Event*) override;
 
     // Needs to return true for all event handlers implemented in JavaScript so that
     // the SVG code does not add the event handler in both
     // SVGUseElement::buildShadowTree and again in
     // SVGUseElement::transferEventListenersToShadowTree
-    virtual bool wasCreatedFromMarkup() const OVERRIDE { return true; }
+    virtual bool wasCreatedFromMarkup() const override { return true; }
 
     AtomicString m_functionName;
     AtomicString m_eventParameterName;

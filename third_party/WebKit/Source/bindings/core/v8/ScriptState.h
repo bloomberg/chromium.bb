@@ -109,8 +109,8 @@ class ScriptStateForTesting : public ScriptState {
 public:
     static PassRefPtr<ScriptStateForTesting> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
-    virtual ExecutionContext* executionContext() const OVERRIDE;
-    virtual void setExecutionContext(ExecutionContext*) OVERRIDE;
+    virtual ExecutionContext* executionContext() const override;
+    virtual void setExecutionContext(ExecutionContext*) override;
 
 private:
     ScriptStateForTesting(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);

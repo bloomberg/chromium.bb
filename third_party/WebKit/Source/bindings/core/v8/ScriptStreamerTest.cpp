@@ -132,7 +132,7 @@ public:
     TestScriptResourceClient()
         : m_finished(false) { }
 
-    virtual void notifyFinished(Resource*) OVERRIDE { m_finished = true; }
+    virtual void notifyFinished(Resource*) override { m_finished = true; }
 
     bool finished() const { return m_finished; }
 

@@ -60,7 +60,7 @@ class ScriptStreamingTask : public WebThread::Task {
     WTF_MAKE_NONCOPYABLE(ScriptStreamingTask);
 public:
     ScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask>, ScriptStreamer*);
-    virtual void run() OVERRIDE;
+    virtual void run() override;
 
 private:
     WTF::OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> m_v8Task;

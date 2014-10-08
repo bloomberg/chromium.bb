@@ -41,7 +41,7 @@ class Page;
 class ScriptPreprocessor;
 class ScriptSourceCode;
 
-class PageScriptDebugServer FINAL : public ScriptDebugServer {
+class PageScriptDebugServer final : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
 public:
     static PageScriptDebugServer& shared();
@@ -61,25 +61,25 @@ public:
     };
     void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
 
-    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) OVERRIDE;
-    virtual void clearCompiledScripts() OVERRIDE;
-    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) OVERRIDE;
-    virtual void setPreprocessorSource(const String&) OVERRIDE;
-    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) OVERRIDE;
-    virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) OVERRIDE;
-    virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) OVERRIDE;
-    virtual void clearPreprocessor() OVERRIDE;
+    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
+    virtual void clearCompiledScripts() override;
+    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
+    virtual void setPreprocessorSource(const String&) override;
+    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) override;
+    virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) override;
+    virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) override;
+    virtual void clearPreprocessor() override;
 
-    virtual void muteWarningsAndDeprecations() OVERRIDE;
-    virtual void unmuteWarningsAndDeprecations() OVERRIDE;
+    virtual void muteWarningsAndDeprecations() override;
+    virtual void unmuteWarningsAndDeprecations() override;
 
 private:
     PageScriptDebugServer();
     virtual ~PageScriptDebugServer();
 
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) OVERRIDE;
-    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) OVERRIDE;
-    virtual void quitMessageLoopOnPause() OVERRIDE;
+    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
+    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
+    virtual void quitMessageLoopOnPause() override;
 
     typedef HashMap<Page*, ScriptDebugListener*> ListenersMap;
     ListenersMap m_listenersMap;

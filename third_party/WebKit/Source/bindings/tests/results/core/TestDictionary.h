@@ -19,7 +19,7 @@
 
 namespace blink {
 
-class TestDictionary FINAL : public GarbageCollectedFinalized<TestDictionary> {
+class TestDictionary final : public GarbageCollectedFinalized<TestDictionary> {
 public:
     static TestDictionary* create()
     {

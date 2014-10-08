@@ -58,7 +58,7 @@
 
 namespace blink {
 
-class WorkerScriptController::WorkerGlobalScopeExecutionState FINAL {
+class WorkerScriptController::WorkerGlobalScopeExecutionState final {
     STACK_ALLOCATED();
 public:
     explicit WorkerGlobalScopeExecutionState(WorkerScriptController* controller)

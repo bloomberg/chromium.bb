@@ -42,13 +42,13 @@ namespace blink {
 // V8CustomXPathNSResolver does not create a persistent handle to the
 // given resolver object. So the lifetime of V8CustomXPathNSResolver
 // must not exceed the lifetime of the passed handle.
-class V8CustomXPathNSResolver FINAL : public XPathNSResolver {
+class V8CustomXPathNSResolver final : public XPathNSResolver {
 public:
     static PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> create(v8::Handle<v8::Object> resolver, v8::Isolate*);
 
-    virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
+    virtual AtomicString lookupNamespaceURI(const String& prefix) override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     V8CustomXPathNSResolver(v8::Handle<v8::Object> resolver, v8::Isolate*);

@@ -60,7 +60,7 @@ class ExceptionState;
 //   v   |                        v   |                        v
 // NodeIterator  --HiddenValue--> NodeFilter --HiddenValue--> JS Callback
 // (V8)
-class V8NodeFilterCondition FINAL : public NodeFilterCondition {
+class V8NodeFilterCondition final : public NodeFilterCondition {
 public:
     static PassRefPtrWillBeRawPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, ScriptState* scriptState)
     {
@@ -69,7 +69,7 @@ public:
 
     virtual ~V8NodeFilterCondition();
 
-    virtual short acceptNode(Node*, ExceptionState&) const OVERRIDE;
+    virtual short acceptNode(Node*, ExceptionState&) const override;
 
 private:
     // As the value |filter| is maintained by V8GC, the |owner| which references

@@ -68,9 +68,9 @@ public:
 
     // Implementation of EventListener interface.
 
-    virtual bool operator==(const EventListener& other) OVERRIDE { return this == &other; }
+    virtual bool operator==(const EventListener& other) override { return this == &other; }
 
-    virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
+    virtual void handleEvent(ExecutionContext*, Event*) override;
 
     virtual bool isLazy() const { return false; }
 
@@ -108,7 +108,7 @@ public:
         m_listener.clear();
     }
 
-    virtual bool belongsToTheCurrentWorld() const OVERRIDE FINAL;
+    virtual bool belongsToTheCurrentWorld() const override final;
     v8::Isolate* isolate() const { return m_isolate; }
     virtual DOMWrapperWorld& world() const { return scriptState()->world(); }
     ScriptState* scriptState() const
@@ -133,7 +133,7 @@ protected:
 
 private:
     // Implementation of EventListener function.
-    virtual bool virtualisAttribute() const OVERRIDE { return m_isAttribute; }
+    virtual bool virtualisAttribute() const override { return m_isAttribute; }
 
     virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsevent, Event*) = 0;
 

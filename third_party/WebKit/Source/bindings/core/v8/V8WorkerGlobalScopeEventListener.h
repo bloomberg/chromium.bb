@@ -39,20 +39,20 @@ namespace blink {
 
 class Event;
 
-class V8WorkerGlobalScopeEventListener FINAL : public V8EventListener {
+class V8WorkerGlobalScopeEventListener final : public V8EventListener {
 public:
     static PassRefPtr<V8WorkerGlobalScopeEventListener> create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     {
         return adoptRef(new V8WorkerGlobalScopeEventListener(listener, isInline, scriptState));
     }
 
-    virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
+    virtual void handleEvent(ExecutionContext*, Event*) override;
 
 protected:
     V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, ScriptState*);
 
 private:
-    virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsEvent, Event*) OVERRIDE;
+    virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsEvent, Event*) override;
     v8::Local<v8::Object> getReceiverObject(Event*);
 };
 

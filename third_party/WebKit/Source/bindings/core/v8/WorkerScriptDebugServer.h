@@ -38,7 +38,7 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerScriptDebugServer FINAL : public ScriptDebugServer {
+class WorkerScriptDebugServer final : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
 public:
     explicit WorkerScriptDebugServer(WorkerGlobalScope*);
@@ -50,9 +50,9 @@ public:
     void interruptAndRunTask(PassOwnPtr<Task>);
 
 private:
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) OVERRIDE;
-    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) OVERRIDE;
-    virtual void quitMessageLoopOnPause() OVERRIDE;
+    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
+    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
+    virtual void quitMessageLoopOnPause() override;
 
     typedef HashMap<WorkerGlobalScope*, ScriptDebugListener*> ListenersMap;
     ScriptDebugListener* m_listener;

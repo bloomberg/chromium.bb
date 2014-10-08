@@ -97,7 +97,7 @@ public:
 
     // Called by V8 on a background thread. Should block until we can return
     // some data.
-    virtual size_t GetMoreData(const uint8_t** src) OVERRIDE
+    virtual size_t GetMoreData(const uint8_t** src) override
     {
         ASSERT(!isMainThread());
         {

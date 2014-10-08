@@ -263,7 +263,7 @@ private:
 // indirectly, must write this macro in the class definition.
 #define DEFINE_WRAPPERTYPEINFO() \
 public: \
-    virtual const WrapperTypeInfo* wrapperTypeInfo() const OVERRIDE \
+    virtual const WrapperTypeInfo* wrapperTypeInfo() const override \
     { \
         return &s_wrapperTypeInfo; \
     } \

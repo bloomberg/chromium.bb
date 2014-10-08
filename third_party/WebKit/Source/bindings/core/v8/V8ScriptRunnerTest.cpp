@@ -20,14 +20,14 @@ public:
     V8ScriptRunnerTest() : m_scope(v8::Isolate::GetCurrent()) { }
     virtual ~V8ScriptRunnerTest() { }
 
-    virtual void SetUp() OVERRIDE
+    virtual void SetUp() override
     {
         // To trick various layers of caching, increment a counter for each
         // test and use it in code(), fielname() and url().
         counter++;
     }
 
-    virtual void TearDown() OVERRIDE
+    virtual void TearDown() override
     {
         m_resourceRequest.clear();
         m_resource.clear();
