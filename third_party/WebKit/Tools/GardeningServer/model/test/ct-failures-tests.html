@@ -163,20 +163,18 @@ describe('ct-failures', function() {
       assert.property(failuresByTree.chromium, '{"step":"unit_tests","reason":"MyTest"}');
       var chromiumBuilders = failuresByTree.chromium['{"step":"unit_tests","reason":"MyTest"}'];
       assert.equal(Object.size(chromiumBuilders), 2);
-      assert.equal(Object.size(chromiumBuilders.Linux), 7);
+      assert.equal(Object.size(chromiumBuilders.Linux), 6);
       assert.propertyVal(chromiumBuilders.Linux, 'key', 'https_//build.chromium.org/p/chromium::Linux::1::unit_tests::MyTest');
       assert.propertyVal(chromiumBuilders.Linux, 'actual', 'a_type');
       assert.propertyVal(chromiumBuilders.Linux, 'lastFailingBuild', 2);
-      assert.propertyVal(chromiumBuilders.Linux, 'earliestFailingBuild', 1);
       assert.propertyVal(chromiumBuilders.Linux, 'masterUrl', 'https://build.chromium.org/p/chromium');
       assert.propertyVal(chromiumBuilders.Linux, 'failingBuildCount', 2);
       assert.propertyVal(chromiumBuilders.Linux, 'annotation', linuxAnnotation);
 
-      assert.equal(Object.size(chromiumBuilders.Win), 7);
+      assert.equal(Object.size(chromiumBuilders.Win), 6);
       assert.propertyVal(chromiumBuilders.Win, 'key', 'https_//build.chromium.org/p/chromium::Win::3::unit_tests::MyTest');
       assert.propertyVal(chromiumBuilders.Win, 'actual', 'another_type');
       assert.propertyVal(chromiumBuilders.Win, 'lastFailingBuild', 44);
-      assert.propertyVal(chromiumBuilders.Win, 'earliestFailingBuild', 3);
       assert.propertyVal(chromiumBuilders.Win, 'masterUrl', 'https://build.chromium.org/p/chromium');
       assert.propertyVal(chromiumBuilders.Win, 'failingBuildCount', 42);
       assert.propertyVal(chromiumBuilders.Win, 'annotation', winAnnotation);
@@ -185,11 +183,10 @@ describe('ct-failures', function() {
       assert.property(failuresByTree.blink, '{"step":"LayoutTests","reason":"MyTest"}');
       var blinkBuilders = failuresByTree.blink['{"step":"LayoutTests","reason":"MyTest"}'];
       assert.equal(Object.size(blinkBuilders), 1);
-      assert.equal(Object.size(blinkBuilders.Linux), 7);
+      assert.equal(Object.size(blinkBuilders.Linux), 6);
       assert.propertyVal(blinkBuilders.Linux, 'key', 'https_//build.chromium.org/p/chromium.webkit::Linux::1::LayoutTests::MyTest');
       assert.propertyVal(blinkBuilders.Linux, 'actual', 'a_type');
       assert.propertyVal(blinkBuilders.Linux, 'lastFailingBuild', 2);
-      assert.propertyVal(blinkBuilders.Linux, 'earliestFailingBuild', 1);
       assert.propertyVal(blinkBuilders.Linux, 'masterUrl', 'https://build.chromium.org/p/chromium.webkit');
       assert.propertyVal(blinkBuilders.Linux, 'failingBuildCount', 2);
       assert.propertyVal(blinkBuilders.Linux, 'annotation', blinkAnnotation);
@@ -375,7 +372,6 @@ describe('ct-failures', function() {
           var dbgBuilder = resultNodesByBuilder['Linux Tests (dbg)(1)'];
           assert.propertyVal(dbgBuilder, 'actual', 'UNKNOWN');
           assert.propertyVal(dbgBuilder, 'lastFailingBuild', 2489);
-          assert.propertyVal(dbgBuilder, 'earliestFailingBuild', 2486);
           assert.propertyVal(dbgBuilder, 'masterUrl', 'https://build.chromium.org/p/chromium.linux');
           assert.propertyVal(dbgBuilder, 'failingBuildCount', 4);
           assert.property(analyzer.failures, 'blink');

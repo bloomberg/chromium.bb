@@ -20,10 +20,7 @@ function CTBuilderList(failures) {
     Object.keys(results, (function(builder, result) {
       if (!builderMap[builder])
         builderMap[builder] = {};
-      // This assumes that duplicate builder/master pairs all have the same
-      // earliestFailingBuild.
       builderMap[builder][result.masterUrl] = {
-        earliestFailingBuild: result.earliestFailingBuild,
         failingBuildCount: result.failingBuildCount,
       };
     }).bind(this));
@@ -32,8 +29,7 @@ function CTBuilderList(failures) {
   Object.keys(builderMap).sort().forEach(function(builder) {
     Object.keys(builderMap[builder]).sort().forEach(function(masterUrl) {
       var result = builderMap[builder][masterUrl];
-      this.builders.push(new CTBuilder(masterUrl, builder,
-          result.earliestFailingBuild, result.failingBuildCount));
+      this.builders.push(new CTBuilder(masterUrl, builder, result.failingBuildCount));
     }, this);
   }, this);
 }

@@ -20,19 +20,16 @@ var kExampleFailures = [
       "WebKit Win7 (dbg)": {
         "actual": "CRASH",
         "masterUrl": "https://master-one",
-        "earliestFailingBuild": 1,
         "failingBuildCount": 2,
       },
       "WebKit Mac10.6 (dbg)": {
         "actual": "CRASH",
         "masterUrl": "https://master-one",
-        "earliestFailingBuild": 2,
         "failingBuildCount": 1,
       },
       "WebKit Mac10.7": {
         "actual": "TEXT",
         "masterUrl": "https://master-one",
-        "earliestFailingBuild": 3,
         "failingBuildCount": 1,
       }
     }, 177164, 177165),
@@ -41,13 +38,11 @@ var kExampleFailures = [
       "WebKit Win7 (dbg)": {
         "actual": "TEXT",
         "masterUrl": "https://master-one",
-        "earliestFailingBuild": 1,
         "failingBuildCount": 2,
       },
       "WebKit Mac10.7": {
         "actual": "CRASH",
         "masterUrl": "https://master-two",
-        "earliestFailingBuild": 4,
         "failingBuildCount": 1,
       },
     }, 177164, 177165
@@ -60,13 +55,13 @@ describe('ct-builder-list', function() {
 
     assert.lengthOf(builderList.builders, 4);
     assert.deepEqual(builderList.builders[0], new CTBuilder(
-        'https://master-one', 'WebKit Mac10.6 (dbg)', 2, 1));
+        'https://master-one', 'WebKit Mac10.6 (dbg)', 1));
     assert.deepEqual(builderList.builders[1], new CTBuilder(
-        'https://master-one', 'WebKit Mac10.7', 3, 1));
+        'https://master-one', 'WebKit Mac10.7', 1));
     assert.deepEqual(builderList.builders[2], new CTBuilder(
-        'https://master-two', 'WebKit Mac10.7', 4, 1));
+        'https://master-two', 'WebKit Mac10.7', 1));
     assert.deepEqual(builderList.builders[3], new CTBuilder(
-        'https://master-one', 'WebKit Win7 (dbg)', 1, 2));
+        'https://master-one', 'WebKit Win7 (dbg)', 2));
   });
 });
 

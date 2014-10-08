@@ -16,17 +16,15 @@ describe('ct-builder', function() {
     it('should link to builder', function(done) {
       var masterUrl = 'https://url';
       var builderName = 'WebKit Linux (dbg)';
-      var firstFailingBuild = '1234';
 
       var builder = document.createElement('ct-builder');
-      builder.builder = new CTBuilder(masterUrl, builderName, firstFailingBuild, 1);
+      builder.builder = new CTBuilder(masterUrl, builderName, 1);
 
       setTimeout(function() {
         var a = builder.shadowRoot.querySelector('a');
         assert.ok(a);
         assert(a.href.startsWith(masterUrl));
         assert.include(a.href, encodeURIComponent(builderName));
-        assert.include(a.href, firstFailingBuild);
 
         done();
       });
