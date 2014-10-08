@@ -1093,7 +1093,8 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
 
 void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   const int width = display_rect().width();
-  if (multiline() || elide_behavior_ != FADE_TAIL || GetContentWidth() <= width)
+  if (multiline() || elide_behavior_ != FADE_TAIL ||
+      static_cast<int>(GetContentWidth()) <= width)
     return;
 
   const int gradient_width = CalculateFadeGradientWidth(font_list(), width);
@@ -1198,8 +1199,10 @@ void RenderText::UpdateLayoutText() {
     }
   }
 
-  if (elide_behavior_ != NO_ELIDE && elide_behavior_ != FADE_TAIL &&
-      !layout_text_.empty() && GetContentWidth() > display_rect_.width()) {
+  if (elide_behavior_ != NO_ELIDE &&
+      elide_behavior_ != FADE_TAIL &&
+      !layout_text_.empty() &&
+      static_cast<int>(GetContentWidth()) > display_rect_.width()) {
     // This doesn't trim styles so ellipsis may get rendered as a different
     // style than the preceding text. See crbug.com/327850.
     layout_text_.assign(
