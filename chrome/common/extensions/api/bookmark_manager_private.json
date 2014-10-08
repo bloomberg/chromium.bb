@@ -55,7 +55,7 @@
       {
         "name": "copy",
         "type": "function",
-        "description": "Copies the given bookmarks into the clipboard",
+        "description": "Copies the given bookmarks into the clipboard.",
         "parameters": [
           {
             "name": "idList",
@@ -70,7 +70,7 @@
       {
         "name": "cut",
         "type": "function",
-        "description": "Cuts the given bookmarks into the clipboard",
+        "description": "Cuts the given bookmarks into the clipboard.",
         "parameters": [
           {
             "name": "idList",
@@ -85,12 +85,12 @@
       {
         "name": "paste",
         "type": "function",
-        "description": "Pastes bookmarks from the clipboard into the parent folder after the last selected node",
+        "description": "Pastes bookmarks from the clipboard into the parent folder after the last selected node.",
         "parameters": [
           {"type": "string", "name": "parentId"},
           {
             "name": "selectedIdList",
-            "description": "An array of string-valued ids for selected bookmarks",
+            "description": "An array of string-valued ids for selected bookmarks.",
             "optional": true,
             "type": "array",
             "items": {"type": "string"},
@@ -102,9 +102,9 @@
       {
         "name": "canPaste",
         "type": "function",
-        "description": "Whether there are any bookmarks that can be pasted",
+        "description": "Whether there are any bookmarks that can be pasted.",
         "parameters": [
-          {"type": "string", "name": "parentId", "description": "The ID of the folder to paste into"},
+          {"type": "string", "name": "parentId", "description": "The ID of the folder to paste into."},
           {"type": "function", "name": "callback", "parameters": [
             {"name": "result", "type": "boolean"}
           ]}
@@ -113,15 +113,15 @@
       {
         "name": "sortChildren",
         "type": "function",
-        "description": "Sorts the children of a given folder",
+        "description": "Sorts the children of a given folder.",
         "parameters": [
-          {"type": "string", "name": "parentId", "description": "The ID of the folder to sort the children of"}
+          {"type": "string", "name": "parentId", "description": "The ID of the folder to sort the children of."}
         ]
       },
       {
         "name": "getStrings",
         "type": "function",
-        "description": "Gets the i18n strings for the bookmark manager",
+        "description": "Gets the i18n strings for the bookmark manager.",
         "parameters": [
           {
             "type": "function",
@@ -139,11 +139,11 @@
       {
         "name": "startDrag",
         "type": "function",
-        "description": "Begins dragging a set of bookmarks",
+        "description": "Begins dragging a set of bookmarks.",
         "parameters": [
           {
             "name": "idList",
-            "description": "An array of string-valued ids",
+            "description": "An array of string-valued ids.",
             "type": "array",
             "items": {"type": "string"},
             "minItems": 1
@@ -151,23 +151,23 @@
           {
             "name": "isFromTouch",
             "type": "boolean",
-            "description": "True if the drag was initiated from touch"
+            "description": "True if the drag was initiated from touch."
           }
         ]
       },
       {
         "name": "drop",
         "type": "function",
-        "description": "Performs the drop action of the drag and drop session",
+        "description": "Performs the drop action of the drag and drop session.",
         "parameters": [
           {
             "name": "parentId",
-            "description": "The ID of the folder that the drop was made",
+            "description": "The ID of the folder that the drop was made.",
             "type": "string"
           },
           {
             "name": "index",
-            "description": "The index of the position to drop at. If left out the dropped items will be placed at the end of the existing children",
+            "description": "The index of the position to drop at. If left out the dropped items will be placed at the end of the existing children.",
             "type": "integer",
             "minimum": 0,
             "optional": true
@@ -201,7 +201,7 @@
       {
         "name": "canEdit",
         "type": "function",
-        "description": "Whether bookmarks can be modified",
+        "description": "Whether bookmarks can be modified.",
         "parameters": [
           {"type": "function", "name": "callback", "parameters": [
             {"name": "result", "type": "boolean"}
@@ -211,7 +211,7 @@
       {
         "name": "canOpenNewWindows",
         "type": "function",
-        "description": "Whether bookmarks can be opened in new windows",
+        "description": "Whether bookmarks can be opened in new windows.",
         "parameters": [
           {"type": "function", "name": "callback", "parameters": [
             {"name": "result", "type": "boolean"}
@@ -225,7 +225,7 @@
         "parameters": [
           {
             "name": "idList",
-            "description": "An array of string-valued ids",
+            "description": "An array of string-valued ids.",
             "type": "array",
             "items": {"type": "string"},
             "minItems": 1
@@ -268,7 +268,7 @@
       {
         "name": "getMetaInfo",
         "type": "function",
-        "description": "Gets meta info from a bookmark node",
+        "description": "Gets meta info from a bookmark node.",
         "allowAmbiguousOptionalArguments": true,
         "parameters": [
           {
@@ -279,7 +279,7 @@
           },
           {
             "name": "key",
-            "description": "The key for the meta info to retrieve. If omitted, all fields are returned",
+            "description": "The key for the meta info to retrieve. If omitted, all fields are returned.",
             "optional": true,
             "type": "string"
           },
@@ -303,21 +303,21 @@
       {
         "name": "setMetaInfo",
         "type": "function",
-        "description": "Sets a meta info value for a bookmark node",
+        "description": "Sets a meta info value for a bookmark node.",
         "parameters": [
           {
             "name": "id",
-            "description": "The id of the bookmark node to set the meta info on",
+            "description": "The id of the bookmark node to set the meta info on.",
             "type": "string"
           },
           {
             "name": "key",
-            "description": "The key of the meta info to set",
+            "description": "The key of the meta info to set.",
             "type": "string"
           },
           {
             "name": "value",
-            "description": "The meta info to set",
+            "description": "The meta info to set.",
             "type": "string"
           },
           {
@@ -354,19 +354,19 @@
       {
         "name": "undo",
         "type": "function",
-        "description": "Performs an undo of the last change to the bookmark model",
+        "description": "Performs an undo of the last change to the bookmark model.",
         "parameters": []
       },
       {
         "name": "redo",
         "type": "function",
-        "description": "Performs a redo of last undone change to the bookmark model",
+        "description": "Performs a redo of last undone change to the bookmark model.",
         "parameters": []
       },
       {
         "name": "getUndoInfo",
         "type": "function",
-        "description": "Gets the information for the undo if available",
+        "description": "Gets the information for the undo if available.",
         "parameters": [
           {
             "type": "function",
@@ -376,8 +376,8 @@
                 "name": "result",
                 "type": "object",
                 "properties": {
-                  "enabled" : {"type": "boolean", "description": "Whether there is an action to undo"},
-                  "label" : {"type": "string", "description": "The i18n label to use for the undo action"}
+                  "enabled" : {"type": "boolean", "description": "Whether there is an action to undo."},
+                  "label" : {"type": "string", "description": "The i18n label to use for the undo action."}
 				}
               }
             ]
@@ -387,7 +387,7 @@
       {
         "name": "getRedoInfo",
         "type": "function",
-        "description": "Gets the information for the redo if available",
+        "description": "Gets the information for the redo if available.",
         "parameters": [
           {
             "type": "function",
@@ -399,9 +399,27 @@
                 "properties": {
                   "enabled" : {"type": "boolean", "description": "Whether there is an action to redo"},
                   "label" : {"type": "string", "description": "The i18n label to use for the redo action"}
-				}
+                }
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "setVersion",
+        "type": "function",
+        "description": "Sets the version to use when updating enhanced bookmarks.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "version",
+            "description": "The version to set."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
           }
         ]
       }
@@ -410,7 +428,7 @@
       {
         "name": "onDragEnter",
         "type": "function",
-        "description": "Fired when dragging bookmarks over the document",
+        "description": "Fired when dragging bookmarks over the document.",
         "parameters": [
           {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
@@ -418,7 +436,7 @@
       {
         "name": "onDragLeave",
         "type": "function",
-        "description": "Fired when the drag and drop leaves the document",
+        "description": "Fired when the drag and drop leaves the document.",
         "parameters": [
           {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
@@ -426,7 +444,7 @@
       {
         "name": "onDrop",
         "type": "function",
-        "description": "Fired when the user drops bookmarks on the document",
+        "description": "Fired when the user drops bookmarks on the document.",
         "parameters": [
           {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
