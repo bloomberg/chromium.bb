@@ -416,6 +416,7 @@ if sys.platform != 'win32':  # All non-Windows OSes.
 
 
 @tools.profile
+@tools.cached
 def listdir(abspath):
   """Lists a directory given an absolute path to it."""
   if not isabs(abspath):
