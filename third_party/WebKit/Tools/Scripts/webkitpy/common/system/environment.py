@@ -33,9 +33,3 @@ class Environment(object):
 
     def to_dictionary(self):
         return self.env
-
-    def disable_gcc_smartquotes(self):
-        # Technically we only need to set LC_CTYPE to disable current
-        # smartquote behavior: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=38363
-        # Apple's XCode sets LC_ALL instead, probably to be future-proof.
-        self.env['LC_ALL'] = 'C'
