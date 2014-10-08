@@ -89,16 +89,10 @@ void GeolocationDispatcher::requestPermission(
       blink::WebUserGestureIndicator::isProcessingUserGesture()));
 }
 
-// TODO(jknotten): Change the messages to use a security origin, so no
-// conversion is necessary.
 void GeolocationDispatcher::cancelPermissionRequest(
     const WebGeolocationPermissionRequest& permissionRequest) {
   int bridge_id;
-  if (!pending_permissions_->remove(permissionRequest, bridge_id))
-    return;
-  base::string16 origin = permissionRequest.securityOrigin().toString();
-  Send(new GeolocationHostMsg_CancelPermissionRequest(
-      routing_id(), bridge_id, GURL(origin)));
+  pending_permissions_->remove(permissionRequest, bridge_id);
 }
 
 // Permission for using geolocation has been set.

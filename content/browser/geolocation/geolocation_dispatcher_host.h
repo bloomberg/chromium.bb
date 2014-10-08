@@ -35,19 +35,21 @@ class GeolocationDispatcherHost : public WebContentsObserver {
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) override;
+  virtual void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                                   const LoadCommittedDetails& details,
+                                   const FrameNavigateParams& params) override;
   virtual bool OnMessageReceived(
       const IPC::Message& msg, RenderFrameHost* render_frame_host) override;
 
   // Message handlers:
+  // TODO(mlamouri): |requesting_origin| should be a security origin to
+  // guarantee that a proper origin is passed.
   void OnRequestPermission(RenderFrameHost* render_frame_host,
                            int bridge_id,
-                           const GURL& requesting_frame,
+                           const GURL& requesting_origin,
                            bool user_gesture);
-  void OnCancelPermissionRequest(RenderFrameHost* render_frame_host,
-                                 int bridge_id,
-                                 const GURL& requesting_frame);
   void OnStartUpdating(RenderFrameHost* render_frame_host,
-                       const GURL& requesting_frame,
+                       const GURL& requesting_origin,
                        bool enable_high_accuracy);
   void OnStopUpdating(RenderFrameHost* render_frame_host);
 
@@ -62,6 +64,10 @@ class GeolocationDispatcherHost : public WebContentsObserver {
                                          int bridge_id,
                                          bool allowed);
 
+  // Clear pending permissions associated with a given frame and request the
+  // browser to cancel the permission requests.
+  void CancelPermissionRequestsForFrame(RenderFrameHost* render_frame_host);
+
   // A map from the RenderFrameHosts that have requested geolocation updates to
   // the type of accuracy they requested (true = high accuracy).
   std::map<RenderFrameHost*, bool> updating_frames_;
@@ -70,11 +76,13 @@ class GeolocationDispatcherHost : public WebContentsObserver {
   struct PendingPermission {
     PendingPermission(int render_frame_id,
                       int render_process_id,
-                      int bridge_id);
+                      int bridge_id,
+                      const GURL& origin);
     ~PendingPermission();
     int render_frame_id;
     int render_process_id;
     int bridge_id;
+    GURL origin;
   };
   std::vector<PendingPermission> pending_permissions_;
 
