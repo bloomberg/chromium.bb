@@ -8,6 +8,15 @@
 #include "ui/aura/window.h"
 
 namespace athena {
+namespace {
+
+// TODO(oshima): Implement real window/layout manager. crbug.com/388362.
+bool ShouldFill(aura::Window* window) {
+  return window->type() != ui::wm::WINDOW_TYPE_MENU &&
+      window->type() != ui::wm::WINDOW_TYPE_TOOLTIP;
+}
+
+}  // namespace
 
 FillLayoutManager::FillLayoutManager(aura::Window* container)
     : container_(container) {
@@ -23,12 +32,14 @@ void FillLayoutManager::OnWindowResized() {
            container_->children().begin();
        iter != container_->children().end();
        ++iter) {
-    SetChildBoundsDirect(*iter, full_bounds);
+    if (ShouldFill(*iter))
+      SetChildBoundsDirect(*iter, full_bounds);
   }
 }
 
 void FillLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  SetChildBoundsDirect(child, (gfx::Rect(container_->bounds().size())));
+  if (ShouldFill(child))
+    SetChildBoundsDirect(child, (gfx::Rect(container_->bounds().size())));
 }
 
 void FillLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
@@ -40,7 +51,8 @@ void FillLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 }
 void FillLayoutManager::SetChildBounds(aura::Window* child,
                                        const gfx::Rect& requested_bounds) {
-  // Ignore SetBounds request.
+  if (!ShouldFill(child))
+    SetChildBoundsDirect(child, requested_bounds);
 }
 
 }  // namespace athena

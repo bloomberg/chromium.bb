@@ -3,4 +3,5 @@ include_rules = [
   "+ui/aura",
   "+ui/compositor",
   "+ui/views",
+  "+ui/wm/public",
 ]
