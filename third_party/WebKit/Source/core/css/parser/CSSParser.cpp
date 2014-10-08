@@ -8,6 +8,8 @@
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/StyleColor.h"
 #include "core/css/StyleRule.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSParserFastPaths.h"
 
 namespace blink {
 
@@ -38,7 +40,14 @@ void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* 
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)
 {
-    return BisonCSSParser::parseValue(declaration, propertyID, string, important, parserMode, styleSheet);
+    if (parseFastPath(declaration, propertyID, string, important, parserMode))
+        return true;
+    CSSParserContext context(parserMode, 0);
+    if (styleSheet) {
+        context = styleSheet->parserContext();
+        context.setMode(parserMode);
+    }
+    return parseValue(declaration, propertyID, string, important, context);
 }
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
@@ -46,12 +55,22 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
     return BisonCSSParser::parseValue(declaration, propertyID, string, important, context);
 }
 
+bool CSSParser::parseFastPath(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode parserMode)
+{
+    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(propertyID, string, parserMode);
+    if (!value)
+        return false;
+    declaration->addParsedProperty(CSSProperty(propertyID, value.release(), important));
+    return true;
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseSingleValue(CSSPropertyID propertyID, const String& string, const CSSParserContext& context)
 {
     if (string.isEmpty())
         return nullptr;
     RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
-    bool success = parseValue(stylePropertySet.get(), propertyID, string, false, context);
+    bool success = parseFastPath(stylePropertySet.get(), propertyID, string, false, context.mode())
+        || parseValue(stylePropertySet.get(), propertyID, string, false, context);
     ASSERT_UNUSED(success, success == stylePropertySet->hasProperty(propertyID));
     return stylePropertySet->getPropertyCSSValue(propertyID);
 }

@@ -40,6 +40,7 @@ public:
 
 private:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
+    static bool parseFastPath(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode);
 
     BisonCSSParser m_bisonParser;
 };

@@ -65,6 +65,7 @@
 #include "core/css/HashTools.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
@@ -468,8 +469,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return true;
     }
 
-    if (isKeywordPropertyID(propId)) {
-        if (!isValidKeywordPropertyAndValue(propId, id))
+    if (CSSParserFastPaths::isKeywordPropertyID(propId)) {
+        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
             return false;
         if (m_valueList->next() && !inShorthand())
             return false;
@@ -4405,7 +4406,7 @@ bool CSSPropertyParser::parseFont(bool important)
     bool fontStretchParsed = false;
     CSSParserValue* value = m_valueList->current();
     for (; value; value = m_valueList->next()) {
-        if (!fontStyleParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStyle, value->id)) {
+        if (!fontStyleParsed && CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyFontStyle, value->id)) {
             addProperty(CSSPropertyFontStyle, cssValuePool().createIdentifierValue(value->id), important);
             fontStyleParsed = true;
         } else if (!fontVariantParsed && (value->id == CSSValueNormal || value->id == CSSValueSmallCaps)) {
@@ -4414,7 +4415,7 @@ bool CSSPropertyParser::parseFont(bool important)
             fontVariantParsed = true;
         } else if (!fontWeightParsed && parseFontWeight(important)) {
             fontWeightParsed = true;
-        } else if (!fontStretchParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStretch, value->id)) {
+        } else if (!fontStretchParsed && CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyFontStretch, value->id)) {
             addProperty(CSSPropertyFontStretch, cssValuePool().createIdentifierValue(value->id), important);
             fontStretchParsed = true;
         } else {

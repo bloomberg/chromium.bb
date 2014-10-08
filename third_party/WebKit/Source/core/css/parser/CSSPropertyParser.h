@@ -60,7 +60,7 @@ public:
         CSSParserValueList*, const CSSParserContext&, bool inViewport,
         WillBeHeapVector<CSSProperty, 256>&, CSSRuleSourceData::Type);
 
-    // FIXME: Should this be on a separate ColorParser object?
+    // FIXME: This should probably move to CSSParserFastPaths
     template<typename StringType>
     static bool fastParseColor(RGBA32&, const StringType&, bool strict);
 
@@ -382,9 +382,6 @@ private:
 CSSPropertyID cssPropertyID(const CSSParserString&);
 CSSPropertyID cssPropertyID(const String&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
-
-bool isKeywordPropertyID(CSSPropertyID);
-bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
 
 } // namespace blink
 

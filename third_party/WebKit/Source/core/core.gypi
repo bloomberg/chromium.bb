@@ -927,6 +927,8 @@
             'css/parser/BisonCSSParser.h',
             'css/parser/CSSParser.cpp',
             'css/parser/CSSParser.h',
+            'css/parser/CSSParserFastPaths.cpp',
+            'css/parser/CSSParserFastPaths.h',
             'css/parser/CSSParserMode.cpp',
             'css/parser/CSSParserMode.h',
             'css/parser/CSSParserValues.cpp',

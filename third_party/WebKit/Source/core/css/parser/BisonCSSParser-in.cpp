@@ -70,6 +70,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
@@ -200,6 +201,7 @@ bool BisonCSSParser::parseSupportsCondition(const String& string)
     return m_supportsCondition;
 }
 
+// FIXME: Move all of this fast-path code to CSSParserFastPaths.cpp
 static inline bool isColorPropertyID(CSSPropertyID propertyId)
 {
     switch (propertyId) {
@@ -225,12 +227,12 @@ static inline bool isColorPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseColorValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> parseColorValue(CSSPropertyID propertyId, const String& string, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool quirksMode = isQuirksModeBehavior(cssParserMode);
     if (!isColorPropertyID(propertyId))
-        return false;
+        return nullptr;
     CSSParserString cssString;
     cssString.init(string);
     CSSValueID valueID = cssValueKeywordID(cssString);
@@ -244,17 +246,13 @@ static bool parseColorValue(MutableStylePropertySet* declaration, CSSPropertyID 
         validPrimitive = true;
     }
 
-    if (validPrimitive) {
-        RefPtrWillBeRawPtr<CSSValue> value = cssValuePool().createIdentifierValue(valueID);
-        declaration->addParsedProperty(CSSProperty(propertyId, value.release(), important));
-        return true;
-    }
+    if (validPrimitive)
+        return cssValuePool().createIdentifierValue(valueID);
+
     RGBA32 color;
     if (!CSSPropertyParser::fastParseColor(color, string, !quirksMode && string[0] != '#'))
-        return false;
-    RefPtrWillBeRawPtr<CSSValue> value = cssValuePool().createColorValue(color);
-    declaration->addParsedProperty(CSSProperty(propertyId, value.release(), important));
-    return true;
+        return nullptr;
+    return cssValuePool().createColorValue(color);
 }
 
 static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acceptsNegativeNumbers)
@@ -277,8 +275,6 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
     case CSSPropertyWebkitPaddingBefore:
     case CSSPropertyWebkitPaddingEnd:
     case CSSPropertyWebkitPaddingStart:
-        acceptsNegativeNumbers = false;
-        return true;
     case CSSPropertyShapeMargin:
         acceptsNegativeNumbers = false;
         return true;
@@ -320,14 +316,14 @@ static inline bool parseSimpleLength(const CharacterType* characters, unsigned l
     return ok;
 }
 
-static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> parseSimpleLengthValue(CSSPropertyID propertyId, const String& string, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool acceptsNegativeNumbers = false;
 
     // In @viewport, width and height are shorthands, not simple length values.
     if (isCSSViewportParsingEnabledForMode(cssParserMode) || !isSimpleLengthPropertyID(propertyId, acceptsNegativeNumbers))
-        return false;
+        return nullptr;
 
     unsigned length = string.length();
     double number;
@@ -335,27 +331,25 @@ static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSProp
 
     if (string.is8Bit()) {
         if (!parseSimpleLength(string.characters8(), length, unit, number))
-            return false;
+            return nullptr;
     } else {
         if (!parseSimpleLength(string.characters16(), length, unit, number))
-            return false;
+            return nullptr;
     }
 
     if (unit == CSSPrimitiveValue::CSS_NUMBER) {
         bool quirksMode = isQuirksModeBehavior(cssParserMode);
         if (number && !quirksMode)
-            return false;
+            return nullptr;
         unit = CSSPrimitiveValue::CSS_PX;
     }
     if (number < 0 && !acceptsNegativeNumbers)
-        return false;
+        return nullptr;
 
-    RefPtrWillBeRawPtr<CSSValue> value = cssValuePool().createValue(number, unit);
-    declaration->addParsedProperty(CSSProperty(propertyId, value.release(), important));
-    return true;
+    return cssValuePool().createValue(number, unit);
 }
 
-bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID)
+bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID)
 {
     if (valueID == CSSValueInvalid)
         return false;
@@ -565,7 +559,7 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
     return false;
 }
 
-bool isKeywordPropertyID(CSSPropertyID propertyId)
+bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
 {
     switch (propertyId) {
     case CSSPropertyAll:
@@ -668,19 +662,19 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important)
+static PassRefPtrWillBeRawPtr<CSSValue> parseKeywordValue(CSSPropertyID propertyId, const String& string)
 {
     ASSERT(!string.isEmpty());
 
-    if (!isKeywordPropertyID(propertyId)) {
+    if (!CSSParserFastPaths::isKeywordPropertyID(propertyId)) {
         // All properties accept the values of "initial" and "inherit".
         String lowerCaseString = string.lower();
         if (lowerCaseString != "initial" && lowerCaseString != "inherit")
-            return false;
+            return nullptr;
 
         // Parse initial/inherit shorthands using the BisonCSSParser.
         if (shorthandForProperty(propertyId).length())
-            return false;
+            return nullptr;
     }
 
     CSSParserString cssString;
@@ -688,20 +682,16 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
     CSSValueID valueID = cssValueKeywordID(cssString);
 
     if (!valueID)
-        return false;
+        return nullptr;
 
     RefPtrWillBeRawPtr<CSSValue> value = nullptr;
     if (valueID == CSSValueInherit)
-        value = cssValuePool().createInheritedValue();
-    else if (valueID == CSSValueInitial)
-        value = cssValuePool().createExplicitInitialValue();
-    else if (isValidKeywordPropertyAndValue(propertyId, valueID))
-        value = cssValuePool().createIdentifierValue(valueID);
-    else
-        return false;
-
-    declaration->addParsedProperty(CSSProperty(propertyId, value.release(), important));
-    return true;
+        return cssValuePool().createInheritedValue();
+    if (valueID == CSSValueInitial)
+        return cssValuePool().createExplicitInitialValue();
+    if (CSSParserFastPaths::isValidKeywordPropertyAndValue(propertyId, valueID))
+        return cssValuePool().createIdentifierValue(valueID);
+    return nullptr;
 }
 
 template <typename CharType>
@@ -850,72 +840,46 @@ static PassRefPtrWillBeRawPtr<CSSValueList> parseSimpleTransformList(CharType*& 
     return transformList.release();
 }
 
-static bool parseSimpleTransform(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
+static PassRefPtrWillBeRawPtr<CSSValue> parseSimpleTransform(CSSPropertyID propertyID, const String& string)
 {
     if (propertyID != CSSPropertyTransform && propertyID != CSSPropertyWebkitTransform)
-        return false;
+        return nullptr;
     if (string.isEmpty())
-        return false;
-    RefPtrWillBeRawPtr<CSSValueList> transformList = nullptr;
+        return nullptr;
     if (string.is8Bit()) {
         const LChar* pos = string.characters8();
         const LChar* end = pos + string.length();
-        transformList = parseSimpleTransformList(pos, end);
-        if (!transformList)
-            return false;
-    } else {
-        const UChar* pos = string.characters16();
-        const UChar* end = pos + string.length();
-        transformList = parseSimpleTransformList(pos, end);
-        if (!transformList)
-            return false;
+        return parseSimpleTransformList(pos, end);
     }
-    properties->addParsedProperty(CSSProperty(propertyID, transformList.release(), important));
-    return true;
+    const UChar* pos = string.characters16();
+    const UChar* end = pos + string.length();
+    return parseSimpleTransformList(pos, end);
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::maybeParseValue(CSSPropertyID propertyID, const String& string, CSSParserMode parserMode)
+{
+    if (RefPtrWillBeRawPtr<CSSValue> length = parseSimpleLengthValue(propertyID, string, parserMode))
+        return length.release();
+    if (RefPtrWillBeRawPtr<CSSValue> color = parseColorValue(propertyID, string, parserMode))
+        return color.release();
+    if (RefPtrWillBeRawPtr<CSSValue> keyword = parseKeywordValue(propertyID, string))
+        return keyword.release();
+    if (RefPtrWillBeRawPtr<CSSValue> transform = parseSimpleTransform(propertyID, string))
+        return transform.release();
+    return nullptr;
 }
 
 bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
     ASSERT(!string.isEmpty());
-
-    if (parseSimpleLengthValue(declaration, propertyID, string, important, context.mode()))
-        return true;
-    if (parseColorValue(declaration, propertyID, string, important, context.mode()))
-        return true;
-    if (parseKeywordValue(declaration, propertyID, string, important))
-        return true;
-
     BisonCSSParser parser(context);
-    return parser.parseValue(declaration, propertyID, string, important, static_cast<StyleSheetContents*>(0));
+    return parser.parseValue(declaration, propertyID, string, important);
 }
 
-bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode cssParserMode, StyleSheetContents* contextStyleSheet)
-{
-    ASSERT(!string.isEmpty());
-    if (parseSimpleLengthValue(declaration, propertyID, string, important, cssParserMode))
-        return true;
-    if (parseColorValue(declaration, propertyID, string, important, cssParserMode))
-        return true;
-    if (parseKeywordValue(declaration, propertyID, string, important))
-        return true;
-    if (parseSimpleTransform(declaration, propertyID, string, important))
-        return true;
-
-    CSSParserContext context(cssParserMode, 0);
-    if (contextStyleSheet) {
-        context = contextStyleSheet->parserContext();
-        context.setMode(cssParserMode);
-    }
-    BisonCSSParser parser(context);
-    return parser.parseValue(declaration, propertyID, string, important, contextStyleSheet);
-}
-
-bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
+bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important)
 {
     if (m_context.useCounter())
         m_context.useCounter()->count(m_context, propertyID);
-
-    setStyleSheet(contextStyleSheet);
 
     setupParser("@-internal-value ", string, "");
 
