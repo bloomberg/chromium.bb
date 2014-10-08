@@ -627,16 +627,18 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
   ASSERT_EQ(1, token_service().num_invalidate_token());
 }
 
-TEST_F(AttachmentUploaderImplTest, ComputeHashHeader) {
+TEST_F(AttachmentUploaderImplTest, ComputeCrc32cHash) {
   scoped_refptr<base::RefCountedString> empty(new base::RefCountedString);
   empty->data() = "";
-  EXPECT_EQ("X-Goog-Hash: crc32c=AAAAAA==",
-            AttachmentUploaderImpl::ComputeHashHeader(empty));
+  EXPECT_EQ("AAAAAA==",
+            AttachmentUploaderImpl::ComputeCrc32cHash(empty->front_as<char>(),
+                                                      empty->size()));
 
   scoped_refptr<base::RefCountedString> hello_world(new base::RefCountedString);
   hello_world->data() = "hello world";
-  EXPECT_EQ("X-Goog-Hash: crc32c=yZRlqg==",
-            AttachmentUploaderImpl::ComputeHashHeader(hello_world));
+  EXPECT_EQ("yZRlqg==",
+            AttachmentUploaderImpl::ComputeCrc32cHash(
+                hello_world->front_as<char>(), hello_world->size()));
 }
 
 // TODO(maniscalco): Add test case for when we are uploading an attachment that

@@ -51,18 +51,21 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   static GURL GetURLForAttachmentId(const GURL& sync_service_url,
                                     const AttachmentId& attachment_id);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(AttachmentUploaderImplTest, ComputeHashHeader);
+  // Return the crc32c of the memory described by |data| and |size|.
+  //
+  // The value is base64 encoded, big-endian format.  Suitable for use in the
+  // X-Goog-Hash header
+  // (https://cloud.google.com/storage/docs/reference-headers#xgooghash).
+  //
+  // Potentially expensive.
+  static std::string ComputeCrc32cHash(const char* data, size_t size);
 
+ private:
   class UploadState;
   typedef std::string UniqueId;
   typedef base::ScopedPtrHashMap<UniqueId, UploadState> StateMap;
 
   void OnUploadStateStopped(const UniqueId& unique_id);
-
-  // Returns an X-Goog-Hash header for |memory|.  Potentially expensive.
-  static std::string ComputeHashHeader(
-      const scoped_refptr<base::RefCountedMemory>& memory);
 
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

@@ -210,7 +210,9 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   // TODO(maniscalco): Consider computing the hash once and storing the value as
   // a new field in the Attachment object to avoid recomputing when an upload
   // fails and is retried (bug 417794).
-  fetcher_->AddExtraRequestHeader(ComputeHashHeader(memory));
+  fetcher_->AddExtraRequestHeader(base::StringPrintf(
+      "X-Goog-Hash: crc32c=%s",
+      ComputeCrc32cHash(memory->front_as<char>(), memory->size()).c_str()));
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DISABLE_CACHE);
@@ -343,18 +345,15 @@ void AttachmentUploaderImpl::OnUploadStateStopped(const UniqueId& unique_id) {
   }
 }
 
-std::string AttachmentUploaderImpl::ComputeHashHeader(
-    const scoped_refptr<base::RefCountedMemory>& memory) {
-  // Generate an X-Goog-Hash header containing the object's crc32c, big-endian,
-  // base64 encoded.  See also
-  // https://cloud.google.com/storage/docs/reference-headers#xgooghash
-  const uint32_t crc32c_big_endian = base::HostToNet32(
-      leveldb::crc32c::Value(memory->front_as<char>(), memory->size()));
+std::string AttachmentUploaderImpl::ComputeCrc32cHash(const char* data,
+                                                      size_t size) {
+  const uint32_t crc32c_big_endian =
+      base::HostToNet32(leveldb::crc32c::Value(data, size));
   const base::StringPiece raw(reinterpret_cast<const char*>(&crc32c_big_endian),
-                              sizeof(crc32c_big_endian));
+                        sizeof(crc32c_big_endian));
   std::string encoded;
   base::Base64Encode(raw, &encoded);
-  return base::StringPrintf("X-Goog-Hash: crc32c=%s", encoded.c_str());
+  return encoded;
 }
 
 }  // namespace syncer

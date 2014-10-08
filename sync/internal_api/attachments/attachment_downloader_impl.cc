@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 #include "sync/protocol/sync.pb.h"
@@ -138,10 +140,15 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
 
   const int response_code = source->GetResponseCode();
   if (response_code == net::HTTP_OK) {
-    result = DOWNLOAD_SUCCESS;
     std::string data_as_string;
     source->GetResponseAsString(&data_as_string);
-    attachment_data = base::RefCountedString::TakeString(&data_as_string);
+    if (VerifyHashIfPresent(*source, data_as_string)) {
+      result = DOWNLOAD_SUCCESS;
+      attachment_data = base::RefCountedString::TakeString(&data_as_string);
+    } else {
+      // TODO(maniscalco): Test me!
+      result = DOWNLOAD_TRANSIENT_ERROR;
+    }
   } else if (response_code == net::HTTP_UNAUTHORIZED) {
     // Server tells us we've got a bad token so invalidate it.
     OAuth2TokenServiceRequest::InvalidateToken(token_service_provider_.get(),
@@ -204,6 +211,53 @@ void AttachmentDownloaderImpl::ReportResult(
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(*iter, result, base::Passed(&attachment)));
   }
+}
+
+bool AttachmentDownloaderImpl::VerifyHashIfPresent(
+    const net::URLFetcher& fetcher,
+    const std::string& data) {
+  const net::HttpResponseHeaders* headers = fetcher.GetResponseHeaders();
+  if (!headers) {
+    // No headers?  It passes.
+    return true;
+  }
+
+  std::string value;
+  if (!ExtractCrc32c(*headers, &value)) {
+    // No crc32c?  It passes.
+    return true;
+  }
+
+  if (value ==
+      AttachmentUploaderImpl::ComputeCrc32cHash(data.data(), data.size())) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool AttachmentDownloaderImpl::ExtractCrc32c(
+    const net::HttpResponseHeaders& headers,
+    std::string* crc32c) {
+  DCHECK(crc32c);
+  std::string header_value;
+  void* iter = NULL;
+  // Iterate over all matching headers.
+  while (headers.EnumerateHeader(&iter, "x-goog-hash", &header_value)) {
+    // Because EnumerateHeader is smart about list values, header_value will
+    // either be empty or a single name=value pair.
+    net::HttpUtil::NameValuePairsIterator pair_iter(
+        header_value.begin(), header_value.end(), ',');
+    if (pair_iter.GetNext()) {
+      if (pair_iter.name() == "crc32c") {
+        *crc32c = pair_iter.value();
+        DCHECK(!pair_iter.GetNext());
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 }  // namespace syncer

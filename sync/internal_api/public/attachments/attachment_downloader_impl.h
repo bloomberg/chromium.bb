@@ -13,6 +13,10 @@
 #include "sync/internal_api/public/attachments/attachment_downloader.h"
 #include "url/gurl.h"
 
+namespace net {
+class HttpResponseHeaders;
+}  // namespace net
+
 namespace syncer {
 
 // An implementation of AttachmentDownloader.
@@ -55,6 +59,10 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AttachmentDownloaderImplTest, ExtractCrc32c_First);
+  FRIEND_TEST_ALL_PREFIXES(AttachmentDownloaderImplTest, ExtractCrc32c_None);
+  FRIEND_TEST_ALL_PREFIXES(AttachmentDownloaderImplTest, ExtractCrc32c_Empty);
+
   struct DownloadState;
   typedef std::string AttachmentUrl;
   typedef base::ScopedPtrHashMap<AttachmentUrl, DownloadState> StateMap;
@@ -67,6 +75,22 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
       const DownloadState& download_state,
       const DownloadResult& result,
       const scoped_refptr<base::RefCountedString>& attachment_data);
+
+  // Verify the integrity of |data| using the hash received in |fetcher|.
+  //
+  // Assumes that the request in |fetcher| has completed.
+  //
+  // Returns true if the hash of |data| matches the hash contained in |fetcher|
+  // or if |fetcher| contains no hash (no hash, no problem).
+  static bool VerifyHashIfPresent(const net::URLFetcher& fetcher,
+                                  const std::string& data);
+
+  // Extract the crc32c from an X-Goog-Hash header in |headers|.
+  //
+  // Return true if a crc32c was found and set |crc32c|.
+  SYNC_EXPORT_PRIVATE static bool ExtractCrc32c(
+      const net::HttpResponseHeaders& headers,
+      std::string* crc32c);
 
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
