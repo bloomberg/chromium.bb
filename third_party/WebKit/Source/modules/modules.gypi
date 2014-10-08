@@ -15,6 +15,7 @@
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
       'battery/BatteryManager.idl',
+      'bluetooth/Bluetooth.idl',
       'credentialmanager/Credential.idl',
       'credentialmanager/CredentialsContainer.idl',
       'credentialmanager/FederatedCredential.idl',
@@ -335,6 +336,8 @@
       'battery/NavigatorBattery.h',
       'beacon/NavigatorBeacon.cpp',
       'beacon/NavigatorBeacon.h',
+      'bluetooth/Bluetooth.h',
+      'bluetooth/NavigatorBluetooth.cpp',
       'bluetooth/NavigatorBluetooth.h',
       'credentialmanager/Credential.cpp',
       'credentialmanager/Credential.h',

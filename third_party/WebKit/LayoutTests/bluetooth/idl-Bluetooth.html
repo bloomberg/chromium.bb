@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  assert_throws(null, function() { new Bluetooth(); },
+                'the constructor should not be callable with "new"');
+  assert_throws(null, function() { Bluetooth(); },
+                'the constructor should not be callable');
+}, 'Bluetooth IDL test');
+</script>

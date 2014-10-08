@@ -7,6 +7,5 @@
 [
     RuntimeEnabled=Bluetooth,
 ] partial interface Navigator {
-// http://crbug.com/420275
-//    readonly attribute Bluetooth bluetooth;
+    readonly attribute Bluetooth bluetooth;
 };
