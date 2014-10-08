@@ -503,13 +503,14 @@ def TargetLibs(bias_arch, is_canonical):
       return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
     def TranslatorFile(lib, filename):
       return os.path.join('%(' + TL(lib) + ')s', filename)
+    setjmp_arch = pynacl.platform.GetArch3264(bias_arch).replace('-', '_')
     libs.update({
       T('libs_support'): {
           'type': 'build' if is_canonical else 'work',
           'dependencies': [ GSDJoin('newlib', MultilibArch(bias_arch)),
                             TL('compiler_rt'), TL('libgcc_eh'),
-                            TL('libs_support_translator'),
                             'target_lib_compiler'],
+          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support')},
           'commands': [
               command.Mkdir(clang_libdir, parents=True),
               command.Copy(
@@ -518,12 +519,18 @@ def TargetLibs(bias_arch, is_canonical):
               command.Copy(
                   TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
                   os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
-              command.Copy(
-                  TranslatorFile('libs_support_translator', 'crtbegin.o'),
-                  os.path.join('%(output)s', clang_libdir, 'crtbegin.o')),
-              command.Copy(
-                  TranslatorFile('libs_support_translator', 'crtend.o'),
-                  os.path.join('%(output)s', clang_libdir, 'crtend.o')),
+              BuildTargetObjectCmd('clang_direct/crtbegin.c', 'crtbeginT.o',
+                                   bias_arch, output_dir=clang_libdir),
+              BuildTargetObjectCmd('crtend.c', 'crtend.o',
+                                   bias_arch, output_dir=clang_libdir),
+              # Put setjmp.o in libgcc.a for now.
+              # TODO(dschuff): it should probably go back into newlib.
+              BuildTargetObjectCmd('setjmp_%s.S' % setjmp_arch, 'setjmp.o',
+                                   bias_arch),
+              command.Command([PnaclTool('ar', bias_arch), 'rs',
+                               command.path.join('%(output)s', clang_libdir,
+                                                 'libgcc.a'),
+                               'setjmp.o']),
           ],
       }
     })
