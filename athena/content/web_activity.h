@@ -43,7 +43,7 @@ class WebActivity : public Activity,
   WebActivity(content::BrowserContext* context,
               const base::string16& title,
               const GURL& gurl);
-  WebActivity(AthenaWebView* web_view);
+  explicit WebActivity(content::WebContents* contents);
 
  protected:
   virtual ~WebActivity();

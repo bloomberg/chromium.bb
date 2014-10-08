@@ -299,9 +299,9 @@ class AthenaWebView : public views::WebView {
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) override {
-    // TODO(oshima): Use factory.
-    ActivityManager::Get()->AddActivity(
-        new WebActivity(new AthenaWebView(new_contents)));
+    Activity* activity =
+        ActivityFactory::Get()->CreateWebActivity(new_contents);
+    Activity::Show(activity);
   }
 
   virtual bool PreHandleKeyboardEvent(
@@ -432,9 +432,9 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
   web_view_->LoadInitialURL(url);
 }
 
-WebActivity::WebActivity(AthenaWebView* web_view)
-    : browser_context_(web_view->browser_context()),
-      web_view_(web_view),
+WebActivity::WebActivity(content::WebContents* contents)
+    : browser_context_(contents->GetBrowserContext()),
+      web_view_(new AthenaWebView(contents)),
       title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
       weak_ptr_factory_(this) {

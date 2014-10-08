@@ -25,6 +25,13 @@ Activity* ContentActivityFactory::CreateWebActivity(
   return activity;
 }
 
+Activity* ContentActivityFactory::CreateWebActivity(
+    content::WebContents* contents) {
+  Activity* activity = new WebActivity(contents);
+  ActivityManager::Get()->AddActivity(activity);
+  return activity;
+}
+
 Activity* ContentActivityFactory::CreateAppActivity(
     const std::string& app_id,
     views::WebView* web_view) {

@@ -38,6 +38,14 @@ Activity* SampleActivityFactory::CreateWebActivity(
   return activity;
 }
 
+Activity* SampleActivityFactory::CreateWebActivity(
+    content::WebContents* contents) {
+  Activity* activity =
+      new SampleActivity(kDefaultColor, kDefaultContentColor, base::string16());
+  ActivityManager::Get()->AddActivity(activity);
+  return activity;
+}
+
 Activity* SampleActivityFactory::CreateAppActivity(
     const std::string& app_id,
     views::WebView* web_view) {

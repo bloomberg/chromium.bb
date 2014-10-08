@@ -12,6 +12,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace views {
@@ -39,6 +40,10 @@ class ATHENA_EXPORT ActivityFactory {
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
                                       const base::string16& title,
                                       const GURL& url) = 0;
+
+  // Create an activity with |contents|. The title is obtained from the web
+  // contents.
+  virtual Activity* CreateWebActivity(content::WebContents* contents) = 0;
 
   // Create an activity of an app with |app_id| and
   // |web_view| that will host the content.
