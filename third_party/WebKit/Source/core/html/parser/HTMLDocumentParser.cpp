@@ -43,6 +43,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
+#include "platform/scheduler/Scheduler.h"
 #include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Functional.h"
 
@@ -536,7 +537,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
         if (isStopped() || isWaitingForScripts())
             break;
 
-        if (currentTime() - startTime > parserTimeLimit && !m_speculations.isEmpty()) {
+        if ((Scheduler::shared()->shouldYieldForHighPriorityWork() || currentTime() - startTime > parserTimeLimit) && !m_speculations.isEmpty()) {
             m_parserScheduler->scheduleForResume();
             break;
         }
