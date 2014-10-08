@@ -97,7 +97,7 @@ fileOperationUtil.deduplicatePath = function(
     return targetPromise.then(function(entry) {
       return Promise.reject(new FileOperationManager.Error(
           util.FileOperationErrorType.TARGET_EXISTS, entry));
-    }, function(inError) {
+    }, function(/** (Error|DOMError) */ inError) {
       if (inError instanceof Error)
         return Promise.reject(inError);
       return Promise.reject(new FileOperationManager.Error(
@@ -117,7 +117,7 @@ fileOperationUtil.deduplicatePath = function(
  * @param {Entry} entry The root Entry for traversing.
  * @param {function(Array.<Entry>)} successCallback Called when the traverse
  *     is successfully done with the array of the entries.
- * @param {function(FileError)} errorCallback Called on error with the first
+ * @param {function(DOMError)} errorCallback Called on error with the first
  *     occurred error (i.e. following errors will just be discarded).
  */
 fileOperationUtil.resolveRecursively = function(
@@ -204,7 +204,7 @@ fileOperationUtil.resolveRecursively = function(
  *     processed bytes of it.
  * @param {function(Entry)} successCallback Callback invoked when the copy
  *     is successfully done with the Entry of the created entry.
- * @param {function(FileError)} errorCallback Callback invoked when an error
+ * @param {function(DOMError)} errorCallback Callback invoked when an error
  *     is found.
  * @return {function()} Callback to cancel the current file copy operation.
  *     When the cancel is done, errorCallback will be called. The returned
@@ -305,7 +305,8 @@ fileOperationUtil.copyTo = function(
           // Unsubscribe the progress listener.
           chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
-          errorCallback(util.createDOMError(chrome.runtime.lastError));
+          errorCallback(util.createDOMError(
+              chrome.runtime.lastError.message || ''));
           return;
         }
 
@@ -337,7 +338,7 @@ fileOperationUtil.copyTo = function(
  * @param {string} newName The name of the archive to be created.
  * @param {function(FileEntry)} successCallback Callback invoked when the
  *     operation is successfully done with the entry of the created archive.
- * @param {function(FileError)} errorCallback Callback invoked when an error
+ * @param {function(DOMError)} errorCallback Callback invoked when an error
  *     is found.
  */
 fileOperationUtil.zipSelection = function(
@@ -1098,7 +1099,7 @@ FileOperationManager.ZipTask.prototype.run = function(
  * If the code is FILESYSTEM_ERROR, data should be the FileError.
  *
  * @param {util.FileOperationErrorType} code Error type.
- * @param {string|Entry|FileError} data Additional data.
+ * @param {string|Entry|DOMError} data Additional data.
  * @constructor
  */
 FileOperationManager.Error = function(code, data) {

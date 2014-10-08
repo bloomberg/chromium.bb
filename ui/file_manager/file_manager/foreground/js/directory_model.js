@@ -742,7 +742,7 @@ DirectoryModel.prototype.onRenameEntry = function(
  *
  * @param {string} name Directory name.
  * @param {function(DirectoryEntry)} successCallback Callback on success.
- * @param {function(FileError)} errorCallback Callback on failure.
+ * @param {function(DOMError)} errorCallback Callback on failure.
  * @param {function()} abortCallback Callback on abort (cancelled by user).
  */
 DirectoryModel.prototype.createDirectory = function(name,
@@ -794,7 +794,7 @@ DirectoryModel.prototype.createDirectory = function(name,
           successCallback(newEntry);
         }
       }.bind(this), function(reason) {
-        errorCallback(reason);
+        errorCallback(/** @type {DOMError} */ (reason));
       });
 };
 

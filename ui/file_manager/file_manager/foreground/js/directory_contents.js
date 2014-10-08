@@ -22,7 +22,7 @@ function ContentScanner() {
  *     completion.
  * @param {function()} successCallback Called when the scan is completed
  *     successfully.
- * @param {function(FileError)} errorCallback Called an error occurs.
+ * @param {function(DOMError)} errorCallback Called an error occurs.
  */
 ContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {

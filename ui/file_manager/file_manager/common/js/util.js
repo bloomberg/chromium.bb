@@ -100,7 +100,7 @@ util.htmlUnescape = function(str) {
  * @param {string} newName The new name.
  * @param {function(Entry)} successCallback Callback invoked when the rename
  *     is successfully done.
- * @param {function(FileError)} errorCallback Callback invoked when an error
+ * @param {function(DOMError)} errorCallback Callback invoked when an error
  *     is found.
  */
 util.rename = function(entry, newName, successCallback, errorCallback) {
@@ -136,7 +136,7 @@ util.rename = function(entry, newName, successCallback, errorCallback) {
  * Remove a file or a directory.
  * @param {Entry} entry The entry to remove.
  * @param {function()} onSuccess The success callback.
- * @param {function(FileError)} onError The error callback.
+ * @param {function(DOMError)} onError The error callback.
  */
 util.removeFileOrDirectory = function(entry, onSuccess, onError) {
   if (entry.isDirectory)
@@ -207,11 +207,13 @@ util.bytesToString = function(bytes) {
  * @param {number} begin Starting byte(included).
  * @param {number} end Last byte(excluded).
  * @param {function(File, Uint8Array)} callback Callback to invoke.
- * @param {function(FileError)} onError Error handler.
+ * @param {function(string)} onError Error handler.
  */
 util.readFileBytes = function(file, begin, end, callback, onError) {
   var fileReader = new FileReader();
-  fileReader.onerror = onError;
+  fileReader.onerror = function(event) {
+    onError(event.type);
+  };
   fileReader.onloadend = function() {
     callback(file, new ByteReader(fileReader.result));
   };
@@ -624,10 +626,8 @@ util.isFakeEntry = function(entry) {
  * Creates an instance of UserDOMError with given error name that looks like a
  * FileError except that it does not have the deprecated FileError.code member.
  *
- * TODO(uekawa): remove reference to FileError.
- *
  * @param {string} name Error name for the file error.
- * @return {util.UserDOMError} FileError instance
+ * @return {DOMError} DOMError instance
  */
 util.createDOMError = function(name) {
   return new util.UserDOMError(name);
@@ -637,6 +637,7 @@ util.createDOMError = function(name) {
  * Creates a DOMError-like object to be used in place of returning file errors.
  *
  * @param {string} name Error name for the file error.
+ * @extends {DOMError}
  * @constructor
  */
 util.UserDOMError = function(name) {
