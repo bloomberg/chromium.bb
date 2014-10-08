@@ -195,6 +195,23 @@ env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        is_broken=(env.Bit('asan') and env.Bit('host_mac')))
 
 
+nexe = env.ComponentProgram('cpp_threadsafe_static_init',
+                            'cpp_threadsafe_static_init.cc',
+                            EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                        '${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('cpp_threadsafe_static_init.out', nexe)
+# This test fails with the newlib-based builds of libstdc++ that have
+# multi-threading disabled internally.  In x86 nacl-gcc, libstdc++'s
+# threading works on x86-32 but is disabled on x86-64 via an #ifdef.  In
+# ARM nacl-gcc, libstdc++'s threading isn't enabled at all.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3948
+env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                       'run_cpp_threadsafe_static_init_test',
+                       is_broken=(not env.Bit('bitcode') and
+                                  not env.Bit('nacl_glibc') and
+                                  not env.Bit('target_x86_32')))
+
+
 # NOTE: the tests below break easily under valgrid and since
 #       they do not exercise malloc/free we exclude
 if env.IsRunningUnderValgrind():
