@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
 #include "content/shell/browser/notify_done_forwarder.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -329,8 +330,12 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager() {
-  if (!dialog_manager_)
-    dialog_manager_.reset(new ShellJavaScriptDialogManager());
+  if (!dialog_manager_) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    dialog_manager_.reset(command_line.HasSwitch(switches::kDumpRenderTree)
+        ? new LayoutTestJavaScriptDialogManager
+        : new ShellJavaScriptDialogManager);
+  }
   return dialog_manager_.get();
 }
 

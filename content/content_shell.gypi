@@ -92,6 +92,8 @@
         'shell/app/webkit_test_platform_support_win.cc',
         'shell/browser/ipc_echo_message_filter.cc',
         'shell/browser/ipc_echo_message_filter.h',
+        'shell/browser/layout_test/layout_test_javascript_dialog_manager.cc',
+        'shell/browser/layout_test/layout_test_javascript_dialog_manager.h',
         'shell/browser/notify_done_forwarder.cc',
         'shell/browser/notify_done_forwarder.h',
         'shell/browser/shell_android.cc',

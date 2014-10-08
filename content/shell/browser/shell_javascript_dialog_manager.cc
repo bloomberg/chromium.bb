@@ -30,11 +30,6 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    callback.Run(true, base::string16());
-    return;
-  }
-
   if (!dialog_request_callback_.is_null()) {
     dialog_request_callback_.Run();
     callback.Run(true, base::string16());
@@ -74,11 +69,6 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    callback.Run(true, base::string16());
-    return;
-  }
-
   if (!dialog_request_callback_.is_null()) {
     dialog_request_callback_.Run();
     callback.Run(true, base::string16());
