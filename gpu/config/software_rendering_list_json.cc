@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.9",
+  "version": "9.10",
   "entries": [
     {
       "id": 1,
@@ -1055,7 +1055,7 @@ LONG_STRING_CONST(
                                  "HTC One",
                                  "C5303", "C6603", "C6903",
                                  "GT-I8262", "GT-I8552", "GT-I9195",
-                                 "GT-I9500", "GT-I9505",
+                                 "GT-I9505",
                                  "SAMSUNG-SCH-I337", "SCH-I545", "SGH-M919",
                                  "SM-N900", "SM-N9005", "SPH-L720",
                                  "XT907", "XT1032", "XT1033", "XT1080"]
