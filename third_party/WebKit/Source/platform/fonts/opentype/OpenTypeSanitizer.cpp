@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/fonts/opentype/OpenTypeSanitizer.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"
@@ -48,8 +47,7 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
     if (m_buffer->size() > maxWebFontSize)
         return nullptr;
 
-    if (RuntimeEnabledFeatures::woff2Enabled())
-        ots::EnableWOFF2();
+    ots::EnableWOFF2();
 
     // A transcoded font is usually smaller than an original font.
     // However, it can be slightly bigger than the original one due to
@@ -68,8 +66,7 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 
 bool OpenTypeSanitizer::supportsFormat(const String& format)
 {
-    return equalIgnoringCase(format, "woff")
-        || (RuntimeEnabledFeatures::woff2Enabled() && equalIgnoringCase(format, "woff2"));
+    return equalIgnoringCase(format, "woff") || equalIgnoringCase(format, "woff2");
 }
 
 } // namespace blink
