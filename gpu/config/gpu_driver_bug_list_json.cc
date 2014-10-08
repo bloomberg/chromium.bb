@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.4",
+  "version": "7.5",
   "entries": [
     {
       "id": 1,
@@ -1014,13 +1014,13 @@ LONG_STRING_CONST(
     },
     {
       "id": 91,
-      "cr_bugs": [150500],
+      "cr_bugs": [150500, 414816],
       "description": "ETC1 non-power-of-two sized textures crash older IMG drivers",
       "os": {
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX 540.*",
+      "gl_renderer": "PowerVR SGX 5.*",
       "features": [
         "etc1_power_of_two_only"
       ]
