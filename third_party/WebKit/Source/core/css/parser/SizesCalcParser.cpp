@@ -18,7 +18,7 @@ SizesCalcParser::SizesCalcParser(MediaQueryTokenIterator start, MediaQueryTokenI
     m_isValid = calcToReversePolishNotation(start, end) && calculate();
 }
 
-unsigned SizesCalcParser::result() const
+float SizesCalcParser::result() const
 {
     ASSERT(m_isValid);
     return m_result;
@@ -212,7 +212,7 @@ bool SizesCalcParser::calculate()
         }
     }
     if (stack.size() == 1 && stack.last().isLength) {
-        m_result = clampTo<unsigned>(stack.last().value);
+        m_result = std::max(clampTo<float>(stack.last().value), (float)0.0);
         return true;
     }
     return false;

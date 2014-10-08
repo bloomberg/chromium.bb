@@ -266,7 +266,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, Vec
         parseImageCandidatesFromSrcsetAttribute<UChar>(attribute, attribute.characters16(), attribute.length(), imageCandidates);
 }
 
-static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, unsigned sourceSize, Vector<ImageCandidate>& imageCandidates)
+static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sourceSize, Vector<ImageCandidate>& imageCandidates)
 {
     const float defaultDensityValue = 1.0;
     bool ignoreSrc = false;
@@ -306,7 +306,7 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, unsigned s
     return imageCandidates[winner];
 }
 
-ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, unsigned sourceSize, const String& srcsetAttribute)
+ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, float sourceSize, const String& srcsetAttribute)
 {
     Vector<ImageCandidate> imageCandidates;
 
@@ -315,7 +315,7 @@ ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, unsigned
     return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates);
 }
 
-ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned sourceSize, const String& srcAttribute, const String& srcsetAttribute)
+ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, const String& srcsetAttribute)
 {
     if (srcsetAttribute.isNull()) {
         if (srcAttribute.isNull())
@@ -333,7 +333,7 @@ ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned
     return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates);
 }
 
-String bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate)
+String bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate)
 {
     if (srcsetImageCandidate.isEmpty())
         return srcAttribute;

@@ -19,19 +19,19 @@ public:
     SizesAttributeParser(PassRefPtr<MediaValues>, const String&);
 
     bool viewportDependant() const { return m_viewportDependant; }
-    unsigned length();
+    float length();
 
 private:
     bool parse(Vector<MediaQueryToken>& tokens);
     bool parseMediaConditionAndLength(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken);
-    unsigned effectiveSize();
-    bool calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, unsigned& result);
+    float effectiveSize();
+    bool calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, float& result);
     bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
     unsigned effectiveSizeDefaultValue();
 
     RefPtrWillBeMember<MediaQuerySet> m_mediaCondition;
     RefPtr<MediaValues> m_mediaValues;
-    unsigned m_length;
+    float m_length;
     bool m_lengthWasSet;
     bool m_viewportDependant;
     Vector<MediaQueryToken> m_tokens;

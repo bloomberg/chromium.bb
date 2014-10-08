@@ -17,7 +17,7 @@ namespace blink {
 
 struct TestCase {
     const char* input;
-    const unsigned output;
+    const float output;
     const bool valid;
     const bool dontRunInCSSCalc;
     const bool viewportDependant;
@@ -40,7 +40,7 @@ static void verifyCSSCalc(String text, double value, bool valid, unsigned fontSi
         primitiveValue->accumulateLengthArray(lengthArray);
     else
         ASSERT_EQ(valid, false);
-    int length = lengthArray.at(CSSPrimitiveValue::UnitTypePixels);
+    float length = lengthArray.at(CSSPrimitiveValue::UnitTypePixels);
     length += lengthArray.at(CSSPrimitiveValue::UnitTypeFontSize) * fontSize;
     length += lengthArray.at(CSSPrimitiveValue::UnitTypeViewportWidth) * viewportWidth / 100.0;
     length += lengthArray.at(CSSPrimitiveValue::UnitTypeViewportHeight) * viewportHeight / 100.0;
@@ -52,6 +52,7 @@ TEST(SizesCalcParserTest, Basic)
 {
     TestCase testCases[] = {
         {"calc(500px + 10em)", 660, true, false, false},
+        {"calc(500px / 8)", 62.5, true, false, false},
         {"calc(500px + 2 * 10em)", 820, true, false, false},
         {"calc(500px + 2*10em)", 820, true, false, false},
         {"calc(500px + 0.5*10em)", 580, true, false, false},
@@ -65,9 +66,9 @@ TEST(SizesCalcParserTest, Basic)
         {"calc(500px + 10)", 0, false, false, false},
         {"calc(500 + 10)", 0, false, false, false},
         {"calc(500px + 10s)", 0, false, true, false}, // This test ASSERTs in CSSCalculationValue.
-        {"calc(500px + 1cm)", 537, true, false, false},
+        {"calc(500px + 1cm)", 537.795276, true, false, false},
         {"calc(500px - 10s)", 0, false, true, false}, // This test ASSERTs in CSSCalculationValue.
-        {"calc(500px - 1cm)", 462, true, false, false},
+        {"calc(500px - 1cm)", 462.204724, true, false, false},
         {"calc(500px - 1vw)", 495, true, false, true},
         {"calc(50px*10)", 500, true, false, false},
         {"calc(50px*10px)", 0, false, false, false},
@@ -81,9 +82,9 @@ TEST(SizesCalcParserTest, Basic)
         {"calc(-500px/10)", 0, true, true, false}, // CSSCalculationValue does not clamp negative values to 0.
         {"calc(((4) * ((10px))))", 40, true, false, false},
         {"calc(50px / 0)", 0, false, false, false},
-        {"calc(50px / (10 + 10))", 2, true, false, false},
+        {"calc(50px / (10 + 10))", 2.5, true, false, false},
         {"calc(50px / (10 - 10))", 0, false, false, false},
-        {"calc(50px / (10 * 10))", 0, true, false, false},
+        {"calc(50px / (10 * 10))", 0.5, true, false, false},
         {"calc(50px / (10 / 10))", 50, true, false, false},
         {"calc(200px*)", 0, false, false, false},
         {"calc(+ +200px)", 0, false, false, false},

@@ -37,7 +37,7 @@ public:
         double tempResult;
         if (!computeLengthImpl(value, type, defaultFontSize, viewportWidth, viewportHeight, tempResult))
             return false;
-        result = roundForImpreciseConversion<T>(tempResult);
+        result = clampTo<T>(tempResult);
         return true;
     }
     virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const = 0;

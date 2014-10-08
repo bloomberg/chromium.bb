@@ -37,7 +37,7 @@ public:
     SizesCalcParser(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues>);
 
     bool viewportDependant() const { return m_viewportDependant; }
-    unsigned result() const;
+    float result() const;
     bool isValid() const { return m_isValid; }
 
 private:
@@ -52,7 +52,7 @@ private:
     RefPtr<MediaValues> m_mediaValues;
     bool m_viewportDependant;
     bool m_isValid;
-    unsigned m_result;
+    float m_result;
 };
 
 } // namespace blink

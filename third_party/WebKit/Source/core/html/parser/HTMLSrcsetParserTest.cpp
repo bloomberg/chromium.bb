@@ -12,7 +12,7 @@ namespace blink {
 
 typedef struct {
     float deviceScaleFactor;
-    int effectiveSize;
+    float effectiveSize;
     const char* srcInput;
     const char* srcsetInput;
     const char* outputURL;
@@ -32,6 +32,8 @@ TEST(ImageCandidateTest, Basic)
 TEST(HTMLSrcsetParserTest, Basic)
 {
     TestCase testCases[] = {
+        {2.0, 0.5, "", "data:,a 1w, data:,b 2x", "data:,a", 2.0, 1},
+        {2.0, 1, "", "data:,a 2w, data:,b 2x", "data:,a", 2.0, 2},
         {2.0, -1, "", "1x.gif 1x, 2x.gif 2x", "2x.gif", 2.0, -1},
         {2.0, -1, "", "1x.gif 1q, 2x.gif 2x", "2x.gif", 2.0, -1},
         {1.0, -1, "", "1x.gif 1q, 2x.gif 2x", "1x.gif", 1.0, -1},

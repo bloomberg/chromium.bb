@@ -22,25 +22,25 @@ SizesAttributeParser::SizesAttributeParser(PassRefPtr<MediaValues> mediaValues, 
     m_isValid = parse(m_tokens);
 }
 
-unsigned SizesAttributeParser::length()
+float SizesAttributeParser::length()
 {
     if (m_isValid)
         return effectiveSize();
     return effectiveSizeDefaultValue();
 }
 
-bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, unsigned& result)
+bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, float& result)
 {
     if (startToken == endToken)
         return false;
     MediaQueryTokenType type = startToken->type();
     if (type == DimensionToken) {
-        int length;
+        double length;
         if (!CSSPrimitiveValue::isLength(startToken->unitType()))
             return false;
         m_viewportDependant = CSSPrimitiveValue::isViewportPercentageLength(startToken->unitType());
         if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length >= 0)) {
-            result = (unsigned)length;
+            result = clampTo<float>(length);
             return true;
         }
     } else if (type == FunctionToken) {
@@ -104,7 +104,7 @@ bool SizesAttributeParser::parseMediaConditionAndLength(MediaQueryTokenIterator 
     lengthTokenEnd = endToken;
     reverseSkipUntilComponentStart(endToken, startToken);
     lengthTokenStart = endToken;
-    unsigned length;
+    float length;
     if (!calculateLengthInPixels(lengthTokenStart, lengthTokenEnd, length))
         return false;
     RefPtrWillBeRawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(startToken, endToken);
@@ -137,7 +137,7 @@ bool SizesAttributeParser::parse(Vector<MediaQueryToken>& tokens)
     return parseMediaConditionAndLength(startToken, --endToken);
 }
 
-unsigned SizesAttributeParser::effectiveSize()
+float SizesAttributeParser::effectiveSize()
 {
     if (m_lengthWasSet)
         return m_length;

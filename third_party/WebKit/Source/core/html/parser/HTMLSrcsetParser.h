@@ -129,11 +129,11 @@ private:
     OriginAttribute m_originAttribute;
 };
 
-ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, unsigned sourceSize, const String& srcsetAttribute);
+ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, float sourceSize, const String& srcsetAttribute);
 
-ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned sourceSize, const String& srcAttribute, const String& srcsetAttribute);
+ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, const String& srcsetAttribute);
 
-String bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
+String bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
 
 }
 
