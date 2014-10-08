@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -21,6 +22,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -179,6 +181,59 @@ TEST_F(NavigatorTest, BrowserSideNavigationRequestNavigationNoLiveRenderer) {
   EXPECT_EQ(rfh, main_test_rfh());
   EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
   EXPECT_TRUE(main_test_rfh()->render_view_host()->IsRenderViewLive());
+}
+
+// PlzNavigate: Test that commiting an HTTP 204 or HTTP 205 response cancels the
+// navigation.
+TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.google.com/");
+
+  // Load a URL.
+  contents()->NavigateAndCommit(kUrl1);
+  RenderFrameHostImpl* rfh = main_test_rfh();
+  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh->rfh_state());
+  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  EnableBrowserSideNavigation();
+
+  // Navigate to a different site.
+  SendRequestNavigation(node, kUrl2);
+  main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
+  NavigationRequest* main_request = GetNavigationRequestForFrameTreeNode(node);
+  ASSERT_TRUE(main_request);
+
+  // Commit an HTTP 204 response.
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
+  response->head.headers = new net::HttpResponseHeaders(
+      std::string(kNoContentHeaders, arraysize(kNoContentHeaders)));
+  node->navigator()->CommitNavigation(
+      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+
+  // There should be no pending RenderFrameHost; the navigation was aborted.
+  EXPECT_FALSE(GetNavigationRequestForFrameTreeNode(node));
+  EXPECT_FALSE(node->render_manager()->pending_frame_host());
+
+  // Now, repeat the test with 205 Reset Content.
+
+  // Navigate to a different site again.
+  SendRequestNavigation(node, kUrl2);
+  main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
+  main_request = GetNavigationRequestForFrameTreeNode(node);
+  ASSERT_TRUE(main_request);
+
+  // Commit an HTTP 205 response.
+  response = new ResourceResponse;
+  const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
+  response->head.headers = new net::HttpResponseHeaders(
+      std::string(kResetContentHeaders, arraysize(kResetContentHeaders)));
+  node->navigator()->CommitNavigation(
+      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+
+  // There should be no pending RenderFrameHost; the navigation was aborted.
+  EXPECT_FALSE(GetNavigationRequestForFrameTreeNode(node));
+  EXPECT_FALSE(node->render_manager()->pending_frame_host());
 }
 
 // PlzNavigate: Test that a new RenderFrameHost is created when doing a cross

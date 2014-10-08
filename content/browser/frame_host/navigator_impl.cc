@@ -33,9 +33,11 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 
 namespace content {
 
@@ -735,6 +737,16 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
                                      scoped_ptr<StreamHandle> body) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
+
+  // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
+  // commit; they leave the frame showing the previous page.
+  if (response->head.headers.get() &&
+      (response->head.headers->response_code() == 204 ||
+       response->head.headers->response_code() == 205)) {
+    CancelNavigation(frame_tree_node);
+    return;
+  }
+
   NavigationRequest* navigation_request =
       navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
   DCHECK(navigation_request);
