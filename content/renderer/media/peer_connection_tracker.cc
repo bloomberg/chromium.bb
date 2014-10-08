@@ -247,7 +247,7 @@ class InternalStatsObserver : public webrtc::StatsObserver {
       : lid_(lid){}
 
   virtual void OnComplete(
-      const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
+      const std::vector<webrtc::StatsReport>& reports) override {
     base::ListValue list;
 
     for (size_t i = 0; i < reports.size(); ++i) {

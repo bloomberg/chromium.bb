@@ -22,7 +22,7 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
   virtual ~MockDeviceMotionListener() { }
 
   virtual void didChangeDeviceMotion(
-      const blink::WebDeviceMotionData& data) OVERRIDE {
+      const blink::WebDeviceMotionData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_motion_ = true;
   }
@@ -50,9 +50,9 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceMotionEventPump::OnDidStart(renderer_handle);
   }
-  virtual void SendStartMessage() OVERRIDE { }
-  virtual void SendStopMessage() OVERRIDE { }
-  virtual void FireEvent() OVERRIDE {
+  virtual void SendStartMessage() override { }
+  virtual void SendStopMessage() override { }
+  virtual void FireEvent() override {
     DeviceMotionEventPump::FireEvent();
     Stop();
     base::MessageLoop::current()->QuitWhenIdle();
@@ -70,7 +70,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     const DeviceMotionHardwareBuffer* null_buffer = NULL;
     listener_.reset(new MockDeviceMotionListener);
     motion_pump_.reset(new DeviceMotionEventPumpForTesting);

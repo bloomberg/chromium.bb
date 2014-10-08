@@ -26,7 +26,7 @@ class MockAudioTrackInterface : public AudioTrackInterface {
   explicit MockAudioTrackInterface(const std::string& id) : id_(id) {}
   virtual ~MockAudioTrackInterface() {}
 
-  virtual std::string id() const OVERRIDE { return id_; }
+  virtual std::string id() const override { return id_; }
 
   MOCK_METHOD1(RegisterObserver, void(ObserverInterface*));
   MOCK_METHOD1(UnregisterObserver, void(ObserverInterface*));
@@ -49,7 +49,7 @@ class MockVideoTrackInterface : public VideoTrackInterface {
   explicit MockVideoTrackInterface(const std::string& id) : id_(id) {}
   virtual ~MockVideoTrackInterface() {}
 
-  virtual std::string id() const OVERRIDE { return id_; }
+  virtual std::string id() const override { return id_; }
 
   MOCK_METHOD1(RegisterObserver, void(ObserverInterface*));
   MOCK_METHOD1(UnregisterObserver, void(ObserverInterface*));
@@ -78,12 +78,12 @@ class MockMediaStreamTrackMetrics : public MediaStreamTrackMetrics {
 
 class MediaStreamTrackMetricsTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     metrics_.reset(new MockMediaStreamTrackMetrics());
     stream_ = new rtc::RefCountedObject<MockMediaStream>("stream");
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     metrics_.reset();
     stream_ = NULL;
   }

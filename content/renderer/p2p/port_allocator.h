@@ -48,7 +48,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
-      const std::string& ice_password) OVERRIDE;
+      const std::string& ice_password) override;
 
  private:
   friend class P2PPortAllocatorSession;
@@ -71,7 +71,7 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession {
 
  protected:
   // Overrides for cricket::BasicPortAllocatorSession.
-  virtual void GetPortConfigurations() OVERRIDE;
+  virtual void GetPortConfigurations() override;
 
  private:
   P2PPortAllocator* allocator_;

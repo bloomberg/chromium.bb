@@ -25,13 +25,13 @@ namespace content {
 
 class MockStreamCollection : public webrtc::StreamCollectionInterface {
  public:
-  virtual size_t count() OVERRIDE {
+  virtual size_t count() override {
     return streams_.size();
   }
-  virtual MediaStreamInterface* at(size_t index) OVERRIDE {
+  virtual MediaStreamInterface* at(size_t index) override {
     return streams_[index];
   }
-  virtual MediaStreamInterface* find(const std::string& label) OVERRIDE {
+  virtual MediaStreamInterface* find(const std::string& label) override {
     for (size_t i = 0; i < streams_.size(); ++i) {
       if (streams_[i]->label() == label)
         return streams_[i];
@@ -39,7 +39,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     return NULL;
   }
   virtual webrtc::MediaStreamTrackInterface* FindAudioTrack(
-      const std::string& id) OVERRIDE {
+      const std::string& id) override {
     for (size_t i = 0; i < streams_.size(); ++i) {
       webrtc::MediaStreamTrackInterface* track =
           streams_.at(i)->FindAudioTrack(id);
@@ -49,7 +49,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     return NULL;
   }
   virtual webrtc::MediaStreamTrackInterface* FindVideoTrack(
-      const std::string& id) OVERRIDE {
+      const std::string& id) override {
     for (size_t i = 0; i < streams_.size(); ++i) {
       webrtc::MediaStreamTrackInterface* track =
           streams_.at(i)->FindVideoTrack(id);
@@ -91,59 +91,59 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   }
 
   virtual void RegisterObserver(
-      webrtc::DataChannelObserver* observer) OVERRIDE {
+      webrtc::DataChannelObserver* observer) override {
   }
 
-  virtual void UnregisterObserver() OVERRIDE {
+  virtual void UnregisterObserver() override {
   }
 
-  virtual std::string label() const OVERRIDE {
+  virtual std::string label() const override {
     return label_;
   }
 
-  virtual bool reliable() const OVERRIDE {
+  virtual bool reliable() const override {
     return reliable_;
   }
 
-  virtual bool ordered() const OVERRIDE {
+  virtual bool ordered() const override {
     return config_.ordered;
   }
 
-  virtual unsigned short maxRetransmitTime() const OVERRIDE {
+  virtual unsigned short maxRetransmitTime() const override {
     return config_.maxRetransmitTime;
   }
 
-  virtual unsigned short maxRetransmits() const OVERRIDE {
+  virtual unsigned short maxRetransmits() const override {
     return config_.maxRetransmits;
   }
 
-  virtual std::string protocol() const OVERRIDE {
+  virtual std::string protocol() const override {
     return config_.protocol;
   }
 
-  virtual bool negotiated() const OVERRIDE {
+  virtual bool negotiated() const override {
     return config_.negotiated;
   }
 
-  virtual int id() const OVERRIDE {
+  virtual int id() const override {
     NOTIMPLEMENTED();
     return 0;
   }
 
-  virtual DataState state() const OVERRIDE {
+  virtual DataState state() const override {
     return state_;
   }
 
-  virtual uint64 buffered_amount() const OVERRIDE {
+  virtual uint64 buffered_amount() const override {
     NOTIMPLEMENTED();
     return 0;
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     state_ = webrtc::DataChannelInterface::kClosing;
   }
 
-  virtual bool Send(const webrtc::DataBuffer& buffer) OVERRIDE {
+  virtual bool Send(const webrtc::DataBuffer& buffer) override {
     return state_ == webrtc::DataChannelInterface::kOpen;
   }
 
@@ -165,30 +165,30 @@ class MockDtmfSender : public DtmfSenderInterface {
         duration_(0),
         inter_tone_gap_(0) {}
   virtual void RegisterObserver(
-      DtmfSenderObserverInterface* observer) OVERRIDE {
+      DtmfSenderObserverInterface* observer) override {
     observer_ = observer;
   }
-  virtual void UnregisterObserver() OVERRIDE {
+  virtual void UnregisterObserver() override {
     observer_ = NULL;
   }
-  virtual bool CanInsertDtmf() OVERRIDE {
+  virtual bool CanInsertDtmf() override {
     return true;
   }
   virtual bool InsertDtmf(const std::string& tones, int duration,
-                          int inter_tone_gap) OVERRIDE {
+                          int inter_tone_gap) override {
     tones_ = tones;
     duration_ = duration;
     inter_tone_gap_ = inter_tone_gap;
     return true;
   }
-  virtual const AudioTrackInterface* track() const OVERRIDE {
+  virtual const AudioTrackInterface* track() const override {
     return track_.get();
   }
-  virtual std::string tones() const OVERRIDE {
+  virtual std::string tones() const override {
     return tones_;
   }
-  virtual int duration() const OVERRIDE { return duration_; }
-  virtual int inter_tone_gap() const OVERRIDE { return inter_tone_gap_; }
+  virtual int duration() const override { return duration_; }
+  virtual int inter_tone_gap() const override { return inter_tone_gap_; }
 
  protected:
   virtual ~MockDtmfSender() {}

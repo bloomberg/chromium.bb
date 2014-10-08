@@ -27,7 +27,7 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
                               int route_id);
   virtual ~EmbeddedWorkerDevToolsAgent();
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnAttach(const std::string& host_id);

@@ -15,34 +15,34 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   virtual ~FakePepperPluginInstance();
 
   // PepperPluginInstance overrides.
-  virtual content::RenderView* GetRenderView() OVERRIDE;
-  virtual blink::WebPluginContainer* GetContainer() OVERRIDE;
-  virtual v8::Isolate* GetIsolate() const OVERRIDE;
-  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
-  virtual const GURL& GetPluginURL() OVERRIDE;
-  virtual base::FilePath GetModulePath() OVERRIDE;
+  virtual content::RenderView* GetRenderView() override;
+  virtual blink::WebPluginContainer* GetContainer() override;
+  virtual v8::Isolate* GetIsolate() const override;
+  virtual ppapi::VarTracker* GetVarTracker() override;
+  virtual const GURL& GetPluginURL() override;
+  virtual base::FilePath GetModulePath() override;
   virtual PP_Resource CreateImage(gfx::ImageSkia* source_image,
-                                  float scale) OVERRIDE;
+                                  float scale) override;
   virtual PP_ExternalPluginResult SwitchToOutOfProcessProxy(
       const base::FilePath& file_path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,
-      int plugin_child_id) OVERRIDE;
-  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
-  virtual bool IsFullPagePlugin() OVERRIDE;
-  virtual bool FlashSetFullscreen(bool fullscreen, bool delay_report) OVERRIDE;
-  virtual bool IsRectTopmost(const gfx::Rect& rect) OVERRIDE;
+      int plugin_child_id) override;
+  virtual void SetAlwaysOnTop(bool on_top) override;
+  virtual bool IsFullPagePlugin() override;
+  virtual bool FlashSetFullscreen(bool fullscreen, bool delay_report) override;
+  virtual bool IsRectTopmost(const gfx::Rect& rect) override;
   virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
-                           bool from_user_action) OVERRIDE;
+                           bool from_user_action) override;
   virtual int MakePendingFileRefRendererHost(const base::FilePath& path)
-      OVERRIDE;
-  virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
-  virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
-  virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
-  virtual void SetTextInputType(ui::TextInputType type) OVERRIDE;
-  virtual void PostMessageToJavaScript(PP_Var message) OVERRIDE;
+      override;
+  virtual void SetEmbedProperty(PP_Var key, PP_Var value) override;
+  virtual void SetSelectedText(const base::string16& selected_text) override;
+  virtual void SetLinkUnderCursor(const std::string& url) override;
+  virtual void SetTextInputType(ui::TextInputType type) override;
+  virtual void PostMessageToJavaScript(PP_Var message) override;
 
  private:
   GURL gurl_;

@@ -103,7 +103,7 @@ class RemoteAudioMediaStreamTrackAdapter
 
  private:
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() OVERRIDE;
+  virtual void OnChanged() override;
 
   webrtc::MediaStreamTrackInterface::TrackState state_;
 

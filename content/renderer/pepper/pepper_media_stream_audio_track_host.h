@@ -67,8 +67,8 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     virtual void OnData(const int16* audio_data,
                         int sample_rate,
                         int number_of_channels,
-                        int number_of_frames) OVERRIDE;
-    virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+                        int number_of_frames) override;
+    virtual void OnSetFormat(const media::AudioParameters& params) override;
 
     // Unowned host which is available during the AudioSink's lifespan.
     // It is mainly used in the main thread. But the audio thread will use
@@ -153,7 +153,7 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // Message handlers:
   int32_t OnHostMsgConfigure(
@@ -161,13 +161,13 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
       const ppapi::MediaStreamAudioTrackShared::Attributes& attributes);
 
   // PepperMediaStreamTrackHostBase overrides:
-  virtual void OnClose() OVERRIDE;
+  virtual void OnClose() override;
 
   // MediaStreamBufferManager::Delegate overrides:
-  virtual void OnNewBufferEnqueued() OVERRIDE;
+  virtual void OnNewBufferEnqueued() override;
 
   // ResourceHost overrides:
-  virtual void DidConnectPendingHostToResource() OVERRIDE;
+  virtual void DidConnectPendingHostToResource() override;
 
   blink::WebMediaStreamTrack track_;
 

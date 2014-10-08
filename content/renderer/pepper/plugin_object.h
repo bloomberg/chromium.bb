@@ -48,9 +48,9 @@ class PluginObject : public gin::Wrappable<PluginObject>,
   // gin::NamedPropertyInterceptor
   virtual v8::Local<v8::Value> GetNamedProperty(
       v8::Isolate* isolate,
-      const std::string& property) OVERRIDE;
+      const std::string& property) override;
   virtual std::vector<std::string> EnumerateNamedProperties(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   const PPP_Class_Deprecated* ppp_class() { return ppp_class_; }
   void* ppp_class_data() { return ppp_class_data_; }
@@ -65,7 +65,7 @@ class PluginObject : public gin::Wrappable<PluginObject>,
 
   // gin::Wrappable
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // Helper method to get named properties.
   v8::Local<v8::Value> GetPropertyOrMethod(v8::Isolate* isolate,

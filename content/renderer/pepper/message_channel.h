@@ -94,20 +94,20 @@ class MessageChannel :
   // gin::NamedPropertyInterceptor
   virtual v8::Local<v8::Value> GetNamedProperty(
       v8::Isolate* isolate,
-      const std::string& property) OVERRIDE;
+      const std::string& property) override;
   virtual bool SetNamedProperty(v8::Isolate* isolate,
                                 const std::string& property,
-                                v8::Local<v8::Value> value) OVERRIDE;
+                                v8::Local<v8::Value> value) override;
   virtual std::vector<std::string> EnumerateNamedProperties(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // gin::Wrappable
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // ppapi::proxy::HostDispatcher::SyncMessageStatusObserver
-  virtual void BeginBlockOnSyncMessage() OVERRIDE;
-  virtual void EndBlockOnSyncMessage() OVERRIDE;
+  virtual void BeginBlockOnSyncMessage() override;
+  virtual void EndBlockOnSyncMessage() override;
 
   // Post a message to the plugin's HandleMessage function for this channel's
   // instance.

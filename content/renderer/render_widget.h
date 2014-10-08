@@ -135,10 +135,10 @@ class CONTENT_EXPORT RenderWidget
 #endif  // defined(VIDEO_HOLE)
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // blink::WebWidgetClient
   virtual void willBeginCompositorFrame();

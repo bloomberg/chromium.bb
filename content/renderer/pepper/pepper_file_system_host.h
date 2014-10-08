@@ -44,8 +44,8 @@ class PepperFileSystemHost
   // ppapi::host::ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
-  virtual bool IsFileSystemHost() OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
+  virtual bool IsFileSystemHost() override;
 
   // Supports FileRefs direct access on the host side.
   PP_FileSystemType GetType() const { return type_; }

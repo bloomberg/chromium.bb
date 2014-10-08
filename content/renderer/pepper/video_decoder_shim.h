@@ -55,14 +55,14 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(
       media::VideoCodecProfile profile,
-      media::VideoDecodeAccelerator::Client* client) OVERRIDE;
-  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
+      media::VideoDecodeAccelerator::Client* client) override;
+  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   virtual void AssignPictureBuffers(
-      const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
-  virtual void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
+      const std::vector<media::PictureBuffer>& buffers) override;
+  virtual void ReusePictureBuffer(int32 picture_buffer_id) override;
+  virtual void Flush() override;
+  virtual void Reset() override;
+  virtual void Destroy() override;
 
  private:
   enum State {

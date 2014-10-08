@@ -48,7 +48,7 @@ class PepperMediaStreamTrackHostBase
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // Message handlers:
   virtual int32_t OnHostMsgEnqueueBuffer(

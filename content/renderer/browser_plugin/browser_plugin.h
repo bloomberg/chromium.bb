@@ -77,62 +77,62 @@ class CONTENT_EXPORT BrowserPlugin :
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
   // blink::WebPlugin implementation.
-  virtual blink::WebPluginContainer* container() const OVERRIDE;
-  virtual bool initialize(blink::WebPluginContainer* container) OVERRIDE;
-  virtual void destroy() OVERRIDE;
-  virtual bool supportsKeyboardFocus() const OVERRIDE;
-  virtual bool supportsEditCommands() const OVERRIDE;
-  virtual bool supportsInputMethod() const OVERRIDE;
-  virtual bool canProcessDrag() const OVERRIDE;
+  virtual blink::WebPluginContainer* container() const override;
+  virtual bool initialize(blink::WebPluginContainer* container) override;
+  virtual void destroy() override;
+  virtual bool supportsKeyboardFocus() const override;
+  virtual bool supportsEditCommands() const override;
+  virtual bool supportsInputMethod() const override;
+  virtual bool canProcessDrag() const override;
   virtual void paint(
       blink::WebCanvas* canvas,
-      const blink::WebRect& rect) OVERRIDE;
+      const blink::WebRect& rect) override;
   virtual void updateGeometry(
       const blink::WebRect& frame_rect,
       const blink::WebRect& clip_rect,
       const blink::WebVector<blink::WebRect>& cut_outs_rects,
-      bool is_visible) OVERRIDE;
-  virtual void updateFocus(bool focused) OVERRIDE;
-  virtual void updateVisibility(bool visible) OVERRIDE;
-  virtual bool acceptsInputEvents() OVERRIDE;
+      bool is_visible) override;
+  virtual void updateFocus(bool focused) override;
+  virtual void updateVisibility(bool visible) override;
+  virtual bool acceptsInputEvents() override;
   virtual bool handleInputEvent(
       const blink::WebInputEvent& event,
-      blink::WebCursorInfo& cursor_info) OVERRIDE;
+      blink::WebCursorInfo& cursor_info) override;
   virtual bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
                                       const blink::WebDragData& drag_data,
                                       blink::WebDragOperationsMask mask,
                                       const blink::WebPoint& position,
-                                      const blink::WebPoint& screen) OVERRIDE;
+                                      const blink::WebPoint& screen) override;
   virtual void didReceiveResponse(
-      const blink::WebURLResponse& response) OVERRIDE;
-  virtual void didReceiveData(const char* data, int data_length) OVERRIDE;
-  virtual void didFinishLoading() OVERRIDE;
-  virtual void didFailLoading(const blink::WebURLError& error) OVERRIDE;
+      const blink::WebURLResponse& response) override;
+  virtual void didReceiveData(const char* data, int data_length) override;
+  virtual void didFinishLoading() override;
+  virtual void didFailLoading(const blink::WebURLError& error) override;
   virtual void didFinishLoadingFrameRequest(
       const blink::WebURL& url,
-      void* notify_data) OVERRIDE;
+      void* notify_data) override;
   virtual void didFailLoadingFrameRequest(
       const blink::WebURL& url,
       void* notify_data,
-      const blink::WebURLError& error) OVERRIDE;
-  virtual bool executeEditCommand(const blink::WebString& name) OVERRIDE;
+      const blink::WebURLError& error) override;
+  virtual bool executeEditCommand(const blink::WebString& name) override;
   virtual bool executeEditCommand(const blink::WebString& name,
-                                  const blink::WebString& value) OVERRIDE;
+                                  const blink::WebString& value) override;
   virtual bool setComposition(
       const blink::WebString& text,
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
       int selectionStart,
-      int selectionEnd) OVERRIDE;
+      int selectionEnd) override;
   virtual bool confirmComposition(
       const blink::WebString& text,
-      blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) OVERRIDE;
-  virtual void extendSelectionAndDelete(int before, int after) OVERRIDE;
+      blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) override;
+  virtual void extendSelectionAndDelete(int before, int after) override;
 
   // MouseLockDispatcher::LockTarget implementation.
-  virtual void OnLockMouseACK(bool succeeded) OVERRIDE;
-  virtual void OnMouseLockLost() OVERRIDE;
+  virtual void OnLockMouseACK(bool succeeded) override;
+  virtual void OnMouseLockLost() override;
   virtual bool HandleMouseLockedInputEvent(
-          const blink::WebMouseEvent& event) OVERRIDE;
+          const blink::WebMouseEvent& event) override;
 
  private:
   friend class base::DeleteHelper<BrowserPlugin>;

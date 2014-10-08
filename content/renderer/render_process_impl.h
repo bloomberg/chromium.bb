@@ -18,8 +18,8 @@ class RenderProcessImpl : public RenderProcess {
   virtual ~RenderProcessImpl();
 
   // RenderProcess implementation.
-  virtual void AddBindings(int bindings) OVERRIDE;
-  virtual int GetEnabledBindings() const OVERRIDE;
+  virtual void AddBindings(int bindings) override;
+  virtual int GetEnabledBindings() const override;
 
  private:
   // Bitwise-ORed set of extra bindings that have been enabled anywhere in this

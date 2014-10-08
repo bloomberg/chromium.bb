@@ -32,34 +32,34 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   void set_has_user_gesture(bool gesture) { has_user_gesture_ = gesture; }
 
   // RendererPpapiHost.
-  virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
-  virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
+  virtual ppapi::host::PpapiHost* GetPpapiHost() override;
+  virtual bool IsValidInstance(PP_Instance instance) const override;
   virtual PepperPluginInstance* GetPluginInstance(PP_Instance instance) const
-      OVERRIDE;
+      override;
   virtual RenderFrame* GetRenderFrameForInstance(PP_Instance instance) const
-      OVERRIDE;
+      override;
   virtual RenderView* GetRenderViewForInstance(PP_Instance instance) const
-      OVERRIDE;
+      override;
   virtual blink::WebPluginContainer* GetContainerForInstance(
-      PP_Instance instance) const OVERRIDE;
-  virtual base::ProcessId GetPluginPID() const OVERRIDE;
-  virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
-  virtual int GetRoutingIDForWidget(PP_Instance instance) const OVERRIDE;
+      PP_Instance instance) const override;
+  virtual base::ProcessId GetPluginPID() const override;
+  virtual bool HasUserGesture(PP_Instance instance) const override;
+  virtual int GetRoutingIDForWidget(PP_Instance instance) const override;
   virtual gfx::Point PluginPointToRenderFrame(PP_Instance instance,
                                               const gfx::Point& pt) const
-      OVERRIDE;
+      override;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
-      bool should_close_source) OVERRIDE;
-  virtual bool IsRunningInProcess() const OVERRIDE;
-  virtual std::string GetPluginName() const OVERRIDE;
-  virtual void SetToExternalPluginHost() OVERRIDE;
+      bool should_close_source) override;
+  virtual bool IsRunningInProcess() const override;
+  virtual std::string GetPluginName() const override;
+  virtual void SetToExternalPluginHost() override;
   virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
       const base::Callback<void(const std::vector<int>&)>& callback) const
-      OVERRIDE;
-  virtual GURL GetDocumentURL(PP_Instance instance) const OVERRIDE;
+      override;
+  virtual GURL GetDocumentURL(PP_Instance instance) const override;
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

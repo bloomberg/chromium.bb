@@ -31,14 +31,14 @@ class CompositorSoftwareOutputDevice
   CompositorSoftwareOutputDevice();
   virtual ~CompositorSoftwareOutputDevice();
 
-  virtual void Resize(const gfx::Size& pixel_size, float scale_factor) OVERRIDE;
+  virtual void Resize(const gfx::Size& pixel_size, float scale_factor) override;
 
-  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE;
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
-  virtual void EnsureBackbuffer() OVERRIDE;
-  virtual void DiscardBackbuffer() OVERRIDE;
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
+  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  virtual void EnsureBackbuffer() override;
+  virtual void DiscardBackbuffer() override;
 
-  virtual void ReclaimSoftwareFrame(unsigned id) OVERRIDE;
+  virtual void ReclaimSoftwareFrame(unsigned id) override;
 
  private:
   // Internal buffer class that manages shared memory lifetime and ownership.

@@ -40,30 +40,30 @@ class ProxyMediaKeys : public media::MediaKeys {
   virtual void SetServerCertificate(
       const uint8* certificate_data,
       int certificate_data_length,
-      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+      scoped_ptr<media::SimpleCdmPromise> promise) override;
   virtual void CreateSession(
       const std::string& init_data_type,
       const uint8* init_data,
       int init_data_length,
       SessionType session_type,
-      scoped_ptr<media::NewSessionCdmPromise> promise) OVERRIDE;
+      scoped_ptr<media::NewSessionCdmPromise> promise) override;
   virtual void LoadSession(
       const std::string& web_session_id,
-      scoped_ptr<media::NewSessionCdmPromise> promise) OVERRIDE;
+      scoped_ptr<media::NewSessionCdmPromise> promise) override;
   virtual void UpdateSession(
       const std::string& web_session_id,
       const uint8* response,
       int response_length,
-      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+      scoped_ptr<media::SimpleCdmPromise> promise) override;
   virtual void CloseSession(
       const std::string& web_session_id,
-      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+      scoped_ptr<media::SimpleCdmPromise> promise) override;
   virtual void RemoveSession(
       const std::string& web_session_id,
-      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+      scoped_ptr<media::SimpleCdmPromise> promise) override;
   virtual void GetUsableKeyIds(
       const std::string& web_session_id,
-      scoped_ptr<media::KeyIdsPromise> promise) OVERRIDE;
+      scoped_ptr<media::KeyIdsPromise> promise) override;
 
   // Callbacks.
   void OnSessionCreated(uint32 session_id, const std::string& web_session_id);

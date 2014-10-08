@@ -58,7 +58,7 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
   // For unittest to override.
   virtual bool Send(IPC::Message* message);
   // RenderProcessObserver implementation. Protected for testing.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:
   struct RequestInfo {

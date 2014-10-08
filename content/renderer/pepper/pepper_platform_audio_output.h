@@ -49,11 +49,11 @@ class PepperPlatformAudioOutput
 
   // media::AudioOutputIPCDelegate implementation.
   virtual void OnStateChanged(media::AudioOutputIPCDelegate::State state)
-      OVERRIDE;
+      override;
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               int length) OVERRIDE;
-  virtual void OnIPCClosed() OVERRIDE;
+                               int length) override;
+  virtual void OnIPCClosed() override;
 
  protected:
   virtual ~PepperPlatformAudioOutput();

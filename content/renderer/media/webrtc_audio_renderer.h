@@ -105,13 +105,13 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // MediaStreamAudioRenderer implementation.  This is private since we want
   // callers to use proxy objects.
   // TODO(tommi): Make the MediaStreamAudioRenderer implementation a pimpl?
-  virtual void Start() OVERRIDE;
-  virtual void Play() OVERRIDE;
-  virtual void Pause() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void SetVolume(float volume) OVERRIDE;
-  virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE;
-  virtual bool IsLocalRenderer() const OVERRIDE;
+  virtual void Start() override;
+  virtual void Play() override;
+  virtual void Pause() override;
+  virtual void Stop() override;
+  virtual void SetVolume(float volume) override;
+  virtual base::TimeDelta GetCurrentRenderTime() const override;
+  virtual bool IsLocalRenderer() const override;
 
   // Called when an audio renderer, either the main or a proxy, starts playing.
   // Here we maintain a reference count of how many renderers are currently
@@ -150,8 +150,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // media::AudioRendererSink::RenderCallback implementation.
   // These two methods are called on the AudioOutputDevice worker thread.
   virtual int Render(media::AudioBus* audio_bus,
-                     int audio_delay_milliseconds) OVERRIDE;
-  virtual void OnRenderError() OVERRIDE;
+                     int audio_delay_milliseconds) override;
+  virtual void OnRenderError() override;
 
   // Called by AudioPullFifo when more data is necessary.
   // This method is called on the AudioOutputDevice worker thread.

@@ -283,47 +283,47 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // The creator must call AddRef() after construction and use Release()
   // to release the reference and delete this object.
   // Called on the main render thread.
-  virtual int32_t AddRef() OVERRIDE;
-  virtual int32_t Release() OVERRIDE;
+  virtual int32_t AddRef() override;
+  virtual int32_t Release() override;
 
   // webrtc::AudioDeviceModule implementation.
   // All implemented methods are called on the main render thread unless
   // anything else is stated.
 
   virtual int32_t RegisterAudioCallback(webrtc::AudioTransport* audio_callback)
-      OVERRIDE;
+      override;
 
-  virtual int32_t Init() OVERRIDE;
-  virtual int32_t Terminate() OVERRIDE;
-  virtual bool Initialized() const OVERRIDE;
+  virtual int32_t Init() override;
+  virtual int32_t Terminate() override;
+  virtual bool Initialized() const override;
 
-  virtual int32_t PlayoutIsAvailable(bool* available) OVERRIDE;
-  virtual bool PlayoutIsInitialized() const OVERRIDE;
-  virtual int32_t RecordingIsAvailable(bool* available) OVERRIDE;
-  virtual bool RecordingIsInitialized() const OVERRIDE;
+  virtual int32_t PlayoutIsAvailable(bool* available) override;
+  virtual bool PlayoutIsInitialized() const override;
+  virtual int32_t RecordingIsAvailable(bool* available) override;
+  virtual bool RecordingIsInitialized() const override;
 
   // All Start/Stop methods are called on a libJingle worker thread.
-  virtual int32_t StartPlayout() OVERRIDE;
-  virtual int32_t StopPlayout() OVERRIDE;
-  virtual bool Playing() const OVERRIDE;
-  virtual int32_t StartRecording() OVERRIDE;
-  virtual int32_t StopRecording() OVERRIDE;
-  virtual bool Recording() const OVERRIDE;
+  virtual int32_t StartPlayout() override;
+  virtual int32_t StopPlayout() override;
+  virtual bool Playing() const override;
+  virtual int32_t StartRecording() override;
+  virtual int32_t StopRecording() override;
+  virtual bool Recording() const override;
 
   // Called on the AudioInputDevice worker thread.
-  virtual int32_t SetMicrophoneVolume(uint32_t volume) OVERRIDE;
+  virtual int32_t SetMicrophoneVolume(uint32_t volume) override;
 
   // TODO(henrika): sort out calling thread once we start using this API.
-  virtual int32_t MicrophoneVolume(uint32_t* volume) const OVERRIDE;
+  virtual int32_t MicrophoneVolume(uint32_t* volume) const override;
 
-  virtual int32_t MaxMicrophoneVolume(uint32_t* max_volume) const OVERRIDE;
-  virtual int32_t MinMicrophoneVolume(uint32_t* min_volume) const OVERRIDE;
-  virtual int32_t StereoPlayoutIsAvailable(bool* available) const OVERRIDE;
-  virtual int32_t StereoRecordingIsAvailable(bool* available) const OVERRIDE;
-  virtual int32_t PlayoutDelay(uint16_t* delay_ms) const OVERRIDE;
-  virtual int32_t RecordingDelay(uint16_t* delay_ms) const OVERRIDE;
-  virtual int32_t RecordingSampleRate(uint32_t* sample_rate) const OVERRIDE;
-  virtual int32_t PlayoutSampleRate(uint32_t* sample_rate) const OVERRIDE;
+  virtual int32_t MaxMicrophoneVolume(uint32_t* max_volume) const override;
+  virtual int32_t MinMicrophoneVolume(uint32_t* min_volume) const override;
+  virtual int32_t StereoPlayoutIsAvailable(bool* available) const override;
+  virtual int32_t StereoRecordingIsAvailable(bool* available) const override;
+  virtual int32_t PlayoutDelay(uint16_t* delay_ms) const override;
+  virtual int32_t RecordingDelay(uint16_t* delay_ms) const override;
+  virtual int32_t RecordingSampleRate(uint32_t* sample_rate) const override;
+  virtual int32_t PlayoutSampleRate(uint32_t* sample_rate) const override;
 
   // Sets the |renderer_|, returns false if |renderer_| already exists.
   // Called on the main renderer thread.
@@ -372,10 +372,10 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                      int audio_delay_milliseconds,
                      int current_volume,
                      bool need_audio_processing,
-                     bool key_pressed) OVERRIDE;
+                     bool key_pressed) override;
 
   // Called on the AudioInputDevice worker thread.
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void OnSetFormat(const media::AudioParameters& params) override;
 
   // WebRtcAudioRendererSource implementation.
 
@@ -383,14 +383,14 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual void RenderData(media::AudioBus* audio_bus,
                           int sample_rate,
                           int audio_delay_milliseconds,
-                          base::TimeDelta* current_time) OVERRIDE;
+                          base::TimeDelta* current_time) override;
 
   // Called on the main render thread.
-  virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) OVERRIDE;
+  virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) override;
 
   // WebRtcPlayoutDataSource implementation.
-  virtual void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) OVERRIDE;
-  virtual void RemovePlayoutSink(WebRtcPlayoutDataSource::Sink* sink) OVERRIDE;
+  virtual void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
+  virtual void RemovePlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;

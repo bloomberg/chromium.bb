@@ -45,7 +45,7 @@ class MockPeerConnectionAudioSink : public PeerConnectionAudioSink {
                      int number_of_channels, int number_of_frames,
                      const std::vector<int>& channels,
                      int audio_delay_milliseconds, int current_volume,
-                     bool need_audio_processing, bool key_pressed) OVERRIDE {
+                     bool need_audio_processing, bool key_pressed) override {
     EXPECT_EQ(sample_rate, params_.sample_rate());
     EXPECT_EQ(number_of_channels, params_.channels());
     EXPECT_EQ(number_of_frames, params_.frames_per_buffer());
@@ -59,7 +59,7 @@ class MockPeerConnectionAudioSink : public PeerConnectionAudioSink {
                                     int current_volume,
                                     bool need_audio_processing,
                                     bool key_pressed));
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE {
+  virtual void OnSetFormat(const media::AudioParameters& params) override {
     params_ = params;
     FormatIsSet();
   }

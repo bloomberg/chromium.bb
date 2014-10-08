@@ -28,13 +28,13 @@ class PeerConnectionAudioSinkOwner : public MediaStreamAudioTrackSink {
                      int audio_delay_milliseconds,
                      int current_volume,
                      bool need_audio_processing,
-                     bool key_pressed) OVERRIDE;
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+                     bool key_pressed) override;
+  virtual void OnSetFormat(const media::AudioParameters& params) override;
   virtual void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual bool IsEqual(const MediaStreamAudioSink* other) const OVERRIDE;
-  virtual bool IsEqual(const PeerConnectionAudioSink* other) const OVERRIDE;
+      blink::WebMediaStreamSource::ReadyState state) override;
+  virtual void Reset() override;
+  virtual bool IsEqual(const MediaStreamAudioSink* other) const override;
+  virtual bool IsEqual(const PeerConnectionAudioSink* other) const override;
 
  protected:
   virtual ~PeerConnectionAudioSinkOwner() {}

@@ -39,7 +39,7 @@ class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
   typedef std::set<std::string> IdSet;
 
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() OVERRIDE;
+  virtual void OnChanged() override;
 
   template <class T>
   IdSet GetTrackIds(const std::vector<rtc::scoped_refptr<T> >& tracks) {

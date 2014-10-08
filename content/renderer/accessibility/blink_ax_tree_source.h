@@ -30,20 +30,20 @@ class BlinkAXTreeSource
   bool IsInTree(blink::WebAXObject node) const;
 
   // AXTreeSource implementation.
-  virtual blink::WebAXObject GetRoot() const OVERRIDE;
-  virtual blink::WebAXObject GetFromId(int32 id) const OVERRIDE;
-  virtual int32 GetId(blink::WebAXObject node) const OVERRIDE;
+  virtual blink::WebAXObject GetRoot() const override;
+  virtual blink::WebAXObject GetFromId(int32 id) const override;
+  virtual int32 GetId(blink::WebAXObject node) const override;
   virtual void GetChildren(
       blink::WebAXObject node,
-      std::vector<blink::WebAXObject>* out_children) const OVERRIDE;
+      std::vector<blink::WebAXObject>* out_children) const override;
   virtual blink::WebAXObject GetParent(blink::WebAXObject node) const
-      OVERRIDE;
+      override;
   virtual void SerializeNode(blink::WebAXObject node,
-                             ui::AXNodeData* out_data) const OVERRIDE;
-  virtual bool IsValid(blink::WebAXObject node) const OVERRIDE;
+                             ui::AXNodeData* out_data) const override;
+  virtual bool IsValid(blink::WebAXObject node) const override;
   virtual bool IsEqual(blink::WebAXObject node1,
-                       blink::WebAXObject node2) const OVERRIDE;
-  virtual blink::WebAXObject GetNull() const OVERRIDE;
+                       blink::WebAXObject node2) const override;
+  virtual blink::WebAXObject GetNull() const override;
 
   blink::WebDocument GetMainDocument() const;
 

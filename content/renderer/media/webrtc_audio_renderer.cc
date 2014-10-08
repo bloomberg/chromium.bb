@@ -64,7 +64,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     Stop();
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (started_)
       return;
@@ -72,7 +72,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     delegate_->Start();
   }
 
-  virtual void Play() OVERRIDE {
+  virtual void Play() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(started_);
     if (playing_state_.playing())
@@ -81,7 +81,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  virtual void Pause() OVERRIDE {
+  virtual void Pause() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(started_);
     if (!playing_state_.playing())
@@ -90,7 +90,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  virtual void Stop() OVERRIDE {
+  virtual void Stop() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!started_)
       return;
@@ -99,19 +99,19 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     delegate_->Stop();
   }
 
-  virtual void SetVolume(float volume) OVERRIDE {
+  virtual void SetVolume(float volume) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(volume >= 0.0f && volume <= 1.0f);
     playing_state_.set_volume(volume);
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE {
+  virtual base::TimeDelta GetCurrentRenderTime() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return delegate_->GetCurrentRenderTime();
   }
 
-  virtual bool IsLocalRenderer() const OVERRIDE {
+  virtual bool IsLocalRenderer() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return delegate_->IsLocalRenderer();
   }

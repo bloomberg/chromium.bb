@@ -25,17 +25,17 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   static PP_Resource Create(PP_Instance instance, bool vertical);
 
   // Resource overrides.
-  virtual PPB_Scrollbar_API* AsPPB_Scrollbar_API() OVERRIDE;
-  virtual void InstanceWasDeleted() OVERRIDE;
+  virtual PPB_Scrollbar_API* AsPPB_Scrollbar_API() override;
+  virtual void InstanceWasDeleted() override;
 
   // PPB_Scrollbar_API implementation.
-  virtual uint32_t GetThickness() OVERRIDE;
-  virtual bool IsOverlay() OVERRIDE;
-  virtual uint32_t GetValue() OVERRIDE;
-  virtual void SetValue(uint32_t value) OVERRIDE;
-  virtual void SetDocumentSize(uint32_t size) OVERRIDE;
-  virtual void SetTickMarks(const PP_Rect* tick_marks, uint32_t count) OVERRIDE;
-  virtual void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) OVERRIDE;
+  virtual uint32_t GetThickness() override;
+  virtual bool IsOverlay() override;
+  virtual uint32_t GetValue() override;
+  virtual void SetValue(uint32_t value) override;
+  virtual void SetDocumentSize(uint32_t size) override;
+  virtual void SetTickMarks(const PP_Rect* tick_marks, uint32_t count) override;
+  virtual void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) override;
 
  private:
   virtual ~PPB_Scrollbar_Impl();
@@ -45,19 +45,19 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
 
   // PPB_Widget private implementation.
   virtual PP_Bool PaintInternal(const gfx::Rect& rect,
-                                PPB_ImageData_Impl* image) OVERRIDE;
+                                PPB_ImageData_Impl* image) override;
   virtual PP_Bool HandleEventInternal(const ppapi::InputEventData& data)
-      OVERRIDE;
-  virtual void SetLocationInternal(const PP_Rect* location) OVERRIDE;
+      override;
+  virtual void SetLocationInternal(const PP_Rect* location) override;
 
   // blink::WebPluginScrollbarClient implementation.
-  virtual void valueChanged(blink::WebPluginScrollbar* scrollbar) OVERRIDE;
-  virtual void overlayChanged(blink::WebPluginScrollbar* scrollbar) OVERRIDE;
+  virtual void valueChanged(blink::WebPluginScrollbar* scrollbar) override;
+  virtual void overlayChanged(blink::WebPluginScrollbar* scrollbar) override;
   virtual void invalidateScrollbarRect(blink::WebPluginScrollbar* scrollbar,
-                                       const blink::WebRect& rect) OVERRIDE;
+                                       const blink::WebRect& rect) override;
   virtual void getTickmarks(blink::WebPluginScrollbar* scrollbar,
                             blink::WebVector<blink::WebRect>* tick_marks) const
-      OVERRIDE;
+      override;
 
   void NotifyInvalidate();
 

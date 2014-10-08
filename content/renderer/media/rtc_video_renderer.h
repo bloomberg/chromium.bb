@@ -39,10 +39,10 @@ class CONTENT_EXPORT RTCVideoRenderer
                    const RepaintCB& repaint_cb);
 
   // VideoFrameProvider implementation. Called on the main thread.
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Play() OVERRIDE;
-  virtual void Pause() OVERRIDE;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void Play() override;
+  virtual void Pause() override;
 
  protected:
   virtual ~RTCVideoRenderer();
@@ -60,7 +60,7 @@ class CONTENT_EXPORT RTCVideoRenderer
 
   // VideoTrackSink implementation. Called on the main thread.
   virtual void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
+      blink::WebMediaStreamSource::ReadyState state) override;
 
   void RenderSignalingFrame();
 

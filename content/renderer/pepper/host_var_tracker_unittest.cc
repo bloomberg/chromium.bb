@@ -49,9 +49,9 @@ class PepperTryCatchForTest : public PepperTryCatch {
         handle_scope_(instance->GetIsolate()),
         context_scope_(v8::Context::New(instance->GetIsolate())) {}
 
-  virtual void SetException(const char* message) OVERRIDE { NOTREACHED(); }
-  virtual bool HasException() OVERRIDE { return false; }
-  virtual v8::Handle<v8::Context> GetContext() OVERRIDE {
+  virtual void SetException(const char* message) override { NOTREACHED(); }
+  virtual bool HasException() override { return false; }
+  virtual v8::Handle<v8::Context> GetContext() override {
     return instance_->GetIsolate()->GetCurrentContext();
   }
 
@@ -68,7 +68,7 @@ class HostVarTrackerTest : public PpapiUnittest {
  public:
   HostVarTrackerTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(
         v8::Isolate::kFullGarbageCollection);
     EXPECT_EQ(0, g_v8objects_alive);

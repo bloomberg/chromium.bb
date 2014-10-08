@@ -22,20 +22,20 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamOptions& components,
-      const GURL& url) OVERRIDE;
+      const GURL& url) override;
   virtual void CancelGenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>&
-          event_handler) OVERRIDE;
+          event_handler) override;
   virtual void EnumerateDevices(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
-      const GURL& security_origin) OVERRIDE;
-  virtual void StopStreamDevice(const StreamDeviceInfo& device_info) OVERRIDE;
-  virtual bool IsStream(const std::string& label) OVERRIDE;
-  virtual int video_session_id(const std::string& label, int index) OVERRIDE;
-  virtual int audio_session_id(const std::string& label, int index) OVERRIDE;
+      const GURL& security_origin) override;
+  virtual void StopStreamDevice(const StreamDeviceInfo& device_info) override;
+  virtual bool IsStream(const std::string& label) override;
+  virtual int video_session_id(const std::string& label, int index) override;
+  virtual int audio_session_id(const std::string& label, int index) override;
 
   int audio_input_request_id() const { return audio_input_request_id_; }
   int audio_output_request_id() const { return audio_output_request_id_; }

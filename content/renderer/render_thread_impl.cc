@@ -198,7 +198,7 @@ class RenderViewZoomer : public RenderViewVisitor {
                                         zoom_level_(zoom_level) {
   }
 
-  virtual bool Visit(RenderView* render_view) OVERRIDE {
+  virtual bool Visit(RenderView* render_view) override {
     WebView* webview = render_view->GetWebView();
     WebDocument document = webview->mainFrame()->document();
 
@@ -286,7 +286,7 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
 
   virtual void GetServiceProviderForFrame(
       int32_t frame_routing_id,
-      mojo::InterfaceRequest<mojo::ServiceProvider> request) OVERRIDE {
+      mojo::InterfaceRequest<mojo::ServiceProvider> request) override {
     // TODO(morrita): This is for investigating http://crbug.com/415059 and
     // should be removed once it is fixed.
     CHECK_LT(routing_id_highmark_, frame_routing_id);
@@ -343,10 +343,10 @@ class MemoryObserver : public base::MessageLoop::TaskObserver {
   MemoryObserver() {}
   virtual ~MemoryObserver() {}
 
-  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
   }
 
-  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
     LOCAL_HISTOGRAM_MEMORY_KB("Memory.RendererUsed", GetMemoryUsageKB());
   }
 

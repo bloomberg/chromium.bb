@@ -31,7 +31,7 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // Called when the stream is created.
   void StreamCreated(base::SharedMemoryHandle shared_memory_handle,

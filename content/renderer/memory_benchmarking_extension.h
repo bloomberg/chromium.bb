@@ -31,7 +31,7 @@ class MemoryBenchmarkingExtension
 
   // gin::Wrappable.
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   bool IsHeapProfilerRunning();
 

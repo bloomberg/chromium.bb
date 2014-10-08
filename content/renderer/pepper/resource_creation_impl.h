@@ -26,46 +26,46 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   virtual PP_Resource CreateAudio1_0(PP_Instance instance,
                                      PP_Resource config_id,
                                      PPB_Audio_Callback_1_0 audio_callback,
-                                     void* user_data) OVERRIDE;
+                                     void* user_data) override;
   virtual PP_Resource CreateAudio(PP_Instance instance,
                                   PP_Resource config_id,
                                   PPB_Audio_Callback audio_callback,
-                                  void* user_data) OVERRIDE;
-  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) OVERRIDE;
+                                  void* user_data) override;
+  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) override;
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
-                                        uint32_t sample_frame_count) OVERRIDE;
-  virtual PP_Resource CreateAudioInput(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateCompositor(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
+                                        uint32_t sample_frame_count) override;
+  virtual PP_Resource CreateAudioInput(PP_Instance instance) override;
+  virtual PP_Resource CreateCompositor(PP_Instance instance) override;
+  virtual PP_Resource CreateBroker(PP_Instance instance) override;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
-                                   uint32_t size) OVERRIDE;
-  virtual PP_Resource CreateFlashDRM(PP_Instance instance) OVERRIDE;
+                                   uint32_t size) override;
+  virtual PP_Resource CreateFlashDRM(PP_Instance instance) override;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description,
-      PP_PrivateFontCharset charset) OVERRIDE;
+      PP_PrivateFontCharset charset) override;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
-                                      const PP_Flash_Menu* menu_data) OVERRIDE;
-  virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
+                                      const PP_Flash_Menu* menu_data) override;
+  virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) override;
   virtual PP_Resource CreateGraphics3D(PP_Instance instance,
                                        PP_Resource share_context,
-                                       const int32_t* attrib_list) OVERRIDE;
+                                       const int32_t* attrib_list) override;
   virtual PP_Resource CreateGraphics3DRaw(
       PP_Instance instance,
       PP_Resource share_context,
       const int32_t* attrib_list,
-      base::SharedMemoryHandle* shared_state) OVERRIDE;
-  virtual PP_Resource CreateHostResolver(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) OVERRIDE;
+      base::SharedMemoryHandle* shared_state) override;
+  virtual PP_Resource CreateHostResolver(PP_Instance instance) override;
+  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) override;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
                                       const PP_Size* size,
-                                      PP_Bool init_to_zero) OVERRIDE;
+                                      PP_Bool init_to_zero) override;
   virtual PP_Resource CreateImageDataSimple(PP_Instance instance,
                                             PP_ImageDataFormat format,
                                             const PP_Size* size,
-                                            PP_Bool init_to_zero) OVERRIDE;
+                                            PP_Bool init_to_zero) override;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                           PP_InputEvent_Type type,
                                           PP_TimeTicks time_stamp,
@@ -74,23 +74,23 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
                                           const uint32_t* segment_offsets,
                                           int32_t target_segment,
                                           uint32_t selection_start,
-                                          uint32_t selection_end) OVERRIDE;
+                                          uint32_t selection_end) override;
   virtual PP_Resource CreateKeyboardInputEvent_1_0(PP_Instance instance,
                                                    PP_InputEvent_Type type,
                                                    PP_TimeTicks time_stamp,
                                                    uint32_t modifiers,
                                                    uint32_t key_code,
                                                    PP_Var character_text)
-      OVERRIDE;
+      override;
   virtual PP_Resource CreateKeyboardInputEvent_1_2(PP_Instance instance,
                                                    PP_InputEvent_Type type,
                                                    PP_TimeTicks time_stamp,
                                                    uint32_t modifiers,
                                                    uint32_t key_code,
                                                    PP_Var character_text,
-                                                   PP_Var code) OVERRIDE;
+                                                   PP_Var code) override;
   virtual PP_Resource CreateMediaStreamVideoTrack(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual PP_Resource CreateMouseInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,
@@ -99,51 +99,51 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
       PP_InputEvent_MouseButton mouse_button,
       const PP_Point* mouse_position,
       int32_t click_count,
-      const PP_Point* mouse_movement) OVERRIDE;
+      const PP_Point* mouse_movement) override;
   virtual PP_Resource CreateNetAddressFromIPv4Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv4* ipv4_addr) OVERRIDE;
+      const PP_NetAddress_IPv4* ipv4_addr) override;
   virtual PP_Resource CreateNetAddressFromIPv6Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv6* ipv6_addr) OVERRIDE;
+      const PP_NetAddress_IPv6* ipv6_addr) override;
   virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
       PP_Instance instance,
-      const PP_NetAddress_Private& private_addr) OVERRIDE;
-  virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) OVERRIDE;
+      const PP_NetAddress_Private& private_addr) override;
+  virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) override;
   virtual PP_Resource CreatePlatformVerificationPrivate(PP_Instance instance)
-      OVERRIDE;
+      override;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
-                                      PP_Bool vertical) OVERRIDE;
+                                      PP_Bool vertical) override;
   virtual PP_Resource CreateOutputProtectionPrivate(PP_Instance instance)
-      OVERRIDE;
-  virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;
+      override;
+  virtual PP_Resource CreateTalk(PP_Instance instance) override;
   virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance)
-      OVERRIDE;
-  virtual PP_Resource CreateTCPSocket1_0(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateTCPSocket(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
+      override;
+  virtual PP_Resource CreateTCPSocket1_0(PP_Instance instance) override;
+  virtual PP_Resource CreateTCPSocket(PP_Instance instance) override;
+  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) override;
   virtual PP_Resource CreateTouchInputEvent(PP_Instance instance,
                                             PP_InputEvent_Type type,
                                             PP_TimeTicks time_stamp,
-                                            uint32_t modifiers) OVERRIDE;
-  virtual PP_Resource CreateUDPSocket(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) OVERRIDE;
+                                            uint32_t modifiers) override;
+  virtual PP_Resource CreateUDPSocket(PP_Instance instance) override;
+  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoCapture(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) override;
   virtual PP_Resource CreateVideoDecoderDev(PP_Instance instance,
                                             PP_Resource graphics3d_id,
                                             PP_VideoDecoder_Profile profile)
-      OVERRIDE;
-  virtual PP_Resource CreateVideoDestination(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoSource(PP_Instance instance) OVERRIDE;
+      override;
+  virtual PP_Resource CreateVideoDestination(PP_Instance instance) override;
+  virtual PP_Resource CreateVideoSource(PP_Instance instance) override;
   virtual PP_Resource CreateWheelInputEvent(PP_Instance instance,
                                             PP_TimeTicks time_stamp,
                                             uint32_t modifiers,
                                             const PP_FloatPoint* wheel_delta,
                                             const PP_FloatPoint* wheel_ticks,
-                                            PP_Bool scroll_by_page) OVERRIDE;
+                                            PP_Bool scroll_by_page) override;
   virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance)
-      OVERRIDE;
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationImpl);

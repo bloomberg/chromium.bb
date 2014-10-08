@@ -26,16 +26,16 @@ class CONTENT_EXPORT DeviceMotionEventPump
   virtual ~DeviceMotionEventPump();
 
   // // PlatformEventObserver.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendFakeDataForTesting(void* fake_data) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void SendFakeDataForTesting(void* fake_data) override;
 
  protected:
-  virtual void FireEvent() OVERRIDE;
-  virtual bool InitializeReader(base::SharedMemoryHandle handle) OVERRIDE;
+  virtual void FireEvent() override;
+  virtual bool InitializeReader(base::SharedMemoryHandle handle) override;
 
   // PlatformEventObserver.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual void SendStartMessage() override;
+  virtual void SendStopMessage() override;
 
   scoped_ptr<DeviceMotionSharedMemoryReader> reader_;
 

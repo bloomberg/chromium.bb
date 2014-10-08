@@ -64,9 +64,9 @@ class PepperTryCatchV8 : public PepperTryCatch {
   PP_Var* exception() { return &exception_; }
 
   // PepperTryCatch
-  virtual void SetException(const char* message) OVERRIDE;
-  virtual bool HasException() OVERRIDE;
-  virtual v8::Handle<v8::Context> GetContext() OVERRIDE;
+  virtual void SetException(const char* message) override;
+  virtual bool HasException() override;
+  virtual v8::Handle<v8::Context> GetContext() override;
 
  private:
   PP_Var exception_;
@@ -85,9 +85,9 @@ class PepperTryCatchVar : public PepperTryCatch {
   virtual ~PepperTryCatchVar();
 
   // PepperTryCatch
-  virtual void SetException(const char* message) OVERRIDE;
-  virtual bool HasException() OVERRIDE;
-  virtual v8::Handle<v8::Context> GetContext() OVERRIDE;
+  virtual void SetException(const char* message) override;
+  virtual bool HasException() override;
+  virtual v8::Handle<v8::Context> GetContext() override;
 
  private:
   // Code which uses PepperTryCatchVar doesn't typically have a HandleScope,

@@ -21,20 +21,20 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   }
 
   virtual void OnStateChanged(
-      media::AudioOutputIPCDelegate::State state) OVERRIDE {
+      media::AudioOutputIPCDelegate::State state) override {
     state_changed_received_ = true;
     state_ = state;
   }
 
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle,
-                               int length) OVERRIDE {
+                               int length) override {
     created_received_ = true;
     handle_ = handle;
     length_ = length;
   }
 
-  virtual void OnIPCClosed() OVERRIDE {}
+  virtual void OnIPCClosed() override {}
 
   void Reset() {
     state_changed_received_ = false;

@@ -54,8 +54,8 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
 
  private:
   // MouseLockDispatcher implementation.
-  virtual void SendLockMouseRequest(bool unlocked_by_target) OVERRIDE;
-  virtual void SendUnlockMouseRequest() OVERRIDE;
+  virtual void SendLockMouseRequest(bool unlocked_by_target) override;
+  virtual void SendUnlockMouseRequest() override;
 
   RenderWidgetFullscreenPepper* widget_;
 

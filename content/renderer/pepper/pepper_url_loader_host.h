@@ -39,7 +39,7 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   // ResourceHost implementation.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // blink::WebURLLoaderClient implementation.
   virtual void willSendRequest(blink::WebURLLoader* loader,
@@ -65,7 +65,7 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
 
  private:
   // ResourceHost protected overrides.
-  virtual void DidConnectPendingHostToResource() OVERRIDE;
+  virtual void DidConnectPendingHostToResource() override;
 
   // IPC messages
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,

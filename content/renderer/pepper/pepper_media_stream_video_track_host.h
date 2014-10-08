@@ -37,7 +37,7 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
                                   PP_Instance instance,
                                   PP_Resource resource);
 
-  virtual bool IsMediaStreamVideoTrackHost() OVERRIDE;
+  virtual bool IsMediaStreamVideoTrackHost() override;
 
   blink::WebMediaStreamTrack track() { return track_; }
 
@@ -48,9 +48,9 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   void InitBuffers();
 
   // PepperMediaStreamTrackHostBase overrides:
-  virtual void OnClose() OVERRIDE;
+  virtual void OnClose() override;
   virtual int32_t OnHostMsgEnqueueBuffer(
-      ppapi::host::HostMessageContext* context, int32_t index) OVERRIDE;
+      ppapi::host::HostMessageContext* context, int32_t index) override;
 
   // Sends frame with |index| to |track_|.
   int32_t SendFrameToTrack(int32_t index);
@@ -64,21 +64,21 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
+      const VideoCaptureDeviceFormatsCB& callback) override;
 
   virtual void StartSourceImpl(
       const media::VideoCaptureFormat& format,
-      const VideoCaptureDeliverFrameCB& frame_callback) OVERRIDE;
+      const VideoCaptureDeliverFrameCB& frame_callback) override;
 
-  virtual void StopSourceImpl() OVERRIDE;
+  virtual void StopSourceImpl() override;
 
   // ResourceHost overrides:
-  virtual void DidConnectPendingHostToResource() OVERRIDE;
+  virtual void DidConnectPendingHostToResource() override;
 
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // Message handlers:
   int32_t OnHostMsgConfigure(

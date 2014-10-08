@@ -48,7 +48,7 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
   virtual ~FakeAudioThread() { DCHECK(thread_.is_null()); }
 
   // base::PlatformThread::Delegate:
-  virtual void ThreadMain() OVERRIDE {
+  virtual void ThreadMain() override {
     while (true) {
       if (closure_.IsSignaled())
         return;
@@ -98,17 +98,17 @@ class MockCapturerSource : public media::AudioCapturerSource {
 
   virtual void Initialize(const media::AudioParameters& params,
                           CaptureCallback* callback,
-                          int session_id) OVERRIDE {
+                          int session_id) override {
     DCHECK(params.IsValid());
     params_ = params;
     OnInitialize(params, callback, session_id);
   }
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     audio_thread_.reset(new FakeAudioThread(capturer_, params_));
     audio_thread_->Start();
     OnStart();
   }
-  virtual void Stop() OVERRIDE {
+  virtual void Stop() override {
     audio_thread_->Stop();
     audio_thread_.reset();
     OnStop();
@@ -135,7 +135,7 @@ class MockMediaStreamAudioSink : public PeerConnectionAudioSink {
              int audio_delay_milliseconds,
              int current_volume,
              bool need_audio_processing,
-             bool key_pressed) OVERRIDE {
+             bool key_pressed) override {
     EXPECT_EQ(params_.sample_rate(), sample_rate);
     EXPECT_EQ(params_.channels(), number_of_channels);
     EXPECT_EQ(params_.frames_per_buffer(), number_of_frames);
@@ -168,7 +168,7 @@ class MockMediaStreamAudioSink : public PeerConnectionAudioSink {
 
 class WebRtcLocalAudioTrackTest : public ::testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   media::CHANNEL_LAYOUT_STEREO, 2, 48000, 16, 480);
     MockMediaConstraintFactory constraint_factory;
@@ -191,7 +191,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
     capturer_->SetCapturerSourceForTesting(capturer_source_, params_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     blink_source_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

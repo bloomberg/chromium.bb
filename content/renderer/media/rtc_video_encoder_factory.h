@@ -31,11 +31,11 @@ class CONTENT_EXPORT RTCVideoEncoderFactory
 
   // cricket::WebRtcVideoEncoderFactory implementation.
   virtual webrtc::VideoEncoder* CreateVideoEncoder(
-      webrtc::VideoCodecType type) OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual const std::vector<VideoCodec>& codecs() const OVERRIDE;
-  virtual void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) OVERRIDE;
+      webrtc::VideoCodecType type) override;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual const std::vector<VideoCodec>& codecs() const override;
+  virtual void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
 
  private:
   const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;

@@ -27,13 +27,13 @@ class GinJavaBridgeValueConverter : public content::V8ValueConverter::Strategy {
   virtual bool FromV8Object(v8::Handle<v8::Object> value,
                             base::Value** out,
                             v8::Isolate* isolate,
-                            const FromV8ValueCallback& callback) const OVERRIDE;
+                            const FromV8ValueCallback& callback) const override;
   virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
                                  base::Value** out,
-                                 v8::Isolate* isolate) const OVERRIDE;
+                                 v8::Isolate* isolate) const override;
   virtual bool FromV8Number(v8::Handle<v8::Number> value,
-                            base::Value** out) const OVERRIDE;
-  virtual bool FromV8Undefined(base::Value** out) const OVERRIDE;
+                            base::Value** out) const override;
+  virtual bool FromV8Undefined(base::Value** out) const override;
 
  private:
   scoped_ptr<V8ValueConverter> converter_;

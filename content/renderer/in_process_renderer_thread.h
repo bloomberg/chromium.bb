@@ -21,8 +21,8 @@ class InProcessRendererThread : public base::Thread {
   virtual ~InProcessRendererThread();
 
  protected:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   std::string channel_id_;

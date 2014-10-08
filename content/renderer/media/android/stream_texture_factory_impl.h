@@ -29,17 +29,17 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
       int frame_id);
 
   // StreamTextureFactory implementation.
-  virtual StreamTextureProxy* CreateProxy() OVERRIDE;
-  virtual void EstablishPeer(int32 stream_id, int player_id) OVERRIDE;
+  virtual StreamTextureProxy* CreateProxy() override;
+  virtual void EstablishPeer(int32 stream_id, int player_id) override;
   virtual unsigned CreateStreamTexture(unsigned texture_target,
                                        unsigned* texture_id,
-                                       gpu::Mailbox* texture_mailbox) OVERRIDE;
+                                       gpu::Mailbox* texture_mailbox) override;
   virtual void SetStreamTextureSize(int32 texture_id,
-                                    const gfx::Size& size) OVERRIDE;
-  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
-  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) OVERRIDE;
+                                    const gfx::Size& size) override;
+  virtual gpu::gles2::GLES2Interface* ContextGL() override;
+  virtual void AddObserver(StreamTextureFactoryContextObserver* obs) override;
   virtual void RemoveObserver(
-      StreamTextureFactoryContextObserver* obs) OVERRIDE;
+      StreamTextureFactoryContextObserver* obs) override;
 
  private:
   friend class base::RefCounted<StreamTextureFactoryImpl>;

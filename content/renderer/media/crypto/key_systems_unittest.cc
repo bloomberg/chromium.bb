@@ -93,7 +93,7 @@ static void AddContainerAndCodecMasksForTest() {
 
 class TestContentRendererClient : public ContentRendererClient {
   virtual void AddKeySystems(
-      std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
+      std::vector<content::KeySystemInfo>* key_systems) override;
 };
 
 void TestContentRendererClient::AddKeySystems(
@@ -163,7 +163,7 @@ class KeySystemsTest : public testing::Test {
     SetRendererClientForTesting(&content_renderer_client_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AddContainerAndCodecMasksForTest();
   }
 

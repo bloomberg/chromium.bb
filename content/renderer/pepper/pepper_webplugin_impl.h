@@ -42,7 +42,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   virtual bool initialize(blink::WebPluginContainer* container);
   virtual void destroy();
   virtual v8::Local<v8::Object> v8ScriptableObject(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
   virtual bool getFormValue(blink::WebString& value);
   virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect);
   virtual void updateGeometry(
@@ -74,16 +74,16 @@ class PepperWebPluginImpl : public blink::WebPlugin {
                          int identifier);
   virtual void selectFindResult(bool forward);
   virtual void stopFind();
-  virtual bool supportsPaginatedPrint() OVERRIDE;
-  virtual bool isPrintScalingDisabled() OVERRIDE;
+  virtual bool supportsPaginatedPrint() override;
+  virtual bool isPrintScalingDisabled() override;
 
-  virtual int printBegin(const blink::WebPrintParams& print_params) OVERRIDE;
-  virtual bool printPage(int page_number, blink::WebCanvas* canvas) OVERRIDE;
-  virtual void printEnd() OVERRIDE;
+  virtual int printBegin(const blink::WebPrintParams& print_params) override;
+  virtual bool printPage(int page_number, blink::WebCanvas* canvas) override;
+  virtual void printEnd() override;
 
-  virtual bool canRotateView() OVERRIDE;
-  virtual void rotateView(RotationType type) OVERRIDE;
-  virtual bool isPlaceholder() OVERRIDE;
+  virtual bool canRotateView() override;
+  virtual void rotateView(RotationType type) override;
+  virtual bool isPlaceholder() override;
 
  private:
   friend class base::DeleteHelper<PepperWebPluginImpl>;

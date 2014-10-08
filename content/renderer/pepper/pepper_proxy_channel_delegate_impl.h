@@ -16,12 +16,12 @@ class PepperProxyChannelDelegateImpl
   virtual ~PepperProxyChannelDelegateImpl();
 
   // ProxyChannel::Delegate implementation.
-  virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
-  virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
+  virtual base::MessageLoopProxy* GetIPCMessageLoop() override;
+  virtual base::WaitableEvent* GetShutdownEvent() override;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       base::ProcessId remote_pid,
-      bool should_close_source) OVERRIDE;
+      bool should_close_source) override;
 };
 
 }  // namespace content

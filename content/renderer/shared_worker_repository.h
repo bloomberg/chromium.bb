@@ -28,8 +28,8 @@ class SharedWorkerRepository : public RenderFrameObserver,
       const blink::WebString& name,
       DocumentID document_id,
       const blink::WebString& content_security_policy,
-      blink::WebContentSecurityPolicyType) OVERRIDE;
-  virtual void documentDetached(DocumentID document_id) OVERRIDE;
+      blink::WebContentSecurityPolicyType) override;
+  virtual void documentDetached(DocumentID document_id) override;
 
  private:
   std::set<DocumentID> documents_with_workers_;

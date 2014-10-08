@@ -134,9 +134,9 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // TODO(xians): Remove when option to disable audio track processing is
   // removed.
   virtual void OnAecDumpFile(
-      const IPC::PlatformFileForTransit& file_handle) OVERRIDE;
-  virtual void OnDisableAecDump() OVERRIDE;
-  virtual void OnIpcClosing() OVERRIDE;
+      const IPC::PlatformFileForTransit& file_handle) override;
+  virtual void OnDisableAecDump() override;
+  virtual void OnIpcClosing() override;
 
  protected:
   // Asks the PeerConnection factory to create a Local Audio Source.

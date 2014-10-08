@@ -32,13 +32,13 @@ class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
 
   // gin::Wrappable.
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // gin::NamedPropertyInterceptor
   virtual v8::Local<v8::Value> GetNamedProperty(
-      v8::Isolate* isolate, const std::string& property) OVERRIDE;
+      v8::Isolate* isolate, const std::string& property) override;
   virtual std::vector<std::string> EnumerateNamedProperties(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   static GinJavaBridgeObject* InjectNamed(
       blink::WebFrame* frame,

@@ -32,11 +32,11 @@ class HostResourceVar : public ppapi::ResourceVar {
                   const IPC::Message& creation_message);
 
   // ResourceVar override.
-  virtual PP_Resource GetPPResource() const OVERRIDE;
-  virtual int GetPendingRendererHostId() const OVERRIDE;
-  virtual int GetPendingBrowserHostId() const OVERRIDE;
-  virtual const IPC::Message* GetCreationMessage() const OVERRIDE;
-  virtual bool IsPending() const OVERRIDE;
+  virtual PP_Resource GetPPResource() const override;
+  virtual int GetPendingRendererHostId() const override;
+  virtual int GetPendingBrowserHostId() const override;
+  virtual const IPC::Message* GetCreationMessage() const override;
+  virtual bool IsPending() const override;
 
   void set_pending_browser_host_id(int id) { pending_browser_host_id_ = id; }
 

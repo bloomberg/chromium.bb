@@ -42,25 +42,25 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
       int route_id);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   // blink::WebSharedWorkerClient implementation.
-  virtual void workerContextClosed() OVERRIDE;
-  virtual void workerContextDestroyed() OVERRIDE;
-  virtual void workerReadyForInspection() OVERRIDE;
-  virtual void workerScriptLoaded() OVERRIDE;
-  virtual void workerScriptLoadFailed() OVERRIDE;
-  virtual void selectAppCacheID(long long) OVERRIDE;
-  virtual blink::WebNotificationPresenter* notificationPresenter() OVERRIDE;
+  virtual void workerContextClosed() override;
+  virtual void workerContextDestroyed() override;
+  virtual void workerReadyForInspection() override;
+  virtual void workerScriptLoaded() override;
+  virtual void workerScriptLoadFailed() override;
+  virtual void selectAppCacheID(long long) override;
+  virtual blink::WebNotificationPresenter* notificationPresenter() override;
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
-      blink::WebApplicationCacheHostClient*) OVERRIDE;
+      blink::WebApplicationCacheHostClient*) override;
   virtual blink::WebWorkerPermissionClientProxy*
       createWorkerPermissionClientProxy(
-          const blink::WebSecurityOrigin& origin) OVERRIDE;
+          const blink::WebSecurityOrigin& origin) override;
   virtual void dispatchDevToolsMessage(
-      const blink::WebString& message) OVERRIDE;
-  virtual void saveDevToolsAgentState(const blink::WebString& state) OVERRIDE;
+      const blink::WebString& message) override;
+  virtual void saveDevToolsAgentState(const blink::WebString& state) override;
 
  private:
   virtual ~EmbeddedSharedWorkerStub();

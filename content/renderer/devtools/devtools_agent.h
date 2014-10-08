@@ -45,35 +45,35 @@ class DevToolsAgent : public RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebDevToolsAgentClient implementation
   virtual void sendMessageToInspectorFrontend(const blink::WebString& data);
 
-  virtual long processId() OVERRIDE;
-  virtual int debuggerId() OVERRIDE;
-  virtual void saveAgentRuntimeState(const blink::WebString& state) OVERRIDE;
+  virtual long processId() override;
+  virtual int debuggerId() override;
+  virtual void saveAgentRuntimeState(const blink::WebString& state) override;
   virtual blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-      createClientMessageLoop() OVERRIDE;
-  virtual void willEnterDebugLoop() OVERRIDE;
-  virtual void didExitDebugLoop() OVERRIDE;
+      createClientMessageLoop() override;
+  virtual void willEnterDebugLoop() override;
+  virtual void didExitDebugLoop() override;
 
   typedef void (*TraceEventCallback)(
       char phase, const unsigned char*, const char* name, unsigned long long id,
       int numArgs, const char* const* argNames, const unsigned char* argTypes,
       const unsigned long long* argValues,
       unsigned char flags, double timestamp);
-  virtual void resetTraceEventCallback() OVERRIDE;
+  virtual void resetTraceEventCallback() override;
   virtual void setTraceEventCallback(const blink::WebString& category_filter,
-                                     TraceEventCallback cb) OVERRIDE;
-  virtual void enableTracing(const blink::WebString& category_filter) OVERRIDE;
-  virtual void disableTracing() OVERRIDE;
-  virtual void startGPUEventsRecording() OVERRIDE;
-  virtual void stopGPUEventsRecording() OVERRIDE;
+                                     TraceEventCallback cb) override;
+  virtual void enableTracing(const blink::WebString& category_filter) override;
+  virtual void disableTracing() override;
+  virtual void startGPUEventsRecording() override;
+  virtual void stopGPUEventsRecording() override;
 
   virtual void enableDeviceEmulation(
-      const blink::WebDeviceEmulationParams& params) OVERRIDE;
-  virtual void disableDeviceEmulation() OVERRIDE;
+      const blink::WebDeviceEmulationParams& params) override;
+  virtual void disableDeviceEmulation() override;
 
   void OnAttach(const std::string& host_id);
   void OnReattach(const std::string& host_id,

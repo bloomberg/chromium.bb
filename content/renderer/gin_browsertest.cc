@@ -42,7 +42,7 @@ class GinBrowserTest : public RenderViewTest {
   GinBrowserTest() {}
   virtual ~GinBrowserTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kJavaScriptFlags, "--expose_gc");
 

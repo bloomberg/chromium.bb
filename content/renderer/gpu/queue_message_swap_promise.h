@@ -25,11 +25,11 @@ class QueueMessageSwapPromise : public cc::SwapPromise {
 
   virtual ~QueueMessageSwapPromise();
 
-  virtual void DidSwap(cc::CompositorFrameMetadata* metadata) OVERRIDE;
+  virtual void DidSwap(cc::CompositorFrameMetadata* metadata) override;
 
-  virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE;
+  virtual void DidNotSwap(DidNotSwapReason reason) override;
 
-  virtual int64 TraceId() const OVERRIDE;
+  virtual int64 TraceId() const override;
 
  private:
   void PromiseCompleted();

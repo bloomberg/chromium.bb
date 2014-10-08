@@ -41,13 +41,13 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   virtual ~RendererAccessibilityComplete();
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // RendererAccessibility.
   virtual void HandleWebAccessibilityEvent(
-      const blink::WebAXObject& obj, blink::WebAXEvent event) OVERRIDE;
-  virtual RendererAccessibilityType GetType() OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
+      const blink::WebAXObject& obj, blink::WebAXEvent event) override;
+  virtual RendererAccessibilityType GetType() override;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
 
   void HandleAXEvent(const blink::WebAXObject& obj, ui::AXEvent event);
 

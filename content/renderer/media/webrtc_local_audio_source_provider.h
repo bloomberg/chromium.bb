@@ -56,21 +56,21 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   virtual void OnData(const int16* audio_data,
                       int sample_rate,
                       int number_of_channels,
-                      int number_of_frames) OVERRIDE;
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+                      int number_of_frames) override;
+  virtual void OnSetFormat(const media::AudioParameters& params) override;
   virtual void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
+      blink::WebMediaStreamSource::ReadyState state) override;
 
   // blink::WebAudioSourceProvider implementation.
-  virtual void setClient(blink::WebAudioSourceProviderClient* client) OVERRIDE;
+  virtual void setClient(blink::WebAudioSourceProviderClient* client) override;
   virtual void provideInput(const blink::WebVector<float*>& audio_data,
-                            size_t number_of_frames) OVERRIDE;
+                            size_t number_of_frames) override;
 
   // media::AudioConverter::Inputcallback implementation.
   // This function is triggered by provideInput()on the WebAudio audio thread,
   // so it has been under the protection of |lock_|.
   virtual double ProvideInput(media::AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) OVERRIDE;
+                              base::TimeDelta buffer_delay) override;
 
   // Method to allow the unittests to inject its own sink parameters to avoid
   // query the hardware.

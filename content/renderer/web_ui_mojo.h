@@ -38,8 +38,8 @@ class WebUIMojo
 
     // RenderFrameObserver overrides:
     virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
-                                          int world_id) OVERRIDE;
-    virtual void DidFinishDocumentLoad() OVERRIDE;
+                                          int world_id) override;
+    virtual void DidFinishDocumentLoad() override;
 
    private:
     WebUIMojo* web_ui_mojo_;
@@ -59,8 +59,8 @@ class WebUIMojo
   WebUIMojoContextState* GetContextState();
 
   // RenderViewObserver overrides:
-  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
+  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) override;
 
   MainFrameObserver main_frame_observer_;
 

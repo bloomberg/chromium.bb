@@ -60,10 +60,10 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // ppapi::host::ResourceHost overrides:
-  virtual bool IsCompositorHost() OVERRIDE;
+  virtual bool IsCompositorHost() override;
 
   // Message handlers:
   int32_t OnHostMsgCommitLayers(

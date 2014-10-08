@@ -60,7 +60,7 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
   // gin::ModuleRegistryObserver overrides:
   virtual void OnDidAddPendingModule(
       const std::string& id,
-      const std::vector<std::string>& dependencies) OVERRIDE;
+      const std::vector<std::string>& dependencies) override;
 
   // Frame script is executed in. Also used to download resources.
   blink::WebFrame* frame_;

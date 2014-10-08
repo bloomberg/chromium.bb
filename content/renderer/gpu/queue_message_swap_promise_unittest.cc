@@ -33,7 +33,7 @@ class TestSyncMessageFilter : public IPC::SyncMessageFilter {
  public:
   TestSyncMessageFilter() : IPC::SyncMessageFilter(NULL) {}
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     messages_.push_back(message);
     return true;
   }

@@ -62,14 +62,14 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
 
   virtual size_t addReport(blink::WebString type,
                            blink::WebString id,
-                           double timestamp) OVERRIDE {
+                           double timestamp) override {
     ++report_count_;
     return report_count_;
   }
 
   virtual void addStatistic(size_t report,
                             blink::WebString name, blink::WebString value)
-      OVERRIDE {
+      override {
     ++statistic_count_;
   }
   int report_count() const { return report_count_; }
@@ -86,20 +86,20 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
       : has_selector_(false),
         request_succeeded_called_(false) {}
 
-  virtual bool hasSelector() const OVERRIDE {
+  virtual bool hasSelector() const override {
     return has_selector_;
   }
-  virtual blink::WebMediaStreamTrack component() const OVERRIDE {
+  virtual blink::WebMediaStreamTrack component() const override {
     return component_;
   }
-  virtual scoped_refptr<LocalRTCStatsResponse> createResponse() OVERRIDE {
+  virtual scoped_refptr<LocalRTCStatsResponse> createResponse() override {
     DCHECK(!response_.get());
     response_ = new rtc::RefCountedObject<MockRTCStatsResponse>();
     return response_;
   }
 
   virtual void requestSucceeded(const LocalRTCStatsResponse* response)
-      OVERRIDE {
+      override {
     EXPECT_EQ(response, response_.get());
     request_succeeded_called_ = true;
   }

@@ -132,7 +132,7 @@ class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
   }
 
   virtual void OnFrameCaptured(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
+      const scoped_refptr<media::VideoFrame>& frame) override {
     ++number_of_capturered_frames_;
     width_ = frame->visible_rect().width();
     height_ = frame->visible_rect().height();
@@ -353,40 +353,40 @@ class MockSessionDescription : public SessionDescriptionInterface {
         sdp_(sdp) {
   }
   virtual ~MockSessionDescription() {}
-  virtual cricket::SessionDescription* description() OVERRIDE {
+  virtual cricket::SessionDescription* description() override {
     NOTIMPLEMENTED();
     return NULL;
   }
-  virtual const cricket::SessionDescription* description() const OVERRIDE {
+  virtual const cricket::SessionDescription* description() const override {
     NOTIMPLEMENTED();
     return NULL;
   }
-  virtual std::string session_id() const OVERRIDE {
+  virtual std::string session_id() const override {
     NOTIMPLEMENTED();
     return std::string();
   }
-  virtual std::string session_version() const OVERRIDE {
+  virtual std::string session_version() const override {
     NOTIMPLEMENTED();
     return std::string();
   }
-  virtual std::string type() const OVERRIDE {
+  virtual std::string type() const override {
     return type_;
   }
-  virtual bool AddCandidate(const IceCandidateInterface* candidate) OVERRIDE {
+  virtual bool AddCandidate(const IceCandidateInterface* candidate) override {
     NOTIMPLEMENTED();
     return false;
   }
-  virtual size_t number_of_mediasections() const OVERRIDE {
+  virtual size_t number_of_mediasections() const override {
     NOTIMPLEMENTED();
     return 0;
   }
   virtual const IceCandidateCollection* candidates(
-      size_t mediasection_index) const OVERRIDE {
+      size_t mediasection_index) const override {
     NOTIMPLEMENTED();
     return NULL;
   }
 
-  virtual bool ToString(std::string* out) const OVERRIDE {
+  virtual bool ToString(std::string* out) const override {
     *out = sdp_;
     return true;
   }
@@ -408,16 +408,16 @@ class MockIceCandidate : public IceCandidateInterface {
     candidate_.set_address(rtc::SocketAddress("127.0.0.1", 5000));
   }
   virtual ~MockIceCandidate() {}
-  virtual std::string sdp_mid() const OVERRIDE {
+  virtual std::string sdp_mid() const override {
     return sdp_mid_;
   }
-  virtual int sdp_mline_index() const OVERRIDE {
+  virtual int sdp_mline_index() const override {
     return sdp_mline_index_;
   }
-  virtual const cricket::Candidate& candidate() const OVERRIDE {
+  virtual const cricket::Candidate& candidate() const override {
     return candidate_;
   }
-  virtual bool ToString(std::string* out) const OVERRIDE {
+  virtual bool ToString(std::string* out) const override {
     *out = sdp_;
     return true;
   }

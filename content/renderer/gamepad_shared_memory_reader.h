@@ -22,14 +22,14 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider {
 
   // RendererGamepadProvider implementation.
   virtual void SampleGamepads(
-      blink::WebGamepads& gamepads) OVERRIDE;
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void Start(blink::WebPlatformEventListener* listener) OVERRIDE;
+      blink::WebGamepads& gamepads) override;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void Start(blink::WebPlatformEventListener* listener) override;
 
  protected:
   // PlatformEventObserver protected methods.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual void SendStartMessage() override;
+  virtual void SendStopMessage() override;
 
  private:
   void OnGamepadConnected(int index, const blink::WebGamepad& gamepad);

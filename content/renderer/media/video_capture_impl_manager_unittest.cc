@@ -56,7 +56,7 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
  protected:
   virtual VideoCaptureImpl* CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId id,
-      VideoCaptureMessageFilter* filter) const OVERRIDE {
+      VideoCaptureMessageFilter* filter) const override {
     return new MockVideoCaptureImpl(id,
                                     filter,
                                     destruct_video_capture_callback_);

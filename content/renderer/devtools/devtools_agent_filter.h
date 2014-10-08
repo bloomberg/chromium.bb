@@ -33,7 +33,7 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   static void SendRpcMessage(const DevToolsMessageData& data);
 
   // IPC::MessageFilter override. Called on IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Called on the main thread.
   void AddEmbeddedWorkerRouteOnMainThread(int32 routing_id);

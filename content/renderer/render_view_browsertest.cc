@@ -116,19 +116,19 @@ int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
 class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
   virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE {
+      WebUI* web_ui, const GURL& url) const override {
     return NULL;
   }
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                                     const GURL& url) const OVERRIDE {
+                                     const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE {
+                              const GURL& url) const override {
     return HasWebUIScheme(url);
   }
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE {
+                                      const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 };
@@ -144,7 +144,7 @@ class RenderViewImplTest : public RenderViewTest {
 
   virtual ~RenderViewImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     RenderViewTest::SetUp();
     // Enable Blink's experimental and test only features so that test code
     // does not have to bother enabling each feature.
@@ -2169,7 +2169,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
 class SuppressErrorPageTest : public RenderViewTest {
  public:
-  virtual ContentRendererClient* CreateContentRendererClient() OVERRIDE {
+  virtual ContentRendererClient* CreateContentRendererClient() override {
     return new TestContentRendererClient;
   }
 
@@ -2185,7 +2185,7 @@ class SuppressErrorPageTest : public RenderViewTest {
   class TestContentRendererClient : public ContentRendererClient {
    public:
     virtual bool ShouldSuppressErrorPage(RenderFrame* render_frame,
-                                         const GURL& url) OVERRIDE {
+                                         const GURL& url) override {
       return url == GURL("http://example.com/suppress");
     }
 
@@ -2195,7 +2195,7 @@ class SuppressErrorPageTest : public RenderViewTest {
         const blink::WebURLRequest& failed_request,
         const blink::WebURLError& error,
         std::string* error_html,
-        base::string16* error_description) OVERRIDE {
+        base::string16* error_description) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }

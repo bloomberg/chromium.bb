@@ -30,17 +30,17 @@ class CONTENT_EXPORT DeviceLightEventPump
   bool SetListener(blink::WebDeviceLightListener* listener);
 
   // PlatformEventObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendFakeDataForTesting(void* data) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void SendFakeDataForTesting(void* data) override;
 
  protected:
   // Methods overriden from base class DeviceSensorEventPump
-  virtual void FireEvent() OVERRIDE;
-  virtual bool InitializeReader(base::SharedMemoryHandle handle) OVERRIDE;
+  virtual void FireEvent() override;
+  virtual bool InitializeReader(base::SharedMemoryHandle handle) override;
 
   // PlatformEventObserver implementation.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual void SendStartMessage() override;
+  virtual void SendStopMessage() override;
 
  private:
   bool ShouldFireEvent(double data) const;

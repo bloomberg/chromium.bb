@@ -42,7 +42,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
        source_stopped_(false) {
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     webkit_source_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

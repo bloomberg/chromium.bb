@@ -30,8 +30,8 @@ class PepperMediaDeviceManager
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const GURL& document_url,
                                const EnumerateDevicesCallback& callback)
-      OVERRIDE;
-  virtual void StopEnumerateDevices(int request_id) OVERRIDE;
+      override;
+  virtual void StopEnumerateDevices(int request_id) override;
 
   typedef base::Callback<void(int /* request_id */,
                               bool /* succeeded */,
@@ -59,19 +59,19 @@ class PepperMediaDeviceManager
       int request_id,
       const std::string& label,
       const StreamDeviceInfoArray& audio_device_array,
-      const StreamDeviceInfoArray& video_device_array) OVERRIDE;
+      const StreamDeviceInfoArray& video_device_array) override;
   virtual void OnStreamGenerationFailed(
       int request_id,
-      content::MediaStreamRequestResult result) OVERRIDE;
+      content::MediaStreamRequestResult result) override;
   virtual void OnDeviceStopped(const std::string& label,
-                               const StreamDeviceInfo& device_info) OVERRIDE;
+                               const StreamDeviceInfo& device_info) override;
   virtual void OnDevicesEnumerated(int request_id,
                                    const StreamDeviceInfoArray& device_array)
-      OVERRIDE;
+      override;
   virtual void OnDeviceOpened(int request_id,
                               const std::string& label,
-                              const StreamDeviceInfo& device_info) OVERRIDE;
-  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
+                              const StreamDeviceInfo& device_info) override;
+  virtual void OnDeviceOpenFailed(int request_id) override;
 
   // Stream type conversion.
   static MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type);

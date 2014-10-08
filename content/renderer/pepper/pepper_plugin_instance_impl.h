@@ -357,177 +357,177 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   ContentDecryptorDelegate* GetContentDecryptorDelegate();
 
   // PluginInstance implementation
-  virtual RenderView* GetRenderView() OVERRIDE;
-  virtual blink::WebPluginContainer* GetContainer() OVERRIDE;
-  virtual v8::Isolate* GetIsolate() const OVERRIDE;
-  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
-  virtual const GURL& GetPluginURL() OVERRIDE;
-  virtual base::FilePath GetModulePath() OVERRIDE;
+  virtual RenderView* GetRenderView() override;
+  virtual blink::WebPluginContainer* GetContainer() override;
+  virtual v8::Isolate* GetIsolate() const override;
+  virtual ppapi::VarTracker* GetVarTracker() override;
+  virtual const GURL& GetPluginURL() override;
+  virtual base::FilePath GetModulePath() override;
   virtual PP_Resource CreateImage(gfx::ImageSkia* source_image,
-                                  float scale) OVERRIDE;
+                                  float scale) override;
   virtual PP_ExternalPluginResult SwitchToOutOfProcessProxy(
       const base::FilePath& file_path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,
-      int plugin_child_id) OVERRIDE;
-  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
-  virtual bool IsFullPagePlugin() OVERRIDE;
-  virtual bool FlashSetFullscreen(bool fullscreen, bool delay_report) OVERRIDE;
-  virtual bool IsRectTopmost(const gfx::Rect& rect) OVERRIDE;
+      int plugin_child_id) override;
+  virtual void SetAlwaysOnTop(bool on_top) override;
+  virtual bool IsFullPagePlugin() override;
+  virtual bool FlashSetFullscreen(bool fullscreen, bool delay_report) override;
+  virtual bool IsRectTopmost(const gfx::Rect& rect) override;
   virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
-                           bool from_user_action) OVERRIDE;
+                           bool from_user_action) override;
   virtual int MakePendingFileRefRendererHost(const base::FilePath& path)
-      OVERRIDE;
-  virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
-  virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
-  virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
-  virtual void SetTextInputType(ui::TextInputType type) OVERRIDE;
-  virtual void PostMessageToJavaScript(PP_Var message) OVERRIDE;
+      override;
+  virtual void SetEmbedProperty(PP_Var key, PP_Var value) override;
+  virtual void SetSelectedText(const base::string16& selected_text) override;
+  virtual void SetLinkUnderCursor(const std::string& url) override;
+  virtual void SetTextInputType(ui::TextInputType type) override;
+  virtual void PostMessageToJavaScript(PP_Var message) override;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
-                               PP_Resource device) OVERRIDE;
-  virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
-  virtual const ppapi::ViewData* GetViewData(PP_Instance instance) OVERRIDE;
-  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
-  virtual PP_Var GetWindowObject(PP_Instance instance) OVERRIDE;
-  virtual PP_Var GetOwnerElementObject(PP_Instance instance) OVERRIDE;
+                               PP_Resource device) override;
+  virtual PP_Bool IsFullFrame(PP_Instance instance) override;
+  virtual const ppapi::ViewData* GetViewData(PP_Instance instance) override;
+  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) override;
+  virtual PP_Var GetWindowObject(PP_Instance instance) override;
+  virtual PP_Var GetOwnerElementObject(PP_Instance instance) override;
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
-                               PP_Var* exception) OVERRIDE;
+                               PP_Var* exception) override;
   virtual uint32_t GetAudioHardwareOutputSampleRate(PP_Instance instance)
-      OVERRIDE;
+      override;
   virtual uint32_t GetAudioHardwareOutputBufferSize(PP_Instance instance)
-      OVERRIDE;
-  virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
-  virtual void SetPluginToHandleFindRequests(PP_Instance) OVERRIDE;
+      override;
+  virtual PP_Var GetDefaultCharSet(PP_Instance instance) override;
+  virtual void SetPluginToHandleFindRequests(PP_Instance) override;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
-                                          PP_Bool final_result) OVERRIDE;
+                                          PP_Bool final_result) override;
   virtual void SelectedFindResultChanged(PP_Instance instance,
-                                         int32_t index) OVERRIDE;
+                                         int32_t index) override;
   virtual void SetTickmarks(PP_Instance instance,
                             const PP_Rect* tickmarks,
-                            uint32_t count) OVERRIDE;
-  virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
+                            uint32_t count) override;
+  virtual PP_Bool IsFullscreen(PP_Instance instance) override;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
-                                PP_Bool fullscreen) OVERRIDE;
-  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
+                                PP_Bool fullscreen) override;
+  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) override;
   virtual ppapi::Resource* GetSingletonResource(PP_Instance instance,
                                                 ppapi::SingletonResourceID id)
-      OVERRIDE;
+      override;
   virtual int32_t RequestInputEvents(PP_Instance instance,
-                                     uint32_t event_classes) OVERRIDE;
+                                     uint32_t event_classes) override;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
-                                              uint32_t event_classes) OVERRIDE;
+                                              uint32_t event_classes) override;
   virtual void ClearInputEventRequest(PP_Instance instance,
-                                      uint32_t event_classes) OVERRIDE;
-  virtual void StartTrackingLatency(PP_Instance instance) OVERRIDE;
-  virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
+                                      uint32_t event_classes) override;
+  virtual void StartTrackingLatency(PP_Instance instance) override;
+  virtual void ZoomChanged(PP_Instance instance, double factor) override;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
-                                 double maximum_factor) OVERRIDE;
-  virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
+                                 double maximum_factor) override;
+  virtual void PostMessage(PP_Instance instance, PP_Var message) override;
   virtual int32_t RegisterMessageHandler(PP_Instance instance,
                                          void* user_data,
                                          const PPP_MessageHandler_0_2* handler,
-                                         PP_Resource message_loop) OVERRIDE;
+                                         PP_Resource message_loop) override;
   virtual int32_t RegisterMessageHandler_1_1_Deprecated(
       PP_Instance instance,
       void* user_data,
       const PPP_MessageHandler_0_1_Deprecated* handler,
-      PP_Resource message_loop) OVERRIDE;
-  virtual void UnregisterMessageHandler(PP_Instance instance) OVERRIDE;
+      PP_Resource message_loop) override;
+  virtual void UnregisterMessageHandler(PP_Instance instance) override;
   virtual PP_Bool SetCursor(PP_Instance instance,
                             PP_MouseCursor_Type type,
                             PP_Resource image,
-                            const PP_Point* hot_spot) OVERRIDE;
+                            const PP_Point* hot_spot) override;
   virtual int32_t LockMouse(PP_Instance instance,
                             scoped_refptr<ppapi::TrackedCallback> callback)
-      OVERRIDE;
-  virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+      override;
+  virtual void UnlockMouse(PP_Instance instance) override;
   virtual void SetTextInputType(PP_Instance instance,
-                                PP_TextInput_Type type) OVERRIDE;
+                                PP_TextInput_Type type) override;
   virtual void UpdateCaretPosition(PP_Instance instance,
                                    const PP_Rect& caret,
-                                   const PP_Rect& bounding_box) OVERRIDE;
-  virtual void CancelCompositionText(PP_Instance instance) OVERRIDE;
-  virtual void SelectionChanged(PP_Instance instance) OVERRIDE;
+                                   const PP_Rect& bounding_box) override;
+  virtual void CancelCompositionText(PP_Instance instance) override;
+  virtual void SelectionChanged(PP_Instance instance) override;
   virtual void UpdateSurroundingText(PP_Instance instance,
                                      const char* text,
                                      uint32_t caret,
-                                     uint32_t anchor) OVERRIDE;
+                                     uint32_t anchor) override;
   virtual PP_Var ResolveRelativeToDocument(PP_Instance instance,
                                            PP_Var relative,
                                            PP_URLComponents_Dev* components)
-      OVERRIDE;
-  virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) OVERRIDE;
+      override;
+  virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) override;
   virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
-                                            PP_Instance target) OVERRIDE;
+                                            PP_Instance target) override;
   virtual PP_Var GetDocumentURL(PP_Instance instance,
-                                PP_URLComponents_Dev* components) OVERRIDE;
+                                PP_URLComponents_Dev* components) override;
   virtual PP_Var GetPluginInstanceURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components)
-      OVERRIDE;
+      override;
   virtual PP_Var GetPluginReferrerURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components)
-      OVERRIDE;
+      override;
 
   // PPB_ContentDecryptor_Private implementation.
   virtual void PromiseResolved(PP_Instance instance,
-                               uint32 promise_id) OVERRIDE;
+                               uint32 promise_id) override;
   virtual void PromiseResolvedWithSession(PP_Instance instance,
                                           uint32 promise_id,
-                                          PP_Var web_session_id_var) OVERRIDE;
+                                          PP_Var web_session_id_var) override;
   virtual void PromiseResolvedWithKeyIds(PP_Instance instance,
                                          uint32 promise_id,
-                                         PP_Var key_ids_var) OVERRIDE;
+                                         PP_Var key_ids_var) override;
   virtual void PromiseRejected(PP_Instance instance,
                                uint32 promise_id,
                                PP_CdmExceptionCode exception_code,
                                uint32 system_code,
-                               PP_Var error_description_var) OVERRIDE;
+                               PP_Var error_description_var) override;
   virtual void SessionMessage(PP_Instance instance,
                               PP_Var web_session_id_var,
                               PP_Var message_var,
-                              PP_Var destination_url_var) OVERRIDE;
+                              PP_Var destination_url_var) override;
   virtual void SessionKeysChange(PP_Instance instance,
                                  PP_Var web_session_id_var,
-                                 PP_Bool has_additional_usable_key) OVERRIDE;
+                                 PP_Bool has_additional_usable_key) override;
   virtual void SessionExpirationChange(PP_Instance instance,
                                        PP_Var web_session_id_var,
-                                       PP_Time new_expiry_time) OVERRIDE;
+                                       PP_Time new_expiry_time) override;
   virtual void SessionReady(PP_Instance instance,
-                            PP_Var web_session_id_var) OVERRIDE;
+                            PP_Var web_session_id_var) override;
   virtual void SessionClosed(PP_Instance instance,
-                             PP_Var web_session_id_var) OVERRIDE;
+                             PP_Var web_session_id_var) override;
   virtual void SessionError(PP_Instance instance,
                             PP_Var web_session_id_var,
                             PP_CdmExceptionCode exception_code,
                             uint32 system_code,
-                            PP_Var error_description_var) OVERRIDE;
+                            PP_Var error_description_var) override;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
-                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
+                            const PP_DecryptedBlockInfo* block_info) override;
   virtual void DecoderInitializeDone(PP_Instance instance,
                                      PP_DecryptorStreamType decoder_type,
                                      uint32_t request_id,
-                                     PP_Bool success) OVERRIDE;
+                                     PP_Bool success) override;
   virtual void DecoderDeinitializeDone(PP_Instance instance,
                                        PP_DecryptorStreamType decoder_type,
-                                       uint32_t request_id) OVERRIDE;
+                                       uint32_t request_id) override;
   virtual void DecoderResetDone(PP_Instance instance,
                                 PP_DecryptorStreamType decoder_type,
-                                uint32_t request_id) OVERRIDE;
+                                uint32_t request_id) override;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
+                            const PP_DecryptedFrameInfo* frame_info) override;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource audio_frames,
                               const PP_DecryptedSampleInfo* sample_info)
-      OVERRIDE;
+      override;
 
   // Reset this instance as proxied. Assigns the instance a new module, resets
   // cached interfaces to point to the out-of-process proxy and re-sends
@@ -547,10 +547,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) OVERRIDE;
+      bool use_shared_memory) override;
 
   // RenderFrameObserver
-  virtual void OnDestruct() OVERRIDE;
+  virtual void OnDestruct() override;
 
   void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
@@ -595,9 +595,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
    public:
     GamepadImpl();
     // Resource implementation.
-    virtual ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
+    virtual ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() override;
     virtual void Sample(PP_Instance instance,
-                        PP_GamepadsSampleData* data) OVERRIDE;
+                        PP_GamepadsSampleData* data) override;
 
    private:
     virtual ~GamepadImpl();

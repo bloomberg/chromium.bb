@@ -80,7 +80,7 @@ class InputEventRecorder {
 
 class IPCMessageRecorder : public IPC::Listener {
  public:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     messages_.push_back(message);
     return true;
   }
@@ -125,7 +125,7 @@ void AddEventsToFilter(IPC::MessageFilter* message_filter,
 
 class InputEventFilterTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     filter_ = new InputEventFilter(&message_recorder_,
                                    base::MessageLoopProxy::current(),
                                    message_loop_.message_loop_proxy());

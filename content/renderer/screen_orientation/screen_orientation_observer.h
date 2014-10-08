@@ -22,11 +22,11 @@ class ScreenOrientationObserver
   virtual ~ScreenOrientationObserver();
 
   // Overriding this method just to make sure |listener| is always null.
-  virtual void Start(blink::WebPlatformEventListener* listener) OVERRIDE;
+  virtual void Start(blink::WebPlatformEventListener* listener) override;
 
  protected:
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual void SendStartMessage() override;
+  virtual void SendStopMessage() override;
 };
 
 }; // namespace content

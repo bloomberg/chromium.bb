@@ -41,24 +41,24 @@ class P2PSocketClientImpl : public P2PSocketClient {
 
   // Send the |data| to the |address|.
   virtual void Send(const net::IPEndPoint& address,
-                    const std::vector<char>& data) OVERRIDE;
+                    const std::vector<char>& data) override;
 
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|.
   virtual void SendWithDscp(const net::IPEndPoint& address,
                             const std::vector<char>& data,
-                            const rtc::PacketOptions& options) OVERRIDE;
+                            const rtc::PacketOptions& options) override;
 
   // Setting socket options.
-  virtual void SetOption(P2PSocketOption option, int value) OVERRIDE;
+  virtual void SetOption(P2PSocketOption option, int value) override;
 
   // Must be called before the socket is destroyed. The delegate may
   // not be called after |closed_task| is executed.
-  virtual void Close() OVERRIDE;
+  virtual void Close() override;
 
-  virtual int GetSocketID() const OVERRIDE;
+  virtual int GetSocketID() const override;
 
-  virtual void SetDelegate(P2PSocketClientDelegate* delegate) OVERRIDE;
+  virtual void SetDelegate(P2PSocketClientDelegate* delegate) override;
 
  private:
   enum State {

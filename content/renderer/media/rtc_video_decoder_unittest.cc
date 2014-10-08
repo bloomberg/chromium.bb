@@ -31,7 +31,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     memset(&codec_, 0, sizeof(codec_));
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(vda_thread_.Start());
     vda_task_runner_ = vda_thread_.message_loop_proxy();
     mock_vda_ = new media::MockVideoDecodeAccelerator;
@@ -47,7 +47,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     EXPECT_CALL(*mock_vda_, Destroy()).Times(1);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     VLOG(2) << "TearDown";
     EXPECT_TRUE(vda_thread_.IsRunning());
     RunUntilIdle();  // Wait until all callbascks complete.
@@ -57,7 +57,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     vda_thread_.Stop();
   }
 
-  virtual int32_t Decoded(webrtc::I420VideoFrame& decoded_image) OVERRIDE {
+  virtual int32_t Decoded(webrtc::I420VideoFrame& decoded_image) override {
     VLOG(2) << "Decoded";
     EXPECT_EQ(vda_task_runner_, base::MessageLoopProxy::current());
     return WEBRTC_VIDEO_CODEC_OK;

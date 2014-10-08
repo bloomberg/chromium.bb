@@ -25,12 +25,12 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
   CONTENT_EXPORT IpcNetworkManager(NetworkListManager* network_list_manager);
   virtual ~IpcNetworkManager();
 
-  virtual void StartUpdating() OVERRIDE;
-  virtual void StopUpdating() OVERRIDE;
+  virtual void StartUpdating() override;
+  virtual void StopUpdating() override;
 
   // P2PSocketDispatcher::NetworkListObserver interface.
   virtual void OnNetworkListChanged(
-      const net::NetworkInterfaceList& list) OVERRIDE;
+      const net::NetworkInterfaceList& list) override;
 
  private:
   void SendNetworksChangedSignal();

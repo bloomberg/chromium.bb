@@ -41,7 +41,7 @@ class MockMediaStreamDispatcherEventHandler
       int request_id,
       const std::string &label,
       const StreamDeviceInfoArray& audio_device_array,
-      const StreamDeviceInfoArray& video_device_array) OVERRIDE {
+      const StreamDeviceInfoArray& video_device_array) override {
     request_id_ = request_id;
     label_ = label;
     if (audio_device_array.size()) {
@@ -56,12 +56,12 @@ class MockMediaStreamDispatcherEventHandler
 
   virtual void OnStreamGenerationFailed(
       int request_id,
-      content::MediaStreamRequestResult result) OVERRIDE {
+      content::MediaStreamRequestResult result) override {
     request_id_ = request_id;
   }
 
   virtual void OnDeviceStopped(const std::string& label,
-                               const StreamDeviceInfo& device_info) OVERRIDE {
+                               const StreamDeviceInfo& device_info) override {
     device_stopped_label_ = label;
     if (IsVideoMediaType(device_info.device.type)) {
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(video_device_, device_info));
@@ -73,19 +73,19 @@ class MockMediaStreamDispatcherEventHandler
 
   virtual void OnDevicesEnumerated(
       int request_id,
-      const StreamDeviceInfoArray& device_array) OVERRIDE {
+      const StreamDeviceInfoArray& device_array) override {
     request_id_ = request_id;
   }
 
   virtual void OnDeviceOpened(
       int request_id,
       const std::string& label,
-      const StreamDeviceInfo& video_device) OVERRIDE {
+      const StreamDeviceInfo& video_device) override {
     request_id_ = request_id;
     label_ = label;
   }
 
-  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE {
+  virtual void OnDeviceOpenFailed(int request_id) override {
     request_id_ = request_id;
   }
 

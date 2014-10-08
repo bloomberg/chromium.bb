@@ -27,16 +27,16 @@ class InputHandlerWrapper : public InputHandlerProxyClient {
   InputHandlerProxy* input_handler_proxy() { return &input_handler_proxy_; }
 
   // InputHandlerProxyClient implementation.
-  virtual void WillShutdown() OVERRIDE;
+  virtual void WillShutdown() override;
   virtual void TransferActiveWheelFlingAnimation(
-      const blink::WebActiveWheelFlingParameters& params) OVERRIDE;
+      const blink::WebActiveWheelFlingParameters& params) override;
   virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
       blink::WebGestureDevice deviceSource,
       const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulativeScroll) OVERRIDE;
-  virtual void DidOverscroll(const DidOverscrollParams& params) OVERRIDE;
-  virtual void DidStopFlinging() OVERRIDE;
-  virtual void DidReceiveInputEvent() OVERRIDE;
+      const blink::WebSize& cumulativeScroll) override;
+  virtual void DidOverscroll(const DidOverscrollParams& params) override;
+  virtual void DidStopFlinging() override;
+  virtual void DidReceiveInputEvent() override;
 
  private:
   InputHandlerManager* input_handler_manager_;

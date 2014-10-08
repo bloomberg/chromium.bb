@@ -62,34 +62,34 @@ class CONTENT_EXPORT UserMediaClientImpl
   virtual void cancelUserMediaRequest(
       const blink::WebUserMediaRequest& user_media_request);
   virtual void requestMediaDevices(
-      const blink::WebMediaDevicesRequest& media_devices_request) OVERRIDE;
+      const blink::WebMediaDevicesRequest& media_devices_request) override;
   virtual void cancelMediaDevicesRequest(
-      const blink::WebMediaDevicesRequest& media_devices_request) OVERRIDE;
+      const blink::WebMediaDevicesRequest& media_devices_request) override;
   virtual void requestSources(
-      const blink::WebMediaStreamTrackSourcesRequest& sources_request) OVERRIDE;
+      const blink::WebMediaStreamTrackSourcesRequest& sources_request) override;
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
       int request_id,
       const std::string& label,
       const StreamDeviceInfoArray& audio_array,
-      const StreamDeviceInfoArray& video_array) OVERRIDE;
+      const StreamDeviceInfoArray& video_array) override;
   virtual void OnStreamGenerationFailed(
       int request_id,
-      MediaStreamRequestResult result) OVERRIDE;
+      MediaStreamRequestResult result) override;
   virtual void OnDeviceStopped(const std::string& label,
-                               const StreamDeviceInfo& device_info) OVERRIDE;
+                               const StreamDeviceInfo& device_info) override;
   virtual void OnDevicesEnumerated(
       int request_id,
-      const StreamDeviceInfoArray& device_array) OVERRIDE;
+      const StreamDeviceInfoArray& device_array) override;
   virtual void OnDeviceOpened(
       int request_id,
       const std::string& label,
-      const StreamDeviceInfo& device_info) OVERRIDE;
-  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
+      const StreamDeviceInfo& device_info) override;
+  virtual void OnDeviceOpenFailed(int request_id) override;
 
-  // RenderFrameObserver OVERRIDE
-  virtual void FrameWillClose() OVERRIDE;
+  // RenderFrameObserver override
+  virtual void FrameWillClose() override;
 
  protected:
   // Called when |source| has been stopped from JavaScript.

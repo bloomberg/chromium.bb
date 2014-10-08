@@ -35,41 +35,41 @@ class CONTENT_EXPORT MediaStreamCenter
 
  private:
   virtual bool getMediaStreamTrackSources(
-      const blink::WebMediaStreamTrackSourcesRequest& request) OVERRIDE;
+      const blink::WebMediaStreamTrackSourcesRequest& request) override;
 
   virtual void didCreateMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
 
   virtual void didEnableMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
 
   virtual void didDisableMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
 
   virtual void didStopLocalMediaStream(
-      const blink::WebMediaStream& stream) OVERRIDE;
+      const blink::WebMediaStream& stream) override;
 
   virtual bool didStopMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
 
   virtual blink::WebAudioSourceProvider*
       createWebAudioSourceFromMediaStreamTrack(
-          const blink::WebMediaStreamTrack& track) OVERRIDE;
+          const blink::WebMediaStreamTrack& track) override;
 
 
   virtual void didCreateMediaStream(
-      blink::WebMediaStream& stream) OVERRIDE;
+      blink::WebMediaStream& stream) override;
 
   virtual bool didAddMediaStreamTrack(
       const blink::WebMediaStream& stream,
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
 
   virtual bool didRemoveMediaStreamTrack(
       const blink::WebMediaStream& stream,
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
 
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   void OnGetSourcesComplete(int request_id,
                             const content::StreamDeviceInfoArray& devices);

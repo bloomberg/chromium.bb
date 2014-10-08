@@ -24,12 +24,12 @@ class WebUIRunner : public gin::Runner {
 
   // Runner overrides:
   virtual void Run(const std::string& source,
-                   const std::string& resource_name) OVERRIDE;
+                   const std::string& resource_name) override;
   virtual v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
                                      v8::Handle<v8::Value> receiver,
                                      int argc,
-                                     v8::Handle<v8::Value> argv[]) OVERRIDE;
-  virtual gin::ContextHolder* GetContextHolder() OVERRIDE;
+                                     v8::Handle<v8::Value> argv[]) override;
+  virtual gin::ContextHolder* GetContextHolder() override;
 
  private:
   // Frame to execute script in.

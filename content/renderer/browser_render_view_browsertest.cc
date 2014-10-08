@@ -55,7 +55,7 @@ class TestShellContentRendererClient : public ShellContentRendererClient {
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
       std::string* error_html,
-      base::string16* error_description) OVERRIDE {
+      base::string16* error_description) override {
     if (error_html)
       *error_html = "A suffusion of yellow.";
     latest_error_valid_ = true;
@@ -139,13 +139,13 @@ class RenderViewBrowserTest : public ContentBrowserTest {
  public:
   RenderViewBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // This method is needed to allow interaction with in-process renderer
     // and use of a test ContentRendererClient.
     command_line->AppendSwitch(switches::kSingleProcess);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Override setting of renderer client.
     renderer_client_ = new TestShellContentRendererClient();
     // Explicitly leaks ownership; this object will remain alive

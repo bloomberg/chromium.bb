@@ -32,11 +32,11 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
   virtual webrtc::VideoDecoder* CreateVideoDecoder(webrtc::VideoCodecType type)
-      OVERRIDE;
+      override;
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) OVERRIDE;
+  virtual void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) override;
 
  private:
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;

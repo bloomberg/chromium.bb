@@ -110,22 +110,22 @@ class CONTENT_EXPORT VideoCaptureImpl
   // VideoCaptureMessageFilter::Delegate interface.
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
                                int length,
-                               int buffer_id) OVERRIDE;
-  virtual void OnBufferDestroyed(int buffer_id) OVERRIDE;
+                               int buffer_id) override;
+  virtual void OnBufferDestroyed(int buffer_id) override;
   virtual void OnBufferReceived(int buffer_id,
                                 const media::VideoCaptureFormat& format,
                                 const gfx::Rect& visible_rect,
-                                base::TimeTicks) OVERRIDE;
+                                base::TimeTicks) override;
   virtual void OnMailboxBufferReceived(int buffer_id,
                                        const gpu::MailboxHolder& mailbox_holder,
                                        const media::VideoCaptureFormat& format,
-                                       base::TimeTicks timestamp) OVERRIDE;
-  virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
+                                       base::TimeTicks timestamp) override;
+  virtual void OnStateChanged(VideoCaptureState state) override;
   virtual void OnDeviceSupportedFormatsEnumerated(
-      const media::VideoCaptureFormats& supported_formats) OVERRIDE;
+      const media::VideoCaptureFormats& supported_formats) override;
   virtual void OnDeviceFormatsInUseReceived(
-      const media::VideoCaptureFormats& formats_in_use) OVERRIDE;
-  virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
+      const media::VideoCaptureFormats& formats_in_use) override;
+  virtual void OnDelegateAdded(int32 device_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.

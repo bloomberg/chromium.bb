@@ -20,8 +20,8 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   virtual ~MockMediaStreamVideoSink();
 
   virtual void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
-  virtual void OnEnabledChanged(bool enabled) OVERRIDE;
+      blink::WebMediaStreamSource::ReadyState state) override;
+  virtual void OnEnabledChanged(bool enabled) override;
 
   // Triggered when OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
   // is called.

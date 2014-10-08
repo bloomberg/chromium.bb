@@ -119,7 +119,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
   }
 
   // PluginResourceClient implementation:
-  virtual void WillSendRequest(const GURL& url, int http_status_code) OVERRIDE {
+  virtual void WillSendRequest(const GURL& url, int http_status_code) override {
     DCHECK(channel_.get() != NULL);
     channel_->Send(new PluginMsg_WillSendRequest(
         instance_id_, resource_id_, url, http_status_code));
@@ -129,7 +129,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
                                   const std::string& headers,
                                   uint32 expected_length,
                                   uint32 last_modified,
-                                  bool request_is_seekable) OVERRIDE {
+                                  bool request_is_seekable) override {
     DCHECK(channel_.get() != NULL);
     PluginMsg_DidReceiveResponseParams params;
     params.id = resource_id_;
@@ -146,7 +146,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
 
   virtual void DidReceiveData(const char* buffer,
                               int length,
-                              int data_offset) OVERRIDE {
+                              int data_offset) override {
     DCHECK(channel_.get() != NULL);
     DCHECK_GT(length, 0);
     std::vector<char> data;
@@ -159,7 +159,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
                                                 data, data_offset));
   }
 
-  virtual void DidFinishLoading(unsigned long resource_id) OVERRIDE {
+  virtual void DidFinishLoading(unsigned long resource_id) override {
     DCHECK(channel_.get() != NULL);
     DCHECK_EQ(resource_id, resource_id_);
     channel_->Send(new PluginMsg_DidFinishLoading(instance_id_, resource_id_));
@@ -167,7 +167,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  virtual void DidFail(unsigned long resource_id) OVERRIDE {
+  virtual void DidFail(unsigned long resource_id) override {
     DCHECK(channel_.get() != NULL);
     DCHECK_EQ(resource_id, resource_id_);
     channel_->Send(new PluginMsg_DidFail(instance_id_, resource_id_));
@@ -175,11 +175,11 @@ class ResourceClientProxy : public WebPluginResourceClient {
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  virtual bool IsMultiByteResponseExpected() OVERRIDE {
+  virtual bool IsMultiByteResponseExpected() override {
     return multibyte_response_expected_;
   }
 
-  virtual int ResourceId() OVERRIDE {
+  virtual int ResourceId() override {
     return resource_id_;
   }
 

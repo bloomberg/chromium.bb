@@ -75,7 +75,7 @@ class TypedArraySerializerImpl : public TypedArraySerializer {
 
   virtual void serializeTo(char* data,
                    size_t data_length,
-                   base::ListValue* out) OVERRIDE {
+                   base::ListValue* out) override {
     DCHECK_EQ(data_length, typed_array_->Length() * sizeof(ElementType));
     for (ElementType *element = reinterpret_cast<ElementType*>(data),
                      *end = element + typed_array_->Length();

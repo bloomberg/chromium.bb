@@ -22,7 +22,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
       base::Time::kMicrosecondsPerSecond / kDefaultPumpFrequencyHz;
 
   // PlatformEventObserver
-  virtual void Start(blink::WebPlatformEventListener* listener) OVERRIDE {
+  virtual void Start(blink::WebPlatformEventListener* listener) override {
     DVLOG(2) << "requested start";
 
     if (state_ != STOPPED)
@@ -34,7 +34,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
     state_ = PENDING_START;
   }
 
-  virtual void Stop() OVERRIDE {
+  virtual void Stop() override {
     DVLOG(2) << "stop";
 
     if (state_ == STOPPED)

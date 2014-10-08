@@ -29,7 +29,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     adapter_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

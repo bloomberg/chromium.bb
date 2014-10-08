@@ -40,14 +40,14 @@ class PepperHungPluginFilter
                          int plugin_child_id);
 
   // SyncMessageStatusReceiver implementation.
-  virtual void BeginBlockOnSyncMessage() OVERRIDE;
-  virtual void EndBlockOnSyncMessage() OVERRIDE;
+  virtual void BeginBlockOnSyncMessage() override;
+  virtual void EndBlockOnSyncMessage() override;
 
   // MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual void OnFilterRemoved() OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual void OnFilterRemoved() override;
+  virtual void OnChannelError() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~PepperHungPluginFilter();

@@ -45,7 +45,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   MOCK_METHOD1(OnDeviceFormatsInUseReceived,
                void(const media::VideoCaptureFormats& formats_in_use));
 
-  virtual void OnDelegateAdded(int32 device_id) OVERRIDE {
+  virtual void OnDelegateAdded(int32 device_id) override {
     ASSERT_TRUE(device_id != 0);
     ASSERT_TRUE(device_id_ == 0);
     device_id_ = device_id;

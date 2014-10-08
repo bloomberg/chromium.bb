@@ -108,73 +108,73 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // blink::WebRTCPeerConnectionHandler implementation
   virtual bool initialize(
       const blink::WebRTCConfiguration& server_configuration,
-      const blink::WebMediaConstraints& options) OVERRIDE;
+      const blink::WebMediaConstraints& options) override;
 
   virtual void createOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebMediaConstraints& options) OVERRIDE;
+      const blink::WebMediaConstraints& options) override;
   virtual void createOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebRTCOfferOptions& options) OVERRIDE;
+      const blink::WebRTCOfferOptions& options) override;
 
   virtual void createAnswer(
       const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebMediaConstraints& options) OVERRIDE;
+      const blink::WebMediaConstraints& options) override;
 
   virtual void setLocalDescription(
       const blink::WebRTCVoidRequest& request,
-      const blink::WebRTCSessionDescription& description) OVERRIDE;
+      const blink::WebRTCSessionDescription& description) override;
   virtual void setRemoteDescription(
         const blink::WebRTCVoidRequest& request,
-        const blink::WebRTCSessionDescription& description) OVERRIDE;
+        const blink::WebRTCSessionDescription& description) override;
 
   virtual blink::WebRTCSessionDescription localDescription()
-      OVERRIDE;
+      override;
   virtual blink::WebRTCSessionDescription remoteDescription()
-      OVERRIDE;
+      override;
 
   virtual bool updateICE(
       const blink::WebRTCConfiguration& server_configuration,
-      const blink::WebMediaConstraints& options) OVERRIDE;
+      const blink::WebMediaConstraints& options) override;
   virtual bool addICECandidate(
-      const blink::WebRTCICECandidate& candidate) OVERRIDE;
+      const blink::WebRTCICECandidate& candidate) override;
   virtual bool addICECandidate(
       const blink::WebRTCVoidRequest& request,
-      const blink::WebRTCICECandidate& candidate) OVERRIDE;
+      const blink::WebRTCICECandidate& candidate) override;
   virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
                                        bool result);
 
   virtual bool addStream(
       const blink::WebMediaStream& stream,
-      const blink::WebMediaConstraints& options) OVERRIDE;
+      const blink::WebMediaConstraints& options) override;
   virtual void removeStream(
-      const blink::WebMediaStream& stream) OVERRIDE;
+      const blink::WebMediaStream& stream) override;
   virtual void getStats(
-      const blink::WebRTCStatsRequest& request) OVERRIDE;
+      const blink::WebRTCStatsRequest& request) override;
   virtual blink::WebRTCDataChannelHandler* createDataChannel(
       const blink::WebString& label,
-      const blink::WebRTCDataChannelInit& init) OVERRIDE;
+      const blink::WebRTCDataChannelInit& init) override;
   virtual blink::WebRTCDTMFSenderHandler* createDTMFSender(
-      const blink::WebMediaStreamTrack& track) OVERRIDE;
-  virtual void stop() OVERRIDE;
+      const blink::WebMediaStreamTrack& track) override;
+  virtual void stop() override;
 
   // webrtc::PeerConnectionObserver implementation
-  virtual void OnError() OVERRIDE;
+  virtual void OnError() override;
   // Triggered when the SignalingState changed.
   virtual void OnSignalingChange(
-      webrtc::PeerConnectionInterface::SignalingState new_state) OVERRIDE;
-  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
-  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
+      webrtc::PeerConnectionInterface::SignalingState new_state) override;
+  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) override;
+  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
   virtual void OnIceCandidate(
-      const webrtc::IceCandidateInterface* candidate) OVERRIDE;
+      const webrtc::IceCandidateInterface* candidate) override;
   virtual void OnIceConnectionChange(
-      webrtc::PeerConnectionInterface::IceConnectionState new_state) OVERRIDE;
+      webrtc::PeerConnectionInterface::IceConnectionState new_state) override;
   virtual void OnIceGatheringChange(
-      webrtc::PeerConnectionInterface::IceGatheringState new_state) OVERRIDE;
+      webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
 
   virtual void OnDataChannel(
-      webrtc::DataChannelInterface* data_channel) OVERRIDE;
-  virtual void OnRenegotiationNeeded() OVERRIDE;
+      webrtc::DataChannelInterface* data_channel) override;
+  virtual void OnRenegotiationNeeded() override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.

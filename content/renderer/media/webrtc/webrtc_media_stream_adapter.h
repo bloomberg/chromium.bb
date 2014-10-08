@@ -43,8 +43,8 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
 
  protected:
   // MediaStreamObserver implementation.
-  virtual void TrackAdded(const blink::WebMediaStreamTrack& track) OVERRIDE;
-  virtual void TrackRemoved(const blink::WebMediaStreamTrack& track) OVERRIDE;
+  virtual void TrackAdded(const blink::WebMediaStreamTrack& track) override;
+  virtual void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
 
  private:
   void CreateAudioTrack(const blink::WebMediaStreamTrack& track);

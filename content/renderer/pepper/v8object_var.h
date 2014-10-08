@@ -33,8 +33,8 @@ class CONTENT_EXPORT V8ObjectVar : public Var {
   V8ObjectVar(PP_Instance instance, v8::Handle<v8::Object> v8_object);
 
   // Var overrides.
-  virtual V8ObjectVar* AsV8ObjectVar() OVERRIDE;
-  virtual PP_VarType GetType() const OVERRIDE;
+  virtual V8ObjectVar* AsV8ObjectVar() override;
+  virtual PP_VarType GetType() const override;
 
   // Returns the underlying v8 object corresponding to this V8ObjectVar. This
   // should only be used on the stack.

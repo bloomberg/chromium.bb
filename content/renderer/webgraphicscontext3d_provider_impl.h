@@ -26,8 +26,8 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   virtual ~WebGraphicsContext3DProviderImpl();
 
   // WebGraphicsContext3DProvider implementation.
-  virtual blink::WebGraphicsContext3D* context3d() OVERRIDE;
-  virtual GrContext* grContext() OVERRIDE;
+  virtual blink::WebGraphicsContext3D* context3d() override;
+  virtual GrContext* grContext() override;
 
  private:
   scoped_refptr<webkit::gpu::ContextProviderWebContext> provider_;

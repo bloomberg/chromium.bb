@@ -52,7 +52,7 @@ class TouchableRenderWidget : public RenderWidget {
   virtual ~TouchableRenderWidget() {}
 
   // Overridden from RenderWidget:
-  virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const OVERRIDE {
+  virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const override {
     for (std::vector<gfx::Rect>::const_iterator iter = rects_.begin();
          iter != rects_.end(); ++iter) {
       if ((*iter).Contains(point))
@@ -61,7 +61,7 @@ class TouchableRenderWidget : public RenderWidget {
     return false;
   }
 
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     sink_.OnMessageReceived(*msg);
     delete msg;
     return true;

@@ -111,10 +111,10 @@ class DomAutomationController : public gin::Wrappable<DomAutomationController>,
 
   // gin::WrappableBase
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // RenderViewObserver
-  virtual void OnDestruct() OVERRIDE;
+  virtual void OnDestruct() override;
 
   int automation_id_;  // routing id to be used by the next channel.
 

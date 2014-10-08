@@ -34,7 +34,7 @@ class EncryptedMediaPlayerSupportImpl
       blink::WebLocalFrame* frame,
       const blink::WebString& key_system,
       const unsigned char* init_data,
-      unsigned init_data_length)  OVERRIDE;
+      unsigned init_data_length)  override;
 
   virtual blink::WebMediaPlayer::MediaKeyException AddKey(
       const blink::WebString& key_system,
@@ -42,25 +42,25 @@ class EncryptedMediaPlayerSupportImpl
       unsigned key_length,
       const unsigned char* init_data,
       unsigned init_data_length,
-      const blink::WebString& session_id) OVERRIDE;
+      const blink::WebString& session_id) override;
 
   virtual blink::WebMediaPlayer::MediaKeyException CancelKeyRequest(
       const blink::WebString& key_system,
-      const blink::WebString& session_id) OVERRIDE;
+      const blink::WebString& session_id) override;
 
   virtual void SetInitialContentDecryptionModule(
-      blink::WebContentDecryptionModule* initial_cdm) OVERRIDE;
+      blink::WebContentDecryptionModule* initial_cdm) override;
 
   virtual void SetContentDecryptionModule(
-      blink::WebContentDecryptionModule* cdm) OVERRIDE;
+      blink::WebContentDecryptionModule* cdm) override;
   virtual void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
-      blink::WebContentDecryptionModuleResult result) OVERRIDE;
+      blink::WebContentDecryptionModuleResult result) override;
 
-  virtual media::SetDecryptorReadyCB CreateSetDecryptorReadyCB() OVERRIDE;
-  virtual media::Demuxer::NeedKeyCB CreateNeedKeyCB() OVERRIDE;
+  virtual media::SetDecryptorReadyCB CreateSetDecryptorReadyCB() override;
+  virtual media::Demuxer::NeedKeyCB CreateNeedKeyCB() override;
 
-  virtual void OnPipelineDecryptError() OVERRIDE;
+  virtual void OnPipelineDecryptError() override;
 
  private:
   explicit EncryptedMediaPlayerSupportImpl(blink::WebMediaPlayerClient* client);

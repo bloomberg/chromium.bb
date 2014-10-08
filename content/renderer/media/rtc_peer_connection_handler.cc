@@ -202,12 +202,12 @@ class CreateSessionDescriptionRequest
       PeerConnectionTracker::Action action)
       : webkit_request_(request), tracker_(handler, action) {}
 
-  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) OVERRIDE {
+  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     tracker_.TrackOnSuccess(desc);
     webkit_request_.requestSucceeded(CreateWebKitSessionDescription(desc));
     delete desc;
   }
-  virtual void OnFailure(const std::string& error) OVERRIDE {
+  virtual void OnFailure(const std::string& error) override {
     tracker_.TrackOnFailure(error);
     webkit_request_.requestFailed(base::UTF8ToUTF16(error));
   }
@@ -231,11 +231,11 @@ class SetSessionDescriptionRequest
       PeerConnectionTracker::Action action)
       : webkit_request_(request), tracker_(handler, action) {}
 
-  virtual void OnSuccess() OVERRIDE {
+  virtual void OnSuccess() override {
     tracker_.TrackOnSuccess(NULL);
     webkit_request_.requestSucceeded();
   }
-  virtual void OnFailure(const std::string& error) OVERRIDE {
+  virtual void OnFailure(const std::string& error) override {
     tracker_.TrackOnFailure(error);
     webkit_request_.requestFailed(base::UTF8ToUTF16(error));
   }
@@ -258,7 +258,7 @@ class StatsResponse : public webrtc::StatsObserver {
     TRACE_EVENT_ASYNC_BEGIN0("webrtc", "getStats_Native", this);
   }
 
-  virtual void OnComplete(const StatsReports& reports) OVERRIDE {
+  virtual void OnComplete(const StatsReports& reports) override {
     TRACE_EVENT0("webrtc", "StatsResponse::OnComplete")
     for (StatsReports::const_iterator it = reports.begin();
          it != reports.end(); ++it) {
@@ -350,14 +350,14 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
   virtual ~PeerConnectionUMAObserver() {}
 
   virtual void IncrementCounter(
-      webrtc::PeerConnectionUMAMetricsCounter counter) OVERRIDE {
+      webrtc::PeerConnectionUMAMetricsCounter counter) override {
     UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics",
                               counter,
                               webrtc::kBoundary);
   }
 
   virtual void AddHistogramSample(
-      webrtc::PeerConnectionUMAMetricsName type, int value) OVERRIDE {
+      webrtc::PeerConnectionUMAMetricsName type, int value) override {
     switch (type) {
       case webrtc::kTimeToConnect:
         UMA_HISTOGRAM_MEDIUM_TIMES(

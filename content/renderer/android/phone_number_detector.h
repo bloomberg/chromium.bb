@@ -28,9 +28,9 @@ class CONTENT_EXPORT PhoneNumberDetector : public ContentDetector {
                            const base::string16::const_iterator& end,
                            size_t* start_pos,
                            size_t* end_pos,
-                           std::string* content_text) OVERRIDE;
-  virtual GURL GetIntentURL(const std::string& content_text) OVERRIDE;
-  virtual size_t GetMaximumContentLength() OVERRIDE;
+                           std::string* content_text) override;
+  virtual GURL GetIntentURL(const std::string& content_text) override;
+  virtual size_t GetMaximumContentLength() override;
 
   const std::string region_code_;
 

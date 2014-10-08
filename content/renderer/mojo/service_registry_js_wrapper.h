@@ -29,7 +29,7 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
 
   // gin::Wrappable<ServiceRegistryJsWrapper> overrides.
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // JS interface implementation.
   mojo::Handle ConnectToService(const std::string& service_name);

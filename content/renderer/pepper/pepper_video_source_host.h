@@ -32,7 +32,7 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   // This helper object receives frames on a video worker thread and passes
@@ -44,7 +44,7 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
 
     // FrameReaderInterface implementation.
     virtual void GotFrame(const scoped_refptr<media::VideoFrame>& frame)
-        OVERRIDE;
+        override;
 
    private:
     friend class base::RefCountedThreadSafe<FrameReceiver>;

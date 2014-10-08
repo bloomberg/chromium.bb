@@ -44,8 +44,8 @@ class GinJavaBridgeDispatcher
   virtual ~GinJavaBridgeDispatcher();
 
   // RenderFrameObserver override:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidClearWindowObject() override;
 
   void GetJavaMethods(ObjectID object_id, std::set<std::string>* methods);
   bool HasJavaMethod(ObjectID object_id, const std::string& method_name);

@@ -56,8 +56,8 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // ppapi::host::ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
-  virtual bool IsGraphics2DHost() OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
+  virtual bool IsGraphics2DHost() override;
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);
   // Assciates this device with the given plugin instance. You can pass NULL

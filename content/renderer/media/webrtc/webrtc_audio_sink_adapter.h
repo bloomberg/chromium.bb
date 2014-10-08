@@ -32,8 +32,8 @@ class WebRtcAudioSinkAdapter : public MediaStreamAudioSink {
   virtual void OnData(const int16* audio_data,
                       int sample_rate,
                       int number_of_channels,
-                      int number_of_frames) OVERRIDE;
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+                      int number_of_frames) override;
+  virtual void OnSetFormat(const media::AudioParameters& params) override;
 
   webrtc::AudioTrackSinkInterface* const sink_;
 

@@ -27,16 +27,16 @@ class PPB_Buffer_Impl : public ppapi::Resource,
   uint32_t size() const { return size_; }
 
   // Resource overrides.
-  virtual ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() override;
 
   // PPB_Buffer_API implementation.
-  virtual PP_Bool Describe(uint32_t* size_in_bytes) OVERRIDE;
-  virtual PP_Bool IsMapped() OVERRIDE;
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
+  virtual PP_Bool Describe(uint32_t* size_in_bytes) override;
+  virtual PP_Bool IsMapped() override;
+  virtual void* Map() override;
+  virtual void Unmap() override;
 
   // Trusted.
-  virtual int32_t GetSharedMemory(int* handle) OVERRIDE;
+  virtual int32_t GetSharedMemory(int* handle) override;
 
  private:
   virtual ~PPB_Buffer_Impl();

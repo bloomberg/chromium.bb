@@ -25,13 +25,13 @@ class SchedulerProxyTaskRunner : public base::SingleThreadTaskRunner {
         next_sequence_num_(0) {}
 
   // base::SingleThreadTaskRunner implementation:
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE {
+  virtual bool RunsTasksOnCurrentThread() const override {
     return base::PlatformThread::CurrentId() == main_thread_id_;
   }
 
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE {
+                               base::TimeDelta delay) override {
     DCHECK(delay == base::TimeDelta());
     base::PendingTask pending_task(from_here, task);
     pending_task.sequence_num = ++next_sequence_num_;
@@ -47,7 +47,7 @@ class SchedulerProxyTaskRunner : public base::SingleThreadTaskRunner {
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE {
+      base::TimeDelta delay) override {
     NOTREACHED();
     return false;
   }

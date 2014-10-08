@@ -21,7 +21,7 @@ class MockBatteryStatusListener : public blink::WebBatteryStatusListener {
 
   // blink::WebBatteryStatusListener method.
   virtual void updateBatteryStatus(
-      const blink::WebBatteryStatus& status) OVERRIDE {
+      const blink::WebBatteryStatus& status) override {
     status_ = status;
     did_change_battery_status_ = true;
   }

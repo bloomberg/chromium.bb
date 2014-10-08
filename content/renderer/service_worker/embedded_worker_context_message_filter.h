@@ -22,8 +22,8 @@ class EmbeddedWorkerContextMessageFilter : public ChildMessageFilter {
 
   // ChildMessageFilter implementation:
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& msg) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+      const IPC::Message& msg) override;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;

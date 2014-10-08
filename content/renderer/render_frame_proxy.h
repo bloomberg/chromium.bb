@@ -83,7 +83,7 @@ class CONTENT_EXPORT RenderFrameProxy
   virtual ~RenderFrameProxy();
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
   // when a compositor frame has committed.
@@ -111,7 +111,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void Init(blink::WebRemoteFrame* frame, RenderViewImpl* render_view);
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // IPC handlers
   void OnDeleteProxy();

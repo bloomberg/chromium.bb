@@ -36,7 +36,7 @@ class CONTENT_EXPORT RemoteMediaStreamImpl
 
  private:
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() OVERRIDE;
+  virtual void OnChanged() override;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
   ScopedVector<RemoteMediaStreamTrackAdapter> video_track_observers_;

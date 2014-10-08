@@ -54,15 +54,15 @@ class CONTENT_EXPORT BrowserPluginManager
   int GetNextInstanceID();
 
   // RenderViewObserver override. Call on render thread.
-  virtual void DidCommitCompositorFrame() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual void DidCommitCompositorFrame() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual bool Send(IPC::Message* msg) override;
 
   // Don't destroy the BrowserPluginManager when the RenderViewImpl goes away.
   // BrowserPluginManager's lifetime is managed by a reference count. Once
   // the host RenderViewImpl and all BrowserPlugins release their references,
   // then the BrowserPluginManager will be destroyed.
-  virtual void OnDestruct() OVERRIDE {}
+  virtual void OnDestruct() override {}
 
  protected:
   // Friend RefCounted so that the dtor can be non-public.

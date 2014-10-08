@@ -26,7 +26,7 @@ class MockProxy : public DOMStorageProxy {
   virtual void LoadArea(int connection_id,
                         DOMStorageValuesMap* values,
                         bool* send_log_get_messages,
-                        const CompletionCallback& callback) OVERRIDE {
+                        const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_load_area_ = true;
     observed_connection_id_ = connection_id;
@@ -38,7 +38,7 @@ class MockProxy : public DOMStorageProxy {
                        const base::string16& key,
                        const base::string16& value,
                        const GURL& page_url,
-                       const CompletionCallback& callback) OVERRIDE {
+                       const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_set_item_ = true;
     observed_connection_id_ = connection_id;
@@ -49,13 +49,13 @@ class MockProxy : public DOMStorageProxy {
 
   virtual void LogGetItem(int connection_id,
                           const base::string16& key,
-                          const base::NullableString16& value) OVERRIDE {
+                          const base::NullableString16& value) override {
   }
 
   virtual void RemoveItem(int connection_id,
                           const base::string16& key,
                           const GURL& page_url,
-                          const CompletionCallback& callback) OVERRIDE {
+                          const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_remove_item_ = true;
     observed_connection_id_ = connection_id;
@@ -65,7 +65,7 @@ class MockProxy : public DOMStorageProxy {
 
   virtual void ClearArea(int connection_id,
                          const GURL& page_url,
-                         const CompletionCallback& callback) OVERRIDE {
+                         const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_clear_area_ = true;
     observed_connection_id_ = connection_id;

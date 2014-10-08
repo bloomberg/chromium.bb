@@ -32,7 +32,7 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
 
  private:
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnPermissionRequestComplete(
       int request_id, blink::WebNotificationPermission result);

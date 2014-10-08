@@ -36,10 +36,10 @@ class CONTENT_EXPORT DevToolsClient
 
  private:
   // WebDevToolsFrontendClient implementation.
-  virtual void sendMessageToBackend(const blink::WebString&) OVERRIDE;
-  virtual void sendMessageToEmbedder(const blink::WebString&) OVERRIDE;
+  virtual void sendMessageToBackend(const blink::WebString&) override;
+  virtual void sendMessageToEmbedder(const blink::WebString&) override;
 
-  virtual bool isUnderTest() OVERRIDE;
+  virtual bool isUnderTest() override;
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
 

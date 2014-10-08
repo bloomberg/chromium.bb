@@ -58,13 +58,13 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
 
   // MediaStreamAudioRenderer implementation.
   // Called on the main thread.
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void Play() OVERRIDE;
-  virtual void Pause() OVERRIDE;
-  virtual void SetVolume(float volume) OVERRIDE;
-  virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE;
-  virtual bool IsLocalRenderer() const OVERRIDE;
+  virtual void Start() override;
+  virtual void Stop() override;
+  virtual void Play() override;
+  virtual void Pause() override;
+  virtual void SetVolume(float volume) override;
+  virtual base::TimeDelta GetCurrentRenderTime() const override;
+  virtual bool IsLocalRenderer() const override;
 
   const base::TimeDelta& total_render_time() const {
     return total_render_time_;
@@ -80,17 +80,17 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   virtual void OnData(const int16* audio_data,
                       int sample_rate,
                       int number_of_channels,
-                      int number_of_frames) OVERRIDE;
+                      int number_of_frames) override;
 
   // Called on the AudioInputDevice worker thread.
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void OnSetFormat(const media::AudioParameters& params) override;
 
   // media::AudioRendererSink::RenderCallback implementation.
   // Render() is called on the AudioOutputDevice thread and OnRenderError()
   // on the IO thread.
   virtual int Render(media::AudioBus* audio_bus,
-                     int audio_delay_milliseconds) OVERRIDE;
-  virtual void OnRenderError() OVERRIDE;
+                     int audio_delay_milliseconds) override;
+  virtual void OnRenderError() override;
 
   // Initializes and starts the |sink_| if
   //  we have received valid |source_params_| &&

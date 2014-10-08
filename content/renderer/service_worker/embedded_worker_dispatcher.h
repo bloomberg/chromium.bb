@@ -26,7 +26,7 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
   virtual ~EmbeddedWorkerDispatcher();
 
   // IPC::Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void WorkerContextDestroyed(int embedded_worker_id);
 

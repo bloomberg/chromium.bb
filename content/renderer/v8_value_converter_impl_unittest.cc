@@ -720,29 +720,29 @@ class V8ValueConverterOverridingStrategyForTesting
       v8::Handle<v8::Object> value,
       base::Value** out,
       v8::Isolate* isolate,
-      const FromV8ValueCallback& callback) const OVERRIDE {
+      const FromV8ValueCallback& callback) const override {
     *out = NewReferenceValue();
     return true;
   }
   virtual bool FromV8Array(v8::Handle<v8::Array> value,
                            base::Value** out,
                            v8::Isolate* isolate,
-                           const FromV8ValueCallback& callback) const OVERRIDE {
+                           const FromV8ValueCallback& callback) const override {
     *out = NewReferenceValue();
     return true;
   }
   virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
                                  base::Value** out,
-                                 v8::Isolate* isolate) const OVERRIDE {
+                                 v8::Isolate* isolate) const override {
     *out = NewReferenceValue();
     return true;
   }
   virtual bool FromV8Number(v8::Handle<v8::Number> value,
-                            base::Value** out) const OVERRIDE {
+                            base::Value** out) const override {
     *out = NewReferenceValue();
     return true;
   }
-  virtual bool FromV8Undefined(base::Value** out) const OVERRIDE {
+  virtual bool FromV8Undefined(base::Value** out) const override {
     *out = NewReferenceValue();
     return true;
   }
@@ -813,25 +813,25 @@ class V8ValueConverterBypassStrategyForTesting
       v8::Handle<v8::Object> value,
       base::Value** out,
       v8::Isolate* isolate,
-      const FromV8ValueCallback& callback) const OVERRIDE {
+      const FromV8ValueCallback& callback) const override {
     return false;
   }
   virtual bool FromV8Array(v8::Handle<v8::Array> value,
                            base::Value** out,
                            v8::Isolate* isolate,
-                           const FromV8ValueCallback& callback) const OVERRIDE {
+                           const FromV8ValueCallback& callback) const override {
     return false;
   }
   virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
                                  base::Value** out,
-                                 v8::Isolate* isolate) const OVERRIDE {
+                                 v8::Isolate* isolate) const override {
     return false;
   }
   virtual bool FromV8Number(v8::Handle<v8::Number> value,
-                            base::Value** out) const OVERRIDE {
+                            base::Value** out) const override {
     return false;
   }
-  virtual bool FromV8Undefined(base::Value** out) const OVERRIDE {
+  virtual bool FromV8Undefined(base::Value** out) const override {
     return false;
   }
 };

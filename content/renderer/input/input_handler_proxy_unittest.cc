@@ -99,13 +99,13 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
   virtual scoped_ptr<cc::SwapPromiseMonitor>
-    CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) OVERRIDE {
+    CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) override {
       return scoped_ptr<cc::SwapPromiseMonitor>();
   }
 
-  virtual void BindToClient(cc::InputHandlerClient* client) OVERRIDE {}
+  virtual void BindToClient(cc::InputHandlerClient* client) override {}
 
-  virtual void MouseMoveAt(const gfx::Point& mouse_position) OVERRIDE {}
+  virtual void MouseMoveAt(const gfx::Point& mouse_position) override {}
 
   MOCK_METHOD2(IsCurrentlyScrollingLayerAt,
                bool(const gfx::Point& point,
@@ -115,9 +115,9 @@ class MockInputHandler : public cc::InputHandler {
 
   virtual void SetRootLayerScrollOffsetDelegate(
       cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)
-      OVERRIDE {}
+      override {}
 
-  virtual void OnRootLayerDelegatedScrollOffsetChanged() OVERRIDE {}
+  virtual void OnRootLayerDelegatedScrollOffsetChanged() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockInputHandler);
 };
@@ -158,7 +158,7 @@ class MockInputHandlerProxyClient
   MockInputHandlerProxyClient() {}
   virtual ~MockInputHandlerProxyClient() {}
 
-  virtual void WillShutdown() OVERRIDE {}
+  virtual void WillShutdown() override {}
 
   MOCK_METHOD1(TransferActiveWheelFlingAnimation,
                void(const WebActiveWheelFlingParameters&));
@@ -166,15 +166,15 @@ class MockInputHandlerProxyClient
   virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
       WebGestureDevice deviceSource,
       const WebFloatPoint& velocity,
-      const WebSize& cumulative_scroll) OVERRIDE {
+      const WebSize& cumulative_scroll) override {
     return new FakeWebGestureCurve(
         blink::WebFloatSize(velocity.x, velocity.y),
         blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
   }
 
   MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
-  virtual void DidStopFlinging() OVERRIDE {}
-  virtual void DidReceiveInputEvent() OVERRIDE {}
+  virtual void DidStopFlinging() override {}
+  virtual void DidReceiveInputEvent() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);

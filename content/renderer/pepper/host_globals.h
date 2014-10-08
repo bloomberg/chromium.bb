@@ -31,27 +31,27 @@ class HostGlobals : public ppapi::PpapiGlobals {
   }
 
   // PpapiGlobals implementation.
-  virtual ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
-  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ppapi::ResourceTracker* GetResourceTracker() override;
+  virtual ppapi::VarTracker* GetVarTracker() override;
   virtual ppapi::CallbackTracker* GetCallbackTrackerForInstance(
-      PP_Instance instance) OVERRIDE;
+      PP_Instance instance) override;
   virtual ppapi::thunk::PPB_Instance_API* GetInstanceAPI(PP_Instance instance)
-      OVERRIDE;
+      override;
   virtual ppapi::thunk::ResourceCreationAPI* GetResourceCreationAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual std::string GetCmdLine() OVERRIDE;
-  virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
+      PP_Instance instance) override;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) override;
+  virtual std::string GetCmdLine() override;
+  virtual void PreCacheFontForFlash(const void* logfontw) override;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel level,
                              const std::string& source,
-                             const std::string& value) OVERRIDE;
+                             const std::string& value) override;
   virtual void BroadcastLogWithSource(PP_Module module,
                                       PP_LogLevel level,
                                       const std::string& source,
-                                      const std::string& value) OVERRIDE;
-  virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
-  virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
+                                      const std::string& value) override;
+  virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() override;
+  virtual base::TaskRunner* GetFileTaskRunner() override;
 
   HostVarTracker* host_var_tracker() { return &host_var_tracker_; }
 
@@ -88,7 +88,7 @@ class HostGlobals : public ppapi::PpapiGlobals {
 
  private:
   // PpapiGlobals overrides.
-  virtual bool IsHostGlobals() const OVERRIDE;
+  virtual bool IsHostGlobals() const override;
 
   static HostGlobals* host_globals_;
 

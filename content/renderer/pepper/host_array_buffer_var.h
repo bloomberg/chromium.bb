@@ -22,13 +22,13 @@ class HostArrayBufferVar : public ppapi::ArrayBufferVar {
                               base::SharedMemoryHandle handle);
 
   // ArrayBufferVar implementation.
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual uint32 ByteLength() OVERRIDE;
+  virtual void* Map() override;
+  virtual void Unmap() override;
+  virtual uint32 ByteLength() override;
   virtual bool CopyToNewShmem(PP_Instance instance,
                               int* host_shm_handle_id,
                               base::SharedMemoryHandle* plugin_shm_handle)
-      OVERRIDE;
+      override;
 
   blink::WebArrayBuffer& webkit_buffer() { return buffer_; }
 

@@ -13,7 +13,7 @@ class ICOImageDecoderTest : public ImageDecoderTest {
   ICOImageDecoderTest() : ImageDecoderTest("ico") { }
 
  protected:
-  virtual blink::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
+  virtual blink::WebImageDecoder* CreateWebKitImageDecoder() const override {
      return new blink::WebImageDecoder(blink::WebImageDecoder::TypeICO);
   }
 };

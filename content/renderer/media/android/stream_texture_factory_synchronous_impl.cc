@@ -36,8 +36,8 @@ class StreamTextureProxyImpl
   // StreamTextureProxy implementation:
   virtual void BindToLoop(int32 stream_id,
                           cc::VideoFrameProvider::Client* client,
-                          scoped_refptr<base::MessageLoopProxy> loop) OVERRIDE;
-  virtual void Release() OVERRIDE;
+                          scoped_refptr<base::MessageLoopProxy> loop) override;
+  virtual void Release() override;
 
  private:
   void BindOnThread(int32 stream_id);

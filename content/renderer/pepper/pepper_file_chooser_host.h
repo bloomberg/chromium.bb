@@ -42,7 +42,7 @@ class CONTENT_EXPORT PepperFileChooserHost
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   void StoreChosenFiles(const std::vector<ChosenFileInfo>& files);
 

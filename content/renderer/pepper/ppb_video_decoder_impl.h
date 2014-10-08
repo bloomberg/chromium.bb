@@ -34,27 +34,27 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
   // PPB_VideoDecoder_Dev_API implementation.
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                          scoped_refptr<ppapi::TrackedCallback> callback)
-      OVERRIDE;
+      override;
   virtual void AssignPictureBuffers(uint32_t no_of_buffers,
                                     const PP_PictureBuffer_Dev* buffers)
-      OVERRIDE;
-  virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
+      override;
+  virtual void ReusePictureBuffer(int32_t picture_buffer_id) override;
   virtual int32_t Flush(scoped_refptr<ppapi::TrackedCallback> callback)
-      OVERRIDE;
+      override;
   virtual int32_t Reset(scoped_refptr<ppapi::TrackedCallback> callback)
-      OVERRIDE;
-  virtual void Destroy() OVERRIDE;
+      override;
+  virtual void Destroy() override;
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                      const gfx::Size& dimensions,
-                                     uint32 texture_target) OVERRIDE;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) OVERRIDE;
-  virtual void NotifyResetDone() OVERRIDE;
+                                     uint32 texture_target) override;
+  virtual void DismissPictureBuffer(int32 picture_buffer_id) override;
+  virtual void PictureReady(const media::Picture& picture) override;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  virtual void NotifyFlushDone() override;
+  virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) override;
+  virtual void NotifyResetDone() override;
 
  private:
   virtual ~PPB_VideoDecoder_Impl();

@@ -125,7 +125,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
 
   virtual cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
-      const std::vector<TurnConfiguration>& turn_configurations) OVERRIDE {
+      const std::vector<TurnConfiguration>& turn_configurations) override {
     P2PPortAllocator::Config config;
     for (size_t i = 0; i < stun_servers.size(); ++i) {
       config.stun_servers.insert(rtc::SocketAddress(

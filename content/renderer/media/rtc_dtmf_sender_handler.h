@@ -32,14 +32,14 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
 
   // blink::WebRTCDTMFSenderHandler implementation.
   virtual void setClient(
-      blink::WebRTCDTMFSenderHandlerClient* client) OVERRIDE;
-  virtual blink::WebString currentToneBuffer() OVERRIDE;
-  virtual bool canInsertDTMF() OVERRIDE;
+      blink::WebRTCDTMFSenderHandlerClient* client) override;
+  virtual blink::WebString currentToneBuffer() override;
+  virtual bool canInsertDTMF() override;
   virtual bool insertDTMF(const blink::WebString& tones, long duration,
-                          long interToneGap) OVERRIDE;
+                          long interToneGap) override;
 
   // webrtc::DtmfSenderObserverInterface implementation.
-  virtual void OnToneChange(const std::string& tone) OVERRIDE;
+  virtual void OnToneChange(const std::string& tone) override;
 
  private:
   scoped_refptr<webrtc::DtmfSenderInterface> dtmf_sender_;

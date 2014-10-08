@@ -115,7 +115,7 @@ class EvilFetcherDelegate : public FetcherDelegate {
   }
 
   virtual void OnURLFetchComplete(const WebURLResponse& response,
-                                  const std::string& data) OVERRIDE {
+                                  const std::string& data) override {
     FetcherDelegate::OnURLFetchComplete(response, data);
 
     // Destroy the ResourceFetcher here.  We are testing that upon returning
@@ -131,7 +131,7 @@ class EvilFetcherDelegate : public FetcherDelegate {
 
 class ResourceFetcherTests : public ContentBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
     // Don't want to try to create a GPU process.

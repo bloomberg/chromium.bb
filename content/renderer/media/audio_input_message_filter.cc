@@ -39,10 +39,10 @@ class AudioInputMessageFilter::AudioInputIPCImpl
                             int session_id,
                             const media::AudioParameters& params,
                             bool automatic_gain_control,
-                            uint32 total_segments) OVERRIDE;
-  virtual void RecordStream() OVERRIDE;
-  virtual void SetVolume(double volume) OVERRIDE;
-  virtual void CloseStream() OVERRIDE;
+                            uint32 total_segments) override;
+  virtual void RecordStream() override;
+  virtual void SetVolume(double volume) override;
+  virtual void CloseStream() override;
 
  private:
   const scoped_refptr<AudioInputMessageFilter> filter_;

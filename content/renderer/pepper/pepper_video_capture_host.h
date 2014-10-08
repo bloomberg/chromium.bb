@@ -37,7 +37,7 @@ class PepperVideoCaptureHost : public ppapi::host::ResourceHost {
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
   // These methods are called by PepperPlatformVideoCapture only.
 

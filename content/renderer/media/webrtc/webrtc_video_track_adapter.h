@@ -39,7 +39,7 @@ class WebRtcVideoTrackAdapter : public MediaStreamVideoSink {
 
  protected:
   // Implementation of MediaStreamSink.
-  virtual void OnEnabledChanged(bool enabled) OVERRIDE;
+  virtual void OnEnabledChanged(bool enabled) override;
 
  private:
   // Used to DCHECK that we are called on the correct thread.

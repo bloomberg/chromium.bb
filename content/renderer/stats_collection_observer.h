@@ -20,8 +20,8 @@ class StatsCollectionObserver : public RenderViewObserver {
   virtual ~StatsCollectionObserver();
 
   // RenderViewObserver implementation
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStartLoading() override;
+  virtual void DidStopLoading() override;
 
   // Timing for the page load start and stop.  These functions may return
   // a null time value under various circumstances.

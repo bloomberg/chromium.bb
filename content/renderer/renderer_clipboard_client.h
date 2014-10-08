@@ -16,27 +16,27 @@ class RendererClipboardClient : public ClipboardClient {
   RendererClipboardClient();
   virtual ~RendererClipboardClient();
 
-  virtual ui::Clipboard* GetClipboard() OVERRIDE;
-  virtual uint64 GetSequenceNumber(ui::ClipboardType type) OVERRIDE;
+  virtual ui::Clipboard* GetClipboard() override;
+  virtual uint64 GetSequenceNumber(ui::ClipboardType type) override;
   virtual bool IsFormatAvailable(ClipboardFormat format,
-                                 ui::ClipboardType type) OVERRIDE;
-  virtual void Clear(ui::ClipboardType type) OVERRIDE;
+                                 ui::ClipboardType type) override;
+  virtual void Clear(ui::ClipboardType type) override;
   virtual void ReadAvailableTypes(ui::ClipboardType type,
                                   std::vector<base::string16>* types,
-                                  bool* contains_filenames) OVERRIDE;
+                                  bool* contains_filenames) override;
   virtual void ReadText(ui::ClipboardType type,
-                        base::string16* result) OVERRIDE;
+                        base::string16* result) override;
   virtual void ReadHTML(ui::ClipboardType type,
                         base::string16* markup,
                         GURL* url,
                         uint32* fragment_start,
-                        uint32* fragment_end) OVERRIDE;
-  virtual void ReadRTF(ui::ClipboardType type, std::string* result) OVERRIDE;
-  virtual void ReadImage(ui::ClipboardType type, std::string* data) OVERRIDE;
+                        uint32* fragment_end) override;
+  virtual void ReadRTF(ui::ClipboardType type, std::string* result) override;
+  virtual void ReadImage(ui::ClipboardType type, std::string* data) override;
   virtual void ReadCustomData(ui::ClipboardType clipboard_type,
                               const base::string16& type,
-                              base::string16* data) OVERRIDE;
-  virtual WriteContext* CreateWriteContext() OVERRIDE;
+                              base::string16* data) override;
+  virtual WriteContext* CreateWriteContext() override;
 };
 
 }  // namespace content

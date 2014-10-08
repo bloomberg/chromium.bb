@@ -56,23 +56,23 @@ class WebPluginDelegateProxy
                          RenderFrameImpl* render_frame);
 
   // WebPluginDelegate implementation:
-  virtual void PluginDestroyed() OVERRIDE;
+  virtual void PluginDestroyed() override;
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
-                          bool load_manually) OVERRIDE;
+                          bool load_manually) override;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
-                              const gfx::Rect& clip_rect) OVERRIDE;
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
-  virtual NPObject* GetPluginScriptableObject() OVERRIDE;
-  virtual struct _NPP* GetPluginNPP() OVERRIDE;
-  virtual bool GetFormValue(base::string16* value) OVERRIDE;
+                              const gfx::Rect& clip_rect) override;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) override;
+  virtual NPObject* GetPluginScriptableObject() override;
+  virtual struct _NPP* GetPluginNPP() override;
+  virtual bool GetFormValue(base::string16* value) override;
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
-                                       int notify_id) OVERRIDE;
-  virtual void SetFocus(bool focused) OVERRIDE;
+                                       int notify_id) override;
+  virtual void SetFocus(bool focused) override;
   virtual bool HandleInputEvent(const blink::WebInputEvent& event,
-                                WebCursor::CursorInfo* cursor) OVERRIDE;
-  virtual int GetProcessId() OVERRIDE;
+                                WebCursor::CursorInfo* cursor) override;
+  virtual int GetProcessId() override;
 
   // Informs the plugin that its containing content view has gained or lost
   // first responder status.
@@ -104,29 +104,29 @@ class WebPluginDelegateProxy
 #endif
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelError() override;
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
                                     bool success,
-                                    int notify_id) OVERRIDE;
+                                    int notify_id) override;
 
   virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
                                         const std::string& headers,
                                         uint32 expected_length,
-                                        uint32 last_modified) OVERRIDE;
-  virtual void DidReceiveManualData(const char* buffer, int length) OVERRIDE;
-  virtual void DidFinishManualLoading() OVERRIDE;
-  virtual void DidManualLoadFail() OVERRIDE;
+                                        uint32 last_modified) override;
+  virtual void DidReceiveManualData(const char* buffer, int length) override;
+  virtual void DidFinishManualLoading() override;
+  virtual void DidManualLoadFail() override;
   virtual WebPluginResourceClient* CreateResourceClient(
-      unsigned long resource_id, const GURL& url, int notify_id) OVERRIDE;
+      unsigned long resource_id, const GURL& url, int notify_id) override;
   virtual WebPluginResourceClient* CreateSeekableResourceClient(
-      unsigned long resource_id, int range_request_id) OVERRIDE;
+      unsigned long resource_id, int range_request_id) override;
   virtual void FetchURL(unsigned long resource_id,
                         int notify_id,
                         const GURL& url,
@@ -139,7 +139,7 @@ class WebPluginDelegateProxy
                         bool is_plugin_src_load,
                         int origin_pid,
                         int render_frame_id,
-                        int render_view_id) OVERRIDE;
+                        int render_view_id) override;
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
 

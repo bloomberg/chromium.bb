@@ -51,7 +51,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   };
 
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   //
   // The following methods send an update to the browser process when a

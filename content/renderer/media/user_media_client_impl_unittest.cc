@@ -77,14 +77,14 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 
   virtual void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
-      blink::WebUserMediaRequest* request_info) OVERRIDE {
+      blink::WebUserMediaRequest* request_info) override {
     last_generated_stream_ = stream;
     state_ = REQUEST_SUCCEEDED;
   }
 
   virtual void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
-      content::MediaStreamRequestResult result) OVERRIDE {
+      content::MediaStreamRequestResult result) override {
     last_generated_stream_.reset();
     state_ = REQUEST_FAILED;
     result_ = result;
@@ -93,7 +93,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   virtual void GetUserMediaRequestTrackStartedFailed(
       blink::WebUserMediaRequest* request_info,
       MediaStreamRequestResult result,
-      const blink::WebString& result_name) OVERRIDE {
+      const blink::WebString& result_name) override {
     last_generated_stream_.reset();
     state_ = REQUEST_FAILED;
     result_ = result;
@@ -102,21 +102,21 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 
   virtual void EnumerateDevicesSucceded(
       blink::WebMediaDevicesRequest* request,
-      blink::WebVector<blink::WebMediaDeviceInfo>& devices) OVERRIDE {
+      blink::WebVector<blink::WebMediaDeviceInfo>& devices) override {
     state_ = REQUEST_SUCCEEDED;
     last_devices_ = devices;
   }
 
   virtual void EnumerateSourcesSucceded(
       blink::WebMediaStreamTrackSourcesRequest* request,
-      blink::WebVector<blink::WebSourceInfo>& sources) OVERRIDE {
+      blink::WebVector<blink::WebSourceInfo>& sources) override {
     state_ = REQUEST_SUCCEEDED;
     last_sources_ = sources;
   }
 
   virtual MediaStreamVideoSource* CreateVideoSource(
       const StreamDeviceInfo& device,
-      const MediaStreamSource::SourceStoppedCallback& stop_callback) OVERRIDE {
+      const MediaStreamSource::SourceStoppedCallback& stop_callback) override {
     video_source_ = new MockMediaStreamVideoCapturerSource(device,
                                                            stop_callback,
                                                            factory_);
@@ -170,7 +170,7 @@ class UserMediaClientImplTest : public ::testing::Test {
         scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_).Pass()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     used_media_impl_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

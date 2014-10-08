@@ -69,16 +69,16 @@ class ResourceConverterImpl : public ResourceConverter {
   virtual ~ResourceConverterImpl();
 
   // ResourceConverter overrides.
-  virtual void Reset() OVERRIDE;
-  virtual bool NeedsFlush() OVERRIDE;
-  virtual void Flush(const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void Reset() override;
+  virtual bool NeedsFlush() override;
+  virtual void Flush(const base::Callback<void(bool)>& callback) override;
   virtual bool FromV8Value(v8::Handle<v8::Object> val,
                            v8::Handle<v8::Context> context,
                            PP_Var* result,
-                           bool* was_resource) OVERRIDE;
+                           bool* was_resource) override;
   virtual bool ToV8Value(const PP_Var& var,
                          v8::Handle<v8::Context> context,
-                         v8::Handle<v8::Value>* result) OVERRIDE;
+                         v8::Handle<v8::Value>* result) override;
 
  private:
   // Creates a resource var with the given |pending_renderer_id| and

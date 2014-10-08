@@ -115,11 +115,11 @@ class RTCVideoEncoder::Impl
   // media::VideoEncodeAccelerator::Client implementation.
   virtual void RequireBitstreamBuffers(unsigned int input_count,
                                        const gfx::Size& input_coded_size,
-                                       size_t output_buffer_size) OVERRIDE;
+                                       size_t output_buffer_size) override;
   virtual void BitstreamBufferReady(int32 bitstream_buffer_id,
                                     size_t payload_size,
-                                    bool key_frame) OVERRIDE;
-  virtual void NotifyError(media::VideoEncodeAccelerator::Error error) OVERRIDE;
+                                    bool key_frame) override;
+  virtual void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
  private:
   friend class base::RefCountedThreadSafe<Impl>;

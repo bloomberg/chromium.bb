@@ -50,25 +50,25 @@ class HostVarTracker : public ppapi::VarTracker {
       PP_Instance instance,
       const IPC::Message& creation_message,
       int pending_renderer_id,
-      int pending_browser_id) OVERRIDE;
-  virtual ppapi::ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE;
-  virtual void DidDeleteInstance(PP_Instance pp_instance) OVERRIDE;
+      int pending_browser_id) override;
+  virtual ppapi::ResourceVar* MakeResourceVar(PP_Resource pp_resource) override;
+  virtual void DidDeleteInstance(PP_Instance pp_instance) override;
 
   virtual int TrackSharedMemoryHandle(PP_Instance instance,
                                       base::SharedMemoryHandle file,
-                                      uint32 size_in_bytes) OVERRIDE;
+                                      uint32 size_in_bytes) override;
   virtual bool StopTrackingSharedMemoryHandle(int id,
                                               PP_Instance instance,
                                               base::SharedMemoryHandle* handle,
-                                              uint32* size_in_bytes) OVERRIDE;
+                                              uint32* size_in_bytes) override;
 
  private:
   // VarTracker private implementation.
   virtual ppapi::ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes)
-      OVERRIDE;
+      override;
   virtual ppapi::ArrayBufferVar* CreateShmArrayBuffer(
       uint32 size_in_bytes,
-      base::SharedMemoryHandle handle) OVERRIDE;
+      base::SharedMemoryHandle handle) override;
 
   // Clear the reference count of the given object and remove it from
   // live_vars_.

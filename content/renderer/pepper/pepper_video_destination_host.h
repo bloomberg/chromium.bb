@@ -28,7 +28,7 @@ class CONTENT_EXPORT PepperVideoDestinationHost
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,

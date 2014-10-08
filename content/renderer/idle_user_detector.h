@@ -27,7 +27,7 @@ class IdleUserDetector : public RenderViewObserver {
 
  private:
   // RenderViewObserver implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnHandleInputEvent(const blink::WebInputEvent* event,
                           const ui::LatencyInfo& latency_info,

@@ -40,13 +40,13 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
   // cricket::VideoCapturer implementation.
   // These methods are accessed from a libJingle worker thread.
   virtual cricket::CaptureState Start(
-      const cricket::VideoFormat& capture_format) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual bool IsRunning() OVERRIDE;
-  virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) OVERRIDE;
+      const cricket::VideoFormat& capture_format) override;
+  virtual void Stop() override;
+  virtual bool IsRunning() override;
+  virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) override;
   virtual bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
-                                    cricket::VideoFormat* best_format) OVERRIDE;
-  virtual bool IsScreencast() const OVERRIDE;
+                                    cricket::VideoFormat* best_format) override;
+  virtual bool IsScreencast() const override;
 
   void UpdateI420Buffer(const scoped_refptr<media::VideoFrame>& src);
 

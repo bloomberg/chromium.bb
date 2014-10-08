@@ -91,24 +91,24 @@ class WebPluginImpl : public WebPlugin,
   virtual void didFailLoadingFrameRequest(
       const blink::WebURL& url, void* notify_data,
       const blink::WebURLError& error);
-  virtual bool isPlaceholder() OVERRIDE;
+  virtual bool isPlaceholder() override;
 
   // WebPlugin implementation:
-  virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
-  virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
-  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
-  virtual void CancelResource(unsigned long id) OVERRIDE;
-  virtual void Invalidate() OVERRIDE;
-  virtual void InvalidateRect(const gfx::Rect& rect) OVERRIDE;
-  virtual NPObject* GetWindowScriptNPObject() OVERRIDE;
-  virtual NPObject* GetPluginElement() OVERRIDE;
+  virtual void SetWindow(gfx::PluginWindowHandle window) override;
+  virtual void SetAcceptsInputEvents(bool accepts) override;
+  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) override;
+  virtual void CancelResource(unsigned long id) override;
+  virtual void Invalidate() override;
+  virtual void InvalidateRect(const gfx::Rect& rect) override;
+  virtual NPObject* GetWindowScriptNPObject() override;
+  virtual NPObject* GetPluginElement() override;
   virtual bool FindProxyForUrl(const GURL& url,
-                               std::string* proxy_list) OVERRIDE;
+                               std::string* proxy_list) override;
   virtual void SetCookie(const GURL& url,
                          const GURL& first_party_for_cookies,
-                         const std::string& cookie) OVERRIDE;
+                         const std::string& cookie) override;
   virtual std::string GetCookies(const GURL& url,
-                                 const GURL& first_party_for_cookies) OVERRIDE;
+                                 const GURL& first_party_for_cookies) override;
   virtual void HandleURLRequest(const char* url,
                                 const char *method,
                                 const char* target,
@@ -116,18 +116,18 @@ class WebPluginImpl : public WebPlugin,
                                 unsigned int len,
                                 int notify_id,
                                 bool popups_allowed,
-                                bool notify_redirects) OVERRIDE;
-  virtual void CancelDocumentLoad() OVERRIDE;
+                                bool notify_redirects) override;
+  virtual void CancelDocumentLoad() override;
   virtual void InitiateHTTPRangeRequest(const char* url,
                                         const char* range_info,
-                                        int pending_request_id) OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+                                        int pending_request_id) override;
+  virtual void DidStartLoading() override;
+  virtual void DidStopLoading() override;
+  virtual bool IsOffTheRecord() override;
   virtual void SetDeferResourceLoading(unsigned long resource_id,
-                                       bool defer) OVERRIDE;
-  virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
-  virtual bool CheckIfRunInsecureContent(const GURL& url) OVERRIDE;
+                                       bool defer) override;
+  virtual void URLRedirectResponse(bool allow, int resource_id) override;
+  virtual bool CheckIfRunInsecureContent(const GURL& url) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window) { }
@@ -136,12 +136,12 @@ class WebPluginImpl : public WebPlugin,
 #endif
 #if defined(OS_MACOSX)
   virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
-      gfx::GpuPreference gpu_preference) OVERRIDE;
-  virtual void AcceleratedPluginEnabledRendering() OVERRIDE;
+      gfx::GpuPreference gpu_preference) override;
+  virtual void AcceleratedPluginEnabledRendering() override;
   virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
                                                    int32 height,
-                                                   uint32 surface_id) OVERRIDE;
-  virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
+                                                   uint32 surface_id) override;
+  virtual void AcceleratedPluginSwappedIOSurface() override;
 #endif
 
  private:
@@ -330,27 +330,27 @@ class WebPluginImpl : public WebPlugin,
 
     virtual void willSendRequest(blink::WebURLLoader*,
                                  blink::WebURLRequest&,
-                                 const blink::WebURLResponse&) OVERRIDE;
+                                 const blink::WebURLResponse&) override;
     virtual void didSendData(blink::WebURLLoader*,
                              unsigned long long bytesSent,
-                             unsigned long long totalBytesToBeSent) OVERRIDE;
+                             unsigned long long totalBytesToBeSent) override;
     virtual void didReceiveResponse(blink::WebURLLoader*,
-                                    const blink::WebURLResponse&) OVERRIDE;
+                                    const blink::WebURLResponse&) override;
     virtual void didDownloadData(blink::WebURLLoader*,
                                  int dataLength,
-                                 int encodedDataLength) OVERRIDE;
+                                 int encodedDataLength) override;
     virtual void didReceiveData(blink::WebURLLoader*,
                                 const char* data,
                                 int dataLength,
-                                int encodedDataLength) OVERRIDE;
+                                int encodedDataLength) override;
     virtual void didReceiveCachedMetadata(blink::WebURLLoader*,
                                           const char* data,
-                                          int dataLength) OVERRIDE;
+                                          int dataLength) override;
     virtual void didFinishLoading(blink::WebURLLoader*,
                                   double finishTime,
-                                  int64_t total_encoded_data_length) OVERRIDE;
+                                  int64_t total_encoded_data_length) override;
     virtual void didFail(blink::WebURLLoader*,
-                         const blink::WebURLError&) OVERRIDE;
+                         const blink::WebURLError&) override;
 
    private:
     WebPluginImpl* parent_;

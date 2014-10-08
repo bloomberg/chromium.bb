@@ -46,25 +46,25 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   // media::GpuVideoAcceleratorFactories implementation.
   virtual scoped_ptr<media::VideoDecodeAccelerator>
-      CreateVideoDecodeAccelerator() OVERRIDE;
+      CreateVideoDecodeAccelerator() override;
   virtual scoped_ptr<media::VideoEncodeAccelerator>
-      CreateVideoEncodeAccelerator() OVERRIDE;
+      CreateVideoEncodeAccelerator() override;
   // Creates textures and produces them into mailboxes. Returns true on success
   // or false on failure.
   virtual bool CreateTextures(int32 count,
                               const gfx::Size& size,
                               std::vector<uint32>* texture_ids,
                               std::vector<gpu::Mailbox>* texture_mailboxes,
-                              uint32 texture_target) OVERRIDE;
-  virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
+                              uint32 texture_target) override;
+  virtual void DeleteTexture(uint32 texture_id) override;
+  virtual void WaitSyncPoint(uint32 sync_point) override;
   virtual void ReadPixels(uint32 texture_id,
                           const gfx::Rect& visible_rect,
-                          const SkBitmap& pixels) OVERRIDE;
-  virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE;
+                          const SkBitmap& pixels) override;
+  virtual base::SharedMemory* CreateSharedMemory(size_t size) override;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetVideoEncodeAcceleratorSupportedProfiles() OVERRIDE;
+      GetVideoEncodeAcceleratorSupportedProfiles() override;
 
  private:
   friend class base::RefCountedThreadSafe<RendererGpuVideoAcceleratorFactories>;

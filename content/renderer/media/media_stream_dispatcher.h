@@ -110,10 +110,10 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // opened it.
   struct Stream;
 
-  // RenderFrameObserver OVERRIDE.
-  virtual void OnDestruct() OVERRIDE;
-  virtual bool Send(IPC::Message* message) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // RenderFrameObserver override.
+  virtual void OnDestruct() override;
+  virtual bool Send(IPC::Message* message) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Messages from the browser.
   void OnStreamGenerated(

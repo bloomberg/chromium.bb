@@ -34,8 +34,8 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   // Implements webrtc::VideoRendererInterface used for receiving video frames
   // from the PeerConnection video track. May be called on a libjingle internal
   // thread.
-  virtual void SetSize(int width, int height) OVERRIDE;
-  virtual void RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
+  virtual void SetSize(int width, int height) override;
+  virtual void RenderFrame(const cricket::VideoFrame* frame) override;
 
   void DoRenderFrameOnIOThread(scoped_refptr<media::VideoFrame> video_frame,
                                const media::VideoCaptureFormat& format);

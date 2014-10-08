@@ -54,19 +54,19 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // is left to the eventual handler to deliver the corresponding
   // InputHostMsg_HandleInputEvent_ACK.
   //
-  virtual void SetBoundHandler(const Handler& handler) OVERRIDE;
+  virtual void SetBoundHandler(const Handler& handler) override;
   virtual void DidAddInputHandler(int routing_id,
-                                  cc::InputHandler* input_handler) OVERRIDE;
-  virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
+                                  cc::InputHandler* input_handler) override;
+  virtual void DidRemoveInputHandler(int routing_id) override;
   virtual void DidOverscroll(int routing_id,
-                             const DidOverscrollParams& params) OVERRIDE;
-  virtual void DidStopFlinging(int routing_id) OVERRIDE;
+                             const DidOverscrollParams& params) override;
+  virtual void DidStopFlinging(int routing_id) override;
 
   // IPC::MessageFilter methods:
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual void OnFilterRemoved() OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual void OnFilterRemoved() override;
+  virtual void OnChannelClosing() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~InputEventFilter();

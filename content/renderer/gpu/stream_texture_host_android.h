@@ -38,8 +38,8 @@ class StreamTextureHost : public IPC::Listener {
   bool BindToCurrentThread(int32 stream_id, Listener* listener);
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
  private:
   // Message handlers:

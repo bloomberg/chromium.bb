@@ -249,35 +249,35 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // RenderFrame implementation:
-  virtual RenderView* GetRenderView() OVERRIDE;
-  virtual int GetRoutingID() OVERRIDE;
-  virtual blink::WebLocalFrame* GetWebFrame() OVERRIDE;
-  virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
+  virtual RenderView* GetRenderView() override;
+  virtual int GetRoutingID() override;
+  virtual blink::WebLocalFrame* GetWebFrame() override;
+  virtual WebPreferences& GetWebkitPreferences() override;
   virtual int ShowContextMenu(ContextMenuClient* client,
-                              const ContextMenuParams& params) OVERRIDE;
-  virtual void CancelContextMenu(int request_id) OVERRIDE;
-  virtual blink::WebNode GetContextMenuNode() const OVERRIDE;
+                              const ContextMenuParams& params) override;
+  virtual void CancelContextMenu(int request_id) override;
+  virtual blink::WebNode GetContextMenuNode() const override;
   virtual blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,
       const WebPluginInfo& info,
-      const blink::WebPluginParams& params) OVERRIDE;
+      const blink::WebPluginParams& params) override;
   virtual void LoadURLExternally(blink::WebLocalFrame* frame,
                                  const blink::WebURLRequest& request,
-                                 blink::WebNavigationPolicy policy) OVERRIDE;
-  virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
-  virtual bool IsHidden() OVERRIDE;
-  virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
-  virtual bool IsFTPDirectoryListing() OVERRIDE;
-  virtual void AttachGuest(int element_instance_id) OVERRIDE;
+                                 blink::WebNavigationPolicy policy) override;
+  virtual void ExecuteJavaScript(const base::string16& javascript) override;
+  virtual bool IsHidden() override;
+  virtual ServiceRegistry* GetServiceRegistry() override;
+  virtual bool IsFTPDirectoryListing() override;
+  virtual void AttachGuest(int element_instance_id) override;
   virtual void SetSelectedText(const base::string16& selection_text,
                                size_t offset,
-                               const gfx::Range& range) OVERRIDE;
+                               const gfx::Range& range) override;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -458,9 +458,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didChangeManifest(blink::WebLocalFrame*);
 
   // WebMediaPlayerDelegate implementation:
-  virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
-  virtual void DidPause(blink::WebMediaPlayer* player) OVERRIDE;
-  virtual void PlayerGone(blink::WebMediaPlayer* player) OVERRIDE;
+  virtual void DidPlay(blink::WebMediaPlayer* player) override;
+  virtual void DidPause(blink::WebMediaPlayer* player) override;
+  virtual void PlayerGone(blink::WebMediaPlayer* player) override;
 
   // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
   // this back to private member.

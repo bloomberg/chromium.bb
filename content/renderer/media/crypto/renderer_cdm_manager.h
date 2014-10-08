@@ -33,7 +33,7 @@ class RendererCdmManager : public RenderFrameObserver {
   virtual ~RendererCdmManager();
 
   // RenderFrameObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Encrypted media related methods.
   void InitializeCdm(int cdm_id,

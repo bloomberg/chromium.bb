@@ -27,7 +27,7 @@ class PeerConnectionIdentityService
   virtual bool RequestIdentity(
       const std::string& identity_name,
       const std::string& common_name,
-      webrtc::DTLSIdentityRequestObserver* observer) OVERRIDE;
+      webrtc::DTLSIdentityRequestObserver* observer) override;
 
  private:
   void OnIdentityReady(const std::string& certificate,

@@ -40,8 +40,8 @@ class ManifestManager : public RenderFrameObserver {
   void GetManifest(const GetManifestCallback& callback);
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidChangeManifest() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidChangeManifest() override;
 
  private:
   enum ResolveState {

@@ -61,11 +61,11 @@ class PepperPlatformAudioInput
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
                                int length,
-                               int total_segments) OVERRIDE;
-  virtual void OnVolume(double volume) OVERRIDE;
+                               int total_segments) override;
+  virtual void OnVolume(double volume) override;
   virtual void OnStateChanged(media::AudioInputIPCDelegate::State state)
-      OVERRIDE;
-  virtual void OnIPCClosed() OVERRIDE;
+      override;
+  virtual void OnIPCClosed() override;
 
  protected:
   virtual ~PepperPlatformAudioInput();

@@ -23,13 +23,13 @@ class CONTENT_EXPORT BatteryStatusDispatcher
   virtual ~BatteryStatusDispatcher();
 
   // PlatformEventObserver public methods.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendFakeDataForTesting(void* data) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  virtual void SendFakeDataForTesting(void* data) override;
 
  protected:
   // PlatformEventObserver protected methods.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual void SendStartMessage() override;
+  virtual void SendStopMessage() override;
 
  private:
   void OnDidChange(const blink::WebBatteryStatus& status);

@@ -56,34 +56,34 @@ class CONTENT_EXPORT RTCVideoDecoder
   // webrtc::VideoDecoder implementation.
   // Called on WebRTC DecodingThread.
   virtual int32_t InitDecode(const webrtc::VideoCodec* codecSettings,
-                             int32_t numberOfCores) OVERRIDE;
+                             int32_t numberOfCores) override;
   // Called on WebRTC DecodingThread.
   virtual int32_t Decode(
       const webrtc::EncodedImage& inputImage,
       bool missingFrames,
       const webrtc::RTPFragmentationHeader* fragmentation,
       const webrtc::CodecSpecificInfo* codecSpecificInfo = NULL,
-      int64_t renderTimeMs = -1) OVERRIDE;
+      int64_t renderTimeMs = -1) override;
   // Called on WebRTC DecodingThread.
   virtual int32_t RegisterDecodeCompleteCallback(
-      webrtc::DecodedImageCallback* callback) OVERRIDE;
+      webrtc::DecodedImageCallback* callback) override;
   // Called on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual int32_t Release() OVERRIDE;
+  virtual int32_t Release() override;
   // Called on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual int32_t Reset() OVERRIDE;
+  virtual int32_t Reset() override;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(uint32 count,
                                      const gfx::Size& size,
-                                     uint32 texture_target) OVERRIDE;
-  virtual void DismissPictureBuffer(int32 id) OVERRIDE;
-  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyEndOfBitstreamBuffer(int32 id) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
+                                     uint32 texture_target) override;
+  virtual void DismissPictureBuffer(int32 id) override;
+  virtual void PictureReady(const media::Picture& picture) override;
+  virtual void NotifyEndOfBitstreamBuffer(int32 id) override;
+  virtual void NotifyFlushDone() override;
+  virtual void NotifyResetDone() override;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
  private:
   class SHMBuffer;

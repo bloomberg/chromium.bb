@@ -41,7 +41,7 @@ class MessageThrottlingFilter : public IPC::MessageFilter {
  private:
   virtual ~MessageThrottlingFilter() {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   int GetPendingCount() { return IncrementPendingCountN(0); }
   int IncrementPendingCount() { return IncrementPendingCountN(1); }
@@ -111,18 +111,18 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   // DOMStorageProxy interface for use by DOMStorageCachedArea.
   virtual void LoadArea(int connection_id, DOMStorageValuesMap* values,
                         bool* send_log_get_messages,
-                        const CompletionCallback& callback) OVERRIDE;
+                        const CompletionCallback& callback) override;
   virtual void SetItem(int connection_id, const base::string16& key,
                        const base::string16& value, const GURL& page_url,
-                       const CompletionCallback& callback) OVERRIDE;
+                       const CompletionCallback& callback) override;
   virtual void LogGetItem(int connection_id, const base::string16& key,
-                          const base::NullableString16& value) OVERRIDE;
+                          const base::NullableString16& value) override;
   virtual void RemoveItem(int connection_id, const base::string16& key,
                           const GURL& page_url,
-                          const CompletionCallback& callback) OVERRIDE;
+                          const CompletionCallback& callback) override;
   virtual void ClearArea(int connection_id,
                         const GURL& page_url,
-                        const CompletionCallback& callback) OVERRIDE;
+                        const CompletionCallback& callback) override;
 
  private:
   // Struct to hold references to our contained areas and
