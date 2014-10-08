@@ -66,6 +66,9 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   base::HourClockType GetHourTypeForTesting() const;
 
  private:
+  // Sets active rendering state and updates the color of |date_label_|.
+  void SetActive(bool active);
+
   // Overridden from BaseDateTimeView.
   virtual void UpdateTextInternal(const base::Time& now) override;
 
@@ -75,6 +78,7 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   // Overridden from views::View.
   virtual void OnMouseEntered(const ui::MouseEvent& event) override;
   virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   views::Label* date_label_;
 

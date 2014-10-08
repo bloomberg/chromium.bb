@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +18,7 @@
 #include "third_party/icu/source/i18n/unicode/dtptngen.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -165,6 +167,12 @@ base::HourClockType DateView::GetHourTypeForTesting() const {
   return hour_type_;
 }
 
+void DateView::SetActive(bool active) {
+  date_label_->SetEnabledColor(active ? kHeaderTextColorHover
+                                      : kHeaderTextColorNormal);
+  SchedulePaint();
+}
+
 void DateView::UpdateTextInternal(const base::Time& now) {
   SetAccessibleName(
       base::TimeFormatFriendlyDate(now) +
@@ -189,15 +197,25 @@ bool DateView::PerformAction(const ui::Event& event) {
 void DateView::OnMouseEntered(const ui::MouseEvent& event) {
   if (action_ == TrayDate::NONE)
     return;
-  date_label_->SetEnabledColor(kHeaderTextColorHover);
-  SchedulePaint();
+  SetActive(true);
 }
 
 void DateView::OnMouseExited(const ui::MouseEvent& event) {
   if (action_ == TrayDate::NONE)
     return;
-  date_label_->SetEnabledColor(kHeaderTextColorNormal);
-  SchedulePaint();
+  SetActive(false);
+}
+
+void DateView::OnGestureEvent(ui::GestureEvent* event) {
+  if (switches::IsTouchFeedbackEnabled()) {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      SetActive(true);
+    } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+               event->type() == ui::ET_GESTURE_END) {
+      SetActive(false);
+    }
+  }
+  BaseDateTimeView::OnGestureEvent(event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -263,7 +281,7 @@ bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
   return false;
 }
 
-void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout){
+void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout) {
   SetBorderFromLayout(clock_layout);
   if (clock_layout == TrayDate::HORIZONTAL_CLOCK) {
     RemoveChildView(vertical_label_hours_.get());
