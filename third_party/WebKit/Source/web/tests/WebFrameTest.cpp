@@ -141,9 +141,6 @@ const int touchPointPadding = 32;
         EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
     } while (false)
 
-#define EXPECT_EQ_POINT(a, b) \
-    EXPECT_EQ(a.x(), b.x()); \
-    EXPECT_EQ(a.y(), b.y());
 
 class FakeCompositingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
@@ -714,30 +711,32 @@ static void enableViewportSettings(WebSettings* settings)
     settings->setShrinksViewportContentToFit(true);
 }
 
-// Helper function to check or set text autosizing multipliers on a document.
-static bool checkOrSetTextAutosizingMultiplier(Document* document, float multiplier, bool setMultiplier)
-{
-    bool multiplierCheckedOrSetAtLeastOnce = false;
-    for (RenderObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
-        if (renderer->style()) {
-            if (setMultiplier)
-                renderer->style()->setTextAutosizingMultiplier(multiplier);
-            EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
-            multiplierCheckedOrSetAtLeastOnce = true;
-        }
-    }
-    return multiplierCheckedOrSetAtLeastOnce;
-
-}
-
+// Helper function to set autosizing multipliers on a document.
 static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
-    return checkOrSetTextAutosizingMultiplier(document, multiplier, true);
+    bool multiplierSet = false;
+    for (RenderObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+        if (renderer->style()) {
+            renderer->style()->setTextAutosizingMultiplier(multiplier);
+
+            EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
+            multiplierSet = true;
+        }
+    }
+    return multiplierSet;
 }
 
+// Helper function to check autosizing multipliers on a document.
 static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 {
-    return checkOrSetTextAutosizingMultiplier(document, multiplier, false);
+    bool multiplierChecked = false;
+    for (RenderObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+        if (renderer->style() && renderer->isText()) {
+            EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
+            multiplierChecked = true;
+        }
+    }
+    return multiplierChecked;
 }
 
 TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
@@ -767,6 +766,27 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
     webViewHelper.webViewImpl()->updatePageDefinedViewportConstraints(description);
 
     EXPECT_TRUE(checkTextAutosizingMultiplier(document, 1));
+}
+
+TEST_F(WebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewport)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    const std::string htmlFile = "fixed_layout.html";
+    registerMockedHttpURLLoad(htmlFile);
+
+    FixedLayoutTestWebViewClient client;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + htmlFile, true, 0, &client, configurePinchVirtualViewport);
+
+    Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+    document->settings()->setTextAutosizingEnabled(true);
+    EXPECT_TRUE(document->settings()->textAutosizingEnabled());
+
+    webViewHelper.webView()->resize(WebSize(490, 800));
+
+    // Multiplier: 980 / 490 = 2.0
+    EXPECT_TRUE(checkTextAutosizingMultiplier(document, 2.0));
 }
 
 TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
@@ -4552,14 +4572,6 @@ TEST_F(WebFrameTest, DisambiguationPopupViewportSite)
     }
 }
 
-static void enableVirtualViewport(WebSettings* settings)
-{
-    settings->setPinchVirtualViewportEnabled(true);
-    settings->setViewportEnabled(true);
-    settings->setViewportMetaEnabled(true);
-    settings->setShrinksViewportContentToFit(true);
-}
-
 TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
@@ -4569,7 +4581,7 @@ TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
     DisambiguationPopupTestWebViewClient client;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + htmlFile, true, 0, &client, enableVirtualViewport);
+    webViewHelper.initializeAndLoad(m_baseURL + htmlFile, true, 0, &client, configurePinchVirtualViewport);
 
     WebViewImpl* webViewImpl = webViewHelper.webViewImpl();
     ASSERT_TRUE(webViewImpl);
@@ -6056,22 +6068,22 @@ TEST_F(WebFrameTest, DISABLED_FrameViewScrollAccountsForTopControls)
     webView->layout();
 
     webView->setMainFrameScrollOffset(WebPoint(20, 100));
-    EXPECT_EQ_POINT(IntPoint(20, 50), IntPoint(frameView->scrollOffset()));
+    EXPECT_POINT_EQ(IntPoint(20, 50), IntPoint(frameView->scrollOffset()));
 
     // Simulate the top controls showing by 20px, thus shrinking the viewport
     // and allowing it to scroll an additional 10px (since we're 2X zoomed).
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 20.0f);
-    EXPECT_EQ_POINT(IntPoint(50, 60), frameView->maximumScrollPosition());
+    EXPECT_POINT_EQ(IntPoint(50, 60), frameView->maximumScrollPosition());
 
     // Show more, make sure the scroll actually gets clamped. Horizontal
     // direction shouldn't be affected.
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 20.0f);
     webView->setMainFrameScrollOffset(WebPoint(100, 100));
-    EXPECT_EQ_POINT(IntPoint(50, 70), IntPoint(frameView->scrollOffset()));
+    EXPECT_POINT_EQ(IntPoint(50, 70), IntPoint(frameView->scrollOffset()));
 
     // Hide until there's 10px showing.
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, -30.0f);
-    EXPECT_EQ_POINT(IntPoint(50, 55), frameView->maximumScrollPosition());
+    EXPECT_POINT_EQ(IntPoint(50, 55), frameView->maximumScrollPosition());
 
     // Simulate a RenderWidget::resize. The frame is resized to accomodate
     // the top controls and Blink's view of the top controls matches that of
@@ -6079,28 +6091,26 @@ TEST_F(WebFrameTest, DISABLED_FrameViewScrollAccountsForTopControls)
     webView->setTopControlsLayoutHeight(10.0f);
     webView->resize(WebSize(100, 90));
     webView->layout();
-    EXPECT_EQ_POINT(IntPoint(50, 45), frameView->maximumScrollPosition());
+    EXPECT_POINT_EQ(IntPoint(50, 45), frameView->maximumScrollPosition());
 
     // Now simulate hiding.
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, -10.0f);
-    EXPECT_EQ_POINT(IntPoint(50, 40), frameView->maximumScrollPosition());
+    EXPECT_POINT_EQ(IntPoint(50, 40), frameView->maximumScrollPosition());
 
     // Reset to original state: 100px widget height, top controls fully hidden.
     webView->setTopControlsLayoutHeight(0.0f);
     webView->resize(WebSize(100, 100));
     webView->layout();
-    EXPECT_EQ_POINT(IntPoint(50, 50), frameView->maximumScrollPosition());
+    EXPECT_POINT_EQ(IntPoint(50, 50), frameView->maximumScrollPosition());
 
     // Show the top controls by just 1px, since we're zoomed in to 2X, that
     // should allow an extra 0.5px of scrolling, but since we quantize to ints
     // it should clamp such that we don't show anything outside bounds.
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 1.0f);
-    EXPECT_EQ_POINT(IntPoint(50, 50), frameView->maximumScrollPosition());
+    EXPECT_POINT_EQ(IntPoint(50, 50), frameView->maximumScrollPosition());
 
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, 2.0f);
-    EXPECT_EQ_POINT(IntPoint(50, 51), frameView->maximumScrollPosition());
-
-
+    EXPECT_POINT_EQ(IntPoint(50, 51), frameView->maximumScrollPosition());
 }
 
 TEST_F(WebFrameTest, FullscreenLayerNonScrollable)

@@ -255,6 +255,7 @@ private:
     void inflateAutoTable(RenderTable*);
     float inflate(RenderObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
     bool shouldHandleLayout() const;
+    IntSize windowSize() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();
     BeginLayoutBehavior prepareForLayout(const RenderBlock*);

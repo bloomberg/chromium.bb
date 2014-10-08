@@ -32,8 +32,10 @@
 #include "core/rendering/TextAutosizer.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/page/Page.h"
@@ -510,7 +512,8 @@ void TextAutosizer::updatePageInfo()
         LocalFrame* mainFrame = m_document->page()->deprecatedLocalMainFrame();
         IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
         if (frameSize.isEmpty())
-            frameSize = mainFrame->view()->unscaledVisibleContentSize(IncludeScrollbars);
+            frameSize = windowSize();
+
         m_pageInfo.m_frameWidth = horizontalWritingMode ? frameSize.width() : frameSize.height();
 
         IntSize layoutSize = mainFrame->view()->layoutSize();
@@ -542,6 +545,15 @@ void TextAutosizer::updatePageInfo()
         resetMultipliers();
         m_pageInfo.m_hasAutosized = false;
     }
+}
+
+IntSize TextAutosizer::windowSize() const
+{
+    Page * page = m_document->page();
+    ASSERT(page);
+    return page->settings().pinchVirtualViewportEnabled() ?
+        page->frameHost().pinchViewport().size() :
+        page->deprecatedLocalMainFrame()->view()->unscaledVisibleContentSize(IncludeScrollbars);
 }
 
 void TextAutosizer::resetMultipliers()
