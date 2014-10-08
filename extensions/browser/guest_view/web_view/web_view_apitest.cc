@@ -116,6 +116,11 @@ void WebViewAPITest::RunTest(const std::string& test_name,
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
+void WebViewAPITest::RunTestOnMainThreadLoop() {
+  AppShellTest::RunTestOnMainThreadLoop();
+  GetGuestViewManager()->WaitForAllGuestsDeleted();
+}
+
 void WebViewAPITest::SetUpOnMainThread() {
   AppShellTest::SetUpOnMainThread();
 
@@ -395,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
                                      "runTest('testRemoveWebviewOnExit')"));
 
   content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForGuestCreated();
+      GetGuestViewManager()->WaitForSingleGuestCreated();
   EXPECT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 

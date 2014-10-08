@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
 
+#include "base/memory/linked_ptr.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
@@ -16,8 +18,8 @@ class TestGuestViewManager : public GuestViewManager {
   explicit TestGuestViewManager(content::BrowserContext* context);
   virtual ~TestGuestViewManager();
 
-  content::WebContents* WaitForGuestCreated();
-  void WaitForGuestDeleted();
+  void WaitForAllGuestsDeleted();
+  content::WebContents* WaitForSingleGuestCreated();
 
  private:
   // GuestViewManager override:
@@ -25,10 +27,13 @@ class TestGuestViewManager : public GuestViewManager {
                         content::WebContents* guest_web_contents) override;
   virtual void RemoveGuest(int guest_instance_id) override;
 
-  bool seen_guest_removed_;
-  content::WebContents* web_contents_;
+  int GetNumGuests() const;
+  content::WebContents* GetLastGuestCreated();
+  void WaitForGuestCreated();
+
+  std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
+      guest_web_contents_watchers_;
   scoped_refptr<content::MessageLoopRunner> created_message_loop_runner_;
-  scoped_refptr<content::MessageLoopRunner> deleted_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGuestViewManager);
 };

@@ -33,6 +33,7 @@ class WebViewAPITest : public AppShellTest {
   TestGuestViewManager* GetGuestViewManager();
 
   // content::BrowserTestBase implementation.
+  virtual void RunTestOnMainThreadLoop() override;
   virtual void SetUpOnMainThread() override;
   virtual void TearDownOnMainThread() override;
 

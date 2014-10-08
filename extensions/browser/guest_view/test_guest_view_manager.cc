@@ -20,36 +20,52 @@
 namespace extensions {
 
 TestGuestViewManager::TestGuestViewManager(content::BrowserContext* context)
-    : GuestViewManager(context),
-      seen_guest_removed_(false),
-      web_contents_(NULL) {
+    : GuestViewManager(context) {
 }
 
 TestGuestViewManager::~TestGuestViewManager() {
 }
 
-content::WebContents* TestGuestViewManager::WaitForGuestCreated() {
-  if (web_contents_)
-    return web_contents_;
-
-  created_message_loop_runner_ = new content::MessageLoopRunner;
-  created_message_loop_runner_->Run();
-  return web_contents_;
+int TestGuestViewManager::GetNumGuests() const {
+  return guest_web_contents_by_instance_id_.size();
 }
 
-void TestGuestViewManager::WaitForGuestDeleted() {
-  if (seen_guest_removed_)
-    return;
+content::WebContents* TestGuestViewManager::GetLastGuestCreated() {
+  content::WebContents* web_contents = nullptr;
+  for (int i = current_instance_id_; i >= 0; i--) {
+    web_contents = GetGuestByInstanceID(i);
+    if (web_contents) {
+      break;
+    }
+  }
+  return web_contents;
+}
 
-  deleted_message_loop_runner_ = new content::MessageLoopRunner;
-  deleted_message_loop_runner_->Run();
+void TestGuestViewManager::WaitForAllGuestsDeleted() {
+  // Make sure that every guest that was created have been removed.
+  for (auto& watcher : guest_web_contents_watchers_)
+    watcher->Wait();
+}
+
+void TestGuestViewManager::WaitForGuestCreated() {
+  created_message_loop_runner_ = new content::MessageLoopRunner;
+  created_message_loop_runner_->Run();
+}
+
+content::WebContents* TestGuestViewManager::WaitForSingleGuestCreated() {
+  if (GetNumGuests() == 0)
+    WaitForGuestCreated();
+
+  return GetLastGuestCreated();
 }
 
 void TestGuestViewManager::AddGuest(int guest_instance_id,
                                     content::WebContents* guest_web_contents) {
   GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
-  web_contents_ = guest_web_contents;
-  seen_guest_removed_ = false;
+
+  guest_web_contents_watchers_.push_back(
+      linked_ptr<content::WebContentsDestroyedWatcher>(
+          new content::WebContentsDestroyedWatcher(guest_web_contents)));
 
   if (created_message_loop_runner_.get())
     created_message_loop_runner_->Quit();
@@ -57,11 +73,6 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
 
 void TestGuestViewManager::RemoveGuest(int guest_instance_id) {
   GuestViewManager::RemoveGuest(guest_instance_id);
-  web_contents_ = NULL;
-  seen_guest_removed_ = true;
-
-  if (deleted_message_loop_runner_.get())
-    deleted_message_loop_runner_->Quit();
 }
 
 // Test factory for creating test instances of GuestViewManager.

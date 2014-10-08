@@ -614,7 +614,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     launched_listener.set_failure_message("WebViewTest.FAILURE");
     LoadAndLaunchPlatformApp(app_path.c_str(), &launched_listener);
 
-    guest_web_contents_ = GetGuestViewManager()->WaitForGuestCreated();
+    guest_web_contents_ = GetGuestViewManager()->WaitForSingleGuestCreated();
   }
 
   void SendMessageToEmbedder(const std::string& message) {
@@ -790,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
                            "WebViewTest.LAUNCHED");
   // Navigate the guest while it's in "display: none" state.
   SendMessageToEmbedder("navigate-guest");
-  GetGuestViewManager()->WaitForGuestCreated();
+  GetGuestViewManager()->WaitForSingleGuestCreated();
 
   // Now attempt to navigate the guest again.
   SendMessageToEmbedder("navigate-guest");
@@ -1218,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
 
   // Wait for interstitial page to be shown in guest.
   content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForGuestCreated();
+      GetGuestViewManager()->WaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
   content::WaitForInterstitialAttach(guest_web_contents);
 
