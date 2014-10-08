@@ -40,7 +40,6 @@ class ResetTest : public LoginManagerTest {
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableRollbackOption);
   }
 
   // LoginManagerTest overrides:
@@ -105,7 +104,6 @@ class ResetFirstAfterBootTest : public ResetTest {
   virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kFirstExecAfterBoot);
-    command_line->AppendSwitch(switches::kEnableRollbackOption);
   }
 };
 

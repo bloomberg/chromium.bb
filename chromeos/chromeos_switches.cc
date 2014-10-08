@@ -62,6 +62,9 @@ const char kDisableNewKioskUI[] = "disable-new-kiosk-ui";
 const char kDisableOfficeEditingComponentApp[] =
     "disable-office-editing-component-extension";
 
+// Disables rollback option on reset screen.
+const char kDisableRollbackOption[] = "disable-rollback-option";
+
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 
@@ -89,9 +92,6 @@ const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
-
-// Enables rollback option on reset screen.
-const char kEnableRollbackOption[] = "enable-rollback-option";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
