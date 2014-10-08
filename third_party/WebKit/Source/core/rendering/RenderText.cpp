@@ -68,7 +68,7 @@ class SecureTextTimer;
 typedef HashMap<RenderText*, SecureTextTimer*> SecureTextTimerMap;
 static SecureTextTimerMap* gSecureTextTimers = 0;
 
-class SecureTextTimer FINAL : public TimerBase {
+class SecureTextTimer final : public TimerBase {
 public:
     SecureTextTimer(RenderText* renderText)
         : m_renderText(renderText)
@@ -86,7 +86,7 @@ public:
     unsigned lastTypedCharacterOffset() { return m_lastTypedCharacterOffset; }
 
 private:
-    virtual void fired() OVERRIDE
+    virtual void fired() override
     {
         ASSERT(gSecureTextTimers->contains(m_renderText));
         m_renderText->setText(m_renderText->text().impl(), true /* forcing setting text as it may be masked later */);

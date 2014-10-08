@@ -29,27 +29,27 @@ namespace blink {
 
 class FlexBoxIterator;
 
-class RenderDeprecatedFlexibleBox FINAL : public RenderBlock {
+class RenderDeprecatedFlexibleBox final : public RenderBlock {
 public:
     RenderDeprecatedFlexibleBox(Element&);
     virtual ~RenderDeprecatedFlexibleBox();
 
-    virtual const char* renderName() const OVERRIDE;
+    virtual const char* renderName() const override;
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
+    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
 
-    virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
+    virtual void layoutBlock(bool relayoutChildren) override;
     void layoutHorizontalBox(bool relayoutChildren);
     void layoutVerticalBox(bool relayoutChildren);
 
-    virtual bool isDeprecatedFlexibleBox() const OVERRIDE { return true; }
+    virtual bool isDeprecatedFlexibleBox() const override { return true; }
     bool isStretchingChildren() const { return m_stretchingChildren; }
-    virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
+    virtual bool canCollapseAnonymousBlockChild() const override { return false; }
 
     void placeChild(RenderBox* child, const LayoutPoint& location);
 
 private:
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
     LayoutUnit allowedChildFlex(RenderBox* child, bool expanding, unsigned group);
 

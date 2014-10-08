@@ -29,7 +29,7 @@ namespace blink {
 class RenderObject;
 class RenderSVGResource;
 
-class SVGTextRunRenderingContext FINAL : public TextRun::RenderingContext {
+class SVGTextRunRenderingContext final : public TextRun::RenderingContext {
 public:
     static PassRefPtr<SVGTextRunRenderingContext> create(RenderObject* renderer)
     {
@@ -39,13 +39,13 @@ public:
     RenderObject* renderer() const { return m_renderer; }
 
 #if ENABLE(SVG_FONTS)
-    virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) OVERRIDE;
-    virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const OVERRIDE;
-    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const OVERRIDE;
+    virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) override;
+    virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const override;
+    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const override;
 #else
-    virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) OVERRIDE { return 0; }
-    virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const OVERRIDE { }
-    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const OVERRIDE { return 0; }
+    virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) override { return 0; }
+    virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const override { }
+    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const override { return 0; }
 #endif
 
 private:

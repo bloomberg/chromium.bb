@@ -26,7 +26,7 @@
 
 namespace blink {
 
-class CSSCharsetRule FINAL : public CSSRule {
+class CSSCharsetRule final : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSCharsetRule> create(CSSStyleSheet* parent, const String& encoding)
     {
@@ -35,14 +35,14 @@ public:
 
     virtual ~CSSCharsetRule() { }
 
-    virtual CSSRule::Type type() const OVERRIDE { return CHARSET_RULE; }
-    virtual String cssText() const OVERRIDE;
-    virtual void reattach(StyleRuleBase* rule) OVERRIDE { ASSERT_UNUSED(rule, !rule); }
+    virtual CSSRule::Type type() const override { return CHARSET_RULE; }
+    virtual String cssText() const override;
+    virtual void reattach(StyleRuleBase* rule) override { ASSERT_UNUSED(rule, !rule); }
 
     const String& encoding() const { return m_encoding; }
     void setEncoding(const String& encoding) { m_encoding = encoding; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
+    virtual void trace(Visitor* visitor) override { CSSRule::trace(visitor); }
 
 private:
     CSSCharsetRule(CSSStyleSheet* parent, const String& encoding);

@@ -30,26 +30,26 @@ namespace blink {
 
 class RenderObject;
 
-class RenderSVGResourceMarker FINAL : public RenderSVGResourceContainer {
+class RenderSVGResourceMarker final : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourceMarker(SVGMarkerElement*);
     virtual ~RenderSVGResourceMarker();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceMarker"; }
+    virtual const char* renderName() const override { return "RenderSVGResourceMarker"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
     void draw(PaintInfo&, const AffineTransform&);
 
     // Calculates marker boundaries, mapped to the target element's coordinate space
     FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
 
-    virtual void applyViewportClip(PaintInfo&) OVERRIDE;
-    virtual void layout() OVERRIDE;
-    virtual void calcViewport() OVERRIDE;
+    virtual void applyViewportClip(PaintInfo&) override;
+    virtual void layout() override;
+    virtual void calcViewport() override;
 
-    virtual const AffineTransform& localToParentTransform() const OVERRIDE;
+    virtual const AffineTransform& localToParentTransform() const override;
     AffineTransform markerTransformation(const FloatPoint& origin, float angle, float strokeWidth) const;
 
     FloatPoint referencePoint() const;
@@ -57,7 +57,7 @@ public:
     SVGMarkerUnitsType markerUnits() const { return toSVGMarkerElement(element())->markerUnits()->currentValue()->enumValue(); }
     SVGMarkerOrientType orientType() const { return toSVGMarkerElement(element())->orientType()->currentValue()->enumValue(); }
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
 private:

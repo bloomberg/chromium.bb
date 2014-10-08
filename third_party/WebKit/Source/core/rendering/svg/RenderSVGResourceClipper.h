@@ -27,7 +27,7 @@ namespace blink {
 
 class DisplayList;
 
-class RenderSVGResourceClipper FINAL : public RenderSVGResourceContainer {
+class RenderSVGResourceClipper final : public RenderSVGResourceContainer {
 public:
     enum ClipperState {
         ClipperNotApplied,
@@ -38,10 +38,10 @@ public:
     explicit RenderSVGResourceClipper(SVGClipPathElement*);
     virtual ~RenderSVGResourceClipper();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceClipper"; }
+    virtual const char* renderName() const override { return "RenderSVGResourceClipper"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
     // FIXME: Filters are also stateful resources that could benefit from having their state managed
     //        on the caller stack instead of the current hashmap. We should look at refactoring these
@@ -56,7 +56,7 @@ public:
 
     FloatRect resourceBoundingBox(const RenderObject*);
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
     bool hitTestClipContent(const FloatRect&, const FloatPoint&);
 

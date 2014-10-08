@@ -29,11 +29,11 @@ namespace blink {
 
 class CounterNode;
 
-class RenderCounter FINAL : public RenderText {
+class RenderCounter final : public RenderText {
 public:
     RenderCounter(Document*, const CounterContent&);
     virtual ~RenderCounter();
-    virtual void destroy() OVERRIDE;
+    virtual void destroy() override;
 
     static void destroyCounterNodes(RenderObject&);
     static void destroyCounterNode(RenderObject&, const AtomicString& identifier);
@@ -44,12 +44,12 @@ public:
     void updateCounter();
 
 protected:
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual void willBeDestroyed() override;
 
 private:
-    virtual const char* renderName() const OVERRIDE;
-    virtual bool isCounter() const OVERRIDE;
-    virtual PassRefPtr<StringImpl> originalText() const OVERRIDE;
+    virtual const char* renderName() const override;
+    virtual bool isCounter() const override;
+    virtual PassRefPtr<StringImpl> originalText() const override;
 
     // Removes the reference to the CounterNode associated with this renderer.
     // This is used to cause a counter display update when the CounterNode tree changes.

@@ -110,7 +110,7 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& elemen
     return count;
 }
 
-class ShadowDOMSiblingTraversalStrategy FINAL {
+class ShadowDOMSiblingTraversalStrategy final {
     STACK_ALLOCATED();
 public:
     ShadowDOMSiblingTraversalStrategy(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth)

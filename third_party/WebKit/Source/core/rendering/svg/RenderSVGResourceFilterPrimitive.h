@@ -31,19 +31,19 @@
 
 namespace blink {
 
-class RenderSVGResourceFilterPrimitive FINAL : public RenderSVGHiddenContainer {
+class RenderSVGResourceFilterPrimitive final : public RenderSVGHiddenContainer {
 public:
     explicit RenderSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
         : RenderSVGHiddenContainer(filterPrimitiveElement)
     {
     }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE { return false; }
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override { return false; }
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceFilterPrimitive"; }
-    virtual bool isSVGResourceFilterPrimitive() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderSVGResourceFilterPrimitive"; }
+    virtual bool isSVGResourceFilterPrimitive() const override { return true; }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)
     {

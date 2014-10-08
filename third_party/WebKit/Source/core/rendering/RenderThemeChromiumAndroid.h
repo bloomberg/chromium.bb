@@ -30,29 +30,29 @@
 
 namespace blink {
 
-class RenderThemeChromiumAndroid FINAL : public RenderThemeChromiumDefault {
+class RenderThemeChromiumAndroid final : public RenderThemeChromiumDefault {
 public:
     static PassRefPtr<RenderTheme> create();
-    virtual String extraDefaultStyleSheet() OVERRIDE;
+    virtual String extraDefaultStyleSheet() override;
 
-    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const OVERRIDE;
+    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const override;
 
-    virtual bool delegatesMenuListRendering() const OVERRIDE { return true; }
+    virtual bool delegatesMenuListRendering() const override { return true; }
 
-    virtual String extraMediaControlsStyleSheet() OVERRIDE;
+    virtual String extraMediaControlsStyleSheet() override;
 
-    virtual Color platformTapHighlightColor() const OVERRIDE
+    virtual Color platformTapHighlightColor() const override
     {
         return RenderThemeChromiumAndroid::defaultTapHighlightColor;
     }
 
-    virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE
+    virtual Color platformActiveSelectionBackgroundColor() const override
     {
         return RenderThemeChromiumAndroid::defaultActiveSelectionBackgroundColor;
     }
 
 protected:
-    virtual int menuListArrowPadding() const OVERRIDE;
+    virtual int menuListArrowPadding() const override;
 
 private:
     virtual ~RenderThemeChromiumAndroid();

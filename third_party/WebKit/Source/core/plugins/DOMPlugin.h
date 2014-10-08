@@ -33,7 +33,7 @@ namespace blink {
 class Plugin;
 class PluginData;
 
-class DOMPlugin FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public FrameDestructionObserver {
+class DOMPlugin final : public RefCountedWillBeGarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public FrameDestructionObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPlugin);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -53,7 +53,7 @@ public:
     bool canGetItemsForName(const AtomicString& propertyName);
     PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     const PluginInfo& pluginInfo() const { return m_pluginData->plugins()[m_index]; }

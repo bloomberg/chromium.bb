@@ -31,21 +31,21 @@ namespace blink {
 
 class Document;
 
-class RenderQuote FINAL : public RenderInline {
+class RenderQuote final : public RenderInline {
 public:
     RenderQuote(Document*, const QuoteType);
     virtual ~RenderQuote();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
     void attachQuote();
 
 private:
     void detachQuote();
 
-    virtual void willBeDestroyed() OVERRIDE;
-    virtual const char* renderName() const OVERRIDE { return "RenderQuote"; };
-    virtual bool isQuote() const OVERRIDE { return true; };
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
-    virtual void willBeRemovedFromTree() OVERRIDE;
+    virtual void willBeDestroyed() override;
+    virtual const char* renderName() const override { return "RenderQuote"; };
+    virtual bool isQuote() const override { return true; };
+    virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
+    virtual void willBeRemovedFromTree() override;
 
     String computeText() const;
     void updateText();

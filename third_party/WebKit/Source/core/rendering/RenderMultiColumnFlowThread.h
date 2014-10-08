@@ -90,14 +90,14 @@ public:
 
     static RenderMultiColumnFlowThread* createAnonymous(Document&, RenderStyle* parentStyle);
 
-    virtual bool isRenderMultiColumnFlowThread() const OVERRIDE FINAL { return true; }
+    virtual bool isRenderMultiColumnFlowThread() const override final { return true; }
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
 
     RenderMultiColumnSet* firstMultiColumnSet() const;
     RenderMultiColumnSet* lastMultiColumnSet() const;
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
+    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
     // becomes a multicol container.
@@ -114,7 +114,7 @@ public:
     virtual bool heightIsAuto() const { return !columnHeightAvailable() || multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance; }
     bool progressionIsInline() const { return m_progressionIsInline; }
 
-    virtual LayoutSize columnOffset(const LayoutPoint&) const OVERRIDE FINAL;
+    virtual LayoutSize columnOffset(const LayoutPoint&) const override final;
 
     // Do we need to set a new width and lay out?
     virtual bool needsNewWidth() const;
@@ -127,21 +127,21 @@ protected:
     RenderMultiColumnFlowThread();
     void setProgressionIsInline(bool isInline) { m_progressionIsInline = isInline; }
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
 
-    virtual const char* renderName() const OVERRIDE;
-    virtual void addRegionToThread(RenderMultiColumnSet*) OVERRIDE;
-    virtual void willBeRemovedFromTree() OVERRIDE;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-    virtual void updateLogicalWidth() OVERRIDE;
-    virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
-    virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
-    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const OVERRIDE;
-    virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) OVERRIDE;
-    virtual bool isPageLogicalHeightKnown() const OVERRIDE;
+    virtual const char* renderName() const override;
+    virtual void addRegionToThread(RenderMultiColumnSet*) override;
+    virtual void willBeRemovedFromTree() override;
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    virtual void updateLogicalWidth() override;
+    virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
+    virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
+    virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override;
+    virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
+    virtual bool isPageLogicalHeightKnown() const override;
 
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.

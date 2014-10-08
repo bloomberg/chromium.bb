@@ -26,14 +26,14 @@
 
 namespace blink {
 
-class RenderSVGResourceSolidColor FINAL : public RenderSVGResource {
+class RenderSVGResourceSolidColor final : public RenderSVGResource {
 public:
     RenderSVGResourceSolidColor();
     virtual ~RenderSVGResourceSolidColor();
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) OVERRIDE;
+    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) override;
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
     const Color& color() const { return m_color; }

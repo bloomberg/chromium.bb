@@ -37,10 +37,10 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) = 0;
 
-    virtual void layout() OVERRIDE;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
+    virtual void layout() override;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
 
-    virtual bool isSVGResourceContainer() const OVERRIDE FINAL { return true; }
+    virtual bool isSVGResourceContainer() const override final { return true; }
 
     template<class Renderer>
     Renderer* cast()
@@ -85,7 +85,7 @@ private:
     void addClient(RenderObject*);
     void removeClient(RenderObject*);
 
-    virtual void willBeDestroyed() OVERRIDE FINAL;
+    virtual void willBeDestroyed() override final;
     void registerResource();
 
     AtomicString m_id;

@@ -33,10 +33,10 @@ namespace blink {
 class RenderTable;
 class RenderTableCell;
 
-class RenderTableCol FINAL : public RenderBox {
+class RenderTableCol final : public RenderBox {
 public:
     explicit RenderTableCol(Element*);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
 
@@ -80,25 +80,25 @@ public:
     const BorderValue& borderAdjoiningCellAfter(const RenderTableCell*) const;
 
 private:
-    virtual RenderObjectChildList* virtualChildren() OVERRIDE { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const OVERRIDE { return children(); }
+    virtual RenderObjectChildList* virtualChildren() override { return children(); }
+    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const OVERRIDE { return "RenderTableCol"; }
-    virtual bool isRenderTableCol() const OVERRIDE { return true; }
-    virtual void updateFromElement() OVERRIDE;
-    virtual void computePreferredLogicalWidths() OVERRIDE { ASSERT_NOT_REACHED(); }
+    virtual const char* renderName() const override { return "RenderTableCol"; }
+    virtual bool isRenderTableCol() const override { return true; }
+    virtual void updateFromElement() override;
+    virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 
-    virtual void insertedIntoTree() OVERRIDE;
-    virtual void willBeRemovedFromTree() OVERRIDE;
+    virtual void insertedIntoTree() override;
+    virtual void willBeRemovedFromTree() override;
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
-    virtual bool canHaveChildren() const OVERRIDE;
-    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool canHaveChildren() const override;
+    virtual LayerType layerTypeRequired() const override { return NoLayer; }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
     RenderTable* table() const;
 

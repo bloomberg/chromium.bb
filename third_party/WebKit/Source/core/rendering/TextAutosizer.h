@@ -50,7 +50,7 @@ class RenderListMarker;
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/TextAutosizer
 
-class TextAutosizer FINAL : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
+class TextAutosizer final : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 public:
     static PassOwnPtrWillBeRawPtr<TextAutosizer> create(const Document* document)

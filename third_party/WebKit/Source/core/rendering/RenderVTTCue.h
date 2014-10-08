@@ -35,12 +35,12 @@ namespace blink {
 class VTTCue;
 class VTTCueBox;
 
-class RenderVTTCue FINAL : public RenderBlockFlow {
+class RenderVTTCue final : public RenderBlockFlow {
 public:
     explicit RenderVTTCue(VTTCueBox*);
 
 private:
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
     bool isOutside() const;
     bool isOverlapping() const;

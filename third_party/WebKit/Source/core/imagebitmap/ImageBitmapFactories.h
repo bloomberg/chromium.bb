@@ -54,7 +54,7 @@ class ImageBitmap;
 class ImageData;
 class ExecutionContext;
 
-class ImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<LocalDOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
+class ImageBitmapFactories final : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<LocalDOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
 public:
@@ -81,7 +81,7 @@ protected:
     static const char* supplementName();
 
 private:
-    class ImageBitmapLoader FINAL : public GarbageCollectedFinalized<ImageBitmapLoader>, public FileReaderLoaderClient {
+    class ImageBitmapLoader final : public GarbageCollectedFinalized<ImageBitmapLoader>, public FileReaderLoaderClient {
     public:
         static ImageBitmapLoader* create(ImageBitmapFactories& factory, const IntRect& cropRect, ScriptState* scriptState)
         {
@@ -101,10 +101,10 @@ private:
         void rejectPromise();
 
         // FileReaderLoaderClient
-        virtual void didStartLoading() OVERRIDE { }
-        virtual void didReceiveData() OVERRIDE { }
-        virtual void didFinishLoading() OVERRIDE;
-        virtual void didFail(FileError::ErrorCode) OVERRIDE;
+        virtual void didStartLoading() override { }
+        virtual void didReceiveData() override { }
+        virtual void didFinishLoading() override;
+        virtual void didFail(FileError::ErrorCode) override;
 
         FileReaderLoader m_loader;
         RawPtrWillBeMember<ImageBitmapFactories> m_factory;

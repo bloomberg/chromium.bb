@@ -63,11 +63,11 @@ private:
 class RenderTableCell;
 class RenderTableRow;
 
-class RenderTableSection FINAL : public RenderBox {
+class RenderTableSection final : public RenderBox {
 public:
     RenderTableSection(Element*);
     virtual ~RenderTableSection();
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     RenderTableRow* firstRow() const;
     RenderTableRow* lastRow() const;
@@ -75,9 +75,9 @@ public:
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
+    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
 
-    virtual int firstLineBoxBaseline() const OVERRIDE;
+    virtual int firstLineBoxBaseline() const override;
 
     void addCell(RenderTableCell*, RenderTableRow* row);
 
@@ -220,12 +220,12 @@ public:
     int distributeExtraLogicalHeightToRows(int extraLogicalHeight);
 
     static RenderTableSection* createAnonymousWithParentRenderer(const RenderObject*);
-    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const OVERRIDE
+    virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const override
     {
         return createAnonymousWithParentRenderer(parent);
     }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
     // Flip the rect so it aligns with the coordinates used by the rowPos and columnPos vectors.
     LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
@@ -236,24 +236,24 @@ public:
     bool hasMultipleCellLevels() { return m_hasMultipleCellLevels; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
-    virtual RenderObjectChildList* virtualChildren() OVERRIDE { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const OVERRIDE { return children(); }
+    virtual RenderObjectChildList* virtualChildren() override { return children(); }
+    virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const OVERRIDE { return (isAnonymous() || isPseudoElement()) ? "RenderTableSection (anonymous)" : "RenderTableSection"; }
+    virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "RenderTableSection (anonymous)" : "RenderTableSection"; }
 
-    virtual bool isTableSection() const OVERRIDE { return true; }
+    virtual bool isTableSection() const override { return true; }
 
-    virtual void willBeRemovedFromTree() OVERRIDE;
+    virtual void willBeRemovedFromTree() override;
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintObject(PaintInfo&, const LayoutPoint&) override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     int borderSpacingForRow(unsigned row) const { return m_grid[row].rowRenderer ? table()->vBorderSpacing() : 0; }
 

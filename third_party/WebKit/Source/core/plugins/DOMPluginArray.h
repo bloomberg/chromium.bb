@@ -34,7 +34,7 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray FINAL : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMPluginArray final : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 public:
@@ -50,7 +50,7 @@ public:
 
     void refresh(bool reload);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     explicit DOMPluginArray(LocalFrame*);

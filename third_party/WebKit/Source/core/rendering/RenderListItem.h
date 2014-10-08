@@ -30,10 +30,10 @@ namespace blink {
 class HTMLOListElement;
 class RenderListMarker;
 
-class RenderListItem FINAL : public RenderBlockFlow {
+class RenderListItem final : public RenderBlockFlow {
 public:
     explicit RenderListItem(Element*);
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
     int value() const { if (!m_isValueUpToDate) updateValueNow(); return m_value; }
     void updateValue();
@@ -56,18 +56,18 @@ public:
     bool isEmpty() const;
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderListItem"; }
+    virtual const char* renderName() const override { return "RenderListItem"; }
 
-    virtual bool isListItem() const OVERRIDE { return true; }
+    virtual bool isListItem() const override { return true; }
 
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual void willBeDestroyed() override;
 
-    virtual void insertedIntoTree() OVERRIDE;
-    virtual void willBeRemovedFromTree() OVERRIDE;
+    virtual void insertedIntoTree() override;
+    virtual void willBeRemovedFromTree() override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
     // Returns true if we re-attached and updated the location of the marker.
     bool updateMarkerLocation();
@@ -75,9 +75,9 @@ private:
 
     void positionListMarker();
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
-    virtual void addOverflowFromChildren() OVERRIDE;
+    virtual void addOverflowFromChildren() override;
 
     inline int calcValue() const;
     void updateValueNow() const;

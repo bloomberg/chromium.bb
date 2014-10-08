@@ -30,19 +30,19 @@
 
 namespace blink {
 
-class RenderSVGPath FINAL : public RenderSVGShape {
+class RenderSVGPath final : public RenderSVGShape {
 public:
     explicit RenderSVGPath(SVGGraphicsElement*);
     virtual ~RenderSVGPath();
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGPath"; }
+    virtual const char* renderName() const override { return "RenderSVGPath"; }
 
-    virtual void updateShapeFromElement() OVERRIDE;
+    virtual void updateShapeFromElement() override;
     FloatRect calculateUpdatedStrokeBoundingBox() const;
 
-    virtual void strokeShape(GraphicsContext*) const OVERRIDE;
-    virtual bool shapeDependentStrokeContains(const FloatPoint&) OVERRIDE;
+    virtual void strokeShape(GraphicsContext*) const override;
+    virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
 
     bool shouldStrokeZeroLengthSubpath() const;
     Path* zeroLengthLinecapPath(const FloatPoint&) const;

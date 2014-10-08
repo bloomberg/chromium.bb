@@ -30,7 +30,7 @@
 
 using namespace blink;
 
-class RenderFullScreenPlaceholder FINAL : public RenderBlockFlow {
+class RenderFullScreenPlaceholder final : public RenderBlockFlow {
 public:
     RenderFullScreenPlaceholder(RenderFullScreen* owner)
         : RenderBlockFlow(0)
@@ -39,8 +39,8 @@ public:
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isRenderFullScreenPlaceholder() const OVERRIDE { return true; }
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual bool isRenderFullScreenPlaceholder() const override { return true; }
+    virtual void willBeDestroyed() override;
     RenderFullScreen* m_owner;
 };
 

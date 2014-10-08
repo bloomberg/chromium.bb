@@ -58,11 +58,11 @@ private:
     // FIXME: inherit from StyleSheetResourceClient directly to eliminate raw back pointer, as there are no space savings in this.
     // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
     // to avoid adding a vptr to StyleRuleImport.
-    class ImportedStyleSheetClient FINAL : public StyleSheetResourceClient {
+    class ImportedStyleSheetClient final : public StyleSheetResourceClient {
     public:
         ImportedStyleSheetClient(StyleRuleImport* ownerRule) : m_ownerRule(ownerRule) { }
         virtual ~ImportedStyleSheetClient() { }
-        virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet) OVERRIDE
+        virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet) override
         {
             m_ownerRule->setCSSStyleSheet(href, baseURL, charset, sheet);
         }

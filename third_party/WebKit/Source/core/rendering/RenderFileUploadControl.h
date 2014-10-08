@@ -31,12 +31,12 @@ class HTMLInputElement;
 // sufficient space to draw a file icon and filename. The RenderButton has a shadow node
 // associated with it to receive click/hover events.
 
-class RenderFileUploadControl FINAL : public RenderBlockFlow {
+class RenderFileUploadControl final : public RenderBlockFlow {
 public:
     RenderFileUploadControl(HTMLInputElement*);
     virtual ~RenderFileUploadControl();
 
-    virtual bool isFileUploadControl() const OVERRIDE { return true; }
+    virtual bool isFileUploadControl() const override { return true; }
 
     String buttonValue();
     String fileTextValue() const;
@@ -47,16 +47,16 @@ public:
     static const int afterButtonSpacing = 4;
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderFileUploadControl"; }
+    virtual const char* renderName() const override { return "RenderFileUploadControl"; }
 
-    virtual void updateFromElement() OVERRIDE;
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
-    virtual void computePreferredLogicalWidths() OVERRIDE;
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void updateFromElement() override;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+    virtual void computePreferredLogicalWidths() override;
+    virtual void paintObject(PaintInfo&, const LayoutPoint&) override;
 
     int maxFilenameWidth() const;
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
     bool m_canReceiveDroppedFiles;
 };

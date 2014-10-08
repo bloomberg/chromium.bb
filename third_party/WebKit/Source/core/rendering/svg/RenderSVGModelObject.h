@@ -45,38 +45,38 @@ class RenderSVGModelObject : public RenderObject {
 public:
     explicit RenderSVGModelObject(SVGElement*);
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
-    virtual bool canHaveWhitespaceChildren() const OVERRIDE { return false; }
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
+    virtual bool canHaveWhitespaceChildren() const override { return false; }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE;
-    virtual void computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect&, const PaintInvalidationState*) const OVERRIDE FINAL;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual void computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect&, const PaintInvalidationState*) const override final;
 
-    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE FINAL;
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
+    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override final;
+    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
-    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE FINAL;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
+    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override final;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
-    virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE FINAL;
+    virtual void computeLayerHitTestRects(LayerHitTestRects&) const override final;
 
     SVGElement* element() const { return toSVGElement(RenderObject::node()); }
 
-    virtual bool isSVG() const OVERRIDE FINAL { return true; }
+    virtual bool isSVG() const override final { return true; }
 
 protected:
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE FINAL;
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override final;
+    virtual void willBeDestroyed() override;
 
 private:
     // RenderSVGModelObject subclasses should use element() instead.
     void node() const WTF_DELETED_FUNCTION;
 
     // This method should never be called, SVG uses a different nodeAtPoint method
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
-    virtual void absoluteFocusRingQuads(Vector<FloatQuad>&) OVERRIDE FINAL;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
+    virtual void absoluteFocusRingQuads(Vector<FloatQuad>&) override final;
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE FINAL;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
 };
 
 }

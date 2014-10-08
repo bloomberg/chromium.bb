@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class RenderSVGInlineText FINAL : public RenderText {
+class RenderSVGInlineText final : public RenderText {
 public:
     RenderSVGInlineText(Node*, PassRefPtr<StringImpl>);
 
@@ -44,20 +44,20 @@ public:
     FloatRect floatLinesBoundingBox() const;
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGInlineText"; }
+    virtual const char* renderName() const override { return "RenderSVGInlineText"; }
 
-    virtual void setTextInternal(PassRefPtr<StringImpl>) OVERRIDE;
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
+    virtual void setTextInternal(PassRefPtr<StringImpl>) override;
+    virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 
-    virtual FloatRect objectBoundingBox() const OVERRIDE { return floatLinesBoundingBox(); }
+    virtual FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
 
-    virtual bool isSVGInlineText() const OVERRIDE { return true; }
-    virtual bool isSVG() const OVERRIDE { return true; }
+    virtual bool isSVGInlineText() const override { return true; }
+    virtual bool isSVG() const override { return true; }
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE;
-    virtual IntRect linesBoundingBox() const OVERRIDE;
-    virtual InlineTextBox* createTextBox(int start, unsigned short length) OVERRIDE;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override;
+    virtual IntRect linesBoundingBox() const override;
+    virtual InlineTextBox* createTextBox(int start, unsigned short length) override;
 
     float m_scalingFactor;
     Font m_scaledFont;

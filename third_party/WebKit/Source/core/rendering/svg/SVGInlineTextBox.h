@@ -28,30 +28,30 @@
 
 namespace blink {
 
-class SVGInlineTextBox FINAL : public InlineTextBox {
+class SVGInlineTextBox final : public InlineTextBox {
 public:
     SVGInlineTextBox(RenderObject&, int start, unsigned short length);
 
-    virtual bool isSVGInlineTextBox() const OVERRIDE { return true; }
+    virtual bool isSVGInlineTextBox() const override { return true; }
 
-    virtual float virtualLogicalHeight() const OVERRIDE { return m_logicalHeight; }
+    virtual float virtualLogicalHeight() const override { return m_logicalHeight; }
     void setLogicalHeight(float height) { m_logicalHeight = height; }
 
-    virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const OVERRIDE;
-    virtual float positionForOffset(int offset) const OVERRIDE;
+    virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const override;
+    virtual float positionForOffset(int offset) const override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
-    virtual LayoutRect localSelectionRect(int startPosition, int endPosition) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    virtual LayoutRect localSelectionRect(int startPosition, int endPosition) override;
 
     bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&, int& startPosition, int& endPosition) const;
 
-    virtual FloatRect calculateBoundaries() const OVERRIDE;
+    virtual FloatRect calculateBoundaries() const override;
 
     void clearTextFragments() { m_textFragments.clear(); }
     Vector<SVGTextFragment>& textFragments() { return m_textFragments; }
     const Vector<SVGTextFragment>& textFragments() const { return m_textFragments; }
 
-    virtual void dirtyLineBoxes() OVERRIDE;
+    virtual void dirtyLineBoxes() override;
 
     bool startsNewTextChunk() const { return m_startsNewTextChunk; }
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
@@ -62,10 +62,10 @@ public:
 
 private:
 
-    virtual void paintDocumentMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&, bool) OVERRIDE FINAL;
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&) OVERRIDE FINAL;
+    virtual void paintDocumentMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&, bool) override final;
+    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&) override final;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
 private:
     float m_logicalHeight;

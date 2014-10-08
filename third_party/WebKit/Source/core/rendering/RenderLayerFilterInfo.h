@@ -47,7 +47,7 @@ class RenderLayerFilterInfo;
 
 typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
 
-class RenderLayerFilterInfo FINAL : public DocumentResourceClient {
+class RenderLayerFilterInfo final : public DocumentResourceClient {
 public:
     static RenderLayerFilterInfo* filterInfoForRenderLayer(const RenderLayer*);
     static RenderLayerFilterInfo* createFilterInfoForRenderLayerIfNeeded(RenderLayer*);
@@ -57,7 +57,7 @@ public:
     void setRenderer(PassRefPtr<FilterEffectRenderer>);
 
     void updateReferenceFilterClients(const FilterOperations&);
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    virtual void notifyFinished(Resource*) override;
     void removeReferenceFilterClients();
 
 private:

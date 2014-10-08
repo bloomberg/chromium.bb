@@ -39,67 +39,67 @@ public:
     RenderThemeChromiumSkia();
     virtual ~RenderThemeChromiumSkia();
 
-    virtual String extraDefaultStyleSheet() OVERRIDE;
-    virtual String extraQuirksStyleSheet() OVERRIDE;
+    virtual String extraDefaultStyleSheet() override;
+    virtual String extraQuirksStyleSheet() override;
 
-    virtual Color platformTapHighlightColor() const OVERRIDE
+    virtual Color platformTapHighlightColor() const override
     {
         return Color(defaultTapHighlightColor);
     }
 
     // A method asking if the theme's controls actually care about redrawing when hovered.
-    virtual bool supportsHover(const RenderStyle*) const OVERRIDE FINAL;
+    virtual bool supportsHover(const RenderStyle*) const override final;
 
     // A method asking if the theme is able to draw the focus ring.
-    virtual bool supportsFocusRing(const RenderStyle*) const OVERRIDE;
+    virtual bool supportsFocusRing(const RenderStyle*) const override;
 
     // The platform selection color.
-    virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE;
-    virtual Color platformInactiveSelectionBackgroundColor() const OVERRIDE;
-    virtual Color platformActiveSelectionForegroundColor() const OVERRIDE;
-    virtual Color platformInactiveSelectionForegroundColor() const OVERRIDE;
-    virtual Color platformFocusRingColor() const OVERRIDE;
+    virtual Color platformActiveSelectionBackgroundColor() const override;
+    virtual Color platformInactiveSelectionBackgroundColor() const override;
+    virtual Color platformActiveSelectionForegroundColor() const override;
+    virtual Color platformInactiveSelectionForegroundColor() const override;
+    virtual Color platformFocusRingColor() const override;
 
     // To change the blink interval, override caretBlinkIntervalInternal instead of this one so that we may share layout test code an intercepts.
-    virtual double caretBlinkInterval() const OVERRIDE;
+    virtual double caretBlinkInterval() const override;
 
     // System fonts.
-    virtual void systemFont(CSSValueID, FontDescription&) const OVERRIDE;
+    virtual void systemFont(CSSValueID, FontDescription&) const override;
 
-    virtual int minimumMenuListSize(RenderStyle*) const OVERRIDE;
+    virtual int minimumMenuListSize(RenderStyle*) const override;
 
-    virtual void setCheckboxSize(RenderStyle*) const OVERRIDE;
+    virtual void setCheckboxSize(RenderStyle*) const override;
 
-    virtual void setRadioSize(RenderStyle*) const OVERRIDE;
+    virtual void setRadioSize(RenderStyle*) const override;
 
-    virtual void adjustButtonStyle(RenderStyle*, Element*) const OVERRIDE;
+    virtual void adjustButtonStyle(RenderStyle*, Element*) const override;
 
-    virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustSearchFieldStyle(RenderStyle*, Element*) const OVERRIDE;
-    virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual void adjustSearchFieldStyle(RenderStyle*, Element*) const override;
+    virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const OVERRIDE;
-    virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual void adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const override;
+    virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const OVERRIDE;
+    virtual void adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const override;
 
-    virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const OVERRIDE;
-    virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const override;
+    virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const OVERRIDE;
-    virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaToggleClosedCaptionsButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaCastButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual String formatMediaControlsTime(float time) const OVERRIDE;
-    virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const OVERRIDE;
-    virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const override;
+    virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaToggleClosedCaptionsButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaCastButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual String formatMediaControlsTime(float time) const override;
+    virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const override;
+    virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&) override;
 
     // MenuList refers to an unstyled menulist (meaning a menulist without
     // background-color or border set) and MenuListButton refers to a styled
@@ -110,18 +110,18 @@ public:
     // In short, we either go down the MenuList code path or the MenuListButton
     // codepath. We never go down both. And in both cases, they render the
     // entire menulist.
-    virtual void adjustMenuListStyle(RenderStyle*, Element*) const OVERRIDE;
-    virtual void adjustMenuListButtonStyle(RenderStyle*, Element*) const OVERRIDE;
-    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual void adjustMenuListStyle(RenderStyle*, Element*) const override;
+    virtual void adjustMenuListButtonStyle(RenderStyle*, Element*) const override;
+    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const OVERRIDE;
-    virtual double animationDurationForProgressBar(RenderProgress*) const OVERRIDE;
+    virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const override;
+    virtual double animationDurationForProgressBar(RenderProgress*) const override;
 
     // These methods define the padding for the MenuList's inner block.
-    virtual int popupInternalPaddingLeft(RenderStyle*) const OVERRIDE;
-    virtual int popupInternalPaddingRight(RenderStyle*) const OVERRIDE;
-    virtual int popupInternalPaddingTop(RenderStyle*) const OVERRIDE;
-    virtual int popupInternalPaddingBottom(RenderStyle*) const OVERRIDE;
+    virtual int popupInternalPaddingLeft(RenderStyle*) const override;
+    virtual int popupInternalPaddingRight(RenderStyle*) const override;
+    virtual int popupInternalPaddingTop(RenderStyle*) const override;
+    virtual int popupInternalPaddingBottom(RenderStyle*) const override;
 
     // Provide a way to pass the default font size from the Settings object
     // to the render theme. FIXME: http://b/1129186 A cleaner way would be
@@ -150,7 +150,7 @@ protected:
     };
 
 private:
-    virtual bool shouldShowPlaceholderWhenFocused() const OVERRIDE;
+    virtual bool shouldShowPlaceholderWhenFocused() const override;
 
     int menuListInternalPadding(RenderStyle*, int paddingType) const;
     bool paintMediaButtonInternal(GraphicsContext*, const IntRect&, Image*);

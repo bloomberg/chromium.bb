@@ -63,7 +63,7 @@ protected:
     OperationType m_type;
 };
 
-class ReferenceClipPathOperation FINAL : public ClipPathOperation {
+class ReferenceClipPathOperation final : public ClipPathOperation {
 public:
     static PassRefPtr<ReferenceClipPathOperation> create(const String& url, const AtomicString& fragment)
     {
@@ -74,7 +74,7 @@ public:
     const AtomicString& fragment() const { return m_fragment; }
 
 private:
-    virtual bool operator==(const ClipPathOperation& o) const OVERRIDE
+    virtual bool operator==(const ClipPathOperation& o) const override
     {
         return isSameType(o) && m_url == static_cast<const ReferenceClipPathOperation&>(o).m_url;
     }
@@ -92,7 +92,7 @@ private:
 
 DEFINE_TYPE_CASTS(ReferenceClipPathOperation, ClipPathOperation, op, op->type() == ClipPathOperation::REFERENCE, op.type() == ClipPathOperation::REFERENCE);
 
-class ShapeClipPathOperation FINAL : public ClipPathOperation {
+class ShapeClipPathOperation final : public ClipPathOperation {
 public:
     static PassRefPtr<ShapeClipPathOperation> create(PassRefPtr<BasicShape> shape)
     {
@@ -112,7 +112,7 @@ public:
     }
 
 private:
-    virtual bool operator==(const ClipPathOperation&) const OVERRIDE;
+    virtual bool operator==(const ClipPathOperation&) const override;
 
     ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
         : ClipPathOperation(SHAPE)

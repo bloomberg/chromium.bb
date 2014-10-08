@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class RenderFieldset FINAL : public RenderBlockFlow {
+class RenderFieldset final : public RenderBlockFlow {
 public:
     explicit RenderFieldset(Element*);
 
@@ -36,16 +36,16 @@ public:
     RenderBox* findLegend(FindLegendOption = IgnoreFloatingOrOutOfFlow) const;
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderFieldSet"; }
-    virtual bool isFieldset() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderFieldSet"; }
+    virtual bool isFieldset() const override { return true; }
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 
-    virtual void computePreferredLogicalWidths() OVERRIDE;
-    virtual bool avoidsFloats() const OVERRIDE { return true; }
+    virtual void computePreferredLogicalWidths() override;
+    virtual bool avoidsFloats() const override { return true; }
 
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintMask(PaintInfo&, const LayoutPoint&) override;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());

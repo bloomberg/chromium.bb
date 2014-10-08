@@ -25,13 +25,13 @@
 #include "core/rendering/svg/RenderSVGInline.h"
 
 namespace blink {
-class RenderSVGTSpan FINAL : public RenderSVGInline {
+class RenderSVGTSpan final : public RenderSVGInline {
 public:
     explicit RenderSVGTSpan(Element*);
 
-    virtual bool isChildAllowed(RenderObject* child, RenderStyle*) const OVERRIDE;
+    virtual bool isChildAllowed(RenderObject* child, RenderStyle*) const override;
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGTSpan"; }
+    virtual const char* renderName() const override { return "RenderSVGTSpan"; }
 };
 }
 

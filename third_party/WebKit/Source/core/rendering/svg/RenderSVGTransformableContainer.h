@@ -26,20 +26,20 @@
 namespace blink {
 
 class SVGGraphicsElement;
-class RenderSVGTransformableContainer FINAL : public RenderSVGContainer {
+class RenderSVGTransformableContainer final : public RenderSVGContainer {
 public:
     explicit RenderSVGTransformableContainer(SVGGraphicsElement*);
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
-    virtual bool isSVGTransformableContainer() const OVERRIDE { return true; }
-    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
-    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
-    virtual bool didTransformToRootUpdate() OVERRIDE { return m_didTransformToRootUpdate; }
+    virtual bool isSVGTransformableContainer() const override { return true; }
+    virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
+    virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+    virtual bool didTransformToRootUpdate() override { return m_didTransformToRootUpdate; }
 
 private:
-    virtual bool calculateLocalTransform() OVERRIDE;
-    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
+    virtual bool calculateLocalTransform() override;
+    virtual AffineTransform localTransform() const override { return m_localTransform; }
 
     bool m_needsTransformUpdate : 1;
     bool m_didTransformToRootUpdate : 1;

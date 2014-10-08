@@ -32,17 +32,17 @@ class RenderSVGInlineText;
 class SVGTextElement;
 class RenderSVGInlineText;
 
-class RenderSVGText FINAL : public RenderSVGBlock {
+class RenderSVGText final : public RenderSVGBlock {
 public:
     explicit RenderSVGText(SVGTextElement*);
     virtual ~RenderSVGText();
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
     void setNeedsPositioningValuesUpdate() { m_needsPositioningValuesUpdate = true; }
-    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
+    virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE;
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override;
 
     static RenderSVGText* locateRenderSVGTextAncestor(RenderObject*);
     static const RenderSVGText* locateRenderSVGTextAncestor(const RenderObject*);
@@ -56,30 +56,30 @@ public:
     void subtreeStyleDidChange();
     void subtreeTextDidChange(RenderSVGInlineText*);
 
-    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
+    virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGText"; }
-    virtual bool isSVGText() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderSVGText"; }
+    virtual bool isSVGText() const override { return true; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
+    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const OVERRIDE;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
-    virtual void removeChild(RenderObject*) OVERRIDE;
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override;
+    virtual void removeChild(RenderObject*) override;
+    virtual void willBeDestroyed() override;
 
-    virtual FloatRect objectBoundingBox() const OVERRIDE { return frameRect(); }
-    virtual FloatRect strokeBoundingBox() const OVERRIDE;
+    virtual FloatRect objectBoundingBox() const override { return frameRect(); }
+    virtual FloatRect strokeBoundingBox() const override;
 
-    virtual RootInlineBox* createRootInlineBox() OVERRIDE;
+    virtual RootInlineBox* createRootInlineBox() override;
 
     bool shouldHandleSubtreeMutations() const;
 

@@ -32,47 +32,47 @@ namespace blink {
 
 class PlatformMouseEvent;
 
-class RenderScrollbarTheme FINAL : public ScrollbarTheme {
+class RenderScrollbarTheme final : public ScrollbarTheme {
 public:
     virtual ~RenderScrollbarTheme() { }
 
-    virtual int scrollbarThickness(ScrollbarControlSize controlSize) OVERRIDE { return ScrollbarTheme::theme()->scrollbarThickness(controlSize); }
+    virtual int scrollbarThickness(ScrollbarControlSize controlSize) override { return ScrollbarTheme::theme()->scrollbarThickness(controlSize); }
 
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const OVERRIDE { return ScrollbarTheme::theme()->buttonsPlacement(); }
+    virtual ScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme()->buttonsPlacement(); }
 
-    virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) OVERRIDE;
+    virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) override;
 
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) OVERRIDE { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }
-    virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) OVERRIDE { return ScrollbarTheme::theme()->shouldSnapBackToDragOrigin(scrollbar, event); }
+    virtual bool shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }
+    virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldSnapBackToDragOrigin(scrollbar, event); }
 
-    virtual double initialAutoscrollTimerDelay() OVERRIDE { return ScrollbarTheme::theme()->initialAutoscrollTimerDelay(); }
-    virtual double autoscrollTimerDelay() OVERRIDE { return ScrollbarTheme::theme()->autoscrollTimerDelay(); }
+    virtual double initialAutoscrollTimerDelay() override { return ScrollbarTheme::theme()->initialAutoscrollTimerDelay(); }
+    virtual double autoscrollTimerDelay() override { return ScrollbarTheme::theme()->autoscrollTimerDelay(); }
 
-    virtual void registerScrollbar(ScrollbarThemeClient* scrollbar) OVERRIDE { return ScrollbarTheme::theme()->registerScrollbar(scrollbar); }
-    virtual void unregisterScrollbar(ScrollbarThemeClient* scrollbar) OVERRIDE { return ScrollbarTheme::theme()->unregisterScrollbar(scrollbar); }
+    virtual void registerScrollbar(ScrollbarThemeClient* scrollbar) override { return ScrollbarTheme::theme()->registerScrollbar(scrollbar); }
+    virtual void unregisterScrollbar(ScrollbarThemeClient* scrollbar) override { return ScrollbarTheme::theme()->unregisterScrollbar(scrollbar); }
 
-    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
+    virtual int minimumThumbLength(ScrollbarThemeClient*) override;
 
     void buttonSizesAlongTrackAxis(ScrollbarThemeClient*, int& beforeSize, int& afterSize);
 
     static RenderScrollbarTheme* renderScrollbarTheme();
 
 protected:
-    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE;
-    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
+    virtual bool hasButtons(ScrollbarThemeClient*) override;
+    virtual bool hasThumb(ScrollbarThemeClient*) override;
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
 
-    virtual void paintScrollbarBackground(GraphicsContext*, ScrollbarThemeClient*) OVERRIDE;
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
-    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintScrollbarBackground(GraphicsContext*, ScrollbarThemeClient*) override;
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
+    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
-    virtual IntRect constrainTrackRectToTrackPieces(ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual IntRect constrainTrackRectToTrackPieces(ScrollbarThemeClient*, const IntRect&) override;
 };
 
 } // namespace blink

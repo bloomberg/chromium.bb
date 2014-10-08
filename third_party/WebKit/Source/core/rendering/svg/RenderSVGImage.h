@@ -31,43 +31,43 @@ namespace blink {
 class RenderImageResource;
 class SVGImageElement;
 
-class RenderSVGImage FINAL : public RenderSVGModelObject {
+class RenderSVGImage final : public RenderSVGModelObject {
 public:
     explicit RenderSVGImage(SVGImageElement*);
     virtual ~RenderSVGImage();
-    virtual void destroy() OVERRIDE;
+    virtual void destroy() override;
 
     bool updateImageViewport();
-    virtual void setNeedsBoundariesUpdate() OVERRIDE { m_needsBoundariesUpdate = true; }
-    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
+    virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesUpdate = true; }
+    virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
     RenderImageResource* imageResource() { return m_imageResource.get(); }
 
-    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
+    virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
     OwnPtr<ImageBuffer>& bufferedForeground() { return m_bufferedForeground; }
 
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return m_paintInvalidationBoundingBox; }
-    virtual FloatRect objectBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
+    virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGImage"; }
-    virtual bool isSVGImage() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderSVGImage"; }
+    virtual bool isSVGImage() const override { return true; }
 
-    virtual FloatRect strokeBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
+    virtual FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const OVERRIDE;
+    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
-    virtual void layout() OVERRIDE;
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void layout() override;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
     bool forceNonUniformScaling(SVGImageElement*) const;
     void invalidateBufferedForeground();
 
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
+    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
-    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
+    virtual AffineTransform localTransform() const override { return m_localTransform; }
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsTransformUpdate : 1;

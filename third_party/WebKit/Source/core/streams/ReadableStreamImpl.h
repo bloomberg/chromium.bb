@@ -62,19 +62,19 @@ public:
     virtual ~ReadableStreamImpl() { }
 
     // ReadableStream methods
-    virtual ScriptValue read(ScriptState*, ExceptionState&) OVERRIDE;
+    virtual ScriptValue read(ScriptState*, ExceptionState&) override;
 
     bool enqueue(typename ChunkTypeTraits::PassType);
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         ReadableStream::trace(visitor);
     }
 
 private:
     // ReadableStream methods
-    virtual bool isQueueEmpty() const OVERRIDE { return m_queue.isEmpty(); }
-    virtual void clearQueue() OVERRIDE
+    virtual bool isQueueEmpty() const override { return m_queue.isEmpty(); }
+    virtual void clearQueue() override
     {
         m_queue.clear();
         m_totalQueueSize = 0;

@@ -29,27 +29,27 @@ class SVGGradientElement;
 class SVGStopElement;
 
 // This class exists mostly so we can hear about gradient stop style changes
-class RenderSVGGradientStop FINAL : public RenderObject {
+class RenderSVGGradientStop final : public RenderObject {
 public:
     explicit RenderSVGGradientStop(SVGStopElement*);
     virtual ~RenderSVGGradientStop();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGGradientStop"; }
-    virtual bool isSVGGradientStop() const OVERRIDE { return true; }
-    virtual bool isSVG() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderSVGGradientStop"; }
+    virtual bool isSVGGradientStop() const override { return true; }
+    virtual bool isSVG() const override { return true; }
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
     // This overrides are needed to prevent ASSERTs on <svg><stop /></svg>
     // RenderObject's default implementations ASSERT_NOT_REACHED()
     // https://bugs.webkit.org/show_bug.cgi?id=20400
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*, const PaintInvalidationState* = 0) const OVERRIDE { return LayoutRect(); }
-    virtual FloatRect objectBoundingBox() const OVERRIDE { return FloatRect(); }
-    virtual FloatRect strokeBoundingBox() const OVERRIDE { return FloatRect(); }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return FloatRect(); }
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*, const PaintInvalidationState* = 0) const override { return LayoutRect(); }
+    virtual FloatRect objectBoundingBox() const override { return FloatRect(); }
+    virtual FloatRect strokeBoundingBox() const override { return FloatRect(); }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(); }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
 private:
     SVGGradientElement* gradientElement() const;

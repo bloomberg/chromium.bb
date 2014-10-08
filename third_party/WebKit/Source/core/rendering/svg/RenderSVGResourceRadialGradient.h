@@ -28,20 +28,20 @@ namespace blink {
 
 class SVGRadialGradientElement;
 
-class RenderSVGResourceRadialGradient FINAL : public RenderSVGResourceGradient {
+class RenderSVGResourceRadialGradient final : public RenderSVGResourceGradient {
 public:
     explicit RenderSVGResourceRadialGradient(SVGRadialGradientElement*);
     virtual ~RenderSVGResourceRadialGradient();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceRadialGradient"; }
+    virtual const char* renderName() const override { return "RenderSVGResourceRadialGradient"; }
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const OVERRIDE { return m_attributes.gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) OVERRIDE { transform = m_attributes.gradientTransform(); }
-    virtual bool collectGradientAttributes(SVGGradientElement*) OVERRIDE;
-    virtual void buildGradient(GradientData*) const OVERRIDE;
+    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return m_attributes.gradientUnits(); }
+    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = m_attributes.gradientTransform(); }
+    virtual bool collectGradientAttributes(SVGGradientElement*) override;
+    virtual void buildGradient(GradientData*) const override;
 
     FloatPoint centerPoint(const RadialGradientAttributes&) const;
     FloatPoint focalPoint(const RadialGradientAttributes&) const;

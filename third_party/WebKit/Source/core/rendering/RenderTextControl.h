@@ -46,7 +46,7 @@ protected:
     int scrollbarThickness() const;
     void adjustInnerEditorStyle(RenderStyle* textBlockStyle) const;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
     void hitInnerEditorElement(HitTestResult&, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset);
 
@@ -60,29 +60,29 @@ protected:
     virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const = 0;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const = 0;
 
-    virtual void updateFromElement() OVERRIDE;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;
+    virtual void updateFromElement() override;
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 
     // We need to override this function because we don't want overflow:hidden on an <input>
     // to affect the baseline calculation. This is necessary because we are an inline-block
     // element as an implementation detail which would normally be affected by this.
-    virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
+    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderTextControl"; }
-    virtual bool isTextControl() const OVERRIDE FINAL { return true; }
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
-    virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE FINAL { }
-    virtual bool avoidsFloats() const OVERRIDE FINAL { return true; }
-    virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return false; }
+    virtual const char* renderName() const override { return "RenderTextControl"; }
+    virtual bool isTextControl() const override final { return true; }
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
+    virtual void computePreferredLogicalWidths() override final;
+    virtual void removeLeftoverAnonymousBlock(RenderBlock*) override final { }
+    virtual bool avoidsFloats() const override final { return true; }
+    virtual bool canHaveGeneratedChildren() const override final { return false; }
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE FINAL;
+    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override final;
 
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const OVERRIDE FINAL;
+    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const override final;
 
-    virtual bool canBeProgramaticallyScrolled() const OVERRIDE FINAL { return true; }
+    virtual bool canBeProgramaticallyScrolled() const override final { return true; }
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());
@@ -91,19 +91,19 @@ DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());
 // We can't use RenderFlexibleBox directly, because flexboxes have a different
 // baseline definition, and then inputs of different types wouldn't line up
 // anymore.
-class RenderTextControlInnerContainer FINAL : public RenderFlexibleBox {
+class RenderTextControlInnerContainer final : public RenderFlexibleBox {
 public:
     explicit RenderTextControlInnerContainer(Element* element)
         : RenderFlexibleBox(element)
     { }
     virtual ~RenderTextControlInnerContainer() { }
 
-    virtual int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const OVERRIDE
+    virtual int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const override
     {
         return RenderBlock::baselinePosition(baseline, firstLine, direction, position);
     }
-    virtual int firstLineBoxBaseline() const OVERRIDE { return RenderBlock::firstLineBoxBaseline(); }
-    virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
+    virtual int firstLineBoxBaseline() const override { return RenderBlock::firstLineBoxBaseline(); }
+    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 };
 
 

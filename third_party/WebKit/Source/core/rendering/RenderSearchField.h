@@ -29,15 +29,15 @@ namespace blink {
 
 class HTMLInputElement;
 
-class RenderSearchField FINAL : public RenderTextControlSingleLine {
+class RenderSearchField final : public RenderTextControlSingleLine {
 public:
     RenderSearchField(HTMLInputElement*);
     virtual ~RenderSearchField();
 
 private:
-    virtual void centerContainerIfNeeded(RenderBox*) const OVERRIDE;
-    virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const OVERRIDE;
-    virtual LayoutUnit computeLogicalHeightLimit() const OVERRIDE;
+    virtual void centerContainerIfNeeded(RenderBox*) const override;
+    virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
+    virtual LayoutUnit computeLogicalHeightLimit() const override;
 
     Element* searchDecorationElement() const;
     Element* cancelButtonElement() const;

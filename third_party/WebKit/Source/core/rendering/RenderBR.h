@@ -29,30 +29,30 @@
  */
 namespace blink {
 
-class RenderBR FINAL : public RenderText {
+class RenderBR final : public RenderText {
 public:
     explicit RenderBR(Node*);
     virtual ~RenderBR();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderBR"; }
+    virtual const char* renderName() const override { return "RenderBR"; }
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* /*paintInvalidationContainer*/) const OVERRIDE { return LayoutRect(); }
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* /*paintInvalidationContainer*/) const override { return LayoutRect(); }
 
-    virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, float /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const OVERRIDE { return 0; }
-    virtual float width(unsigned /*from*/, unsigned /*len*/, float /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const OVERRIDE { return 0; }
+    virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, float /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const override { return 0; }
+    virtual float width(unsigned /*from*/, unsigned /*len*/, float /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const override { return 0; }
 
     int lineHeight(bool firstLine) const;
 
     // overrides
-    virtual bool isBR() const OVERRIDE { return true; }
+    virtual bool isBR() const override { return true; }
 
-    virtual int caretMinOffset() const OVERRIDE;
-    virtual int caretMaxOffset() const OVERRIDE;
+    virtual int caretMinOffset() const override;
+    virtual int caretMaxOffset() const override;
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override final;
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBR, isBR());

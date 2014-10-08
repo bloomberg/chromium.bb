@@ -33,25 +33,25 @@
 
 namespace blink {
 
-class RenderReplica FINAL : public RenderBox {
+class RenderReplica final : public RenderBox {
 public:
     static RenderReplica* createAnonymous(Document*);
 
     virtual ~RenderReplica();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderReplica"; }
+    virtual const char* renderName() const override { return "RenderReplica"; }
 
-    virtual LayerType layerTypeRequired() const OVERRIDE { return NormalLayer; }
+    virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
 private:
     RenderReplica();
 
-    virtual bool isReplica() const OVERRIDE { return true; }
-    virtual void computePreferredLogicalWidths() OVERRIDE;
+    virtual bool isReplica() const override { return true; }
+    virtual void computePreferredLogicalWidths() override;
 
 };
 

@@ -13,7 +13,7 @@
 namespace blink {
 
 // Maintains the parent element stack (and bloom filter) inside recalcStyle.
-class StyleResolverParentScope FINAL {
+class StyleResolverParentScope final {
     STACK_ALLOCATED();
 public:
     explicit StyleResolverParentScope(Node& parent);

@@ -51,8 +51,8 @@ public:
     RenderLayer* layer() const { return m_layer.get(); }
     ScrollableArea* scrollableArea() const;
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
     virtual void updateFromStyle() { }
 
     virtual LayerType layerTypeRequired() const = 0;
@@ -64,7 +64,7 @@ public:
     // This is null for anonymous renderers.
     ContainerNode* node() const { return toContainerNode(RenderObject::node()); }
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
     // Indicate that the contents of this renderer need to be repainted. Only has an effect if compositing is being used,
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, InvalidationReason) const; // r is in the coordinate space of this render object
@@ -72,12 +72,12 @@ public:
 protected:
     void createLayer(LayerType);
 
-    virtual void willBeDestroyed() OVERRIDE;
+    virtual void willBeDestroyed() override;
 
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer*, const LayoutPoint&, const LayoutRect&) const OVERRIDE;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer*, const LayoutPoint&, const LayoutRect&) const override;
 
 private:
-    virtual bool isLayerModelObject() const OVERRIDE FINAL { return true; }
+    virtual bool isLayerModelObject() const override final { return true; }
 
     OwnPtr<RenderLayer> m_layer;
 

@@ -46,7 +46,7 @@ class File;
 
 class ExceptionState;
 
-class DataTransferItemList FINAL : public RefCountedWillBeGarbageCollected<DataTransferItemList>, public ScriptWrappable {
+class DataTransferItemList final : public RefCountedWillBeGarbageCollected<DataTransferItemList>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItemList);
     DEFINE_WRAPPERTYPEINFO();
 public:

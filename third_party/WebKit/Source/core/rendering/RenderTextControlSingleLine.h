@@ -35,7 +35,7 @@ public:
     RenderTextControlSingleLine(HTMLInputElement*);
     virtual ~RenderTextControlSingleLine();
     // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
-    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const OVERRIDE FINAL;
+    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const override final;
 
     void capsLockStateMayHaveChanged();
 
@@ -47,31 +47,31 @@ protected:
     HTMLInputElement* inputElement() const;
 
 private:
-    virtual bool hasControlClip() const OVERRIDE FINAL;
-    virtual LayoutRect controlClipRect(const LayoutPoint&) const OVERRIDE FINAL;
-    virtual bool isTextField() const OVERRIDE FINAL { return true; }
+    virtual bool hasControlClip() const override final;
+    virtual LayoutRect controlClipRect(const LayoutPoint&) const override final;
+    virtual bool isTextField() const override final { return true; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual void layout() OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void layout() override;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
-    virtual void autoscroll(const IntPoint&) OVERRIDE FINAL;
+    virtual void autoscroll(const IntPoint&) override final;
 
     // Subclassed to forward to our inner div.
-    virtual LayoutUnit scrollLeft() const OVERRIDE FINAL;
-    virtual LayoutUnit scrollTop() const OVERRIDE FINAL;
-    virtual LayoutUnit scrollWidth() const OVERRIDE FINAL;
-    virtual LayoutUnit scrollHeight() const OVERRIDE FINAL;
-    virtual void setScrollLeft(LayoutUnit) OVERRIDE FINAL;
-    virtual void setScrollTop(LayoutUnit) OVERRIDE FINAL;
+    virtual LayoutUnit scrollLeft() const override final;
+    virtual LayoutUnit scrollTop() const override final;
+    virtual LayoutUnit scrollWidth() const override final;
+    virtual LayoutUnit scrollHeight() const override final;
+    virtual void setScrollLeft(LayoutUnit) override final;
+    virtual void setScrollTop(LayoutUnit) override final;
 
     int textBlockWidth() const;
-    virtual float getAvgCharWidth(AtomicString family) OVERRIDE FINAL;
-    virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const OVERRIDE FINAL;
-    virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const OVERRIDE;
+    virtual float getAvgCharWidth(AtomicString family) override final;
+    virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const override final;
+    virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
 
     bool textShouldBeTruncated() const;
 
@@ -88,16 +88,16 @@ DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlSingleLine, isTextField());
 class RenderTextControlInnerBlock : public RenderBlockFlow {
 public:
     RenderTextControlInnerBlock(Element* element) : RenderBlockFlow(element) { }
-    virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
+    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
 private:
-    virtual bool isIntristicallyScrollable(ScrollbarOrientation orientation) const OVERRIDE
+    virtual bool isIntristicallyScrollable(ScrollbarOrientation orientation) const override
     {
         return orientation == HorizontalScrollbar;
     }
-    virtual bool scrollsOverflowX() const OVERRIDE { return hasOverflowClip(); }
-    virtual bool scrollsOverflowY() const OVERRIDE { return false; }
-    virtual bool hasLineIfEmpty() const OVERRIDE { return true; }
+    virtual bool scrollsOverflowX() const override { return hasOverflowClip(); }
+    virtual bool scrollsOverflowY() const override { return false; }
+    virtual bool hasLineIfEmpty() const override { return true; }
 };
 
 }

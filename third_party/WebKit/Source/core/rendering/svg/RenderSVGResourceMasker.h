@@ -35,15 +35,15 @@ namespace blink {
 class DisplayList;
 class GraphicsContext;
 
-class RenderSVGResourceMasker FINAL : public RenderSVGResourceContainer {
+class RenderSVGResourceMasker final : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourceMasker(SVGMaskElement*);
     virtual ~RenderSVGResourceMasker();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceMasker"; }
+    virtual const char* renderName() const override { return "RenderSVGResourceMasker"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
     bool prepareEffect(RenderObject*, RenderStyle*, GraphicsContext*&);
     void finishEffect(RenderObject*, GraphicsContext*&);
@@ -53,7 +53,7 @@ public:
     SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(element())->maskUnits()->currentValue()->enumValue(); }
     SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue(); }
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
 private:

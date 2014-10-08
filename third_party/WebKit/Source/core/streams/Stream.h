@@ -43,7 +43,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class Stream FINAL : public RefCountedWillBeGarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
+class Stream final : public RefCountedWillBeGarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Stream> create(ExecutionContext* context, const String& mediaType)
@@ -78,9 +78,9 @@ public:
     // Implementation of ActiveDOMObject.
     //
     // FIXME: Implement suspend() and resume() when necessary.
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual void suspend() override;
+    virtual void resume() override;
+    virtual void stop() override;
 
     void trace(Visitor*) { }
 

@@ -33,12 +33,12 @@ namespace blink {
 
 class HTMLElement;
 
-class RenderWordBreak FINAL : public RenderText {
+class RenderWordBreak final : public RenderText {
 public:
     explicit RenderWordBreak(HTMLElement*);
 
-    virtual const char* renderName() const OVERRIDE;
-    virtual bool isWordBreak() const OVERRIDE;
+    virtual const char* renderName() const override;
+    virtual bool isWordBreak() const override;
 };
 
 }

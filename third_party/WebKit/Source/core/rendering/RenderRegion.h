@@ -43,7 +43,7 @@ class RenderRegion : public RenderBlockFlow {
 public:
     explicit RenderRegion(Element*, RenderFlowThread*);
 
-    virtual bool isRenderRegion() const OVERRIDE FINAL { return true; }
+    virtual bool isRenderRegion() const override final { return true; }
 
     void setFlowThreadPortionRect(const LayoutRect& rect) { m_flowThreadPortionRect = rect; }
     LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }
@@ -64,20 +64,20 @@ public:
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;
 
-    virtual bool canHaveChildren() const OVERRIDE FINAL { return false; }
-    virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return true; }
+    virtual bool canHaveChildren() const override final { return false; }
+    virtual bool canHaveGeneratedChildren() const override final { return true; }
 
-    virtual const char* renderName() const OVERRIDE { return "RenderRegion"; }
+    virtual const char* renderName() const override { return "RenderRegion"; }
 
 protected:
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
 
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
     void paintInvalidationOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect,
         const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
 
 private:
-    virtual void layoutBlock(bool relayoutChildren) OVERRIDE FINAL;
+    virtual void layoutBlock(bool relayoutChildren) override final;
 
 protected:
     RenderFlowThread* m_flowThread;

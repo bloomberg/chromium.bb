@@ -37,7 +37,7 @@ namespace blink {
 
 class HTMLSelectElement;
 
-class RenderListBox FINAL : public RenderBlockFlow {
+class RenderListBox final : public RenderBlockFlow {
 public:
     explicit RenderListBox(Element*);
     virtual ~RenderListBox();
@@ -47,14 +47,14 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
-    virtual const char* renderName() const OVERRIDE { return "RenderListBox"; }
+    virtual const char* renderName() const override { return "RenderListBox"; }
 
-    virtual bool isListBox() const OVERRIDE { return true; }
+    virtual bool isListBox() const override { return true; }
 
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
-    virtual void stopAutoscroll() OVERRIDE;
+    virtual void stopAutoscroll() override;
 
     LayoutUnit defaultItemHeight() const;
     LayoutUnit itemHeight() const;

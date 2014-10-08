@@ -36,11 +36,11 @@ namespace blink {
 class RenderThemeChromiumDefault : public RenderThemeChromiumSkia {
 public:
     static PassRefPtr<RenderTheme> create();
-    virtual String extraDefaultStyleSheet() OVERRIDE;
+    virtual String extraDefaultStyleSheet() override;
 
-    virtual Color systemColor(CSSValueID) const OVERRIDE;
+    virtual Color systemColor(CSSValueID) const override;
 
-    virtual bool supportsFocusRing(const RenderStyle*) const OVERRIDE;
+    virtual bool supportsFocusRing(const RenderStyle*) const override;
 
     // List Box selection color
     virtual Color activeListBoxSelectionBackgroundColor() const;
@@ -48,48 +48,48 @@ public:
     virtual Color inactiveListBoxSelectionBackgroundColor() const;
     virtual Color inactiveListBoxSelectionForegroundColor() const;
 
-    virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE;
-    virtual Color platformInactiveSelectionBackgroundColor() const OVERRIDE;
-    virtual Color platformActiveSelectionForegroundColor() const OVERRIDE;
-    virtual Color platformInactiveSelectionForegroundColor() const OVERRIDE;
+    virtual Color platformActiveSelectionBackgroundColor() const override;
+    virtual Color platformInactiveSelectionBackgroundColor() const override;
+    virtual Color platformActiveSelectionForegroundColor() const override;
+    virtual Color platformInactiveSelectionForegroundColor() const override;
 
-    virtual IntSize sliderTickSize() const OVERRIDE;
-    virtual int sliderTickOffsetFromTrackCenter() const OVERRIDE;
-    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const OVERRIDE;
+    virtual IntSize sliderTickSize() const override;
+    virtual int sliderTickOffsetFromTrackCenter() const override;
+    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const override;
 
     static void setCaretBlinkInterval(double);
-    virtual double caretBlinkIntervalInternal() const OVERRIDE;
+    virtual double caretBlinkIntervalInternal() const override;
 
-    virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual void setCheckboxSize(RenderStyle*) const OVERRIDE;
+    virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual void setCheckboxSize(RenderStyle*) const override;
 
-    virtual bool paintRadio(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual void setRadioSize(RenderStyle*) const OVERRIDE;
+    virtual bool paintRadio(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual void setRadioSize(RenderStyle*) const override;
 
-    virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) override;
+    virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const OVERRIDE;
-    virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const override;
+    virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool popsMenuBySpaceKey() const OVERRIDE FINAL { return true; }
-    virtual bool popsMenuByReturnKey() const OVERRIDE FINAL { return true; }
-    virtual bool popsMenuByAltDownUpOrF4Key() const OVERRIDE { return true; }
+    virtual bool popsMenuBySpaceKey() const override final { return true; }
+    virtual bool popsMenuByReturnKey() const override final { return true; }
+    virtual bool popsMenuByAltDownUpOrF4Key() const override { return true; }
 
-    virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) override;
 
-    virtual bool shouldOpenPickerWithF4Key() const OVERRIDE;
+    virtual bool shouldOpenPickerWithF4Key() const override;
 
     static void setSelectionColors(unsigned activeBackgroundColor, unsigned activeForegroundColor, unsigned inactiveBackgroundColor, unsigned inactiveForegroundColor);
 
 protected:
     RenderThemeChromiumDefault();
     virtual ~RenderThemeChromiumDefault();
-    virtual bool shouldUseFallbackTheme(RenderStyle*) const OVERRIDE;
+    virtual bool shouldUseFallbackTheme(RenderStyle*) const override;
 
 private:
     static double m_caretBlinkInterval;

@@ -50,16 +50,16 @@ namespace blink {
 //
 // Column spans result in the creation of new column sets, since a spanning renderer has to be
 // placed in between the column sets that come before and after the span.
-class RenderMultiColumnSet FINAL : public RenderRegion {
+class RenderMultiColumnSet final : public RenderRegion {
 public:
     enum BalancedHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
 
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread*, RenderStyle* parentStyle);
 
-    virtual bool isRenderMultiColumnSet() const OVERRIDE { return true; }
+    virtual bool isRenderMultiColumnSet() const override { return true; }
 
-    virtual LayoutUnit pageLogicalWidth() const OVERRIDE FINAL { return flowThread()->logicalWidth(); }
-    virtual LayoutUnit pageLogicalHeight() const OVERRIDE FINAL { return m_columnHeight; }
+    virtual LayoutUnit pageLogicalWidth() const override final { return flowThread()->logicalWidth(); }
+    virtual LayoutUnit pageLogicalHeight() const override final { return m_columnHeight; }
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
     RenderMultiColumnFlowThread* multiColumnFlowThread() const
@@ -130,16 +130,16 @@ public:
 private:
     RenderMultiColumnSet(RenderFlowThread*);
 
-    virtual void insertedIntoTree() OVERRIDE FINAL;
-    virtual void willBeRemovedFromTree() OVERRIDE FINAL;
+    virtual void insertedIntoTree() override final;
+    virtual void willBeRemovedFromTree() override final;
 
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) OVERRIDE;
+    virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) override;
 
-    virtual void addOverflowFromChildren() OVERRIDE;
+    virtual void addOverflowFromChildren() override;
 
-    virtual const char* renderName() const OVERRIDE;
+    virtual const char* renderName() const override;
 
     LayoutUnit calculateMaxColumnHeight() const;
     LayoutRect columnRectAt(unsigned index) const;

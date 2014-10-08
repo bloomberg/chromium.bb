@@ -28,7 +28,7 @@ namespace blink {
 class HTMLInputElement;
 class SliderThumbElement;
 
-class RenderSlider FINAL : public RenderFlexibleBox {
+class RenderSlider final : public RenderFlexibleBox {
 public:
     static const int defaultTrackLength;
 
@@ -38,12 +38,12 @@ public:
     bool inDragMode() const;
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderSlider"; }
-    virtual bool isSlider() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderSlider"; }
+    virtual bool isSlider() const override { return true; }
 
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
-    virtual void layout() OVERRIDE;
+    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+    virtual void layout() override;
 
     SliderThumbElement* sliderThumbElement() const;
 };

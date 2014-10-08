@@ -39,13 +39,13 @@ namespace blink {
 
 class SliderThumbElement;
 
-class RenderSliderThumb FINAL : public RenderBlockFlow {
+class RenderSliderThumb final : public RenderBlockFlow {
 public:
     RenderSliderThumb(SliderThumbElement*);
     void updateAppearance(RenderStyle* parentStyle);
 
 private:
-    virtual bool isSliderThumb() const OVERRIDE;
+    virtual bool isSliderThumb() const override;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSliderThumb, isSliderThumb());

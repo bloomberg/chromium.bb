@@ -40,7 +40,7 @@ class FontDescription;
 class RemoteFontFaceSource;
 class SimpleFontData;
 
-class CSSFontFace FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
+class CSSFontFace final : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
 public:
     struct UnicodeRange;
     class UnicodeRangeSet;

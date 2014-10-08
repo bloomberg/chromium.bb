@@ -30,21 +30,21 @@
 
 namespace blink {
 
-class RenderIFrame FINAL : public RenderPart {
+class RenderIFrame final : public RenderPart {
 public:
     explicit RenderIFrame(Element*);
 
 private:
-    virtual bool shouldComputeSizeAsReplaced() const OVERRIDE;
-    virtual bool isInlineBlockOrInlineTable() const OVERRIDE;
+    virtual bool shouldComputeSizeAsReplaced() const override;
+    virtual bool isInlineBlockOrInlineTable() const override;
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
-    virtual bool isRenderIFrame() const OVERRIDE { return true; }
+    virtual bool isRenderIFrame() const override { return true; }
 
-    virtual const char* renderName() const OVERRIDE { return "RenderPartObject"; } // Lying for now to avoid breaking tests
+    virtual const char* renderName() const override { return "RenderPartObject"; } // Lying for now to avoid breaking tests
 
-    virtual LayerType layerTypeRequired() const OVERRIDE;
+    virtual LayerType layerTypeRequired() const override;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderIFrame, isRenderIFrame());

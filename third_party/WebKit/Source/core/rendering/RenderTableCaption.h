@@ -26,17 +26,17 @@ namespace blink {
 
 class RenderTable;
 
-class RenderTableCaption FINAL : public RenderBlockFlow {
+class RenderTableCaption final : public RenderBlockFlow {
 public:
     explicit RenderTableCaption(Element*);
     virtual ~RenderTableCaption();
-    virtual LayoutUnit containingBlockLogicalWidthForContent() const OVERRIDE;
+    virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
 
 private:
-    virtual bool isTableCaption() const OVERRIDE { return true; }
+    virtual bool isTableCaption() const override { return true; }
 
-    virtual void insertedIntoTree() OVERRIDE;
-    virtual void willBeRemovedFromTree() OVERRIDE;
+    virtual void insertedIntoTree() override;
+    virtual void willBeRemovedFromTree() override;
 
     RenderTable* table() const;
 };

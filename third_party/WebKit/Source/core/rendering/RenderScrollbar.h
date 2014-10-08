@@ -38,7 +38,7 @@ class RenderBox;
 class RenderScrollbarPart;
 class RenderStyle;
 
-class RenderScrollbar FINAL : public Scrollbar {
+class RenderScrollbar final : public Scrollbar {
 protected:
     RenderScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
 
@@ -55,20 +55,20 @@ public:
 
     int minimumThumbLength();
 
-    virtual bool isOverlayScrollbar() const OVERRIDE { return false; }
+    virtual bool isOverlayScrollbar() const override { return false; }
 
     RenderScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
 
 private:
-    virtual void setParent(Widget*) OVERRIDE;
-    virtual void setEnabled(bool) OVERRIDE;
+    virtual void setParent(Widget*) override;
+    virtual void setEnabled(bool) override;
 
-    virtual void setHoveredPart(ScrollbarPart) OVERRIDE;
-    virtual void setPressedPart(ScrollbarPart) OVERRIDE;
+    virtual void setHoveredPart(ScrollbarPart) override;
+    virtual void setPressedPart(ScrollbarPart) override;
 
-    virtual void styleChanged() OVERRIDE;
+    virtual void styleChanged() override;
 
-    virtual bool isCustomScrollbar() const OVERRIDE { return true; }
+    virtual bool isCustomScrollbar() const override { return true; }
 
     void updateScrollbarParts(bool destroy = false);
 

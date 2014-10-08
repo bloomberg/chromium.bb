@@ -27,36 +27,36 @@ namespace blink {
 
 class SVGForeignObjectElement;
 
-class RenderSVGForeignObject FINAL : public RenderSVGBlock {
+class RenderSVGForeignObject final : public RenderSVGBlock {
 public:
     explicit RenderSVGForeignObject(SVGForeignObjectElement*);
     virtual ~RenderSVGForeignObject();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGForeignObject"; }
+    virtual const char* renderName() const override { return "RenderSVGForeignObject"; }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
-    virtual FloatRect objectBoundingBox() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
-    virtual FloatRect strokeBoundingBox() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
+    virtual FloatRect objectBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+    virtual FloatRect strokeBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
 
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const OVERRIDE;
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
-    virtual bool isSVGForeignObject() const OVERRIDE { return true; }
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+    virtual bool isSVGForeignObject() const override { return true; }
 
-    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
+    virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
     FloatRect viewportRect() { return m_viewport; }
 
 private:
-    virtual void updateLogicalWidth() OVERRIDE;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
+    virtual void updateLogicalWidth() override;
+    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual const AffineTransform& localToParentTransform() const OVERRIDE;
+    virtual const AffineTransform& localToParentTransform() const override;
 
     bool m_needsTransformUpdate : 1;
     FloatRect m_viewport;

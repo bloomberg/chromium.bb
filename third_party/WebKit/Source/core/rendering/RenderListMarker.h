@@ -33,13 +33,13 @@ String listMarkerText(EListStyleType, int value);
 
 // Used to render the list item's marker.
 // The RenderListMarker always has to be a child of a RenderListItem.
-class RenderListMarker FINAL : public RenderBox {
+class RenderListMarker final : public RenderBox {
 public:
     static RenderListMarker* createAnonymous(RenderListItem*);
 
     virtual ~RenderListMarker();
-    virtual void destroy() OVERRIDE;
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void destroy() override;
+    virtual void trace(Visitor*) override;
 
     const String& text() const { return m_text; }
 
@@ -49,7 +49,7 @@ public:
 
     IntRect getRelativeMarkerRect();
     LayoutRect localSelectionRect();
-    virtual bool isImage() const OVERRIDE;
+    virtual bool isImage() const override;
     const StyleImage* image() { return m_image.get(); }
     const RenderListItem* listItem() { return m_listItem.get(); }
 
@@ -58,33 +58,33 @@ public:
 private:
     RenderListMarker(RenderListItem*);
 
-    virtual const char* renderName() const OVERRIDE { return "RenderListMarker"; }
-    virtual void computePreferredLogicalWidths() OVERRIDE;
+    virtual const char* renderName() const override { return "RenderListMarker"; }
+    virtual void computePreferredLogicalWidths() override;
 
-    virtual bool isListMarker() const OVERRIDE { return true; }
+    virtual bool isListMarker() const override { return true; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
-    virtual InlineBox* createInlineBox() OVERRIDE;
+    virtual InlineBox* createInlineBox() override;
 
-    virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
+    virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
+    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
 
     bool isText() const { return !isImage(); }
 
-    virtual void setSelectionState(SelectionState) OVERRIDE;
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE;
-    virtual bool canBeSelectionLeaf() const OVERRIDE { return true; }
+    virtual void setSelectionState(SelectionState) override;
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const override;
+    virtual bool canBeSelectionLeaf() const override { return true; }
 
     void updateMargins();
     void updateContent();
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) override;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
     String m_text;
     RefPtr<StyleImage> m_image;

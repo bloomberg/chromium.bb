@@ -34,7 +34,7 @@ namespace blink {
 class DOMPlugin;
 class LocalFrame;
 
-class DOMMimeType FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+class DOMMimeType final : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -49,7 +49,7 @@ public:
     const String& description() const;
     PassRefPtrWillBeRawPtr<DOMPlugin> enabledPlugin() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     const MimeClassInfo& mimeClassInfo() const { return m_pluginData->mimes()[m_index]; }

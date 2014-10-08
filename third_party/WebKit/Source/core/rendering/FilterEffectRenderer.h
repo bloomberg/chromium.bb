@@ -71,7 +71,7 @@ private:
     bool m_haveFilterEffect;
 };
 
-class FilterEffectRenderer FINAL : public Filter
+class FilterEffectRenderer final : public Filter
 {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -85,7 +85,7 @@ public:
         m_sourceDrawingRegion = sourceImageRect;
         m_graphicsBufferAttached = false;
     }
-    virtual IntRect sourceImageRect() const OVERRIDE { return m_sourceDrawingRegion; }
+    virtual IntRect sourceImageRect() const override { return m_sourceDrawingRegion; }
 
     GraphicsContext* inputContext();
     ImageBuffer* output() const { return lastEffect()->asImageBuffer(); }

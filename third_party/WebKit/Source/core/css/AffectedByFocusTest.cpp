@@ -29,7 +29,7 @@ protected:
         bool childrenOrSiblingsAffectedBy;
     };
 
-    virtual void SetUp() OVERRIDE;
+    virtual void SetUp() override;
 
     HTMLDocument& document() const { return *m_document; }
 

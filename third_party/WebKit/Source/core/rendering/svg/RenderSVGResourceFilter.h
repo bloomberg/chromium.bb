@@ -50,19 +50,19 @@ public:
 
 class GraphicsContext;
 
-class RenderSVGResourceFilter FINAL : public RenderSVGResourceContainer {
+class RenderSVGResourceFilter final : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourceFilter(SVGFilterElement*);
     virtual ~RenderSVGResourceFilter();
-    virtual void destroy() OVERRIDE;
+    virtual void destroy() override;
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceFilter"; }
-    virtual bool isSVGResourceFilter() const OVERRIDE { return true; }
+    virtual const char* renderName() const override { return "RenderSVGResourceFilter"; }
+    virtual bool isSVGResourceFilter() const override { return true; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
     bool prepareEffect(RenderObject*, RenderStyle*, GraphicsContext*&);
     void finishEffect(RenderObject*, GraphicsContext*&);
@@ -76,7 +76,7 @@ public:
 
     void primitiveAttributeChanged(RenderObject*, const QualifiedName&);
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
     FloatRect drawingRegion(RenderObject*) const;

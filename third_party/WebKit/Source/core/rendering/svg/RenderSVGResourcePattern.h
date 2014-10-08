@@ -42,19 +42,19 @@ public:
     AffineTransform transform;
 };
 
-class RenderSVGResourcePattern FINAL : public RenderSVGResourceContainer {
+class RenderSVGResourcePattern final : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourcePattern(SVGPatternElement*);
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourcePattern"; }
+    virtual const char* renderName() const override { return "RenderSVGResourcePattern"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) OVERRIDE;
-    virtual void postApplyResource(GraphicsContext*) OVERRIDE;
+    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) override;
+    virtual void postApplyResource(GraphicsContext*) override;
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
 private:

@@ -37,7 +37,7 @@ class ContainerNode;
 class ElementRuleCollector;
 class RuleFeatureSet;
 
-class TreeBoundaryCrossingRules FINAL {
+class TreeBoundaryCrossingRules final {
     DISALLOW_ALLOCATION();
 public:
     void addTreeBoundaryCrossingRules(const RuleSet&, CSSStyleSheet*, unsigned sheetIndex, ContainerNode&);
@@ -50,7 +50,7 @@ public:
 
 private:
     size_t size() const { return m_scopingNodes.size(); }
-    class RuleSubSet FINAL : public NoBaseWillBeGarbageCollected<RuleSubSet> {
+    class RuleSubSet final : public NoBaseWillBeGarbageCollected<RuleSubSet> {
     public:
         static PassOwnPtrWillBeRawPtr<RuleSubSet> create(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
         {

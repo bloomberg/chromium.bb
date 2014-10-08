@@ -34,12 +34,12 @@
 
 namespace blink {
 
-class RenderTextTrackContainerElement FINAL : public RenderBlockFlow {
+class RenderTextTrackContainerElement final : public RenderBlockFlow {
 public:
     RenderTextTrackContainerElement(Element*);
 
 private:
-    virtual void layout() OVERRIDE;
+    virtual void layout() override;
 };
 
 

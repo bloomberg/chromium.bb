@@ -45,11 +45,11 @@ class RenderSVGResourceGradient : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourceGradient(SVGGradientElement*);
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE FINAL;
-    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE FINAL;
+    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override final;
+    virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override final;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) OVERRIDE FINAL;
-    virtual void postApplyResource(GraphicsContext*) OVERRIDE FINAL;
+    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) override final;
+    virtual void postApplyResource(GraphicsContext*) override final;
 
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;

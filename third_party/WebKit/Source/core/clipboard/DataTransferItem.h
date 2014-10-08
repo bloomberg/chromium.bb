@@ -46,7 +46,7 @@ class File;
 class StringCallback;
 class ExecutionContext;
 
-class DataTransferItem FINAL : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
+class DataTransferItem final : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
     DEFINE_WRAPPERTYPEINFO();
 public:

@@ -28,20 +28,20 @@ namespace blink {
 
 class SVGLinearGradientElement;
 
-class RenderSVGResourceLinearGradient FINAL : public RenderSVGResourceGradient {
+class RenderSVGResourceLinearGradient final : public RenderSVGResourceGradient {
 public:
     explicit RenderSVGResourceLinearGradient(SVGLinearGradientElement*);
     virtual ~RenderSVGResourceLinearGradient();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceLinearGradient"; }
+    virtual const char* renderName() const override { return "RenderSVGResourceLinearGradient"; }
 
-    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const OVERRIDE { return m_attributes.gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) OVERRIDE { transform = m_attributes.gradientTransform(); }
-    virtual bool collectGradientAttributes(SVGGradientElement*) OVERRIDE;
-    virtual void buildGradient(GradientData*) const OVERRIDE;
+    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return m_attributes.gradientUnits(); }
+    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = m_attributes.gradientTransform(); }
+    virtual bool collectGradientAttributes(SVGGradientElement*) override;
+    virtual void buildGradient(GradientData*) const override;
 
     FloatPoint startPoint(const LinearGradientAttributes&) const;
     FloatPoint endPoint(const LinearGradientAttributes&) const;

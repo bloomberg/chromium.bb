@@ -27,7 +27,7 @@ namespace blink {
 class HitTestRequest;
 class HitTestResult;
 
-class EllipsisBox FINAL : public InlineBox {
+class EllipsisBox final : public InlineBox {
 public:
     EllipsisBox(RenderObject& obj, const AtomicString& ellipsisStr, InlineFlowBox* parent,
         int width, int height, int x, int y, bool firstLine, bool isVertical, InlineBox* markupBox)
@@ -40,13 +40,13 @@ public:
         setHasVirtualLogicalHeight();
     }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     void setSelectionState(RenderObject::SelectionState s) { m_selectionState = s; }
     IntRect selectionRect();
 
-    virtual float virtualLogicalHeight() const OVERRIDE { return m_height; }
-    virtual RenderObject::SelectionState selectionState() const OVERRIDE { return m_selectionState; }
+    virtual float virtualLogicalHeight() const override { return m_height; }
+    virtual RenderObject::SelectionState selectionState() const override { return m_selectionState; }
     const AtomicString& ellipsisStr() { return m_str; }
     InlineBox* markupBox() const;
 

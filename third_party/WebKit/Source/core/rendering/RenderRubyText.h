@@ -35,22 +35,22 @@
 
 namespace blink {
 
-class RenderRubyText FINAL : public RenderBlockFlow {
+class RenderRubyText final : public RenderBlockFlow {
 public:
     RenderRubyText(Element*);
     virtual ~RenderRubyText();
 
-    virtual const char* renderName() const OVERRIDE { return "RenderRubyText"; }
+    virtual const char* renderName() const override { return "RenderRubyText"; }
 
-    virtual bool isRubyText() const OVERRIDE { return true; }
+    virtual bool isRubyText() const override { return true; }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
 private:
-    virtual bool avoidsFloats() const OVERRIDE;
+    virtual bool avoidsFloats() const override;
 
-    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const OVERRIDE;
-    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const OVERRIDE;
+    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
+    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const override;
 };
 
 } // namespace blink
