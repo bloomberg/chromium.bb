@@ -2,7 +2,11 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""Provides functions: get_native_path_case(), isabs() and safe_join()."""
+"""Provides functions: get_native_path_case(), isabs() and safe_join().
+
+This module assumes that filesystem is not changing while current process
+is running and thus it caches results of functions that depend on FS state.
+"""
 
 import logging
 import os
@@ -146,6 +150,7 @@ if sys.platform == 'win32':
 
 
   @tools.profile
+  @tools.cached
   def get_native_path_case(p):
     """Returns the native path case for an existing file.
 
@@ -246,12 +251,13 @@ elif sys.platform == 'darwin':
       return item
 
     item = item.lower()
-    for element in os.listdir(root_path):
+    for element in listdir(root_path):
       if element.lower() == item:
         return element
 
 
   @tools.profile
+  @tools.cached
   def get_native_path_case(path):
     """Returns the native path case for an existing file.
 
@@ -315,6 +321,7 @@ else:  # OSes other than Windows and OSX.
 
 
   @tools.profile
+  @tools.cached
   def get_native_path_case(path):
     """Returns the native path case for an existing file.
 
@@ -333,8 +340,12 @@ else:  # OSes other than Windows and OSX.
     # OS so this needs to be done here to be coherent between OSes.
     out = os.path.normpath(path)
     if path.endswith(os.path.sep) and not out.endswith(os.path.sep):
-      return out + os.path.sep
-    return out
+      out = out + os.path.sep
+    # In 99.99% of cases on Linux out == path. Since a return value is cached
+    # forever, reuse (also cached) |path| object. It safes approx 7MB of ram
+    # when isolating Chromium tests. It's important on memory constrained
+    # systems running ARM.
+    return path if out == path else out
 
 
 if sys.platform != 'win32':  # All non-Windows OSes.
@@ -402,6 +413,15 @@ if sys.platform != 'win32':  # All non-Windows OSes.
         break
       index += 1
     return relfile, None, None
+
+
+@tools.profile
+def listdir(abspath):
+  """Lists a directory given an absolute path to it."""
+  if not isabs(abspath):
+    raise ValueError(
+        'list_dir(%r): Require an absolute path' % abspath, abspath)
+  return os.listdir(abspath)
 
 
 def relpath(path, root):

@@ -27,6 +27,11 @@ _ca_certs = None
 _ca_certs_lock = threading.Lock()
 
 
+# @cached decorators registered by report_cache_stats_at_exit.
+_caches = []
+_caches_lock = threading.Lock()
+
+
 class OptionParserWithLogging(optparse.OptionParser):
   """Adds --verbose option."""
 
@@ -191,6 +196,75 @@ def profile(func):
   def wrapper(*args, **kwargs):
     with timer:
       return func(*args, **kwargs)
+  return wrapper
+
+
+def report_cache_stats_at_exit(func, cache):
+  """Registers a hook that reports state of the cache on the process exit."""
+  # Very dumb. Tries to account for object reuse though.
+  def get_size(obj, seen):
+    # Use id(...) to avoid triggering __hash__ and comparing by value instead.
+    if id(obj) in seen:
+      return 0
+    seen.add(id(obj))
+    size = sys.getsizeof(obj)
+    if isinstance(obj, (list, tuple)):
+      return size + sum(get_size(x, seen) for x in obj)
+    elif isinstance(obj, dict):
+      return size + sum(
+          get_size(k, seen) + get_size(v, seen) for k, v in obj.iteritems())
+    return size
+
+  def report_caches_state():
+    print('\nFunction cache report:')
+    print('-' * 80)
+    print('{:<40}{:<16}{:<26}'.format('Name', 'Items', 'Approx size, KB'))
+    print('-' * 80)
+    with _caches_lock:
+      total = 0
+      seen_objects = set()
+      for func, cache in sorted(_caches, key=lambda x: -len(x[1])):
+        size = get_size(cache, seen_objects)
+        total += size
+        print(
+            '{:<40}{:<16}{:<26}'.format(func.__name__, len(cache), size / 1024))
+    print('-' * 80)
+    print('Total: %.1f MB' % (total / 1024 / 1024,))
+    print('-' * 80)
+
+  with _caches_lock:
+    _caches.append((func, cache))
+    if len(_caches) == 1:
+      atexit.register(report_caches_state)
+
+
+def cached(func):
+  """Decorator that permanently caches a result of function invocation.
+
+  It tries to be super fast and because of that is somewhat limited:
+    * The function being cached can accept only positional arguments.
+    * All arguments should be hashable.
+    * The function may be called multiple times with same arguments in
+      multithreaded environment.
+    * The cache is not cleared up at all.
+
+  If SWARMING_PROFILE env var is set, will produce a report about the state of
+  the cache at the process exit (number of items and approximate size).
+  """
+  empty = object()
+  cache = {}
+
+  if os.environ.get('SWARMING_PROFILE') == '1':
+    report_cache_stats_at_exit(func, cache)
+
+  @functools.wraps(func)
+  def wrapper(*args):
+    v = cache.get(args, empty)
+    if v is empty:
+      v = func(*args)
+      cache[args] = v
+    return v
+
   return wrapper
 
 

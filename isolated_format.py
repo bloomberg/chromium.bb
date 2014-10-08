@@ -128,10 +128,6 @@ def walk_includes(isolated):
       yield x
 
 
-# Wrap listdir for profiling. Noop if profiling is disabled.
-os_listdir = tools.profile(os.listdir)
-
-
 @tools.profile
 def expand_symlinks(indir, relfile):
   """Follows symlinks in |relfile|, but treating symlinks that point outside the
@@ -152,8 +148,7 @@ def expand_symlinks(indir, relfile):
   symlinks = []
 
   while todo:
-    pre_symlink, symlink, post_symlink = file_path.split_at_symlink(
-        done, todo)
+    pre_symlink, symlink, post_symlink = file_path.split_at_symlink(done, todo)
     if not symlink:
       todo = file_path.fix_native_path_case(done, todo)
       done = os.path.join(done, todo)
@@ -261,7 +256,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       relfile = relfile[2:]
     outfiles = symlinks
     try:
-      for filename in os_listdir(infile):
+      for filename in file_path.listdir(infile):
         inner_relfile = os.path.join(relfile, filename)
         if blacklist and blacklist(inner_relfile):
           continue
