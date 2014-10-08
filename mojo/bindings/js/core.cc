@@ -230,8 +230,9 @@ gin::Dictionary ReadData(const gin::Arguments& args,
 // and the buffer will contain whatever was read before the error occurred.
 // The drainData data pipe handle argument is closed automatically.
 
-v8::Handle<v8::Value> DoDrainData(gin::Arguments* args, mojo::Handle handle) {
-  return (new DrainData(args->isolate(), handle))->GetPromise();
+v8::Handle<v8::Value> DoDrainData(gin::Arguments* args,
+                                  gin::Handle<gin::HandleWrapper> handle) {
+  return (new DrainData(args->isolate(), handle->release()))->GetPromise();
 }
 
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
