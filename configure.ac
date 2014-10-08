@@ -9,7 +9,7 @@ AC_INIT([weston],
         [weston_version],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=weston&version=weston_version],
         [weston],
-        [http://wayland.freedesktop.org/])
+        [http://wayland.freedesktop.org])
 
 AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
 AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
