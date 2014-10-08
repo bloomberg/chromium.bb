@@ -28,8 +28,9 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
 
 OmniboxUI::~OmniboxUI() {}
 
-scoped_ptr<MojoWebUIHandler> OmniboxUI::CreateUIHandler(
+void OmniboxUI::BindUIHandler(
     mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) {
-  return scoped_ptr<MojoWebUIHandler>(mojo::WeakBindToRequest(
-      new OmniboxUIHandler(Profile::FromWebUI(web_ui())), &request));
+  // BindToRequest takes ownership of the handler.
+  mojo::BindToRequest(new OmniboxUIHandler(Profile::FromWebUI(web_ui())),
+                      &request);
 }
