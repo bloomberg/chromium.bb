@@ -65,6 +65,7 @@ private:
     void processToken(const MediaQueryToken&);
 
     void readRestrictor(MediaQueryTokenType, const MediaQueryToken&);
+    void readMediaNot(MediaQueryTokenType, const MediaQueryToken&);
     void readMediaType(MediaQueryTokenType, const MediaQueryToken&);
     void readAnd(MediaQueryTokenType, const MediaQueryToken&);
     void readFeatureStart(MediaQueryTokenType, const MediaQueryToken&);
@@ -88,6 +89,7 @@ private:
     MediaQueryBlockWatcher m_blockWatcher;
 
     const static State ReadRestrictor;
+    const static State ReadMediaNot;
     const static State ReadMediaType;
     const static State ReadAnd;
     const static State ReadFeatureStart;

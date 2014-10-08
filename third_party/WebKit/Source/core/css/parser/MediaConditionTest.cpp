@@ -35,6 +35,8 @@ TEST(MediaConditionParserTest, Basic)
         {"(min-width: 100px) and print", "not all"},
         {"(min-width: 100px) and (max-width: 900px)", "(max-width: 900px) and (min-width: 100px)"},
         {"(min-width: [100px) and (max-width: 900px)", "not all"},
+        {"not (min-width: 900px)", "not all and (min-width: 900px)"},
+        {"not (blabla)", "not all"},
         {0, 0} // Do not remove the terminator line.
     };
 

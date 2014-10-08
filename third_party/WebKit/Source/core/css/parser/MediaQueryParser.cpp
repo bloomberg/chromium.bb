@@ -27,6 +27,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(Medi
 }
 
 const MediaQueryParser::State MediaQueryParser::ReadRestrictor = &MediaQueryParser::readRestrictor;
+const MediaQueryParser::State MediaQueryParser::ReadMediaNot = &MediaQueryParser::readMediaNot;
 const MediaQueryParser::State MediaQueryParser::ReadMediaType = &MediaQueryParser::readMediaType;
 const MediaQueryParser::State MediaQueryParser::ReadAnd = &MediaQueryParser::readAnd;
 const MediaQueryParser::State MediaQueryParser::ReadFeatureStart = &MediaQueryParser::readFeatureStart;
@@ -45,7 +46,7 @@ MediaQueryParser::MediaQueryParser(ParserType parserType)
     if (parserType == MediaQuerySetParser)
         m_state = &MediaQueryParser::readRestrictor;
     else // MediaConditionParser
-        m_state = &MediaQueryParser::readFeatureStart;
+        m_state = &MediaQueryParser::readMediaNot;
 }
 
 MediaQueryParser::~MediaQueryParser() { };
@@ -60,6 +61,14 @@ void MediaQueryParser::setStateAndRestrict(State state, MediaQuery::Restrictor r
 void MediaQueryParser::readRestrictor(MediaQueryTokenType type, const MediaQueryToken& token)
 {
     readMediaType(type, token);
+}
+
+void MediaQueryParser::readMediaNot(MediaQueryTokenType type, const MediaQueryToken& token)
+{
+    if (type == IdentToken && equalIgnoringCase(token.value(), "not"))
+        setStateAndRestrict(ReadFeatureStart, MediaQuery::Not);
+    else
+        readFeatureStart(type, token);
 }
 
 void MediaQueryParser::readMediaType(MediaQueryTokenType type, const MediaQueryToken& token)
@@ -193,7 +202,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(MediaQueryToke
     for (; token != endToken; ++token)
         processToken(*token);
 
-    if (m_state != ReadAnd && m_state != ReadRestrictor && m_state != Done && (m_parserType != MediaConditionParser || m_state != ReadFeatureStart))
+    if (m_state != ReadAnd && m_state != ReadRestrictor && m_state != Done && m_state != ReadMediaNot)
         m_querySet->addMediaQuery(MediaQuery::createNotAll());
     else if (m_mediaQueryData.currentMediaQueryChanged())
         m_querySet->addMediaQuery(m_mediaQueryData.takeMediaQuery());
