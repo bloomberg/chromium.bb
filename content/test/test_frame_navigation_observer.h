@@ -46,6 +46,7 @@ class TestFrameNavigationObserver : public WebContentsObserver {
       bool is_error_page,
       bool is_iframe_srcdoc) override;
   virtual void DidNavigateAnyFrame(
+      RenderFrameHost* render_frame_host,
       const LoadCommittedDetails& details,
       const FrameNavigateParams& params) override;
 

@@ -84,6 +84,7 @@ void HistoryTabHelper::DidNavigateMainFrame(
 }
 
 void HistoryTabHelper::DidNavigateAnyFrame(
+    content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Update history. Note that this needs to happen after the entry is complete,

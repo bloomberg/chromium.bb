@@ -605,6 +605,7 @@ class RedirectObserver : public content::WebContentsObserver {
   }
 
   virtual void DidNavigateAnyFrame(
+      content::RenderFrameHost* render_frame_host,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override {
     params_ = params;

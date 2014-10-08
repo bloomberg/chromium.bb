@@ -156,6 +156,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // And regardless of what frame navigated, this method is invoked after
   // DidCommitProvisionalLoadForFrame was invoked.
   virtual void DidNavigateAnyFrame(
+      RenderFrameHost* render_frame_host,
       const LoadCommittedDetails& details,
       const FrameNavigateParams& params) {}
 

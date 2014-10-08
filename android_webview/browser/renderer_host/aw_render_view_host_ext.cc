@@ -116,6 +116,7 @@ void AwRenderViewHostExt::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void AwRenderViewHostExt::DidNavigateAnyFrame(
+    content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   DCHECK(CalledOnValidThread());

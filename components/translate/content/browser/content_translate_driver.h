@@ -91,6 +91,7 @@ class ContentTranslateDriver : public TranslateDriver,
   virtual void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
   virtual void DidNavigateAnyFrame(
+      content::RenderFrameHost* render_frame_host,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
   virtual bool OnMessageReceived(const IPC::Message& message) override;

@@ -59,6 +59,7 @@ void TestFrameNavigationObserver::DidStartProvisionalLoadForFrame(
 }
 
 void TestFrameNavigationObserver::DidNavigateAnyFrame(
+    RenderFrameHost* render_frame_host,
     const LoadCommittedDetails& details,
     const FrameNavigateParams& params) {
   if (!navigation_started_)

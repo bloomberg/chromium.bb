@@ -154,6 +154,7 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
 }
 
 void WebContentsObserverAndroid::DidNavigateAnyFrame(
+    RenderFrameHost* render_frame_host,
     const LoadCommittedDetails& details,
     const FrameNavigateParams& params) {
   JNIEnv* env = AttachCurrentThread();

@@ -47,6 +47,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidNavigateAnyFrame(
+      content::RenderFrameHost* render_frame_host,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void TitleWasSet(content::NavigationEntry* entry,

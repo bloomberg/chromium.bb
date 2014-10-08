@@ -206,6 +206,7 @@ void ContentTranslateDriver::NavigationEntryCommitted(
 }
 
 void ContentTranslateDriver::DidNavigateAnyFrame(
+    content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Let the LanguageState clear its state.

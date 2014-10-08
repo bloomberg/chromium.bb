@@ -2647,7 +2647,7 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidNavigateAnyFrame(details, params));
+                    DidNavigateAnyFrame(render_frame_host, details, params));
 }
 
 void WebContentsImpl::SetMainFrameMimeType(const std::string& mime_type) {

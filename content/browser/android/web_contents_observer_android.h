@@ -47,7 +47,8 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                            const base::string16& error_description) override;
   virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
                                     const FrameNavigateParams& params) override;
-  virtual void DidNavigateAnyFrame(const LoadCommittedDetails& details,
+  virtual void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                                   const LoadCommittedDetails& details,
                                    const FrameNavigateParams& params) override;
   virtual void DidFirstVisuallyNonEmptyPaint() override;
   virtual void DidStartProvisionalLoadForFrame(
