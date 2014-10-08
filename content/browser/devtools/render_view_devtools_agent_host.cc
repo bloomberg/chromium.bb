@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_power_handler.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
@@ -112,14 +111,15 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
       input_handler_(new devtools::input::InputHandler()),
       page_handler_(new devtools::page::PageHandler()),
+      power_handler_(new devtools::power::PowerHandler()),
       handler_impl_(new DevToolsProtocolHandlerImpl()),
       overrides_handler_(new RendererOverridesHandler()),
       tracing_handler_(
           new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
-      power_handler_(new DevToolsPowerHandler()),
       reattaching_(false) {
   handler_impl_->SetInputHandler(input_handler_.get());
   handler_impl_->SetPageHandler(page_handler_.get());
+  handler_impl_->SetPowerHandler(power_handler_.get());
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
       &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend,
@@ -127,7 +127,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
   handler_impl_->SetNotifier(notifier);
   overrides_handler_->SetNotifier(notifier);
   tracing_handler_->SetNotifier(notifier);
-  power_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
   DevToolsManager::GetInstance()->AgentHostChanged(this);
@@ -162,8 +161,6 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
       overridden_response = overrides_handler_->HandleCommand(command);
     if (!overridden_response.get())
       overridden_response = tracing_handler_->HandleCommand(command);
-    if (!overridden_response.get())
-      overridden_response = power_handler_->HandleCommand(command);
     if (!overridden_response.get())
       overridden_response = handler_impl_->HandleCommand(command);
     if (overridden_response.get()) {
@@ -218,8 +215,8 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
 #endif
   overrides_handler_->OnClientDetached();
   tracing_handler_->OnClientDetached();
-  power_handler_->OnClientDetached();
   page_handler_->Detached();
+  power_handler_->Detached();
   ClientDetachedFromRenderer();
 
   // TODO(kaznacheev): Move this call back to DevToolsManager when

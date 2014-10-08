@@ -6,12 +6,13 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_POWER_HANDLER_H_
 
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/power_profiler/power_profiler_observer.h"
 
 namespace content {
 namespace devtools {
 namespace power {
 
-class PowerHandler {
+class PowerHandler : public PowerProfilerObserver {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
@@ -20,6 +21,11 @@ class PowerHandler {
 
   void SetClient(scoped_ptr<Client> client);
 
+  // PowerProfilerObserver override.
+  virtual void OnPowerEvent(const PowerEventVector& events) override;
+
+  void Detached();
+
   Response Start();
   Response End();
   Response CanProfilePower(bool* result);
@@ -27,6 +33,7 @@ class PowerHandler {
 
  private:
   scoped_ptr<Client> client_;
+  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerHandler);
 };

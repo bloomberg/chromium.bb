@@ -439,8 +439,6 @@
       'browser/devtools/devtools_manager.h',
       'browser/devtools/devtools_netlog_observer.cc',
       'browser/devtools/devtools_netlog_observer.h',
-      'browser/devtools/devtools_power_handler.cc',
-      'browser/devtools/devtools_power_handler.h',
       'browser/devtools/devtools_protocol.cc',
       'browser/devtools/devtools_protocol.h',
       'browser/devtools/devtools_system_info_handler.cc',
