@@ -850,20 +850,93 @@ static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
   return image;
 }
 
-scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
+bool GLRenderer::ShouldApplyBackgroundFilters(DrawingFrame* frame,
+                                              const RenderPassDrawQuad* quad) {
+  if (quad->background_filters.IsEmpty())
+    return false;
+
+  // TODO(danakj): We only allow background filters on an opaque render surface
+  // because other surfaces may contain translucent pixels, and the contents
+  // behind those translucent pixels wouldn't have the filter applied.
+  if (frame->current_render_pass->has_transparent_background)
+    return false;
+
+  // TODO(ajuma): Add support for reference filters once
+  // FilterOperations::GetOutsets supports reference filters.
+  if (quad->background_filters.HasReferenceFilter())
+    return false;
+  return true;
+}
+
+gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
-    const gfx::Transform& contents_device_transform,
+    const gfx::Transform& contents_device_transform) {
+  gfx::Rect backdrop_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
+      contents_device_transform, SharedGeometryQuad().BoundingBox()));
+
+  if (ShouldApplyBackgroundFilters(frame, quad)) {
+    int top, right, bottom, left;
+    quad->background_filters.GetOutsets(&top, &right, &bottom, &left);
+    backdrop_rect.Inset(-left, -top, -right, -bottom);
+  }
+
+  backdrop_rect.Intersect(
+      MoveFromDrawToWindowSpace(frame->current_render_pass->output_rect));
+  return backdrop_rect;
+}
+
+scoped_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
+    const gfx::Rect& bounding_rect) {
+  scoped_ptr<ScopedResource> device_background_texture =
+      ScopedResource::Create(resource_provider_);
+  // CopyTexImage2D fails when called on a texture having immutable storage.
+  device_background_texture->Allocate(
+      bounding_rect.size(), ResourceProvider::TextureHintDefault, RGBA_8888);
+  {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                             device_background_texture->id());
+    GetFramebufferTexture(
+        lock.texture_id(), device_background_texture->format(), bounding_rect);
+  }
+  return device_background_texture.Pass();
+}
+
+skia::RefPtr<SkImage> GLRenderer::ApplyBackgroundFilters(
+    DrawingFrame* frame,
+    const RenderPassDrawQuad* quad,
+    ScopedResource* background_texture) {
+  DCHECK(ShouldApplyBackgroundFilters(frame, quad));
+  skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+      quad->background_filters, background_texture->size());
+
+  skia::RefPtr<SkImage> background_with_filters =
+      ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
+                       resource_provider_,
+                       quad->rect.origin(),
+                       quad->filters_scale,
+                       filter.get(),
+                       background_texture);
+  return background_with_filters;
+}
+
+scoped_ptr<ScopedResource>
+GLRenderer::ApplyInverseTransformForBackgroundFilters(
+    DrawingFrame* frame,
+    const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform_inverse,
-    bool* background_changed) {
+    ScopedResource* device_background_texture,
+    skia::RefPtr<SkImage> filtered_device_background,
+    const gfx::Rect& backdrop_bounding_rect) {
   // This method draws a background filter, which applies a filter to any pixels
   // behind the quad and seen through its background.  The algorithm works as
   // follows:
-  // 1. Compute a bounding box around the pixels that will be visible through
-  // the quad.
+  // 1. Read the pixels in the bounding box into a buffer.
+  // Moved to GLRenderer::GetBackdropBoundingBoxForRenderPassQuad().
   // 2. Read the pixels in the bounding box into a buffer R.
+  // Moved to GLRenderer::GetBackdropTexture().
   // 3. Apply the background filter to R, so that it is applied in the pixels'
-  // coordinate space.
+  // coordinate space. Moved to GLRenderer::ApplyBackgroundFilters().
   // 4. Apply the quad's inverse transform to map the pixels in R into the
   // quad's content space. This implicitly clips R by the content bounds of the
   // quad since the destination texture has bounds matching the quad's content.
@@ -879,56 +952,7 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
   // TODO(danakj): When this algorithm changes, update
   // LayerTreeHost::PrioritizeTextures() accordingly.
 
-  // TODO(danakj): We only allow background filters on an opaque render surface
-  // because other surfaces may contain translucent pixels, and the contents
-  // behind those translucent pixels wouldn't have the filter applied.
-  bool apply_background_filters =
-      !frame->current_render_pass->has_transparent_background;
-  DCHECK(!frame->current_texture);
-
-  // TODO(ajuma): Add support for reference filters once
-  // FilterOperations::GetOutsets supports reference filters.
-  if (apply_background_filters && quad->background_filters.HasReferenceFilter())
-    apply_background_filters = false;
-
-  // TODO(danakj): Do a single readback for both the surface and replica and
-  // cache the filtered results (once filter textures are not reused).
-  gfx::Rect window_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
-      contents_device_transform, SharedGeometryQuad().BoundingBox()));
-
-  int top, right, bottom, left;
-  quad->background_filters.GetOutsets(&top, &right, &bottom, &left);
-  window_rect.Inset(-left, -top, -right, -bottom);
-
-  window_rect.Intersect(
-      MoveFromDrawToWindowSpace(frame->current_render_pass->output_rect));
-
-  scoped_ptr<ScopedResource> device_background_texture =
-      ScopedResource::Create(resource_provider_);
-  // CopyTexImage2D fails when called on a texture having immutable storage.
-  device_background_texture->Allocate(
-      window_rect.size(), ResourceProvider::TextureHintDefault, RGBA_8888);
-  {
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
-                                             device_background_texture->id());
-    GetFramebufferTexture(
-        lock.texture_id(), device_background_texture->format(), window_rect);
-  }
-
-  skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-      quad->background_filters, device_background_texture->size());
-
-  skia::RefPtr<SkImage> filtered_device_background;
-  if (apply_background_filters) {
-    filtered_device_background =
-        ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
-                         resource_provider_,
-                         quad->rect.origin(),
-                         quad->filters_scale,
-                         filter.get(),
-                         device_background_texture.get());
-  }
-  *background_changed = (filtered_device_background != NULL);
+  DCHECK(device_background_texture);
 
   int filtered_device_background_texture_id = 0;
   scoped_ptr<ResourceProvider::ScopedReadLockGL> lock;
@@ -966,15 +990,15 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
     gl_->Clear(GL_COLOR_BUFFER_BIT);
 #endif
 
-    // The filtered_deveice_background_texture is oriented the same as the frame
-    // buffer. The transform we are copying with has a vertical flip, as well as
+    // The background_texture is oriented the same as the frame buffer.
+    // The transform we are copying with has a vertical flip, as well as
     // the |device_to_framebuffer_transform|, which cancel each other out. So do
     // not flip the contents in the shader to maintain orientation.
     bool flip_vertically = false;
 
     CopyTextureToFramebuffer(frame,
                              filtered_device_background_texture_id,
-                             window_rect,
+                             backdrop_bounding_rect,
                              device_to_framebuffer_transform,
                              flip_vertically);
   }
@@ -1009,8 +1033,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     return;
 
   bool need_background_texture = !ShouldApplyBlendModeUsingBlendFunc(quad) ||
-                                 !quad->background_filters.IsEmpty();
-  bool background_changed = false;
+                                 ShouldApplyBackgroundFilters(frame, quad);
+
   scoped_ptr<ScopedResource> background_texture;
   if (need_background_texture) {
     // The pixels from the filtered background should completely replace the
@@ -1019,12 +1043,33 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     if (disable_blending)
       SetBlendEnabled(false);
 
-    background_texture =
-        GetBackgroundWithFilters(frame,
-                                 quad,
-                                 contents_device_transform,
-                                 contents_device_transform_inverse,
-                                 &background_changed);
+    // Compute a bounding box around the pixels that will be visible through
+    // the quad.
+    gfx::Rect backdrop_rect = GetBackdropBoundingBoxForRenderPassQuad(
+        frame, quad, contents_device_transform);
+
+    // Read the pixels in the bounding box into a buffer R.
+    scoped_ptr<ScopedResource> scoped_background_texture =
+        GetBackdropTexture(backdrop_rect);
+
+    skia::RefPtr<SkImage> background_with_filters;
+    if (ShouldApplyBackgroundFilters(frame, quad)) {
+      // Apply the background filters to R, so that it is applied in the pixels'
+      // coordinate space.
+      background_with_filters =
+          ApplyBackgroundFilters(frame, quad, scoped_background_texture.get());
+    }
+    // Apply the quad's inverse transform to map the pixels in R into the
+    // quad's content space. This implicitly clips R by the content bounds of
+    // the quad since the destination texture has bounds matching the quad's
+    // content.
+    background_texture = ApplyInverseTransformForBackgroundFilters(
+        frame,
+        quad,
+        contents_device_transform_inverse,
+        scoped_background_texture.get(),
+        background_with_filters,
+        backdrop_rect);
 
     if (disable_blending)
       SetBlendEnabled(true);
@@ -1063,6 +1108,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     }
   }
 
+  // If blending is applied using shaders, the background texture with
+  // filters will be used as backdrop for blending operation, so we don't
+  // need to copy it to the frame buffer.
   if (background_texture && !ShouldApplyBlendModeUsingBlendFunc(quad)) {
     filter_bitmap =
         ApplyBlendModeWithBackdrop(ScopedUseGrContext::Create(this, frame),
@@ -1071,10 +1119,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                    contents_texture,
                                    background_texture.get(),
                                    quad->shared_quad_state->blend_mode);
-  }
-
-  // Draw the background texture if it has some filters applied.
-  if (background_texture && background_changed) {
+  } else if (background_texture) {
+    // Draw the background texture if it has some filters applied.
+    DCHECK(ShouldApplyBackgroundFilters(frame, quad));
     DCHECK(background_texture->size() == quad->rect.size());
     ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                             background_texture->id());

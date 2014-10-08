@@ -146,12 +146,27 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   static bool ShouldApplyBlendModeUsingBlendFunc(const DrawQuad* quad);
   void ApplyBlendModeUsingBlendFunc(const DrawQuad* quad);
   void RestoreBlendFuncToDefault();
-  scoped_ptr<ScopedResource> GetBackgroundWithFilters(
+
+  gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform,
-      const gfx::Transform& contents_device_transformInverse,
-      bool* background_changed);
+      const gfx::Transform& contents_device_transform);
+  scoped_ptr<ScopedResource> GetBackdropTexture(const gfx::Rect& bounding_rect);
+
+  static bool ShouldApplyBackgroundFilters(DrawingFrame* frame,
+                                           const RenderPassDrawQuad* quad);
+  skia::RefPtr<SkImage> ApplyBackgroundFilters(
+      DrawingFrame* frame,
+      const RenderPassDrawQuad* quad,
+      ScopedResource* background_texture);
+  scoped_ptr<ScopedResource> ApplyInverseTransformForBackgroundFilters(
+      DrawingFrame* frame,
+      const RenderPassDrawQuad* quad,
+      const gfx::Transform& contents_device_transform_inverse,
+      ScopedResource* background_texture,
+      skia::RefPtr<SkImage> backdrop_bitmap,
+      const gfx::Rect& backdrop_bounding_rect);
+
   void DrawRenderPassQuad(DrawingFrame* frame, const RenderPassDrawQuad* quad);
   void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad);
