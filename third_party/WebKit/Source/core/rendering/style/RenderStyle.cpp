@@ -395,6 +395,14 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) co
     if (!diff.needsFullLayout() && diffNeedsFullLayout(other))
         diff.setNeedsFullLayout();
 
+    if (!diff.needsFullLayout() && surround->margin != other.surround->margin) {
+        // Relative-positioned elements collapse their margins so need a full layout.
+        if (position() == AbsolutePosition || position() == FixedPosition)
+            diff.setNeedsPositionedMovementLayout();
+        else
+            diff.setNeedsFullLayout();
+    }
+
     if (!diff.needsFullLayout() && position() != StaticPosition && surround->offset != other.surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
         if (positionedObjectMovedOnly(surround->offset, other.surround->offset, m_box->width()))
@@ -613,9 +621,6 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
         return true;
 
     if (surround.get() != other.surround.get()) {
-        if (surround->margin != other.surround->margin)
-            return true;
-
         if (surround->padding != other.surround->padding)
             return true;
     }
