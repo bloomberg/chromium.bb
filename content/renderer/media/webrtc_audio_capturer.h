@@ -17,7 +17,6 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/tagged_list.h"
 #include "media/audio/audio_input_device.h"
-#include "media/audio/audio_power_monitor.h"
 #include "media/base/audio_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 
@@ -216,12 +215,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // guaranteed to exist as long as a WebRtcLocalAudioTrack is connected to this
   // WebRtcAudioCapturer.
   MediaStreamAudioSource* const audio_source_;
-
-    // Audio power monitor for logging audio power level.
-  media::AudioPowerMonitor audio_power_monitor_;
-
-  // Records when the last time audio power level is logged.
-  base::TimeTicks last_audio_level_log_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioCapturer);
 };

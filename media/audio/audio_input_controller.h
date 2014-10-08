@@ -17,7 +17,6 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_power_monitor.h"
 #include "media/base/audio_bus.h"
 
 // An AudioInputController controls an AudioInputStream and records data
@@ -353,11 +352,10 @@ class MEDIA_EXPORT AudioInputController
   UserInputMonitor* user_input_monitor_;
 
 #if defined(AUDIO_POWER_MONITORING)
-  // Scans audio samples from OnData() as input to compute audio levels.
-  scoped_ptr<AudioPowerMonitor> audio_level_;
+  // Enabled in DoCrete() but not in DoCreateForStream().
+  bool power_measurement_is_enabled_;
 
-  // We need these to be able to feed data to the AudioPowerMonitor.
-  media::AudioParameters audio_params_;
+  // Updated each time a power measurement is performed.
   base::TimeTicks last_audio_level_log_time_;
 
   // Whether the silence state should sent as UMA stat.

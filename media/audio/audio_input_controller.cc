@@ -33,17 +33,6 @@ const int kTimerResetIntervalSeconds = 1;
 const int kTimerInitialIntervalSeconds = 5;
 
 #if defined(AUDIO_POWER_MONITORING)
-// Time constant for AudioPowerMonitor.
-// The utilized smoothing factor (alpha) in the exponential filter is given
-// by 1-exp(-1/(fs*ts)), where fs is the sample rate in Hz and ts is the time
-// constant given by |kPowerMeasurementTimeConstantMilliseconds|.
-// Example: fs=44100, ts=10e-3 => alpha~0.022420
-//          fs=44100, ts=20e-3 => alpha~0.165903
-// A large smoothing factor corresponds to a faster filter response to input
-// changes since y(n)=alpha*x(n)+(1-alpha)*y(n-1), where x(n) is the input
-// and y(n) is the output.
-const int kPowerMeasurementTimeConstantMilliseconds = 10;
-
 // Time in seconds between two successive measurements of audio power levels.
 const int kPowerMonitorLogIntervalSeconds = 15;
 
@@ -65,7 +54,39 @@ void LogMicrophoneMuteResult(MicrophoneMuteResult result) {
                             result,
                             MICROPHONE_MUTE_MAX + 1);
 }
-#endif
+
+// Helper method which calculates the average power of an audio bus. Unit is in
+// dBFS, where 0 dBFS corresponds to all channels and samples equal to 1.0.
+float AveragePower(const media::AudioBus& buffer) {
+  const int frames = buffer.frames();
+  const int channels = buffer.channels();
+  if (frames <= 0 || channels <= 0)
+    return 0.0f;
+
+  // Scan all channels and accumulate the sum of squares for all samples.
+  float sum_power = 0.0f;
+  for (int ch = 0; ch < channels; ++ch) {
+    const float* channel_data = buffer.channel(ch);
+    for (int i = 0; i < frames; i++) {
+      const float sample = channel_data[i];
+      sum_power += sample * sample;
+    }
+  }
+
+  // Update accumulated average results, with clamping for sanity.
+  const float average_power =
+      std::max(0.0f, std::min(1.0f, sum_power / (frames * channels)));
+
+  // Convert average power level to dBFS units, and pin it down to zero if it
+  // is insignificantly small.
+  const float kInsignificantPower = 1.0e-10f;  // -100 dBFS
+  const float power_dbfs = average_power < kInsignificantPower ?
+      -std::numeric_limits<float>::infinity() : 10.0f * log10f(average_power);
+
+  return power_dbfs;
+}
+#endif  // AUDIO_POWER_MONITORING
+
 }
 
 // Used to log the result of capture startup.
@@ -106,6 +127,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
       max_volume_(0.0),
       user_input_monitor_(user_input_monitor),
 #if defined(AUDIO_POWER_MONITORING)
+      power_measurement_is_enabled_(false),
       log_silence_state_(false),
       silence_state_(SILENCE_STATE_NO_MEASUREMENT),
 #endif
@@ -252,15 +274,8 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
     handler_->OnLog(this, "AIC::DoCreate");
 
 #if defined(AUDIO_POWER_MONITORING)
-  // Create the audio (power) level meter given the provided audio parameters.
-  // An AudioBus is also needed to wrap the raw data buffer from the native
-  // layer to match AudioPowerMonitor::Scan().
-  // TODO(henrika): Remove use of extra AudioBus. See http://crbug.com/375155.
+  power_measurement_is_enabled_ = true;
   last_audio_level_log_time_ = base::TimeTicks::Now();
-  audio_level_.reset(new media::AudioPowerMonitor(
-      params.sample_rate(),
-      TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMilliseconds)));
-  audio_params_ = params;
   silence_state_ = SILENCE_STATE_NO_MEASUREMENT;
 #endif
 
@@ -511,23 +526,17 @@ void AudioInputController::OnData(AudioInputStream* stream,
     sync_writer_->UpdateRecordedBytes(hardware_delay_bytes);
 
 #if defined(AUDIO_POWER_MONITORING)
-    // Only do power-level measurements if an AudioPowerMonitor object has
-    // been created. Done in DoCreate() but not DoCreateForStream(), hence
-    // logging will mainly be done for WebRTC and WebSpeech clients.
-    if (!audio_level_)
+    // Only do power-level measurements if DoCreate() has been called. It will
+    // ensure that logging will mainly be done for WebRTC and WebSpeech
+    // clients.
+    if (!power_measurement_is_enabled_)
       return;
 
     // Perform periodic audio (power) level measurements.
     if ((base::TimeTicks::Now() - last_audio_level_log_time_).InSeconds() >
         kPowerMonitorLogIntervalSeconds) {
-      // Wrap data into an AudioBus to match AudioPowerMonitor::Scan.
-      // TODO(henrika): remove this section when capture side uses AudioBus.
-      // See http://crbug.com/375155 for details.
-      audio_level_->Scan(*source, source->frames());
-
-      // Get current average power level and add it to the log.
-      // Possible range is given by [-inf, 0] dBFS.
-      std::pair<float, bool> result = audio_level_->ReadCurrentPowerAndClip();
+      // Calculate the average power of the signal, or the energy per sample.
+      const float average_power_dbfs = AveragePower(*source);
 
       // Add current microphone volume to log and UMA histogram.
       const int mic_volume_percent = static_cast<int>(100.0 * volume);
@@ -537,13 +546,10 @@ void AudioInputController::OnData(AudioInputStream* stream,
       task_runner_->PostTask(FROM_HERE,
                              base::Bind(&AudioInputController::DoLogAudioLevels,
                                         this,
-                                        result.first,
+                                        average_power_dbfs,
                                         mic_volume_percent));
 
       last_audio_level_log_time_ = base::TimeTicks::Now();
-
-      // Reset the average power level (since we don't log continuously).
-      audio_level_->Reset();
     }
 #endif
     return;
