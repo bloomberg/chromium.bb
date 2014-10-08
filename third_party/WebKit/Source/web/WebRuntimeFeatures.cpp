@@ -180,6 +180,11 @@ void WebRuntimeFeatures::enableOrientationEvent(bool enable)
     RuntimeEnabledFeatures::setOrientationEventEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePagePopup(bool enable)
+{
+    RuntimeEnabledFeatures::setPagePopupEnabled(enable);
+}
+
 void WebRuntimeFeatures::enablePeerConnection(bool enable)
 {
     RuntimeEnabledFeatures::setPeerConnectionEnabled(enable);
