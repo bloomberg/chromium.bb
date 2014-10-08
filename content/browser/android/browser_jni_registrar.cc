@@ -36,7 +36,7 @@
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
-#include "content/browser/screen_orientation/screen_orientation_provider_android.h"
+#include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/vibration/vibration_provider_android.h"
@@ -84,7 +84,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"PowerSaveBlock", content::RegisterPowerSaveBlocker},
     {"RegisterImeAdapter", content::RegisterImeAdapter},
     {"ScreenOrientationProvider",
-     content::ScreenOrientationProviderAndroid::Register},
+     content::ScreenOrientationDelegateAndroid::Register},
     {"SensorManagerAndroid", content::SensorManagerAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},

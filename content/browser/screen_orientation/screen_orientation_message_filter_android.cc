@@ -4,7 +4,7 @@
 
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 
-#include "content/browser/screen_orientation/screen_orientation_provider_android.h"
+#include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/common/screen_orientation_messages.h"
 
 namespace content {
@@ -17,7 +17,7 @@ ScreenOrientationMessageFilterAndroid::ScreenOrientationMessageFilterAndroid()
 ScreenOrientationMessageFilterAndroid::~ScreenOrientationMessageFilterAndroid()
 {
   if (listeners_count_ > 0)
-    ScreenOrientationProviderAndroid::StopAccurateListening();
+    ScreenOrientationDelegateAndroid::StopAccurateListening();
 }
 
 bool ScreenOrientationMessageFilterAndroid::OnMessageReceived(
@@ -36,14 +36,14 @@ bool ScreenOrientationMessageFilterAndroid::OnMessageReceived(
 void ScreenOrientationMessageFilterAndroid::OnStartListening() {
   ++listeners_count_;
   if (listeners_count_ == 1)
-    ScreenOrientationProviderAndroid::StartAccurateListening();
+    ScreenOrientationDelegateAndroid::StartAccurateListening();
 }
 
 void ScreenOrientationMessageFilterAndroid::OnStopListening() {
   DCHECK(listeners_count_ > 0);
   --listeners_count_;
   if (listeners_count_ == 0)
-    ScreenOrientationProviderAndroid::StopAccurateListening();
+    ScreenOrientationDelegateAndroid::StopAccurateListening();
 }
 
 }  // namespace content

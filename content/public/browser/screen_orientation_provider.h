@@ -6,52 +6,74 @@
 #define CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {
 
+class ScreenOrientationDelegate;
 class ScreenOrientationDispatcherHost;
 class WebContents;
 
-// Interface that needs to be implemented by any backend that wants to handle
-// screen orientation lock/unlock.
-class CONTENT_EXPORT ScreenOrientationProvider {
+// Handles screen orientation lock/unlock. Platforms which wish to provide
+// custom implementations can provide a factory for ScreenOrientationDelegate.
+class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
  public:
+  ScreenOrientationProvider(ScreenOrientationDispatcherHost* dispatcher_host,
+                            WebContents* web_contents);
+  virtual ~ScreenOrientationProvider();
+
   // Lock the screen orientation to |orientations|.
-  virtual void LockOrientation(
-      int request_id,
-      blink::WebScreenOrientationLockType orientations) = 0;
+  void LockOrientation(int request_id,
+                       blink::WebScreenOrientationLockType lock_orientation);
 
   // Unlock the screen orientation.
-  virtual void UnlockOrientation() = 0;
+  void UnlockOrientation();
 
   // Inform about a screen orientation update. It is called to let the provider
   // know if a lock has been resolved.
-  virtual void OnOrientationChange() = 0;
+  void OnOrientationChange();
 
-  virtual ~ScreenOrientationProvider() {}
+  // Provide a delegate which creates delegates for platform implementations.
+  // The delegate is not owned by ScreenOrientationProvider.
+  static void SetDelegate(ScreenOrientationDelegate* delegate_);
 
- protected:
-  friend class ScreenOrientationDispatcherHostImpl;
+  // WebContentsObserver
+  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE;
 
-  static ScreenOrientationProvider* Create(
-      ScreenOrientationDispatcherHost* dispatcher_host,
-      WebContents* web_contents);
+ private:
+  struct LockInformation {
+    LockInformation(int request_id, blink::WebScreenOrientationLockType lock);
+    int request_id;
+    blink::WebScreenOrientationLockType lock;
+  };
 
-  ScreenOrientationProvider() {}
+  // Returns the lock type that should be associated with 'natural' lock.
+  // Returns WebScreenOrientationLockDefault if the natural lock type can't be
+  // found.
+  blink::WebScreenOrientationLockType GetNaturalLockType() const;
+
+  // Whether the passed |lock| matches the current orientation. In other words,
+  // whether the orientation will need to change to match the |lock|.
+  bool LockMatchesCurrentOrientation(blink::WebScreenOrientationLockType lock);
+
+  // Not owned, responsible for platform implementations.
+  static ScreenOrientationDelegate* delegate_;
+
+  // ScreenOrientationDispatcherHost owns ScreenOrientationProvider.
+  ScreenOrientationDispatcherHost* dispatcher_;
+
+  // Whether the ScreenOrientationProvider currently has a lock applied.
+  bool lock_applied_;
+
+  // Locks that require orientation changes are not completed until
+  // OnOrientationChange.
+  scoped_ptr<LockInformation> pending_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProvider);
 };
-
-#if !defined(OS_ANDROID)
-// static
-ScreenOrientationProvider* ScreenOrientationProvider::Create(
-    ScreenOrientationDispatcherHost* dispatcher_host,
-    WebContents* web_contents) {
-  return NULL;
-}
-#endif // !defined(OS_ANDROID)
 
 } // namespace content
 

@@ -48,7 +48,9 @@ class StartupTaskRunner;
 class TimeZoneMonitor;
 struct MainFunctionParams;
 
-#if defined(OS_LINUX)
+#if defined(OS_ANDROID)
+class ScreenOrientationDelegate;
+#elif defined(OS_LINUX)
 class DeviceMonitorLinux;
 #elif defined(OS_MACOSX)
 class DeviceMonitorMac;
@@ -165,6 +167,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
+#endif
+#if defined(OS_ANDROID)
+  // Android implementation of ScreenOrientationDelegate
+  scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
   // The startup task runner is created by CreateStartupTasks()
   scoped_ptr<StartupTaskRunner> startup_task_runner_;
