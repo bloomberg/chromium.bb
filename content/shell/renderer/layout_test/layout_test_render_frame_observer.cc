@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/shell_render_frame_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
 
 #include "base/command_line.h"
 #include "content/public/renderer/render_frame.h"
@@ -14,10 +14,9 @@
 
 namespace content {
 
-ShellRenderFrameObserver::ShellRenderFrameObserver(RenderFrame* render_frame)
+LayoutTestRenderFrameObserver::LayoutTestRenderFrameObserver(
+    RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return;
   render_frame->GetWebFrame()->setPermissionClient(
       ShellRenderProcessObserver::GetInstance()
           ->test_interfaces()

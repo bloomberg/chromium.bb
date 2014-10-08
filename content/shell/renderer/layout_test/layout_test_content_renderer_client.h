@@ -31,6 +31,7 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   virtual ~LayoutTestContentRendererClient();
 
   // ShellContentRendererClient implementation.
+  virtual void RenderFrameCreated(RenderFrame* render_frame) override;
   virtual void RenderViewCreated(RenderView* render_view) override;
   virtual blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;

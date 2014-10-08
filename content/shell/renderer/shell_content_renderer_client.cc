@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/shell/renderer/shell_render_frame_observer.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -27,10 +26,6 @@ void ShellContentRendererClient::RenderThreadStarted() {
   shell_observer_.reset(new ShellRenderProcessObserver());
   web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
   thread->AddObserver(web_cache_observer_.get());
-}
-
-void ShellContentRendererClient::RenderFrameCreated(RenderFrame* render_frame) {
-  new ShellRenderFrameObserver(render_frame);
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {

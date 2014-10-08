@@ -25,7 +25,6 @@ class ShellContentRendererClient : public ContentRendererClient {
 
   // ContentRendererClient implementation.
   virtual void RenderThreadStarted() override;
-  virtual void RenderFrameCreated(RenderFrame* render_frame) override;
   virtual void RenderViewCreated(RenderView* render_view) override;
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we

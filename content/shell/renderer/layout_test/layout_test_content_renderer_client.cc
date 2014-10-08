@@ -15,7 +15,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
-#include "content/shell/renderer/shell_render_frame_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
@@ -81,6 +81,11 @@ LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
 }
 
 LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
+}
+
+void LayoutTestContentRendererClient::RenderFrameCreated(
+    RenderFrame* render_frame) {
+  new LayoutTestRenderFrameObserver(render_frame);
 }
 
 void LayoutTestContentRendererClient::RenderViewCreated(
