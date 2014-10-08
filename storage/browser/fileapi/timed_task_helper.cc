@@ -27,7 +27,6 @@ TimedTaskHelper::TimedTaskHelper(base::SequencedTaskRunner* task_runner)
 }
 
 TimedTaskHelper::~TimedTaskHelper() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (tracker_)
     tracker_->timer = NULL;
 }
