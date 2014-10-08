@@ -15,7 +15,6 @@ class WebCacheRenderProcessObserver;
 
 namespace content {
 
-class ShellRenderProcessObserver;
 class WebTestProxyBase;
 
 class ShellContentRendererClient : public ContentRendererClient {
@@ -35,7 +34,6 @@ class ShellContentRendererClient : public ContentRendererClient {
 
  private:
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
-  scoped_ptr<ShellRenderProcessObserver> shell_observer_;
 };
 
 }  // namespace content

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_SHELL_RENDER_PROCESS_OBSERVER_H_
-#define CONTENT_SHELL_SHELL_RENDER_PROCESS_OBSERVER_H_
+#ifndef CONTENT_SHELL_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
+#define CONTENT_SHELL_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -23,12 +23,12 @@ class WebKitTestRunner;
 class WebTestDelegate;
 class WebTestInterfaces;
 
-class ShellRenderProcessObserver : public RenderProcessObserver {
+class LayoutTestRenderProcessObserver : public RenderProcessObserver {
  public:
-  static ShellRenderProcessObserver* GetInstance();
+  static LayoutTestRenderProcessObserver* GetInstance();
 
-  ShellRenderProcessObserver();
-  virtual ~ShellRenderProcessObserver();
+  LayoutTestRenderProcessObserver();
+  virtual ~LayoutTestRenderProcessObserver();
 
   void SetTestDelegate(WebTestDelegate* delegate);
   void SetMainWindow(RenderView* view);
@@ -49,7 +49,6 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
 
  private:
   // Message handlers.
-  void OnResetAll();
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
 
   WebKitTestRunner* main_test_runner_;
@@ -58,9 +57,9 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
 
   base::FilePath webkit_source_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellRenderProcessObserver);
+  DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderProcessObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_SHELL_RENDER_PROCESS_OBSERVER_H_
+#endif  // CONTENT_SHELL_LAYOUT_TEST_RENDER_PROCESS_OBSERVER_H_

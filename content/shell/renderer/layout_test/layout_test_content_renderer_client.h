@@ -21,8 +21,8 @@ class WebCacheRenderProcessObserver;
 
 namespace content {
 
+class LayoutTestRenderProcessObserver;
 class MockWebClipboardImpl;
-class ShellRenderProcessObserver;
 class WebTestProxyBase;
 
 class LayoutTestContentRendererClient : public ShellContentRendererClient {
@@ -31,6 +31,7 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   virtual ~LayoutTestContentRendererClient();
 
   // ShellContentRendererClient implementation.
+  virtual void RenderThreadStarted() override;
   virtual void RenderFrameCreated(RenderFrame* render_frame) override;
   virtual void RenderViewCreated(RenderView* render_view) override;
   virtual blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
@@ -48,8 +49,7 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
  private:
   void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);
 
-  scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
-  scoped_ptr<ShellRenderProcessObserver> shell_observer_;
+  scoped_ptr<LayoutTestRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;
 };
 

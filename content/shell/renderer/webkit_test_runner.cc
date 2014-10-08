@@ -32,8 +32,8 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
 #include "content/shell/renderer/gc_controller.h"
+#include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/leak_detector.h"
-#include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
@@ -308,8 +308,8 @@ WebURL WebKitTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url) {
     return WebURL(GURL(utf8_url));
 
   base::FilePath replace_path =
-      ShellRenderProcessObserver::GetInstance()->webkit_source_dir().Append(
-          FILE_PATH_LITERAL("LayoutTests/"));
+      LayoutTestRenderProcessObserver::GetInstance()->webkit_source_dir()
+          .Append(FILE_PATH_LITERAL("LayoutTests/"));
 #if defined(OS_WIN)
   std::string utf8_path = base::WideToUTF8(replace_path.value());
 #else
@@ -499,7 +499,7 @@ void WebKitTestRunner::TestFinished() {
     return;
   }
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(false);
   if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
     SyncNavigationStateVisitor visitor;
@@ -567,7 +567,8 @@ std::string WebKitTestRunner::DumpHistoryForWindow(WebTestProxyBase* proxy) {
 
 void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->BindTo(frame);
+  LayoutTestRenderProcessObserver::GetInstance()->test_interfaces()->BindTo(
+      frame);
   GCController::Install(frame);
 }
 
@@ -589,9 +590,10 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
 void WebKitTestRunner::Navigate(const GURL& url) {
   focus_on_next_commit_ = true;
   if (!is_main_window_ &&
-      ShellRenderProcessObserver::GetInstance()->main_test_runner() == this) {
+      LayoutTestRenderProcessObserver::GetInstance()->main_test_runner() ==
+          this) {
     WebTestInterfaces* interfaces =
-        ShellRenderProcessObserver::GetInstance()->test_interfaces();
+        LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
     interfaces->SetTestIsRunning(true);
     interfaces->ConfigureForTestWithURL(GURL(), false);
     ForceResizeRenderView(render_view(), WebSize(800, 600));
@@ -639,7 +641,7 @@ void WebKitTestRunner::Reset() {
 
 void WebKitTestRunner::CaptureDump() {
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   TRACE_EVENT0("shell", "WebKitTestRunner::CaptureDump");
 
   if (interfaces->TestRunner()->ShouldDumpAsAudio()) {
@@ -708,7 +710,7 @@ void WebKitTestRunner::OnSetTestConfiguration(
   SetFocus(proxy_, true);
 
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
   interfaces->ConfigureForTestWithURL(params.test_url,
                                       params.enable_pixel_dumping);
@@ -725,7 +727,7 @@ void WebKitTestRunner::OnSessionHistory(
 }
 
 void WebKitTestRunner::OnReset() {
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->ResetAll();
+  LayoutTestRenderProcessObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset();
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.

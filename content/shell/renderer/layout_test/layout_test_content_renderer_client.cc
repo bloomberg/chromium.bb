@@ -16,7 +16,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
 #include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
-#include "content/shell/renderer/shell_render_process_observer.h"
+#include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
@@ -83,6 +83,11 @@ LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
 LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
 }
 
+void LayoutTestContentRendererClient::RenderThreadStarted() {
+  ShellContentRendererClient::RenderThreadStarted();
+  shell_observer_.reset(new LayoutTestRenderProcessObserver());
+}
+
 void LayoutTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
   new LayoutTestRenderFrameObserver(render_frame);
@@ -100,19 +105,17 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   render_view->GetWebView()->setCredentialManagerClient(
       test_runner->proxy()->GetCredentialManagerClientMock());
   WebTestDelegate* delegate =
-      ShellRenderProcessObserver::GetInstance()->test_delegate();
+      LayoutTestRenderProcessObserver::GetInstance()->test_delegate();
   if (delegate == static_cast<WebTestDelegate*>(test_runner))
-    ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view);
+    LayoutTestRenderProcessObserver::GetInstance()->SetMainWindow(render_view);
 }
 
 WebMediaStreamCenter*
 LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
     WebMediaStreamCenterClient* client) {
 #if defined(ENABLE_WEBRTC)
-  // TODO(mkwst): Change this to a LayoutTestRenderProcessObserver in a future
-  // CL. https://crbug.com/420994
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMediaStreamCenter(client);
 #else
   return NULL;
@@ -123,10 +126,8 @@ WebRTCPeerConnectionHandler*
 LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
 #if defined(ENABLE_WEBRTC)
-  // TODO(mkwst): Change this to a LayoutTestRenderProcessObserver in a future
-  // CL. https://crbug.com/420994
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateWebRTCPeerConnectionHandler(client);
 #else
   return NULL;
@@ -137,7 +138,7 @@ WebMIDIAccessor*
 LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMIDIAccessor(client);
 }
 
@@ -145,7 +146,7 @@ WebAudioDevice*
 LayoutTestContentRendererClient::OverrideCreateAudioDevice(
     double sample_rate) {
   WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateAudioDevice(sample_rate);
 }
 
@@ -156,7 +157,7 @@ WebClipboard* LayoutTestContentRendererClient::OverrideWebClipboard() {
 }
 
 WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
-  return ShellRenderProcessObserver::GetInstance()
+  return LayoutTestRenderProcessObserver::GetInstance()
       ->test_interfaces()
       ->ThemeEngine();
 }
@@ -166,15 +167,14 @@ void LayoutTestContentRendererClient::WebTestProxyCreated(
     WebTestProxyBase* proxy) {
   WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
   test_runner->set_proxy(proxy);
-  if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
-    // TODO(mkwst): Change this to a LayoutTestRenderProcessObserver in a future
-    // CL. https://crbug.com/420994
-    ShellRenderProcessObserver::GetInstance()->SetTestDelegate(test_runner);
+  if (!LayoutTestRenderProcessObserver::GetInstance()->test_delegate()) {
+    LayoutTestRenderProcessObserver::GetInstance()->SetTestDelegate(
+        test_runner);
   }
   proxy->SetInterfaces(
-      ShellRenderProcessObserver::GetInstance()->test_interfaces());
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces());
   test_runner->proxy()->SetDelegate(
-      ShellRenderProcessObserver::GetInstance()->test_delegate());
+      LayoutTestRenderProcessObserver::GetInstance()->test_delegate());
 }
 
 }  // namespace content
