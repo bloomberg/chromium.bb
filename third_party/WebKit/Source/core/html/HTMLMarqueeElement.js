@@ -87,8 +87,8 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
     HTMLMarqueeElementPrototype.createdCallback = function() {
         var shadow = this.createShadowRoot();
         var style = document.createElement('style');
-        style.textContent = ':host { display: inline-block; width: -webkit-fill-available; overflow: hidden; text-align: initial; }'
-            + ':host([direction="up"]), :host([direction="down"]) { overflow: initial; overflow-y: hidden; }';
+        style.textContent = ':host { display: inline-block; width: -webkit-fill-available; overflow: hidden; text-align: initial; white-space: nowrap; }'
+            + ':host([direction="up"]), :host([direction="down"]) { overflow: initial; overflow-y: hidden; white-space: initial; }';
         shadow.appendChild(style);
 
         var mover = document.createElement('div');
