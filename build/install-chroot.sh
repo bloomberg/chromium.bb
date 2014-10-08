@@ -639,7 +639,7 @@ sudo "/usr/local/bin/${target%bit}" /bin/sh -c '
 # Install a few more commonly used packages
 sudo "/usr/local/bin/${target%bit}" apt-get -y install                         \
   autoconf automake1.9 dpkg-dev g++-multilib gcc-multilib gdb less libtool     \
-  strace
+  lsof strace
 
 # If running a 32bit environment on a 64bit machine, install a few binaries
 # as 64bit. This is only done automatically if the chroot distro is the same as
