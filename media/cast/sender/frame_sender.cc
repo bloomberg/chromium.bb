@@ -39,6 +39,7 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       min_playout_delay_(min_playout_delay == base::TimeDelta() ?
                          max_playout_delay : min_playout_delay),
       max_playout_delay_(max_playout_delay),
+      send_target_playout_delay_(false),
       max_frame_rate_(max_frame_rate),
       num_aggressive_rtcp_reports_sent_(0),
       last_sent_frame_id_(0),
