@@ -330,10 +330,17 @@ bool SourceState::Append(
 
   // TODO(wolenetz/acolwell): Curry and pass a NewBuffersCB here bound with
   // append window and timestamp offset pointer. See http://crbug.com/351454.
-  bool err = stream_parser_->Parse(data, length);
+  bool result = stream_parser_->Parse(data, length);
+  if (!result) {
+    MEDIA_LOG(log_cb_)
+        << __FUNCTION__ << ": stream parsing failed."
+        << " Data size=" << length
+        << " append_window_start=" << append_window_start.InSecondsF()
+        << " append_window_end=" << append_window_end.InSecondsF();
+  }
   timestamp_offset_during_append_ = NULL;
   init_segment_received_cb_.Reset();
-  return err;
+  return result;
 }
 
 void SourceState::Abort(TimeDelta append_window_start,
