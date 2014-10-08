@@ -119,27 +119,42 @@ static void WriteStartCodeAndNALUType(std::vector<uint8>* buffer,
   buffer->push_back(StringToNALUType(nal_unit_type));
 }
 
+// Input string should be one or more NALU types separated with spaces or
+// commas. NALU grouped together and separated by commas are placed into the
+// same subsample, NALU groups separated by spaces are placed into separate
+// subsamples.
+// For example: input string "SPS PPS I" produces Annex B buffer containing
+// SPS, PPS and I NALUs, each in a separate subsample. While input string
+// "SPS,PPS I" produces Annex B buffer where the first subsample contains SPS
+// and PPS NALUs and the second subsample contains the I-slice NALU.
+// The output buffer will contain a valid-looking Annex B (it's valid-looking in
+// the sense that it has start codes and correct NALU types, but the actual NALU
+// payload is junk).
 void StringToAnnexB(const std::string& str, std::vector<uint8>* buffer,
                     std::vector<SubsampleEntry>* subsamples) {
   DCHECK(!str.empty());
 
-  std::vector<std::string> tokens;
-  EXPECT_GT(Tokenize(str, " ", &tokens), 0u);
+  std::vector<std::string> subsample_specs;
+  EXPECT_GT(Tokenize(str, " ", &subsample_specs), 0u);
 
   buffer->clear();
-  for (size_t i = 0; i < tokens.size(); ++i) {
+  for (size_t i = 0; i < subsample_specs.size(); ++i) {
     SubsampleEntry entry;
     size_t start = buffer->size();
 
-    WriteStartCodeAndNALUType(buffer, tokens[i]);
+    std::vector<std::string> subsample_nalus;
+    EXPECT_GT(Tokenize(subsample_specs[i], ",", &subsample_nalus), 0u);
+    for (size_t j = 0; j < subsample_nalus.size(); ++j) {
+      WriteStartCodeAndNALUType(buffer, subsample_nalus[j]);
+
+      // Write junk for the payload since the current code doesn't
+      // actually look at it.
+      buffer->push_back(0x32);
+      buffer->push_back(0x12);
+      buffer->push_back(0x67);
+    }
 
     entry.clear_bytes = buffer->size() - start;
-
-    // Write junk for the payload since the current code doesn't
-    // actually look at it.
-    buffer->push_back(0x32);
-    buffer->push_back(0x12);
-    buffer->push_back(0x67);
 
     if (subsamples) {
       // Simulate the encrypted bits containing something that looks
@@ -155,6 +170,25 @@ void StringToAnnexB(const std::string& str, std::vector<uint8>* buffer,
   }
 }
 
+int FindSubsampleIndex(const std::vector<uint8>& buffer,
+                       const std::vector<SubsampleEntry>* subsamples,
+                       const uint8* ptr) {
+  DCHECK(ptr >= &buffer[0]);
+  DCHECK(ptr <= &buffer[buffer.size()-1]);
+  if (!subsamples || subsamples->empty())
+    return 0;
+
+  const uint8* p = &buffer[0];
+  for (size_t i = 0; i < subsamples->size(); ++i) {
+    p += (*subsamples)[i].clear_bytes + (*subsamples)[i].cypher_bytes;
+    if (p > ptr) {
+      return i;
+    }
+  }
+  NOTREACHED();
+  return 0;
+}
+
 std::string AnnexBToString(const std::vector<uint8>& buffer,
                            const std::vector<SubsampleEntry>& subsamples) {
   std::stringstream ss;
@@ -164,13 +198,18 @@ std::string AnnexBToString(const std::vector<uint8>& buffer,
 
   H264NALU nalu;
   bool first = true;
+  size_t current_subsample_index = 0;
   while (parser.AdvanceToNextNALU(&nalu) == H264Parser::kOk) {
-    if (!first)
-      ss << " ";
-    else
+    size_t subsample_index = FindSubsampleIndex(buffer, &subsamples, nalu.data);
+    if (!first) {
+      ss << (subsample_index == current_subsample_index ? "," : " ");
+    } else {
+      DCHECK_EQ(subsample_index, current_subsample_index);
       first = false;
+    }
 
     ss << NALUTypeToString(nalu.nal_unit_type);
+    current_subsample_index = subsample_index;
   }
   return ss.str();
 }
@@ -206,7 +245,7 @@ TEST_P(AVCConversionTest, ParseCorrectly) {
   EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples));
   EXPECT_EQ(buf.size(), sizeof(kExpected));
   EXPECT_EQ(0, memcmp(kExpected, &buf[0], sizeof(kExpected)));
-  EXPECT_EQ("P SDC", AnnexBToString(buf, subsamples));
+  EXPECT_EQ("P,SDC", AnnexBToString(buf, subsamples));
 }
 
 // Intentionally write NALU sizes that are larger than the buffer.
@@ -304,6 +343,9 @@ TEST_F(AVCConversionTest, ValidAnnexBConstructs) {
     "SEI SEI R14 I",
     "SPS SPSExt SPS PPS I P",
     "R14 SEI I",
+    "AUD,I",
+    "AUD,SEI I",
+    "AUD,SEI,SPS,PPS,I"
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -318,6 +360,7 @@ TEST_F(AVCConversionTest, ValidAnnexBConstructs) {
 TEST_F(AVCConversionTest, InvalidAnnexBConstructs) {
   static const char* test_cases[] = {
     "AUD",  // No VCL present.
+    "AUD,SEI", // No VCL present.
     "SPS PPS",  // No VCL present.
     "SPS PPS AUD I",  // Parameter sets must come after AUD.
     "SPSExt SPS P",  // SPS must come before SPSExt.
