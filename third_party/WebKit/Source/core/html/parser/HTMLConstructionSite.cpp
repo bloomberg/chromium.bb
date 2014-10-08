@@ -34,6 +34,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
@@ -826,36 +827,39 @@ bool HTMLConstructionSite::inQuirksMode()
     return m_inQuirksMode;
 }
 
+
+// Adjusts |task| to match the "adjusted insertion location" determined by the foster parenting algorithm,
+// laid out as the substeps of step 2 of https://html.spec.whatwg.org/#appropriate-place-for-inserting-a-node
 void HTMLConstructionSite::findFosterSite(HTMLConstructionSiteTask& task)
 {
-    // When a node is to be foster parented, the last template element with no table element is below it in the stack of open elements is the foster parent element (NOT the template's parent!)
-    HTMLElementStack::ElementRecord* lastTemplateElement = m_openElements.topmost(templateTag.localName());
-    if (lastTemplateElement && !m_openElements.inTableScope(tableTag)) {
-        task.parent = lastTemplateElement->element();
+    // 2.1
+    HTMLElementStack::ElementRecord* lastTemplate = m_openElements.topmost(templateTag.localName());
+
+    // 2.2
+    HTMLElementStack::ElementRecord* lastTable = m_openElements.topmost(tableTag.localName());
+
+    // 2.3
+    if (lastTemplate && (!lastTable || lastTemplate->isAbove(lastTable))) {
+        task.parent = lastTemplate->element();
         return;
     }
 
-    HTMLElementStack::ElementRecord* lastTableElementRecord = m_openElements.topmost(tableTag.localName());
-    if (lastTableElementRecord) {
-        Element* lastTableElement = lastTableElementRecord->element();
-        ContainerNode* parent;
-        if (lastTableElementRecord->next()->stackItem()->hasTagName(templateTag))
-            parent = lastTableElementRecord->next()->element();
-        else
-            parent = lastTableElement->parentNode();
-
-        // When parsing HTML fragments, we skip step 4.2 ("Let root be a new html element with no attributes") for efficiency,
-        // and instead use the DocumentFragment as a root node. So we must treat the root node (DocumentFragment) as if it is a html element here.
-        if (parent && (parent->isElementNode() || (m_isParsingFragment && parent == m_openElements.rootNode()))) {
-            task.parent = parent;
-            task.nextChild = lastTableElement;
-            return;
-        }
-        task.parent = lastTableElementRecord->next()->element();
+    // 2.4
+    if (!lastTable) {
+        // Fragment case
+        task.parent = m_openElements.rootNode(); // DocumentFragment
         return;
     }
-    // Fragment case
-    task.parent = m_openElements.rootNode(); // DocumentFragment
+
+    // 2.5
+    if (ContainerNode* parent = lastTable->element()->parentNode()) {
+        task.parent = parent;
+        task.nextChild = lastTable->element();
+        return;
+    }
+
+    // 2.6, 2.7
+    task.parent = lastTable->next()->element();
 }
 
 bool HTMLConstructionSite::shouldFosterParent() const
