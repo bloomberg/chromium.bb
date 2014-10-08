@@ -53,6 +53,10 @@ class UdpSendWork : public UdpWork {
     if (!node_->TestStreamFlags(SSF_CAN_SEND))
       return false;
 
+    // Check if we are already sending.
+    if (node_->TestStreamFlags(SSF_SENDING))
+      return false;
+
     packet_ = emitter_->ReadTXPacket_Locked();
     if (NULL == packet_)
       return false;
