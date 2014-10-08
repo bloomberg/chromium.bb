@@ -7,7 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # GYP version: mojo/mojo_services.gypi:mojo_gles2_service
 source_set("gles2") {
   public_deps = [
-    ":bindings",
+    ":lib",
   ]
   deps = [
     "//base",
@@ -23,8 +23,8 @@ source_set("gles2") {
   ]
 }
 
-# GYP version: mojo/mojo_services.gypi:mojo_gles2_bindings
-source_set("bindings") {
+# GYP version: mojo/mojo_services.gypi:mojo_gles2_lib
+source_set("lib") {
   sources = [
     "command_buffer_type_conversions.cc",
     "command_buffer_type_conversions.h",

@@ -19,8 +19,8 @@
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_environment_chromium',
         'mojo_base.gyp:mojo_js_bindings_lib',
-        'mojo_gles2_bindings',
-        'mojo_native_viewport_bindings',
+        'mojo_gles2_lib',
+        'services/public/mojo_services_public.gyp:mojo_native_viewport_bindings',
       ],
       'includes': [
         'mojo_public_gles2_for_loadable_module.gypi',
@@ -29,8 +29,8 @@
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
         'mojo_base.gyp:mojo_common_lib',
-        'mojo_gles2_bindings',
-        'mojo_native_viewport_bindings',
+        'mojo_gles2_lib',
+        'services/public/mojo_services_public.gyp:mojo_native_viewport_bindings',
       ],
       'sources': [
         'apps/js/mojo_runner_delegate.cc',
@@ -104,7 +104,7 @@
       'target_name': 'mojo_js_content_handler',
       'type': 'loadable_module',
       'dependencies': [
-        'mojo_content_handler_bindings',
+        'services/public/mojo_services_public.gyp:mojo_content_handler_bindings',
         'mojo_js_apps_lib',
         '<(mojo_system_for_loadable_module)',
       ],

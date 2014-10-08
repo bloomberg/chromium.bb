@@ -16,6 +16,8 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/examples/surfaces_app/surfaces_util.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/environment/environment.h"

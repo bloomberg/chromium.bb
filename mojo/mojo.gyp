@@ -40,6 +40,7 @@
         'mojo_example_service',
         'mojo_geometry_lib',
         'mojo_html_viewer',
+        'mojo_input_events_lib',
         'mojo_js_content_handler',
         'mojo_js_standalone',
         'mojo_js_unittests',
@@ -60,9 +61,9 @@
         'mojo_surfaces_service',
         'mojo_test_app',
         'mojo_test_request_tracker_app',
-        'mojo_view_manager_lib',
         'mojo_view_manager_lib_unittests',
         'mojo_wget',
+        'services/public/mojo_services_public.gyp:mojo_services_public',
         'public/mojo_public.gyp:mojo_public',
       ],
       'conditions': [
@@ -78,13 +79,13 @@
             'mojo_keyboard',
             'mojo_media_viewer',
             'mojo_nesting_app',
+            'mojo_view_manager',
+            'mojo_view_manager_unittests',
             'mojo_window_manager',
             'mojo_wm_flow_app',
             'mojo_wm_flow_embedded',
             'mojo_wm_flow_init',
             'mojo_wm_flow_wm',
-            'mojo_view_manager',
-            'mojo_view_manager_unittests',
           ],
         }],
         ['OS == "linux"', {
@@ -156,7 +157,7 @@
         'mojo_base.gyp:mojo_common_lib',
         'mojo_external_service_bindings',
         'mojo_gles2_impl',
-        'mojo_network_bindings',
+        'services/public/mojo_services_public.gyp:mojo_network_bindings',
         'mojo_spy',
         'public/mojo_public.gyp:mojo_application_bindings',
       ],
@@ -305,8 +306,8 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../url/url.gyp:url_lib',
-        'mojo_content_handler_bindings',
-        'mojo_network_bindings',
+        'services/public/mojo_services_public.gyp:mojo_content_handler_bindings',
+        'services/public/mojo_services_public.gyp:mojo_network_bindings',
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_environment_chromium',
         'public/mojo_public.gyp:mojo_application_bindings',
@@ -324,7 +325,7 @@
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'public/mojo_public.gyp:mojo_application_bindings',
-        'mojo_network_bindings',
+        'services/public/mojo_services_public.gyp:mojo_network_bindings',
       ],
     },
     {
@@ -360,14 +361,14 @@
         '../skia/skia.gyp:skia',
         '../gpu/gpu.gyp:gles2_implementation',
         'mojo_geometry_lib',
-        'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
+        'services/public/mojo_services_public.gyp:mojo_surfaces_bindings',
       ],
       'includes': [
         'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'export_dependent_settings': [
-        'mojo_surfaces_bindings',
+        'services/public/mojo_services_public.gyp:mojo_surfaces_bindings',
       ],
       'sources': [
         'cc/context_provider_mojo.cc',
@@ -388,8 +389,8 @@
         '../gpu/gpu.gyp:gles2_cmd_helper',
         '../gpu/gpu.gyp:gles2_implementation',
         'mojo_base.gyp:mojo_environment_chromium',
-        'mojo_gles2_bindings',
-        'mojo_gpu_bindings',
+        'mojo_gles2_lib',
+        'services/public/mojo_services_public.gyp:mojo_gpu_bindings',
         '<(mojo_system_for_component)',
       ],
       'defines': [
@@ -405,7 +406,7 @@
         ],
       },
       'export_dependent_settings': [
-        'mojo_gpu_bindings',
+        'services/public/mojo_services_public.gyp:mojo_gpu_bindings',
       ],
       'sources': [
         'gles2/command_buffer_client_impl.cc',
@@ -532,13 +533,11 @@
             '../ui/events/events.gyp:events_base',
             'mojo_cc_support',
             'mojo_geometry_lib',
-            'mojo_native_viewport_bindings',
-            'mojo_gpu_bindings',
-            'mojo_surfaces_bindings',
             'mojo_surfaces_lib',
             'mojo_view_manager_lib',
             'public/mojo_public.gyp:mojo_application_base',
             'public/mojo_public.gyp:mojo_application_bindings',
+            'services/public/mojo_services_public.gyp:mojo_native_viewport_bindings',
           ],
           'includes': [
             'mojo_public_gles2_for_loadable_module.gypi',
@@ -572,8 +571,8 @@
             '../ui/wm/wm.gyp:wm',
             'mojo_aura_support',
             'mojo_views_support_internal',
-            'mojo_view_manager_bindings',
             'mojo_view_manager_lib',
+            'services/public/mojo_services_public.gyp:mojo_view_manager_bindings',
           ],
           'sources': [
             'views/input_method_mojo_linux.cc',
@@ -605,6 +604,27 @@
           ],
           'defines': [
             'MOJO_VIEWS_IMPLEMENTATION',
+          ],
+        },
+        {
+          # GN version: //mojo/services/public/cpp/view_manager/lib:run_unittests
+          'target_name': 'mojo_view_manager_run_unittests',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+          ],
+          'sources': [
+            'services/public/cpp/view_manager/lib/view_manager_test_suite.cc',
+            'services/public/cpp/view_manager/lib/view_manager_test_suite.h',
+            'services/public/cpp/view_manager/lib/view_manager_unittests.cc',
+          ],
+          'conditions': [
+            ['use_x11==1', {
+              'dependencies': [
+                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+              ],
+            }],
           ],
         },
       ],

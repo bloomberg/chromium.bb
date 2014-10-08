@@ -10,7 +10,7 @@
   'conditions': [
     ['component=="shared_library"', {
       'dependencies': [
-        'mojo.gyp:mojo_gles2_impl',
+        '<(DEPTH)/mojo/mojo.gyp:mojo_gles2_impl',
       ],
     }, {  # component!="shared_library"
       'defines': [
@@ -18,14 +18,14 @@
         'GLES2_USE_MOJO',
       ],
       'include_dirs': [
-        '..',
+        '<(DEPTH)',
       ],
       'dependencies': [
-        '../third_party/khronos/khronos.gyp:khronos_headers'
+        '<(DEPTH)/third_party/khronos/khronos.gyp:khronos_headers'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '..',
+          '<(DEPTH)',
         ],
         'defines': [
           'GLES2_USE_MOJO',
@@ -43,16 +43,16 @@
         ],
       },
       'sources': [
-        'public/c/gles2/gles2.h',
-        'public/c/gles2/gles2_export.h',
-        'public/platform/native/gles2_thunks.cc',
-        'public/platform/native/gles2_thunks.h',
-        'public/platform/native/gles2_impl_thunks.cc',
-        'public/platform/native/gles2_impl_thunks.h',
-        'public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc',
-        'public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.h',
-        'public/platform/native/gles2_impl_chromium_sync_point_thunks.cc',
-        'public/platform/native/gles2_impl_chromium_sync_point_thunks.h',
+        '<(DEPTH)/mojo/public/c/gles2/gles2.h',
+        '<(DEPTH)/mojo/public/c/gles2/gles2_export.h',
+        '<(DEPTH)/mojo/public/platform/native/gles2_thunks.cc',
+        '<(DEPTH)/mojo/public/platform/native/gles2_thunks.h',
+        '<(DEPTH)/mojo/public/platform/native/gles2_impl_thunks.cc',
+        '<(DEPTH)/mojo/public/platform/native/gles2_impl_thunks.h',
+        '<(DEPTH)/mojo/public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc',
+        '<(DEPTH)/mojo/public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.h',
+        '<(DEPTH)/mojo/public/platform/native/gles2_impl_chromium_sync_point_thunks.cc',
+        '<(DEPTH)/mojo/public/platform/native/gles2_impl_chromium_sync_point_thunks.h',
       ],
     }]
   ]

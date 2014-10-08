@@ -29,10 +29,13 @@ shared_library("parent_app") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_shared_library",
-    "//mojo/services/public/interfaces/geometry",
+    "//mojo/public/cpp/system",
     "//mojo/services/public/cpp/geometry",
-    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/gpu",
+    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/interfaces/native_viewport",
   ]
 
   sources = [
@@ -53,17 +56,19 @@ shared_library("child_app") {
     "//base",
     "//cc",
     "//cc/surfaces",
-    "//skia",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_shared_library",
-    "//mojo/services/public/interfaces/geometry",
+    "//mojo/public/cpp/bindings",
     "//mojo/services/public/cpp/geometry",
-    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/interfaces/surfaces:surface_id",
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 
   sources = [
@@ -83,19 +88,25 @@ shared_library("child_gl_app") {
     "//base",
     "//cc",
     "//cc/surfaces",
-    "//skia",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//mojo/common",
+    "//gpu/command_buffer/common",
     "//mojo/application",
+    "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/examples/sample_app:spinning_cube",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
     "//mojo/public/gles2:for_shared_library",
-    "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/cpp/geometry",
-    "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/gpu",
+    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/interfaces/surfaces:surface_id",
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 
   sources = [
@@ -109,6 +120,8 @@ source_set("util") {
   deps = [
     "//cc",
     "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 
   sources = [

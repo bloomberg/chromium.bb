@@ -18,6 +18,6 @@ source_set("gl") {
     "//mojo/bindings/js",
     "//mojo/environment:chromium",
     "//mojo/public/gles2:for_shared_library",
-    "//mojo/services/gles2:bindings",
+    "//mojo/services/gles2:lib",
   ]
 }
