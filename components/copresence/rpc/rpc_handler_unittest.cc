@@ -31,11 +31,8 @@ void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
                              const std::string& message_string,
                              SubscribedMessage* message_proto) {
   message_proto->mutable_published_message()->set_payload(message_string);
-  for (std::vector<std::string>::const_iterator subscription_id =
-           subscription_ids.begin();
-       subscription_id != subscription_ids.end();
-       ++subscription_id) {
-    message_proto->add_subscription_id(*subscription_id);
+  for (const std::string& subscription_id : subscription_ids) {
+    message_proto->add_subscription_id(subscription_id);
   }
 }
 
@@ -214,7 +211,7 @@ TEST_F(RpcHandlerTest, ReportTokens) {
   rpc_handler_.ReportTokens(test_tokens);
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
   ReportRequest* report = static_cast<ReportRequest*>(request_proto_.get());
-  google::protobuf::RepeatedPtrField<TokenObservation> tokens_sent =
+  RepeatedPtrField<TokenObservation> tokens_sent =
       report->update_signals_request().token_observation();
   ASSERT_EQ(2, tokens_sent.size());
   EXPECT_EQ("token 1", tokens_sent.Get(0).token_id());

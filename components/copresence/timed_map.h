@@ -48,7 +48,7 @@ class TimedMap {
 
   const ValueType& GetValue(const KeyType& key) {
     ClearExpiredTokens();
-    typename std::map<KeyType, ValueType>::const_iterator elt = map_.find(key);
+    auto elt = map_.find(key);
     return elt == map_.end() ? kEmptyValue : elt->second;
   }
 

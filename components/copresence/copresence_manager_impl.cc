@@ -64,17 +64,14 @@ void CopresenceManagerImpl::CompleteInitialization() {
   if (!init_failed_)
     rpc_handler_->ConnectToWhispernet();
 
-  for (std::vector<PendingRequest>::iterator request =
-           pending_requests_queue_.begin();
-       request != pending_requests_queue_.end();
-       ++request) {
+  for (PendingRequest& request : pending_requests_queue_) {
     if (init_failed_) {
-      request->callback.Run(FAIL);
+      request.callback.Run(FAIL);
     } else {
       rpc_handler_->SendReportRequest(
-          make_scoped_ptr(new copresence::ReportRequest(request->report)),
-          request->app_id,
-          request->callback);
+          make_scoped_ptr(new copresence::ReportRequest(request.report)),
+          request.app_id,
+          request.callback);
     }
   }
   pending_requests_queue_.clear();
