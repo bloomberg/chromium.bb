@@ -825,6 +825,11 @@ void RenderViewContextMenu::AppendCopyItem() {
 }
 
 void RenderViewContextMenu::AppendPrintItem() {
+  // AppendPluginItems() could have already added |IDC_PRINT| so we are
+  // skipping it here if |IDC_PRINT| is already present in the context menu.
+  if (menu_model_.GetIndexOfCommandId(IDC_PRINT) != -1)
+    return;
+
   if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
       (params_.media_type == WebContextMenuData::MediaTypeNone ||
        params_.media_flags & WebContextMenuData::MediaCanPrint)) {
