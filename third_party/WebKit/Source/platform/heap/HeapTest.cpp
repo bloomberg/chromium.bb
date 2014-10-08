@@ -232,12 +232,12 @@ static void getHeapStats(HeapStats* stats)
 }
 
 #define DEFINE_VISITOR_METHODS(Type)                                       \
-    virtual void mark(const Type* object, TraceCallback callback) OVERRIDE \
+    virtual void mark(const Type* object, TraceCallback callback) override \
     {                                                                      \
         if (object)                                                        \
             m_count++;                                                     \
     }                                                                      \
-    virtual bool isMarked(const Type*) OVERRIDE { return false; }
+    virtual bool isMarked(const Type*) override { return false; }
 
 class CountingVisitor : public Visitor {
 public:
@@ -246,32 +246,32 @@ public:
     {
     }
 
-    virtual void mark(const void* object, TraceCallback) OVERRIDE
+    virtual void mark(const void* object, TraceCallback) override
     {
         if (object)
             m_count++;
     }
 
-    virtual void mark(HeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
     {
         ASSERT(header->payload());
         m_count++;
     }
 
-    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
     {
         ASSERT(header->payload());
         m_count++;
     }
 
-    virtual void registerDelayedMarkNoTracing(const void*) OVERRIDE { }
-    virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) OVERRIDE { }
-    virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) OVERRIDE { }
+    virtual void registerDelayedMarkNoTracing(const void*) override { }
+    virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) override { }
+    virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) override { }
 #if ENABLE(ASSERT)
-    virtual bool weakTableRegistered(const void*) OVERRIDE { return false; }
+    virtual bool weakTableRegistered(const void*) override { return false; }
 #endif
-    virtual void registerWeakCell(void**, WeakPointerCallback) OVERRIDE { }
-    virtual bool isMarked(const void*) OVERRIDE { return false; }
+    virtual void registerWeakCell(void**, WeakPointerCallback) override { }
+    virtual bool isMarked(const void*) override { return false; }
 
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 
@@ -466,7 +466,7 @@ public:
     }
 
 protected:
-    virtual void runThread() OVERRIDE
+    virtual void runThread() override
     {
         ThreadState::attach();
 
@@ -514,7 +514,7 @@ public:
     }
 
 private:
-    virtual void runThread() OVERRIDE
+    virtual void runThread() override
     {
         ThreadState::attach();
 
@@ -718,7 +718,7 @@ public:
         return new Foo(foo);
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         if (m_pointsToFoo)
             visitor->mark(static_cast<Foo*>(m_bar));
@@ -752,7 +752,7 @@ public:
         return new Bars();
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         for (unsigned i = 0; i < m_width; i++)
             visitor->trace(m_bars[i]);
@@ -874,7 +874,7 @@ private:
 int RefCountedAndGarbageCollected2::s_destructorCalls = 0;
 
 #define DEFINE_VISITOR_METHODS(Type)                                       \
-    virtual void mark(const Type* object, TraceCallback callback) OVERRIDE \
+    virtual void mark(const Type* object, TraceCallback callback) override \
     {                                                                      \
         mark(object);                                                      \
     }                                                                      \
@@ -901,17 +901,17 @@ public:
         m_count++;
     }
 
-    virtual void mark(const void* ptr, TraceCallback) OVERRIDE
+    virtual void mark(const void* ptr, TraceCallback) override
     {
         mark(ptr);
     }
 
-    virtual void mark(HeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
     {
         mark(header->payload());
     }
 
-    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
     {
         mark(header->payload());
     }
@@ -945,7 +945,7 @@ public:
         return new Weak(strong, weak);
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_strongBar);
         visitor->registerWeakMembers(this, zapWeakMembers);
@@ -984,7 +984,7 @@ public:
         return new WithWeakMember(strong, weak);
     }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_strongBar);
         visitor->trace(m_weakBar);

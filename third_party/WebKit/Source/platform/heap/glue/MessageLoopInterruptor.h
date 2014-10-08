@@ -40,7 +40,7 @@ class MessageLoopInterruptor : public ThreadState::Interruptor {
 public:
     explicit MessageLoopInterruptor(blink::WebThread* thread) : m_thread(thread) { }
 
-    virtual void requestInterrupt() OVERRIDE
+    virtual void requestInterrupt() override
     {
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
@@ -48,14 +48,14 @@ public:
         m_thread->postTask(new GCTask);
     }
 
-    virtual void clearInterrupt() OVERRIDE { }
+    virtual void clearInterrupt() override { }
 
 private:
     class GCTask : public blink::WebThread::Task {
     public:
         virtual ~GCTask() { }
 
-        virtual void run() OVERRIDE
+        virtual void run() override
         {
             // Don't do anything here because we don't know if this is
             // a nested event loop or not. PendingGCRunner::didProcessTask

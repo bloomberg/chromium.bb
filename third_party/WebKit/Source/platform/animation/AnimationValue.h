@@ -67,7 +67,7 @@ public:
         , m_value(value)
     {
     }
-    virtual PassOwnPtr<AnimationValue> clone() const OVERRIDE { return adoptPtr(new FloatAnimationValue(*this)); }
+    virtual PassOwnPtr<AnimationValue> clone() const override { return adoptPtr(new FloatAnimationValue(*this)); }
 
     float value() const { return m_value; }
 
@@ -84,7 +84,7 @@ public:
         if (value)
             m_value = *value;
     }
-    virtual PassOwnPtr<AnimationValue> clone() const OVERRIDE { return adoptPtr(new TransformAnimationValue(*this)); }
+    virtual PassOwnPtr<AnimationValue> clone() const override { return adoptPtr(new TransformAnimationValue(*this)); }
 
     const TransformOperations* value() const { return &m_value; }
 
@@ -101,7 +101,7 @@ public:
         if (value)
             m_value = *value;
     }
-    virtual PassOwnPtr<AnimationValue> clone() const OVERRIDE { return adoptPtr(new FilterAnimationValue(*this)); }
+    virtual PassOwnPtr<AnimationValue> clone() const override { return adoptPtr(new FilterAnimationValue(*this)); }
 
     const FilterOperations* value() const { return &m_value; }
 

@@ -39,30 +39,30 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
 public:
-    virtual void updateEnabledState(ScrollbarThemeClient*) OVERRIDE;
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) OVERRIDE;
-    virtual bool usesOverlayScrollbars() const OVERRIDE;
-    virtual void updateScrollbarOverlayStyle(ScrollbarThemeClient*) OVERRIDE;
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const OVERRIDE;
+    virtual void updateEnabledState(ScrollbarThemeClient*) override;
+    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+    virtual bool usesOverlayScrollbars() const override;
+    virtual void updateScrollbarOverlayStyle(ScrollbarThemeClient*) override;
+    virtual ScrollbarButtonsPlacement buttonsPlacement() const override;
 
-    virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
-    virtual void unregisterScrollbar(ScrollbarThemeClient*) OVERRIDE;
+    virtual void registerScrollbar(ScrollbarThemeClient*) override;
+    virtual void unregisterScrollbar(ScrollbarThemeClient*) override;
 
     void setNewPainterForScrollbar(ScrollbarThemeClient*, ScrollbarPainter);
     ScrollbarPainter painterForScrollbar(ScrollbarThemeClient*);
 
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
 protected:
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
 
-    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return false; }
-    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
+    virtual bool hasButtons(ScrollbarThemeClient*) override { return false; }
+    virtual bool hasThumb(ScrollbarThemeClient*) override;
 
-    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
+    virtual int minimumThumbLength(ScrollbarThemeClient*) override;
 };
 
 }

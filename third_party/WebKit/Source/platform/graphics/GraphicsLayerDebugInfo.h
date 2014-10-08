@@ -46,7 +46,7 @@ public:
     GraphicsLayerDebugInfo();
     virtual ~GraphicsLayerDebugInfo();
 
-    virtual void appendAsTraceFormat(WebString* out) const OVERRIDE;
+    virtual void appendAsTraceFormat(WebString* out) const override;
 
     GraphicsLayerDebugInfo* clone() const;
 

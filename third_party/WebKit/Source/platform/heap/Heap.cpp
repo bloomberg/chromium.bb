@@ -1955,21 +1955,21 @@ public:
             Heap::pushTraceCallback(m_markingStack, const_cast<void*>(objectPointer), callback);
     }
 
-    virtual void mark(HeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
     {
         // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
         // version to correctly find the payload.
         visitHeader(header, header->payload(), callback);
     }
 
-    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
     {
         // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
         // version to correctly find the payload.
         visitHeader(header, header->payload(), callback);
     }
 
-    virtual void mark(const void* objectPointer, TraceCallback callback) OVERRIDE
+    virtual void mark(const void* objectPointer, TraceCallback callback) override
     {
         if (!objectPointer)
             return;
@@ -1977,12 +1977,12 @@ public:
         visitHeader(header, header->payload(), callback);
     }
 
-    virtual void registerDelayedMarkNoTracing(const void* object) OVERRIDE
+    virtual void registerDelayedMarkNoTracing(const void* object) override
     {
         Heap::pushPostMarkingCallback(const_cast<void*>(object), markNoTracingCallback);
     }
 
-    virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) OVERRIDE
+    virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) override
     {
         Heap::pushWeakObjectPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
     }
@@ -1999,14 +1999,14 @@ public:
     }
 #endif
 
-    virtual bool isMarked(const void* objectPointer) OVERRIDE
+    virtual bool isMarked(const void* objectPointer) override
     {
         return FinalizedHeapObjectHeader::fromPayload(objectPointer)->isMarked();
     }
 
     // This macro defines the necessary visitor methods for typed heaps
 #define DEFINE_VISITOR_METHODS(Type)                                              \
-    virtual void mark(const Type* objectPointer, TraceCallback callback) OVERRIDE \
+    virtual void mark(const Type* objectPointer, TraceCallback callback) override \
     {                                                                             \
         if (!objectPointer)                                                       \
             return;                                                               \
@@ -2014,7 +2014,7 @@ public:
             HeapObjectHeader::fromPayload(objectPointer);                         \
         visitHeader(header, header->payload(), callback);                         \
     }                                                                             \
-    virtual bool isMarked(const Type* objectPointer) OVERRIDE                     \
+    virtual bool isMarked(const Type* objectPointer) override                     \
     {                                                                             \
         return HeapObjectHeader::fromPayload(objectPointer)->isMarked();          \
     }
@@ -2119,7 +2119,7 @@ public:
 #endif
 
 protected:
-    virtual void registerWeakCell(void** cell, WeakPointerCallback callback) OVERRIDE
+    virtual void registerWeakCell(void** cell, WeakPointerCallback callback) override
     {
         Heap::pushWeakCellPointerCallback(cell, callback);
     }

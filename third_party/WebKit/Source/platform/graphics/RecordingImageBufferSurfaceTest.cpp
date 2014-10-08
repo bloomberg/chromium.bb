@@ -48,8 +48,8 @@ public:
     }
 
     // TaskObserver implementation
-    virtual void willProcessTask() OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void didProcessTask() OVERRIDE
+    virtual void willProcessTask() override { ASSERT_NOT_REACHED(); }
+    virtual void didProcessTask() override
     {
         ASSERT_TRUE(m_isDirty);
         FloatRect dirtyRect(0, 0, 1, 1);
@@ -240,28 +240,28 @@ private:
             m_task = task;
         }
 
-        virtual void postDelayedTask(Task*, long long delayMs) OVERRIDE { ASSERT_NOT_REACHED(); };
+        virtual void postDelayedTask(Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
 
-        virtual bool isCurrentThread() const OVERRIDE { return true; }
-        virtual PlatformThreadId threadId() const OVERRIDE
+        virtual bool isCurrentThread() const override { return true; }
+        virtual PlatformThreadId threadId() const override
         {
             ASSERT_NOT_REACHED();
             return 0;
         }
 
-        virtual void addTaskObserver(TaskObserver* taskObserver) OVERRIDE
+        virtual void addTaskObserver(TaskObserver* taskObserver) override
         {
             EXPECT_EQ((TaskObserver*)0, m_taskObserver);
             m_taskObserver = taskObserver;
         }
 
-        virtual void removeTaskObserver(TaskObserver* taskObserver) OVERRIDE
+        virtual void removeTaskObserver(TaskObserver* taskObserver) override
         {
             EXPECT_EQ(m_taskObserver, taskObserver);
             m_taskObserver = 0;
         }
 
-        virtual void enterRunLoop() OVERRIDE
+        virtual void enterRunLoop() override
         {
             if (m_taskObserver)
                 m_taskObserver->willProcessTask();
@@ -274,7 +274,7 @@ private:
                 m_taskObserver->didProcessTask();
         }
 
-        virtual void exitRunLoop() OVERRIDE { ASSERT_NOT_REACHED(); }
+        virtual void exitRunLoop() override { ASSERT_NOT_REACHED(); }
 
     private:
         TaskObserver* m_taskObserver;
@@ -285,7 +285,7 @@ private:
     public:
         CurrentThreadPlatformMock() { }
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
-        virtual WebThread* currentThread() OVERRIDE { return &m_currentThread; }
+        virtual WebThread* currentThread() override { return &m_currentThread; }
     private:
         CurrentThreadMock m_currentThread;
     };
@@ -299,7 +299,7 @@ private:
 class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                           \
     public:                                                                                       \
         TestWrapperTask_ ## TEST_METHOD(RecordingImageBufferSurfaceTest* test) : m_test(test) { } \
-        virtual void run() OVERRIDE { m_test->TEST_METHOD(); }                                    \
+        virtual void run() override { m_test->TEST_METHOD(); }                                    \
     private:                                                                                      \
         RecordingImageBufferSurfaceTest* m_test;                                                  \
 };

@@ -37,27 +37,27 @@ class PLATFORM_EXPORT ScrollbarThemeMacCommon : public ScrollbarTheme {
 public:
     virtual ~ScrollbarThemeMacCommon();
 
-    virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
-    virtual void unregisterScrollbar(ScrollbarThemeClient*) OVERRIDE;
+    virtual void registerScrollbar(ScrollbarThemeClient*) override;
+    virtual void unregisterScrollbar(ScrollbarThemeClient*) override;
     void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw);
 
-    virtual bool supportsControlTints() const OVERRIDE { return true; }
+    virtual bool supportsControlTints() const override { return true; }
 
-    virtual double initialAutoscrollTimerDelay() OVERRIDE;
-    virtual double autoscrollTimerDelay() OVERRIDE;
+    virtual double initialAutoscrollTimerDelay() override;
+    virtual double autoscrollTimerDelay() override;
 
-    virtual void paintOverhangBackground(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
-    virtual void paintOverhangShadows(GraphicsContext*, const IntSize& scrollOffset, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
-    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintOverhangBackground(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) override;
+    virtual void paintOverhangShadows(GraphicsContext*, const IntSize& scrollOffset, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) override;
+    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
     static NSScrollerStyle recommendedScrollerStyle();
 
     static bool isOverlayAPIAvailable();
 
 protected:
-    virtual int maxOverlapBetweenPages() OVERRIDE { return 40; }
+    virtual int maxOverlapBetweenPages() override { return 40; }
 
-    virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
+    virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) override;
     int scrollbarPartToHIPressedState(ScrollbarPart);
 
     virtual void updateButtonPlacement() { }

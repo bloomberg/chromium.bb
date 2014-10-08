@@ -52,7 +52,7 @@ private:
     explicit MediaStreamWebAudioSource(PassOwnPtr<WebAudioSourceProvider>);
 
     // blink::AudioSourceProvider implementation.
-    virtual void provideInput(blink::AudioBus*, size_t framesToProcess) OVERRIDE;
+    virtual void provideInput(blink::AudioBus*, size_t framesToProcess) override;
 
     OwnPtr<WebAudioSourceProvider> m_webAudioSourceProvider;
 };

@@ -189,8 +189,8 @@ public:
         COMPILE_ASSERT(!(sizeof(LargeHeapObject<Header>) & allocationMask), large_heap_object_header_misaligned);
     }
 
-    virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
-    virtual bool isLargeObject() OVERRIDE { return true; }
+    virtual void checkAndMarkPointer(Visitor*, Address) override;
+    virtual bool isLargeObject() override { return true; }
 
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfo(Address address)
@@ -226,7 +226,7 @@ public:
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
     // populate the negative page cache.
-    virtual bool contains(Address object) OVERRIDE
+    virtual bool contains(Address object) override
     {
         return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
     }
@@ -502,7 +502,7 @@ public:
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
     // the result can be used to populate the negative page cache.
-    virtual bool contains(Address addr) OVERRIDE
+    virtual bool contains(Address addr) override
     {
         Address blinkPageStart = roundToBlinkPageStart(address());
         ASSERT(blinkPageStart == address() - osPageSize()); // Page is at aligned address plus guard page size.
@@ -528,9 +528,9 @@ public:
     void sweep(HeapStats*, ThreadHeap<Header>*);
     void clearObjectStartBitMap();
     void finalize(Header*);
-    virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
+    virtual void checkAndMarkPointer(Visitor*, Address) override;
 #if ENABLE(GC_PROFILE_MARKING)
-    const GCInfo* findGCInfo(Address) OVERRIDE;
+    const GCInfo* findGCInfo(Address) override;
 #endif
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);

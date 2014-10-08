@@ -16,23 +16,23 @@ class MockScrollElasticityControllerClient : public ScrollElasticityControllerCl
 public:
     MockScrollElasticityControllerClient() : m_pinned(true), m_stretchX(0.0f) {}
 
-    virtual bool allowsHorizontalStretching() OVERRIDE { return true; }
-    virtual bool allowsVerticalStretching() OVERRIDE { return true; }
+    virtual bool allowsHorizontalStretching() override { return true; }
+    virtual bool allowsVerticalStretching() override { return true; }
     // The amount that the view is stretched past the normal allowable bounds.
     // The "overhang" amount.
-    virtual IntSize stretchAmount() OVERRIDE { return IntSize(m_stretchX, 0); }
-    virtual bool pinnedInDirection(const FloatSize&) OVERRIDE { return m_pinned; }
-    virtual bool canScrollHorizontally() OVERRIDE { return true; }
-    virtual bool canScrollVertically() OVERRIDE { return true; }
+    virtual IntSize stretchAmount() override { return IntSize(m_stretchX, 0); }
+    virtual bool pinnedInDirection(const FloatSize&) override { return m_pinned; }
+    virtual bool canScrollHorizontally() override { return true; }
+    virtual bool canScrollVertically() override { return true; }
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual blink::IntPoint absoluteScrollPosition() OVERRIDE { return IntPoint(m_stretchX, 0); }
+    virtual blink::IntPoint absoluteScrollPosition() override { return IntPoint(m_stretchX, 0); }
 
-    virtual void immediateScrollBy(const FloatSize& size) OVERRIDE { m_stretchX += size.width(); }
-    virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize& size) OVERRIDE { m_stretchX += size.width(); }
-    virtual void startSnapRubberbandTimer() OVERRIDE {}
-    virtual void stopSnapRubberbandTimer() OVERRIDE {}
-    virtual void adjustScrollPositionToBoundsIfNecessary() OVERRIDE {}
+    virtual void immediateScrollBy(const FloatSize& size) override { m_stretchX += size.width(); }
+    virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize& size) override { m_stretchX += size.width(); }
+    virtual void startSnapRubberbandTimer() override {}
+    virtual void stopSnapRubberbandTimer() override {}
+    virtual void adjustScrollPositionToBoundsIfNecessary() override {}
 
     void reset() { m_stretchX = 0; }
 

@@ -20,7 +20,7 @@ public:
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, blink::WebBlendMode);
 
 
-    PassRefPtr<SkImage> skImage() OVERRIDE { return m_image; }
+    PassRefPtr<SkImage> skImage() override { return m_image; }
 
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);

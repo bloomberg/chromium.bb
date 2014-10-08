@@ -47,9 +47,9 @@ namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
 public:
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) OVERRIDE { }
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE { }
-    virtual String debugName(const GraphicsLayer*) OVERRIDE { return String(); }
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) override { }
+    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override { }
+    virtual String debugName(const GraphicsLayer*) override { return String(); }
 };
 
 class GraphicsLayerForTesting : public GraphicsLayer {
@@ -125,28 +125,28 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 
 class FakeScrollableArea : public ScrollableArea {
 public:
-    virtual bool isActive() const OVERRIDE { return false; }
-    virtual int scrollSize(ScrollbarOrientation) const OVERRIDE { return 100; }
-    virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
-    virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
-    virtual int visibleWidth() const OVERRIDE { return 10; }
-    virtual int visibleHeight() const OVERRIDE { return 10; }
-    virtual IntSize contentsSize() const OVERRIDE { return IntSize(100, 100); }
-    virtual bool scrollbarsCanBeActive() const OVERRIDE { return false; }
-    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE { return IntRect(); }
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE { }
-    virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }
-    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE { return true; }
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE { return false; }
-    virtual int pageStep(ScrollbarOrientation) const OVERRIDE { return 0; }
-    virtual IntPoint minimumScrollPosition() const OVERRIDE { return IntPoint(); }
-    virtual IntPoint maximumScrollPosition() const OVERRIDE
+    virtual bool isActive() const override { return false; }
+    virtual int scrollSize(ScrollbarOrientation) const override { return 100; }
+    virtual bool isScrollCornerVisible() const override { return false; }
+    virtual IntRect scrollCornerRect() const override { return IntRect(); }
+    virtual int visibleWidth() const override { return 10; }
+    virtual int visibleHeight() const override { return 10; }
+    virtual IntSize contentsSize() const override { return IntSize(100, 100); }
+    virtual bool scrollbarsCanBeActive() const override { return false; }
+    virtual IntRect scrollableAreaBoundingBox() const override { return IntRect(); }
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override { }
+    virtual void invalidateScrollCornerRect(const IntRect&) override { }
+    virtual bool userInputScrollable(ScrollbarOrientation) const override { return true; }
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
+    virtual int pageStep(ScrollbarOrientation) const override { return 0; }
+    virtual IntPoint minimumScrollPosition() const override { return IntPoint(); }
+    virtual IntPoint maximumScrollPosition() const override
     {
         return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
     }
 
-    virtual void setScrollOffset(const IntPoint& scrollOffset) OVERRIDE { m_scrollPosition = scrollOffset; }
-    virtual IntPoint scrollPosition() const OVERRIDE { return m_scrollPosition; }
+    virtual void setScrollOffset(const IntPoint& scrollOffset) override { m_scrollPosition = scrollOffset; }
+    virtual IntPoint scrollPosition() const override { return m_scrollPosition; }
 
 private:
     IntPoint m_scrollPosition;

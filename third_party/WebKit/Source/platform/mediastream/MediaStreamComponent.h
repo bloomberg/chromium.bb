@@ -93,7 +93,7 @@ private:
         void wrap(WebAudioSourceProvider*);
 
         // blink::AudioSourceProvider
-        virtual void provideInput(blink::AudioBus*, size_t framesToProcess) OVERRIDE;
+        virtual void provideInput(blink::AudioBus*, size_t framesToProcess) override;
 
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;

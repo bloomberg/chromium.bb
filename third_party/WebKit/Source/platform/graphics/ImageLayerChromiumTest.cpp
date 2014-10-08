@@ -37,9 +37,9 @@ namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
 public:
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) OVERRIDE { }
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE { }
-    virtual String debugName(const GraphicsLayer*) OVERRIDE { return String(); }
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) override { }
+    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override { }
+    virtual String debugName(const GraphicsLayer*) override { return String(); }
 };
 
 class TestImage : public Image {
@@ -59,22 +59,22 @@ public:
         m_nativeImage = NativeImageSkia::create(bitmap);
     }
 
-    virtual bool isBitmapImage() const OVERRIDE
+    virtual bool isBitmapImage() const override
     {
         return true;
     }
 
-    virtual bool currentFrameKnownToBeOpaque() OVERRIDE
+    virtual bool currentFrameKnownToBeOpaque() override
     {
         return m_nativeImage->bitmap().isOpaque();
     }
 
-    virtual IntSize size() const OVERRIDE
+    virtual IntSize size() const override
     {
         return m_size;
     }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override
     {
         if (m_size.isZero())
             return nullptr;
@@ -83,11 +83,11 @@ public:
     }
 
     // Stub implementations of pure virtual Image functions.
-    virtual void destroyDecodedData(bool) OVERRIDE
+    virtual void destroyDecodedData(bool) override
     {
     }
 
-    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, WebBlendMode) OVERRIDE
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, WebBlendMode) override
     {
     }
 

@@ -33,22 +33,22 @@ namespace blink {
 // Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) OVERRIDE;
-    virtual bool usesOverlayScrollbars() const OVERRIDE;
+    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+    virtual bool usesOverlayScrollbars() const override;
 
 protected:
-    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return false; }
-    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE { return true; }
+    virtual bool hasButtons(ScrollbarThemeClient*) override { return false; }
+    virtual bool hasThumb(ScrollbarThemeClient*) override { return true; }
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) OVERRIDE { return IntRect(); }
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) OVERRIDE { return IntRect(); }
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
 
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
 private:
-    virtual bool isMockTheme() const OVERRIDE FINAL { return true; }
+    virtual bool isMockTheme() const override FINAL { return true; }
 };
 
 }

@@ -35,12 +35,12 @@ class PLATFORM_EXPORT EqualPowerPanner FINAL : public Panner {
 public:
     EqualPowerPanner(float sampleRate);
 
-    virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBuf, size_t framesToProcess) OVERRIDE;
+    virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBuf, size_t framesToProcess) override;
 
-    virtual void reset() OVERRIDE { m_isFirstRender = true; }
+    virtual void reset() override { m_isFirstRender = true; }
 
-    virtual double tailTime() const OVERRIDE { return 0; }
-    virtual double latencyTime() const OVERRIDE { return 0; }
+    virtual double tailTime() const override { return 0; }
+    virtual double latencyTime() const override { return 0; }
 
 private:
     // For smoothing / de-zippering

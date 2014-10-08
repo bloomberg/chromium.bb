@@ -37,14 +37,14 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarThemeNonMacCommon {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
+    virtual int scrollbarThickness(ScrollbarControlSize) override;
 
 protected:
-    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
-    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual IntSize buttonSize(ScrollbarThemeClient*) OVERRIDE;
-    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
+    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
+    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) override;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    virtual IntSize buttonSize(ScrollbarThemeClient*) override;
+    virtual int minimumThumbLength(ScrollbarThemeClient*) override;
 };
 
 } // namespace blink

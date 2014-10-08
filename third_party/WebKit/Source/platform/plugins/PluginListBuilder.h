@@ -42,9 +42,9 @@ public:
     PluginListBuilder(Vector<blink::PluginInfo>* results) : m_results(results) { }
 
     // WebPluginListBuilder methods:
-    virtual void addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName) OVERRIDE;
-    virtual void addMediaTypeToLastPlugin(const blink::WebString& name, const blink::WebString& description) OVERRIDE;
-    virtual void addFileExtensionToLastMediaType(const blink::WebString& extension) OVERRIDE;
+    virtual void addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName) override;
+    virtual void addMediaTypeToLastPlugin(const blink::WebString& name, const blink::WebString& description) override;
+    virtual void addFileExtensionToLastMediaType(const blink::WebString& extension) override;
 
 private:
     Vector<PluginInfo>* m_results;

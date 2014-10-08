@@ -50,10 +50,10 @@ public:
     static bool shareSameAxis(const RotateTransformOperation* fromRotation, const RotateTransformOperation* toRotation, FloatPoint3D* axis, double* fromAngle, double* toAngle);
 
     virtual bool canBlendWith(const TransformOperation& other) const;
-    virtual OperationType type() const OVERRIDE { return m_type; }
+    virtual OperationType type() const override { return m_type; }
 
 private:
-    virtual bool operator==(const TransformOperation& o) const OVERRIDE
+    virtual bool operator==(const TransformOperation& o) const override
     {
         if (!isSameType(o))
             return false;
@@ -61,12 +61,12 @@ private:
         return m_x == r->m_x && m_y == r->m_y && m_z == r->m_z && m_angle == r->m_angle;
     }
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize& /*borderBoxSize*/) const OVERRIDE
+    virtual void apply(TransformationMatrix& transform, const FloatSize& /*borderBoxSize*/) const override
     {
         transform.rotate3d(m_x, m_y, m_z, m_angle);
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) OVERRIDE;
+    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
 
     RotateTransformOperation(double x, double y, double z, double angle, OperationType type)
         : m_x(x)

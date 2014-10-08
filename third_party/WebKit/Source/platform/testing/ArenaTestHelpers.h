@@ -44,14 +44,14 @@ public:
         return adoptRef(new TrackedAllocator);
     }
 
-    virtual void* allocate(size_t size) OVERRIDE
+    virtual void* allocate(size_t size) override
     {
         void* result = PODArena::FastMallocAllocator::allocate(size);
         m_allocatedRegions.append(result);
         return result;
     }
 
-    virtual void free(void* ptr) OVERRIDE
+    virtual void free(void* ptr) override
     {
         size_t slot = m_allocatedRegions.find(ptr);
         ASSERT_NE(slot, kNotFound);

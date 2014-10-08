@@ -34,33 +34,33 @@ public:
 class TestMainThread : public blink::WebThread {
 public:
     // blink::WebThread implementation.
-    virtual void postTask(Task* task) OVERRIDE
+    virtual void postTask(Task* task) override
     {
         m_pendingTasks.append(adoptPtr(task));
     }
 
-    virtual void postDelayedTask(Task* task, long long delayMs) OVERRIDE
+    virtual void postDelayedTask(Task* task, long long delayMs) override
     {
         ASSERT_NOT_REACHED();
     }
 
-    virtual bool isCurrentThread() const OVERRIDE
+    virtual bool isCurrentThread() const override
     {
         return true;
     }
 
-    virtual blink::PlatformThreadId threadId() const OVERRIDE
+    virtual blink::PlatformThreadId threadId() const override
     {
         ASSERT_NOT_REACHED();
         return 0;
     }
 
-    virtual void enterRunLoop() OVERRIDE
+    virtual void enterRunLoop() override
     {
         ASSERT_NOT_REACHED();
     }
 
-    virtual void exitRunLoop() OVERRIDE
+    virtual void exitRunLoop() override
     {
         ASSERT_NOT_REACHED();
     }
@@ -92,17 +92,17 @@ public:
     }
 
     // blink::Platform implementation.
-    virtual blink::WebThread* currentThread() OVERRIDE
+    virtual blink::WebThread* currentThread() override
     {
         return &m_mainThread;
     }
 
-    virtual void setSharedTimerFiredFunction(SharedTimerFunction timerFunction) OVERRIDE
+    virtual void setSharedTimerFiredFunction(SharedTimerFunction timerFunction) override
     {
         m_sharedTimerFunction = timerFunction;
     }
 
-    virtual double monotonicallyIncreasingTime() OVERRIDE
+    virtual double monotonicallyIncreasingTime() override
     {
         return m_monotonicallyIncreasingTime;
     }
@@ -171,12 +171,12 @@ public:
         Scheduler::shutdown();
     }
 
-    virtual void SetUp() OVERRIDE
+    virtual void SetUp() override
     {
         m_scheduler->enterSchedulerPolicy(SchedulerForTest::Normal);
     }
 
-    virtual void TearDown() OVERRIDE
+    virtual void TearDown() override
     {
         // If the Scheduler hasn't been shut down then explicitly flush the tasks.
         if (Scheduler::shared())

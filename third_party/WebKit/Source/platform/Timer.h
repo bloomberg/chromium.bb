@@ -122,7 +122,7 @@ public:
         : m_object(o), m_function(f) { }
 
 private:
-    virtual void fired() OVERRIDE { (m_object->*m_function)(this); }
+    virtual void fired() override { (m_object->*m_function)(this); }
 
     // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
@@ -168,7 +168,7 @@ public:
     using TimerBase::isActive;
 
 private:
-    virtual void fired() OVERRIDE
+    virtual void fired() override
     {
         if (m_shouldRestartWhenTimerFires) {
             m_shouldRestartWhenTimerFires = false;

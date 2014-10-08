@@ -59,7 +59,7 @@ public:
     }
 
     // WebContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
+    virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) override;
 
 private:
     GraphicsContextPainter* m_painter;

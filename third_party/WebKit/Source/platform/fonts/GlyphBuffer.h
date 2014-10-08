@@ -90,7 +90,7 @@ protected:
 
 class GlyphBufferWithOffsets : public GlyphBuffer {
 public:
-    virtual bool hasOffsets() const OVERRIDE { return true; }
+    virtual bool hasOffsets() const override { return true; }
 
     const FloatSize* offsets(unsigned from) const { return m_offsets.data() + from; }
 

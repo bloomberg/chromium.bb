@@ -72,7 +72,7 @@ public:
     {
     }
 
-    virtual size_t storageAllocatedForRecording() OVERRIDE
+    virtual size_t storageAllocatedForRecording() override
     {
         // Because the fake layer has no canvas to query, just
         // return status quo. Allocation changes that would normally be
@@ -86,7 +86,7 @@ public:
         m_freeableBytes = size;
     }
 
-    virtual size_t freeMemoryIfPossible(size_t size) OVERRIDE
+    virtual size_t freeMemoryIfPossible(size_t size) override
     {
         m_freeMemoryIfPossibleCount++;
         size_t bytesFreed = size < m_freeableBytes ? size : m_freeableBytes;
@@ -96,7 +96,7 @@ public:
         return bytesFreed;
     }
 
-    virtual void flush() OVERRIDE
+    virtual void flush() override
     {
         flushedDrawCommands();
         m_freeableBytes = bytesAllocated();
@@ -257,7 +257,7 @@ protected:
             m_skipCommands = skipCommands;
         }
 
-        virtual void run() OVERRIDE
+        virtual void run() override
         {
             m_test->doDeferredFrameTestTask(m_layer, m_skipCommands);
         }

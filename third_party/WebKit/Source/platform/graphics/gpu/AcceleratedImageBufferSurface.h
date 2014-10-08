@@ -44,10 +44,10 @@ public:
     AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, int msaaSampleCount = 0);
     virtual ~AcceleratedImageBufferSurface() { }
 
-    virtual SkCanvas* canvas() const OVERRIDE { return m_surface ? m_surface->getCanvas() : 0; }
-    virtual bool isValid() const OVERRIDE { return m_surface; }
-    virtual bool isAccelerated() const OVERRIDE { return true; }
-    virtual Platform3DObject getBackingTexture() const OVERRIDE;
+    virtual SkCanvas* canvas() const override { return m_surface ? m_surface->getCanvas() : 0; }
+    virtual bool isValid() const override { return m_surface; }
+    virtual bool isAccelerated() const override { return true; }
+    virtual Platform3DObject getBackingTexture() const override;
 
 private:
     OwnPtr<SkSurface> m_surface;

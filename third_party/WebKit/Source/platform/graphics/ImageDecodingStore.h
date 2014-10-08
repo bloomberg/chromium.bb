@@ -144,8 +144,8 @@ private:
         {
         }
 
-        virtual size_t memoryUsageInBytes() const OVERRIDE { return m_size.width() * m_size.height() * 4; }
-        virtual CacheType type() const OVERRIDE { return TypeDecoder; }
+        virtual size_t memoryUsageInBytes() const override { return m_size.width() * m_size.height() * 4; }
+        virtual CacheType type() const override { return TypeDecoder; }
 
         static DecoderCacheKey makeCacheKey(const ImageFrameGenerator* generator, const SkISize& size)
         {

@@ -154,7 +154,7 @@ public:
     }
 
     // Consumes samples from the in-memory buffer.
-    virtual void provideInput(AudioBus* bus, size_t framesToProcess) OVERRIDE
+    virtual void provideInput(AudioBus* bus, size_t framesToProcess) override
     {
         ASSERT(m_source && bus);
         if (!m_source || !bus)

@@ -218,7 +218,7 @@ class WrapperPersistent FINAL : public WrapperPersistentNode {
 public:
     static WrapperPersistent<T>* create(T* raw);
 
-    virtual void trace(Visitor* visitor) OVERRIDE
+    virtual void trace(Visitor* visitor) override
     {
         ASSERT(isAlive());
         visitor->mark(static_cast<T*>(m_raw));

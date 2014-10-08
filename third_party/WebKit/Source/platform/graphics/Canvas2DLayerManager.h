@@ -49,8 +49,8 @@ private:
     // internal methods
     void freeMemoryIfNecessary();
     void addLayerToList(Canvas2DLayerBridge*);
-    virtual void willProcessTask() OVERRIDE;
-    virtual void didProcessTask() OVERRIDE;
+    virtual void willProcessTask() override;
+    virtual void didProcessTask() override;
 
     size_t m_bytesAllocated;
     size_t m_maxBytesAllocated;

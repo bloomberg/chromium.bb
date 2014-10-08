@@ -27,13 +27,13 @@ public:
     virtual ~RecordingImageBufferSurface();
 
     // Implementation of ImageBufferSurface interfaces
-    virtual SkCanvas* canvas() const OVERRIDE;
-    virtual PassRefPtr<SkPicture> getPicture() OVERRIDE;
-    virtual bool isValid() const OVERRIDE { return true; }
-    virtual void willAccessPixels() OVERRIDE;
-    virtual void finalizeFrame(const FloatRect&) OVERRIDE;
-    virtual void didClearCanvas() OVERRIDE;
-    virtual void setImageBuffer(ImageBuffer*) OVERRIDE;
+    virtual SkCanvas* canvas() const override;
+    virtual PassRefPtr<SkPicture> getPicture() override;
+    virtual bool isValid() const override { return true; }
+    virtual void willAccessPixels() override;
+    virtual void finalizeFrame(const FloatRect&) override;
+    virtual void didClearCanvas() override;
+    virtual void setImageBuffer(ImageBuffer*) override;
 
 private:
     struct StateRec {

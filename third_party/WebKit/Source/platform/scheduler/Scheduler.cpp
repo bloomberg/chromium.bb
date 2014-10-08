@@ -34,7 +34,7 @@ public:
     }
 
     // WebThread::Task implementation.
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         m_task->run();
         if (Scheduler* scheduler = Scheduler::shared()) {
@@ -59,7 +59,7 @@ public:
     }
 
     // WebThread::Task implementation.
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         m_task->run();
         if (Scheduler* scheduler = Scheduler::shared()) {
@@ -82,7 +82,7 @@ public:
     }
 
     // WebThread::Task implementation.
-    virtual void run() OVERRIDE
+    virtual void run() override
     {
         if (Scheduler* scheduler = Scheduler::shared()) {
             scheduler->maybeRunPendingIdleTask();

@@ -85,64 +85,64 @@ private:
     Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) OVERRIDE;
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) OVERRIDE;
+    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
+    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
 #if USE(RUBBER_BANDING)
-    virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
+    virtual bool handleWheelEvent(const PlatformWheelEvent&) override;
 #endif
 
-    virtual void handleWheelEventPhase(PlatformWheelEventPhase) OVERRIDE;
+    virtual void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
-    virtual void cancelAnimations() OVERRIDE;
-    virtual void setIsActive() OVERRIDE;
+    virtual void cancelAnimations() override;
+    virtual void setIsActive() override;
 
-    virtual void contentAreaWillPaint() const OVERRIDE;
-    virtual void mouseEnteredContentArea() const OVERRIDE;
-    virtual void mouseExitedContentArea() const OVERRIDE;
-    virtual void mouseMovedInContentArea() const OVERRIDE;
-    virtual void mouseEnteredScrollbar(Scrollbar*) const OVERRIDE;
-    virtual void mouseExitedScrollbar(Scrollbar*) const OVERRIDE;
-    virtual void willStartLiveResize() OVERRIDE;
-    virtual void contentsResized() const OVERRIDE;
-    virtual void willEndLiveResize() OVERRIDE;
-    virtual void contentAreaDidShow() const OVERRIDE;
-    virtual void contentAreaDidHide() const OVERRIDE;
+    virtual void contentAreaWillPaint() const override;
+    virtual void mouseEnteredContentArea() const override;
+    virtual void mouseExitedContentArea() const override;
+    virtual void mouseMovedInContentArea() const override;
+    virtual void mouseEnteredScrollbar(Scrollbar*) const override;
+    virtual void mouseExitedScrollbar(Scrollbar*) const override;
+    virtual void willStartLiveResize() override;
+    virtual void contentsResized() const override;
+    virtual void willEndLiveResize() override;
+    virtual void contentAreaDidShow() const override;
+    virtual void contentAreaDidHide() const override;
     void didBeginScrollGesture() const;
     void didEndScrollGesture() const;
     void mayBeginScrollGesture() const;
 
-    virtual void finishCurrentScrollAnimations() OVERRIDE;
+    virtual void finishCurrentScrollAnimations() override;
 
-    virtual void didAddVerticalScrollbar(Scrollbar*) OVERRIDE;
-    virtual void willRemoveVerticalScrollbar(Scrollbar*) OVERRIDE;
-    virtual void didAddHorizontalScrollbar(Scrollbar*) OVERRIDE;
-    virtual void willRemoveHorizontalScrollbar(Scrollbar*) OVERRIDE;
+    virtual void didAddVerticalScrollbar(Scrollbar*) override;
+    virtual void willRemoveVerticalScrollbar(Scrollbar*) override;
+    virtual void didAddHorizontalScrollbar(Scrollbar*) override;
+    virtual void willRemoveHorizontalScrollbar(Scrollbar*) override;
 
-    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) OVERRIDE;
+    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) override;
 
-    virtual void notifyContentAreaScrolled(const FloatSize& delta) OVERRIDE;
+    virtual void notifyContentAreaScrolled(const FloatSize& delta) override;
 
     FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
 
     void immediateScrollTo(const FloatPoint&);
 
-    virtual bool isRubberBandInProgress() const OVERRIDE;
+    virtual bool isRubberBandInProgress() const override;
 
 #if USE(RUBBER_BANDING)
     /// ScrollElasticityControllerClient member functions.
-    virtual IntSize stretchAmount() OVERRIDE;
-    virtual bool allowsHorizontalStretching() OVERRIDE;
-    virtual bool allowsVerticalStretching() OVERRIDE;
-    virtual bool pinnedInDirection(const FloatSize&) OVERRIDE;
-    virtual bool canScrollHorizontally() OVERRIDE;
-    virtual bool canScrollVertically() OVERRIDE;
-    virtual blink::IntPoint absoluteScrollPosition() OVERRIDE;
-    virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) OVERRIDE;
-    virtual void immediateScrollBy(const FloatSize&) OVERRIDE;
-    virtual void startSnapRubberbandTimer() OVERRIDE;
-    virtual void stopSnapRubberbandTimer() OVERRIDE;
-    virtual void adjustScrollPositionToBoundsIfNecessary() OVERRIDE;
+    virtual IntSize stretchAmount() override;
+    virtual bool allowsHorizontalStretching() override;
+    virtual bool allowsVerticalStretching() override;
+    virtual bool pinnedInDirection(const FloatSize&) override;
+    virtual bool canScrollHorizontally() override;
+    virtual bool canScrollVertically() override;
+    virtual blink::IntPoint absoluteScrollPosition() override;
+    virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) override;
+    virtual void immediateScrollBy(const FloatSize&) override;
+    virtual void startSnapRubberbandTimer() override;
+    virtual void stopSnapRubberbandTimer() override;
+    virtual void adjustScrollPositionToBoundsIfNecessary() override;
 
     bool pinnedInDirection(float deltaX, float deltaY);
     void snapRubberBandTimerFired(Timer<ScrollAnimatorMac>*);

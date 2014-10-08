@@ -56,15 +56,15 @@ public:
 
     virtual ~BitmapImage();
 
-    virtual bool isBitmapImage() const OVERRIDE;
+    virtual bool isBitmapImage() const override;
 
-    virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE;
+    virtual bool currentFrameHasSingleSecurityOrigin() const override;
 
-    virtual IntSize size() const OVERRIDE;
+    virtual IntSize size() const override;
     IntSize sizeRespectingOrientation() const;
-    virtual bool getHotSpot(IntPoint&) const OVERRIDE;
-    virtual String filenameExtension() const OVERRIDE;
-    virtual bool dataChanged(bool allDataReceived) OVERRIDE;
+    virtual bool getHotSpot(IntPoint&) const override;
+    virtual String filenameExtension() const override;
+    virtual bool dataChanged(bool allDataReceived) override;
 
     bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;
@@ -74,17 +74,17 @@ public:
     // This because we start and stop animating lazily. Animation starts when
     // the image is rendered, and automatically pauses once all observers no
     // longer want to render the image.
-    virtual void stopAnimation() OVERRIDE;
-    virtual void resetAnimation() OVERRIDE;
-    virtual bool maybeAnimated() OVERRIDE;
+    virtual void stopAnimation() override;
+    virtual void resetAnimation() override;
+    virtual bool maybeAnimated() override;
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
-    virtual PassRefPtr<Image> imageForDefaultFrame() OVERRIDE;
-    virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
+    virtual PassRefPtr<Image> imageForDefaultFrame() override;
+    virtual bool currentFrameKnownToBeOpaque() override;
     ImageOrientation currentFrameOrientation();
 
 #if ENABLE(ASSERT)
-    virtual bool notSolidColor() OVERRIDE;
+    virtual bool notSolidColor() override;
 #endif
 
 private:
@@ -102,8 +102,8 @@ protected:
     BitmapImage(PassRefPtr<NativeImageSkia>, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode) OVERRIDE;
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, RespectImageOrientationEnum) OVERRIDE;
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode) override;
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, RespectImageOrientationEnum) override;
 
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
@@ -128,7 +128,7 @@ protected:
     // frame; this is used while animating large images to keep memory footprint
     // low; the decoder should preserve the current frame and may preserve some
     // other frames to avoid redecoding the whole image on every frame.
-    virtual void destroyDecodedData(bool destroyAll) OVERRIDE;
+    virtual void destroyDecodedData(bool destroyAll) override;
 
     // If the image is large enough, calls destroyDecodedData().
     void destroyDecodedDataIfNecessary();
@@ -144,7 +144,7 @@ protected:
     // Animation.
     int repetitionCount(bool imageKnownToBeComplete);  // |imageKnownToBeComplete| should be set if the caller knows the entire image has been decoded.
     bool shouldAnimate();
-    virtual void startAnimation(CatchUpAnimation = CatchUp) OVERRIDE;
+    virtual void startAnimation(CatchUpAnimation = CatchUp) override;
     void advanceAnimation(Timer<BitmapImage>*);
 
     // Function that does the real work of advancing the animation.  When
@@ -159,8 +159,8 @@ protected:
     // changed.
     void checkForSolidColor();
 
-    virtual bool mayFillWithSolidColor() OVERRIDE;
-    virtual Color solidColor() const OVERRIDE;
+    virtual bool mayFillWithSolidColor() override;
+    virtual Color solidColor() const override;
 
 private:
     ImageSource m_source;

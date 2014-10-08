@@ -61,10 +61,10 @@ public:
     float sampleRate() const { return m_sampleRate; }
 
     // WebAudioDevice::RenderCallback
-    virtual void render(const WebVector<float*>& sourceData, const WebVector<float*>& audioData, size_t numberOfFrames) OVERRIDE;
+    virtual void render(const WebVector<float*>& sourceData, const WebVector<float*>& audioData, size_t numberOfFrames) override;
 
     // AudioSourceProvider
-    virtual void provideInput(AudioBus*, size_t framesToProcess) OVERRIDE;
+    virtual void provideInput(AudioBus*, size_t framesToProcess) override;
 
     static float hardwareSampleRate();
 

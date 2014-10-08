@@ -41,16 +41,16 @@ public:
     WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
     virtual ~WEBPImageDecoder();
 
-    virtual String filenameExtension() const OVERRIDE { return "webp"; }
-    virtual bool isSizeAvailable() OVERRIDE;
-    virtual bool hasColorProfile() const OVERRIDE { return m_hasColorProfile; }
-    virtual size_t frameCount() OVERRIDE;
-    virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
-    virtual void setData(SharedBuffer* data, bool allDataReceived) OVERRIDE;
-    virtual int repetitionCount() const OVERRIDE;
-    virtual bool frameIsCompleteAtIndex(size_t) const OVERRIDE;
-    virtual float frameDurationAtIndex(size_t) const OVERRIDE;
-    virtual size_t clearCacheExceptFrame(size_t) OVERRIDE;
+    virtual String filenameExtension() const override { return "webp"; }
+    virtual bool isSizeAvailable() override;
+    virtual bool hasColorProfile() const override { return m_hasColorProfile; }
+    virtual size_t frameCount() override;
+    virtual ImageFrame* frameBufferAtIndex(size_t) override;
+    virtual void setData(SharedBuffer* data, bool allDataReceived) override;
+    virtual int repetitionCount() const override;
+    virtual bool frameIsCompleteAtIndex(size_t) const override;
+    virtual float frameDurationAtIndex(size_t) const override;
+    virtual size_t clearCacheExceptFrame(size_t) override;
 
 private:
     bool decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex);
@@ -74,7 +74,7 @@ private:
     bool updateDemuxer();
     bool initFrameBuffer(size_t frameIndex);
     void applyPostProcessing(size_t frameIndex);
-    virtual void clearFrameBuffer(size_t frameIndex) OVERRIDE;
+    virtual void clearFrameBuffer(size_t frameIndex) override;
 
     WebPDemuxer* m_demux;
     WebPDemuxState m_demuxState;

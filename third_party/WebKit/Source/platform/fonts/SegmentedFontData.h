@@ -67,13 +67,13 @@ public:
 private:
     SegmentedFontData() { }
 
-    virtual const SimpleFontData* fontDataForCharacter(UChar32) const OVERRIDE;
+    virtual const SimpleFontData* fontDataForCharacter(UChar32) const override;
 
-    virtual bool isCustomFont() const OVERRIDE;
-    virtual bool isLoading() const OVERRIDE;
-    virtual bool isLoadingFallback() const OVERRIDE;
-    virtual bool isSegmented() const OVERRIDE;
-    virtual bool shouldSkipDrawing() const OVERRIDE;
+    virtual bool isCustomFont() const override;
+    virtual bool isLoading() const override;
+    virtual bool isLoadingFallback() const override;
+    virtual bool isSegmented() const override;
+    virtual bool shouldSkipDrawing() const override;
 
     Vector<FontDataRange, 1> m_ranges;
 };

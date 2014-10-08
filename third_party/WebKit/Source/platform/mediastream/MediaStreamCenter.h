@@ -73,7 +73,7 @@ public:
     void didStopLocalMediaStream(MediaStreamDescriptor*);
 
     // blink::WebMediaStreamCenterClient
-    virtual void stopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;
+    virtual void stopLocalMediaStream(const blink::WebMediaStream&) override;
 
 private:
     MediaStreamCenter();
