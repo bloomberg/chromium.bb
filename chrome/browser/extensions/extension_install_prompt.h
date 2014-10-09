@@ -23,7 +23,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class ExtensionInstallUI;
 class Profile;
 
