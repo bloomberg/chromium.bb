@@ -1,6 +1,6 @@
 {
   "config_version": "www-google-com-v1",
-  "config_valid_until": 1425168000.0,
+  "config_valid_until": 1432944000.0,
   "monitored_domain": "www.google.com",
   "collectors": [
     {
@@ -60,6 +60,12 @@
       "failure_sample_rate": 1.00
     },
     {
+      "resource_name": "www-google-com-recaptcha",
+      "url_patterns": ["http*://www.google.com/recaptcha/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
       "resource_name": "www-google-com-home",
       "url_patterns": ["http*://www.google.com/"],
       "success_sample_rate": 0.05,
@@ -67,7 +73,7 @@
     },
     {
       "resource_name": "www-google-com-other",
-      "url_patterns": ["http*://www.google.com/*"],
+      "url_patterns": ["*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     }

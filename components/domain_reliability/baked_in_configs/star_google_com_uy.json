@@ -1,0 +1,21 @@
+{
+  "config_version": "star-google-com-uy-v1",
+  "config_valid_until": 1432944000,
+  "monitored_domain": "*.google.com.uy",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    },
+    {
+      "upload_url": "https://beacons.gvt2.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "star-google-com-uy-other",
+      "url_patterns": ["*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    }
+  ]
+}

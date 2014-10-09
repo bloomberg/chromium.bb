@@ -1,6 +1,6 @@
 {
   "config_version": "drive-google-com-v1",
-  "config_valid_until": 1425168000.0,
+  "config_valid_until": 1432944000.0,
   "monitored_domain": "drive.google.com",
   "collectors": [
     {
@@ -19,7 +19,7 @@
     },
     {
       "resource_name": "drive-other",
-      "url_patterns": ["http*://drive.google.com/*"],
+      "url_patterns": ["*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     }

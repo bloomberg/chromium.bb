@@ -1,6 +1,6 @@
 {
   "config_version": "apis-google-com-v1",
-  "config_valid_until": 1425168000.0,
+  "config_valid_until": 1432944000.0,
   "monitored_domain": "apis.google.com",
   "collectors": [
     {
@@ -13,7 +13,7 @@
   "monitored_resources": [
     {
       "resource_name": "apis",
-      "url_patterns": ["http*://apis.google.com/*"],
+      "url_patterns": ["*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     }

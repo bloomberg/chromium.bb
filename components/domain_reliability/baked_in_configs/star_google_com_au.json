@@ -1,6 +1,6 @@
 {
   "config_version": "star-google-com-au-v1",
-  "config_valid_until": 1425168000.0,
+  "config_valid_until": 1432944000,
   "monitored_domain": "*.google.com.au",
   "collectors": [
     {
@@ -13,7 +13,7 @@
   "monitored_resources": [
     {
       "resource_name": "star-google-com-au-other",
-      "url_patterns": ["http*://*.google.com.au/*"],
+      "url_patterns": ["*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     }
