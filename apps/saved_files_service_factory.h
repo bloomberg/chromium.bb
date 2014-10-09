@@ -27,7 +27,7 @@ class SavedFilesServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<SavedFilesServiceFactory>;
 
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 };
 
 }  // namespace apps

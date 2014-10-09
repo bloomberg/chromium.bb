@@ -111,7 +111,7 @@ class SavedFilesService : public KeyedService,
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Returns the SavedFiles for |extension_id| or NULL if one does not exist.
   SavedFiles* Get(const std::string& extension_id) const;

@@ -31,10 +31,10 @@ class AppLifetimeMonitorFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* profile) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-    content::BrowserContext* context) const OVERRIDE;
+    content::BrowserContext* context) const override;
 };
 
 }  // namespace apps

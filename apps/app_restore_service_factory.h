@@ -31,8 +31,8 @@ class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* profile) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
 };
 
 }  // namespace apps

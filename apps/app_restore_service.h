@@ -42,16 +42,16 @@ class AppRestoreService : public KeyedService,
 
  private:
   // AppLifetimeMonitor::Observer.
-  virtual void OnAppStart(Profile* profile, const std::string& app_id) OVERRIDE;
+  virtual void OnAppStart(Profile* profile, const std::string& app_id) override;
   virtual void OnAppActivated(Profile* profile,
-                              const std::string& app_id) OVERRIDE;
+                              const std::string& app_id) override;
   virtual void OnAppDeactivated(Profile* profile,
-                                const std::string& app_id) OVERRIDE;
-  virtual void OnAppStop(Profile* profile, const std::string& app_id) OVERRIDE;
-  virtual void OnChromeTerminating() OVERRIDE;
+                                const std::string& app_id) override;
+  virtual void OnAppStop(Profile* profile, const std::string& app_id) override;
+  virtual void OnChromeTerminating() override;
 
   // KeyedService.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   void RecordAppStart(const std::string& extension_id);
   void RecordAppStop(const std::string& extension_id);
