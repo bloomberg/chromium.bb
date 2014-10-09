@@ -1443,3 +1443,9 @@ crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing [ Pass Failure ]
 
 crbug.com/421298 http/tests/security/subresourceIntegrity/subresource-integrity-style-blocked.html [ Pass Failure ]
+
+# These are experiencing assertions in harfbuzz.
+# fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
+crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Pass Crash ]
+crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
+
