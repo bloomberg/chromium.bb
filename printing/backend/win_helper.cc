@@ -477,14 +477,16 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
   scoped_ptr<DEVMODE, base::FreeDeleter> out(
-      reinterpret_cast<DEVMODE*>(malloc(buffer_size)));
+      reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER;
   if (DocumentProperties(
           NULL, printer, const_cast<wchar_t*>(L""), out.get(), in, flags) !=
       IDOK) {
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
   }
-  CHECK_GE(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
+  int size = out->dmSize;
+  int extra_size = out->dmDriverExtra;
+  CHECK_GE(buffer_size, size + extra_size);
   return out.Pass();
 }
 
@@ -504,7 +506,7 @@ scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
   scoped_ptr<DEVMODE, base::FreeDeleter> out(
-      reinterpret_cast<DEVMODE*>(malloc(buffer_size)));
+      reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER | DM_IN_PROMPT;
   LONG result = DocumentProperties(window,
                                    printer,
@@ -516,7 +518,9 @@ scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
     *canceled = (result == IDCANCEL);
   if (result != IDOK)
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
-  CHECK_GE(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
+  int size = out->dmSize;
+  int extra_size = out->dmDriverExtra;
+  CHECK_GE(buffer_size, size + extra_size);
   return out.Pass();
 }
 
