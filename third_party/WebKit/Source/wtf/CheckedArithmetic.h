@@ -251,7 +251,7 @@ template <typename LHS, typename RHS, typename ResultType> struct ArithmeticOper
                     return false;
             }
         } // if the signs do not match this operation can't overflow
-        result = static_cast<ResultType>(lhs + rhs);
+        result = lhs + rhs;
         return true;
     }
 
@@ -266,7 +266,7 @@ template <typename LHS, typename RHS, typename ResultType> struct ArithmeticOper
                     return false;
             }
         } // if the signs match this operation can't overflow
-        result = static_cast<ResultType>(lhs - rhs);
+        result = lhs - rhs;
         return true;
     }
 
@@ -291,7 +291,7 @@ template <typename LHS, typename RHS, typename ResultType> struct ArithmeticOper
                     return false;
             }
         }
-        result = static_cast<ResultType>(lhs * rhs);
+        result = lhs * rhs;
         return true;
     }
 

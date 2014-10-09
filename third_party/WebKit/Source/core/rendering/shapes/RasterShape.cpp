@@ -142,7 +142,7 @@ const RasterShapeIntervals& RasterShape::marginIntervals() const
     if (!shapeMargin())
         return *m_intervals;
 
-    int shapeMarginInt = clampTo<int>(ceil(shapeMargin()), 0);
+    int shapeMarginInt = clampToPositiveInteger(ceil(shapeMargin()));
     int maxShapeMarginInt = std::max(m_marginRectSize.width(), m_marginRectSize.height()) * sqrtf(2);
     if (!m_marginIntervals)
         m_marginIntervals = m_intervals->computeShapeMarginIntervals(std::min(shapeMarginInt, maxShapeMarginInt));

@@ -215,22 +215,22 @@ inline float operator*(const FloatPoint& a, const FloatPoint& b)
 
 inline IntPoint roundedIntPoint(const FloatPoint& p)
 {
-    return IntPoint(clampTo<int>(roundf(p.x())), clampTo<int>(roundf(p.y())));
+    return IntPoint(clampToInteger(roundf(p.x())), clampToInteger(roundf(p.y())));
 }
 
 inline IntPoint flooredIntPoint(const FloatPoint& p)
 {
-    return IntPoint(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));
+    return IntPoint(clampToInteger(floorf(p.x())), clampToInteger(floorf(p.y())));
 }
 
 inline IntPoint ceiledIntPoint(const FloatPoint& p)
 {
-    return IntPoint(clampTo<int>(ceilf(p.x())), clampTo<int>(ceilf(p.y())));
+    return IntPoint(clampToInteger(ceilf(p.x())), clampToInteger(ceilf(p.y())));
 }
 
 inline IntSize flooredIntSize(const FloatPoint& p)
 {
-    return IntSize(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));
+    return IntSize(clampToInteger(floorf(p.x())), clampToInteger(floorf(p.y())));
 }
 
 inline FloatSize toFloatSize(const FloatPoint& a)

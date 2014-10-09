@@ -663,8 +663,7 @@ void Element::setScrollLeft(double newLeft)
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
-        RenderBox* rend = renderBox();
-        if (rend && !std::isnan(newLeft))
+        if (RenderBox* rend = renderBox())
             rend->setScrollLeft(LayoutUnit::fromFloatRound(newLeft * rend->style()->effectiveZoom()));
         return;
     }
@@ -710,8 +709,7 @@ void Element::setScrollTop(double newTop)
     document().updateLayoutIgnorePendingStylesheets();
 
     if (document().documentElement() != this) {
-        RenderBox* rend = renderBox();
-        if (rend && !std::isnan(newTop))
+        if (RenderBox* rend = renderBox())
             rend->setScrollTop(LayoutUnit::fromFloatRound(newTop * rend->style()->effectiveZoom()));
         return;
     }

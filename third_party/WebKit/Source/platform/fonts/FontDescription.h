@@ -178,8 +178,8 @@ public:
     FontCacheKey cacheKey(const FontFaceCreationParams&, FontTraits desiredTraits = FontTraits(0)) const;
 
     void setFamily(const FontFamily& family) { m_familyList = family; }
-    void setComputedSize(float s) { m_computedSize = clampTo<float>(s); }
-    void setSpecifiedSize(float s) { m_specifiedSize = clampTo<float>(s); }
+    void setComputedSize(float s) { m_computedSize = clampToFloat(s); }
+    void setSpecifiedSize(float s) { m_specifiedSize = clampToFloat(s); }
     void setStyle(FontStyle i) { m_style = i; }
     void setVariant(FontVariant c) { m_variant = c; }
     void setVariantLigatures(const VariantLigatures&);

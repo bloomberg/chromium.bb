@@ -550,7 +550,7 @@ static void paintStepper(ControlStates states, GraphicsContext* context, const I
     // Center the stepper rectangle in the specified area.
     backgroundBounds.origin.x = bounds.origin.x + (bounds.size.width - backgroundBounds.size.width) / 2;
     if (backgroundBounds.size.height < bounds.size.height) {
-        int heightDiff = clampTo<int>(bounds.size.height - backgroundBounds.size.height);
+        int heightDiff = clampToInteger(bounds.size.height - backgroundBounds.size.height);
         backgroundBounds.origin.y = bounds.origin.y + (heightDiff / 2) + 1;
     }
 

@@ -77,7 +77,7 @@ private:
 ARC4Stream::ARC4Stream()
 {
     for (int n = 0; n < 256; n++)
-        s[n] = static_cast<uint8_t>(n);
+        s[n] = n;
     i = 0;
     j = 0;
 }

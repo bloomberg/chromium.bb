@@ -74,14 +74,14 @@ public:
     static LayoutUnit fromFloatCeil(float value)
     {
         LayoutUnit v;
-        v.m_value = clampTo<int>(ceilf(value * kFixedPointDenominator));
+        v.m_value = clampToInteger(ceilf(value * kFixedPointDenominator));
         return v;
     }
 
     static LayoutUnit fromFloatFloor(float value)
     {
         LayoutUnit v;
-        v.m_value = clampTo<int>(floorf(value * kFixedPointDenominator));
+        v.m_value = clampToInteger(floorf(value * kFixedPointDenominator));
         return v;
     }
 

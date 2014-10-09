@@ -68,7 +68,7 @@ public:
     int incrementValue() const { return m_incrementValue; }
     void addIncrementValue(int value)
     {
-        m_incrementValue = clampTo<int>((double)m_incrementValue + value);
+        m_incrementValue = clampToInteger((double)m_incrementValue + value);
         m_isIncrementSet = true;
     }
     void clearIncrement()

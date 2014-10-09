@@ -1287,7 +1287,7 @@ void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
     }
     for (RootInlineBox* curr = firstRootBox; curr && curr != lastRootBox; curr = curr->nextRootBox()) {
         if (curr->lineBreakObj() == this && curr->lineBreakPos() > end)
-            curr->setLineBreakPos(clampTo<int>(curr->lineBreakPos() + delta));
+            curr->setLineBreakPos(clampToInteger(curr->lineBreakPos() + delta));
     }
 
     // If the text node is empty, dirty the line where new text will be inserted.
