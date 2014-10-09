@@ -43,6 +43,7 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/RenderImage.h"
+#include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -268,7 +269,11 @@ const AtomicString& HTMLImageElement::altText() const
 
 static bool supportedImageType(const String& type)
 {
-    return MIMETypeRegistry::isSupportedImagePrefixedMIMEType(type);
+    String trimmedType = ContentType(type).type();
+    // An empty type attribute is implicitly supported.
+    if (trimmedType.isEmpty())
+        return true;
+    return MIMETypeRegistry::isSupportedImagePrefixedMIMEType(trimmedType);
 }
 
 // http://picture.responsiveimages.org/#update-source-set
