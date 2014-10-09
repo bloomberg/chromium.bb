@@ -61,6 +61,7 @@ class RepoInitTests(cros_test_lib.MoxTempDirTestCase):
                                      branch=branch)
     repo.Initialize()
 
+  @cros_test_lib.NetworkTest()
   def testReInitialization(self):
     """Test ability to switch between branches."""
     self._Initialize('release-R19-2046.B')

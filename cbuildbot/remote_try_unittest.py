@@ -27,6 +27,7 @@ class RemoteTryJobMock(remote_try.RemoteTryJob):
   """Helper for Mocking out a RemoteTryJob."""
 
 # pylint: disable=W0212,R0904,E1101
+@cros_test_lib.NetworkTest()
 class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
   """Test cases related to remote try jobs."""
 
