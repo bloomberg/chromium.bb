@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
+
+#include "base/test/opaque_ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -59,4 +61,14 @@ TEST(RefCountedUnitTest, ScopedRefPtrToSelf) {
   EXPECT_FALSE(ScopedRefPtrToSelf::was_destroyed());
   check->SelfDestruct();
   EXPECT_TRUE(ScopedRefPtrToSelf::was_destroyed());
+}
+
+TEST(RefCountedUnitTest, ScopedRefPtrToOpaque) {
+  scoped_refptr<base::OpaqueRefCounted> p = base::MakeOpaqueRefCounted();
+  base::TestOpaqueRefCounted(p);
+
+  scoped_refptr<base::OpaqueRefCounted> q;
+  q = p;
+  base::TestOpaqueRefCounted(p);
+  base::TestOpaqueRefCounted(q);
 }

@@ -276,23 +276,23 @@ class scoped_refptr {
 
   scoped_refptr(T* p) : ptr_(p) {
     if (ptr_)
-      ptr_->AddRef();
+      AddRef(ptr_);
   }
 
   scoped_refptr(const scoped_refptr<T>& r) : ptr_(r.ptr_) {
     if (ptr_)
-      ptr_->AddRef();
+      AddRef(ptr_);
   }
 
   template <typename U>
   scoped_refptr(const scoped_refptr<U>& r) : ptr_(r.get()) {
     if (ptr_)
-      ptr_->AddRef();
+      AddRef(ptr_);
   }
 
   ~scoped_refptr() {
     if (ptr_)
-      ptr_->Release();
+      Release(ptr_);
   }
 
   T* get() const { return ptr_; }
@@ -316,11 +316,11 @@ class scoped_refptr {
   scoped_refptr<T>& operator=(T* p) {
     // AddRef first so that self assignment should work
     if (p)
-      p->AddRef();
+      AddRef(p);
     T* old_ptr = ptr_;
     ptr_ = p;
     if (old_ptr)
-      old_ptr->Release();
+      Release(old_ptr);
     return *this;
   }
 
@@ -362,7 +362,25 @@ class scoped_refptr {
 
  protected:
   T* ptr_;
+
+ private:
+  // Non-inline helpers to allow:
+  //     class Opaque;
+  //     extern template class scoped_refptr<Opaque>;
+  // Otherwise the compiler will complain that Opaque is an incomplete type.
+  static void AddRef(T* ptr);
+  static void Release(T* ptr);
 };
+
+template <typename T>
+void scoped_refptr<T>::AddRef(T* ptr) {
+  ptr->AddRef();
+}
+
+template <typename T>
+void scoped_refptr<T>::Release(T* ptr) {
+  ptr->Release();
+}
 
 // Handy utility for creating a scoped_refptr<T> out of a T* explicitly without
 // having to retype all the template arguments

@@ -904,6 +904,8 @@
         'test/multiprocess_test_android.cc',
         'test/null_task_runner.cc',
         'test/null_task_runner.h',
+        'test/opaque_ref_counted.cc',
+        'test/opaque_ref_counted.h',
         'test/perf_log.cc',
         'test/perf_log.h',
         'test/perf_test_suite.cc',

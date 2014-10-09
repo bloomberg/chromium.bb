@@ -41,6 +41,8 @@ source_set("test_support") {
     "multiprocess_test_android.cc",
     "null_task_runner.cc",
     "null_task_runner.h",
+    "opaque_ref_counted.cc",
+    "opaque_ref_counted.h",
     "perf_log.cc",
     "perf_log.h",
     "perf_test_suite.cc",
