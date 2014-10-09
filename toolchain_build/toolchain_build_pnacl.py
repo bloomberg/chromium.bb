@@ -38,6 +38,7 @@ sys.path.insert(0, python_lib_dir)
 import argparse
 
 PNACL_DRIVER_DIR = os.path.join(NACL_DIR, 'pnacl', 'driver')
+NACL_TOOLS_DIR = os.path.join(NACL_DIR, 'tools')
 
 # Scons tests can check this version number to decide whether to enable tests
 # for toolchain bug fixes or new features.  This allows tests to be enabled on
@@ -88,6 +89,8 @@ MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                             'llvm-build', 'Release+Asserts', 'bin', 'clang')
 CHROME_CLANGXX = CHROME_CLANG + '++'
+
+REDIRECTOR_SCRIPT = os.path.join(NACL_TOOLS_DIR, 'create_redirector.sh')
 
 TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
                      'x86-32-nonsfi', 'arm-nonsfi')
@@ -626,10 +629,26 @@ def Metadata(revisions):
 def HostToolsDirectToNacl(host):
   def H(component_name):
     return GSDJoin(component_name, host)
+
+  if TripleIsWindows(host):
+    # TODO(dyen): Compile redirector.c and execute here for windows.
+    redirect_cmds = []
+    redirect_inputs = {}
+  else:
+    redirect_inputs = { 'redirector_script' : REDIRECTOR_SCRIPT }
+    redirect_cmds = [
+      command.Command([
+        '%(abs_redirector_script)s',
+        command.path.join('%(output)s', 'bin', 'i686-nacl-' + tool),
+        'x86_64-nacl-' + tool,
+        args])
+      for tool, args in [('as', '--32'), ('ld', '-melf_i386_nacl')]]
+
   tools = {
       H('binutils_x86'): {
           'type': 'build',
           'dependencies': ['binutils_x86_src'],
+          'inputs' : redirect_inputs,
           'commands': [
               command.SkipForIncrementalCommand(
                   ['sh', '%(binutils_x86_src)s/configure'] +
@@ -672,7 +691,8 @@ def HostToolsDirectToNacl(host):
                   command.path.join('%(output)s', 'bin', 'x86_64-nacl-' + tool),
                   command.path.join('%(output)s', 'bin', 'i686-nacl-' + tool)])
                for tool in ['addr2line', 'ar', 'nm', 'objcopy', 'objdump',
-                            'ranlib', 'readelf', 'size', 'strings', 'strip']]
+                            'ranlib', 'readelf', 'size', 'strings', 'strip']] +
+              redirect_cmds
       }
   }
   return tools
