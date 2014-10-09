@@ -45,8 +45,12 @@ GenerateFakeBuffers(const int* frame_pts_ms,
     buffers[k] = StreamParserBuffer::CopyFrom(
         dummy_buffer, arraysize(dummy_buffer),
         is_key_frame[k], DemuxerStream::VIDEO, 0);
-    buffers[k]->set_timestamp(
-        base::TimeDelta::FromMilliseconds(frame_pts_ms[k]));
+    if (frame_pts_ms[k] < 0) {
+      buffers[k]->set_timestamp(kNoTimestamp());
+    } else {
+      buffers[k]->set_timestamp(
+          base::TimeDelta::FromMilliseconds(frame_pts_ms[k]));
+    }
   }
   return buffers;
 }
@@ -141,6 +145,26 @@ TEST_F(EsAdapterVideoTest, LeadingNonKeyFrames) {
       GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
 
   EXPECT_EQ("(30,Y) (30,Y) (30,Y) (30,Y) (30,N) (30,N)",
+            RunAdapterTest(buffer_queue));
+}
+
+TEST_F(EsAdapterVideoTest, LeadingKeyFrameWithNoTimestamp) {
+  int pts_ms[] = {-1, 40, 50, 120, 150, 180};
+  bool is_key_frame[] = {true, false, false, true, false, false};
+  StreamParserBuffer::BufferQueue buffer_queue =
+      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+
+  EXPECT_EQ("(40,Y) (40,Y) (30,Y) (30,N) (30,N)",
+            RunAdapterTest(buffer_queue));
+}
+
+TEST_F(EsAdapterVideoTest, LeadingFramesWithNoTimestamp) {
+  int pts_ms[] = {-1, -1, 50, 120, 150, 180};
+  bool is_key_frame[] = {false, false, false, true, false, false};
+  StreamParserBuffer::BufferQueue buffer_queue =
+      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+
+  EXPECT_EQ("(70,Y) (30,Y) (30,N) (30,N)",
             RunAdapterTest(buffer_queue));
 }
 

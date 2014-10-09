@@ -48,7 +48,8 @@ class MEDIA_EXPORT EsAdapterVideo {
   void OnConfigChanged(const VideoDecoderConfig& video_decoder_config);
 
   // Provide a new video buffer.
-  void OnNewBuffer(
+  // Returns true when successful.
+  bool OnNewBuffer(
       const scoped_refptr<StreamParserBuffer>& stream_parser_buffer);
 
  private:
@@ -85,10 +86,13 @@ class MEDIA_EXPORT EsAdapterVideo {
   BufferQueue buffer_list_;
   std::list<base::TimeDelta> emitted_pts_;
 
-  // - Minimum PTS of discarded frames.
-  // - DTS of discarded frames.
-  base::TimeDelta discarded_frames_min_pts_;
-  std::list<DecodeTimestamp> discarded_frames_dts_;
+  // Minimum PTS/DTS since the last Reset.
+  bool has_valid_initial_timestamp_;
+  base::TimeDelta min_pts_;
+  DecodeTimestamp min_dts_;
+
+  // Number of frames to replace with the first valid key frame.
+  int discarded_frame_count_;
 
   DISALLOW_COPY_AND_ASSIGN(EsAdapterVideo);
 };

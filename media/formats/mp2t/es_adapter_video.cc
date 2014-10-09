@@ -33,7 +33,9 @@ EsAdapterVideo::EsAdapterVideo(
       has_valid_frame_(false),
       last_frame_duration_(
           base::TimeDelta::FromMilliseconds(kDefaultFrameDurationMs)),
-      buffer_index_(0) {
+      buffer_index_(0),
+      has_valid_initial_timestamp_(false),
+      discarded_frame_count_(0) {
 }
 
 EsAdapterVideo::~EsAdapterVideo() {
@@ -55,8 +57,11 @@ void EsAdapterVideo::Reset() {
   buffer_list_.clear();
   emitted_pts_.clear();
 
-  discarded_frames_min_pts_ = base::TimeDelta();
-  discarded_frames_dts_.clear();
+  has_valid_initial_timestamp_ = false;
+  min_pts_ = base::TimeDelta();
+  min_dts_ = DecodeTimestamp();
+
+  discarded_frame_count_ = 0;
 }
 
 void EsAdapterVideo::OnConfigChanged(
@@ -67,29 +72,59 @@ void EsAdapterVideo::OnConfigChanged(
   ProcessPendingBuffers(false);
 }
 
-void EsAdapterVideo::OnNewBuffer(
+bool EsAdapterVideo::OnNewBuffer(
     const scoped_refptr<StreamParserBuffer>& stream_parser_buffer) {
+  if (stream_parser_buffer->timestamp() == kNoTimestamp()) {
+    if (has_valid_frame_) {
+      // There is currently no error concealment for a missing timestamp
+      // in the middle of the stream.
+      DVLOG(1) << "Missing timestamp in the middle of the stream";
+      return false;
+    }
+
+    if (!has_valid_initial_timestamp_) {
+      // MPEG-2 TS requires the first access unit to be given a timestamp.
+      // However, some streams do not comply with this requirement.
+      // So simply drop the frame if it is a leading frame with no timestamp.
+      DVLOG(1)
+          << "Stream not compliant: ignoring leading frame with no timestamp";
+      return true;
+    }
+
+    // In all the other cases, this frame will be replaced by the following
+    // valid key frame, using timestamp interpolation.
+    DCHECK(has_valid_initial_timestamp_);
+    DCHECK_GE(discarded_frame_count_, 1);
+    discarded_frame_count_++;
+    return true;
+  }
+
+  // At this point, timestamps of the incoming frame are valid.
+  if (!has_valid_initial_timestamp_) {
+    min_pts_ = stream_parser_buffer->timestamp();
+    min_dts_ = stream_parser_buffer->GetDecodeTimestamp();
+    has_valid_initial_timestamp_ = true;
+  }
+  if (stream_parser_buffer->timestamp() < min_pts_)
+    min_pts_ = stream_parser_buffer->timestamp();
+
   // Discard the incoming frame:
   // - if it is not associated with any config,
-  // - or if only non-key frames have been added to a new segment.
+  // - or if no valid key frame has been found so far.
   if (!has_valid_config_ ||
       (!has_valid_frame_ && !stream_parser_buffer->IsKeyframe())) {
-    if (discarded_frames_dts_.empty() ||
-        discarded_frames_min_pts_ > stream_parser_buffer->timestamp()) {
-      discarded_frames_min_pts_ = stream_parser_buffer->timestamp();
-    }
-    discarded_frames_dts_.push_back(
-        stream_parser_buffer->GetDecodeTimestamp());
-    return;
+    discarded_frame_count_++;
+    return true;
   }
 
   has_valid_frame_ = true;
 
-  if (!discarded_frames_dts_.empty())
+  if (discarded_frame_count_ > 0)
     ReplaceDiscardedFrames(stream_parser_buffer);
 
   buffer_list_.push_back(stream_parser_buffer);
   ProcessPendingBuffers(false);
+  return true;
 }
 
 void EsAdapterVideo::ProcessPendingBuffers(bool flush) {
@@ -160,16 +195,26 @@ base::TimeDelta EsAdapterVideo::GetNextFramePts(base::TimeDelta current_pts) {
 
 void EsAdapterVideo::ReplaceDiscardedFrames(
     const scoped_refptr<StreamParserBuffer>& stream_parser_buffer) {
-  DCHECK(!discarded_frames_dts_.empty());
+  DCHECK_GT(discarded_frame_count_, 0);
   DCHECK(stream_parser_buffer->IsKeyframe());
 
-  // PTS is interpolated between the min PTS of discarded frames
-  // and the PTS of the first valid buffer.
-  base::TimeDelta pts = discarded_frames_min_pts_;
+  // PTS/DTS are interpolated between the min PTS/DTS of discarded frames
+  // and the PTS/DTS of the first valid buffer.
+  // Note: |pts_delta| and |dts_delta| are calculated using integer division.
+  // Interpolation thus accumulutes small errors. However, since timestamps
+  // are given in microseconds, only a high number of discarded frames
+  // (in the order of 10000s) could have an impact and create a gap (from MSE
+  // point of view) between the last interpolated frame and
+  // |stream_parser_buffer|.
+  base::TimeDelta pts = min_pts_;
   base::TimeDelta pts_delta =
-      (stream_parser_buffer->timestamp() - pts) / discarded_frames_dts_.size();
+      (stream_parser_buffer->timestamp() - pts) / discarded_frame_count_;
+  DecodeTimestamp dts = min_dts_;
+  base::TimeDelta dts_delta =
+      (stream_parser_buffer->GetDecodeTimestamp() - dts) /
+      discarded_frame_count_;
 
-  while (!discarded_frames_dts_.empty()) {
+  for (int i = 0; i < discarded_frame_count_; i++) {
     scoped_refptr<StreamParserBuffer> frame =
         StreamParserBuffer::CopyFrom(
             stream_parser_buffer->data(),
@@ -177,13 +222,14 @@ void EsAdapterVideo::ReplaceDiscardedFrames(
             stream_parser_buffer->IsKeyframe(),
             stream_parser_buffer->type(),
             stream_parser_buffer->track_id());
-    frame->SetDecodeTimestamp(discarded_frames_dts_.front());
+    frame->SetDecodeTimestamp(dts);
     frame->set_timestamp(pts);
     frame->set_duration(pts_delta);
     buffer_list_.push_back(frame);
     pts += pts_delta;
-    discarded_frames_dts_.pop_front();
+    dts += dts_delta;
   }
+  discarded_frame_count_ = 0;
 }
 
 }  // namespace mp2t

@@ -200,10 +200,18 @@ bool EsParserH264::ParseFromEsQueue() {
 bool EsParserH264::EmitFrame(int64 access_unit_pos, int access_unit_size,
                              bool is_key_frame, int pps_id) {
   // Get the access unit timing info.
+  // Note: |current_timing_desc.pts| might be |kNoTimestamp()| at this point
+  // if:
+  // - the stream is not fully MPEG-2 compliant.
+  // - or if the stream relies on H264 VUI parameters to compute the timestamps.
+  //   See H.222 spec: section 2.7.5 "Conditional coding of timestamps".
+  //   This part is not yet implemented in EsParserH264.
+  // |es_adapter_| will take care of the missing timestamps.
   TimingDesc current_timing_desc = GetTimingDescriptor(access_unit_pos);
-  if (current_timing_desc.pts == kNoTimestamp())
-    return false;
+  DVLOG_IF(1, current_timing_desc.pts == kNoTimestamp())
+      << "Missing timestamp";
 
+  // If only the PTS is provided, copy the PTS into the DTS.
   if (current_timing_desc.dts == kNoDecodeTimestamp()) {
     current_timing_desc.dts =
         DecodeTimestamp::FromPresentationTime(current_timing_desc.pts);
@@ -245,8 +253,7 @@ bool EsParserH264::EmitFrame(int64 access_unit_pos, int access_unit_size,
           0);
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
-  es_adapter_.OnNewBuffer(stream_parser_buffer);
-  return true;
+  return es_adapter_.OnNewBuffer(stream_parser_buffer);
 }
 
 bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
