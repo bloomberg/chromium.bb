@@ -401,8 +401,8 @@ Gallery.prototype.initDom_ = function() {
     cr.dispatchSimpleEvent(this, 'image-saved');
   }.bind(this));
 
-  var deleteButton = this.initToolbarButton_('delete', 'GALLERY_DELETE');
-  deleteButton.addEventListener('click', this.delete_.bind(this));
+  this.deleteButton_ = this.initToolbarButton_('delete', 'GALLERY_DELETE');
+  this.deleteButton_.addEventListener('click', this.delete_.bind(this));
 
   this.shareButton_ = this.initToolbarButton_('share', 'GALLERY_SHARE');
   this.shareButton_.addEventListener(
@@ -851,6 +851,12 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   // If it's selecting something, update the variable values.
   if (numSelectedItems) {
+    // Delete button is available when all images are NOT readOnly.
+    this.deleteButton_.disabled = !this.selectionModel_.selectedIndexes
+        .every(function(i) {
+          return !this.dataModel_.item(i).getLocationInfo().isReadOnly;
+        }, this);
+
     // Obtains selected item.
     var selectedItem =
         this.dataModel_.item(this.selectionModel_.selectedIndex);
@@ -885,6 +891,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   } else {
     document.title = '';
     this.filenameEdit_.disabled = true;
+    this.deleteButton_.disabled = true;
     this.filenameEdit_.value = '';
     this.shareButton_.hidden = true;
   }
