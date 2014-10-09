@@ -49,7 +49,8 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(default_dpi)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(printing::PwgRasterTransformType)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::PwgRasterTransformType,
+                          printing::TRANSFORM_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PwgRasterSettings)
   IPC_STRUCT_TRAITS_MEMBER(odd_page_transform)
