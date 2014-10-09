@@ -402,7 +402,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_hasUserGesture = false;
     m_downloadToFile = false;
     m_skipServiceWorker = false;
-    m_priority = ResourceLoadPriorityLow;
+    m_priority = ResourceLoadPriorityLowest;
     m_intraPriorityValue = 0;
     m_requestorID = 0;
     m_requestorProcessID = 0;

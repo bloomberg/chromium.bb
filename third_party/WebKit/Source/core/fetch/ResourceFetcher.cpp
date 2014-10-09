@@ -731,7 +731,12 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     if (!request.forPreload() || policy != Use) {
         ResourceLoadPriority priority = loadPriority(type, request);
-        if (priority != resource->resourceRequest().priority()) {
+        // When issuing another request for a resource that is already in-flight make
+        // sure to not demote the priority of the in-flight request. If the new request
+        // isn't at the same priority as the in-flight request, only allow promotions.
+        // This can happen when a visible image's priority is increased and then another
+        // reference to the image is parsed (which would be at a lower priority).
+        if (priority > resource->resourceRequest().priority()) {
             resource->mutableResourceRequest().setPriority(priority);
             resource->didChangePriority(priority, 0);
         }

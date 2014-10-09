@@ -119,8 +119,8 @@ void ResourceLoadPriorityOptimizer::notifyImageResourceVisibility(ImageResource*
 
     ImageResourceMap::AddResult result = m_imageResources.add(img->identifier(), adoptPtr(new ResourceAndVisibility(img, status, screenArea)));
     if (!result.isNewEntry && status == Visible) {
-        result.storedValue->value->status = status;
-        result.storedValue->value->screenArea = status;
+        result.storedValue->value->status = Visible;
+        result.storedValue->value->screenArea += screenArea;
     }
 }
 
