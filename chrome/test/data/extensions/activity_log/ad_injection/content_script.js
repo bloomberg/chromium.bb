@@ -359,6 +359,12 @@ functions.push(function AddNewScriptAd() {
   return INJECTION_NEW_AD;
 });
 
+// Add an ad network script by modifying the src attribute of a script element.
+functions.push(function ModifyScriptSrcAttribute() {
+  document.body.appendChild(document.createElement('script')).src = kAdNetwork;
+  return INJECTION_NEW_AD;
+});
+
 // Ensure that we flag actions that look a lot like ad injection, even if we're
 // not sure.
 functions.push(function LikelyReplacedAd() {
@@ -378,6 +384,14 @@ functions.push(function VerifyNoAccess() {
     return kAdNetwork;
   });
   return NO_AD_INJECTION;
+});
+
+// Test that using "eval" is not a way around detection.
+functions.push(function EvalAdInjection() {
+  var code = 'document.body.appendChild(' +
+             '    document.createElement("iframe")).src = kAdNetwork;';
+  eval(code);
+  return INJECTION_NEW_AD;
 });
 
 // TODO(rdevlin.cronin): We are not covering every case yet. Fix this.
