@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_REFCOUNTED_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 
