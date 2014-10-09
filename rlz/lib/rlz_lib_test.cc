@@ -838,7 +838,7 @@ TEST_F(RlzLibTest, BrandingWithStatefulEvents) {
 #if defined(OS_POSIX)
 class ReadonlyRlzDirectoryTest : public RlzLibTestNoMachineState {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 void ReadonlyRlzDirectoryTest::SetUp() {

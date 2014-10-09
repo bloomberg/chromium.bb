@@ -20,8 +20,8 @@
 
 class RlzLibTestNoMachineState : public ::testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
 #if defined(OS_POSIX)
   base::ScopedTempDir temp_dir_;
@@ -34,7 +34,7 @@ class RlzLibTestNoMachineState : public ::testing::Test {
 
 class RlzLibTestBase : public RlzLibTestNoMachineState {
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 };
 
 #endif  // RLZ_TEST_RLZ_TEST_HELPERS_H

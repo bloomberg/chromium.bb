@@ -31,33 +31,33 @@ class RlzValueStoreChromeOS : public RlzValueStore,
   virtual ~RlzValueStoreChromeOS();
 
   // RlzValueStore overrides:
-  virtual bool HasAccess(AccessType type) OVERRIDE;
+  virtual bool HasAccess(AccessType type) override;
 
-  virtual bool WritePingTime(Product product, int64 time) OVERRIDE;
-  virtual bool ReadPingTime(Product product, int64* time) OVERRIDE;
-  virtual bool ClearPingTime(Product product) OVERRIDE;
+  virtual bool WritePingTime(Product product, int64 time) override;
+  virtual bool ReadPingTime(Product product, int64* time) override;
+  virtual bool ClearPingTime(Product product) override;
 
   virtual bool WriteAccessPointRlz(AccessPoint access_point,
-                                   const char* new_rlz) OVERRIDE;
+                                   const char* new_rlz) override;
   virtual bool ReadAccessPointRlz(AccessPoint access_point,
                                   char* rlz,
-                                  size_t rlz_size) OVERRIDE;
-  virtual bool ClearAccessPointRlz(AccessPoint access_point) OVERRIDE;
+                                  size_t rlz_size) override;
+  virtual bool ClearAccessPointRlz(AccessPoint access_point) override;
 
-  virtual bool AddProductEvent(Product product, const char* event_rlz) OVERRIDE;
+  virtual bool AddProductEvent(Product product, const char* event_rlz) override;
   virtual bool ReadProductEvents(Product product,
-                                 std::vector<std::string>* events) OVERRIDE;
+                                 std::vector<std::string>* events) override;
   virtual bool ClearProductEvent(Product product,
-                                 const char* event_rlz) OVERRIDE;
-  virtual bool ClearAllProductEvents(Product product) OVERRIDE;
+                                 const char* event_rlz) override;
+  virtual bool ClearAllProductEvents(Product product) override;
 
   virtual bool AddStatefulEvent(Product product,
-                                const char* event_rlz) OVERRIDE;
+                                const char* event_rlz) override;
   virtual bool IsStatefulEvent(Product product,
-                               const char* event_rlz) OVERRIDE;
-  virtual bool ClearAllStatefulEvents(Product product) OVERRIDE;
+                               const char* event_rlz) override;
+  virtual bool ClearAllStatefulEvents(Product product) override;
 
-  virtual void CollectGarbage() OVERRIDE;
+  virtual void CollectGarbage() override;
 
  private:
   // Reads RLZ store from file.
