@@ -335,6 +335,10 @@ int ki_readlink(const char* path, char* buf, size_t count) {
 int ki_utimes(const char* path, const struct timeval times[2]) {
   ON_NOSYS_RETURN(-1);
   // Implement in terms of utimens.
+  if (!times) {
+    return s_state.kp->utimens(path, NULL);
+  }
+
   struct timespec ts[2];
   ts[0].tv_sec = times[0].tv_sec;
   ts[0].tv_nsec = times[0].tv_usec * 1000;
@@ -346,6 +350,10 @@ int ki_utimes(const char* path, const struct timeval times[2]) {
 int ki_futimes(int fd, const struct timeval times[2]) {
   ON_NOSYS_RETURN(-1);
   // Implement in terms of futimens.
+  if (!times) {
+    return s_state.kp->futimens(fd, NULL);
+  }
+
   struct timespec ts[2];
   ts[0].tv_sec = times[0].tv_sec;
   ts[0].tv_nsec = times[0].tv_usec * 1000;
@@ -402,6 +410,10 @@ int ki_lchown(const char* path, uid_t owner, gid_t group) {
 int ki_utime(const char* filename, const struct utimbuf* times) {
   ON_NOSYS_RETURN(-1);
   // Implement in terms of utimens.
+  if (!times) {
+    return s_state.kp->utimens(filename, NULL);
+  }
+
   struct timespec ts[2];
   ts[0].tv_sec = times->actime;
   ts[0].tv_nsec = 0;

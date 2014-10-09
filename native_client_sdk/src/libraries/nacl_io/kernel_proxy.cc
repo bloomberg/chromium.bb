@@ -707,7 +707,28 @@ int KernelProxy::futimens(int fd, const struct timespec times[2]) {
     return -1;
   }
 
-  error = handle->node()->Futimens(times);
+  return FutimensInternal(handle->node(), times);
+}
+
+Error KernelProxy::FutimensInternal(const ScopedNode& node,
+                                    const struct timespec times[2]) {
+  Error error(0);
+  if (times == NULL) {
+    struct timespec now[2];
+    struct timeval tm;
+    error = gettimeofday(&tm, NULL);
+    if (error) {
+      errno = error;
+      return -1;
+    }
+
+    now[0].tv_sec = now[1].tv_sec = tm.tv_sec;
+    now[0].tv_nsec = now[1].tv_nsec = tm.tv_usec * 1000;
+    error = node->Futimens(now);
+  } else {
+    error = node->Futimens(times);
+  }
+
   if (error) {
     errno = error;
     return -1;
@@ -929,13 +950,7 @@ int KernelProxy::utimens(const char* path, const struct timespec times[2]) {
     return -1;
   }
 
-  error = node->Futimens(times);
-  if (error) {
-    errno = error;
-    return -1;
-  }
-
-  return 0;
+  return FutimensInternal(node, times);
 }
 
 // TODO(noelallen): Needs implementation.

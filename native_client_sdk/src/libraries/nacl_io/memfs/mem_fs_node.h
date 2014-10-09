@@ -27,6 +27,7 @@ class MemFsNode : public Node {
                       size_t count,
                       int* out_bytes);
   virtual Error FTruncate(off_t size);
+  virtual Error Futimens(const struct timespec times[2]);
   virtual Error Fchmod(mode_t mode);
 
  private:

@@ -17,6 +17,7 @@
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/osinttypes.h"
 #include "nacl_io/osstat.h"
+#include "nacl_io/ostime.h"
 #include "sdk_util/auto_lock.h"
 
 namespace nacl_io {
@@ -120,6 +121,15 @@ Error MemFsNode::Resize(off_t new_length) {
   if (new_length > stat_.st_size)
     memset(data_ + stat_.st_size, 0, new_length - stat_.st_size);
   stat_.st_size = new_length;
+  return 0;
+}
+
+Error MemFsNode::Futimens(const struct timespec times[2]) {
+  AUTO_LOCK(node_lock_);
+  stat_.st_atime = times[0].tv_sec;
+  stat_.st_atimensec = times[0].tv_nsec;
+  stat_.st_mtime = times[1].tv_sec;
+  stat_.st_mtimensec = times[1].tv_nsec;
   return 0;
 }
 

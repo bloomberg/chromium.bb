@@ -227,6 +227,9 @@ class KernelProxy : protected KernelObject {
                       bool create_fs_node,
                       ScopedFilesystem* out_filesystem);
 
+  Error FutimensInternal(const ScopedNode& node,
+                         const struct timespec times[2]);
+
   Error CreateFsNode(const ScopedFilesystem& fs);
 
  protected:

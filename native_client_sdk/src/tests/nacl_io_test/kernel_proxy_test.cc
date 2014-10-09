@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <utime.h>
 
 #include <map>
 #include <string>
@@ -22,6 +24,7 @@
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/memfs/mem_fs.h"
 #include "nacl_io/osmman.h"
+#include "nacl_io/ostime.h"
 #include "nacl_io/path.h"
 #include "nacl_io/typed_fs_factory.h"
 
@@ -581,6 +584,51 @@ TEST_F(KernelProxyTest, Utimes) {
   // or if the file is read-only.
   EXPECT_EQ(0, ki_chmod("/dummy", 0444));
   EXPECT_EQ(0, ki_utimes("/dummy", times));
+
+  // times can be NULL. In that case the access/mod times will be set to the
+  // current time.
+  struct timeval tm;
+  EXPECT_EQ(0, gettimeofday(&tm, NULL));
+
+  EXPECT_EQ(0, ki_utimes("/dummy", NULL));
+  struct stat buf;
+  EXPECT_EQ(0, ki_stat("/dummy", &buf));
+
+  EXPECT_GE(buf.st_atime, tm.tv_sec);
+  EXPECT_GE(buf.st_atimensec, tm.tv_usec * 1000);
+  EXPECT_GE(buf.st_mtime, tm.tv_sec);
+  EXPECT_GE(buf.st_mtimensec, tm.tv_usec * 1000);
+}
+
+TEST_F(KernelProxyTest, Utime) {
+  struct utimbuf times;
+  times.actime = 1000;
+  times.modtime = 2000;
+
+  int fd = ki_open("/dummy", O_CREAT | O_WRONLY, 0222);
+  ASSERT_GT(fd, -1);
+  EXPECT_EQ(0, ki_close(fd));
+
+  // utime should work if the file is write-only.
+  EXPECT_EQ(0, ki_utime("/dummy", &times));
+
+  // or if the file is read-only.
+  EXPECT_EQ(0, ki_chmod("/dummy", 0444));
+  EXPECT_EQ(0, ki_utime("/dummy", &times));
+
+  // times can be NULL. In that case the access/mod times will be set to the
+  // current time.
+  struct timeval tm;
+  EXPECT_EQ(0, gettimeofday(&tm, NULL));
+
+  EXPECT_EQ(0, ki_utime("/dummy", NULL));
+  struct stat buf;
+  EXPECT_EQ(0, ki_stat("/dummy", &buf));
+
+  EXPECT_GE(buf.st_atime, tm.tv_sec);
+  EXPECT_GE(buf.st_atimensec, tm.tv_usec * 1000);
+  EXPECT_GE(buf.st_mtime, tm.tv_sec);
+  EXPECT_GE(buf.st_mtimensec, tm.tv_usec * 1000);
 }
 
 namespace {
