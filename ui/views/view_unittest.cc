@@ -3087,23 +3087,20 @@ TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   widget()->SetContentsView(content_view);
   content_view->SetPaintToLayer(true);
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   GetRootLayer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   content_view->set_painted(false);
   // content_view no longer has a dirty rect. Paint from the root and make sure
   // PaintTrackingView isn't painted.
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_FALSE(content_view->painted());
 
   // Make content_view have a dirty rect, paint the layers and make sure
   // PaintTrackingView is painted.
   content_view->layer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_TRUE(content_view->painted());
 }
 
@@ -3343,15 +3340,13 @@ TEST_F(ViewLayerTest, BoundsTreePaintUpdatesCullSet) {
   // Schedule a full-view paint to get everyone's rectangles updated.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Now we have test_view - v1 - v2. Damage to only test_view should only
   // return root_view and test_view.
   test_view->SchedulePaintInRect(gfx::Rect(0, 0, 1, 1));
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_EQ(2U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
   EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
@@ -3359,8 +3354,7 @@ TEST_F(ViewLayerTest, BoundsTreePaintUpdatesCullSet) {
   // Damage to v1 only should only return root_view, test_view, and v1.
   test_view->SchedulePaintInRect(gfx::Rect(11, 16, 1, 1));
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_EQ(3U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
   EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
@@ -3370,8 +3364,7 @@ TEST_F(ViewLayerTest, BoundsTreePaintUpdatesCullSet) {
   // on call to TestView::Paint(), along with the widget root view.
   test_view->SchedulePaintInRect(gfx::Rect(31, 49, 1, 1));
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_EQ(4U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
   EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
@@ -3398,15 +3391,13 @@ TEST_F(ViewLayerTest, BoundsTreeWithRTL) {
   // Schedule a full-view paint to get everyone's rectangles updated.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Damage to the right side of the parent view should touch both child views.
   gfx::Rect rtl_damage(test_view->bounds().width() - 16, 18, 1, 1);
   test_view->SchedulePaintInRect(rtl_damage);
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_EQ(4U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
   EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
@@ -3418,8 +3409,7 @@ TEST_F(ViewLayerTest, BoundsTreeWithRTL) {
   gfx::Rect ltr_damage(16, 18, 1, 1);
   test_view->SchedulePaintInRect(ltr_damage);
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_EQ(2U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
   EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
@@ -3443,21 +3433,18 @@ TEST_F(ViewLayerTest, BoundsTreeSetBoundsChangesCullSet) {
   // Schedule a full-view paint to get everyone's rectangles updated.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Move v1 to a new origin out of the way of our next query.
   v1->SetBoundsRect(gfx::Rect(50, 60, 100, 101));
   // The move will force a repaint.
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Schedule a paint with damage rect where v1 used to be.
   test_view->SchedulePaintInRect(gfx::Rect(5, 6, 10, 11));
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Should only have picked up root_view and test_view.
   EXPECT_EQ(2U, test_view->last_cull_set_.size());
@@ -3480,8 +3467,7 @@ TEST_F(ViewLayerTest, BoundsTreeLayerChangeMakesNewTree) {
   // Schedule a full-view paint to get everyone's rectangles updated.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Set v1 to paint to its own layer, it should remove itself from the
   // test_view heiarchy and no longer intersect with damage rects in that cull
@@ -3491,8 +3477,7 @@ TEST_F(ViewLayerTest, BoundsTreeLayerChangeMakesNewTree) {
   // Schedule another full-view paint.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   // v1 and v2 should no longer be present in the test_view cull_set.
   EXPECT_EQ(2U, test_view->last_cull_set_.size());
   EXPECT_EQ(0U, test_view->last_cull_set_.count(v1));
@@ -3503,8 +3488,7 @@ TEST_F(ViewLayerTest, BoundsTreeLayerChangeMakesNewTree) {
   // Schedule another full-view paint.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   // We should be back to the full cull set including v1 and v2.
   EXPECT_EQ(4U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
@@ -3528,8 +3512,7 @@ TEST_F(ViewLayerTest, BoundsTreeRemoveChildRemovesBounds) {
   // Schedule a full-view paint to get everyone's rectangles updated.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Now remove v1 from the root view.
   test_view->RemoveChildView(v1);
@@ -3537,8 +3520,7 @@ TEST_F(ViewLayerTest, BoundsTreeRemoveChildRemovesBounds) {
   // Schedule another full-view paint.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   // v1 and v2 should no longer be present in the test_view cull_set.
   EXPECT_EQ(2U, test_view->last_cull_set_.size());
   EXPECT_EQ(0U, test_view->last_cull_set_.count(v1));
@@ -3569,8 +3551,7 @@ TEST_F(ViewLayerTest, BoundsTreeMoveViewMovesBounds) {
   // Schedule a full-view paint and ensure all views are present in the cull.
   test_view->SchedulePaintInRect(test_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_EQ(5U, test_view->last_cull_set_.size());
   EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
   EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
@@ -3593,8 +3574,7 @@ TEST_F(ViewLayerTest, BoundsTreeMoveViewMovesBounds) {
   test_view->SchedulePaintInRect(test_view->bounds());
   widget_view->SchedulePaintInRect(widget_view->bounds());
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      GetRootLayer()->GetCompositor());
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
 
   // Only v1 should be present in the first cull set.
   EXPECT_EQ(3U, test_view->last_cull_set_.size());
