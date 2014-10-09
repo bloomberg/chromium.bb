@@ -58,9 +58,8 @@ class IOSurfaceTexture
   // white. |window_scale_factor| is 1 in normal views, 2 in HiDPI views.
   bool DrawIOSurface() WARN_UNUSED_RESULT;
 
-  // Returns true if the offscreen context used by this surface has been
-  // poisoned.
-  bool HasBeenPoisoned() const;
+  // Returns the GL context in which this texture was created.
+  scoped_refptr<IOSurfaceContext> context() const { return context_; }
 
  private:
   friend class base::RefCounted<IOSurfaceTexture>;
@@ -80,7 +79,7 @@ class IOSurfaceTexture
   // Offscreen context used for all operations other than drawing to the
   // screen. This is in the same share group as the contexts used for
   // drawing, and is the same for all IOSurfaces in all windows.
-  scoped_refptr<IOSurfaceContext> offscreen_context_;
+  scoped_refptr<IOSurfaceContext> context_;
 
   // The IOSurface and its non-rounded size.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
