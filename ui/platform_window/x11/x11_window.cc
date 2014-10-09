@@ -56,7 +56,6 @@ X11Window::~X11Window() {
 }
 
 void X11Window::Destroy() {
-  delegate_->OnClosed();
   if (xwindow_ == None)
     return;
 
