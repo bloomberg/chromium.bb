@@ -311,6 +311,19 @@ public class BookmarksBridge {
     }
 
     /**
+     * Gets the child of a folder at the specific position.
+     * @param folderId Id of the parent folder
+     * @param index Posision of child among all children in folder
+     * @return BookmarkId of the child, which will be null if folderId does not point to a folder or
+     *         index is invalid.
+     */
+    public BookmarkId getChildAt(BookmarkId folderId, int index) {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeGetChildAt(mNativeBookmarksBridge, folderId.getId(), folderId.getType(),
+                index);
+    }
+
+    /**
      * @return All bookmark IDs ordered by descending creation date.
      */
     public List<BookmarkId> getAllBookmarkIDsOrderedByCreationDate() {
@@ -614,6 +627,8 @@ public class BookmarksBridge {
     private native BookmarkId nativeGetDesktopFolderId(long nativeBookmarksBridge);
     private native void nativeGetChildIDs(long nativeBookmarksBridge, long id, int type,
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
+    private native BookmarkId nativeGetChildAt(long nativeBookmarksBridge, long id, int type,
+            int index);
     private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarksBridge,
             List<BookmarkId> result);
     private native void nativeSetBookmarkTitle(long nativeBookmarksBridge, long id, int type,

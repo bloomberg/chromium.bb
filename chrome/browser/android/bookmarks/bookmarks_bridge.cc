@@ -424,6 +424,20 @@ void BookmarksBridge::GetChildIDs(JNIEnv* env,
   }
 }
 
+ScopedJavaLocalRef<jobject> BookmarksBridge::GetChildAt(JNIEnv* env,
+                                                        jobject obj,
+                                                        jlong id,
+                                                        jint type,
+                                                        jint index) {
+  DCHECK(IsLoaded());
+
+  const BookmarkNode* parent = GetNodeByID(id, type);
+  DCHECK(parent);
+  const BookmarkNode* child = parent->GetChild(index);
+  return Java_BookmarksBridge_createBookmarkId(
+      env, child->id(), GetBookmarkType(child));
+}
+
 void BookmarksBridge::GetAllBookmarkIDsOrderedByCreationDate(
     JNIEnv* env,
     jobject obj,

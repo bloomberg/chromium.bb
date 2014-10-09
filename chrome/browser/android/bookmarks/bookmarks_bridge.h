@@ -82,6 +82,12 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                    jboolean get_bookmarks,
                    jobject j_result_obj);
 
+  base::android::ScopedJavaLocalRef<jobject> GetChildAt(JNIEnv* env,
+                                                        jobject obj,
+                                                        jlong id,
+                                                        jint type,
+                                                        jint index);
+
   void GetAllBookmarkIDsOrderedByCreationDate(JNIEnv* env,
                                               jobject obj,
                                               jobject j_result_obj);
