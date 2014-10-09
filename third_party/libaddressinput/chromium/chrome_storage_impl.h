@@ -27,13 +27,13 @@ class ChromeStorageImpl : public ::i18n::addressinput::Storage,
   virtual ~ChromeStorageImpl();
 
   // ::i18n::addressinput::Storage implementation.
-  virtual void Put(const std::string& key, std::string* data) OVERRIDE;
+  virtual void Put(const std::string& key, std::string* data) override;
   virtual void Get(const std::string& key, const Callback& data_ready)
-      const OVERRIDE;
+      const override;
 
   // PrefStore::Observer implementation.
-  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+  virtual void OnPrefValueChanged(const std::string& key) override;
+  virtual void OnInitializationCompleted(bool succeeded) override;
 
  private:
   struct Request {

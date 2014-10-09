@@ -66,7 +66,7 @@ class AddressValidatorTest : public testing::Test, LoadRulesListener {
  private:
   // LoadRulesListener implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
-                                              bool success) OVERRIDE {
+                                              bool success) override {
     AddressData address_data;
     address_data.region_code = country_code;
     FieldProblemMap dummy;
@@ -749,7 +749,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
     virtual ~TestAddressValidator() {}
 
    protected:
-    virtual base::TimeDelta GetBaseRetryPeriod() const OVERRIDE {
+    virtual base::TimeDelta GetBaseRetryPeriod() const override {
       return base::TimeDelta::FromSeconds(0);
     }
 
@@ -773,7 +773,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
     // Source implementation.
     // Always fails for the first |failures_number| times.
     virtual void Get(const std::string& url,
-                     const Callback& callback) const OVERRIDE {
+                     const Callback& callback) const override {
       ++attempts_number_;
       // |callback| takes ownership of the |new std::string|.
       if (failures_number_-- > 0)
@@ -815,7 +815,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
  private:
   // LoadRulesListener implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string&,
-                                              bool success) OVERRIDE {
+                                              bool success) override {
     load_rules_success_ = success;
   }
 

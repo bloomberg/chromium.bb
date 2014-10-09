@@ -24,19 +24,19 @@ class UnownedStringWriter : public net::URLFetcherResponseWriter {
   UnownedStringWriter(std::string* data) : data_(data) {}
   virtual ~UnownedStringWriter() {}
 
-  virtual int Initialize(const net::CompletionCallback& callback) OVERRIDE {
+  virtual int Initialize(const net::CompletionCallback& callback) override {
     data_->clear();
     return net::OK;
   }
 
   virtual int Write(net::IOBuffer* buffer,
                     int num_bytes,
-                    const net::CompletionCallback& callback) OVERRIDE {
+                    const net::CompletionCallback& callback) override {
     data_->append(buffer->data(), num_bytes);
     return num_bytes;
   }
 
-  virtual int Finish(const net::CompletionCallback& callback) OVERRIDE {
+  virtual int Finish(const net::CompletionCallback& callback) override {
     return net::OK;
   }
 

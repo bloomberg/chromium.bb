@@ -30,10 +30,10 @@ class ChromeMetadataSource : public ::i18n::addressinput::Source,
 
   // ::i18n::addressinput::Source:
   virtual void Get(const std::string& key,
-                   const Callback& downloaded) const OVERRIDE;
+                   const Callback& downloaded) const override;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   struct Request {
