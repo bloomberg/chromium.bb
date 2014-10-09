@@ -20,7 +20,8 @@
 #define IPC_MESSAGE_START CdmMsgStart
 
 IPC_ENUM_TRAITS(media::MediaKeys::KeyError)
-IPC_ENUM_TRAITS(CdmHostMsg_CreateSession_ContentType)
+IPC_ENUM_TRAITS_MAX_VALUE(CdmHostMsg_CreateSession_ContentType,
+                          CREATE_SESSION_TYPE_LAST)
 
 // Messages from render to browser.
 

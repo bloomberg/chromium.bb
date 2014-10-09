@@ -8,7 +8,8 @@
 // Dictates the session type when an EME session is created.
 enum CdmHostMsg_CreateSession_ContentType {
   CREATE_SESSION_TYPE_WEBM,
-  CREATE_SESSION_TYPE_MP4
+  CREATE_SESSION_TYPE_MP4,
+  CREATE_SESSION_TYPE_LAST = CREATE_SESSION_TYPE_MP4
 };
 
 #endif  // CONTENT_COMMON_MEDIA_CDM_MESSAGES_ENUMS_H_
