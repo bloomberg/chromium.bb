@@ -75,32 +75,7 @@ bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-    } else if (name == SVGNames::patternUnitsAttr) {
-        m_patternUnits->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::patternContentUnitsAttr) {
-        m_patternContentUnits->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::patternTransformAttr) {
-        m_patternTransform->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::xAttr) {
-        m_x->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::yAttr) {
-        m_y->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::widthAttr) {
-        m_width->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::heightAttr) {
-        m_height->setBaseValueAsString(value, parseError);
-    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
-    } else if (SVGTests::parseAttribute(name, value)) {
-    } else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
-    } else {
-        ASSERT_NOT_REACHED();
-    }
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGPatternElement::svgAttributeChanged(const QualifiedName& attrName)

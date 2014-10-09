@@ -74,26 +74,7 @@ bool SVGRadialGradientElement::isSupportedAttribute(const QualifiedName& attrNam
 
 void SVGRadialGradientElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name))
-        SVGGradientElement::parseAttribute(name, value);
-    else if (name == SVGNames::cxAttr)
-        m_cx->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::cyAttr)
-        m_cy->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::rAttr)
-        m_r->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::fxAttr)
-        m_fx->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::fyAttr)
-        m_fy->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::frAttr)
-        m_fr->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGRadialGradientElement::svgAttributeChanged(const QualifiedName& attrName)

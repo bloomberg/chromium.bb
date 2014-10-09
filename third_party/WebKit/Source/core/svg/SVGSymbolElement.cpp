@@ -35,39 +35,15 @@ inline SVGSymbolElement::SVGSymbolElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGSymbolElement)
 
-bool SVGSymbolElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty())
-        SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
-
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGSymbolElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-    if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
-    } else {
-        ASSERT_NOT_REACHED();
-    }
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    invalidateInstances();
+    if (SVGFitToViewBox::isKnownAttribute(attrName))
+        invalidateInstances();
 }
 
 RenderObject* SVGSymbolElement::createRenderer(RenderStyle*)

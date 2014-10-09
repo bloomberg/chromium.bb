@@ -227,19 +227,7 @@ void SVGTextContentElement::collectStyleForPresentationAttribute(const Qualified
 
 void SVGTextContentElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name))
-        SVGGraphicsElement::parseAttribute(name, value);
-    else if (name == SVGNames::lengthAdjustAttr) {
-        m_lengthAdjust->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::textLengthAttr) {
-        m_textLength->setBaseValueAsString(value, parseError);
-    } else if (name.matches(XMLNames::spaceAttr)) {
-    } else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
