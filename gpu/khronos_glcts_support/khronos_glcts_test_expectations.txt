@@ -24,6 +24,8 @@
 //  91531 MAC WIN LINUX : conformance_more_* = SKIP
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
+// Chromium implements GL_ARB_texture_rectangle which makes this test fail
+139729 DEBUG RELEASE : ES2_CTS_gtf_GL_build_Texture_Rectangle_Samplers_frag = FAIL
 
 ////////////////////////////////////////////////////////////////////////////////
 //
