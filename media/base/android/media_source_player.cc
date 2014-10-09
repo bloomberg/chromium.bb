@@ -44,7 +44,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       is_waiting_for_key_(false),
       is_waiting_for_audio_decoder_(false),
       is_waiting_for_video_decoder_(false),
-      prerolling_(false),
+      prerolling_(true),
       weak_factory_(this) {
   audio_decoder_job_.reset(new AudioDecoderJob(
       base::Bind(&DemuxerAndroid::RequestDemuxerData,

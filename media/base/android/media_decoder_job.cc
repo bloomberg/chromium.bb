@@ -116,7 +116,6 @@ bool MediaDecoderJob::Decode(
   DCHECK(decode_cb_.is_null());
   DCHECK(data_received_cb_.is_null());
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
   if (!media_codec_bridge_ || need_to_reconfig_decoder_job_) {
     need_to_reconfig_decoder_job_ = !CreateMediaCodecBridge();
     if (drain_decoder_) {
@@ -511,8 +510,10 @@ void MediaDecoderJob::OnDecodeCompleted(
   DCHECK(!decode_cb_.is_null());
 
   // If output was queued for rendering, then we have completed prerolling.
-  if (current_presentation_timestamp != kNoTimestamp())
+  if (current_presentation_timestamp != kNoTimestamp() ||
+      status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
     prerolling_ = false;
+  }
 
   switch (status) {
     case MEDIA_CODEC_OK:

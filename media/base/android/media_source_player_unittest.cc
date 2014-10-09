@@ -355,7 +355,10 @@ class MediaSourcePlayerTest : public testing::Test {
                 new_current_time.InMilliseconds());
       current_time = new_current_time;
       if (manager_.timestamp_updated()) {
-        EXPECT_LT(start_timestamp.InMillisecondsF(),
+        // TODO(qinmin): the current time is from the decoder thread and it does
+        // not take the delay from posting the task into consideration.
+        // http://crbug.com/421616.
+        EXPECT_LE(start_timestamp.InMillisecondsF(),
                   new_current_time.InMillisecondsF());
         return;
       }
@@ -1178,9 +1181,9 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
 
   DecodeAudioDataUntilOutputBecomesAvailable();
 
-  // The decoder job should finish and a new request will be sent.
-  base::TimeTicks previous = StartTimeTicks();
+  // The decoder job should finish prerolling and start prefetching.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(3));
+  base::TimeTicks previous = StartTimeTicks();
 
   // Let the decoder starve.
   TriggerPlayerStarvation();
@@ -1738,6 +1741,12 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
   EnableAdaptiveVideoPlayback(false);
   WaitForAudioVideoDecodeDone();
 
+  EXPECT_TRUE(IsPrerolling(true));
+  EXPECT_TRUE(IsPrerolling(false));
+  PrerollDecoderToTime(true, base::TimeDelta(), base::TimeDelta(), true);
+  PrerollDecoderToTime(false, base::TimeDelta(), base::TimeDelta(), false);
+  int expected_num_data_requests = demuxer_->num_data_requests();
+
   // Simulate audio |kConfigChanged| prefetched as standalone access unit.
   DemuxerConfigs audio_configs = CreateAudioDemuxerConfigs(kCodecVorbis, true);
   player_.OnDemuxerDataAvailable(
@@ -1747,7 +1756,7 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
   player_.OnDemuxerDataAvailable(
       CreateReadFromDemuxerAckWithConfigChanged(
           false, 0, CreateVideoDemuxerConfigs(true)));
-  EXPECT_EQ(6, demuxer_->num_data_requests());
+  EXPECT_EQ(expected_num_data_requests + 2, demuxer_->num_data_requests());
   EXPECT_TRUE(IsDrainingDecoder(true));
   EXPECT_TRUE(IsDrainingDecoder(false));
 
