@@ -97,7 +97,7 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
     QuicInMemoryCachePeer::ResetForTests();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
 
     BalsaHeaders request_headers, response_headers;

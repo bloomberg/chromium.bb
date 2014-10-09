@@ -31,8 +31,8 @@ class NotifyWatcherMac : public base::MessageLoopForIO::Watcher {
 
  private:
   // MessageLoopForIO::Watcher:
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {}
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
 
   int notify_fd_;
   int notify_token_;

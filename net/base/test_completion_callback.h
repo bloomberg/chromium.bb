@@ -117,7 +117,7 @@ class ReleaseBufferCompletionCallback: public TestCompletionCallback {
   virtual ~ReleaseBufferCompletionCallback();
 
  private:
-  virtual void SetResult(int result) OVERRIDE;
+  virtual void SetResult(int result) override;
 
   IOBuffer* buffer_;
   DISALLOW_COPY_AND_ASSIGN(ReleaseBufferCompletionCallback);

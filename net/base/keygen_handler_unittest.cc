@@ -34,11 +34,11 @@ class StubCryptoModuleDelegate : public crypto::NSSCryptoModuleDelegate {
 
    virtual std::string RequestPassword(const std::string& slot_name,
                                        bool retry,
-                                       bool* cancelled) OVERRIDE{
+                                       bool* cancelled) override{
      return std::string();
    }
 
-   virtual crypto::ScopedPK11Slot RequestSlot() OVERRIDE {
+   virtual crypto::ScopedPK11Slot RequestSlot() override {
      return crypto::ScopedPK11Slot(PK11_ReferenceSlot(slot_.get()));
    }
 

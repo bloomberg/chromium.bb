@@ -169,13 +169,13 @@ class DelayingDhcpProxyScriptAdapterFetcher
     }
 
     std::string ImplGetPacURLFromDhcp(
-        const std::string& adapter_name) OVERRIDE {
+        const std::string& adapter_name) override {
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
       return DhcpQuery::ImplGetPacURLFromDhcp(adapter_name);
     }
   };
 
-  DhcpQuery* ImplCreateDhcpQuery() OVERRIDE {
+  DhcpQuery* ImplCreateDhcpQuery() override {
     return new DelayingDhcpQuery();
   }
 };
@@ -189,7 +189,7 @@ class DelayingDhcpProxyScriptFetcherWin
       : DhcpProxyScriptFetcherWin(context) {
   }
 
-  DhcpProxyScriptAdapterFetcher* ImplCreateAdapterFetcher() OVERRIDE {
+  DhcpProxyScriptAdapterFetcher* ImplCreateAdapterFetcher() override {
     return new DelayingDhcpProxyScriptAdapterFetcher(url_request_context(),
                                                      GetTaskRunner());
   }
@@ -224,25 +224,25 @@ class DummyDhcpProxyScriptAdapterFetcher
   }
 
   void Fetch(const std::string& adapter_name,
-             const CompletionCallback& callback) OVERRIDE {
+             const CompletionCallback& callback) override {
     callback_ = callback;
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(fetch_delay_ms_),
                  this, &DummyDhcpProxyScriptAdapterFetcher::OnTimer);
   }
 
-  void Cancel() OVERRIDE {
+  void Cancel() override {
     timer_.Stop();
   }
 
-  bool DidFinish() const OVERRIDE {
+  bool DidFinish() const override {
     return did_finish_;
   }
 
-  int GetResult() const OVERRIDE {
+  int GetResult() const override {
     return result_;
   }
 
-  base::string16 GetPacScript() const OVERRIDE {
+  base::string16 GetPacScript() const override {
     return pac_script_;
   }
 
@@ -280,7 +280,7 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
     }
 
     virtual bool ImplGetCandidateAdapterNames(
-        std::set<std::string>* adapter_names) OVERRIDE {
+        std::set<std::string>* adapter_names) override {
       adapter_names->insert(
           mock_adapter_names_.begin(), mock_adapter_names_.end());
       return true;
@@ -324,21 +324,21 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
     PushBackAdapter(adapter_name, adapter_fetcher.release());
   }
 
-  DhcpProxyScriptAdapterFetcher* ImplCreateAdapterFetcher() OVERRIDE {
+  DhcpProxyScriptAdapterFetcher* ImplCreateAdapterFetcher() override {
     ++num_fetchers_created_;
     return adapter_fetchers_[next_adapter_fetcher_index_++];
   }
 
-  virtual AdapterQuery* ImplCreateAdapterQuery() OVERRIDE {
+  virtual AdapterQuery* ImplCreateAdapterQuery() override {
     DCHECK(adapter_query_);
     return adapter_query_.get();
   }
 
-  base::TimeDelta ImplGetMaxWait() OVERRIDE {
+  base::TimeDelta ImplGetMaxWait() override {
     return max_wait_;
   }
 
-  void ImplOnGetCandidateAdapterNamesDone() OVERRIDE {
+  void ImplOnGetCandidateAdapterNamesDone() override {
     worker_finished_event_.Signal();
   }
 

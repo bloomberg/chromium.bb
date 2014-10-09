@@ -277,7 +277,7 @@ class ProxyConfigServiceAndroid::Delegate
                                         jobject jself,
                                         jstring jhost,
                                         jint jport,
-                                        jstring jpac_url) OVERRIDE {
+                                        jstring jpac_url) override {
       std::string host = ConvertJavaStringToUTF8(env, jhost);
       std::string pac_url;
       if (jpac_url)
@@ -285,7 +285,7 @@ class ProxyConfigServiceAndroid::Delegate
       delegate_->ProxySettingsChangedTo(host, jport, pac_url);
     }
 
-    virtual void ProxySettingsChanged(JNIEnv* env, jobject self) OVERRIDE {
+    virtual void ProxySettingsChanged(JNIEnv* env, jobject self) override {
       delegate_->ProxySettingsChanged();
     }
 

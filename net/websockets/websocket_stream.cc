@@ -56,7 +56,7 @@ class Delegate : public URLRequest::Delegate {
   // Implementation of URLRequest::Delegate methods.
   virtual void OnReceivedRedirect(URLRequest* request,
                                   const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) OVERRIDE {
+                                  bool* defer_redirect) override {
     // HTTP status codes returned by HttpStreamParser are filtered by
     // WebSocketBasicHandshakeStream, and only 101, 401 and 407 are permitted
     // back up the stack to HttpNetworkTransaction. In particular, redirect
@@ -65,20 +65,20 @@ class Delegate : public URLRequest::Delegate {
     NOTREACHED();
   }
 
-  virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
+  virtual void OnResponseStarted(URLRequest* request) override;
 
   virtual void OnAuthRequired(URLRequest* request,
-                              AuthChallengeInfo* auth_info) OVERRIDE;
+                              AuthChallengeInfo* auth_info) override;
 
   virtual void OnCertificateRequested(URLRequest* request,
                                       SSLCertRequestInfo* cert_request_info)
-      OVERRIDE;
+      override;
 
   virtual void OnSSLCertificateError(URLRequest* request,
                                      const SSLInfo& ssl_info,
-                                     bool fatal) OVERRIDE;
+                                     bool fatal) override;
 
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) OVERRIDE;
+  virtual void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
   StreamRequestImpl* owner_;
@@ -206,7 +206,7 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
   explicit SSLErrorCallbacks(URLRequest* url_request)
       : url_request_(url_request) {}
 
-  virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) OVERRIDE {
+  virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) override {
     if (ssl_info) {
       url_request_->CancelWithSSLError(error, *ssl_info);
     } else {
@@ -214,7 +214,7 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
     }
   }
 
-  virtual void ContinueSSLRequest() OVERRIDE {
+  virtual void ContinueSSLRequest() override {
     url_request_->ContinueDespiteLastError();
   }
 

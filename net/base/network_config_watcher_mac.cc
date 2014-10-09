@@ -35,8 +35,8 @@ class NetworkConfigWatcherMacThread : public base::Thread {
 
  protected:
   // base::Thread
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   // The SystemConfiguration calls in this function can lead to contention early

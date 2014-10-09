@@ -26,12 +26,12 @@ class ClosingDelegate : public SpdyStream::Delegate {
   virtual ~ClosingDelegate();
 
   // SpdyStream::Delegate implementation.
-  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual void OnRequestHeadersSent() override;
   virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE;
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent() OVERRIDE;
-  virtual void OnClose(int status) OVERRIDE;
+      const SpdyHeaderBlock& response_headers) override;
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
+  virtual void OnDataSent() override;
+  virtual void OnClose(int status) override;
 
   // Returns whether or not the stream is closed.
   bool StreamIsClosed() const { return !stream_.get(); }
@@ -47,12 +47,12 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   explicit StreamDelegateBase(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateBase();
 
-  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual void OnRequestHeadersSent() override;
   virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE;
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent() OVERRIDE;
-  virtual void OnClose(int status) OVERRIDE;
+      const SpdyHeaderBlock& response_headers) override;
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
+  virtual void OnDataSent() override;
+  virtual void OnClose(int status) override;
 
   // Waits for the stream to be closed and returns the status passed
   // to OnClose().
@@ -101,7 +101,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
   virtual ~StreamDelegateSendImmediate();
 
   virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE;
+      const SpdyHeaderBlock& response_headers) override;
 
  private:
   base::StringPiece data_;
@@ -114,7 +114,7 @@ class StreamDelegateWithBody : public StreamDelegateBase {
                          base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 
-  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual void OnRequestHeadersSent() override;
 
  private:
   scoped_refptr<StringIOBuffer> buf_;
@@ -127,7 +127,7 @@ class StreamDelegateCloseOnHeaders : public StreamDelegateBase {
   virtual ~StreamDelegateCloseOnHeaders();
 
   virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE;
+      const SpdyHeaderBlock& response_headers) override;
 };
 
 } // namespace test

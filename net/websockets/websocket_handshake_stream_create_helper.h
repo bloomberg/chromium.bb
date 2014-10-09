@@ -38,12 +38,12 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   // Create a WebSocketBasicHandshakeStream.
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
-      bool using_proxy) OVERRIDE;
+      bool using_proxy) override;
 
   // Unimplemented as of November 2013.
   virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& session,
-      bool use_relative_url) OVERRIDE;
+      bool use_relative_url) override;
 
   // Call Upgrade() on the WebSocketHandshakeStream and return the result. This
   // must only be called if the handshake succeeded.

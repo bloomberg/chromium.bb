@@ -56,68 +56,68 @@ class BasicNetworkDelegate : public NetworkDelegate {
  private:
   virtual int OnBeforeURLRequest(URLRequest* request,
                                  const CompletionCallback& callback,
-                                 GURL* new_url) OVERRIDE {
+                                 GURL* new_url) override {
     return OK;
   }
 
   virtual int OnBeforeSendHeaders(URLRequest* request,
                                   const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) OVERRIDE {
+                                  HttpRequestHeaders* headers) override {
     return OK;
   }
 
   virtual void OnSendHeaders(URLRequest* request,
-                             const HttpRequestHeaders& headers) OVERRIDE {}
+                             const HttpRequestHeaders& headers) override {}
 
   virtual int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url) OVERRIDE {
+      GURL* allowed_unsafe_redirect_url) override {
     return OK;
   }
 
   virtual void OnBeforeRedirect(URLRequest* request,
-                                const GURL& new_location) OVERRIDE {}
+                                const GURL& new_location) override {}
 
-  virtual void OnResponseStarted(URLRequest* request) OVERRIDE {}
+  virtual void OnResponseStarted(URLRequest* request) override {}
 
   virtual void OnRawBytesRead(const URLRequest& request,
-                              int bytes_read) OVERRIDE {}
+                              int bytes_read) override {}
 
-  virtual void OnCompleted(URLRequest* request, bool started) OVERRIDE {}
+  virtual void OnCompleted(URLRequest* request, bool started) override {}
 
-  virtual void OnURLRequestDestroyed(URLRequest* request) OVERRIDE {}
+  virtual void OnURLRequestDestroyed(URLRequest* request) override {}
 
   virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) OVERRIDE {}
+                                const base::string16& error) override {}
 
   virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
-      AuthCredentials* credentials) OVERRIDE {
+      AuthCredentials* credentials) override {
     return NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
   }
 
   virtual bool OnCanGetCookies(const URLRequest& request,
-                               const CookieList& cookie_list) OVERRIDE {
+                               const CookieList& cookie_list) override {
     return true;
   }
 
   virtual bool OnCanSetCookie(const URLRequest& request,
                               const std::string& cookie_line,
-                              CookieOptions* options) OVERRIDE {
+                              CookieOptions* options) override {
     return true;
   }
 
   virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const base::FilePath& path) const OVERRIDE {
+                               const base::FilePath& path) const override {
     return true;
   }
 
-  virtual bool OnCanThrottleRequest(const URLRequest& request) const OVERRIDE {
+  virtual bool OnCanThrottleRequest(const URLRequest& request) const override {
     // Returning true will only enable throttling if there's also a
     // URLRequestThrottlerManager, which there isn't, by default.
     return true;
@@ -125,7 +125,7 @@ class BasicNetworkDelegate : public NetworkDelegate {
 
   virtual int OnBeforeSocketStreamConnect(
       SocketStream* stream,
-      const CompletionCallback& callback) OVERRIDE {
+      const CompletionCallback& callback) override {
     return OK;
   }
 

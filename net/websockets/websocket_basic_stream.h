@@ -44,16 +44,16 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // WebSocketStream implementation.
   virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
-                         const CompletionCallback& callback) OVERRIDE;
+                         const CompletionCallback& callback) override;
 
   virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) OVERRIDE;
+                          const CompletionCallback& callback) override;
 
-  virtual void Close() OVERRIDE;
+  virtual void Close() override;
 
-  virtual std::string GetSubProtocol() const OVERRIDE;
+  virtual std::string GetSubProtocol() const override;
 
-  virtual std::string GetExtensions() const OVERRIDE;
+  virtual std::string GetExtensions() const override;
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods for testing only.

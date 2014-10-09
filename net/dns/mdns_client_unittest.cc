@@ -391,7 +391,7 @@ class PtrRecordCopyContainer {
 
 class MDnsTest : public ::testing::Test {
  public:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
   void DeleteTransaction();
   void DeleteBothListeners();
   void RunFor(base::TimeDelta time_period);
@@ -1057,7 +1057,7 @@ TEST_F(MDnsTest, RefreshQuery) {
 class SimpleMockSocketFactory : public MDnsSocketFactory {
  public:
   virtual void CreateSockets(
-      ScopedVector<DatagramServerSocket>* sockets) OVERRIDE {
+      ScopedVector<DatagramServerSocket>* sockets) override {
     sockets->clear();
     sockets->swap(sockets_);
   }
@@ -1088,7 +1088,7 @@ class MDnsConnectionTest : public ::testing::Test {
 
  protected:
   // Follow successful connection initialization.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     socket_ipv4_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV4);
     socket_ipv6_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV6);
     factory_.PushSocket(socket_ipv6_);
@@ -1160,7 +1160,7 @@ TEST_F(MDnsConnectionTest, Error) {
 
 class MDnsConnectionSendTest : public MDnsConnectionTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     MDnsConnectionTest::SetUp();
     EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
         .WillOnce(Return(ERR_IO_PENDING));

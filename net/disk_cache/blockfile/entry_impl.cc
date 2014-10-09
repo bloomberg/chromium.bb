@@ -46,7 +46,7 @@ class SyncCallback: public disk_cache::FileIOCallback {
   }
   virtual ~SyncCallback() {}
 
-  virtual void OnFileIOComplete(int bytes_copied) OVERRIDE;
+  virtual void OnFileIOComplete(int bytes_copied) override;
   void Discard();
 
  private:

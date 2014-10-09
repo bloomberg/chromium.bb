@@ -22,7 +22,7 @@ class URLRequestFilterInterceptor : public URLRequestInterceptor {
 
   // URLRequestInterceptor implementation.
   virtual URLRequestJob* MaybeInterceptRequest(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+      URLRequest* request, NetworkDelegate* network_delegate) const override {
     return factory_(request, network_delegate, request->url().scheme());
   }
 

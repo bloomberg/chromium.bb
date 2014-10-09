@@ -56,11 +56,11 @@ class OutputOrdering {
     virtual ~BeginOutputtingAlarm();
 
     // EpollAlarmCallbackInterface:
-    virtual int64 OnAlarm() OVERRIDE;
+    virtual int64 OnAlarm() override;
     virtual void OnRegistration(const EpollServer::AlarmRegToken& tok,
-                                EpollServer* eps) OVERRIDE;
-    virtual void OnUnregistration() OVERRIDE;
-    virtual void OnShutdown(EpollServer* eps) OVERRIDE;
+                                EpollServer* eps) override;
+    virtual void OnUnregistration() override;
+    virtual void OnShutdown(EpollServer* eps) override;
 
    private:
     OutputOrdering* output_ordering_;

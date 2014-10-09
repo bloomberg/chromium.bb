@@ -28,7 +28,7 @@ class ServerThread : public base::SimpleThread {
   void Initialize();
 
   // Runs the event loop. Will initialize if necessary.
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
   // Waits for the handshake to be confirmed for the first session created.
   void WaitForCryptoHandshakeConfirmed();

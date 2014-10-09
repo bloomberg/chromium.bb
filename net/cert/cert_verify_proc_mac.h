@@ -15,7 +15,7 @@ class CertVerifyProcMac : public CertVerifyProc {
  public:
   CertVerifyProcMac();
 
-  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE;
+  virtual bool SupportsAdditionalTrustAnchors() const override;
 
  protected:
   virtual ~CertVerifyProcMac();
@@ -26,7 +26,7 @@ class CertVerifyProcMac : public CertVerifyProc {
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) OVERRIDE;
+                             CertVerifyResult* verify_result) override;
 };
 
 }  // namespace net

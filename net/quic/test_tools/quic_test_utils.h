@@ -190,35 +190,35 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
  public:
   NoOpFramerVisitor() {}
 
-  virtual void OnError(QuicFramer* framer) OVERRIDE {}
-  virtual void OnPacket() OVERRIDE {}
+  virtual void OnError(QuicFramer* framer) override {}
+  virtual void OnPacket() override {}
   virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& packet) OVERRIDE {}
+      const QuicPublicResetPacket& packet) override {}
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) OVERRIDE {}
-  virtual void OnRevivedPacket() OVERRIDE {}
-  virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE;
-  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
+      const QuicVersionNegotiationPacket& packet) override {}
+  virtual void OnRevivedPacket() override {}
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) override;
+  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   virtual bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) OVERRIDE;
-  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {}
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
-  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
+      const QuicPacketPublicHeader& header) override;
+  virtual void OnDecryptedPacket(EncryptionLevel level) override {}
+  virtual bool OnPacketHeader(const QuicPacketHeader& header) override;
+  virtual void OnFecProtectedPayload(base::StringPiece payload) override {}
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  virtual bool OnAckFrame(const QuicAckFrame& frame) override;
   virtual bool OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+      const QuicCongestionFeedbackFrame& frame) override;
   virtual bool OnStopWaitingFrame(
-      const QuicStopWaitingFrame& frame) OVERRIDE;
-  virtual bool OnPingFrame(const QuicPingFrame& frame) OVERRIDE;
-  virtual void OnFecData(const QuicFecData& fec) OVERRIDE {}
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
+      const QuicStopWaitingFrame& frame) override;
+  virtual bool OnPingFrame(const QuicPingFrame& frame) override;
+  virtual void OnFecData(const QuicFecData& fec) override {}
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
   virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) OVERRIDE;
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
-  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) OVERRIDE;
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE;
-  virtual void OnPacketComplete() OVERRIDE {}
+      const QuicConnectionCloseFrame& frame) override;
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  virtual void OnPacketComplete() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoOpFramerVisitor);
@@ -255,9 +255,9 @@ class MockHelper : public QuicConnectionHelperInterface {
  public:
   MockHelper();
   virtual ~MockHelper();
-  virtual const QuicClock* GetClock() const OVERRIDE;
-  virtual QuicRandom* GetRandomGenerator() OVERRIDE;
-  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
+  virtual const QuicClock* GetClock() const override;
+  virtual QuicRandom* GetRandomGenerator() override;
+  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
   void AdvanceTime(QuicTime::Delta delta);
 
  private:
@@ -312,7 +312,7 @@ class MockConnection : public QuicConnection {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE {
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) override {
     return false;
   }
 
@@ -331,7 +331,7 @@ class PacketSavingConnection : public MockConnection {
 
   virtual ~PacketSavingConnection();
 
-  virtual void SendOrQueuePacket(QueuedPacket packet) OVERRIDE;
+  virtual void SendOrQueuePacket(QueuedPacket packet) override;
 
   std::vector<QuicPacket*> packets_;
   std::vector<QuicEncryptedPacket*> encrypted_packets_;
@@ -383,7 +383,7 @@ class TestSession : public QuicSession {
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE;
+  virtual QuicCryptoStream* GetCryptoStream() override;
 
  private:
   QuicCryptoStream* crypto_stream_;
@@ -408,7 +408,7 @@ class TestClientSession : public QuicClientSessionBase {
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE;
+  virtual QuicCryptoStream* GetCryptoStream() override;
 
  private:
   QuicCryptoStream* crypto_stream_;
@@ -496,7 +496,7 @@ class TestEntropyCalculator :
   virtual ~TestEntropyCalculator();
 
   virtual QuicPacketEntropyHash EntropyHash(
-      QuicPacketSequenceNumber sequence_number) const OVERRIDE;
+      QuicPacketSequenceNumber sequence_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestEntropyCalculator);
@@ -554,7 +554,7 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
   virtual ~TestWriterFactory();
 
   virtual QuicPacketWriter* Create(QuicServerPacketWriter* writer,
-                                   QuicConnection* connection) OVERRIDE;
+                                   QuicConnection* connection) override;
 
   // Calls OnPacketSent on the last QuicConnection to write through one of the
   // packet writers created by this factory.
@@ -572,7 +572,7 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
         const char* buffer,
         size_t buf_len,
         const IPAddressNumber& self_address,
-        const IPEndPoint& peer_address) OVERRIDE;
+        const IPEndPoint& peer_address) override;
 
    private:
     TestWriterFactory* factory_;

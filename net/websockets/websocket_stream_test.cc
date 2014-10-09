@@ -99,7 +99,7 @@ class DeterministicKeyWebSocketHandshakeStreamCreateHelper
       : WebSocketHandshakeStreamCreateHelper(connect_delegate,
                                              requested_subprotocols) {}
 
-  virtual void OnStreamCreated(WebSocketBasicHandshakeStream* stream) OVERRIDE {
+  virtual void OnStreamCreated(WebSocketBasicHandshakeStream* stream) override {
     stream->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
   }
 };
@@ -201,23 +201,23 @@ class WebSocketStreamCreateTest : public ::testing::Test {
     explicit TestConnectDelegate(WebSocketStreamCreateTest* owner)
         : owner_(owner) {}
 
-    virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) OVERRIDE {
+    virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
       stream.swap(owner_->stream_);
     }
 
-    virtual void OnFailure(const std::string& message) OVERRIDE {
+    virtual void OnFailure(const std::string& message) override {
       owner_->has_failed_ = true;
       owner_->failure_message_ = message;
     }
 
     virtual void OnStartOpeningHandshake(
-        scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {
+        scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
       // Can be called multiple times (in the case of HTTP auth). Last call
       // wins.
       owner_->request_info_ = request.Pass();
     }
     virtual void OnFinishOpeningHandshake(
-        scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {
+        scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
       if (owner_->response_info_)
         ADD_FAILURE();
       owner_->response_info_ = response.Pass();
@@ -226,7 +226,7 @@ class WebSocketStreamCreateTest : public ::testing::Test {
         scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
             ssl_error_callbacks,
         const SSLInfo& ssl_info,
-        bool fatal) OVERRIDE {
+        bool fatal) override {
       owner_->ssl_error_callbacks_ = ssl_error_callbacks.Pass();
       owner_->ssl_info_ = ssl_info;
       owner_->ssl_fatal_ = fatal;
@@ -408,7 +408,7 @@ class WebSocketStreamCreateUMATest : public ::testing::Test {
   };
 
   class StreamCreation : public WebSocketStreamCreateTest {
-    virtual void TestBody() OVERRIDE {}
+    virtual void TestBody() override {}
   };
 
   scoped_ptr<base::HistogramSamples> GetSamples(const std::string& name) {

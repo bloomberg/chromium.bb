@@ -75,12 +75,12 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   void Close();
 
   // SpdyStream::Delegate
-  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual void OnRequestHeadersSent() override;
   virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE;
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent() OVERRIDE;
-  virtual void OnClose(int status) OVERRIDE;
+      const SpdyHeaderBlock& response_headers) override;
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
+  virtual void OnDataSent() override;
+  virtual void OnClose(int status) override;
 
  private:
   friend class SpdyWebSocketStreamTest;

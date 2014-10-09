@@ -34,13 +34,13 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
                         const base::FilePath& file_path,
                         const scoped_refptr<base::TaskRunner>& task_runner);
 
-  virtual void Start() OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
-  virtual bool GetCharset(std::string* charset) OVERRIDE;
-  virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
+  virtual void Start() override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual int GetResponseCode() const override;
+  virtual bool GetCharset(std::string* charset) override;
+  virtual void GetResponseInfo(HttpResponseInfo* info) override;
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
+                                  int* http_status_code) override;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler(

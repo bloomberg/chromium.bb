@@ -148,9 +148,9 @@ class ProxyResolverV8Tracing::Job
   virtual bool ResolveDns(const std::string& host,
                           ResolveDnsOperation op,
                           std::string* output,
-                          bool* terminate) OVERRIDE;
-  virtual void Alert(const base::string16& message) OVERRIDE;
-  virtual void OnError(int line_number, const base::string16& error) OVERRIDE;
+                          bool* terminate) override;
+  virtual void Alert(const base::string16& message) override;
+  virtual void OnError(int line_number, const base::string16& error) override;
 
   bool ResolveDnsBlocking(const std::string& host,
                           ResolveDnsOperation op,

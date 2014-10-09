@@ -264,14 +264,14 @@ class BlockingWriter : public QuicPacketWriterWrapper {
  public:
   BlockingWriter() : write_blocked_(false) {}
 
-  virtual bool IsWriteBlocked() const OVERRIDE { return write_blocked_; }
-  virtual void SetWritable() OVERRIDE { write_blocked_ = false; }
+  virtual bool IsWriteBlocked() const override { return write_blocked_; }
+  virtual void SetWritable() override { write_blocked_ = false; }
 
   virtual WriteResult WritePacket(
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& self_client_address,
-      const IPEndPoint& peer_client_address) OVERRIDE {
+      const IPEndPoint& peer_client_address) override {
     // It would be quite possible to actually implement this method here with
     // the fake blocked status, but it would be significantly more work in
     // Chromium, and since it's not called anyway, don't bother.

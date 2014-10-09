@@ -25,16 +25,16 @@ class NET_EXPORT_PRIVATE ProxyResolverWinHttp : public ProxyResolver {
                              ProxyInfo* results,
                              const net::CompletionCallback& /*callback*/,
                              RequestHandle* /*request*/,
-                             const BoundNetLog& /*net_log*/) OVERRIDE;
-  virtual void CancelRequest(RequestHandle request) OVERRIDE;
+                             const BoundNetLog& /*net_log*/) override;
+  virtual void CancelRequest(RequestHandle request) override;
 
-  virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE;
+  virtual LoadState GetLoadState(RequestHandle request) const override;
 
-  virtual void CancelSetPacScript() OVERRIDE;
+  virtual void CancelSetPacScript() override;
 
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const net::CompletionCallback& /*callback*/) OVERRIDE;
+      const net::CompletionCallback& /*callback*/) override;
 
  private:
   bool OpenWinHttpSession();

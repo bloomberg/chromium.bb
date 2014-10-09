@@ -22,18 +22,18 @@ class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
   virtual ~NullDecrypter() {}
 
   // QuicDecrypter implementation
-  virtual bool SetKey(base::StringPiece key) OVERRIDE;
-  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) OVERRIDE;
+  virtual bool SetKey(base::StringPiece key) override;
+  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
   virtual bool Decrypt(base::StringPiece nonce,
                        base::StringPiece associated_data,
                        base::StringPiece ciphertext,
                        unsigned char* output,
-                       size_t* output_length) OVERRIDE;
+                       size_t* output_length) override;
   virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
                                   base::StringPiece associated_data,
-                                  base::StringPiece ciphertext) OVERRIDE;
-  virtual base::StringPiece GetKey() const OVERRIDE;
-  virtual base::StringPiece GetNoncePrefix() const OVERRIDE;
+                                  base::StringPiece ciphertext) override;
+  virtual base::StringPiece GetKey() const override;
+  virtual base::StringPiece GetNoncePrefix() const override;
 
  private:
   bool ReadHash(QuicDataReader* reader, uint128* hash);

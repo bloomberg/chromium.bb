@@ -22,7 +22,7 @@ class FakeTimeEpollServer : public EpollServer {
   virtual ~FakeTimeEpollServer();
 
   // Replaces the EpollServer NowInUsec.
-  virtual int64 NowInUsec() const OVERRIDE;
+  virtual int64 NowInUsec() const override;
 
   void set_now_in_usec(int64 nius) { now_in_usec_ = nius; }
 
@@ -85,16 +85,16 @@ class MockEpollServer : public FakeTimeEpollServer {
  protected:  // functions
   // These functions do nothing here, as we're not actually
   // using the epoll_* syscalls.
-  virtual void DelFD(int fd) const OVERRIDE {}
-  virtual void AddFD(int fd, int event_mask) const OVERRIDE {}
-  virtual void ModFD(int fd, int event_mask) const OVERRIDE {}
+  virtual void DelFD(int fd) const override {}
+  virtual void AddFD(int fd, int event_mask) const override {}
+  virtual void ModFD(int fd, int event_mask) const override {}
 
   // Replaces the epoll_server's epoll_wait_impl.
   virtual int epoll_wait_impl(int epfd,
                               struct epoll_event* events,
                               int max_events,
-                              int timeout_in_ms) OVERRIDE;
-  virtual void SetNonblocking (int fd) OVERRIDE {}
+                              int timeout_in_ms) override;
+  virtual void SetNonblocking (int fd) override {}
 
  private:  // members
   EventQueue event_queue_;

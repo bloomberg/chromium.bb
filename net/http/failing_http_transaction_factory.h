@@ -28,9 +28,9 @@ class NET_EXPORT FailingHttpTransactionFactory : public HttpTransactionFactory {
   // HttpTransactionFactory:
   virtual int CreateTransaction(
       RequestPriority priority,
-      scoped_ptr<HttpTransaction>* trans) OVERRIDE;
-  virtual HttpCache* GetCache() OVERRIDE;
-  virtual HttpNetworkSession* GetSession() OVERRIDE;
+      scoped_ptr<HttpTransaction>* trans) override;
+  virtual HttpCache* GetCache() override;
+  virtual HttpNetworkSession* GetSession() override;
 
  private:
   HttpNetworkSession* session_;

@@ -18,7 +18,7 @@ class CTLogVerifierTest : public ::testing::Test {
  public:
   CTLogVerifierTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog").Pass();
 
     ASSERT_TRUE(log_);

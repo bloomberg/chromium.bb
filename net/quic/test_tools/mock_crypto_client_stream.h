@@ -46,10 +46,10 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
 
   // CryptoFramerVisitorInterface implementation.
   virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) OVERRIDE;
+      const CryptoHandshakeMessage& message) override;
 
   // QuicCryptoClientStream implementation.
-  virtual bool CryptoConnect() OVERRIDE;
+  virtual bool CryptoConnect() override;
 
   // Invokes the sessions's CryptoHandshakeEvent method with the specified
   // event.

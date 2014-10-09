@@ -65,7 +65,7 @@ class NET_EXPORT TransportSecurityPersister
   virtual ~TransportSecurityPersister();
 
   // Called by the TransportSecurityState when it changes its state.
-  virtual void StateIsDirty(TransportSecurityState*) OVERRIDE;
+  virtual void StateIsDirty(TransportSecurityState*) override;
 
   // ImportantFileWriter::DataSerializer:
   //
@@ -97,7 +97,7 @@ class NET_EXPORT TransportSecurityPersister
   // The reason for hashing them is so that the stored state does not
   // trivially reveal a user's browsing history to an attacker reading the
   // serialized state on disk.
-  virtual bool SerializeData(std::string* data) OVERRIDE;
+  virtual bool SerializeData(std::string* data) override;
 
   // Clears any existing non-static entries, and then re-populates
   // |transport_security_state_|.

@@ -47,10 +47,10 @@ class QuicServer : public EpollCallbackInterface {
   // From EpollCallbackInterface
   virtual void OnRegistration(EpollServer* eps,
                               int fd,
-                              int event_mask) OVERRIDE {}
-  virtual void OnModification(int fd, int event_mask) OVERRIDE {}
-  virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
-  virtual void OnUnregistration(int fd, bool replaced) OVERRIDE {}
+                              int event_mask) override {}
+  virtual void OnModification(int fd, int event_mask) override {}
+  virtual void OnEvent(int fd, EpollEvent* event) override;
+  virtual void OnUnregistration(int fd, bool replaced) override {}
 
   // Reads a packet from the given fd, and then passes it off to
   // the QuicDispatcher.  Returns true if a packet is read, false
@@ -62,7 +62,7 @@ class QuicServer : public EpollCallbackInterface {
                                           ProcessPacketInterface* processor,
                                           uint32* packets_dropped);
 
-  virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}
+  virtual void OnShutdown(EpollServer* eps, int fd) override {}
 
   void SetStrikeRegisterNoStartupPeriod() {
     crypto_config_.set_strike_register_no_startup_period();

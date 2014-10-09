@@ -35,7 +35,7 @@ class NET_EXPORT_PRIVATE ChaCha20Poly1305Encrypter : public AeadBaseEncrypter {
   virtual void FillAeadParams(base::StringPiece nonce,
                               base::StringPiece associated_data,
                               size_t auth_tag_size,
-                              AeadParams* aead_params) const OVERRIDE;
+                              AeadParams* aead_params) const override;
 #endif
 
  private:

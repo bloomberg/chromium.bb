@@ -135,41 +135,41 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor);
 
   // SpdyFramerVisitorInterface
-  virtual void OnError(SpdyFramer* spdy_framer) OVERRIDE;
+  virtual void OnError(SpdyFramer* spdy_framer) override;
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
                            bool fin,
-                           bool unidirectional) OVERRIDE;
-  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE;
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) OVERRIDE;
+                           bool unidirectional) override;
+  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) override;
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override;
   virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                         const char* header_data,
-                                        size_t len) OVERRIDE;
+                                        size_t len) override;
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 bool fin) OVERRIDE;
-  virtual void OnSettings(bool clear_persisted) OVERRIDE;
+                                 bool fin) override;
+  virtual void OnSettings(bool clear_persisted) override;
   virtual void OnSetting(
-      SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
-  virtual void OnSettingsAck() OVERRIDE;
-  virtual void OnSettingsEnd() OVERRIDE;
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE;
+      SpdySettingsIds id, uint8 flags, uint32 value) override;
+  virtual void OnSettingsAck() override;
+  virtual void OnSettingsEnd() override;
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override;
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) OVERRIDE;
+                           SpdyRstStreamStatus status) override;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) OVERRIDE;
+                        SpdyGoAwayStatus status) override;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) OVERRIDE;
+                              uint32 delta_window_size) override;
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
-                             bool end) OVERRIDE;
+                             bool end) override;
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
-                                 bool fin) OVERRIDE;
-  virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE;
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE;
+                                 bool fin) override;
+  virtual void OnContinuation(SpdyStreamId stream_id, bool end) override;
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

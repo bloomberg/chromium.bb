@@ -29,10 +29,10 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   virtual WriteResult WritePacket(const char* buffer,
                                   size_t buf_len,
                                   const IPAddressNumber& self_address,
-                                  const IPEndPoint& peer_address) OVERRIDE;
-  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
-  virtual bool IsWriteBlocked() const OVERRIDE;
-  virtual void SetWritable() OVERRIDE;
+                                  const IPEndPoint& peer_address) override;
+  virtual bool IsWriteBlockedDataBuffered() const override;
+  virtual bool IsWriteBlocked() const override;
+  virtual void SetWritable() override;
 
   void OnWriteComplete(int rv);
   void SetConnection(QuicConnection* connection) {

@@ -147,13 +147,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Until the servers support roaming, close all connections when the local
   // IP address changes.
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
   // CertDatabase::Observer methods:
 
   // We close all sessions when certificate database is changed.
-  virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
-  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCertAdded(const X509Certificate* cert) override;
+  virtual void OnCACertChanged(const X509Certificate* cert) override;
 
   bool require_confirmation() const {
     return require_confirmation_;

@@ -39,10 +39,10 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // DhcpProxyScriptFetcher implementation.
   int Fetch(base::string16* utf16_text,
-            const net::CompletionCallback& callback) OVERRIDE;
-  void Cancel() OVERRIDE;
-  const GURL& GetPacURL() const OVERRIDE;
-  std::string GetFetcherName() const OVERRIDE;
+            const net::CompletionCallback& callback) override;
+  void Cancel() override;
+  const GURL& GetPacURL() const override;
+  std::string GetFetcherName() const override;
 
   // Sets |adapter_names| to contain the name of each network adapter on
   // this machine that has DHCP enabled and is not a loop-back adapter. Returns

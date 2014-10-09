@@ -21,7 +21,7 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
   explicit WriteUnblockedAlarm(PacketDroppingTestWriter* writer)
       : writer_(writer) {}
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     DVLOG(1) << "Unblocking socket.";
     writer_->OnCanWrite();
     return QuicTime::Zero();
@@ -37,7 +37,7 @@ class DelayAlarm : public QuicAlarm::Delegate {
  public:
   explicit DelayAlarm(PacketDroppingTestWriter* writer) : writer_(writer) {}
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     return writer_->ReleaseOldPackets();
   }
 

@@ -23,17 +23,17 @@ class NET_EXPORT_PRIVATE TCPLossAlgorithm : public LossDetectionInterface {
   TCPLossAlgorithm();
   virtual ~TCPLossAlgorithm() {}
 
-  virtual LossDetectionType GetLossDetectionType() const OVERRIDE;
+  virtual LossDetectionType GetLossDetectionType() const override;
 
   // Uses nack counts to decide when packets are lost.
   virtual SequenceNumberSet DetectLostPackets(
       const QuicUnackedPacketMap& unacked_packets,
       const QuicTime& time,
       QuicPacketSequenceNumber largest_observed,
-      const RttStats& rtt_stats) OVERRIDE;
+      const RttStats& rtt_stats) override;
 
   // Returns a non-zero value when the early retransmit timer is active.
-  virtual QuicTime GetLossTimeout() const OVERRIDE;
+  virtual QuicTime GetLossTimeout() const override;
 
  private:
   QuicTime loss_detection_timeout_;

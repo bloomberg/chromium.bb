@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // QuicFecBuilderInterface
   virtual void OnBuiltFecProtectedPayload(const QuicPacketHeader& header,
-                                          base::StringPiece payload) OVERRIDE;
+                                          base::StringPiece payload) override;
 
   // Turn on FEC protection for subsequently created packets. FEC should be
   // enabled first (max_packets_per_fec_group should be non-zero) for FEC

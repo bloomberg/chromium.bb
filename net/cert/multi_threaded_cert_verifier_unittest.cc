@@ -39,7 +39,7 @@ class MockCertVerifyProc : public CertVerifyProc {
   virtual ~MockCertVerifyProc() {}
 
   // CertVerifyProc implementation
-  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE {
+  virtual bool SupportsAdditionalTrustAnchors() const override {
     return false;
   }
 
@@ -48,7 +48,7 @@ class MockCertVerifyProc : public CertVerifyProc {
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) OVERRIDE {
+                             CertVerifyResult* verify_result) override {
     verify_result->Reset();
     verify_result->verified_cert = cert;
     verify_result->cert_status = CERT_STATUS_COMMON_NAME_INVALID;

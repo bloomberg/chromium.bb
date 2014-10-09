@@ -48,12 +48,12 @@ class CacheDumper : public CacheDumpWriter {
   explicit CacheDumper(disk_cache::Backend* cache);
 
   virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
-                          const net::CompletionCallback& callback) OVERRIDE;
+                          const net::CompletionCallback& callback) override;
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
-                         const net::CompletionCallback& callback) OVERRIDE;
+                         const net::CompletionCallback& callback) override;
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
-                          base::Time last_modified) OVERRIDE;
+                          base::Time last_modified) override;
 
  private:
   disk_cache::Backend* cache_;
@@ -65,12 +65,12 @@ class DiskDumper : public CacheDumpWriter {
   explicit DiskDumper(const base::FilePath& path);
 
   virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
-                          const net::CompletionCallback& callback) OVERRIDE;
+                          const net::CompletionCallback& callback) override;
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
-                         const net::CompletionCallback& callback) OVERRIDE;
+                         const net::CompletionCallback& callback) override;
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
-                          base::Time last_modified) OVERRIDE;
+                          base::Time last_modified) override;
 
  private:
   base::FilePath path_;

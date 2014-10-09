@@ -36,17 +36,17 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
                     const scoped_refptr<base::TaskRunner>& file_task_runner);
 
   // URLRequestJob:
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
   virtual bool ReadRawData(IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
+                           int* bytes_read) override;
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
-  virtual Filter* SetupFilter() const OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+                                  int* http_status_code) override;
+  virtual Filter* SetupFilter() const override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
   virtual void SetExtraRequestHeaders(
-      const HttpRequestHeaders& headers) OVERRIDE;
+      const HttpRequestHeaders& headers) override;
 
   // An interface for subclasses who wish to monitor read operations.
   virtual void OnSeekComplete(int64 result);

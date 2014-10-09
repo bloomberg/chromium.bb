@@ -32,7 +32,7 @@ class TestNetworkChangeNotifierWin : public NetworkChangeNotifierWin {
 
   // From NetworkChangeNotifierWin.
   virtual NetworkChangeNotifier::ConnectionType
-      RecomputeCurrentConnectionType() const OVERRIDE {
+      RecomputeCurrentConnectionType() const override {
     return NetworkChangeNotifier::CONNECTION_UNKNOWN;
   }
 

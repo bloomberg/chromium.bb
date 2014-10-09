@@ -50,37 +50,37 @@ class NET_EXPORT WebSocketJob
   static void EnsureInit();
 
   State state() const { return state_; }
-  virtual void Connect() OVERRIDE;
-  virtual bool SendData(const char* data, int len) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void RestartWithAuth(const AuthCredentials& credentials) OVERRIDE;
-  virtual void DetachDelegate() OVERRIDE;
+  virtual void Connect() override;
+  virtual bool SendData(const char* data, int len) override;
+  virtual void Close() override;
+  virtual void RestartWithAuth(const AuthCredentials& credentials) override;
+  virtual void DetachDelegate() override;
 
   // SocketStream::Delegate methods.
   virtual int OnStartOpenConnection(
-      SocketStream* socket, const CompletionCallback& callback) OVERRIDE;
+      SocketStream* socket, const CompletionCallback& callback) override;
   virtual void OnConnected(SocketStream* socket,
-                           int max_pending_send_allowed) OVERRIDE;
-  virtual void OnSentData(SocketStream* socket, int amount_sent) OVERRIDE;
+                           int max_pending_send_allowed) override;
+  virtual void OnSentData(SocketStream* socket, int amount_sent) override;
   virtual void OnReceivedData(SocketStream* socket,
                               const char* data,
-                              int len) OVERRIDE;
-  virtual void OnClose(SocketStream* socket) OVERRIDE;
+                              int len) override;
+  virtual void OnClose(SocketStream* socket) override;
   virtual void OnAuthRequired(
-      SocketStream* socket, AuthChallengeInfo* auth_info) OVERRIDE;
+      SocketStream* socket, AuthChallengeInfo* auth_info) override;
   virtual void OnSSLCertificateError(SocketStream* socket,
                                      const SSLInfo& ssl_info,
-                                     bool fatal) OVERRIDE;
-  virtual void OnError(const SocketStream* socket, int error) OVERRIDE;
+                                     bool fatal) override;
+  virtual void OnError(const SocketStream* socket, int error) override;
 
   // SpdyWebSocketStream::Delegate methods.
-  virtual void OnCreatedSpdyStream(int status) OVERRIDE;
-  virtual void OnSentSpdyHeaders() OVERRIDE;
+  virtual void OnCreatedSpdyStream(int status) override;
+  virtual void OnSentSpdyHeaders() override;
   virtual void OnSpdyResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE;
-  virtual void OnSentSpdyData(size_t bytes_sent) OVERRIDE;
-  virtual void OnReceivedSpdyData(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnCloseSpdyStream() OVERRIDE;
+      const SpdyHeaderBlock& response_headers) override;
+  virtual void OnSentSpdyData(size_t bytes_sent) override;
+  virtual void OnReceivedSpdyData(scoped_ptr<SpdyBuffer> buffer) override;
+  virtual void OnCloseSpdyStream() override;
 
  private:
   friend class WebSocketThrottle;

@@ -312,7 +312,7 @@ class RegistryWatcher : public base::win::ObjectWatcher::Delegate,
     return true;
   }
 
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE {
+  virtual void OnObjectSignaled(HANDLE object) override {
     // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
     tracked_objects::ScopedProfile tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -609,7 +609,7 @@ class DnsConfigServiceWin::Watcher
   }
 
   // NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() OVERRIDE {
+  virtual void OnIPAddressChanged() override {
     // Need to update non-loopback IP of local host.
     service_->OnHostsChanged(true);
   }
@@ -635,7 +635,7 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
  private:
   virtual ~ConfigReader() {}
 
-  virtual void DoWork() OVERRIDE {
+  virtual void DoWork() override {
     // Should be called on WorkerPool.
     base::TimeTicks start_time = base::TimeTicks::Now();
     DnsSystemSettings settings = {};
@@ -651,7 +651,7 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
                         base::TimeTicks::Now() - start_time);
   }
 
-  virtual void OnWorkFinished() OVERRIDE {
+  virtual void OnWorkFinished() override {
     DCHECK(loop()->BelongsToCurrentThread());
     DCHECK(!IsCancelled());
     if (success_) {
@@ -685,7 +685,7 @@ class DnsConfigServiceWin::HostsReader : public SerialWorker {
  private:
   virtual ~HostsReader() {}
 
-  virtual void DoWork() OVERRIDE {
+  virtual void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     HostsParseWinResult result = HOSTS_PARSE_WIN_UNREADABLE_HOSTS_FILE;
     if (ParseHostsFile(path_, &hosts_))
@@ -698,7 +698,7 @@ class DnsConfigServiceWin::HostsReader : public SerialWorker {
                         base::TimeTicks::Now() - start_time);
   }
 
-  virtual void OnWorkFinished() OVERRIDE {
+  virtual void OnWorkFinished() override {
     DCHECK(loop()->BelongsToCurrentThread());
     if (success_) {
       service_->OnHostsRead(hosts_);

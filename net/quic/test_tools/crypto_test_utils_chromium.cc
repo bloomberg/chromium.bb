@@ -59,7 +59,7 @@ class FakeProofSource : public ProofSource {
                         const std::string& server_config,
                         bool ecdsa_ok,
                         const std::vector<std::string>** out_certs,
-                        std::string* out_signature) OVERRIDE {
+                        std::string* out_signature) override {
     *out_certs = &certs_;
     *out_signature = kSignature;
     return true;
@@ -84,7 +84,7 @@ class FakeProofVerifier : public ProofVerifier {
       const ProofVerifyContext* verify_context,
       std::string* error_details,
       scoped_ptr<ProofVerifyDetails>* verify_details,
-      ProofVerifierCallback* callback) OVERRIDE {
+      ProofVerifierCallback* callback) override {
     error_details->clear();
     scoped_ptr<ProofVerifyDetailsChromium> verify_details_chromium(
         new ProofVerifyDetailsChromium);

@@ -467,7 +467,7 @@ int SimpleBackendImpl::DoomEntriesSince(
   return DoomEntriesBetween(initial_time, Time(), callback);
 }
 
-class SimpleBackendImpl::SimpleIterator FINAL : public Iterator {
+class SimpleBackendImpl::SimpleIterator final : public Iterator {
  public:
   explicit SimpleIterator(base::WeakPtr<SimpleBackendImpl> backend)
       : backend_(backend),
@@ -476,7 +476,7 @@ class SimpleBackendImpl::SimpleIterator FINAL : public Iterator {
 
   // From Backend::Iterator:
   virtual int OpenNextEntry(Entry** next_entry,
-                            const CompletionCallback& callback) OVERRIDE {
+                            const CompletionCallback& callback) override {
     CompletionCallback open_next_entry_impl =
         base::Bind(&SimpleIterator::OpenNextEntryImpl,
                    weak_factory_.GetWeakPtr(), next_entry, callback);

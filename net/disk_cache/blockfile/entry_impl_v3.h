@@ -77,26 +77,26 @@ class NET_EXPORT_PRIVATE EntryImplV3
   const net::BoundNetLog& net_log() const;
 
   // Entry interface.
-  virtual void Doom() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual std::string GetKey() const OVERRIDE;
-  virtual base::Time GetLastUsed() const OVERRIDE;
-  virtual base::Time GetLastModified() const OVERRIDE;
-  virtual int32 GetDataSize(int index) const OVERRIDE;
+  virtual void Doom() override;
+  virtual void Close() override;
+  virtual std::string GetKey() const override;
+  virtual base::Time GetLastUsed() const override;
+  virtual base::Time GetLastModified() const override;
+  virtual int32 GetDataSize(int index) const override;
   virtual int ReadData(int index, int offset, IOBuffer* buf, int buf_len,
-                       const CompletionCallback& callback) OVERRIDE;
+                       const CompletionCallback& callback) override;
   virtual int WriteData(int index, int offset, IOBuffer* buf, int buf_len,
                         const CompletionCallback& callback,
-                        bool truncate) OVERRIDE;
+                        bool truncate) override;
   virtual int ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
-                             const CompletionCallback& callback) OVERRIDE;
+                             const CompletionCallback& callback) override;
   virtual int WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
-                              const CompletionCallback& callback) OVERRIDE;
+                              const CompletionCallback& callback) override;
   virtual int GetAvailableRange(int64 offset, int len, int64* start,
-                                const CompletionCallback& callback) OVERRIDE;
-  virtual bool CouldBeSparse() const OVERRIDE;
-  virtual void CancelSparseIO() OVERRIDE;
-  virtual int ReadyForSparseIO(const CompletionCallback& callback) OVERRIDE;
+                                const CompletionCallback& callback) override;
+  virtual bool CouldBeSparse() const override;
+  virtual void CancelSparseIO() override;
+  virtual int ReadyForSparseIO(const CompletionCallback& callback) override;
 
  private:
   enum {

@@ -42,7 +42,7 @@ class MockJobInterceptor : public net::URLRequestInterceptor {
   // net::URLRequestJobFactory::ProtocolHandler implementation
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     return new URLRequestMockHTTPJob(
         request,
         network_delegate,

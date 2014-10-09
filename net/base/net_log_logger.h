@@ -41,7 +41,7 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
   void StopObserving();
 
   // net::NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const NetLog::Entry& entry) override;
 
   // Create a dictionary containing legend for net/ constants.  Caller takes
   // ownership of returned value.

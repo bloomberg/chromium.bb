@@ -296,10 +296,10 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
 
   // ProxyConfigService methods:
   // Called from IO thread.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
   virtual ProxyConfigService::ConfigAvailability GetLatestProxyConfig(
-      ProxyConfig* config) OVERRIDE;
+      ProxyConfig* config) override;
 
  private:
   scoped_refptr<Delegate> delegate_;

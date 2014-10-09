@@ -667,7 +667,7 @@ class BackendImplV3::IteratorImpl : public Backend::Iterator {
   }
 
   virtual int OpenNextEntry(Entry** next_entry,
-                            const net::CompletionCallback& callback) OVERRIDE {
+                            const net::CompletionCallback& callback) override {
     if (!background_queue_)
       return net::ERR_FAILED;
     background_queue_->OpenNextEntry(&data_, next_entry, callback);
@@ -1511,7 +1511,7 @@ int BackendImplV3::DoomEntriesSince(base::Time initial_time,
 class BackendImplV3::NotImplementedIterator : public Backend::Iterator {
  public:
   virtual int OpenNextEntry(disk_cache::Entry** next_entry,
-                            const net::CompletionCallback& callback) OVERRIDE {
+                            const net::CompletionCallback& callback) override {
     return net::ERR_NOT_IMPLEMENTED;
   }
 };

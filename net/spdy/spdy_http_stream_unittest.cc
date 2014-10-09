@@ -79,7 +79,7 @@ class SpdyHttpStreamTest : public testing::Test,
   OrderedSocketData* data() { return data_.get(); }
 
  protected:
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
     base::MessageLoop::current()->RunUntilIdle();
   }

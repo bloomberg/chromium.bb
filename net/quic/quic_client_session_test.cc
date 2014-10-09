@@ -55,7 +55,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
     crypto_config_.SetDefaults();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     session_.CloseSessionOnError(ERR_ABORTED);
   }
 

@@ -28,7 +28,7 @@ class TestJobProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
   // URLRequestJobFactory::ProtocolHandler implementation:
   virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+      URLRequest* request, NetworkDelegate* network_delegate) const override {
     return new URLRequestTestJob(request, network_delegate);
   }
 };

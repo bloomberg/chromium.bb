@@ -30,7 +30,7 @@ class TestURLRequestJob : public net::URLRequestFileJob {
                                file_path,
                                worker_task_runner) {}
 
-  virtual int GetResponseCode() const OVERRIDE { return 200; }
+  virtual int GetResponseCode() const override { return 200; }
 
  private:
   virtual ~TestURLRequestJob() {}
@@ -93,7 +93,7 @@ class TestURLRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   // When computing matches, this ignores the query parameters of the url.
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
     if (request->url().scheme() != scheme_ ||
         request->url().host() != hostname_) {

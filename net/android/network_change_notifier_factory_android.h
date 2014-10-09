@@ -29,7 +29,7 @@ class NET_EXPORT NetworkChangeNotifierFactoryAndroid :
   virtual ~NetworkChangeNotifierFactoryAndroid();
 
   // NetworkChangeNotifierFactory:
-  virtual NetworkChangeNotifier* CreateInstance() OVERRIDE;
+  virtual NetworkChangeNotifier* CreateInstance() override;
 
  private:
   // Delegate passed to the instances created by this class.

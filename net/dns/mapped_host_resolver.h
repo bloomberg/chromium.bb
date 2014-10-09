@@ -50,14 +50,14 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
                       AddressList* addresses,
                       const CompletionCallback& callback,
                       RequestHandle* out_req,
-                      const BoundNetLog& net_log) OVERRIDE;
+                      const BoundNetLog& net_log) override;
   virtual int ResolveFromCache(const RequestInfo& info,
                                AddressList* addresses,
-                               const BoundNetLog& net_log) OVERRIDE;
-  virtual void CancelRequest(RequestHandle req) OVERRIDE;
-  virtual void SetDnsClientEnabled(bool enabled) OVERRIDE;
-  virtual HostCache* GetHostCache() OVERRIDE;
-  virtual base::Value* GetDnsConfigAsValue() const OVERRIDE;
+                               const BoundNetLog& net_log) override;
+  virtual void CancelRequest(RequestHandle req) override;
+  virtual void SetDnsClientEnabled(bool enabled) override;
+  virtual HostCache* GetHostCache() override;
+  virtual base::Value* GetDnsConfigAsValue() const override;
 
  private:
   // Modify the request |info| according to |rules_|. Returns either OK or

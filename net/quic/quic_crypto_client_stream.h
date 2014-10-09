@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // CryptoFramerVisitorInterface implementation
   virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) OVERRIDE;
+      const CryptoHandshakeMessage& message) override;
 
   // Performs a crypto handshake with the server. Returns true if the crypto
   // handshake is started successfully.
@@ -62,7 +62,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     virtual ~ChannelIDSourceCallbackImpl();
 
     // ChannelIDSourceCallback interface.
-    virtual void Run(scoped_ptr<ChannelIDKey>* channel_id_key) OVERRIDE;
+    virtual void Run(scoped_ptr<ChannelIDKey>* channel_id_key) override;
 
     // Cancel causes any future callbacks to be ignored. It must be called on
     // the same thread as the callback will be made on.
@@ -83,7 +83,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     // ProofVerifierCallback interface.
     virtual void Run(bool ok,
                      const string& error_details,
-                     scoped_ptr<ProofVerifyDetails>* details) OVERRIDE;
+                     scoped_ptr<ProofVerifyDetails>* details) override;
 
     // Cancel causes any future callbacks to be ignored. It must be called on
     // the same thread as the callback will be made on.

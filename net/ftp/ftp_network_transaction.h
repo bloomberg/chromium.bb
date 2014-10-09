@@ -38,14 +38,14 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   // FtpTransaction methods:
   virtual int Start(const FtpRequestInfo* request_info,
                     const CompletionCallback& callback,
-                    const BoundNetLog& net_log) OVERRIDE;
+                    const BoundNetLog& net_log) override;
   virtual int RestartWithAuth(const AuthCredentials& credentials,
-                              const CompletionCallback& callback) OVERRIDE;
+                              const CompletionCallback& callback) override;
   virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE;
-  virtual const FtpResponseInfo* GetResponseInfo() const OVERRIDE;
-  virtual LoadState GetLoadState() const OVERRIDE;
-  virtual uint64 GetUploadProgress() const OVERRIDE;
+                   const CompletionCallback& callback) override;
+  virtual const FtpResponseInfo* GetResponseInfo() const override;
+  virtual LoadState GetLoadState() const override;
+  virtual uint64 GetUploadProgress() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FtpNetworkTransactionTest,

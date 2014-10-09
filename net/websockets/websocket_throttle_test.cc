@@ -25,12 +25,12 @@ class DummySocketStreamDelegate : public SocketStream::Delegate {
   DummySocketStreamDelegate() {}
   virtual ~DummySocketStreamDelegate() {}
   virtual void OnConnected(
-      SocketStream* socket, int max_pending_send_allowed) OVERRIDE {}
+      SocketStream* socket, int max_pending_send_allowed) override {}
   virtual void OnSentData(SocketStream* socket,
-                          int amount_sent) OVERRIDE {}
+                          int amount_sent) override {}
   virtual void OnReceivedData(SocketStream* socket,
-                              const char* data, int len) OVERRIDE {}
-  virtual void OnClose(SocketStream* socket) OVERRIDE {}
+                              const char* data, int len) override {}
+  virtual void OnClose(SocketStream* socket) override {}
 };
 
 class WebSocketThrottleTestContext : public TestURLRequestContext {

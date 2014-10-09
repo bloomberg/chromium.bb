@@ -42,7 +42,7 @@ class DefaultChannelIDStore::GetChannelIDTask
   GetChannelIDTask(const std::string& server_identifier,
                    const GetChannelIDCallback& callback);
   virtual ~GetChannelIDTask();
-  virtual void Run(DefaultChannelIDStore* store) OVERRIDE;
+  virtual void Run(DefaultChannelIDStore* store) override;
 
  private:
   std::string server_identifier_;
@@ -84,7 +84,7 @@ class DefaultChannelIDStore::SetChannelIDTask
                    const std::string& private_key,
                    const std::string& cert);
   virtual ~SetChannelIDTask();
-  virtual void Run(DefaultChannelIDStore* store) OVERRIDE;
+  virtual void Run(DefaultChannelIDStore* store) override;
 
  private:
   std::string server_identifier_;
@@ -124,7 +124,7 @@ class DefaultChannelIDStore::DeleteChannelIDTask
   DeleteChannelIDTask(const std::string& server_identifier,
                       const base::Closure& callback);
   virtual ~DeleteChannelIDTask();
-  virtual void Run(DefaultChannelIDStore* store) OVERRIDE;
+  virtual void Run(DefaultChannelIDStore* store) override;
 
  private:
   std::string server_identifier_;
@@ -159,7 +159,7 @@ class DefaultChannelIDStore::DeleteAllCreatedBetweenTask
                               base::Time delete_end,
                               const base::Closure& callback);
   virtual ~DeleteAllCreatedBetweenTask();
-  virtual void Run(DefaultChannelIDStore* store) OVERRIDE;
+  virtual void Run(DefaultChannelIDStore* store) override;
 
  private:
   base::Time delete_begin_;
@@ -195,7 +195,7 @@ class DefaultChannelIDStore::GetAllChannelIDsTask
  public:
   explicit GetAllChannelIDsTask(const GetChannelIDListCallback& callback);
   virtual ~GetAllChannelIDsTask();
-  virtual void Run(DefaultChannelIDStore* store) OVERRIDE;
+  virtual void Run(DefaultChannelIDStore* store) override;
 
  private:
   std::string server_identifier_;

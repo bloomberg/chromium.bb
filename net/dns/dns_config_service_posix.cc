@@ -74,7 +74,7 @@ class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
   }
 
   virtual void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type)
-      OVERRIDE {
+      override {
     if (!callback_.is_null() && type != NetworkChangeNotifier::CONNECTION_NONE)
       callback_.Run(true);
   }
@@ -263,7 +263,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   explicit ConfigReader(DnsConfigServicePosix* service)
       : service_(service), success_(false) {}
 
-  virtual void DoWork() OVERRIDE {
+  virtual void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     ConfigParsePosixResult result = ReadDnsConfig(&dns_config_);
     switch (result) {
@@ -285,7 +285,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
                         base::TimeTicks::Now() - start_time);
   }
 
-  virtual void OnWorkFinished() OVERRIDE {
+  virtual void OnWorkFinished() override {
     DCHECK(!IsCancelled());
     if (success_) {
       service_->OnConfigRead(dns_config_);
@@ -314,7 +314,7 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
  private:
   virtual ~HostsReader() {}
 
-  virtual void DoWork() OVERRIDE {
+  virtual void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     success_ = ParseHostsFile(path_, &hosts_);
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.HostParseResult", success_);
@@ -322,7 +322,7 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
                         base::TimeTicks::Now() - start_time);
   }
 
-  virtual void OnWorkFinished() OVERRIDE {
+  virtual void OnWorkFinished() override {
     if (success_) {
       service_->OnHostsRead(hosts_);
     } else {

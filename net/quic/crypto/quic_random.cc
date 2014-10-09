@@ -17,10 +17,10 @@ class DefaultRandom : public QuicRandom {
   static DefaultRandom* GetInstance();
 
   // QuicRandom implementation
-  virtual void RandBytes(void* data, size_t len) OVERRIDE;
-  virtual uint64 RandUint64() OVERRIDE;
+  virtual void RandBytes(void* data, size_t len) override;
+  virtual uint64 RandUint64() override;
   virtual void Reseed(const void* additional_entropy,
-                      size_t entropy_len) OVERRIDE;
+                      size_t entropy_len) override;
 
  private:
   DefaultRandom() {};

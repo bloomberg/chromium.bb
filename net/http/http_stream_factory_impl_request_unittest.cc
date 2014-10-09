@@ -34,28 +34,28 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
   virtual void OnStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      HttpStreamBase* stream) OVERRIDE {}
+      HttpStreamBase* stream) override {}
   virtual void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      WebSocketHandshakeStreamBase* stream) OVERRIDE {}
+      WebSocketHandshakeStreamBase* stream) override {}
   virtual void OnStreamFailed(
       int status,
-      const SSLConfig& used_ssl_config) OVERRIDE {}
+      const SSLConfig& used_ssl_config) override {}
   virtual void OnCertificateError(
       int status,
       const SSLConfig& used_ssl_config,
-      const SSLInfo& ssl_info) OVERRIDE {}
+      const SSLInfo& ssl_info) override {}
   virtual void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
                                 const SSLConfig& used_ssl_config,
                                 const ProxyInfo& used_proxy_info,
-                                HttpAuthController* auth_controller) OVERRIDE {}
+                                HttpAuthController* auth_controller) override {}
   virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
-                                 SSLCertRequestInfo* cert_info) OVERRIDE {}
+                                 SSLCertRequestInfo* cert_info) override {}
   virtual void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                           const SSLConfig& used_ssl_config,
                                           const ProxyInfo& used_proxy_info,
-                                          HttpStreamBase* stream) OVERRIDE {}
+                                          HttpStreamBase* stream) override {}
 };
 
 }  // namespace

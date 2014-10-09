@@ -128,7 +128,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
     }
 
    protected:
-    virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE {
+    virtual bool Init(HttpAuthChallengeTokenizer* challenge) override {
       HttpAuthHandlerMock::Init(challenge);
       set_allows_default_credentials(true);
       set_allows_explicit_credentials(false);
@@ -146,7 +146,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
     virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                       const HttpRequestInfo* request,
                                       const CompletionCallback& callback,
-                                      std::string* auth_token) OVERRIDE {
+                                      std::string* auth_token) override {
       int result =
           HttpAuthHandlerMock::GenerateAuthTokenImpl(credentials,
                                                      request, callback,

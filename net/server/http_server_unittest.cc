@@ -181,7 +181,7 @@ class HttpServerTest : public testing::Test,
  public:
   HttpServerTest() : quit_after_request_count_(0) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     scoped_ptr<ServerSocket> server_socket(
         new TCPServerSocket(NULL, net::NetLog::Source()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
@@ -189,26 +189,26 @@ class HttpServerTest : public testing::Test,
     ASSERT_EQ(OK, server_->GetLocalAddress(&server_address_));
   }
 
-  virtual void OnConnect(int connection_id) OVERRIDE {}
+  virtual void OnConnect(int connection_id) override {}
 
   virtual void OnHttpRequest(int connection_id,
-                             const HttpServerRequestInfo& info) OVERRIDE {
+                             const HttpServerRequestInfo& info) override {
     requests_.push_back(std::make_pair(info, connection_id));
     if (requests_.size() == quit_after_request_count_)
       run_loop_quit_func_.Run();
   }
 
   virtual void OnWebSocketRequest(int connection_id,
-                                  const HttpServerRequestInfo& info) OVERRIDE {
+                                  const HttpServerRequestInfo& info) override {
     NOTREACHED();
   }
 
   virtual void OnWebSocketMessage(int connection_id,
-                                  const std::string& data) OVERRIDE {
+                                  const std::string& data) override {
     NOTREACHED();
   }
 
-  virtual void OnClose(int connection_id) OVERRIDE {}
+  virtual void OnClose(int connection_id) override {}
 
   bool RunUntilRequestsReceived(size_t count) {
     quit_after_request_count_ = count;
@@ -249,17 +249,17 @@ namespace {
 
 class WebSocketTest : public HttpServerTest {
   virtual void OnHttpRequest(int connection_id,
-                             const HttpServerRequestInfo& info) OVERRIDE {
+                             const HttpServerRequestInfo& info) override {
     NOTREACHED();
   }
 
   virtual void OnWebSocketRequest(int connection_id,
-                                  const HttpServerRequestInfo& info) OVERRIDE {
+                                  const HttpServerRequestInfo& info) override {
     HttpServerTest::OnHttpRequest(connection_id, info);
   }
 
   virtual void OnWebSocketMessage(int connection_id,
-                                  const std::string& data) OVERRIDE {
+                                  const std::string& data) override {
   }
 };
 
@@ -409,7 +409,7 @@ TEST_F(HttpServerTest, RequestWithTooLargeBody) {
         : quit_loop_func_(quit_loop_func) {}
     virtual ~TestURLFetcherDelegate() {}
 
-    virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+    virtual void OnURLFetchComplete(const URLFetcher* source) override {
       EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, source->GetResponseCode());
       quit_loop_func_.Run();
     }
@@ -473,10 +473,10 @@ class MockStreamSocket : public StreamSocket {
         read_buf_len_(0) {}
 
   // StreamSocket
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
+  virtual int Connect(const CompletionCallback& callback) override {
     return ERR_NOT_IMPLEMENTED;
   }
-  virtual void Disconnect() OVERRIDE {
+  virtual void Disconnect() override {
     connected_ = false;
     if (!read_callback_.is_null()) {
       read_buf_ = NULL;
@@ -484,28 +484,28 @@ class MockStreamSocket : public StreamSocket {
       base::ResetAndReturn(&read_callback_).Run(ERR_CONNECTION_CLOSED);
     }
   }
-  virtual bool IsConnected() const OVERRIDE { return connected_; }
-  virtual bool IsConnectedAndIdle() const OVERRIDE { return IsConnected(); }
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
+  virtual bool IsConnected() const override { return connected_; }
+  virtual bool IsConnectedAndIdle() const override { return IsConnected(); }
+  virtual int GetPeerAddress(IPEndPoint* address) const override {
     return ERR_NOT_IMPLEMENTED;
   }
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
+  virtual int GetLocalAddress(IPEndPoint* address) const override {
     return ERR_NOT_IMPLEMENTED;
   }
-  virtual const BoundNetLog& NetLog() const OVERRIDE { return net_log_; }
-  virtual void SetSubresourceSpeculation() OVERRIDE {}
-  virtual void SetOmniboxSpeculation() OVERRIDE {}
-  virtual bool WasEverUsed() const OVERRIDE { return true; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual bool WasNpnNegotiated() const OVERRIDE { return false; }
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
+  virtual const BoundNetLog& NetLog() const override { return net_log_; }
+  virtual void SetSubresourceSpeculation() override {}
+  virtual void SetOmniboxSpeculation() override {}
+  virtual bool WasEverUsed() const override { return true; }
+  virtual bool UsingTCPFastOpen() const override { return false; }
+  virtual bool WasNpnNegotiated() const override { return false; }
+  virtual NextProto GetNegotiatedProtocol() const override {
     return kProtoUnknown;
   }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE { return false; }
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
 
   // Socket
   virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
+                   const CompletionCallback& callback) override {
     if (!connected_) {
       return ERR_SOCKET_NOT_CONNECTED;
     }
@@ -523,13 +523,13 @@ class MockStreamSocket : public StreamSocket {
     return read_len;
   }
   virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
+                    const CompletionCallback& callback) override {
     return ERR_NOT_IMPLEMENTED;
   }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual int SetReceiveBufferSize(int32 size) override {
     return ERR_NOT_IMPLEMENTED;
   }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual int SetSendBufferSize(int32 size) override {
     return ERR_NOT_IMPLEMENTED;
   }
 
@@ -621,7 +621,7 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
 
 class CloseOnConnectHttpServerTest : public HttpServerTest {
  public:
-  virtual void OnConnect(int connection_id) OVERRIDE {
+  virtual void OnConnect(int connection_id) override {
     connection_ids_.push_back(connection_id);
     server_->Close(connection_id);
   }

@@ -75,7 +75,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     server_framer_.set_visitor(&framer_visitor_);
   }
 
-  virtual ~QuicPacketCreatorTest() OVERRIDE {
+  virtual ~QuicPacketCreatorTest() override {
   }
 
   void ProcessPacket(QuicPacket* packet) {

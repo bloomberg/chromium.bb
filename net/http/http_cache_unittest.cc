@@ -498,12 +498,12 @@ class FakeWebSocketHandshakeStreamCreateHelper
  public:
   virtual ~FakeWebSocketHandshakeStreamCreateHelper() {}
   virtual net::WebSocketHandshakeStreamBase* CreateBasicStream(
-      scoped_ptr<net::ClientSocketHandle> connect, bool using_proxy) OVERRIDE {
+      scoped_ptr<net::ClientSocketHandle> connect, bool using_proxy) override {
     return NULL;
   }
   virtual net::WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<net::SpdySession>& session,
-      bool use_relative_url) OVERRIDE {
+      bool use_relative_url) override {
     return NULL;
   }
 };

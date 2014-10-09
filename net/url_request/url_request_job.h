@@ -219,7 +219,7 @@ class NET_EXPORT URLRequestJob
 
   // base::PowerObserver methods:
   // We invoke URLRequestJob::Kill on suspend (crbug.com/4606).
-  virtual void OnSuspend() OVERRIDE;
+  virtual void OnSuspend() override;
 
   // Called after a NetworkDelegate has been informed that the URLRequest
   // will be destroyed. This is used to track that no pending callbacks

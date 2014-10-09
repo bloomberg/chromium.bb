@@ -25,7 +25,7 @@ class NET_EXPORT URLRangeRequestJob : public URLRequestJob {
                      NetworkDelegate* delegate);
 
   virtual void SetExtraRequestHeaders(
-      const HttpRequestHeaders& headers) OVERRIDE;
+      const HttpRequestHeaders& headers) override;
 
   const std::vector<HttpByteRange>& ranges() const { return ranges_; }
   int range_parse_result() const { return range_parse_result_; }

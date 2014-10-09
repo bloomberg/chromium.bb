@@ -52,7 +52,7 @@ class TestCryptoStream : public QuicCryptoStream {
   }
 
   virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) OVERRIDE {
+      const CryptoHandshakeMessage& message) override {
     encryption_established_ = true;
     handshake_confirmed_ = true;
     CryptoHandshakeMessage msg;
@@ -91,7 +91,7 @@ class TestStream : public QuicDataStream {
 
   using ReliableQuicStream::CloseWriteSide;
 
-  virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE {
+  virtual uint32 ProcessData(const char* data, uint32 data_len) override {
     return data_len;
   }
 
@@ -129,17 +129,17 @@ class TestSession : public QuicSession {
     InitializeSession();
   }
 
-  virtual TestCryptoStream* GetCryptoStream() OVERRIDE {
+  virtual TestCryptoStream* GetCryptoStream() override {
     return &crypto_stream_;
   }
 
-  virtual TestStream* CreateOutgoingDataStream() OVERRIDE {
+  virtual TestStream* CreateOutgoingDataStream() override {
     TestStream* stream = new TestStream(GetNextStreamId(), this);
     ActivateStream(stream);
     return stream;
   }
 
-  virtual TestStream* CreateIncomingDataStream(QuicStreamId id) OVERRIDE {
+  virtual TestStream* CreateIncomingDataStream(QuicStreamId id) override {
     return new TestStream(id, this);
   }
 
@@ -157,7 +157,7 @@ class TestSession : public QuicSession {
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
-      QuicAckNotifier::DelegateInterface* ack_notifier_delegate) OVERRIDE {
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate) override {
     // Always consumes everything.
     if (writev_consumes_all_data_) {
       return QuicConsumedData(data.TotalBufferSize(), fin);

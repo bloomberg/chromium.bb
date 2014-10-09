@@ -46,7 +46,7 @@ class DiskCacheTest : public PlatformTest {
   // Deletes the contents of |cache_path_|.
   bool CleanupCacheDir();
 
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   base::FilePath cache_path_;
 
@@ -154,7 +154,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   void AddDelay();
 
   // DiskCacheTest:
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // cache_ will always have a valid object, regardless of how the cache was
   // initialized. The implementation pointers can be NULL.

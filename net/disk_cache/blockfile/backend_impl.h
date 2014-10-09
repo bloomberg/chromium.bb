@@ -259,20 +259,20 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void FlushIndex();
 
   // Backend implementation.
-  virtual net::CacheType GetCacheType() const OVERRIDE;
-  virtual int32 GetEntryCount() const OVERRIDE;
+  virtual net::CacheType GetCacheType() const override;
+  virtual int32 GetEntryCount() const override;
   virtual int OpenEntry(const std::string& key, Entry** entry,
-                        const CompletionCallback& callback) OVERRIDE;
+                        const CompletionCallback& callback) override;
   virtual int CreateEntry(const std::string& key, Entry** entry,
-                          const CompletionCallback& callback) OVERRIDE;
+                          const CompletionCallback& callback) override;
   virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) OVERRIDE;
-  virtual int DoomAllEntries(const CompletionCallback& callback) OVERRIDE;
+                        const CompletionCallback& callback) override;
+  virtual int DoomAllEntries(const CompletionCallback& callback) override;
   virtual int DoomEntriesBetween(base::Time initial_time,
                                  base::Time end_time,
-                                 const CompletionCallback& callback) OVERRIDE;
+                                 const CompletionCallback& callback) override;
   virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) OVERRIDE;
+                               const CompletionCallback& callback) override;
   // NOTE: The blockfile Backend::Iterator::OpenNextEntry method does not modify
   // the last_used field of the entry, and therefore it does not impact the
   // eviction ranking of the entry. However, an enumeration will go through all
@@ -281,9 +281,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   // the iterator (for example, deleting the entry) will invalidate the
   // iterator. Performing operations on an entry that modify the entry may
   // result in loops in the iteration, skipped entries or similar.
-  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
-  virtual void GetStats(StatsItems* stats) OVERRIDE;
-  virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
+  virtual scoped_ptr<Iterator> CreateIterator() override;
+  virtual void GetStats(StatsItems* stats) override;
+  virtual void OnExternalCacheHit(const std::string& key) override;
 
  private:
   typedef base::hash_map<CacheAddr, EntryImpl*> EntriesMap;

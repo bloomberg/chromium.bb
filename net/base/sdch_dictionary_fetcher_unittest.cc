@@ -62,7 +62,7 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const CompletionCallback& callback) const OVERRIDE {
+                      const CompletionCallback& callback) const override {
     GURL url(request_->url());
     *data = ExpectedResponseForURL(url);
     return OK;
@@ -87,7 +87,7 @@ class SdchTestDelegate : public SdchFetcher::Delegate {
   };
 
   virtual void AddSdchDictionary(const std::string& dictionary_text,
-                                 const GURL& dictionary_url) OVERRIDE {
+                                 const GURL& dictionary_url) override {
     dictionary_additions.push_back(
         DictionaryAdditions(dictionary_text, dictionary_url));
   }
@@ -105,7 +105,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
  public:
   SdchDictionaryFetcherTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DCHECK(!fetcher_.get());
 
     URLRequestSpecifiedResponseJob::AddUrlHandler();
@@ -115,7 +115,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
         fetcher_delegate_.get(), context_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     URLRequestSpecifiedResponseJob::RemoveUrlHandler();
     fetcher_.reset();
     context_.reset();

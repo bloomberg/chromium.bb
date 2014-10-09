@@ -49,7 +49,7 @@ class RecordingProofVerifier : public ProofVerifier {
       const ProofVerifyContext* context,
       string* error_details,
       scoped_ptr<ProofVerifyDetails>* details,
-      ProofVerifierCallback* callback) OVERRIDE {
+      ProofVerifierCallback* callback) override {
     common_name_.clear();
     if (certs.empty()) {
       return QUIC_FAILURE;

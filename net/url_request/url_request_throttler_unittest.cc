@@ -63,11 +63,11 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
     backoff_policy_.num_errors_to_ignore = 0;
   }
 
-  virtual const BackoffEntry* GetBackoffEntry() const OVERRIDE {
+  virtual const BackoffEntry* GetBackoffEntry() const override {
     return &mock_backoff_entry_;
   }
 
-  virtual BackoffEntry* GetBackoffEntry() OVERRIDE {
+  virtual BackoffEntry* GetBackoffEntry() override {
     return &mock_backoff_entry_;
   }
 
@@ -85,7 +85,7 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
   }
 
   // Overridden for tests.
-  virtual TimeTicks ImplGetTimeNow() const OVERRIDE { return fake_time_now_; }
+  virtual TimeTicks ImplGetTimeNow() const override { return fake_time_now_; }
 
   void set_exponential_backoff_release_time(
       const base::TimeTicks& release_time) {

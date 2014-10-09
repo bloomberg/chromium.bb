@@ -299,7 +299,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void SendConnectionCloseWithDetails(QuicErrorCode error,
                                               const std::string& details);
   // Notifies the visitor of the close and marks the connection as disconnected.
-  virtual void CloseConnection(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void CloseConnection(QuicErrorCode error, bool from_peer) override;
   virtual void SendGoAway(QuicErrorCode error,
                           QuicStreamId last_good_stream_id,
                           const std::string& reason);
@@ -317,7 +317,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // QuicBlockedWriterInterface
   // Called when the underlying connection becomes writable to allow queued
   // writes to happen.
-  virtual void OnCanWrite() OVERRIDE;
+  virtual void OnCanWrite() override;
 
   // Called when an error occurs while attempting to write a packet to the
   // network.
@@ -335,47 +335,47 @@ class NET_EXPORT_PRIVATE QuicConnection
   }
 
   // From QuicFramerVisitorInterface
-  virtual void OnError(QuicFramer* framer) OVERRIDE;
-  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) OVERRIDE;
-  virtual void OnPacket() OVERRIDE;
+  virtual void OnError(QuicFramer* framer) override;
+  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) override;
+  virtual void OnPacket() override;
   virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& packet) OVERRIDE;
+      const QuicPublicResetPacket& packet) override;
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) OVERRIDE;
-  virtual void OnRevivedPacket() OVERRIDE;
+      const QuicVersionNegotiationPacket& packet) override;
+  virtual void OnRevivedPacket() override;
   virtual bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) OVERRIDE;
-  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE;
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE;
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
-  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
+      const QuicPacketPublicHeader& header) override;
+  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
+  virtual void OnDecryptedPacket(EncryptionLevel level) override;
+  virtual bool OnPacketHeader(const QuicPacketHeader& header) override;
+  virtual void OnFecProtectedPayload(base::StringPiece payload) override;
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  virtual bool OnAckFrame(const QuicAckFrame& frame) override;
   virtual bool OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) OVERRIDE;
-  virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) OVERRIDE;
-  virtual bool OnPingFrame(const QuicPingFrame& frame) OVERRIDE;
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
+      const QuicCongestionFeedbackFrame& frame) override;
+  virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
+  virtual bool OnPingFrame(const QuicPingFrame& frame) override;
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
   virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) OVERRIDE;
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
-  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) OVERRIDE;
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE;
-  virtual void OnFecData(const QuicFecData& fec) OVERRIDE;
-  virtual void OnPacketComplete() OVERRIDE;
+      const QuicConnectionCloseFrame& frame) override;
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  virtual void OnFecData(const QuicFecData& fec) override;
+  virtual void OnPacketComplete() override;
 
   // QuicPacketGenerator::DelegateInterface
   virtual bool ShouldGeneratePacket(TransmissionType transmission_type,
                                     HasRetransmittableData retransmittable,
-                                    IsHandshake handshake) OVERRIDE;
-  virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
-  virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
-  virtual QuicStopWaitingFrame* CreateStopWaitingFrame() OVERRIDE;
-  virtual void OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
+                                    IsHandshake handshake) override;
+  virtual QuicAckFrame* CreateAckFrame() override;
+  virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() override;
+  virtual QuicStopWaitingFrame* CreateStopWaitingFrame() override;
+  virtual void OnSerializedPacket(const SerializedPacket& packet) override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
   virtual void OnCongestionWindowChange(
-      QuicByteCount congestion_window) OVERRIDE;
+      QuicByteCount congestion_window) override;
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of

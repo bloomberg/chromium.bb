@@ -31,7 +31,7 @@ namespace {
 
 class ProxyResolverV8TracingTest : public testing::Test {
  public:
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Drain any pending messages, which may be left over from cancellation.
     // This way they get reliably run as part of the current test, rather than
     // spilling into the next test's execution.
@@ -71,7 +71,7 @@ class MockErrorObserver : public ProxyResolverErrorObserver {
   MockErrorObserver() : event_(true, false) {}
 
   virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) OVERRIDE {
+                                const base::string16& error) override {
     {
       base::AutoLock l(lock_);
       output += base::StringPrintf("Error: line %d: %s\n", line_number,
@@ -768,7 +768,7 @@ class BlockableHostResolver : public HostResolver {
                       AddressList* addresses,
                       const CompletionCallback& callback,
                       RequestHandle* out_req,
-                      const BoundNetLog& net_log) OVERRIDE {
+                      const BoundNetLog& net_log) override {
     EXPECT_FALSE(callback.is_null());
     EXPECT_TRUE(out_req);
 
@@ -791,12 +791,12 @@ class BlockableHostResolver : public HostResolver {
 
   virtual int ResolveFromCache(const RequestInfo& info,
                                AddressList* addresses,
-                               const BoundNetLog& net_log) OVERRIDE {
+                               const BoundNetLog& net_log) override {
     NOTREACHED();
     return ERR_DNS_CACHE_MISS;
   }
 
-  virtual void CancelRequest(RequestHandle req) OVERRIDE {
+  virtual void CancelRequest(RequestHandle req) override {
     EXPECT_EQ(reinterpret_cast<RequestHandle*>(1), req);
     num_cancelled_requests_++;
   }

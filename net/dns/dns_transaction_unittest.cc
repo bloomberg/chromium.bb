@@ -153,7 +153,7 @@ class FailingUDPClientSocket : public MockUDPClientSocket {
       : MockUDPClientSocket(data, net_log) {
   }
   virtual ~FailingUDPClientSocket() {}
-  virtual int Connect(const IPEndPoint& endpoint) OVERRIDE {
+  virtual int Connect(const IPEndPoint& endpoint) override {
     return ERR_CONNECTION_REFUSED;
   }
 
@@ -170,7 +170,7 @@ class TestUDPClientSocket : public MockUDPClientSocket {
       : MockUDPClientSocket(data, net_log), factory_(factory) {
   }
   virtual ~TestUDPClientSocket() {}
-  virtual int Connect(const IPEndPoint& endpoint) OVERRIDE;
+  virtual int Connect(const IPEndPoint& endpoint) override;
 
  private:
   TestSocketFactory* factory_;
@@ -188,7 +188,7 @@ class TestSocketFactory : public MockClientSocketFactory {
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       net::NetLog* net_log,
-      const net::NetLog::Source& source) OVERRIDE {
+      const net::NetLog::Source& source) override {
     if (fail_next_socket_) {
       fail_next_socket_ = false;
       return scoped_ptr<DatagramClientSocket>(
@@ -441,7 +441,7 @@ class DnsTransactionTest : public testing::Test {
     }
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // By default set one server,
     ConfigureNumServers(1);
     // and no retransmissions,
@@ -451,7 +451,7 @@ class DnsTransactionTest : public testing::Test {
     ConfigureFactory();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Check that all socket data was at least written to.
     for (size_t i = 0; i < socket_data_.size(); ++i) {
       EXPECT_TRUE(socket_data_[i]->was_written()) << i;

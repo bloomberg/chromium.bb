@@ -27,14 +27,14 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
   // ClientCertStoreNSS:
   virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
                               CertificateList* selected_certs,
-                              const base::Closure& callback) OVERRIDE;
+                              const base::Closure& callback) override;
 
  protected:
   // ClientCertStoreNSS:
   virtual void GetClientCertsImpl(CERTCertList* cert_list,
                                   const SSLCertRequestInfo& request,
                                   bool query_nssdb,
-                                  CertificateList* selected_certs) OVERRIDE;
+                                  CertificateList* selected_certs) override;
 
  private:
   void DidGetSystemAndPrivateSlot(const SSLCertRequestInfo* request,

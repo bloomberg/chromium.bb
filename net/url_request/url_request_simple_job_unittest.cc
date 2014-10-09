@@ -35,7 +35,7 @@ class MockSimpleJob : public URLRequestSimpleJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const CompletionCallback& callback) const OVERRIDE {
+                      const CompletionCallback& callback) const override {
     mime_type->assign("text/plain");
     charset->assign("US-ASCII");
     data->assign(kTestData);
@@ -55,7 +55,7 @@ class SimpleJobProtocolHandler :
  public:
   virtual URLRequestJob* MaybeCreateJob(
       URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE {
+      NetworkDelegate* network_delegate) const override {
     return new MockSimpleJob(request, network_delegate);
   }
 };

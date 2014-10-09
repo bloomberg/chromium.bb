@@ -81,7 +81,7 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
                                  int num_retransmitted_packets,
                                  int num_retransmitted_bytes,
                                  QuicTime::Delta delta_largest_observed)
-      OVERRIDE {
+      override {
     DCHECK_LT(0, pending_acks_);
     --pending_acks_;
     num_original_packets_ += num_original_packets;
@@ -106,7 +106,7 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 
  protected:
   // Delegates are ref counted.
-  virtual ~ProxyAckNotifierDelegate() OVERRIDE {
+  virtual ~ProxyAckNotifierDelegate() override {
   }
 
  private:

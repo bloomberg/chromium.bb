@@ -121,7 +121,7 @@ class SpdySessionTest : public PlatformTest,
         HttpNetworkSession::NORMAL_SOCKET_POOL, old_max_group_sockets_);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     g_time_delta = base::TimeDelta();
   }
 
@@ -2305,7 +2305,7 @@ class SessionClosingDelegate : public test::StreamDelegateDoNothing {
 
   virtual ~SessionClosingDelegate() {}
 
-  virtual void OnClose(int status) OVERRIDE {
+  virtual void OnClose(int status) override {
     session_to_close_->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error");
   }
 
@@ -3381,7 +3381,7 @@ class StreamCreatingDelegate : public test::StreamDelegateDoNothing {
 
   virtual ~StreamCreatingDelegate() {}
 
-  virtual void OnClose(int status) OVERRIDE {
+  virtual void OnClose(int status) override {
     GURL url(kDefaultURL);
     ignore_result(
         CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
@@ -3661,7 +3661,7 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
   virtual ~DropReceivedDataDelegate() {}
 
   // Drop any received data.
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE {}
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override {}
 };
 
 // Send data back and forth but use a delegate that drops its received
@@ -4249,7 +4249,7 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
     stream_to_close_ = stream_to_close;
   }
 
-  virtual void OnDataSent() OVERRIDE {
+  virtual void OnDataSent() override {
     test::StreamDelegateWithBody::OnDataSent();
     if (stream_to_close_.get()) {
       stream_to_close_->Close();

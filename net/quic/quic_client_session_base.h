@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSession {
       const ProofVerifyDetails& verify_details) = 0;
 
   // Override base class to set FEC policy before any data is sent by client.
-  virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) OVERRIDE;
+  virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicClientSessionBase);

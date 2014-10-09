@@ -356,7 +356,7 @@ class NET_EXPORT SdchManager
   // (data in the dictionary is not acceptable from the
   // dictionary_url; dictionary already added, etc.).
   virtual void AddSdchDictionary(const std::string& dictionary_text,
-                                 const GURL& dictionary_url) OVERRIDE;
+                                 const GURL& dictionary_url) override;
 
  private:
   struct BlacklistInfo {

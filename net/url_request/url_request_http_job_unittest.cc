@@ -231,7 +231,7 @@ class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
   // scoped_ptr, so this forwarding method acts as a workaround.
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
-      bool using_proxy) OVERRIDE {
+      bool using_proxy) override {
     // Discard the arguments since we don't need them anyway.
     return CreateBasicStreamMock();
   }
@@ -256,58 +256,58 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   virtual int InitializeStream(const HttpRequestInfo* request_info,
                                RequestPriority priority,
                                const BoundNetLog& net_log,
-                               const CompletionCallback& callback) OVERRIDE {
+                               const CompletionCallback& callback) override {
     initialize_stream_was_called_ = true;
     return ERR_IO_PENDING;
   }
 
   virtual int SendRequest(const HttpRequestHeaders& request_headers,
                           HttpResponseInfo* response,
-                          const CompletionCallback& callback) OVERRIDE {
+                          const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE {
+  virtual int ReadResponseHeaders(const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
-                               const CompletionCallback& callback) OVERRIDE {
+                               const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual void Close(bool not_reusable) OVERRIDE {}
+  virtual void Close(bool not_reusable) override {}
 
-  virtual bool IsResponseBodyComplete() const OVERRIDE { return false; }
+  virtual bool IsResponseBodyComplete() const override { return false; }
 
-  virtual bool CanFindEndOfResponse() const OVERRIDE { return false; }
+  virtual bool CanFindEndOfResponse() const override { return false; }
 
-  virtual bool IsConnectionReused() const OVERRIDE { return false; }
-  virtual void SetConnectionReused() OVERRIDE {}
+  virtual bool IsConnectionReused() const override { return false; }
+  virtual void SetConnectionReused() override {}
 
-  virtual bool IsConnectionReusable() const OVERRIDE { return false; }
+  virtual bool IsConnectionReusable() const override { return false; }
 
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE { return 0; }
+  virtual int64 GetTotalReceivedBytes() const override { return 0; }
 
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
-      OVERRIDE {
+      override {
     return false;
   }
 
-  virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {}
+  virtual void GetSSLInfo(SSLInfo* ssl_info) override {}
 
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
-      OVERRIDE {}
+      override {}
 
-  virtual bool IsSpdyHttpStream() const OVERRIDE { return false; }
+  virtual bool IsSpdyHttpStream() const override { return false; }
 
-  virtual void Drain(HttpNetworkSession* session) OVERRIDE {}
+  virtual void Drain(HttpNetworkSession* session) override {}
 
-  virtual void SetPriority(RequestPriority priority) OVERRIDE {}
+  virtual void SetPriority(RequestPriority priority) override {}
 
   // Fake implementation of WebSocketHandshakeStreamBase method(s)
-  virtual scoped_ptr<WebSocketStream> Upgrade() OVERRIDE {
+  virtual scoped_ptr<WebSocketStream> Upgrade() override {
     return scoped_ptr<WebSocketStream>();
   }
 

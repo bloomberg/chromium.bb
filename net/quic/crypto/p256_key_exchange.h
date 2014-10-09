@@ -38,11 +38,11 @@ class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   static std::string NewPrivateKey();
 
   // KeyExchange interface.
-  virtual KeyExchange* NewKeyPair(QuicRandom* rand) const OVERRIDE;
+  virtual KeyExchange* NewKeyPair(QuicRandom* rand) const override;
   virtual bool CalculateSharedKey(const base::StringPiece& peer_public_value,
-                                  std::string* shared_key) const OVERRIDE;
-  virtual base::StringPiece public_value() const OVERRIDE;
-  virtual QuicTag tag() const OVERRIDE;
+                                  std::string* shared_key) const override;
+  virtual base::StringPiece public_value() const override;
+  virtual QuicTag tag() const override;
 
  private:
   enum {

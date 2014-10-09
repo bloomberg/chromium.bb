@@ -29,8 +29,8 @@ class NetworkChangeNotifierLinux::Thread : public base::Thread {
 
  protected:
   // base::Thread
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   scoped_ptr<DnsConfigService> dns_config_service_;

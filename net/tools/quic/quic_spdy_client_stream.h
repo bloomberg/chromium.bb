@@ -32,16 +32,16 @@ class QuicSpdyClientStream : public QuicDataStream {
   // Override the base class to close the write side as soon as we get a
   // response.
   // SPDY/HTTP does not support bidirectional streaming.
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) override;
 
   // Override the base class to store the size of the headers.
-  virtual void OnStreamHeadersComplete(bool fin, size_t frame_len) OVERRIDE;
+  virtual void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
 
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
-  virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
+  virtual uint32 ProcessData(const char* data, uint32 data_len) override;
 
-  virtual void OnFinRead() OVERRIDE;
+  virtual void OnFinRead() override;
 
   // Serializes the headers and body, sends it to the server, and
   // returns the number of bytes sent.

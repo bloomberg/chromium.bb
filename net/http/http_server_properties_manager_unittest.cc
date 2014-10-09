@@ -44,7 +44,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   // Post tasks without a delay during tests.
   virtual void StartPrefsUpdateTimerOnNetworkThread(
-      base::TimeDelta delay) OVERRIDE {
+      base::TimeDelta delay) override {
     HttpServerPropertiesManager::StartPrefsUpdateTimerOnNetworkThread(
         base::TimeDelta());
   }
@@ -55,7 +55,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   // Post tasks without a delay during tests.
   virtual void StartCacheUpdateTimerOnPrefThread(
-      base::TimeDelta delay) OVERRIDE {
+      base::TimeDelta delay) override {
     HttpServerPropertiesManager::StartCacheUpdateTimerOnPrefThread(
         base::TimeDelta());
   }
@@ -88,7 +88,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
  protected:
   HttpServerPropertiesManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     pref_service_.registry()->RegisterDictionaryPref(kTestHttpServerProperties);
     http_server_props_manager_.reset(
         new StrictMock<TestingHttpServerPropertiesManager>(
@@ -99,7 +99,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (http_server_props_manager_.get())
       http_server_props_manager_->ShutdownOnPrefThread();
     base::RunLoop().RunUntilIdle();

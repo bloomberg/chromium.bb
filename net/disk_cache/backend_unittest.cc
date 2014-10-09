@@ -1843,7 +1843,7 @@ class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
   virtual ~BadEntropyProvider() {}
 
   virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const OVERRIDE {
+                                    uint32 randomization_seed) const override {
     return 0.5;
   }
 };

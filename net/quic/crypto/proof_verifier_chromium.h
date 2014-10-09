@@ -30,7 +30,7 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
  public:
 
   // ProofVerifyDetails implementation
-  virtual ProofVerifyDetails* Clone() const OVERRIDE;
+  virtual ProofVerifyDetails* Clone() const override;
 
   CertVerifyResult cert_verify_result;
 
@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
       const ProofVerifyContext* verify_context,
       std::string* error_details,
       scoped_ptr<ProofVerifyDetails>* verify_details,
-      ProofVerifierCallback* callback) OVERRIDE;
+      ProofVerifierCallback* callback) override;
 
  private:
   class Job;

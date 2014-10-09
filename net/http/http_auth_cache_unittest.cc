@@ -33,19 +33,19 @@ class MockAuthHandler : public HttpAuthHandler {
   }
 
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuthChallengeTokenizer* challenge) OVERRIDE {
+      HttpAuthChallengeTokenizer* challenge) override {
     return HttpAuth::AUTHORIZATION_RESULT_REJECT;
   }
 
  protected:
-  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE {
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) override {
     return false;  // Unused.
   }
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials*,
                                     const HttpRequestInfo*,
                                     const CompletionCallback& callback,
-                                    std::string* auth_token) OVERRIDE {
+                                    std::string* auth_token) override {
     *auth_token = "mock-credentials";
     return OK;
   }

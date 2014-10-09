@@ -2165,7 +2165,7 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
  public:
   FlushablePersistentStore() : flush_count_(0) {}
 
-  virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE {
+  virtual void Load(const LoadedCallback& loaded_callback) override {
     std::vector<CanonicalCookie*> out_cookies;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -2175,16 +2175,16 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
 
   virtual void LoadCookiesForKey(
       const std::string& key,
-      const LoadedCallback& loaded_callback) OVERRIDE {
+      const LoadedCallback& loaded_callback) override {
     Load(loaded_callback);
   }
 
-  virtual void AddCookie(const CanonicalCookie&) OVERRIDE {}
-  virtual void UpdateCookieAccessTime(const CanonicalCookie&) OVERRIDE {}
-  virtual void DeleteCookie(const CanonicalCookie&) OVERRIDE {}
-  virtual void SetForceKeepSessionState() OVERRIDE {}
+  virtual void AddCookie(const CanonicalCookie&) override {}
+  virtual void UpdateCookieAccessTime(const CanonicalCookie&) override {}
+  virtual void DeleteCookie(const CanonicalCookie&) override {}
+  virtual void SetForceKeepSessionState() override {}
 
-  virtual void Flush(const base::Closure& callback) OVERRIDE {
+  virtual void Flush(const base::Closure& callback) override {
     ++flush_count_;
     if (!callback.is_null())
       callback.Run();

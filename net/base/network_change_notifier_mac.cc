@@ -47,12 +47,12 @@ class NetworkChangeNotifierMac::DnsConfigServiceThread : public base::Thread {
     Stop();
   }
 
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     service_ = DnsConfigService::CreateSystemService();
     service_->WatchConfig(base::Bind(&NetworkChangeNotifier::SetDnsConfig));
   }
 
-  virtual void CleanUp() OVERRIDE {
+  virtual void CleanUp() override {
     service_.reset();
   }
 

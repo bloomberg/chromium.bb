@@ -38,7 +38,7 @@ class ImmediatePollPolicy : public ProxyService::PacPollPolicy {
   ImmediatePollPolicy() {}
 
   virtual Mode GetNextDelay(int error, base::TimeDelta current_delay,
-                            base::TimeDelta* next_delay) const OVERRIDE {
+                            base::TimeDelta* next_delay) const override {
     *next_delay = base::TimeDelta::FromMilliseconds(1);
     return MODE_USE_TIMER;
   }
@@ -54,7 +54,7 @@ class NeverPollPolicy : public ProxyService::PacPollPolicy {
   NeverPollPolicy() {}
 
   virtual Mode GetNextDelay(int error, base::TimeDelta current_delay,
-                            base::TimeDelta* next_delay) const OVERRIDE {
+                            base::TimeDelta* next_delay) const override {
     *next_delay = base::TimeDelta::FromDays(60);
     return MODE_USE_TIMER;
   }
@@ -69,7 +69,7 @@ class ImmediateAfterActivityPollPolicy : public ProxyService::PacPollPolicy {
   ImmediateAfterActivityPollPolicy() {}
 
   virtual Mode GetNextDelay(int error, base::TimeDelta current_delay,
-                            base::TimeDelta* next_delay) const OVERRIDE {
+                            base::TimeDelta* next_delay) const override {
     *next_delay = base::TimeDelta();
     return MODE_START_AFTER_ACTIVITY;
   }
@@ -95,13 +95,13 @@ class ImmediateAfterActivityPollPolicy : public ProxyService::PacPollPolicy {
 // are careful to avoid timing problems.
 class ProxyServiceTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     previous_policy_ =
         ProxyService::set_pac_script_poll_policy(&never_poll_policy_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Restore the original policy.
     ProxyService::set_pac_script_poll_policy(previous_policy_);
     testing::Test::TearDown();
@@ -127,16 +127,16 @@ class MockProxyConfigService: public ProxyConfigService {
         config_(ProxyConfig::CreateFromCustomPacURL(GURL(pac_url))) {
   }
 
-  virtual void AddObserver(Observer* observer) OVERRIDE {
+  virtual void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+  virtual void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
   virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* results)
-      OVERRIDE {
+      override {
     if (availability_ == CONFIG_VALID)
       *results = config_;
     return availability_;
@@ -168,7 +168,7 @@ class TestResolveProxyNetworkDelegate : public NetworkDelegate {
   virtual void OnResolveProxy(const GURL& url,
                               int load_flags,
                               const ProxyService& proxy_service,
-                              ProxyInfo* result) OVERRIDE {
+                              ProxyInfo* result) override {
     on_resolve_proxy_called_ = true;
     proxy_service_ = &proxy_service;
     DCHECK(!add_proxy_ || !remove_proxy_);
@@ -211,7 +211,7 @@ class TestProxyFallbackNetworkDelegate : public NetworkDelegate {
   }
 
   virtual void OnProxyFallback(const ProxyServer& proxy_server,
-                               int net_error) OVERRIDE {
+                               int net_error) override {
     proxy_server_ = proxy_server;
     proxy_fallback_net_error_ = net_error;
     on_proxy_fallback_called_ = true;

@@ -81,14 +81,14 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
     Stop();
   }
 
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     address_tracker_.Init();
     dns_config_service_ = DnsConfigService::CreateSystemService();
     dns_config_service_->WatchConfig(
         base::Bind(&NetworkChangeNotifier::SetDnsConfig));
   }
 
-  virtual void CleanUp() OVERRIDE {
+  virtual void CleanUp() override {
     dns_config_service_.reset();
   }
 

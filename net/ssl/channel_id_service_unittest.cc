@@ -37,11 +37,11 @@ class FailingTaskRunner : public base::TaskRunner {
 
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE {
+                               base::TimeDelta delay) override {
     return false;
   }
 
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+  virtual bool RunsTasksOnCurrentThread() const override { return true; }
 
  protected:
   virtual ~FailingTaskRunner() {}
@@ -60,17 +60,17 @@ class MockChannelIDStoreWithAsyncGet
                            base::Time* expiration_time,
                            std::string* private_key_result,
                            std::string* cert_result,
-                           const GetChannelIDCallback& callback) OVERRIDE;
+                           const GetChannelIDCallback& callback) override;
 
   virtual void SetChannelID(const std::string& server_identifier,
                             base::Time creation_time,
                             base::Time expiration_time,
                             const std::string& private_key,
-                            const std::string& cert) OVERRIDE {
+                            const std::string& cert) override {
     channel_id_count_ = 1;
   }
 
-  virtual int GetChannelIDCount() OVERRIDE { return channel_id_count_; }
+  virtual int GetChannelIDCount() override { return channel_id_count_; }
 
   void CallGetChannelIDCallbackWithResult(int err,
                                           base::Time expiration_time,

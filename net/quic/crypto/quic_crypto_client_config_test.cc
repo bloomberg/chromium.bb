@@ -21,7 +21,7 @@ class TestProofVerifyDetails : public ProofVerifyDetails {
   virtual ~TestProofVerifyDetails() {}
 
   // ProofVerifyDetails implementation
-  virtual ProofVerifyDetails* Clone() const OVERRIDE {
+  virtual ProofVerifyDetails* Clone() const override {
     return new TestProofVerifyDetails;
   }
 };

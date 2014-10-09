@@ -69,7 +69,7 @@ class NET_EXPORT URLRequestFilter : public URLRequestInterceptor {
   // URLRequestInterceptor implementation:
   virtual URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE;
+      NetworkDelegate* network_delegate) const override;
 
  private:
   // scheme,hostname -> URLRequestInterceptor

@@ -20,11 +20,11 @@ class MockClock : public QuicClock {
 
   void AdvanceTime(QuicTime::Delta delta);
 
-  virtual QuicTime Now() const OVERRIDE;
+  virtual QuicTime Now() const override;
 
-  virtual QuicTime ApproximateNow() const OVERRIDE;
+  virtual QuicTime ApproximateNow() const override;
 
-  virtual QuicWallTime WallNow() const OVERRIDE;
+  virtual QuicWallTime WallNow() const override;
 
   base::TimeTicks NowInTicks() const;
 

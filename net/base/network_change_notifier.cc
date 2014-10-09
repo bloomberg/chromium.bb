@@ -45,7 +45,7 @@ NetworkChangeNotifierFactory* g_network_change_notifier_factory = NULL;
 
 class MockNetworkChangeNotifier : public NetworkChangeNotifier {
  public:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  virtual ConnectionType GetCurrentConnectionType() const override {
     return CONNECTION_UNKNOWN;
   }
 };
@@ -93,7 +93,7 @@ class HistogramWatcher
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() OVERRIDE {
+  virtual void OnIPAddressChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_MEDIUM_TIMES("NCN.IPAddressChange",
                                SinceLast(&last_ip_address_change_));
@@ -104,7 +104,7 @@ class HistogramWatcher
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
-      NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+      NetworkChangeNotifier::ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeTicks now = base::TimeTicks::Now();
     int32 kilobytes_read = bytes_read_since_last_connection_change_ / 1000;
@@ -264,7 +264,7 @@ class HistogramWatcher
   }
 
   // NetworkChangeNotifier::DNSObserver implementation.
-  virtual void OnDNSChanged() OVERRIDE {
+  virtual void OnDNSChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_MEDIUM_TIMES("NCN.DNSConfigChange",
                                SinceLast(&last_dns_change_));
@@ -272,7 +272,7 @@ class HistogramWatcher
 
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
-      NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+      NetworkChangeNotifier::ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (type != NetworkChangeNotifier::CONNECTION_NONE) {
       UMA_HISTOGRAM_MEDIUM_TIMES("NCN.NetworkOnlineChange",
@@ -432,7 +432,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() OVERRIDE {
+  virtual void OnIPAddressChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
         ? params_.ip_address_offline_delay_ : params_.ip_address_online_delay_;
@@ -441,7 +441,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   }
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(ConnectionType type) OVERRIDE {
+  virtual void OnConnectionTypeChanged(ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     pending_connection_type_ = type;
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE

@@ -201,11 +201,11 @@ class BalsaFrame {
 
  private:
   class DoNothingBalsaVisitor : public BalsaVisitorInterface {
-    virtual void ProcessBodyInput(const char *input, size_t size) OVERRIDE {}
-    virtual void ProcessBodyData(const char *input, size_t size) OVERRIDE {}
-    virtual void ProcessHeaderInput(const char *input, size_t size) OVERRIDE {}
-    virtual void ProcessTrailerInput(const char *input, size_t size) OVERRIDE {}
-    virtual void ProcessHeaders(const BalsaHeaders& headers) OVERRIDE {}
+    virtual void ProcessBodyInput(const char *input, size_t size) override {}
+    virtual void ProcessBodyData(const char *input, size_t size) override {}
+    virtual void ProcessHeaderInput(const char *input, size_t size) override {}
+    virtual void ProcessTrailerInput(const char *input, size_t size) override {}
+    virtual void ProcessHeaders(const BalsaHeaders& headers) override {}
     virtual void ProcessRequestFirstLine(const char* line_input,
                                          size_t line_length,
                                          const char* method_input,
@@ -213,7 +213,7 @@ class BalsaFrame {
                                          const char* request_uri_input,
                                          size_t request_uri_length,
                                          const char* version_input,
-                                         size_t version_length) OVERRIDE {}
+                                         size_t version_length) override {}
     virtual void ProcessResponseFirstLine(const char *line_input,
                                           size_t line_length,
                                           const char *version_input,
@@ -221,16 +221,16 @@ class BalsaFrame {
                                           const char *status_input,
                                           size_t status_length,
                                           const char *reason_input,
-                                          size_t reason_length) OVERRIDE {}
-    virtual void ProcessChunkLength(size_t chunk_length) OVERRIDE {}
+                                          size_t reason_length) override {}
+    virtual void ProcessChunkLength(size_t chunk_length) override {}
     virtual void ProcessChunkExtensions(const char *input,
-                                        size_t size) OVERRIDE {}
-    virtual void HeaderDone() OVERRIDE {}
-    virtual void MessageDone() OVERRIDE {}
-    virtual void HandleHeaderError(BalsaFrame* framer) OVERRIDE {}
-    virtual void HandleHeaderWarning(BalsaFrame* framer) OVERRIDE {}
-    virtual void HandleChunkingError(BalsaFrame* framer) OVERRIDE {}
-    virtual void HandleBodyError(BalsaFrame* framer) OVERRIDE {}
+                                        size_t size) override {}
+    virtual void HeaderDone() override {}
+    virtual void MessageDone() override {}
+    virtual void HandleHeaderError(BalsaFrame* framer) override {}
+    virtual void HandleHeaderWarning(BalsaFrame* framer) override {}
+    virtual void HandleChunkingError(BalsaFrame* framer) override {}
+    virtual void HandleBodyError(BalsaFrame* framer) override {}
   };
 
   bool last_char_was_slash_r_;

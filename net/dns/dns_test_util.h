@@ -211,10 +211,10 @@ class MockDnsClient : public DnsClient {
   virtual ~MockDnsClient();
 
   // DnsClient interface:
-  virtual void SetConfig(const DnsConfig& config) OVERRIDE;
-  virtual const DnsConfig* GetConfig() const OVERRIDE;
-  virtual DnsTransactionFactory* GetTransactionFactory() OVERRIDE;
-  virtual AddressSorter* GetAddressSorter() OVERRIDE;
+  virtual void SetConfig(const DnsConfig& config) override;
+  virtual const DnsConfig* GetConfig() const override;
+  virtual DnsTransactionFactory* GetTransactionFactory() override;
+  virtual AddressSorter* GetAddressSorter() override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();

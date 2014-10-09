@@ -72,7 +72,7 @@ class AckAlarm : public QuicAlarm::Delegate {
       : connection_(connection) {
   }
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     connection_->SendAck();
     return QuicTime::Zero();
   }
@@ -92,7 +92,7 @@ class RetransmissionAlarm : public QuicAlarm::Delegate {
       : connection_(connection) {
   }
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     connection_->OnRetransmissionTimeout();
     return QuicTime::Zero();
   }
@@ -111,7 +111,7 @@ class SendAlarm : public QuicAlarm::Delegate {
       : connection_(connection) {
   }
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     connection_->WriteIfNotBlocked();
     // Never reschedule the alarm, since CanWrite does that.
     return QuicTime::Zero();
@@ -129,7 +129,7 @@ class TimeoutAlarm : public QuicAlarm::Delegate {
       : connection_(connection) {
   }
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     connection_->CheckForTimeout();
     // Never reschedule the alarm, since CheckForTimeout does that.
     return QuicTime::Zero();
@@ -147,7 +147,7 @@ class PingAlarm : public QuicAlarm::Delegate {
       : connection_(connection) {
   }
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     connection_->SendPing();
     return QuicTime::Zero();
   }

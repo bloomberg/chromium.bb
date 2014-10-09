@@ -34,8 +34,8 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // ReliableQuicStream implementation
-  virtual uint32 ProcessRawData(const char* data, uint32 data_len) OVERRIDE;
-  virtual QuicPriority EffectivePriority() const OVERRIDE;
+  virtual uint32 ProcessRawData(const char* data, uint32 data_len) override;
+  virtual QuicPriority EffectivePriority() const override;
 
  private:
   class SpdyFramerVisitor;

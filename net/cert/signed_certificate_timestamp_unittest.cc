@@ -20,7 +20,7 @@ const char kLogDescription[] = "somelog";
 
 class SignedCertificateTimestampTest : public ::testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     GetX509CertSCT(&sample_sct_);
     sample_sct_->origin = SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE;
     sample_sct_->log_description = kLogDescription;

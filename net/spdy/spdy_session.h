@@ -517,7 +517,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   base::WeakPtr<SpdySession> GetWeakPtr();
 
   // HigherLayeredPool implementation:
-  virtual bool CloseOneIdleConnection() OVERRIDE;
+  virtual bool CloseOneIdleConnection() override;
 
  private:
   friend class base::RefCounted<SpdySession>;
@@ -813,55 +813,55 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void DeleteExpiredPushedStreams();
 
   // BufferedSpdyFramerVisitorInterface:
-  virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE;
+  virtual void OnError(SpdyFramer::SpdyError error_code) override;
   virtual void OnStreamError(SpdyStreamId stream_id,
-                             const std::string& description) OVERRIDE;
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE;
+                             const std::string& description) override;
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override;
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) OVERRIDE;
+                           SpdyRstStreamStatus status) override;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) OVERRIDE;
+                        SpdyGoAwayStatus status) override;
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
-                                 bool fin) OVERRIDE;
+                                 bool fin) override;
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 bool fin) OVERRIDE;
-  virtual void OnSettings(bool clear_persisted) OVERRIDE;
+                                 bool fin) override;
+  virtual void OnSettings(bool clear_persisted) override;
   virtual void OnSetting(
-      SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
+      SpdySettingsIds id, uint8 flags, uint32 value) override;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) OVERRIDE;
+                              uint32 delta_window_size) override;
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
-                             const SpdyHeaderBlock& headers) OVERRIDE;
+                             const SpdyHeaderBlock& headers) override;
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
                            bool fin,
                            bool unidirectional,
-                           const SpdyHeaderBlock& headers) OVERRIDE;
+                           const SpdyHeaderBlock& headers) override;
   virtual void OnSynReply(
       SpdyStreamId stream_id,
       bool fin,
-      const SpdyHeaderBlock& headers) OVERRIDE;
+      const SpdyHeaderBlock& headers) override;
   virtual void OnHeaders(
       SpdyStreamId stream_id,
       bool fin,
-      const SpdyHeaderBlock& headers) OVERRIDE;
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE;
+      const SpdyHeaderBlock& headers) override;
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
 
   // SpdyFramerDebugVisitorInterface
   virtual void OnSendCompressedFrame(
       SpdyStreamId stream_id,
       SpdyFrameType type,
       size_t payload_len,
-      size_t frame_len) OVERRIDE;
+      size_t frame_len) override;
   virtual void OnReceiveCompressedFrame(
       SpdyStreamId stream_id,
       SpdyFrameType type,
-      size_t frame_len) OVERRIDE;
+      size_t frame_len) override;
 
   // Called when bytes are consumed from a SpdyBuffer for a DATA frame
   // that is to be written or is being written. Increases the send

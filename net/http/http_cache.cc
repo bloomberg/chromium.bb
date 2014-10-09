@@ -286,7 +286,7 @@ class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
   }
 
   virtual QuicServerInfo* GetForServer(
-      const QuicServerId& server_id) OVERRIDE {
+      const QuicServerId& server_id) override {
     return new DiskCacheBasedQuicServerInfo(server_id, http_cache_);
   }
 

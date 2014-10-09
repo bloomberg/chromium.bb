@@ -80,7 +80,7 @@ class FileInFlightIO : public disk_cache::InFlightIO {
   // queued (because we are inside WaitForPendingIO), and false if said task is
   // the one performing the call.
   virtual void OnOperationComplete(disk_cache::BackgroundIO* operation,
-                                   bool cancel) OVERRIDE;
+                                   bool cancel) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileInFlightIO);

@@ -104,7 +104,7 @@ class TestSession : public QuicSession {
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE;
+  virtual QuicCryptoStream* GetCryptoStream() override;
 
  private:
   QuicCryptoStream* crypto_stream_;
@@ -169,7 +169,7 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
   virtual ~TestWriterFactory();
 
   virtual QuicPacketWriter* Create(QuicPacketWriter* writer,
-                                   QuicConnection* connection) OVERRIDE;
+                                   QuicConnection* connection) override;
 
   // Calls OnPacketSent on the last QuicConnection to write through one of the
   // packet writers created by this factory.
@@ -187,7 +187,7 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
         const char* buffer,
         size_t buf_len,
         const IPAddressNumber& self_address,
-        const IPEndPoint& peer_address) OVERRIDE;
+        const IPEndPoint& peer_address) override;
 
    private:
     TestWriterFactory* factory_;

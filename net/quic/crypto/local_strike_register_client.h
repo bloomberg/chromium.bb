@@ -26,10 +26,10 @@ class NET_EXPORT_PRIVATE LocalStrikeRegisterClient
                             const uint8 orbit[8],
                             StrikeRegister::StartupType startup);
 
-  virtual bool IsKnownOrbit(base::StringPiece orbit) const OVERRIDE;
+  virtual bool IsKnownOrbit(base::StringPiece orbit) const override;
   virtual void VerifyNonceIsValidAndUnique(base::StringPiece nonce,
                                            QuicWallTime now,
-                                           ResultCallback* cb) OVERRIDE;
+                                           ResultCallback* cb) override;
 
  private:
   mutable base::Lock m_;

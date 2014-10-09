@@ -1260,7 +1260,7 @@ class BackendImpl::IteratorImpl : public Backend::Iterator {
   }
 
   virtual int OpenNextEntry(Entry** next_entry,
-                            const net::CompletionCallback& callback) OVERRIDE {
+                            const net::CompletionCallback& callback) override {
     if (!background_queue_)
       return net::ERR_FAILED;
     background_queue_->OpenNextEntry(iterator_.get(), next_entry, callback);

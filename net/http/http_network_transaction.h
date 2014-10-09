@@ -47,63 +47,63 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,
                     const CompletionCallback& callback,
-                    const BoundNetLog& net_log) OVERRIDE;
+                    const BoundNetLog& net_log) override;
   virtual int RestartIgnoringLastError(
-      const CompletionCallback& callback) OVERRIDE;
+      const CompletionCallback& callback) override;
   virtual int RestartWithCertificate(
       X509Certificate* client_cert,
-      const CompletionCallback& callback) OVERRIDE;
+      const CompletionCallback& callback) override;
   virtual int RestartWithAuth(const AuthCredentials& credentials,
-                              const CompletionCallback& callback) OVERRIDE;
-  virtual bool IsReadyToRestartForAuth() OVERRIDE;
+                              const CompletionCallback& callback) override;
+  virtual bool IsReadyToRestartForAuth() override;
 
   virtual int Read(IOBuffer* buf,
                    int buf_len,
-                   const CompletionCallback& callback) OVERRIDE;
-  virtual void StopCaching() OVERRIDE;
+                   const CompletionCallback& callback) override;
+  virtual void StopCaching() override;
   virtual bool GetFullRequestHeaders(
-      HttpRequestHeaders* headers) const OVERRIDE;
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
-  virtual void DoneReading() OVERRIDE;
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
-  virtual LoadState GetLoadState() const OVERRIDE;
-  virtual UploadProgress GetUploadProgress() const OVERRIDE;
-  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) OVERRIDE;
+      HttpRequestHeaders* headers) const override;
+  virtual int64 GetTotalReceivedBytes() const override;
+  virtual void DoneReading() override;
+  virtual const HttpResponseInfo* GetResponseInfo() const override;
+  virtual LoadState GetLoadState() const override;
+  virtual UploadProgress GetUploadProgress() const override;
+  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const OVERRIDE;
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
+      LoadTimingInfo* load_timing_info) const override;
+  virtual void SetPriority(RequestPriority priority) override;
   virtual void SetWebSocketHandshakeStreamCreateHelper(
-      WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
+      WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   virtual void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) OVERRIDE;
+      const BeforeNetworkStartCallback& callback) override;
   virtual void SetBeforeProxyHeadersSentCallback(
-      const BeforeProxyHeadersSentCallback& callback) OVERRIDE;
-  virtual int ResumeNetworkStart() OVERRIDE;
+      const BeforeProxyHeadersSentCallback& callback) override;
+  virtual int ResumeNetworkStart() override;
 
   // HttpStreamRequest::Delegate methods:
   virtual void OnStreamReady(const SSLConfig& used_ssl_config,
                              const ProxyInfo& used_proxy_info,
-                             HttpStreamBase* stream) OVERRIDE;
+                             HttpStreamBase* stream) override;
   virtual void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      WebSocketHandshakeStreamBase* stream) OVERRIDE;
+      WebSocketHandshakeStreamBase* stream) override;
   virtual void OnStreamFailed(int status,
-                              const SSLConfig& used_ssl_config) OVERRIDE;
+                              const SSLConfig& used_ssl_config) override;
   virtual void OnCertificateError(int status,
                                   const SSLConfig& used_ssl_config,
-                                  const SSLInfo& ssl_info) OVERRIDE;
+                                  const SSLInfo& ssl_info) override;
   virtual void OnNeedsProxyAuth(
       const HttpResponseInfo& response_info,
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      HttpAuthController* auth_controller) OVERRIDE;
+      HttpAuthController* auth_controller) override;
   virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
-                                 SSLCertRequestInfo* cert_info) OVERRIDE;
+                                 SSLCertRequestInfo* cert_info) override;
   virtual void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                           const SSLConfig& used_ssl_config,
                                           const ProxyInfo& used_proxy_info,
-                                          HttpStreamBase* stream) OVERRIDE;
+                                          HttpStreamBase* stream) override;
 
  private:
   friend class HttpNetworkTransactionSSLTest;

@@ -32,32 +32,32 @@ class SimpleBuffer : public BufferInterface {
   // The following functions all override pure virtual functions
   // in BufferInterface. See buffer_interface.h for a description
   // of what they do.
-  virtual int ReadableBytes() const OVERRIDE;
-  virtual int BufferSize() const OVERRIDE;
-  virtual int BytesFree() const OVERRIDE;
+  virtual int ReadableBytes() const override;
+  virtual int BufferSize() const override;
+  virtual int BytesFree() const override;
 
-  virtual bool Empty() const OVERRIDE;
-  virtual bool Full() const OVERRIDE;
+  virtual bool Empty() const override;
+  virtual bool Full() const override;
 
-  virtual int Write(const char* bytes, int size) OVERRIDE;
+  virtual int Write(const char* bytes, int size) override;
 
-  virtual void GetWritablePtr(char **ptr, int* size) const OVERRIDE;
+  virtual void GetWritablePtr(char **ptr, int* size) const override;
 
-  virtual void GetReadablePtr(char **ptr, int* size) const OVERRIDE;
+  virtual void GetReadablePtr(char **ptr, int* size) const override;
 
-  virtual int Read(char* bytes, int size) OVERRIDE;
+  virtual int Read(char* bytes, int size) override;
 
-  virtual void Clear() OVERRIDE;
+  virtual void Clear() override;
 
   // This can be an expensive operation: costing a new/delete, and copying of
   // all existing data. Even if the existing buffer does not need to be
   // resized, unread data may still need to be non-destructively copied to
   // consolidate fragmented free space.
-  virtual bool Reserve(int size) OVERRIDE;
+  virtual bool Reserve(int size) override;
 
-  virtual void AdvanceReadablePtr(int amount_to_advance) OVERRIDE;
+  virtual void AdvanceReadablePtr(int amount_to_advance) override;
 
-  virtual void AdvanceWritablePtr(int amount_to_advance) OVERRIDE;
+  virtual void AdvanceWritablePtr(int amount_to_advance) override;
 
   void Swap(SimpleBuffer* other) {
     char* tmp = storage_;

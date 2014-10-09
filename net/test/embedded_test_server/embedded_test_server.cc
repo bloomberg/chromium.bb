@@ -32,7 +32,7 @@ class CustomHttpResponse : public HttpResponse {
       : headers_(headers), contents_(contents) {
   }
 
-  virtual std::string ToResponseString() const OVERRIDE {
+  virtual std::string ToResponseString() const override {
     return headers_ + "\r\n" + contents_;
   }
 

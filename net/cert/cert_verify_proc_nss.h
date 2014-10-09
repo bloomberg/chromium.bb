@@ -17,7 +17,7 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
  public:
   CertVerifyProcNSS();
 
-  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE;
+  virtual bool SupportsAdditionalTrustAnchors() const override;
 
  protected:
   virtual ~CertVerifyProcNSS();
@@ -39,7 +39,7 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) OVERRIDE;
+                             CertVerifyResult* verify_result) override;
 };
 
 }  // namespace net

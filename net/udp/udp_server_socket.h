@@ -22,30 +22,30 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   virtual ~UDPServerSocket();
 
   // Implement DatagramServerSocket:
-  virtual int Listen(const IPEndPoint& address) OVERRIDE;
+  virtual int Listen(const IPEndPoint& address) override;
   virtual int RecvFrom(IOBuffer* buf,
                        int buf_len,
                        IPEndPoint* address,
-                       const CompletionCallback& callback) OVERRIDE;
+                       const CompletionCallback& callback) override;
   virtual int SendTo(IOBuffer* buf,
                      int buf_len,
                      const IPEndPoint& address,
-                     const CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE;
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
-  virtual const BoundNetLog& NetLog() const OVERRIDE;
-  virtual void AllowAddressReuse() OVERRIDE;
-  virtual void AllowBroadcast() OVERRIDE;
-  virtual int JoinGroup(const IPAddressNumber& group_address) const OVERRIDE;
-  virtual int LeaveGroup(const IPAddressNumber& group_address) const OVERRIDE;
-  virtual int SetMulticastInterface(uint32 interface_index) OVERRIDE;
-  virtual int SetMulticastTimeToLive(int time_to_live) OVERRIDE;
-  virtual int SetMulticastLoopbackMode(bool loopback) OVERRIDE;
-  virtual int SetDiffServCodePoint(DiffServCodePoint dscp) OVERRIDE;
-  virtual void DetachFromThread() OVERRIDE;
+                     const CompletionCallback& callback) override;
+  virtual int SetReceiveBufferSize(int32 size) override;
+  virtual int SetSendBufferSize(int32 size) override;
+  virtual void Close() override;
+  virtual int GetPeerAddress(IPEndPoint* address) const override;
+  virtual int GetLocalAddress(IPEndPoint* address) const override;
+  virtual const BoundNetLog& NetLog() const override;
+  virtual void AllowAddressReuse() override;
+  virtual void AllowBroadcast() override;
+  virtual int JoinGroup(const IPAddressNumber& group_address) const override;
+  virtual int LeaveGroup(const IPAddressNumber& group_address) const override;
+  virtual int SetMulticastInterface(uint32 interface_index) override;
+  virtual int SetMulticastTimeToLive(int time_to_live) override;
+  virtual int SetMulticastLoopbackMode(bool loopback) override;
+  virtual int SetDiffServCodePoint(DiffServCodePoint dscp) override;
+  virtual void DetachFromThread() override;
 
  private:
   UDPSocket socket_;

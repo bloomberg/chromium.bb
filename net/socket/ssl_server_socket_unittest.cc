@@ -171,81 +171,81 @@ class FakeSocket : public StreamSocket {
   }
 
   virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
+                   const CompletionCallback& callback) override {
     // Read random number of bytes.
     buf_len = rand() % buf_len + 1;
     return incoming_->Read(buf, buf_len, callback);
   }
 
   virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
+                    const CompletionCallback& callback) override {
     // Write random number of bytes.
     buf_len = rand() % buf_len + 1;
     return outgoing_->Write(buf, buf_len, callback);
   }
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual int SetReceiveBufferSize(int32 size) override {
     return OK;
   }
 
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual int SetSendBufferSize(int32 size) override {
     return OK;
   }
 
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
+  virtual int Connect(const CompletionCallback& callback) override {
     return OK;
   }
 
-  virtual void Disconnect() OVERRIDE {
+  virtual void Disconnect() override {
     incoming_->Close();
     outgoing_->Close();
   }
 
-  virtual bool IsConnected() const OVERRIDE {
+  virtual bool IsConnected() const override {
     return true;
   }
 
-  virtual bool IsConnectedAndIdle() const OVERRIDE {
+  virtual bool IsConnectedAndIdle() const override {
     return true;
   }
 
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
+  virtual int GetPeerAddress(IPEndPoint* address) const override {
     IPAddressNumber ip_address(kIPv4AddressSize);
     *address = IPEndPoint(ip_address, 0 /*port*/);
     return OK;
   }
 
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
+  virtual int GetLocalAddress(IPEndPoint* address) const override {
     IPAddressNumber ip_address(4);
     *address = IPEndPoint(ip_address, 0);
     return OK;
   }
 
-  virtual const BoundNetLog& NetLog() const OVERRIDE {
+  virtual const BoundNetLog& NetLog() const override {
     return net_log_;
   }
 
-  virtual void SetSubresourceSpeculation() OVERRIDE {}
-  virtual void SetOmniboxSpeculation() OVERRIDE {}
+  virtual void SetSubresourceSpeculation() override {}
+  virtual void SetOmniboxSpeculation() override {}
 
-  virtual bool WasEverUsed() const OVERRIDE {
+  virtual bool WasEverUsed() const override {
     return true;
   }
 
-  virtual bool UsingTCPFastOpen() const OVERRIDE {
+  virtual bool UsingTCPFastOpen() const override {
     return false;
   }
 
 
-  virtual bool WasNpnNegotiated() const OVERRIDE {
+  virtual bool WasNpnNegotiated() const override {
     return false;
   }
 
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
+  virtual NextProto GetNegotiatedProtocol() const override {
     return kProtoUnknown;
   }
 
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) override {
     return false;
   }
 

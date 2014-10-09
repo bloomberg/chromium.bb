@@ -63,7 +63,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*send_algorithm_, InRecovery()).Times(AnyNumber());
   }
 
-  virtual ~QuicSentPacketManagerTest() OVERRIDE {
+  virtual ~QuicSentPacketManagerTest() override {
     STLDeleteElements(&packets_);
   }
 

@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
         CreateReason reason,
         int digest_nonce_count,
         const BoundNetLog& net_log,
-        scoped_ptr<HttpAuthHandler>* handler) OVERRIDE;
+        scoped_ptr<HttpAuthHandler>* handler) override;
 
    private:
     bool disable_cname_lookup_;
@@ -107,18 +107,18 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   // HttpAuthHandler:
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuthChallengeTokenizer* challenge) OVERRIDE;
-  virtual bool NeedsIdentity() OVERRIDE;
-  virtual bool AllowsDefaultCredentials() OVERRIDE;
-  virtual bool AllowsExplicitCredentials() OVERRIDE;
+      HttpAuthChallengeTokenizer* challenge) override;
+  virtual bool NeedsIdentity() override;
+  virtual bool AllowsDefaultCredentials() override;
+  virtual bool AllowsExplicitCredentials() override;
 
  protected:
-  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) override;
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,
                                     const CompletionCallback& callback,
-                                    std::string* auth_token) OVERRIDE;
+                                    std::string* auth_token) override;
 
  private:
   enum State {

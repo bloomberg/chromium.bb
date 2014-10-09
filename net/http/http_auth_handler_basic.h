@@ -28,19 +28,19 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
         CreateReason reason,
         int digest_nonce_count,
         const BoundNetLog& net_log,
-        scoped_ptr<HttpAuthHandler>* handler) OVERRIDE;
+        scoped_ptr<HttpAuthHandler>* handler) override;
   };
 
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuthChallengeTokenizer* challenge) OVERRIDE;
+      HttpAuthChallengeTokenizer* challenge) override;
 
  protected:
-  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) override;
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,
                                     const CompletionCallback& callback,
-                                    std::string* auth_token) OVERRIDE;
+                                    std::string* auth_token) override;
 
  private:
   virtual ~HttpAuthHandlerBasic() {}

@@ -49,11 +49,11 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address) OVERRIDE;
+      const IPEndPoint& peer_address) override;
 
-  virtual bool IsWriteBlocked() const OVERRIDE;
+  virtual bool IsWriteBlocked() const override;
 
-  virtual void SetWritable() OVERRIDE;
+  virtual void SetWritable() override;
 
   // Writes out any packet which should have been sent by now
   // to the contained writer and returns the time

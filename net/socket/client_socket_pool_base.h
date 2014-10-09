@@ -327,10 +327,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void EnableConnectBackupJobs();
 
   // ConnectJob::Delegate methods:
-  virtual void OnConnectJobComplete(int result, ConnectJob* job) OVERRIDE;
+  virtual void OnConnectJobComplete(int result, ConnectJob* job) override;
 
   // NetworkChangeNotifier::IPAddressObserver methods:
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
  private:
   friend class base::RefCounted<ClientSocketPoolBaseHelper>;
@@ -856,7 +856,7 @@ class ClientSocketPoolBase {
     virtual scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const internal::ClientSocketPoolBaseHelper::Request& request,
-        ConnectJob::Delegate* delegate) const OVERRIDE {
+        ConnectJob::Delegate* delegate) const override {
       const Request& casted_request = static_cast<const Request&>(request);
       return connect_job_factory_->NewConnectJob(
           group_name, casted_request, delegate);

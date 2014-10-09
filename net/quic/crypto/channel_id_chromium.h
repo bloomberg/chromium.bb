@@ -24,8 +24,8 @@ class NET_EXPORT_PRIVATE ChannelIDKeyChromium: public ChannelIDKey {
 
   // ChannelIDKey interface
   virtual bool Sign(base::StringPiece signed_data,
-                    std::string* out_signature) const OVERRIDE;
-  virtual std::string SerializeKey() const OVERRIDE;
+                    std::string* out_signature) const override;
+  virtual std::string SerializeKey() const override;
 
  private:
   scoped_ptr<crypto::ECPrivateKey> ec_private_key_;
@@ -42,7 +42,7 @@ class ChannelIDSourceChromium : public ChannelIDSource {
   virtual QuicAsyncStatus GetChannelIDKey(
       const std::string& hostname,
       scoped_ptr<ChannelIDKey>* channel_id_key,
-      ChannelIDSourceCallback* callback) OVERRIDE;
+      ChannelIDSourceCallback* callback) override;
 
  private:
   class Job;

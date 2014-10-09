@@ -141,7 +141,7 @@ class DnsUDPAttempt : public DnsAttempt {
         query_(query.Pass()) {}
 
   // DnsAttempt:
-  virtual int Start(const CompletionCallback& callback) OVERRIDE {
+  virtual int Start(const CompletionCallback& callback) override {
     DCHECK_EQ(STATE_NONE, next_state_);
     callback_ = callback;
     start_time_ = base::TimeTicks::Now();
@@ -149,16 +149,16 @@ class DnsUDPAttempt : public DnsAttempt {
     return DoLoop(OK);
   }
 
-  virtual const DnsQuery* GetQuery() const OVERRIDE {
+  virtual const DnsQuery* GetQuery() const override {
     return query_.get();
   }
 
-  virtual const DnsResponse* GetResponse() const OVERRIDE {
+  virtual const DnsResponse* GetResponse() const override {
     const DnsResponse* resp = response_.get();
     return (resp != NULL && resp->IsValid()) ? resp : NULL;
   }
 
-  virtual const BoundNetLog& GetSocketNetLog() const OVERRIDE {
+  virtual const BoundNetLog& GetSocketNetLog() const override {
     return socket_lease_->socket()->NetLog();
   }
 
@@ -306,7 +306,7 @@ class DnsTCPAttempt : public DnsAttempt {
         response_length_(0) {}
 
   // DnsAttempt:
-  virtual int Start(const CompletionCallback& callback) OVERRIDE {
+  virtual int Start(const CompletionCallback& callback) override {
     DCHECK_EQ(STATE_NONE, next_state_);
     callback_ = callback;
     start_time_ = base::TimeTicks::Now();
@@ -320,16 +320,16 @@ class DnsTCPAttempt : public DnsAttempt {
     return DoLoop(rv);
   }
 
-  virtual const DnsQuery* GetQuery() const OVERRIDE {
+  virtual const DnsQuery* GetQuery() const override {
     return query_.get();
   }
 
-  virtual const DnsResponse* GetResponse() const OVERRIDE {
+  virtual const DnsResponse* GetResponse() const override {
     const DnsResponse* resp = response_.get();
     return (resp != NULL && resp->IsValid()) ? resp : NULL;
   }
 
-  virtual const BoundNetLog& GetSocketNetLog() const OVERRIDE {
+  virtual const BoundNetLog& GetSocketNetLog() const override {
     return socket_->NetLog();
   }
 
@@ -574,17 +574,17 @@ class DnsTransactionImpl : public DnsTransaction,
     }  // otherwise logged in DoCallback or Start
   }
 
-  virtual const std::string& GetHostname() const OVERRIDE {
+  virtual const std::string& GetHostname() const override {
     DCHECK(CalledOnValidThread());
     return hostname_;
   }
 
-  virtual uint16 GetType() const OVERRIDE {
+  virtual uint16 GetType() const override {
     DCHECK(CalledOnValidThread());
     return qtype_;
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK(!callback_.is_null());
     DCHECK(attempts_.empty());
     net_log_.BeginEvent(NetLog::TYPE_DNS_TRANSACTION,
@@ -972,7 +972,7 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
       const std::string& hostname,
       uint16 qtype,
       const CallbackType& callback,
-      const BoundNetLog& net_log) OVERRIDE {
+      const BoundNetLog& net_log) override {
     return scoped_ptr<DnsTransaction>(new DnsTransactionImpl(
         session_.get(), hostname, qtype, callback, net_log));
   }

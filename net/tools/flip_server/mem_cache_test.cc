@@ -16,7 +16,7 @@ class MemoryCacheWithFakeReadToString : public MemoryCache {
   virtual ~MemoryCacheWithFakeReadToString() {}
 
   virtual void ReadToString(const char* filename,
-                            std::string* output) OVERRIDE {
+                            std::string* output) override {
     *output = data_map_[filename];
   }
 

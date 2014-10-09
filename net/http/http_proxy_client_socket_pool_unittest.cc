@@ -66,7 +66,7 @@ class TestProxyDelegate : public ProxyDelegate {
         on_tunnel_headers_received_called_(false) {
   }
 
-  virtual ~TestProxyDelegate() OVERRIDE {
+  virtual ~TestProxyDelegate() override {
   }
 
   bool on_before_tunnel_request_called() const {
@@ -92,21 +92,21 @@ class TestProxyDelegate : public ProxyDelegate {
   virtual void OnResolveProxy(const GURL& url,
                               int load_flags,
                               const ProxyService& proxy_service,
-                              ProxyInfo* result) OVERRIDE {
+                              ProxyInfo* result) override {
   }
 
   virtual void OnFallback(const ProxyServer& bad_proxy,
-                          int net_error) OVERRIDE {
+                          int net_error) override {
   }
 
   virtual void OnBeforeSendHeaders(URLRequest* request,
                                    const ProxyInfo& proxy_info,
-                                   HttpRequestHeaders* headers) OVERRIDE {
+                                   HttpRequestHeaders* headers) override {
   }
 
   virtual void OnBeforeTunnelRequest(
       const net::HostPortPair& proxy_server,
-      net::HttpRequestHeaders* extra_headers) OVERRIDE {
+      net::HttpRequestHeaders* extra_headers) override {
     on_before_tunnel_request_called_ = true;
     if (extra_headers) {
       extra_headers->SetHeader("Foo", proxy_server.ToString());
@@ -116,7 +116,7 @@ class TestProxyDelegate : public ProxyDelegate {
   virtual void OnTunnelHeadersReceived(
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
-      const net::HttpResponseHeaders& response_headers) OVERRIDE {
+      const net::HttpResponseHeaders& response_headers) override {
     on_tunnel_headers_received_called_ = true;
     on_tunnel_headers_received_origin_ = origin;
     on_tunnel_headers_received_proxy_server_ = proxy_server;

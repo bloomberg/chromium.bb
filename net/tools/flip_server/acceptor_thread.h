@@ -52,14 +52,14 @@ class SMAcceptorThread : public base::SimpleThread,
   // EpollCallbackInteface interface
   virtual void OnRegistration(EpollServer* eps,
                               int fd,
-                              int event_mask) OVERRIDE {}
-  virtual void OnModification(int fd, int event_mask) OVERRIDE {}
-  virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
-  virtual void OnUnregistration(int fd, bool replaced) OVERRIDE {}
-  virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}
+                              int event_mask) override {}
+  virtual void OnModification(int fd, int event_mask) override {}
+  virtual void OnEvent(int fd, EpollEvent* event) override;
+  virtual void OnUnregistration(int fd, bool replaced) override {}
+  virtual void OnShutdown(EpollServer* eps, int fd) override {}
 
   // SMConnectionPool interface
-  virtual void SMConnectionDone(SMConnection* sc) OVERRIDE;
+  virtual void SMConnectionDone(SMConnection* sc) override;
 
   // TODO(mbelshe): figure out if we can move these to private functions.
   SMConnection* NewConnection();
@@ -75,7 +75,7 @@ class SMAcceptorThread : public base::SimpleThread,
   // idle longer than the configured timeout.
   void HandleConnectionIdleTimeout();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   EpollServer epoll_server_;

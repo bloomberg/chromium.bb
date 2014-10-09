@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE ServerHelloNotifier : public
       int num_original_bytes,
       int num_retransmitted_packets,
       int num_retransmitted_bytes,
-      QuicTime::Delta delta_largest_observed) OVERRIDE;
+      QuicTime::Delta delta_largest_observed) override;
 
  private:
   virtual ~ServerHelloNotifier() {}
@@ -60,7 +60,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
 
   // CryptoFramerVisitorInterface implementation
   virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) OVERRIDE;
+      const CryptoHandshakeMessage& message) override;
 
   // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
   // SHA-256 hash of the client's ChannelID key and returns true, if the client
@@ -103,7 +103,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
 
     // From ValidateClientHelloResultCallback
     virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
-                         const Result& result) OVERRIDE;
+                         const Result& result) override;
 
    private:
     QuicCryptoServerStream* parent_;

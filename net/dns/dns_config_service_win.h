@@ -125,8 +125,8 @@ class NET_EXPORT_PRIVATE DnsConfigServiceWin : public DnsConfigService {
   class HostsReader;
 
   // DnsConfigService:
-  virtual void ReadNow() OVERRIDE;
-  virtual bool StartWatching() OVERRIDE;
+  virtual void ReadNow() override;
+  virtual bool StartWatching() override;
 
   void OnConfigChanged(bool succeeded);
   void OnHostsChanged(bool succeeded);

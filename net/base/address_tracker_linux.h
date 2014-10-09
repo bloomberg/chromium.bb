@@ -108,8 +108,8 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   void AbortAndForceOnline();
 
   // MessageLoopForIO::Watcher:
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override;
 
   // Close |netlink_fd_|
   void CloseSocket();

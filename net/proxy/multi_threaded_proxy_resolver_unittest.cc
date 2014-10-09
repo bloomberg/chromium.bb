@@ -40,7 +40,7 @@ class MockProxyResolver : public ProxyResolver {
                              ProxyInfo* results,
                              const CompletionCallback& callback,
                              RequestHandle* request,
-                             const BoundNetLog& net_log) OVERRIDE {
+                             const BoundNetLog& net_log) override {
     if (resolve_latency_ != base::TimeDelta())
       base::PlatformThread::Sleep(resolve_latency_);
 
@@ -58,22 +58,22 @@ class MockProxyResolver : public ProxyResolver {
     return request_count_++;
   }
 
-  virtual void CancelRequest(RequestHandle request) OVERRIDE {
+  virtual void CancelRequest(RequestHandle request) override {
     NOTREACHED();
   }
 
-  virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE {
+  virtual LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
   }
 
-  virtual void CancelSetPacScript() OVERRIDE {
+  virtual void CancelSetPacScript() override {
     NOTREACHED();
   }
 
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const CompletionCallback& callback) OVERRIDE {
+      const CompletionCallback& callback) override {
     CheckIsOnWorkerThread();
     last_script_data_ = script_data;
     return OK;
@@ -137,7 +137,7 @@ class BlockableProxyResolver : public MockProxyResolver {
                              ProxyInfo* results,
                              const CompletionCallback& callback,
                              RequestHandle* request,
-                             const BoundNetLog& net_log) OVERRIDE {
+                             const BoundNetLog& net_log) override {
     if (should_block_) {
       blocked_.Signal();
       unblocked_.Wait();
@@ -164,27 +164,27 @@ class ForwardingProxyResolver : public ProxyResolver {
                              ProxyInfo* results,
                              const CompletionCallback& callback,
                              RequestHandle* request,
-                             const BoundNetLog& net_log) OVERRIDE {
+                             const BoundNetLog& net_log) override {
     return impl_->GetProxyForURL(
         query_url, results, callback, request, net_log);
   }
 
-  virtual void CancelRequest(RequestHandle request) OVERRIDE {
+  virtual void CancelRequest(RequestHandle request) override {
     impl_->CancelRequest(request);
   }
 
-  virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE {
+  virtual LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
   }
 
-  virtual void CancelSetPacScript() OVERRIDE {
+  virtual void CancelSetPacScript() override {
     impl_->CancelSetPacScript();
   }
 
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const CompletionCallback& callback) OVERRIDE {
+      const CompletionCallback& callback) override {
     return impl_->SetPacScript(script_data, callback);
   }
 
@@ -200,7 +200,7 @@ class ForwardingProxyResolverFactory : public ProxyResolverFactory {
       : ProxyResolverFactory(resolver->expects_pac_bytes()),
         resolver_(resolver) {}
 
-  virtual ProxyResolver* CreateProxyResolver() OVERRIDE {
+  virtual ProxyResolver* CreateProxyResolver() override {
     return new ForwardingProxyResolver(resolver_);
   }
 
@@ -217,7 +217,7 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
     STLDeleteElements(&resolvers_);
   }
 
-  virtual ProxyResolver* CreateProxyResolver() OVERRIDE {
+  virtual ProxyResolver* CreateProxyResolver() override {
     BlockableProxyResolver* resolver = new BlockableProxyResolver;
     resolvers_.push_back(resolver);
     return new ForwardingProxyResolver(resolver);

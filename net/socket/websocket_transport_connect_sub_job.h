@@ -47,7 +47,7 @@ class WebSocketTransportConnectSubJob
   scoped_ptr<StreamSocket> PassSocket() { return transport_socket_.Pass(); }
 
   // Implementation of WebSocketEndpointLockManager::EndpointWaiter.
-  virtual void GotEndpointLock() OVERRIDE;
+  virtual void GotEndpointLock() override;
 
  private:
   enum State {

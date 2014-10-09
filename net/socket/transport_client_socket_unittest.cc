@@ -48,18 +48,18 @@ class TransportClientSocketTest
 
   // Implement StreamListenSocket::Delegate methods
   virtual void DidAccept(StreamListenSocket* server,
-                         scoped_ptr<StreamListenSocket> connection) OVERRIDE {
+                         scoped_ptr<StreamListenSocket> connection) override {
     connected_sock_.reset(
         static_cast<TCPListenSocket*>(connection.release()));
   }
-  virtual void DidRead(StreamListenSocket*, const char* str, int len) OVERRIDE {
+  virtual void DidRead(StreamListenSocket*, const char* str, int len) override {
     // TODO(dkegel): this might not be long enough to tickle some bugs.
     connected_sock_->Send(kServerReply, arraysize(kServerReply) - 1,
                           false /* Don't append line feed */);
     if (close_server_socket_on_next_send_)
       CloseServerSocket();
   }
-  virtual void DidClose(StreamListenSocket* sock) OVERRIDE {}
+  virtual void DidClose(StreamListenSocket* sock) override {}
 
   // Testcase hooks
   virtual void SetUp();

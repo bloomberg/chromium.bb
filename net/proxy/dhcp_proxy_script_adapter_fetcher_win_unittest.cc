@@ -51,7 +51,7 @@ class MockDhcpProxyScriptAdapterFetcher
     fetcher_ = NULL;
   }
 
-  virtual ProxyScriptFetcher* ImplCreateScriptFetcher() OVERRIDE {
+  virtual ProxyScriptFetcher* ImplCreateScriptFetcher() override {
     // We don't maintain ownership of the fetcher, it is transferred to
     // the caller.
     fetcher_ = new MockProxyScriptFetcher();
@@ -71,7 +71,7 @@ class MockDhcpProxyScriptAdapterFetcher
     }
 
     std::string ImplGetPacURLFromDhcp(
-        const std::string& adapter_name) OVERRIDE {
+        const std::string& adapter_name) override {
       base::ElapsedTimer timer;
       test_finished_event_.TimedWait(dhcp_delay_);
       return configured_url_;
@@ -82,7 +82,7 @@ class MockDhcpProxyScriptAdapterFetcher
     std::string configured_url_;
   };
 
-  virtual DhcpQuery* ImplCreateDhcpQuery() OVERRIDE {
+  virtual DhcpQuery* ImplCreateDhcpQuery() override {
     dhcp_query_ = new DelayingDhcpQuery();
     dhcp_query_->dhcp_delay_ = dhcp_delay_;
     dhcp_query_->configured_url_ = configured_url_;
@@ -90,7 +90,7 @@ class MockDhcpProxyScriptAdapterFetcher
   }
 
   // Use a shorter timeout so tests can finish more quickly.
-  virtual base::TimeDelta ImplGetTimeout() const OVERRIDE {
+  virtual base::TimeDelta ImplGetTimeout() const override {
     return timeout_;
   }
 
@@ -272,7 +272,7 @@ class MockDhcpRealFetchProxyScriptAdapterFetcher
   }
 
   // Returns a real proxy script fetcher.
-  ProxyScriptFetcher* ImplCreateScriptFetcher() OVERRIDE {
+  ProxyScriptFetcher* ImplCreateScriptFetcher() override {
     ProxyScriptFetcher* fetcher =
         new ProxyScriptFetcherImpl(url_request_context_);
     return fetcher;

@@ -26,7 +26,7 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
  private:
   virtual ~TracedValue() {}
 
-  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+  virtual void AppendAsTraceFormat(std::string* out) const override {
     if (value_) {
       std::string tmp;
       base::JSONWriter::Write(value_.get(), &tmp);

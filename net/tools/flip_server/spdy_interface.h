@@ -35,7 +35,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   virtual ~SpdySM();
 
   virtual void InitSMInterface(SMInterface* sm_http_interface,
-                               int32 server_idx) OVERRIDE {}
+                               int32 server_idx) override {}
 
   virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
                                 SMInterface* sm_interface,
@@ -44,13 +44,13 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                                 std::string server_ip,
                                 std::string server_port,
                                 std::string remote_ip,
-                                bool use_ssl) OVERRIDE;
+                                bool use_ssl) override;
 
   // Create new SPDY framer after reusing SpdySM and negotiating new version
   void CreateFramer(SpdyMajorVersion spdy_version);
 
  private:
-  virtual void set_is_request() OVERRIDE {}
+  virtual void set_is_request() override {}
   SMInterface* NewConnectionInterface();
   // virtual for tests
   virtual SMInterface* FindOrMakeNewSMConnectionInterface(
@@ -63,31 +63,31 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                           bool* is_https_scheme);
 
   // BufferedSpdyFramerVisitorInterface:
-  virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {}
+  virtual void OnError(SpdyFramer::SpdyError error_code) override {}
   virtual void OnStreamError(SpdyStreamId stream_id,
-                             const std::string& description) OVERRIDE {}
+                             const std::string& description) override {}
   // Called after all the header data for SYN_STREAM control frame is received.
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
                            bool fin,
                            bool unidirectional,
-                           const SpdyHeaderBlock& headers) OVERRIDE;
+                           const SpdyHeaderBlock& headers) override;
 
   // Called after all the header data for SYN_REPLY control frame is received.
   virtual void OnSynReply(SpdyStreamId stream_id,
                           bool fin,
-                          const SpdyHeaderBlock& headers) OVERRIDE;
+                          const SpdyHeaderBlock& headers) override;
 
   // Called after all the header data for HEADERS control frame is received.
   virtual void OnHeaders(SpdyStreamId stream_id,
                          bool fin,
-                         const SpdyHeaderBlock& headers) OVERRIDE;
+                         const SpdyHeaderBlock& headers) override;
 
   // Called when data frame header is received.
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
-                                 bool fin) OVERRIDE {}
+                                 bool fin) override {}
 
   // Called when data is received.
   // |stream_id| The stream receiving data.
@@ -98,73 +98,73 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 bool fin) OVERRIDE;
+                                 bool fin) override;
 
   // Called when a SETTINGS frame is received.
   // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
-  virtual void OnSettings(bool clear_persisted) OVERRIDE {}
+  virtual void OnSettings(bool clear_persisted) override {}
 
   // Called when an individual setting within a SETTINGS frame has been parsed
   // and validated.
   virtual void OnSetting(SpdySettingsIds id,
                          uint8 flags,
-                         uint32 value) OVERRIDE {}
+                         uint32 value) override {}
 
   // Called when a PING frame has been parsed.
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override {}
 
   // Called when a RST_STREAM frame has been parsed.
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) OVERRIDE;
+                           SpdyRstStreamStatus status) override;
 
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) OVERRIDE {}
+                        SpdyGoAwayStatus status) override {}
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) OVERRIDE {}
+                              uint32 delta_window_size) override {}
 
   // Called when a PUSH_PROMISE frame has been parsed.
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
-                             const SpdyHeaderBlock& headers) OVERRIDE {}
+                             const SpdyHeaderBlock& headers) override {}
 
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE;
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
 
  public:
-  virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
-  virtual size_t ProcessWriteInput(const char* data, size_t len) OVERRIDE;
-  virtual bool MessageFullyRead() const OVERRIDE;
-  virtual void SetStreamID(uint32 stream_id) OVERRIDE {}
-  virtual bool Error() const OVERRIDE;
-  virtual const char* ErrorAsString() const OVERRIDE;
-  virtual void Reset() OVERRIDE {}
-  virtual void ResetForNewInterface(int32 server_idx) OVERRIDE;
-  virtual void ResetForNewConnection() OVERRIDE;
+  virtual size_t ProcessReadInput(const char* data, size_t len) override;
+  virtual size_t ProcessWriteInput(const char* data, size_t len) override;
+  virtual bool MessageFullyRead() const override;
+  virtual void SetStreamID(uint32 stream_id) override {}
+  virtual bool Error() const override;
+  virtual const char* ErrorAsString() const override;
+  virtual void Reset() override {}
+  virtual void ResetForNewInterface(int32 server_idx) override;
+  virtual void ResetForNewConnection() override;
   // SMInterface's Cleanup is currently only called by SMConnection after a
   // protocol message as been fully read. Spdy's SMInterface does not need
   // to do any cleanup at this time.
   // TODO(klindsay) This method is probably not being used properly and
   // some logic review and method renaming is probably in order.
-  virtual void Cleanup() OVERRIDE {}
+  virtual void Cleanup() override {}
   // Send a settings frame
-  virtual int PostAcceptHook() OVERRIDE;
+  virtual int PostAcceptHook() override;
   virtual void NewStream(uint32 stream_id,
                          uint32 priority,
-                         const std::string& filename) OVERRIDE;
+                         const std::string& filename) override;
   void AddToOutputOrder(const MemCacheIter& mci);
-  virtual void SendEOF(uint32 stream_id) OVERRIDE;
-  virtual void SendErrorNotFound(uint32 stream_id) OVERRIDE;
+  virtual void SendEOF(uint32 stream_id) override;
+  virtual void SendErrorNotFound(uint32 stream_id) override;
   virtual size_t SendSynStream(uint32 stream_id,
-                               const BalsaHeaders& headers) OVERRIDE;
+                               const BalsaHeaders& headers) override;
   virtual size_t SendSynReply(uint32 stream_id,
-                              const BalsaHeaders& headers) OVERRIDE;
+                              const BalsaHeaders& headers) override;
   virtual void SendDataFrame(uint32 stream_id,
                              const char* data,
                              int64 len,
                              uint32 flags,
-                             bool compress) OVERRIDE;
+                             bool compress) override;
   BufferedSpdyFramer* spdy_framer() { return buffered_spdy_framer_.get(); }
 
   const OutputOrdering& output_ordering() const {
@@ -193,7 +193,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                          SpdyDataFlags flags,
                          bool compress);
   void EnqueueDataFrame(DataFrame* df);
-  virtual void GetOutput() OVERRIDE;
+  virtual void GetOutput() override;
 
  private:
   scoped_ptr<BufferedSpdyFramer> buffered_spdy_framer_;

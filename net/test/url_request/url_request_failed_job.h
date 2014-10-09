@@ -22,7 +22,7 @@ class URLRequestFailedJob : public URLRequestJob {
                       NetworkDelegate* network_delegate,
                       int net_error);
 
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();

@@ -101,7 +101,7 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   class Core;
 
   // base::ObjectWatcher::Delegate implementation.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+  virtual void OnObjectSignaled(HANDLE object) override;
 
   int AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
                      IPEndPoint* address);

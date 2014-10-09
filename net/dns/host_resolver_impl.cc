@@ -1424,7 +1424,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   // PriorityDispatch::Job:
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     DCHECK_LE(num_occupied_job_slots_, 1u);
 
     handle_.Reset();
@@ -1590,7 +1590,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   virtual void OnDnsTaskComplete(base::TimeTicks start_time,
                                  int net_error,
                                  const AddressList& addr_list,
-                                 base::TimeDelta ttl) OVERRIDE {
+                                 base::TimeDelta ttl) override {
     DCHECK(is_dns_running());
 
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
@@ -1625,7 +1625,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         bounded_ttl);
   }
 
-  virtual void OnFirstDnsTransactionComplete() OVERRIDE {
+  virtual void OnFirstDnsTransactionComplete() override {
     DCHECK(dns_task_->needs_two_transactions());
     DCHECK_EQ(dns_task_->needs_another_transaction(), is_queued());
     // No longer need to occupy two dispatcher slots.

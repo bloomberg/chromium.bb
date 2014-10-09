@@ -35,34 +35,34 @@ class TestUDPClientSocket : public DatagramClientSocket {
 
   virtual ~TestUDPClientSocket() {}
 
-  virtual int Read(IOBuffer*, int, const CompletionCallback&) OVERRIDE {
+  virtual int Read(IOBuffer*, int, const CompletionCallback&) override {
     NOTIMPLEMENTED();
     return OK;
   }
-  virtual int Write(IOBuffer*, int, const CompletionCallback&) OVERRIDE {
+  virtual int Write(IOBuffer*, int, const CompletionCallback&) override {
     NOTIMPLEMENTED();
     return OK;
   }
-  virtual int SetReceiveBufferSize(int32) OVERRIDE {
+  virtual int SetReceiveBufferSize(int32) override {
     return OK;
   }
-  virtual int SetSendBufferSize(int32) OVERRIDE {
+  virtual int SetSendBufferSize(int32) override {
     return OK;
   }
 
-  virtual void Close() OVERRIDE {}
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
+  virtual void Close() override {}
+  virtual int GetPeerAddress(IPEndPoint* address) const override {
     NOTIMPLEMENTED();
     return OK;
   }
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
+  virtual int GetLocalAddress(IPEndPoint* address) const override {
     if (!connected_)
       return ERR_UNEXPECTED;
     *address = local_endpoint_;
     return OK;
   }
 
-  virtual int Connect(const IPEndPoint& remote) OVERRIDE {
+  virtual int Connect(const IPEndPoint& remote) override {
     if (connected_)
       return ERR_UNEXPECTED;
     AddressMapping::const_iterator it = mapping_->find(remote.address());
@@ -73,7 +73,7 @@ class TestUDPClientSocket : public DatagramClientSocket {
     return OK;
   }
 
-  virtual const BoundNetLog& NetLog() const OVERRIDE {
+  virtual const BoundNetLog& NetLog() const override {
     return net_log_;
   }
 
@@ -96,13 +96,13 @@ class TestSocketFactory : public ClientSocketFactory {
       DatagramSocket::BindType,
       const RandIntCallback&,
       NetLog*,
-      const NetLog::Source&) OVERRIDE {
+      const NetLog::Source&) override {
     return scoped_ptr<DatagramClientSocket>(new TestUDPClientSocket(&mapping_));
   }
   virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList&,
       NetLog*,
-      const NetLog::Source&) OVERRIDE {
+      const NetLog::Source&) override {
     NOTIMPLEMENTED();
     return scoped_ptr<StreamSocket>();
   }
@@ -110,11 +110,11 @@ class TestSocketFactory : public ClientSocketFactory {
       scoped_ptr<ClientSocketHandle>,
       const HostPortPair&,
       const SSLConfig&,
-      const SSLClientSocketContext&) OVERRIDE {
+      const SSLClientSocketContext&) override {
     NOTIMPLEMENTED();
     return scoped_ptr<SSLClientSocket>();
   }
-  virtual void ClearSSLSessionCache() OVERRIDE {
+  virtual void ClearSSLSessionCache() override {
     NOTIMPLEMENTED();
   }
 

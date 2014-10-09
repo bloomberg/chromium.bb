@@ -2063,7 +2063,7 @@ class SparseTestCompletionCallback: public net::TestCompletionCallback {
   }
 
  private:
-  virtual void SetResult(int result) OVERRIDE {
+  virtual void SetResult(int result) override {
     cache_.reset();
     TestCompletionCallback::SetResult(result);
   }

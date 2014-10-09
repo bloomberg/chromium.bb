@@ -32,10 +32,10 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
   virtual URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
-  virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
+      NetworkDelegate* network_delegate) const override;
+  virtual bool IsHandledProtocol(const std::string& scheme) const override;
+  virtual bool IsHandledURL(const GURL& url) const override;
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
   // For testing only.

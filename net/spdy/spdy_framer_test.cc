@@ -82,22 +82,22 @@ class SpdyFramerTestUtil {
       buffer_.reset(new char[kMaxDecompressedSize]);
     }
 
-    virtual void OnError(SpdyFramer* framer) OVERRIDE { LOG(FATAL); }
+    virtual void OnError(SpdyFramer* framer) override { LOG(FATAL); }
     virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                    size_t length,
-                                   bool fin) OVERRIDE {
+                                   bool fin) override {
       LOG(FATAL) << "Unexpected data frame header";
     }
     virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                    const char* data,
                                    size_t len,
-                                   bool fin) OVERRIDE {
+                                   bool fin) override {
       LOG(FATAL);
     }
 
     virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                           const char* header_data,
-                                          size_t len) OVERRIDE {
+                                          size_t len) override {
       CHECK(buffer_.get() != NULL);
       CHECK_GE(kMaxDecompressedSize, size_ + len);
       CHECK(!finished_);
@@ -115,7 +115,7 @@ class SpdyFramerTestUtil {
                              SpdyStreamId associated_stream_id,
                              SpdyPriority priority,
                              bool fin,
-                             bool unidirectional) OVERRIDE {
+                             bool unidirectional) override {
       SpdyFramer framer(version_);
       framer.set_enable_compression(false);
       SpdySynStreamIR syn_stream(stream_id);
@@ -129,7 +129,7 @@ class SpdyFramerTestUtil {
       size_ += framer.GetSynStreamMinimumSize();
     }
 
-    virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {
+    virtual void OnSynReply(SpdyStreamId stream_id, bool fin) override {
       SpdyFramer framer(version_);
       framer.set_enable_compression(false);
       SpdyHeadersIR headers(stream_id);
@@ -141,26 +141,26 @@ class SpdyFramerTestUtil {
     }
 
     virtual void OnRstStream(SpdyStreamId stream_id,
-                             SpdyRstStreamStatus status) OVERRIDE {
+                             SpdyRstStreamStatus status) override {
       LOG(FATAL);
     }
     virtual void OnSetting(SpdySettingsIds id,
                            uint8 flags,
-                           uint32 value) OVERRIDE {
+                           uint32 value) override {
       LOG(FATAL);
     }
-    virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
+    virtual void OnPing(SpdyPingId unique_id, bool is_ack) override {
       LOG(FATAL);
     }
-    virtual void OnSettingsEnd() OVERRIDE { LOG(FATAL); }
+    virtual void OnSettingsEnd() override { LOG(FATAL); }
     virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                          SpdyGoAwayStatus status) OVERRIDE {
+                          SpdyGoAwayStatus status) override {
       LOG(FATAL);
     }
 
     virtual void OnHeaders(SpdyStreamId stream_id,
                            bool fin,
-                           bool end) OVERRIDE {
+                           bool end) override {
       SpdyFramer framer(version_);
       framer.set_enable_compression(false);
       SpdyHeadersIR headers(stream_id);
@@ -177,7 +177,7 @@ class SpdyFramerTestUtil {
 
     virtual void OnPushPromise(SpdyStreamId stream_id,
                                SpdyStreamId promised_stream_id,
-                               bool end) OVERRIDE {
+                               bool end) override {
       SpdyFramer framer(version_);
       framer.set_enable_compression(false);
       SpdyPushPromiseIR push_promise(stream_id, promised_stream_id);
@@ -187,19 +187,19 @@ class SpdyFramerTestUtil {
       size_ += framer.GetPushPromiseMinimumSize();
     }
 
-    virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE {
+    virtual void OnContinuation(SpdyStreamId stream_id, bool end) override {
       LOG(FATAL);
     }
 
     virtual void OnPriority(SpdyStreamId stream_id,
                             SpdyStreamId parent_stream_id,
                             uint8 weight,
-                            bool exclusive) OVERRIDE {
+                            bool exclusive) override {
       // Do nothing.
     }
 
     virtual bool OnUnknownFrame(SpdyStreamId stream_id,
-                                int frame_type) OVERRIDE {
+                                int frame_type) override {
       LOG(FATAL);
       return false;
     }
@@ -210,7 +210,7 @@ class SpdyFramerTestUtil {
     }
 
     virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                                uint32 delta_window_size) OVERRIDE {
+                                uint32 delta_window_size) override {
       LOG(FATAL);
     }
 
@@ -277,7 +277,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         header_control_type_(DATA),
         header_buffer_valid_(false) {}
 
-  virtual void OnError(SpdyFramer* f) OVERRIDE {
+  virtual void OnError(SpdyFramer* f) override {
     LOG(INFO) << "SpdyFramer Error: "
               << SpdyFramer::ErrorCodeToString(f->error_code());
     ++error_count_;
@@ -285,7 +285,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
-                                 bool fin) OVERRIDE {
+                                 bool fin) override {
     ++data_frame_count_;
     header_stream_id_ = stream_id;
   }
@@ -293,7 +293,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 bool fin) OVERRIDE {
+                                 bool fin) override {
     EXPECT_EQ(header_stream_id_, stream_id);
     if (len == 0)
       ++zero_length_data_frame_count_;
@@ -310,7 +310,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                         const char* header_data,
-                                        size_t len) OVERRIDE {
+                                        size_t len) override {
     ++control_frame_header_data_count_;
     CHECK_EQ(header_stream_id_, stream_id);
     if (len == 0) {
@@ -339,7 +339,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
                            bool fin,
-                           bool unidirectional) OVERRIDE {
+                           bool unidirectional) override {
     ++syn_frame_count_;
     if (framer_.protocol_version() > SPDY3) {
       InitHeaderStreaming(HEADERS, stream_id);
@@ -351,7 +351,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     }
   }
 
-  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {
+  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) override {
     ++syn_reply_frame_count_;
     if (framer_.protocol_version() > SPDY3) {
       InitHeaderStreaming(HEADERS, stream_id);
@@ -364,12 +364,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) OVERRIDE {
+                           SpdyRstStreamStatus status) override {
     ++fin_frame_count_;
   }
 
   virtual bool OnRstStreamFrameData(const char* rst_stream_data,
-                                    size_t len) OVERRIDE {
+                                    size_t len) override {
     if ((rst_stream_data != NULL) && (len > 0)) {
       fin_opaque_data_ += std::string(rst_stream_data, len);
     }
@@ -378,30 +378,30 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   virtual void OnSetting(SpdySettingsIds id,
                          uint8 flags,
-                         uint32 value) OVERRIDE {
+                         uint32 value) override {
     ++setting_count_;
   }
 
-  virtual void OnSettingsAck() OVERRIDE {
+  virtual void OnSettingsAck() override {
     DCHECK_LT(SPDY3, framer_.protocol_version());
     ++settings_ack_received_;
   }
 
-  virtual void OnSettingsEnd() OVERRIDE {
+  virtual void OnSettingsEnd() override {
     if (framer_.protocol_version() <= SPDY3) { return; }
     ++settings_ack_sent_;
   }
 
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override {
     DLOG(FATAL);
   }
 
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) OVERRIDE {
+                        SpdyGoAwayStatus status) override {
     ++goaway_count_;
   }
 
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) OVERRIDE {
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override {
     ++headers_frame_count_;
     InitHeaderStreaming(HEADERS, stream_id);
     if (fin) {
@@ -410,21 +410,21 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) OVERRIDE {
+                              uint32 delta_window_size) override {
     last_window_update_stream_ = stream_id;
     last_window_update_delta_ = delta_window_size;
   }
 
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
-                             bool end) OVERRIDE {
+                             bool end) override {
     ++push_promise_frame_count_;
     InitHeaderStreaming(PUSH_PROMISE, stream_id);
     last_push_promise_stream_ = stream_id;
     last_push_promise_promised_stream_ = promised_stream_id;
   }
 
-  virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE {
+  virtual void OnContinuation(SpdyStreamId stream_id, bool end) override {
     ++continuation_count_;
   }
 
@@ -433,7 +433,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                         uint16 port,
                         StringPiece protocol_id,
                         StringPiece host,
-                        StringPiece origin) OVERRIDE {
+                        StringPiece origin) override {
     test_altsvc_ir_.set_stream_id(stream_id);
     test_altsvc_ir_.set_max_age(max_age);
     test_altsvc_ir_.set_port(port);
@@ -448,11 +448,11 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   virtual void OnPriority(SpdyStreamId stream_id,
                           SpdyStreamId parent_stream_id,
                           uint8 weight,
-                          bool exclusive) OVERRIDE {
+                          bool exclusive) override {
     ++priority_count_;
   }
 
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE {
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     DLOG(INFO) << "Unknown frame type " << frame_type;
     return on_unknown_frame_result_;
   }
@@ -460,14 +460,14 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   virtual void OnSendCompressedFrame(SpdyStreamId stream_id,
                                      SpdyFrameType type,
                                      size_t payload_len,
-                                     size_t frame_len) OVERRIDE {
+                                     size_t frame_len) override {
     last_payload_len_ = payload_len;
     last_frame_len_ = frame_len;
   }
 
   virtual void OnReceiveCompressedFrame(SpdyStreamId stream_id,
                                         SpdyFrameType type,
-                                        size_t frame_len) OVERRIDE {
+                                        size_t frame_len) override {
     last_frame_len_ = frame_len;
   }
 

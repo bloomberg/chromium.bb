@@ -43,7 +43,7 @@ class TestURLRequestInterceptor : public URLRequestInterceptor {
   virtual ~TestURLRequestInterceptor() {}
 
   virtual URLRequestJob* MaybeInterceptRequest(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+      URLRequest* request, NetworkDelegate* network_delegate) const override {
     job_c = new URLRequestTestJob(request, network_delegate);
     return job_c;
   }

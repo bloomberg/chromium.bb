@@ -188,7 +188,7 @@ class MemBackendImpl::MemIterator : public Backend::Iterator {
   }
 
   virtual int OpenNextEntry(Entry** next_entry,
-                            const CompletionCallback& callback) OVERRIDE {
+                            const CompletionCallback& callback) override {
     if (!backend_)
       return net::ERR_FAILED;
 

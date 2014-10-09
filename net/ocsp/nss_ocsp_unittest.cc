@@ -49,7 +49,7 @@ class AiaResponseHandler : public net::URLRequestInterceptor {
   // net::URLRequestInterceptor implementation:
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     ++const_cast<AiaResponseHandler*>(this)->request_count_;
 
     return new net::URLRequestTestJob(

@@ -116,7 +116,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     // BackendFactory implementation.
     virtual int CreateBackend(NetLog* net_log,
                               scoped_ptr<disk_cache::Backend>* backend,
-                              const CompletionCallback& callback) OVERRIDE;
+                              const CompletionCallback& callback) override;
 
    private:
     CacheType type_;
@@ -214,9 +214,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   // HttpTransactionFactory implementation:
   virtual int CreateTransaction(RequestPriority priority,
-                                scoped_ptr<HttpTransaction>* trans) OVERRIDE;
-  virtual HttpCache* GetCache() OVERRIDE;
-  virtual HttpNetworkSession* GetSession() OVERRIDE;
+                                scoped_ptr<HttpTransaction>* trans) override;
+  virtual HttpCache* GetCache() override;
+  virtual HttpNetworkSession* GetSession() override;
 
   base::WeakPtr<HttpCache> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 

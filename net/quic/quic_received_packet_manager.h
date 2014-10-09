@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   // Called by QuicFramer, when the outgoing ack gets truncated, to recalculate
   // the received entropy hash for the truncated ack frame.
   virtual QuicPacketEntropyHash EntropyHash(
-      QuicPacketSequenceNumber sequence_number) const OVERRIDE;
+      QuicPacketSequenceNumber sequence_number) const override;
 
   // Updates internal state based on |stop_waiting|.
   void UpdatePacketInformationSentByPeer(

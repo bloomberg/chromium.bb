@@ -108,19 +108,19 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   static URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler();
 
   // Job functions
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
-  virtual void Start() OVERRIDE;
+  virtual void SetPriority(RequestPriority priority) override;
+  virtual void Start() override;
   virtual bool ReadRawData(IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE;
-  virtual void Kill() OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
+                           int *bytes_read) override;
+  virtual void Kill() override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual void GetResponseInfo(HttpResponseInfo* info) override;
   virtual void GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
+      LoadTimingInfo* load_timing_info) const override;
+  virtual int GetResponseCode() const override;
   virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
+                                  int* http_status_code) override;
 
  protected:
   // Override to specify whether the next read done from this job will

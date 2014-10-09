@@ -75,18 +75,18 @@ class QuitDelegate : public net::URLFetcherDelegate {
   virtual ~QuitDelegate() {}
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     base::MessageLoop::current()->Quit();
   }
 
   virtual void OnURLFetchDownloadProgress(
       const net::URLFetcher* source,
-      int64 current, int64 total) OVERRIDE {
+      int64 current, int64 total) override {
     NOTREACHED();
   }
 
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE {
+                                        int64 current, int64 total) override {
     NOTREACHED();
   }
 
@@ -106,7 +106,7 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
   }
 
   // NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE {
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override {
     // The log level of the entry is unknown, so just assume it maps
     // to VLOG(1).
     if (!VLOG_IS_ON(1))

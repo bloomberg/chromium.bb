@@ -15,7 +15,7 @@ class CertVerifyProcAndroid : public CertVerifyProc {
  public:
   CertVerifyProcAndroid();
 
-  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE;
+  virtual bool SupportsAdditionalTrustAnchors() const override;
 
  protected:
   virtual ~CertVerifyProcAndroid();
@@ -26,7 +26,7 @@ class CertVerifyProcAndroid : public CertVerifyProc {
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) OVERRIDE;
+                             CertVerifyResult* verify_result) override;
 };
 
 }  // namespace net

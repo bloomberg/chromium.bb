@@ -36,9 +36,9 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
   virtual ~QuicEpollConnectionHelper();
 
   // QuicEpollConnectionHelperInterface
-  virtual const QuicClock* GetClock() const OVERRIDE;
-  virtual QuicRandom* GetRandomGenerator() OVERRIDE;
-  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
+  virtual const QuicClock* GetClock() const override;
+  virtual QuicRandom* GetRandomGenerator() override;
+  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
 
   EpollServer* epoll_server() { return epoll_server_; }
 

@@ -28,14 +28,14 @@ class QuicEpollAlarm : public QuicAlarm {
         epoll_alarm_impl_(this) {}
 
  protected:
-  virtual void SetImpl() OVERRIDE {
+  virtual void SetImpl() override {
     DCHECK(deadline().IsInitialized());
     epoll_server_->RegisterAlarm(
         deadline().Subtract(QuicTime::Zero()).ToMicroseconds(),
         &epoll_alarm_impl_);
   }
 
-  virtual void CancelImpl() OVERRIDE {
+  virtual void CancelImpl() override {
     DCHECK(!deadline().IsInitialized());
     epoll_alarm_impl_.UnregisterIfRegistered();
   }
@@ -45,7 +45,7 @@ class QuicEpollAlarm : public QuicAlarm {
    public:
     explicit EpollAlarmImpl(QuicEpollAlarm* alarm) : alarm_(alarm) {}
 
-    virtual int64 OnAlarm() OVERRIDE {
+    virtual int64 OnAlarm() override {
       EpollAlarm::OnAlarm();
       alarm_->Fire();
       // Fire will take care of registering the alarm, if needed.

@@ -20,7 +20,7 @@ namespace net {
 
 class CtSerializationTest : public ::testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test_digitally_signed_ = ct::GetTestDigitallySigned();
   }
 

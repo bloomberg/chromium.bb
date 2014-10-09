@@ -112,37 +112,37 @@ class HttpCache::Transaction : public HttpTransaction {
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,
                     const CompletionCallback& callback,
-                    const BoundNetLog& net_log) OVERRIDE;
+                    const BoundNetLog& net_log) override;
   virtual int RestartIgnoringLastError(
-      const CompletionCallback& callback) OVERRIDE;
+      const CompletionCallback& callback) override;
   virtual int RestartWithCertificate(
       X509Certificate* client_cert,
-      const CompletionCallback& callback) OVERRIDE;
+      const CompletionCallback& callback) override;
   virtual int RestartWithAuth(const AuthCredentials& credentials,
-                              const CompletionCallback& callback) OVERRIDE;
-  virtual bool IsReadyToRestartForAuth() OVERRIDE;
+                              const CompletionCallback& callback) override;
+  virtual bool IsReadyToRestartForAuth() override;
   virtual int Read(IOBuffer* buf,
                    int buf_len,
-                   const CompletionCallback& callback) OVERRIDE;
-  virtual void StopCaching() OVERRIDE;
+                   const CompletionCallback& callback) override;
+  virtual void StopCaching() override;
   virtual bool GetFullRequestHeaders(
-      HttpRequestHeaders* headers) const OVERRIDE;
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
-  virtual void DoneReading() OVERRIDE;
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
-  virtual LoadState GetLoadState() const OVERRIDE;
-  virtual UploadProgress GetUploadProgress(void) const OVERRIDE;
-  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) OVERRIDE;
+      HttpRequestHeaders* headers) const override;
+  virtual int64 GetTotalReceivedBytes() const override;
+  virtual void DoneReading() override;
+  virtual const HttpResponseInfo* GetResponseInfo() const override;
+  virtual LoadState GetLoadState() const override;
+  virtual UploadProgress GetUploadProgress(void) const override;
+  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const OVERRIDE;
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
+      LoadTimingInfo* load_timing_info) const override;
+  virtual void SetPriority(RequestPriority priority) override;
   virtual void SetWebSocketHandshakeStreamCreateHelper(
-      net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
+      net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   virtual void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) OVERRIDE;
+      const BeforeNetworkStartCallback& callback) override;
   virtual void SetBeforeProxyHeadersSentCallback(
-      const BeforeProxyHeadersSentCallback& callback) OVERRIDE;
-  virtual int ResumeNetworkStart() OVERRIDE;
+      const BeforeProxyHeadersSentCallback& callback) override;
+  virtual int ResumeNetworkStart() override;
 
  private:
   static const size_t kNumValidationHeaders = 2;

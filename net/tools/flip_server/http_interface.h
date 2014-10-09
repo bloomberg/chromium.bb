@@ -32,11 +32,11 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
 
  private:
   // BalsaVisitorInterface:
-  virtual void ProcessBodyInput(const char* input, size_t size) OVERRIDE {}
-  virtual void ProcessBodyData(const char* input, size_t size) OVERRIDE;
-  virtual void ProcessHeaderInput(const char* input, size_t size) OVERRIDE {}
-  virtual void ProcessTrailerInput(const char* input, size_t size) OVERRIDE {}
-  virtual void ProcessHeaders(const BalsaHeaders& headers) OVERRIDE;
+  virtual void ProcessBodyInput(const char* input, size_t size) override {}
+  virtual void ProcessBodyData(const char* input, size_t size) override;
+  virtual void ProcessHeaderInput(const char* input, size_t size) override {}
+  virtual void ProcessTrailerInput(const char* input, size_t size) override {}
+  virtual void ProcessHeaders(const BalsaHeaders& headers) override;
   virtual void ProcessRequestFirstLine(const char* line_input,
                                        size_t line_length,
                                        const char* method_input,
@@ -44,7 +44,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
                                        const char* request_uri_input,
                                        size_t request_uri_length,
                                        const char* version_input,
-                                       size_t version_length) OVERRIDE {}
+                                       size_t version_length) override {}
   virtual void ProcessResponseFirstLine(const char* line_input,
                                         size_t line_length,
                                         const char* version_input,
@@ -52,28 +52,28 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
                                         const char* status_input,
                                         size_t status_length,
                                         const char* reason_input,
-                                        size_t reason_length) OVERRIDE {}
-  virtual void ProcessChunkLength(size_t chunk_length) OVERRIDE {}
-  virtual void ProcessChunkExtensions(const char* input, size_t size) OVERRIDE {
+                                        size_t reason_length) override {}
+  virtual void ProcessChunkLength(size_t chunk_length) override {}
+  virtual void ProcessChunkExtensions(const char* input, size_t size) override {
   }
-  virtual void HeaderDone() OVERRIDE {}
-  virtual void MessageDone() OVERRIDE;
-  virtual void HandleHeaderError(BalsaFrame* framer) OVERRIDE;
-  virtual void HandleHeaderWarning(BalsaFrame* framer) OVERRIDE {}
-  virtual void HandleChunkingError(BalsaFrame* framer) OVERRIDE;
-  virtual void HandleBodyError(BalsaFrame* framer) OVERRIDE;
+  virtual void HeaderDone() override {}
+  virtual void MessageDone() override;
+  virtual void HandleHeaderError(BalsaFrame* framer) override;
+  virtual void HandleHeaderWarning(BalsaFrame* framer) override {}
+  virtual void HandleChunkingError(BalsaFrame* framer) override;
+  virtual void HandleBodyError(BalsaFrame* framer) override;
 
   void HandleError();
 
  public:
   void AddToOutputOrder(const MemCacheIter& mci);
   BalsaFrame* spdy_framer() { return http_framer_; }
-  virtual void set_is_request() OVERRIDE {}
+  virtual void set_is_request() override {}
   const OutputOrdering& output_ordering() const { return output_ordering_; }
 
   // SMInterface:
   virtual void InitSMInterface(SMInterface* sm_spdy_interface,
-                               int32 server_idx) OVERRIDE;
+                               int32 server_idx) override;
   virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
                                 SMInterface* sm_interface,
                                 EpollServer* epoll_server,
@@ -81,33 +81,33 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
                                 std::string server_ip,
                                 std::string server_port,
                                 std::string remote_ip,
-                                bool use_ssl) OVERRIDE;
-  virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
-  virtual size_t ProcessWriteInput(const char* data, size_t len) OVERRIDE;
-  virtual bool MessageFullyRead() const OVERRIDE;
-  virtual void SetStreamID(uint32 stream_id) OVERRIDE;
-  virtual bool Error() const OVERRIDE;
-  virtual const char* ErrorAsString() const OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual void ResetForNewInterface(int32 server_idx) OVERRIDE {}
-  virtual void ResetForNewConnection() OVERRIDE;
-  virtual void Cleanup() OVERRIDE;
-  virtual int PostAcceptHook() OVERRIDE;
+                                bool use_ssl) override;
+  virtual size_t ProcessReadInput(const char* data, size_t len) override;
+  virtual size_t ProcessWriteInput(const char* data, size_t len) override;
+  virtual bool MessageFullyRead() const override;
+  virtual void SetStreamID(uint32 stream_id) override;
+  virtual bool Error() const override;
+  virtual const char* ErrorAsString() const override;
+  virtual void Reset() override;
+  virtual void ResetForNewInterface(int32 server_idx) override {}
+  virtual void ResetForNewConnection() override;
+  virtual void Cleanup() override;
+  virtual int PostAcceptHook() override;
 
   virtual void NewStream(uint32 stream_id,
                          uint32 priority,
-                         const std::string& filename) OVERRIDE;
-  virtual void SendEOF(uint32 stream_id) OVERRIDE;
-  virtual void SendErrorNotFound(uint32 stream_id) OVERRIDE;
+                         const std::string& filename) override;
+  virtual void SendEOF(uint32 stream_id) override;
+  virtual void SendErrorNotFound(uint32 stream_id) override;
   virtual size_t SendSynStream(uint32 stream_id,
-                               const BalsaHeaders& headers) OVERRIDE;
+                               const BalsaHeaders& headers) override;
   virtual size_t SendSynReply(uint32 stream_id,
-                              const BalsaHeaders& headers) OVERRIDE;
+                              const BalsaHeaders& headers) override;
   virtual void SendDataFrame(uint32 stream_id,
                              const char* data,
                              int64 len,
                              uint32 flags,
-                             bool compress) OVERRIDE;
+                             bool compress) override;
 
  private:
   void SendEOFImpl(uint32 stream_id);
@@ -121,7 +121,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
                          uint32 flags,
                          bool compress);
   void EnqueueDataFrame(DataFrame* df);
-  virtual void GetOutput() OVERRIDE;
+  virtual void GetOutput() override;
 
  private:
   BalsaFrame* http_framer_;

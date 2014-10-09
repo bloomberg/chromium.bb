@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // destination buffer. Upon exit, *dest_len is the actual number of chars
   // written into the destination buffer.
   virtual FilterStatus ReadFilteredData(char* dest_buffer,
-                                        int* dest_len) OVERRIDE;
+                                        int* dest_len) override;
 
  private:
   // Internal status.  Once we enter an error state, we stop processing data.

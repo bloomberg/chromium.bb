@@ -24,7 +24,7 @@ class NetworkChangeNotifierMac: public NetworkChangeNotifier {
   virtual ~NetworkChangeNotifierMac();
 
   // NetworkChangeNotifier implementation:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE;
+  virtual ConnectionType GetCurrentConnectionType() const override;
 
   // Forwarder just exists to keep the NetworkConfigWatcherMac API out of
   // NetworkChangeNotifierMac's public API.
@@ -34,11 +34,11 @@ class NetworkChangeNotifierMac: public NetworkChangeNotifier {
         : net_config_watcher_(net_config_watcher) {}
 
     // NetworkConfigWatcherMac::Delegate implementation:
-    virtual void Init() OVERRIDE;
-    virtual void StartReachabilityNotifications() OVERRIDE;
+    virtual void Init() override;
+    virtual void StartReachabilityNotifications() override;
     virtual void SetDynamicStoreNotificationKeys(
-        SCDynamicStoreRef store) OVERRIDE;
-    virtual void OnNetworkConfigChange(CFArrayRef changed_keys) OVERRIDE;
+        SCDynamicStoreRef store) override;
+    virtual void OnNetworkConfigChange(CFArrayRef changed_keys) override;
 
    private:
     NetworkChangeNotifierMac* const net_config_watcher_;

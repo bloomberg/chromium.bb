@@ -40,7 +40,7 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 
   virtual void Run(bool ok,
                    const string& error_details,
-                   scoped_ptr<ProofVerifyDetails>* details) OVERRIDE {
+                   scoped_ptr<ProofVerifyDetails>* details) override {
     *ok_ = ok;
     *error_details_ = error_details;
 

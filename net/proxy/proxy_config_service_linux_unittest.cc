@@ -107,7 +107,7 @@ class MockEnvironment : public base::Environment {
   }
 
   // Begin base::Environment implementation.
-  virtual bool GetVar(const char* variable_name, std::string* result) OVERRIDE {
+  virtual bool GetVar(const char* variable_name, std::string* result) override {
     std::map<std::string, const char**>::iterator it =
         table.find(variable_name);
     if (it != table.end() && *(it->second) != NULL) {
@@ -119,12 +119,12 @@ class MockEnvironment : public base::Environment {
   }
 
   virtual bool SetVar(const char* variable_name, const std::string& new_value)
-      OVERRIDE {
+      override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool UnSetVar(const char* variable_name) OVERRIDE {
+  virtual bool UnSetVar(const char* variable_name) override {
     ADD_FAILURE();
     return false;
   }
@@ -178,28 +178,28 @@ class MockSettingGetter
   virtual bool Init(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
-      OVERRIDE {
+      override {
     task_runner_ = glib_task_runner;
     return true;
   }
 
-  virtual void ShutDown() OVERRIDE {}
+  virtual void ShutDown() override {}
 
   virtual bool SetUpNotifications(ProxyConfigServiceLinux::Delegate* delegate)
-      OVERRIDE {
+      override {
     return true;
   }
 
   virtual const scoped_refptr<base::SingleThreadTaskRunner>&
-  GetNotificationTaskRunner() OVERRIDE {
+  GetNotificationTaskRunner() override {
     return task_runner_;
   }
 
-  virtual ProxyConfigSource GetConfigSource() OVERRIDE {
+  virtual ProxyConfigSource GetConfigSource() override {
     return PROXY_CONFIG_SOURCE_TEST;
   }
 
-  virtual bool GetString(StringSetting key, std::string* result) OVERRIDE {
+  virtual bool GetString(StringSetting key, std::string* result) override {
     const char* value = strings_table.Get(key);
     if (value) {
       *result = value;
@@ -208,7 +208,7 @@ class MockSettingGetter
     return false;
   }
 
-  virtual bool GetBool(BoolSetting key, bool* result) OVERRIDE {
+  virtual bool GetBool(BoolSetting key, bool* result) override {
     BoolSettingValue value = bools_table.Get(key);
     switch (value) {
     case UNSET:
@@ -222,24 +222,24 @@ class MockSettingGetter
     return true;
   }
 
-  virtual bool GetInt(IntSetting key, int* result) OVERRIDE {
+  virtual bool GetInt(IntSetting key, int* result) override {
     // We don't bother to distinguish unset keys from 0 values.
     *result = ints_table.Get(key);
     return true;
   }
 
   virtual bool GetStringList(StringListSetting key,
-                             std::vector<std::string>* result) OVERRIDE {
+                             std::vector<std::string>* result) override {
     *result = string_lists_table.Get(key);
     // We don't bother to distinguish unset keys from empty lists.
     return !result->empty();
   }
 
-  virtual bool BypassListIsReversed() OVERRIDE {
+  virtual bool BypassListIsReversed() override {
     return false;
   }
 
-  virtual bool MatchHostsUsingSuffixMatching() OVERRIDE {
+  virtual bool MatchHostsUsingSuffixMatching() override {
     return false;
   }
 
@@ -355,7 +355,7 @@ namespace net {
 // must use the same test fixture class (also "ProxyConfigServiceLinuxTest").
 class ProxyConfigServiceLinuxTest : public PlatformTest {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     PlatformTest::SetUp();
     // Set up a temporary KDE home directory.
     std::string prefix("ProxyConfigServiceLinuxTest_user_home");
@@ -372,7 +372,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
     kioslaverc4_ = kde4_config_.Append(FILE_PATH_LITERAL("kioslaverc"));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     // Delete the temporary KDE home directory.
     base::DeleteFile(user_home_, true);
     PlatformTest::TearDown();

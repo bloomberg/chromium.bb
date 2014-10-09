@@ -64,7 +64,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
 
     virtual QuicPacketWriter* Create(
         QuicServerPacketWriter* writer,
-        QuicConnection* connection) OVERRIDE;
+        QuicConnection* connection) override;
   };
 
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
@@ -89,7 +89,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   // an existing session, or passing it to the TimeWaitListManager.
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
-                             const QuicEncryptedPacket& packet) OVERRIDE;
+                             const QuicEncryptedPacket& packet) override;
 
   // Returns true if there's anything in the blocked writer list.
   virtual bool HasPendingWrites() const;
@@ -99,16 +99,16 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
 
   // QuicBlockedWriterInterface implementation:
   // Called when the socket becomes writable to allow queued writes to happen.
-  virtual void OnCanWrite() OVERRIDE;
+  virtual void OnCanWrite() override;
 
   // QuicServerSessionVisitor interface implementation:
   // Ensure that the closed connection is cleaned up asynchronously.
   virtual void OnConnectionClosed(QuicConnectionId connection_id,
-                                  QuicErrorCode error) OVERRIDE;
+                                  QuicErrorCode error) override;
 
   // Queues the blocked writer for later resumption.
   virtual void OnWriteBlocked(
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
+      QuicBlockedWriterInterface* blocked_writer) override;
 
   typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
 
@@ -185,7 +185,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
     PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
     virtual ~PacketWriterFactoryAdapter ();
 
-    virtual QuicPacketWriter* Create(QuicConnection* connection) const OVERRIDE;
+    virtual QuicPacketWriter* Create(QuicConnection* connection) const override;
 
    private:
     QuicDispatcher* dispatcher_;

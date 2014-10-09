@@ -28,14 +28,14 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
   }
 
   virtual void OnListFile(
-      const DirectoryLister::DirectoryListerData& data) OVERRIDE {
+      const DirectoryLister::DirectoryListerData& data) override {
     file_list_.push_back(data.info);
     paths_.push_back(data.path);
     if (quit_loop_after_each_file_)
       base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnListDone(int error) OVERRIDE {
+  virtual void OnListDone(int error) override {
     error_ = error;
     base::MessageLoop::current()->Quit();
     if (recursive_)
@@ -93,7 +93,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
 class DirectoryListerTest : public PlatformTest {
  public:
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     const int kMaxDepth = 3;
     const int kBranchingFactor = 4;
     const int kFilesPerDirectory = 5;

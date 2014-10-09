@@ -81,8 +81,8 @@ class NET_EXPORT_PRIVATE SocketLibevent
 
  private:
   // base::MessageLoopForIO::Watcher methods.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   int DoAccept(scoped_ptr<SocketLibevent>* socket);
   void AcceptCompleted();

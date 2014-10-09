@@ -133,19 +133,19 @@ class NET_EXPORT SpdySessionPool
   // We flush all idle sessions and release references to the active ones so
   // they won't get re-used.  The active ones will either complete successfully
   // or error out due to the IP address change.
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
   // SSLConfigService::Observer methods:
 
   // We perform the same flushing as described above when SSL settings change.
-  virtual void OnSSLConfigChanged() OVERRIDE;
+  virtual void OnSSLConfigChanged() override;
 
   // CertDatabase::Observer methods:
 
   // We perform the same flushing as described above when certificate database
   // is changed.
-  virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
-  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCertAdded(const X509Certificate* cert) override;
+  virtual void OnCACertChanged(const X509Certificate* cert) override;
 
  private:
   friend class SpdySessionPoolPeer;  // For testing.

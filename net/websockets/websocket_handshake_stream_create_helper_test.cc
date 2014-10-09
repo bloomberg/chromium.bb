@@ -61,17 +61,17 @@ class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
  public:
   virtual ~TestConnectDelegate() {}
 
-  virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) OVERRIDE {}
-  virtual void OnFailure(const std::string& failure_message) OVERRIDE {}
+  virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) override {}
+  virtual void OnFailure(const std::string& failure_message) override {}
   virtual void OnStartOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {}
+      scoped_ptr<WebSocketHandshakeRequestInfo> request) override {}
   virtual void OnFinishOpeningHandshake(
-      scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {}
+      scoped_ptr<WebSocketHandshakeResponseInfo> response) override {}
   virtual void OnSSLCertificateError(
       scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
-      bool fatal) OVERRIDE {}
+      bool fatal) override {}
 };
 
 class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {

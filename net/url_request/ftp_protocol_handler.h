@@ -24,7 +24,7 @@ class NET_EXPORT FtpProtocolHandler :
   explicit FtpProtocolHandler(FtpTransactionFactory* ftp_transaction_factory);
   virtual ~FtpProtocolHandler();
   virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
+      URLRequest* request, NetworkDelegate* network_delegate) const override;
 
  private:
   friend class FtpTestURLRequestContext;

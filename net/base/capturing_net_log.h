@@ -105,7 +105,7 @@ class CapturingNetLog : public NetLog {
 
    private:
     // ThreadSafeObserver implementation:
-    virtual void OnAddEntry(const Entry& entry) OVERRIDE;
+    virtual void OnAddEntry(const Entry& entry) override;
 
     // Needs to be "mutable" so can use it in GetEntries().
     mutable base::Lock lock_;

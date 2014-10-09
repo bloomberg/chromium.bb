@@ -63,7 +63,7 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
 
   virtual ~SynStreamBufferProducer() {}
 
-  virtual scoped_ptr<SpdyBuffer> ProduceBuffer() OVERRIDE {
+  virtual scoped_ptr<SpdyBuffer> ProduceBuffer() override {
     if (!stream_.get()) {
       NOTREACHED();
       return scoped_ptr<SpdyBuffer>();

@@ -27,7 +27,7 @@ class MockAddressSorter : public AddressSorter {
  public:
   virtual ~MockAddressSorter() {}
   virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const OVERRIDE {
+                    const CallbackType& callback) const override {
     // Do nothing.
     callback.Run(true, list);
   }
@@ -60,15 +60,15 @@ class MockTransaction : public DnsTransaction,
     }
   }
 
-  virtual const std::string& GetHostname() const OVERRIDE {
+  virtual const std::string& GetHostname() const override {
     return hostname_;
   }
 
-  virtual uint16 GetType() const OVERRIDE {
+  virtual uint16 GetType() const override {
     return qtype_;
   }
 
-  virtual void Start() OVERRIDE {
+  virtual void Start() override {
     EXPECT_FALSE(started_);
     started_ = true;
     if (delayed_)
@@ -172,7 +172,7 @@ class MockTransactionFactory : public DnsTransactionFactory {
       const std::string& hostname,
       uint16 qtype,
       const DnsTransactionFactory::CallbackType& callback,
-      const BoundNetLog&) OVERRIDE {
+      const BoundNetLog&) override {
     MockTransaction* transaction =
         new MockTransaction(rules_, hostname, qtype, callback);
     if (transaction->delayed())

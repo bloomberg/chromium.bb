@@ -64,18 +64,18 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
 
   virtual ~SessionOpeningDelegate() {}
 
-  virtual void OnRequestHeadersSent() OVERRIDE {}
+  virtual void OnRequestHeadersSent() override {}
 
   virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
-      const SpdyHeaderBlock& response_headers) OVERRIDE {
+      const SpdyHeaderBlock& response_headers) override {
     return RESPONSE_HEADERS_ARE_COMPLETE;
   }
 
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE {}
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override {}
 
-  virtual void OnDataSent() OVERRIDE {}
+  virtual void OnDataSent() override {}
 
-  virtual void OnClose(int status) OVERRIDE {
+  virtual void OnClose(int status) override {
     ignore_result(CreateFakeSpdySession(spdy_session_pool_, key_));
   }
 

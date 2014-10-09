@@ -237,7 +237,7 @@ class WebSocketBasicStreamSocketWriteTest
  protected:
   // All write tests use the same frame, so it is easiest to create it during
   // test creation.
-  virtual void SetUp() OVERRIDE { PrepareWriteFrame(); }
+  virtual void SetUp() override { PrepareWriteFrame(); }
 
   // Creates a WebSocketFrame with a wire format matching kWriteFrame and adds
   // it to |frames_|.

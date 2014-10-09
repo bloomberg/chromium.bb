@@ -59,22 +59,22 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // QuicConnectionVisitorInterface methods:
   virtual void OnStreamFrames(
-      const std::vector<QuicStreamFrame>& frames) OVERRIDE;
-  virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
-  virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
+      const std::vector<QuicStreamFrame>& frames) override;
+  virtual void OnRstStream(const QuicRstStreamFrame& frame) override;
+  virtual void OnGoAway(const QuicGoAwayFrame& frame) override;
   virtual void OnWindowUpdateFrames(
-      const std::vector<QuicWindowUpdateFrame>& frames) OVERRIDE;
+      const std::vector<QuicWindowUpdateFrame>& frames) override;
   virtual void OnBlockedFrames(
-      const std::vector<QuicBlockedFrame>& frames) OVERRIDE;
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
-  virtual void OnWriteBlocked() OVERRIDE {}
+      const std::vector<QuicBlockedFrame>& frames) override;
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  virtual void OnWriteBlocked() override {}
   virtual void OnSuccessfulVersionNegotiation(
-      const QuicVersion& version) OVERRIDE;
-  virtual void OnCanWrite() OVERRIDE;
-  virtual void OnCongestionWindowChange(QuicTime now) OVERRIDE {}
-  virtual bool WillingAndAbleToWrite() const OVERRIDE;
-  virtual bool HasPendingHandshake() const OVERRIDE;
-  virtual bool HasOpenDataStreams() const OVERRIDE;
+      const QuicVersion& version) override;
+  virtual void OnCanWrite() override;
+  virtual void OnCongestionWindowChange(QuicTime now) override {}
+  virtual bool WillingAndAbleToWrite() const override;
+  virtual bool HasPendingHandshake() const override;
+  virtual bool HasOpenDataStreams() const override;
 
   // Called by the headers stream when headers have been received for a stream.
   virtual void OnStreamHeaders(QuicStreamId stream_id,

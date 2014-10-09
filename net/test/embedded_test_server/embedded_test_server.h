@@ -167,11 +167,11 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
 
   // StreamListenSocket::Delegate overrides:
   virtual void DidAccept(StreamListenSocket* server,
-                         scoped_ptr<StreamListenSocket> connection) OVERRIDE;
+                         scoped_ptr<StreamListenSocket> connection) override;
   virtual void DidRead(StreamListenSocket* connection,
                        const char* data,
-                       int length) OVERRIDE;
-  virtual void DidClose(StreamListenSocket* connection) OVERRIDE;
+                       int length) override;
+  virtual void DidClose(StreamListenSocket* connection) override;
 
   HttpConnection* FindConnection(StreamListenSocket* socket);
 

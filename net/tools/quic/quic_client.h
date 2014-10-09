@@ -107,17 +107,17 @@ class QuicClient : public EpollCallbackInterface,
   // From EpollCallbackInterface
   virtual void OnRegistration(EpollServer* eps,
                               int fd,
-                              int event_mask) OVERRIDE {}
-  virtual void OnModification(int fd, int event_mask) OVERRIDE {}
-  virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
+                              int event_mask) override {}
+  virtual void OnModification(int fd, int event_mask) override {}
+  virtual void OnEvent(int fd, EpollEvent* event) override;
   // |fd_| can be unregistered without the client being disconnected. This
   // happens in b3m QuicProber where we unregister |fd_| to feed in events to
   // the client from the SelectServer.
-  virtual void OnUnregistration(int fd, bool replaced) OVERRIDE {}
-  virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}
+  virtual void OnUnregistration(int fd, bool replaced) override {}
+  virtual void OnShutdown(EpollServer* eps, int fd) override {}
 
   // QuicDataStream::Visitor
-  virtual void OnClose(QuicDataStream* stream) OVERRIDE;
+  virtual void OnClose(QuicDataStream* stream) override;
 
   QuicClientSession* session() { return session_.get(); }
 
@@ -194,7 +194,7 @@ class QuicClient : public EpollCallbackInterface,
     DummyPacketWriterFactory(QuicPacketWriter* writer);
     virtual ~DummyPacketWriterFactory();
 
-    virtual QuicPacketWriter* Create(QuicConnection* connection) const OVERRIDE;
+    virtual QuicPacketWriter* Create(QuicConnection* connection) const override;
 
    private:
     QuicPacketWriter* writer_;

@@ -27,7 +27,7 @@ class DelayedVerifyStrikeRegisterClient : public LocalStrikeRegisterClient {
 
   virtual void VerifyNonceIsValidAndUnique(base::StringPiece nonce,
                                            QuicWallTime now,
-                                           ResultCallback* cb) OVERRIDE;
+                                           ResultCallback* cb) override;
 
   // Start queueing verifications instead of executing them immediately.
   void StartDelayingVerification() {

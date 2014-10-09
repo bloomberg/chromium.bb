@@ -25,12 +25,12 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
   void SetSystemSlot(crypto::ScopedPK11Slot system_slot);
 
   // NSSCertDatabase implementation.
-  virtual void ListCertsSync(CertificateList* certs) OVERRIDE;
+  virtual void ListCertsSync(CertificateList* certs) override;
   virtual void ListCerts(const NSSCertDatabase::ListCertsCallback& callback)
-      OVERRIDE;
+      override;
   virtual void ListModules(CryptoModuleList* modules, bool need_rw) const
-      OVERRIDE;
-  virtual crypto::ScopedPK11Slot GetSystemSlot() const OVERRIDE;
+      override;
+  virtual crypto::ScopedPK11Slot GetSystemSlot() const override;
 
   // TODO(mattm): handle trust setting, deletion, etc correctly when certs exist
   // in multiple slots.

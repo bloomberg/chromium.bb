@@ -41,16 +41,16 @@ class QuicServerPacketWriter : public QuicPacketWriter {
   void OnWriteComplete(int rv);
 
   // QuicPacketWriter implementation:
-  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
-  virtual bool IsWriteBlocked() const OVERRIDE;
-  virtual void SetWritable() OVERRIDE;
+  virtual bool IsWriteBlockedDataBuffered() const override;
+  virtual bool IsWriteBlocked() const override;
+  virtual void SetWritable() override;
 
  protected:
   // Do not call WritePacket on its own -- use WritePacketWithCallback
   virtual WriteResult WritePacket(const char* buffer,
                                   size_t buf_len,
                                   const IPAddressNumber& self_address,
-                                  const IPEndPoint& peer_address) OVERRIDE;
+                                  const IPEndPoint& peer_address) override;
  private:
   UDPServerSocket* socket_;
 

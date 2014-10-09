@@ -28,8 +28,8 @@ class TestTaskRunner : public base::TaskRunner {
   // base::TaskRunner implementation.
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
-                               base::TimeDelta delay) OVERRIDE;
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+                               base::TimeDelta delay) override;
+  virtual bool RunsTasksOnCurrentThread() const override;
 
   const std::vector<PostedTask>& GetPostedTasks() const;
 

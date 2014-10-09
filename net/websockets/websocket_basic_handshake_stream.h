@@ -42,35 +42,35 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   virtual int InitializeStream(const HttpRequestInfo* request_info,
                                RequestPriority priority,
                                const BoundNetLog& net_log,
-                               const CompletionCallback& callback) OVERRIDE;
+                               const CompletionCallback& callback) override;
   virtual int SendRequest(const HttpRequestHeaders& request_headers,
                           HttpResponseInfo* response,
-                          const CompletionCallback& callback) OVERRIDE;
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE;
+                          const CompletionCallback& callback) override;
+  virtual int ReadResponseHeaders(const CompletionCallback& callback) override;
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
-                               const CompletionCallback& callback) OVERRIDE;
-  virtual void Close(bool not_reusable) OVERRIDE;
-  virtual bool IsResponseBodyComplete() const OVERRIDE;
-  virtual bool CanFindEndOfResponse() const OVERRIDE;
-  virtual bool IsConnectionReused() const OVERRIDE;
-  virtual void SetConnectionReused() OVERRIDE;
-  virtual bool IsConnectionReusable() const OVERRIDE;
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
+                               const CompletionCallback& callback) override;
+  virtual void Close(bool not_reusable) override;
+  virtual bool IsResponseBodyComplete() const override;
+  virtual bool CanFindEndOfResponse() const override;
+  virtual bool IsConnectionReused() const override;
+  virtual void SetConnectionReused() override;
+  virtual bool IsConnectionReusable() const override;
+  virtual int64 GetTotalReceivedBytes() const override;
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
-      OVERRIDE;
-  virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
+      override;
+  virtual void GetSSLInfo(SSLInfo* ssl_info) override;
   virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual bool IsSpdyHttpStream() const OVERRIDE;
-  virtual void Drain(HttpNetworkSession* session) OVERRIDE;
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
+      SSLCertRequestInfo* cert_request_info) override;
+  virtual bool IsSpdyHttpStream() const override;
+  virtual void Drain(HttpNetworkSession* session) override;
+  virtual void SetPriority(RequestPriority priority) override;
 
   // This is called from the top level once correct handshake response headers
   // have been received. It creates an appropriate subclass of WebSocketStream
   // depending on what extensions were negotiated. This object is unusable after
   // Upgrade() has been called and should be disposed of as soon as possible.
-  virtual scoped_ptr<WebSocketStream> Upgrade() OVERRIDE;
+  virtual scoped_ptr<WebSocketStream> Upgrade() override;
 
   // Set the value used for the next Sec-WebSocket-Key header
   // deterministically. The key is only used once, and then discarded.

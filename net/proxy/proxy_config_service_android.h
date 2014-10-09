@@ -64,9 +64,9 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
 
   // ProxyConfigService:
   // Called only on the network thread.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
+  virtual void RemoveObserver(Observer* observer) override;
+  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
 
  private:
   friend class ProxyConfigServiceAndroidTestBase;

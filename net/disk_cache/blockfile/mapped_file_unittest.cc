@@ -23,7 +23,7 @@ class FileCallbackTest: public disk_cache::FileIOCallback {
   }
   virtual ~FileCallbackTest() {}
 
-  virtual void OnFileIOComplete(int bytes_copied) OVERRIDE;
+  virtual void OnFileIOComplete(int bytes_copied) override;
 
  private:
   int id_;
@@ -48,9 +48,9 @@ class TestFileBlock : public disk_cache::FileBlock {
   virtual ~TestFileBlock() {}
 
   // FileBlock interface.
-  virtual void* buffer() const OVERRIDE { return const_cast<char*>(buffer_); }
-  virtual size_t size() const OVERRIDE { return sizeof(buffer_); }
-  virtual int offset() const OVERRIDE { return 1024; }
+  virtual void* buffer() const override { return const_cast<char*>(buffer_); }
+  virtual size_t size() const override { return sizeof(buffer_); }
+  virtual int offset() const override { return 1024; }
 
  private:
   char buffer_[20];

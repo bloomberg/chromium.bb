@@ -68,51 +68,51 @@ class SSLClientSocketNSS : public SSLClientSocket {
   virtual ~SSLClientSocketNSS();
 
   // SSLClientSocket implementation.
-  virtual std::string GetSessionCacheKey() const OVERRIDE;
-  virtual bool InSessionCache() const OVERRIDE;
+  virtual std::string GetSessionCacheKey() const override;
+  virtual bool InSessionCache() const override;
   virtual void SetHandshakeCompletionCallback(
-      const base::Closure& callback) OVERRIDE;
+      const base::Closure& callback) override;
   virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
+      SSLCertRequestInfo* cert_request_info) override;
+  virtual NextProtoStatus GetNextProto(std::string* proto) override;
 
   // SSLSocket implementation.
   virtual int ExportKeyingMaterial(const base::StringPiece& label,
                                    bool has_context,
                                    const base::StringPiece& context,
                                    unsigned char* out,
-                                   unsigned int outlen) OVERRIDE;
-  virtual int GetTLSUniqueChannelBinding(std::string* out) OVERRIDE;
+                                   unsigned int outlen) override;
+  virtual int GetTLSUniqueChannelBinding(std::string* out) override;
 
   // StreamSocket implementation.
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual bool IsConnected() const OVERRIDE;
-  virtual bool IsConnectedAndIdle() const OVERRIDE;
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE;
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
-  virtual const BoundNetLog& NetLog() const OVERRIDE;
-  virtual void SetSubresourceSpeculation() OVERRIDE;
-  virtual void SetOmniboxSpeculation() OVERRIDE;
-  virtual bool WasEverUsed() const OVERRIDE;
-  virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
+  virtual int Connect(const CompletionCallback& callback) override;
+  virtual void Disconnect() override;
+  virtual bool IsConnected() const override;
+  virtual bool IsConnectedAndIdle() const override;
+  virtual int GetPeerAddress(IPEndPoint* address) const override;
+  virtual int GetLocalAddress(IPEndPoint* address) const override;
+  virtual const BoundNetLog& NetLog() const override;
+  virtual void SetSubresourceSpeculation() override;
+  virtual void SetOmniboxSpeculation() override;
+  virtual bool WasEverUsed() const override;
+  virtual bool UsingTCPFastOpen() const override;
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) override;
 
   // Socket implementation.
   virtual int Read(IOBuffer* buf,
                    int buf_len,
-                   const CompletionCallback& callback) OVERRIDE;
+                   const CompletionCallback& callback) override;
   virtual int Write(IOBuffer* buf,
                     int buf_len,
-                    const CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
-  virtual ChannelIDService* GetChannelIDService() const OVERRIDE;
+                    const CompletionCallback& callback) override;
+  virtual int SetReceiveBufferSize(int32 size) override;
+  virtual int SetSendBufferSize(int32 size) override;
+  virtual ChannelIDService* GetChannelIDService() const override;
 
  protected:
   // SSLClientSocket implementation.
   virtual scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
-      const OVERRIDE;
+      const override;
 
  private:
   // Helper class to handle marshalling any NSS interaction to and from the

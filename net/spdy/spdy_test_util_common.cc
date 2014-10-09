@@ -214,44 +214,44 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
     return priority_;
   }
 
-  virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {}
+  virtual void OnError(SpdyFramer::SpdyError error_code) override {}
   virtual void OnStreamError(SpdyStreamId stream_id,
-                             const std::string& description) OVERRIDE {}
+                             const std::string& description) override {}
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
                            bool fin,
                            bool unidirectional,
-                           const SpdyHeaderBlock& headers) OVERRIDE {
+                           const SpdyHeaderBlock& headers) override {
     priority_ = priority;
   }
   virtual void OnSynReply(SpdyStreamId stream_id,
                           bool fin,
-                          const SpdyHeaderBlock& headers) OVERRIDE {}
+                          const SpdyHeaderBlock& headers) override {}
   virtual void OnHeaders(SpdyStreamId stream_id,
                          bool fin,
-                         const SpdyHeaderBlock& headers) OVERRIDE {}
+                         const SpdyHeaderBlock& headers) override {}
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
-                                 bool fin) OVERRIDE {}
+                                 bool fin) override {}
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 bool fin) OVERRIDE {}
-  virtual void OnSettings(bool clear_persisted) OVERRIDE {}
+                                 bool fin) override {}
+  virtual void OnSettings(bool clear_persisted) override {}
   virtual void OnSetting(
-      SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE {}
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
+      SpdySettingsIds id, uint8 flags, uint32 value) override {}
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override {}
   virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) OVERRIDE {}
+                           SpdyRstStreamStatus status) override {}
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) OVERRIDE {}
+                        SpdyGoAwayStatus status) override {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) OVERRIDE {}
+                              uint32 delta_window_size) override {}
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
-                             const SpdyHeaderBlock& headers) OVERRIDE {}
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE {
+                             const SpdyHeaderBlock& headers) override {}
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     return false;
   }
 
@@ -616,43 +616,43 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
   virtual ~FakeSpdySessionClientSocket() {}
 
   virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
+                   const CompletionCallback& callback) override {
     return read_result_;
   }
 
   virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
+                    const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
   // Return kProtoUnknown to use the pool's default protocol.
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
+  virtual NextProto GetNegotiatedProtocol() const override {
     return kProtoUnknown;
   }
 
   // The functions below are not expected to be called.
 
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
+  virtual int Connect(const CompletionCallback& callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual bool WasEverUsed() const OVERRIDE {
+  virtual bool WasEverUsed() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool UsingTCPFastOpen() const OVERRIDE {
+  virtual bool UsingTCPFastOpen() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool WasNpnNegotiated() const OVERRIDE {
+  virtual bool WasNpnNegotiated() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) override {
     ADD_FAILURE();
     return false;
   }

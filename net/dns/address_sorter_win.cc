@@ -31,7 +31,7 @@ class AddressSorterWin : public AddressSorter {
 
   // AddressSorter:
   virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const OVERRIDE {
+                    const CallbackType& callback) const override {
     DCHECK(!list.empty());
     scoped_refptr<Job> job = new Job(list, callback);
   }
@@ -160,7 +160,7 @@ class AddressSorterWinXP : public AddressSorter {
 
   // AddressSorter:
   virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const OVERRIDE {
+                    const CallbackType& callback) const override {
     AddressList list_ipv4;
     AddressList list_ipv6;
     for (size_t i = 0; i < list.size(); ++i) {

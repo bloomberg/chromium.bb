@@ -68,7 +68,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
     virtual QuicPacketWriter* Create(
         QuicPacketWriter* writer,
-        QuicConnection* connection) OVERRIDE;
+        QuicConnection* connection) override;
   };
 
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
@@ -92,7 +92,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // an existing session, or passing it to the TimeWaitListManager.
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
-                             const QuicEncryptedPacket& packet) OVERRIDE;
+                             const QuicEncryptedPacket& packet) override;
 
   // Called when the socket becomes writable to allow queued writes to happen.
   virtual void OnCanWrite();
@@ -106,11 +106,11 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // QuicServerSessionVisitor interface implementation:
   // Ensure that the closed connection is cleaned up asynchronously.
   virtual void OnConnectionClosed(QuicConnectionId connection_id,
-                                  QuicErrorCode error) OVERRIDE;
+                                  QuicErrorCode error) override;
 
   // Queues the blocked writer for later resumption.
   virtual void OnWriteBlocked(
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
+      QuicBlockedWriterInterface* blocked_writer) override;
 
   typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
 
@@ -193,7 +193,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
     PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
     virtual ~PacketWriterFactoryAdapter ();
 
-    virtual QuicPacketWriter* Create(QuicConnection* connection) const OVERRIDE;
+    virtual QuicPacketWriter* Create(QuicConnection* connection) const override;
 
    private:
     QuicDispatcher* dispatcher_;

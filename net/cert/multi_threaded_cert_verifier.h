@@ -61,9 +61,9 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
                      CertVerifyResult* verify_result,
                      const CompletionCallback& callback,
                      CertVerifier::RequestHandle* out_req,
-                     const BoundNetLog& net_log) OVERRIDE;
+                     const BoundNetLog& net_log) override;
 
-  virtual void CancelRequest(CertVerifier::RequestHandle req) OVERRIDE;
+  virtual void CancelRequest(CertVerifier::RequestHandle req) override;
 
  private:
   friend class CertVerifierWorker;  // Calls HandleResult.
@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
                     const CertVerifyResult& verify_result);
 
   // CertDatabase::Observer methods:
-  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCACertChanged(const X509Certificate* cert) override;
 
   // For unit testing.
   void ClearCache() { cache_.Clear(); }

@@ -30,7 +30,7 @@ class MockQuicCryptoStream : public QuicCryptoStream {
   }
 
   virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) OVERRIDE {
+      const CryptoHandshakeMessage& message) override {
     messages_.push_back(message);
   }
 

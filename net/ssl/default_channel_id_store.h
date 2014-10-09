@@ -49,25 +49,25 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result,
-      const GetChannelIDCallback& callback) OVERRIDE;
+      const GetChannelIDCallback& callback) override;
   virtual void SetChannelID(
       const std::string& server_identifier,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,
-      const std::string& cert) OVERRIDE;
+      const std::string& cert) override;
   virtual void DeleteChannelID(
       const std::string& server_identifier,
-      const base::Closure& callback) OVERRIDE;
+      const base::Closure& callback) override;
   virtual void DeleteAllCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& callback) OVERRIDE;
-  virtual void DeleteAll(const base::Closure& callback) OVERRIDE;
+      const base::Closure& callback) override;
+  virtual void DeleteAll(const base::Closure& callback) override;
   virtual void GetAllChannelIDs(
-      const GetChannelIDListCallback& callback) OVERRIDE;
-  virtual int GetChannelIDCount() OVERRIDE;
-  virtual void SetForceKeepSessionState() OVERRIDE;
+      const GetChannelIDListCallback& callback) override;
+  virtual int GetChannelIDCount() override;
+  virtual void SetForceKeepSessionState() override;
 
  private:
   class Task;

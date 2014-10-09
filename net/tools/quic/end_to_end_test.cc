@@ -159,10 +159,10 @@ class ServerDelegate : public PacketDroppingTestWriter::Delegate {
       : writer_factory_(writer_factory),
         dispatcher_(dispatcher) {}
   virtual ~ServerDelegate() {}
-  virtual void OnPacketSent(WriteResult result) OVERRIDE {
+  virtual void OnPacketSent(WriteResult result) override {
     writer_factory_->OnPacketSent(result);
   }
-  virtual void OnCanWrite() OVERRIDE { dispatcher_->OnCanWrite(); }
+  virtual void OnCanWrite() override { dispatcher_->OnCanWrite(); }
  private:
   TestWriterFactory* writer_factory_;
   QuicDispatcher* dispatcher_;
@@ -172,8 +172,8 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
  public:
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   virtual ~ClientDelegate() {}
-  virtual void OnPacketSent(WriteResult result) OVERRIDE {}
-  virtual void OnCanWrite() OVERRIDE {
+  virtual void OnPacketSent(WriteResult result) override {}
+  virtual void OnCanWrite() override {
     EpollEvent event(EPOLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
   }
@@ -323,14 +323,14 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     return client_->client()->connected();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // The ownership of these gets transferred to the QuicPacketWriterWrapper
     // and TestWriterFactory when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     StopServer();
   }
 
@@ -1107,13 +1107,13 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& real_self_address,
-      const IPEndPoint& peer_address) OVERRIDE {
+      const IPEndPoint& peer_address) override {
     // Use wrong address!
     return QuicPacketWriterWrapper::WritePacket(
         buffer, buf_len, self_address_.address(), peer_address);
   }
 
-  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {
+  virtual bool IsWriteBlockedDataBuffered() const override {
     return false;
   }
 

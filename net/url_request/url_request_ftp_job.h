@@ -37,13 +37,13 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   virtual ~URLRequestFtpJob();
 
   // Overridden from URLRequestJob:
-  virtual bool IsSafeRedirect(const GURL& location) OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
-  virtual HostPortPair GetSocketAddress() const OVERRIDE;
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
+  virtual bool IsSafeRedirect(const GURL& location) override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual void GetResponseInfo(HttpResponseInfo* info) override;
+  virtual HostPortPair GetSocketAddress() const override;
+  virtual void SetPriority(RequestPriority priority) override;
+  virtual void Start() override;
+  virtual void Kill() override;
 
   RequestPriority priority() const { return priority_; }
 
@@ -62,18 +62,18 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   void LogFtpServerType(char server_type);
 
   // Overridden from URLRequestJob:
-  virtual LoadState GetLoadState() const OVERRIDE;
-  virtual bool NeedsAuth() OVERRIDE;
+  virtual LoadState GetLoadState() const override;
+  virtual bool NeedsAuth() override;
   virtual void GetAuthChallengeInfo(
-      scoped_refptr<AuthChallengeInfo>* auth_info) OVERRIDE;
-  virtual void SetAuth(const AuthCredentials& credentials) OVERRIDE;
-  virtual void CancelAuth() OVERRIDE;
+      scoped_refptr<AuthChallengeInfo>* auth_info) override;
+  virtual void SetAuth(const AuthCredentials& credentials) override;
+  virtual void CancelAuth() override;
 
   // TODO(ibrar):  Yet to give another look at this function.
-  virtual UploadProgress GetUploadProgress() const OVERRIDE;
+  virtual UploadProgress GetUploadProgress() const override;
   virtual bool ReadRawData(IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE;
+                           int *bytes_read) override;
 
   void HandleAuthNeededResponse();
 

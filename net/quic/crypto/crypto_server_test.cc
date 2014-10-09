@@ -156,7 +156,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     }
 
     virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
-                         const Result& result) OVERRIDE {
+                         const Result& result) override {
       {
         // Ensure that the strike register client lock is not held.
         QuicCryptoServerConfigPeer peer(&test_->config_);

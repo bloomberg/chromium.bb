@@ -27,7 +27,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
                              const CompletionCallback& callback));
 
   virtual int SendTo(IOBuffer* buf, int buf_len, const IPEndPoint& address,
-                     const CompletionCallback& callback) OVERRIDE;
+                     const CompletionCallback& callback) override;
 
   MOCK_METHOD3(SendToInternal, int(const std::string& packet,
                                    const std::string address,
@@ -39,7 +39,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD0(Close, void());
 
   MOCK_CONST_METHOD1(GetPeerAddress, int(IPEndPoint* address));
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
+  virtual int GetLocalAddress(IPEndPoint* address) const override;
   MOCK_CONST_METHOD0(NetLog, const BoundNetLog&());
 
   MOCK_METHOD0(AllowAddressReuse, void());
@@ -75,7 +75,7 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
   virtual ~MockMDnsSocketFactory();
 
   virtual void CreateSockets(
-      ScopedVector<DatagramServerSocket>* sockets) OVERRIDE;
+      ScopedVector<DatagramServerSocket>* sockets) override;
 
   void SimulateReceive(const uint8* packet, int size);
 

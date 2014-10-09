@@ -32,7 +32,7 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
   // ClientCertStore:
   virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
                               CertificateList* selected_certs,
-                              const base::Closure& callback) OVERRIDE;
+                              const base::Closure& callback) override;
 
  protected:
   // Examines the certificates in |cert_list| to find all certificates that

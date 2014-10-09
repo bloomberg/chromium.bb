@@ -51,11 +51,11 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   friend class NetworkChangeNotifierWinTest;
 
   // NetworkChangeNotifier methods:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE;
+  virtual ConnectionType GetCurrentConnectionType() const override;
 
   // ObjectWatcher::Delegate methods:
   // Must only be called on the thread |this| was created on.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+  virtual void OnObjectSignaled(HANDLE object) override;
 
   // Does the actual work to determine the current connection type.
   // It is not thread safe, see crbug.com/324913.

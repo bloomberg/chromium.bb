@@ -45,10 +45,10 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   virtual ~NetworkChangeNotifierAndroid();
 
   // NetworkChangeNotifier:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE;
+  virtual ConnectionType GetCurrentConnectionType() const override;
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
-  virtual void OnConnectionTypeChanged() OVERRIDE;
+  virtual void OnConnectionTypeChanged() override;
 
   static bool Register(JNIEnv* env);
 

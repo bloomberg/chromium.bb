@@ -23,7 +23,7 @@ class FileNetLogObserver : public NetLog::ThreadSafeObserver {
   virtual ~FileNetLogObserver();
 
   // NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   FILE* const destination_;

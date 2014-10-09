@@ -28,44 +28,44 @@ class ProxyConnectRedirectHttpStream : public HttpStream {
   virtual int InitializeStream(const HttpRequestInfo* request_info,
                                RequestPriority priority,
                                const BoundNetLog& net_log,
-                               const CompletionCallback& callback) OVERRIDE;
+                               const CompletionCallback& callback) override;
   virtual int SendRequest(const HttpRequestHeaders& request_headers,
                           HttpResponseInfo* response,
-                          const CompletionCallback& callback) OVERRIDE;
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE;
+                          const CompletionCallback& callback) override;
+  virtual int ReadResponseHeaders(const CompletionCallback& callback) override;
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
-                               const CompletionCallback& callback) OVERRIDE;
+                               const CompletionCallback& callback) override;
 
   // This function may be called.
-  virtual void Close(bool not_reusable) OVERRIDE;
+  virtual void Close(bool not_reusable) override;
 
-  virtual bool IsResponseBodyComplete() const OVERRIDE;
+  virtual bool IsResponseBodyComplete() const override;
 
   // This function may be called.
-  virtual bool CanFindEndOfResponse() const OVERRIDE;
+  virtual bool CanFindEndOfResponse() const override;
 
-  virtual bool IsConnectionReused() const OVERRIDE;
-  virtual void SetConnectionReused() OVERRIDE;
-  virtual bool IsConnectionReusable() const OVERRIDE;
+  virtual bool IsConnectionReused() const override;
+  virtual void SetConnectionReused() override;
+  virtual bool IsConnectionReusable() const override;
 
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
+  virtual int64 GetTotalReceivedBytes() const override;
 
   // This function may be called.
   virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const OVERRIDE;
+      LoadTimingInfo* load_timing_info) const override;
 
-  virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
+  virtual void GetSSLInfo(SSLInfo* ssl_info) override;
   virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual bool IsSpdyHttpStream() const OVERRIDE;
-  virtual void Drain(HttpNetworkSession* session) OVERRIDE;
+      SSLCertRequestInfo* cert_request_info) override;
+  virtual bool IsSpdyHttpStream() const override;
+  virtual void Drain(HttpNetworkSession* session) override;
 
   // This function may be called.
-  virtual void SetPriority(RequestPriority priority) OVERRIDE;
+  virtual void SetPriority(RequestPriority priority) override;
 
-  virtual UploadProgress GetUploadProgress() const OVERRIDE;
-  virtual HttpStream* RenewStreamForAuth() OVERRIDE;
+  virtual UploadProgress GetUploadProgress() const override;
+  virtual HttpStream* RenewStreamForAuth() override;
 
  private:
   bool has_load_timing_info_;

@@ -50,12 +50,12 @@ class QuicServerSession : public QuicSession {
                     QuicServerSessionVisitor* visitor);
 
   // Override the base class to notify the owner of the connection close.
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
-  virtual void OnWriteBlocked() OVERRIDE;
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  virtual void OnWriteBlocked() override;
 
   // Sends a server config update to the client, containing new bandwidth
   // estimate.
-  virtual void OnCongestionWindowChange(QuicTime now) OVERRIDE;
+  virtual void OnCongestionWindowChange(QuicTime now) override;
 
   virtual ~QuicServerSession();
 
@@ -66,7 +66,7 @@ class QuicServerSession : public QuicSession {
   }
 
   // Override base class to process FEC config received from client.
-  virtual void OnConfigNegotiated() OVERRIDE;
+  virtual void OnConfigNegotiated() override;
 
   void set_serving_region(string serving_region) {
     serving_region_ = serving_region;
@@ -74,9 +74,9 @@ class QuicServerSession : public QuicSession {
 
  protected:
   // QuicSession methods:
-  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) OVERRIDE;
-  virtual QuicDataStream* CreateOutgoingDataStream() OVERRIDE;
-  virtual QuicCryptoServerStream* GetCryptoStream() OVERRIDE;
+  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) override;
+  virtual QuicDataStream* CreateOutgoingDataStream() override;
+  virtual QuicCryptoServerStream* GetCryptoStream() override;
 
   // If we should create an incoming stream, returns true. Otherwise
   // does error handling, including communicating the error to the client and

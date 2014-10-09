@@ -21,9 +21,9 @@ class NET_EXPORT_PRIVATE WebSocketDeflatePredictorImpl
   virtual ~WebSocketDeflatePredictorImpl() {}
 
   virtual Result Predict(const ScopedVector<WebSocketFrame>& frames,
-                         size_t frame_index) OVERRIDE;
-  virtual void RecordInputDataFrame(const WebSocketFrame* frame) OVERRIDE;
-  virtual void RecordWrittenDataFrame(const WebSocketFrame* frame) OVERRIDE;
+                         size_t frame_index) override;
+  virtual void RecordInputDataFrame(const WebSocketFrame* frame) override;
+  virtual void RecordWrittenDataFrame(const WebSocketFrame* frame) override;
 };
 
 }  // namespace net

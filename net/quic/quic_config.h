@@ -89,7 +89,7 @@ class NET_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
 
   // Serialises |name_| and value to |out|. If |negotiated_| is true then
   // |negotiated_value_| is serialised, otherwise |max_value_| is serialised.
-  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
   // Sets |negotiated_value_| to the minimum of |max_value_| and the
   // corresponding value from |peer_hello|. If the corresponding value is
@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
   virtual QuicErrorCode ProcessPeerHello(
       const CryptoHandshakeMessage& peer_hello,
       HelloType hello_type,
-      std::string* error_details) OVERRIDE;
+      std::string* error_details) override;
 
  private:
   uint32 max_value_;
@@ -123,7 +123,7 @@ class NET_EXPORT_PRIVATE QuicNegotiableTag : public QuicNegotiableValue {
   // Serialises |name_| and vector (either possible or negotiated) to |out|. If
   // |negotiated_| is true then |negotiated_tag_| is serialised, otherwise
   // |possible_values_| is serialised.
-  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
   // Selects the tag common to both tags in |client_hello| for |name_| and
   // |possible_values_| with preference to tag in |possible_values_|. The
@@ -131,7 +131,7 @@ class NET_EXPORT_PRIVATE QuicNegotiableTag : public QuicNegotiableValue {
   virtual QuicErrorCode ProcessPeerHello(
       const CryptoHandshakeMessage& peer_hello,
       HelloType hello_type,
-      std::string* error_details) OVERRIDE;
+      std::string* error_details) override;
 
  private:
   // Reads the vector corresponding to |name_| from |msg| into |out|. If the
@@ -166,13 +166,13 @@ class NET_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
   void SetReceivedValue(uint32 value);
 
   // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
-  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
   // Sets |value_| to the corresponding value from |peer_hello_| if it exists.
   virtual QuicErrorCode ProcessPeerHello(
       const CryptoHandshakeMessage& peer_hello,
       HelloType hello_type,
-      std::string* error_details) OVERRIDE;
+      std::string* error_details) override;
 
  private:
   uint32 send_value_;
@@ -200,13 +200,13 @@ class NET_EXPORT_PRIVATE QuicFixedTag : public QuicConfigValue {
   void SetReceivedValue(QuicTag value);
 
   // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
-  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
   // Sets |value_| to the corresponding value from |client_hello_| if it exists.
   virtual QuicErrorCode ProcessPeerHello(
       const CryptoHandshakeMessage& peer_hello,
       HelloType hello_type,
-      std::string* error_details) OVERRIDE;
+      std::string* error_details) override;
 
  private:
   QuicTag send_value_;
@@ -235,14 +235,14 @@ class NET_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
 
   // If has_send_value is true, serialises |tag_vector_| and |send_value_| to
   // |out|.
-  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
   // Sets |receive_values_| to the corresponding value from |client_hello_| if
   // it exists.
   virtual QuicErrorCode ProcessPeerHello(
       const CryptoHandshakeMessage& peer_hello,
       HelloType hello_type,
-      std::string* error_details) OVERRIDE;
+      std::string* error_details) override;
 
  private:
   QuicTagVector send_values_;

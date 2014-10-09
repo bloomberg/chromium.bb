@@ -62,41 +62,41 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   virtual int InitializeStream(const HttpRequestInfo* request_info,
                                RequestPriority priority,
                                const BoundNetLog& net_log,
-                               const CompletionCallback& callback) OVERRIDE {
+                               const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
   virtual int SendRequest(const HttpRequestHeaders& request_headers,
                           HttpResponseInfo* response,
-                          const CompletionCallback& callback) OVERRIDE {
+                          const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE {
+  virtual int ReadResponseHeaders(const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
-                               const CompletionCallback& callback) OVERRIDE {
+                               const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
-  virtual void Close(bool not_reusable) OVERRIDE {}
-  virtual bool IsResponseBodyComplete() const OVERRIDE { return false; }
-  virtual bool CanFindEndOfResponse() const OVERRIDE { return false; }
-  virtual bool IsConnectionReused() const OVERRIDE { return false; }
-  virtual void SetConnectionReused() OVERRIDE {}
-  virtual bool IsConnectionReusable() const OVERRIDE { return false; }
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE { return 0; }
+  virtual void Close(bool not_reusable) override {}
+  virtual bool IsResponseBodyComplete() const override { return false; }
+  virtual bool CanFindEndOfResponse() const override { return false; }
+  virtual bool IsConnectionReused() const override { return false; }
+  virtual void SetConnectionReused() override {}
+  virtual bool IsConnectionReusable() const override { return false; }
+  virtual int64 GetTotalReceivedBytes() const override { return 0; }
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
-      OVERRIDE {
+      override {
     return false;
   }
-  virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {}
+  virtual void GetSSLInfo(SSLInfo* ssl_info) override {}
   virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) OVERRIDE {}
-  virtual bool IsSpdyHttpStream() const OVERRIDE { return false; }
-  virtual void Drain(HttpNetworkSession* session) OVERRIDE {}
-  virtual void SetPriority(RequestPriority priority) OVERRIDE {}
+      SSLCertRequestInfo* cert_request_info) override {}
+  virtual bool IsSpdyHttpStream() const override { return false; }
+  virtual void Drain(HttpNetworkSession* session) override {}
+  virtual void SetPriority(RequestPriority priority) override {}
 
-  virtual scoped_ptr<WebSocketStream> Upgrade() OVERRIDE {
+  virtual scoped_ptr<WebSocketStream> Upgrade() override {
     return scoped_ptr<WebSocketStream>();
   }
 
@@ -124,7 +124,7 @@ class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
 
  private:
   // HttpStreamFactoryImpl methods.
-  virtual void OnPreconnectsCompleteInternal() OVERRIDE {
+  virtual void OnPreconnectsCompleteInternal() override {
     preconnect_done_ = true;
     if (waiting_for_preconnect_)
       base::MessageLoop::current()->Quit();
@@ -145,7 +145,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   virtual void OnStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      HttpStreamBase* stream) OVERRIDE {
+      HttpStreamBase* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->Quit();
@@ -157,7 +157,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   virtual void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      WebSocketHandshakeStreamBase* stream) OVERRIDE {
+      WebSocketHandshakeStreamBase* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->Quit();
@@ -168,25 +168,25 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
 
   virtual void OnStreamFailed(
       int status,
-      const SSLConfig& used_ssl_config) OVERRIDE {}
+      const SSLConfig& used_ssl_config) override {}
 
   virtual void OnCertificateError(
       int status,
       const SSLConfig& used_ssl_config,
-      const SSLInfo& ssl_info) OVERRIDE {}
+      const SSLInfo& ssl_info) override {}
 
   virtual void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
                                 const SSLConfig& used_ssl_config,
                                 const ProxyInfo& used_proxy_info,
-                                HttpAuthController* auth_controller) OVERRIDE {}
+                                HttpAuthController* auth_controller) override {}
 
   virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
-                                 SSLCertRequestInfo* cert_info) OVERRIDE {}
+                                 SSLCertRequestInfo* cert_info) override {}
 
   virtual void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                           const SSLConfig& used_ssl_config,
                                           const ProxyInfo& used_proxy_info,
-                                          HttpStreamBase* stream) OVERRIDE {}
+                                          HttpStreamBase* stream) override {}
 
   void WaitForStream() {
     while (!stream_done_) {
@@ -264,13 +264,13 @@ class WebSocketStreamCreateHelper
 
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
-      bool using_proxy) OVERRIDE {
+      bool using_proxy) override {
     return new WebSocketBasicHandshakeStream(connection.Pass());
   }
 
   virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& spdy_session,
-      bool use_relative_url) OVERRIDE {
+      bool use_relative_url) override {
     return new WebSocketSpdyHandshakeStream(spdy_session);
   }
 };
@@ -329,7 +329,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
                             RequestPriority priority,
                             ClientSocketHandle* handle,
                             const CompletionCallback& callback,
-                            const BoundNetLog& net_log) OVERRIDE {
+                            const BoundNetLog& net_log) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
@@ -337,38 +337,38 @@ class CapturePreconnectsSocketPool : public ParentPool {
   virtual void RequestSockets(const std::string& group_name,
                               const void* socket_params,
                               int num_sockets,
-                              const BoundNetLog& net_log) OVERRIDE {
+                              const BoundNetLog& net_log) override {
     last_num_streams_ = num_sockets;
   }
 
   virtual void CancelRequest(const std::string& group_name,
-                             ClientSocketHandle* handle) OVERRIDE {
+                             ClientSocketHandle* handle) override {
     ADD_FAILURE();
   }
   virtual void ReleaseSocket(const std::string& group_name,
                              scoped_ptr<StreamSocket> socket,
-                             int id) OVERRIDE {
+                             int id) override {
     ADD_FAILURE();
   }
-  virtual void CloseIdleSockets() OVERRIDE {
+  virtual void CloseIdleSockets() override {
     ADD_FAILURE();
   }
-  virtual int IdleSocketCount() const OVERRIDE {
+  virtual int IdleSocketCount() const override {
     ADD_FAILURE();
     return 0;
   }
   virtual int IdleSocketCountInGroup(
-      const std::string& group_name) const OVERRIDE {
+      const std::string& group_name) const override {
     ADD_FAILURE();
     return 0;
   }
   virtual LoadState GetLoadState(
       const std::string& group_name,
-      const ClientSocketHandle* handle) const OVERRIDE {
+      const ClientSocketHandle* handle) const override {
     ADD_FAILURE();
     return LOAD_STATE_IDLE;
   }
-  virtual base::TimeDelta ConnectionTimeout() const OVERRIDE {
+  virtual base::TimeDelta ConnectionTimeout() const override {
     return base::TimeDelta();
   }
 

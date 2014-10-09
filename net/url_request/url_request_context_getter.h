@@ -62,10 +62,10 @@ public:
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
 
   // net::URLRequestContextGetter implementation:
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
 private:
   virtual ~TrivialURLRequestContextGetter();

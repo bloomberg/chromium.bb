@@ -56,11 +56,11 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
     CertDatabase::GetInstance()->RemoveObserver(this);
   }
 
-  virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE {
+  virtual void OnCertAdded(const X509Certificate* cert) override {
     ClearSSLSessionCache();
   }
 
-  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE {
+  virtual void OnCACertChanged(const X509Certificate* cert) override {
     // Per wtc, we actually only need to flush when trust is reduced.
     // Always flush now because OnCACertChanged does not tell us this.
     // See comments in ClientSocketPoolManager::OnCACertChanged.
@@ -71,7 +71,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
-      const NetLog::Source& source) OVERRIDE {
+      const NetLog::Source& source) override {
     return scoped_ptr<DatagramClientSocket>(
         new UDPClientSocket(bind_type, rand_int_cb, net_log, source));
   }
@@ -79,7 +79,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
   virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* net_log,
-      const NetLog::Source& source) OVERRIDE {
+      const NetLog::Source& source) override {
     return scoped_ptr<StreamSocket>(
         new TCPClientSocket(addresses, net_log, source));
   }
@@ -88,7 +88,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
       scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) OVERRIDE {
+      const SSLClientSocketContext& context) override {
     // nss_thread_task_runner_ may be NULL if g_use_dedicated_nss_thread is
     // false or if the dedicated NSS thread failed to start. If so, cause NSS
     // functions to execute on the current task runner.
@@ -120,7 +120,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
 #endif
   }
 
-  virtual void ClearSSLSessionCache() OVERRIDE {
+  virtual void ClearSSLSessionCache() override {
     SSLClientSocket::ClearSessionCache();
   }
 

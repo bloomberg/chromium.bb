@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
   virtual ~ProxyConfigServiceWin();
 
   // Overrides a function from PollingProxyConfigService.
-  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void AddObserver(Observer* observer) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyConfigServiceWinTest, SetFromIEConfig);
@@ -63,7 +63,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
 
   // ObjectWatcher::Delegate methods:
   // This is called whenever one of the registry keys we are watching change.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
+  virtual void OnObjectSignaled(HANDLE object) override;
 
   static void GetCurrentProxyConfig(ProxyConfig* config);
 

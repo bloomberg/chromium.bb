@@ -58,7 +58,7 @@ class WellKnownCaCertVerifyProc : public CertVerifyProc {
       : is_well_known_(is_well_known) {}
 
   // CertVerifyProc implementation:
-  virtual bool SupportsAdditionalTrustAnchors() const OVERRIDE { return false; }
+  virtual bool SupportsAdditionalTrustAnchors() const override { return false; }
 
  protected:
   virtual ~WellKnownCaCertVerifyProc() {}
@@ -69,7 +69,7 @@ class WellKnownCaCertVerifyProc : public CertVerifyProc {
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) OVERRIDE;
+                             CertVerifyResult* verify_result) override;
 
   const bool is_well_known_;
 

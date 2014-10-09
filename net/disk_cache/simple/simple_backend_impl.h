@@ -85,27 +85,27 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // SimpleIndexDelegate:
   virtual void DoomEntries(std::vector<uint64>* entry_hashes,
-                           const CompletionCallback& callback) OVERRIDE;
+                           const CompletionCallback& callback) override;
 
   // Backend:
-  virtual net::CacheType GetCacheType() const OVERRIDE;
-  virtual int32 GetEntryCount() const OVERRIDE;
+  virtual net::CacheType GetCacheType() const override;
+  virtual int32 GetEntryCount() const override;
   virtual int OpenEntry(const std::string& key, Entry** entry,
-                        const CompletionCallback& callback) OVERRIDE;
+                        const CompletionCallback& callback) override;
   virtual int CreateEntry(const std::string& key, Entry** entry,
-                          const CompletionCallback& callback) OVERRIDE;
+                          const CompletionCallback& callback) override;
   virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) OVERRIDE;
-  virtual int DoomAllEntries(const CompletionCallback& callback) OVERRIDE;
+                        const CompletionCallback& callback) override;
+  virtual int DoomAllEntries(const CompletionCallback& callback) override;
   virtual int DoomEntriesBetween(base::Time initial_time,
                                  base::Time end_time,
-                                 const CompletionCallback& callback) OVERRIDE;
+                                 const CompletionCallback& callback) override;
   virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) OVERRIDE;
-  virtual scoped_ptr<Iterator> CreateIterator() OVERRIDE;
+                               const CompletionCallback& callback) override;
+  virtual scoped_ptr<Iterator> CreateIterator() override;
   virtual void GetStats(
-      std::vector<std::pair<std::string, std::string> >* stats) OVERRIDE;
-  virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
+      std::vector<std::pair<std::string, std::string> >* stats) override;
+  virtual void OnExternalCacheHit(const std::string& key) override;
 
  private:
   class SimpleIterator;

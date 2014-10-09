@@ -24,7 +24,7 @@ class NetworkChangeNotifierDelegateAndroidObserver
   NetworkChangeNotifierDelegateAndroidObserver() : notifications_count_(0) {}
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
-  virtual void OnConnectionTypeChanged() OVERRIDE {
+  virtual void OnConnectionTypeChanged() override {
     notifications_count_++;
   }
 
@@ -43,7 +43,7 @@ class NetworkChangeNotifierObserver
 
   // NetworkChangeNotifier::Observer:
   virtual void OnConnectionTypeChanged(
-      NetworkChangeNotifier::ConnectionType connection_type) OVERRIDE {
+      NetworkChangeNotifier::ConnectionType connection_type) override {
     notifications_count_++;
   }
 

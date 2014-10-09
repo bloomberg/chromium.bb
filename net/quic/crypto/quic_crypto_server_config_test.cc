@@ -188,7 +188,7 @@ class TestStrikeRegisterClient : public StrikeRegisterClient {
         is_known_orbit_called_(false) {
   }
 
-  virtual bool IsKnownOrbit(StringPiece orbit) const OVERRIDE {
+  virtual bool IsKnownOrbit(StringPiece orbit) const override {
     // Ensure that the strike register client lock is not held.
     QuicCryptoServerConfigPeer peer(config_);
     base::Lock* m = peer.GetStrikeRegisterClientLock();
@@ -204,7 +204,7 @@ class TestStrikeRegisterClient : public StrikeRegisterClient {
   virtual void VerifyNonceIsValidAndUnique(
       StringPiece nonce,
       QuicWallTime now,
-      ResultCallback* cb) OVERRIDE {
+      ResultCallback* cb) override {
     LOG(FATAL) << "Not implemented";
   }
 

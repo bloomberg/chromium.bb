@@ -235,7 +235,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
   virtual bool Init(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
-      OVERRIDE {
+      override {
     DCHECK(glib_task_runner->BelongsToCurrentThread());
     DCHECK(!client_);
     DCHECK(!task_runner_.get());
@@ -273,7 +273,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
     return true;
   }
 
-  virtual void ShutDown() OVERRIDE {
+  virtual void ShutDown() override {
     if (client_) {
       DCHECK(task_runner_->BelongsToCurrentThread());
       // We must explicitly disable gconf notifications here, because the gconf
@@ -291,7 +291,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
   }
 
   virtual bool SetUpNotifications(
-      ProxyConfigServiceLinux::Delegate* delegate) OVERRIDE {
+      ProxyConfigServiceLinux::Delegate* delegate) override {
     DCHECK(client_);
     DCHECK(task_runner_->BelongsToCurrentThread());
     GError* error = NULL;
@@ -321,15 +321,15 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
   }
 
   virtual const scoped_refptr<base::SingleThreadTaskRunner>&
-  GetNotificationTaskRunner() OVERRIDE {
+  GetNotificationTaskRunner() override {
     return task_runner_;
   }
 
-  virtual ProxyConfigSource GetConfigSource() OVERRIDE {
+  virtual ProxyConfigSource GetConfigSource() override {
     return PROXY_CONFIG_SOURCE_GCONF;
   }
 
-  virtual bool GetString(StringSetting key, std::string* result) OVERRIDE {
+  virtual bool GetString(StringSetting key, std::string* result) override {
     switch (key) {
       case PROXY_MODE:
         return GetStringByPath("/system/proxy/mode", result);
@@ -346,7 +346,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
     }
     return false;  // Placate compiler.
   }
-  virtual bool GetBool(BoolSetting key, bool* result) OVERRIDE {
+  virtual bool GetBool(BoolSetting key, bool* result) override {
     switch (key) {
       case PROXY_USE_HTTP_PROXY:
         return GetBoolByPath("/system/http_proxy/use_http_proxy", result);
@@ -357,7 +357,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
     }
     return false;  // Placate compiler.
   }
-  virtual bool GetInt(IntSetting key, int* result) OVERRIDE {
+  virtual bool GetInt(IntSetting key, int* result) override {
     switch (key) {
       case PROXY_HTTP_PORT:
         return GetIntByPath("/system/http_proxy/port", result);
@@ -371,7 +371,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
     return false;  // Placate compiler.
   }
   virtual bool GetStringList(StringListSetting key,
-                             std::vector<std::string>* result) OVERRIDE {
+                             std::vector<std::string>* result) override {
     switch (key) {
       case PROXY_IGNORE_HOSTS:
         return GetStringListByPath("/system/http_proxy/ignore_hosts", result);
@@ -379,12 +379,12 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
     return false;  // Placate compiler.
   }
 
-  virtual bool BypassListIsReversed() OVERRIDE {
+  virtual bool BypassListIsReversed() override {
     // This is a KDE-specific setting.
     return false;
   }
 
-  virtual bool MatchHostsUsingSuffixMatching() OVERRIDE {
+  virtual bool MatchHostsUsingSuffixMatching() override {
     return false;
   }
 
@@ -568,7 +568,7 @@ class SettingGetterImplGSettings
   virtual bool Init(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
-      OVERRIDE {
+      override {
     DCHECK(glib_task_runner->BelongsToCurrentThread());
     DCHECK(!client_);
     DCHECK(!task_runner_.get());
@@ -589,7 +589,7 @@ class SettingGetterImplGSettings
     return true;
   }
 
-  virtual void ShutDown() OVERRIDE {
+  virtual void ShutDown() override {
     if (client_) {
       DCHECK(task_runner_->BelongsToCurrentThread());
       // This also disables gsettings notifications.
@@ -605,7 +605,7 @@ class SettingGetterImplGSettings
   }
 
   virtual bool SetUpNotifications(
-      ProxyConfigServiceLinux::Delegate* delegate) OVERRIDE {
+      ProxyConfigServiceLinux::Delegate* delegate) override {
     DCHECK(client_);
     DCHECK(task_runner_->BelongsToCurrentThread());
     notify_delegate_ = delegate;
@@ -628,15 +628,15 @@ class SettingGetterImplGSettings
   }
 
   virtual const scoped_refptr<base::SingleThreadTaskRunner>&
-  GetNotificationTaskRunner() OVERRIDE {
+  GetNotificationTaskRunner() override {
     return task_runner_;
   }
 
-  virtual ProxyConfigSource GetConfigSource() OVERRIDE {
+  virtual ProxyConfigSource GetConfigSource() override {
     return PROXY_CONFIG_SOURCE_GSETTINGS;
   }
 
-  virtual bool GetString(StringSetting key, std::string* result) OVERRIDE {
+  virtual bool GetString(StringSetting key, std::string* result) override {
     DCHECK(client_);
     switch (key) {
       case PROXY_MODE:
@@ -654,7 +654,7 @@ class SettingGetterImplGSettings
     }
     return false;  // Placate compiler.
   }
-  virtual bool GetBool(BoolSetting key, bool* result) OVERRIDE {
+  virtual bool GetBool(BoolSetting key, bool* result) override {
     DCHECK(client_);
     switch (key) {
       case PROXY_USE_HTTP_PROXY:
@@ -672,7 +672,7 @@ class SettingGetterImplGSettings
     }
     return false;  // Placate compiler.
   }
-  virtual bool GetInt(IntSetting key, int* result) OVERRIDE {
+  virtual bool GetInt(IntSetting key, int* result) override {
     DCHECK(client_);
     switch (key) {
       case PROXY_HTTP_PORT:
@@ -687,7 +687,7 @@ class SettingGetterImplGSettings
     return false;  // Placate compiler.
   }
   virtual bool GetStringList(StringListSetting key,
-                             std::vector<std::string>* result) OVERRIDE {
+                             std::vector<std::string>* result) override {
     DCHECK(client_);
     switch (key) {
       case PROXY_IGNORE_HOSTS:
@@ -696,12 +696,12 @@ class SettingGetterImplGSettings
     return false;  // Placate compiler.
   }
 
-  virtual bool BypassListIsReversed() OVERRIDE {
+  virtual bool BypassListIsReversed() override {
     // This is a KDE-specific setting.
     return false;
   }
 
-  virtual bool MatchHostsUsingSuffixMatching() OVERRIDE {
+  virtual bool MatchHostsUsingSuffixMatching() override {
     return false;
   }
 
@@ -932,7 +932,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   virtual bool Init(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
-      OVERRIDE {
+      override {
     // This has to be called on the UI thread (http://crbug.com/69057).
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     DCHECK(inotify_fd_ < 0);
@@ -956,7 +956,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
     return true;
   }
 
-  virtual void ShutDown() OVERRIDE {
+  virtual void ShutDown() override {
     if (inotify_fd_ >= 0) {
       ResetCachedSettings();
       inotify_watcher_.StopWatchingFileDescriptor();
@@ -966,7 +966,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   }
 
   virtual bool SetUpNotifications(
-      ProxyConfigServiceLinux::Delegate* delegate) OVERRIDE {
+      ProxyConfigServiceLinux::Delegate* delegate) override {
     DCHECK(inotify_fd_ >= 0);
     DCHECK(file_task_runner_->BelongsToCurrentThread());
     // We can't just watch the kioslaverc file directly, since KDE will write
@@ -990,41 +990,41 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   }
 
   virtual const scoped_refptr<base::SingleThreadTaskRunner>&
-  GetNotificationTaskRunner() OVERRIDE {
+  GetNotificationTaskRunner() override {
     return file_task_runner_;
   }
 
   // Implement base::MessagePumpLibevent::Watcher.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanReadWithoutBlocking(int fd) override {
     DCHECK_EQ(fd, inotify_fd_);
     DCHECK(file_task_runner_->BelongsToCurrentThread());
     OnChangeNotification();
   }
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {
     NOTREACHED();
   }
 
-  virtual ProxyConfigSource GetConfigSource() OVERRIDE {
+  virtual ProxyConfigSource GetConfigSource() override {
     return PROXY_CONFIG_SOURCE_KDE;
   }
 
-  virtual bool GetString(StringSetting key, std::string* result) OVERRIDE {
+  virtual bool GetString(StringSetting key, std::string* result) override {
     string_map_type::iterator it = string_table_.find(key);
     if (it == string_table_.end())
       return false;
     *result = it->second;
     return true;
   }
-  virtual bool GetBool(BoolSetting key, bool* result) OVERRIDE {
+  virtual bool GetBool(BoolSetting key, bool* result) override {
     // We don't ever have any booleans.
     return false;
   }
-  virtual bool GetInt(IntSetting key, int* result) OVERRIDE {
+  virtual bool GetInt(IntSetting key, int* result) override {
     // We don't ever have any integers. (See AddProxy() below about ports.)
     return false;
   }
   virtual bool GetStringList(StringListSetting key,
-                             std::vector<std::string>* result) OVERRIDE {
+                             std::vector<std::string>* result) override {
     strings_map_type::iterator it = strings_table_.find(key);
     if (it == strings_table_.end())
       return false;
@@ -1032,11 +1032,11 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
     return true;
   }
 
-  virtual bool BypassListIsReversed() OVERRIDE {
+  virtual bool BypassListIsReversed() override {
     return reversed_bypass_list_;
   }
 
-  virtual bool MatchHostsUsingSuffixMatching() OVERRIDE {
+  virtual bool MatchHostsUsingSuffixMatching() override {
     return true;
   }
 

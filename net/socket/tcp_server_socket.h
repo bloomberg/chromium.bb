@@ -22,10 +22,10 @@ class NET_EXPORT_PRIVATE TCPServerSocket : public ServerSocket {
   virtual ~TCPServerSocket();
 
   // net::ServerSocket implementation.
-  virtual int Listen(const IPEndPoint& address, int backlog) OVERRIDE;
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
+  virtual int Listen(const IPEndPoint& address, int backlog) override;
+  virtual int GetLocalAddress(IPEndPoint* address) const override;
   virtual int Accept(scoped_ptr<StreamSocket>* socket,
-                     const CompletionCallback& callback) OVERRIDE;
+                     const CompletionCallback& callback) override;
 
  private:
   // Converts |accepted_socket_| and stores the result in

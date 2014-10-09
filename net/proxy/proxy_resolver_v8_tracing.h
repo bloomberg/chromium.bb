@@ -49,13 +49,13 @@ class NET_EXPORT_PRIVATE ProxyResolverV8Tracing
                              ProxyInfo* results,
                              const CompletionCallback& callback,
                              RequestHandle* request,
-                             const BoundNetLog& net_log) OVERRIDE;
-  virtual void CancelRequest(RequestHandle request) OVERRIDE;
-  virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE;
-  virtual void CancelSetPacScript() OVERRIDE;
+                             const BoundNetLog& net_log) override;
+  virtual void CancelRequest(RequestHandle request) override;
+  virtual LoadState GetLoadState(RequestHandle request) const override;
+  virtual void CancelSetPacScript() override;
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const CompletionCallback& callback) OVERRIDE;
+      const CompletionCallback& callback) override;
 
  private:
   class Job;

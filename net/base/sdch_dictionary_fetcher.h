@@ -44,12 +44,12 @@ class NET_EXPORT SdchDictionaryFetcher
   virtual ~SdchDictionaryFetcher();
 
   // Implementation of SdchFetcher methods.
-  virtual void Schedule(const GURL& dictionary_url) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
+  virtual void Schedule(const GURL& dictionary_url) override;
+  virtual void Cancel() override;
 
   // Implementation of URLRequest::Delegate methods.
-  virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) OVERRIDE;
+  virtual void OnResponseStarted(URLRequest* request) override;
+  virtual void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
   enum State {

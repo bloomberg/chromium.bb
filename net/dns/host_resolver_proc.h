@@ -99,7 +99,7 @@ class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
                       AddressFamily address_family,
                       HostResolverFlags host_resolver_flags,
                       AddressList* addr_list,
-                      int* os_error) OVERRIDE;
+                      int* os_error) override;
  protected:
   virtual ~SystemHostResolverProc();
 

@@ -66,7 +66,7 @@ class SOCKSConnectJob : public ConnectJob {
   virtual ~SOCKSConnectJob();
 
   // ConnectJob methods.
-  virtual LoadState GetLoadState() const OVERRIDE;
+  virtual LoadState GetLoadState() const override;
 
  private:
   enum State {
@@ -90,7 +90,7 @@ class SOCKSConnectJob : public ConnectJob {
   // Begins the transport connection and the SOCKS handshake.  Returns OK on
   // success and ERR_IO_PENDING if it cannot immediately service the request.
   // Otherwise, it returns a net error code.
-  virtual int ConnectInternal() OVERRIDE;
+  virtual int ConnectInternal() override;
 
   scoped_refptr<SOCKSSocketParams> socks_params_;
   TransportClientSocketPool* const transport_pool_;
@@ -125,51 +125,51 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
                             RequestPriority priority,
                             ClientSocketHandle* handle,
                             const CompletionCallback& callback,
-                            const BoundNetLog& net_log) OVERRIDE;
+                            const BoundNetLog& net_log) override;
 
   virtual void RequestSockets(const std::string& group_name,
                               const void* params,
                               int num_sockets,
-                              const BoundNetLog& net_log) OVERRIDE;
+                              const BoundNetLog& net_log) override;
 
   virtual void CancelRequest(const std::string& group_name,
-                             ClientSocketHandle* handle) OVERRIDE;
+                             ClientSocketHandle* handle) override;
 
   virtual void ReleaseSocket(const std::string& group_name,
                              scoped_ptr<StreamSocket> socket,
-                             int id) OVERRIDE;
+                             int id) override;
 
-  virtual void FlushWithError(int error) OVERRIDE;
+  virtual void FlushWithError(int error) override;
 
-  virtual void CloseIdleSockets() OVERRIDE;
+  virtual void CloseIdleSockets() override;
 
-  virtual int IdleSocketCount() const OVERRIDE;
+  virtual int IdleSocketCount() const override;
 
   virtual int IdleSocketCountInGroup(
-      const std::string& group_name) const OVERRIDE;
+      const std::string& group_name) const override;
 
   virtual LoadState GetLoadState(
       const std::string& group_name,
-      const ClientSocketHandle* handle) const OVERRIDE;
+      const ClientSocketHandle* handle) const override;
 
   virtual base::DictionaryValue* GetInfoAsValue(
       const std::string& name,
       const std::string& type,
-      bool include_nested_pools) const OVERRIDE;
+      bool include_nested_pools) const override;
 
-  virtual base::TimeDelta ConnectionTimeout() const OVERRIDE;
+  virtual base::TimeDelta ConnectionTimeout() const override;
 
-  virtual ClientSocketPoolHistograms* histograms() const OVERRIDE;
+  virtual ClientSocketPoolHistograms* histograms() const override;
 
   // LowerLayeredPool implementation.
-  virtual bool IsStalled() const OVERRIDE;
+  virtual bool IsStalled() const override;
 
-  virtual void AddHigherLayeredPool(HigherLayeredPool* higher_pool) OVERRIDE;
+  virtual void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
-  virtual void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) OVERRIDE;
+  virtual void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
   // HigherLayeredPool implementation.
-  virtual bool CloseOneIdleConnection() OVERRIDE;
+  virtual bool CloseOneIdleConnection() override;
 
  private:
   typedef ClientSocketPoolBase<SOCKSSocketParams> PoolBase;
@@ -189,9 +189,9 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
     virtual scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const PoolBase::Request& request,
-        ConnectJob::Delegate* delegate) const OVERRIDE;
+        ConnectJob::Delegate* delegate) const override;
 
-    virtual base::TimeDelta ConnectionTimeout() const OVERRIDE;
+    virtual base::TimeDelta ConnectionTimeout() const override;
 
    private:
     TransportClientSocketPool* const transport_pool_;

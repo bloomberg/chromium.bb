@@ -19,8 +19,8 @@ class NET_EXPORT DataProtocolHandler
  public:
   DataProtocolHandler();
   virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
+      URLRequest* request, NetworkDelegate* network_delegate) const override;
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataProtocolHandler);

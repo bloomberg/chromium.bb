@@ -28,7 +28,7 @@ class DeleteSessionsAlarm : public QuicAlarm::Delegate {
       : dispatcher_(dispatcher) {
   }
 
-  virtual QuicTime OnAlarm() OVERRIDE {
+  virtual QuicTime OnAlarm() override {
     dispatcher_->DeleteSessions();
     return QuicTime::Zero();
   }
@@ -44,23 +44,23 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
         connection_id_(0) {}
 
   // QuicFramerVisitorInterface implementation
-  virtual void OnPacket() OVERRIDE {}
+  virtual void OnPacket() override {}
   virtual bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) OVERRIDE {
+      const QuicPacketPublicHeader& header) override {
     connection_id_ = header.connection_id;
     return dispatcher_->OnUnauthenticatedPublicHeader(header);
   }
   virtual bool OnUnauthenticatedHeader(
-      const QuicPacketHeader& header) OVERRIDE {
+      const QuicPacketHeader& header) override {
     dispatcher_->OnUnauthenticatedHeader(header);
     return false;
   }
-  virtual void OnError(QuicFramer* framer) OVERRIDE {
+  virtual void OnError(QuicFramer* framer) override {
     DVLOG(1) << QuicUtils::ErrorToString(framer->error());
   }
 
   virtual bool OnProtocolVersionMismatch(
-      QuicVersion /*received_version*/) OVERRIDE {
+      QuicVersion /*received_version*/) override {
     if (dispatcher_->time_wait_list_manager()->IsConnectionIdInTimeWait(
             connection_id_)) {
       // Keep processing after protocol mismatch - this will be dealt with by
@@ -77,74 +77,74 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
   // false from OnUnauthenticatedHeader().  As a result, we never process the
   // payload of the packet.
   virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& /*packet*/) OVERRIDE {
+      const QuicPublicResetPacket& /*packet*/) override {
     DCHECK(false);
   }
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& /*packet*/) OVERRIDE {
+      const QuicVersionNegotiationPacket& /*packet*/) override {
     DCHECK(false);
   }
-  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {
+  virtual void OnDecryptedPacket(EncryptionLevel level) override {
     DCHECK(false);
   }
-  virtual bool OnPacketHeader(const QuicPacketHeader& /*header*/) OVERRIDE {
-    DCHECK(false);
-    return false;
-  }
-  virtual void OnRevivedPacket() OVERRIDE {
-    DCHECK(false);
-  }
-  virtual void OnFecProtectedPayload(StringPiece /*payload*/) OVERRIDE {
-    DCHECK(false);
-  }
-  virtual bool OnStreamFrame(const QuicStreamFrame& /*frame*/) OVERRIDE {
+  virtual bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
     DCHECK(false);
     return false;
   }
-  virtual bool OnAckFrame(const QuicAckFrame& /*frame*/) OVERRIDE {
+  virtual void OnRevivedPacket() override {
+    DCHECK(false);
+  }
+  virtual void OnFecProtectedPayload(StringPiece /*payload*/) override {
+    DCHECK(false);
+  }
+  virtual bool OnStreamFrame(const QuicStreamFrame& /*frame*/) override {
+    DCHECK(false);
+    return false;
+  }
+  virtual bool OnAckFrame(const QuicAckFrame& /*frame*/) override {
     DCHECK(false);
     return false;
   }
   virtual bool OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& /*frame*/) OVERRIDE {
+      const QuicCongestionFeedbackFrame& /*frame*/) override {
     DCHECK(false);
     return false;
   }
   virtual bool OnStopWaitingFrame(
-      const QuicStopWaitingFrame& /*frame*/) OVERRIDE {
+      const QuicStopWaitingFrame& /*frame*/) override {
     DCHECK(false);
     return false;
   }
-  virtual bool OnPingFrame(const QuicPingFrame& /*frame*/) OVERRIDE {
+  virtual bool OnPingFrame(const QuicPingFrame& /*frame*/) override {
     DCHECK(false);
     return false;
   }
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) OVERRIDE {
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) override {
     DCHECK(false);
     return false;
   }
   virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame & /*frame*/) OVERRIDE {
+      const QuicConnectionCloseFrame & /*frame*/) override {
     DCHECK(false);
     return false;
   }
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) OVERRIDE {
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) override {
     DCHECK(false);
     return false;
   }
   virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& /*frame*/)
-      OVERRIDE {
+      override {
     DCHECK(false);
     return false;
   }
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE {
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
     DCHECK(false);
     return false;
   }
-  virtual void OnFecData(const QuicFecData& /*fec*/) OVERRIDE {
+  virtual void OnFecData(const QuicFecData& /*fec*/) override {
     DCHECK(false);
   }
-  virtual void OnPacketComplete() OVERRIDE {
+  virtual void OnPacketComplete() override {
     DCHECK(false);
   }
 

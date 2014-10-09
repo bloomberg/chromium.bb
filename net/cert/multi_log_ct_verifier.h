@@ -41,7 +41,7 @@ class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
                      const std::string& stapled_ocsp_response,
                      const std::string& sct_list_from_tls_extension,
                      ct::CTVerifyResult* result,
-                     const BoundNetLog& net_log) OVERRIDE;
+                     const BoundNetLog& net_log) override;
 
  private:
   // Mapping from a log's ID to the verifier for this log.

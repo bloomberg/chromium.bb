@@ -35,12 +35,12 @@ class MockIndexBackend : public disk_cache::IndexTableBackend {
   bool grow_called() const { return grow_called_; }
   int buffer_len() const { return buffer_len_; }
 
-  virtual void GrowIndex() OVERRIDE { grow_called_ = true; }
-  virtual void SaveIndex(net::IOBuffer* buffer, int buffer_len) OVERRIDE {
+  virtual void GrowIndex() override { grow_called_ = true; }
+  virtual void SaveIndex(net::IOBuffer* buffer, int buffer_len) override {
     buffer_len_ = buffer_len;
   }
-  virtual void DeleteCell(EntryCell cell) OVERRIDE {}
-  virtual void FixCell(EntryCell cell) OVERRIDE {}
+  virtual void DeleteCell(EntryCell cell) override {}
+  virtual void FixCell(EntryCell cell) override {}
 
  private:
   bool grow_called_;

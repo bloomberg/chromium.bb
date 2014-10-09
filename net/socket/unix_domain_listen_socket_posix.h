@@ -64,7 +64,7 @@ class NET_EXPORT UnixDomainListenSocket : public StreamListenSocket {
       bool use_abstract_namespace);
 
   // StreamListenSocket:
-  virtual void Accept() OVERRIDE;
+  virtual void Accept() override;
 
   AuthCallback auth_callback_;
 
@@ -83,7 +83,7 @@ class NET_EXPORT UnixDomainListenSocketFactory
 
   // StreamListenSocketFactory:
   virtual scoped_ptr<StreamListenSocket> CreateAndListen(
-      StreamListenSocket::Delegate* delegate) const OVERRIDE;
+      StreamListenSocket::Delegate* delegate) const override;
 
  protected:
   const std::string path_;
@@ -107,7 +107,7 @@ class NET_EXPORT UnixDomainListenSocketWithAbstractNamespaceFactory
 
   // UnixDomainListenSocketFactory:
   virtual scoped_ptr<StreamListenSocket> CreateAndListen(
-      StreamListenSocket::Delegate* delegate) const OVERRIDE;
+      StreamListenSocket::Delegate* delegate) const override;
 
  private:
   std::string fallback_path_;

@@ -27,8 +27,8 @@ class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
 
  protected:
   // DnsConfigService:
-  virtual void ReadNow() OVERRIDE;
-  virtual bool StartWatching() OVERRIDE;
+  virtual void ReadNow() override;
+  virtual bool StartWatching() override;
 
  private:
   class Watcher;

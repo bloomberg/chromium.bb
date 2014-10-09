@@ -80,7 +80,7 @@ class CountingObserver : public NetLog::ThreadSafeObserver {
       net_log()->RemoveThreadSafeObserver(this);
   }
 
-  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE {
+  virtual void OnAddEntry(const NetLog::Entry& entry) override {
     ++count_;
   }
 
@@ -99,7 +99,7 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
       net_log()->RemoveThreadSafeObserver(this);
   }
 
-  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE {
+  virtual void OnAddEntry(const NetLog::Entry& entry) override {
     base::Value* value = entry.ToValue();
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(value->GetAsDictionary(&dict));
@@ -138,7 +138,7 @@ class NetLogTestThread : public base::SimpleThread {
     net_log_ = net_log;
   }
 
-  virtual void Run() OVERRIDE {
+  virtual void Run() override {
     start_event_->Wait();
     RunTestThread();
   }
@@ -165,7 +165,7 @@ class AddEventsTestThread : public NetLogTestThread {
   virtual ~AddEventsTestThread() {}
 
  private:
-  virtual void RunTestThread() OVERRIDE {
+  virtual void RunTestThread() override {
     for (int i = 0; i < kEvents; ++i)
       AddEvent(net_log_);
   }
@@ -183,7 +183,7 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
   }
 
  private:
-  virtual void RunTestThread() OVERRIDE {
+  virtual void RunTestThread() override {
     for (int i = 0; i < kEvents; ++i) {
       ASSERT_FALSE(observer_.net_log());
 

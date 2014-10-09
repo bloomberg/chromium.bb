@@ -32,12 +32,12 @@ class TestAlarm : public QuicAlarm {
   }
 
  protected:
-  virtual void SetImpl() OVERRIDE {
+  virtual void SetImpl() override {
     DCHECK(deadline().IsInitialized());
     scheduled_ = true;
   }
 
-  virtual void CancelImpl() OVERRIDE {
+  virtual void CancelImpl() override {
     DCHECK(!deadline().IsInitialized());
     scheduled_ = false;
   }

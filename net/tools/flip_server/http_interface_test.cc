@@ -86,7 +86,7 @@ class FlipHttpSMTest : public ::testing::Test {
                                 acceptor_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (acceptor_->listen_fd_ >= 0) {
       epoll_server_->UnregisterFD(acceptor_->listen_fd_);
       close(acceptor_->listen_fd_);

@@ -51,13 +51,13 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
                                  Credentials* credentials);
 
   // ServerSocket implementation.
-  virtual int Listen(const IPEndPoint& address, int backlog) OVERRIDE;
+  virtual int Listen(const IPEndPoint& address, int backlog) override;
   virtual int ListenWithAddressAndPort(const std::string& unix_domain_path,
                                        int port_unused,
-                                       int backlog) OVERRIDE;
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
+                                       int backlog) override;
+  virtual int GetLocalAddress(IPEndPoint* address) const override;
   virtual int Accept(scoped_ptr<StreamSocket>* socket,
-                     const CompletionCallback& callback) OVERRIDE;
+                     const CompletionCallback& callback) override;
 
   // Accepts an incoming connection on |listen_socket_|, but passes back
   // a raw SocketDescriptor instead of a StreamSocket.

@@ -37,8 +37,8 @@ class TestAlarm : public QuicAlarm {
       : QuicAlarm(delegate) {
   }
 
-  virtual void SetImpl() OVERRIDE {}
-  virtual void CancelImpl() OVERRIDE {}
+  virtual void SetImpl() override {}
+  virtual void CancelImpl() override {}
 };
 
 }  // namespace
@@ -229,7 +229,7 @@ class NiceMockPacketWriterFactory
   virtual ~NiceMockPacketWriterFactory() {}
 
   virtual QuicPacketWriter* Create(
-      QuicConnection* /*connection*/) const OVERRIDE {
+      QuicConnection* /*connection*/) const override {
     return new testing::NiceMock<MockPacketWriter>();
   }
 

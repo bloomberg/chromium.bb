@@ -95,7 +95,7 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
       : event_manager_(event_manager) {}
 
   virtual void DidAccept(StreamListenSocket* server,
-                         scoped_ptr<StreamListenSocket> connection) OVERRIDE {
+                         scoped_ptr<StreamListenSocket> connection) override {
     LOG(ERROR) << __PRETTY_FUNCTION__;
     connection_ = connection.Pass();
     Notify(EVENT_ACCEPT);
@@ -103,7 +103,7 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
 
   virtual void DidRead(StreamListenSocket* connection,
                        const char* data,
-                       int len) OVERRIDE {
+                       int len) override {
     {
       base::AutoLock lock(mutex_);
       DCHECK(len);
@@ -112,7 +112,7 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
     Notify(EVENT_READ);
   }
 
-  virtual void DidClose(StreamListenSocket* sock) OVERRIDE {
+  virtual void DidClose(StreamListenSocket* sock) override {
     Notify(EVENT_CLOSE);
   }
 
@@ -169,12 +169,12 @@ class UnixDomainListenSocketTestHelper : public testing::Test {
     return temp_dir_.path().Append(socket_name);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     event_manager_ = new EventManager();
     socket_delegate_.reset(new TestListenSocketDelegate(event_manager_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     socket_.reset();
     socket_delegate_.reset();
     event_manager_ = NULL;

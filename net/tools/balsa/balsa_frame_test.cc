@@ -58,7 +58,7 @@ class Visitor : public BalsaVisitorInterface {
 
 class BalsaFrameTest : public ::testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     frame_.reset(new BalsaFrame);
     frame_headers_.reset(new BalsaHeaders);
     visitor_.reset(new Visitor);
