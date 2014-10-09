@@ -190,10 +190,6 @@ void EasyUnlockService::RegisterProfilePrefs(
       prefs::kEasyUnlockEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEasyUnlockShowTutorial,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       prefs::kEasyUnlockPairing,
       new base::DictionaryValue(),
@@ -210,7 +206,7 @@ void EasyUnlockService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void EasyUnlockService::RemoveHardlockStateForUser(const std::string& user_id) {
+void EasyUnlockService::ResetLocalStateForUser(const std::string& user_id) {
   DCHECK(!user_id.empty());
 
   PrefService* local_state = GetLocalState();
@@ -282,7 +278,6 @@ EasyUnlockScreenlockStateHandler*
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
         GetUserEmail(),
         GetHardlockState(),
-        GetType() == TYPE_REGULAR ? profile_->GetPrefs() : NULL,
         ScreenlockBridge::Get()));
   }
   return screenlock_state_handler_.get();
@@ -361,6 +356,14 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
                  user_id,
                  paired_devices));
 #endif
+}
+
+void EasyUnlockService::SetTrialRun() {
+  DCHECK(GetType() == TYPE_REGULAR);
+
+  EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
+  if (handler)
+    handler->SetTrialRun();
 }
 
 void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
@@ -558,7 +561,8 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
   for (const auto& device_key_data : key_data_list)
     devices_in_cryptohome.insert(device_key_data.public_key);
 
-  if (paired_devices != devices_in_cryptohome) {
+  if (paired_devices != devices_in_cryptohome ||
+      GetHardlockState() == EasyUnlockScreenlockStateHandler::NO_PAIRING) {
     SetHardlockStateForUser(user_id,
                             EasyUnlockScreenlockStateHandler::PAIRING_CHANGED);
   }

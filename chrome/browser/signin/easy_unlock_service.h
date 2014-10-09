@@ -64,7 +64,7 @@ class EasyUnlockService : public KeyedService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Removes the hardlock state for the given user.
-  static void RemoveHardlockStateForUser(const std::string& user_id);
+  static void ResetLocalStateForUser(const std::string& user_id);
 
   // Returns true if Easy sign-in is enabled.
   static bool IsSignInEnabled();
@@ -143,6 +143,10 @@ class EasyUnlockService : public KeyedService {
   // Checks the consistency between pairing data and cryptohome keys. Set
   // hardlock state if the two do not match.
   void CheckCryptohomeKeysAndMaybeHardlock();
+
+  // Marks the Easy Unlock screen lock state as the one associated with the
+  // trial run initiated by Easy Unlock app.
+  void SetTrialRun();
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);

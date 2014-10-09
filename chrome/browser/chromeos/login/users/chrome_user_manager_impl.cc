@@ -801,7 +801,7 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
 
   multi_profile_user_controller_->RemoveCachedValues(user_id);
 
-  EasyUnlockService::RemoveHardlockStateForUser(user_id);
+  EasyUnlockService::ResetLocalStateForUser(user_id);
 }
 
 void

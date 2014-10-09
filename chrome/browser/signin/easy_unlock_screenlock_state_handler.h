@@ -55,12 +55,11 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
   // |user_email|: The email for the user associated with the profile to which
   //     this class is attached.
-  // |pref_service|: The profile preferences.
+  // |initial_hardlock_state|: The initial hardlock state.
   // |screenlock_bridge|: The screenlock bridge used to update the screen lock
   //     state.
   EasyUnlockScreenlockStateHandler(const std::string& user_email,
                                    HardlockState initial_hardlock_state,
-                                   PrefService* pref_service,
                                    ScreenlockBridge* screenlock_bridge);
   virtual ~EasyUnlockScreenlockStateHandler();
 
@@ -74,11 +73,17 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // Shows the hardlock UI if the hardlock_state_ is not NO_HARDLOCK.
   void MaybeShowHardlockUI();
 
+  // Marks the current screenlock state as the one for trial Easy Unlock run.
+  void SetTrialRun();
+
  private:
   // ScreenlockBridge::Observer:
   virtual void OnScreenDidLock() override;
   virtual void OnScreenDidUnlock() override;
   virtual void OnFocusedUserChanged(const std::string& user_id) override;
+
+  // Forces refresh of the Easy Unlock screenlock UI.
+  void RefreshScreenlockState();
 
   void ShowHardlockUI();
 
@@ -87,15 +92,6 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   void UpdateTooltipOptions(
       bool trial_run,
       ScreenlockBridge::UserPodCustomIconOptions* icon_options);
-
-  // Whether this is the first, trial Easy Unlock run. If this is the case, a
-  // tutorial message should be shown and hard-locking be disabled in
-  // Authenticated state. The trial run will be active if Easy Unlock never
-  // entered Authenticated state (across sessions).
-  bool IsTrialRun();
-
-  // Sets user preference that marks trial run completed.
-  void MarkTrialRunComplete();
 
   // Gets the name to be used for the device. The name depends on the device
   // type (example values: Chromebook and Chromebox).
@@ -106,12 +102,16 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
   State state_;
   std::string user_email_;
-  PrefService* pref_service_;
   ScreenlockBridge* screenlock_bridge_;
 
   // State of hardlock.
   HardlockState hardlock_state_;
   bool hardlock_ui_shown_;
+
+  // Whether this is the trial Easy Unlock run. If this is the case, a
+  // tutorial message should be shown and hard-locking be disabled. The trial
+  // run should be set if the screen was locked by the Easy Unlock setup app.
+  bool is_trial_run_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockScreenlockStateHandler);
 };

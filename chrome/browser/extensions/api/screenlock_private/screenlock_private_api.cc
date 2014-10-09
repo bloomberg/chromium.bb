@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/event_router.h"
 
 namespace screenlock = extensions::api::screenlock_private;
@@ -61,10 +62,19 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
   scoped_ptr<screenlock::SetLocked::Params> params(
       screenlock::SetLocked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  if (params->locked)
+  if (params->locked) {
+    if (extension()->id() == extension_misc::kEasyUnlockAppId) {
+      // Mark the Easy Unlock behaviour on the lock screen as the one initiated
+      // by the Easy Unlock setup app as a trial one.
+      // TODO(tbarzic): Move this logic to a new easyUnlockPrivate function.
+      EasyUnlockService* service = EasyUnlockService::Get(GetProfile());
+      if (service)
+        service->SetTrialRun();
+    }
     ScreenlockBridge::Get()->Lock(GetProfile());
-  else
+  } else {
     ScreenlockBridge::Get()->Unlock(GetProfile());
+  }
   SendResponse(error_.empty());
   return true;
 }
@@ -81,7 +91,9 @@ bool ScreenlockPrivateAcceptAuthAttemptFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService::Get(profile)->FinalizeUnlock(params->accept);
+  EasyUnlockService* service = EasyUnlockService::Get(profile);
+  if (service)
+    service->FinalizeUnlock(params->accept);
   return true;
 }
 
