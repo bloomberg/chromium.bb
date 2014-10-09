@@ -85,16 +85,16 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
 
   // Overridden from SkBaseDevice:
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&) OVERRIDE;
+                             const SkClipStack&) override;
 
   // Overridden from PlatformDevice:
-  virtual cairo_t* BeginPlatformPaint() OVERRIDE;
+  virtual cairo_t* BeginPlatformPaint() override;
   virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect) OVERRIDE;
+                                   const PlatformRect* src_rect) override;
 
  protected:
   virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
-                                       Usage usage) OVERRIDE;
+                                       Usage usage) override;
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

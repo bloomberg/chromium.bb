@@ -20,7 +20,7 @@ class SK_API OpacityDrawFilter : public SkDrawFilter {
  public:
   OpacityDrawFilter(float opacity, bool disable_image_filtering);
   virtual ~OpacityDrawFilter();
-  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) OVERRIDE;
+  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) override;
 
  private:
   int alpha_;

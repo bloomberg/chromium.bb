@@ -16,9 +16,9 @@ public:
   virtual ~SkDiscardableMemoryChrome();
 
   // SkDiscardableMemory:
-  virtual bool lock() OVERRIDE;
-  virtual void* data() OVERRIDE;
-  virtual void unlock() OVERRIDE;
+  virtual bool lock() override;
+  virtual void* data() override;
+  virtual void unlock() override;
 
 private:
   friend class SkDiscardableMemory;

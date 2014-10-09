@@ -51,8 +51,8 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                        DiscardablePixelRefSet* pixel_ref_set)
       : SkBitmapDevice(bm), pixel_ref_set_(pixel_ref_set) {}
 
-  virtual void clear(SkColor color) SK_OVERRIDE {}
-  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) SK_OVERRIDE {
+  virtual void clear(SkColor color) override {}
+  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) override {
     SkBitmap bitmap;
     if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect clip_rect = SkRect::Make(draw.fRC->getBounds());
@@ -64,7 +64,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                           SkCanvas::PointMode mode,
                           size_t count,
                           const SkPoint points[],
-                          const SkPaint& paint) SK_OVERRIDE {
+                          const SkPaint& paint) override {
     SkBitmap bitmap;
     if (!GetBitmapFromPaint(paint, &bitmap))
       return;
@@ -89,7 +89,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
   }
   virtual void drawRect(const SkDraw& draw,
                         const SkRect& rect,
-                        const SkPaint& paint) SK_OVERRIDE {
+                        const SkPaint& paint) override {
     SkBitmap bitmap;
     if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect mapped_rect;
@@ -100,19 +100,19 @@ class GatherPixelRefDevice : public SkBitmapDevice {
   }
   virtual void drawOval(const SkDraw& draw,
                         const SkRect& rect,
-                        const SkPaint& paint) SK_OVERRIDE {
+                        const SkPaint& paint) override {
     GatherPixelRefDevice::drawRect(draw, rect, paint);
   }
   virtual void drawRRect(const SkDraw& draw,
                          const SkRRect& rect,
-                         const SkPaint& paint) SK_OVERRIDE {
+                         const SkPaint& paint) override {
     GatherPixelRefDevice::drawRect(draw, rect.rect(), paint);
   }
   virtual void drawPath(const SkDraw& draw,
                         const SkPath& path,
                         const SkPaint& paint,
                         const SkMatrix* pre_path_matrix,
-                        bool path_is_mutable) SK_OVERRIDE {
+                        bool path_is_mutable) override {
     SkBitmap bitmap;
     if (!GetBitmapFromPaint(paint, &bitmap))
       return;
@@ -129,7 +129,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
   virtual void drawBitmap(const SkDraw& draw,
                           const SkBitmap& bitmap,
                           const SkMatrix& matrix,
-                          const SkPaint& paint) SK_OVERRIDE {
+                          const SkPaint& paint) override {
     SkMatrix total_matrix;
     total_matrix.setConcat(*draw.fMatrix, matrix);
 
@@ -147,7 +147,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                               const SkRect* src_or_null,
                               const SkRect& dst,
                               const SkPaint& paint,
-                              SkCanvas::DrawBitmapRectFlags flags) SK_OVERRIDE {
+                              SkCanvas::DrawBitmapRectFlags flags) override {
     SkRect bitmap_rect = SkRect::MakeWH(bitmap.width(), bitmap.height());
     SkMatrix matrix;
     matrix.setRectToRect(bitmap_rect, dst, SkMatrix::kFill_ScaleToFit);
@@ -157,7 +157,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                           const SkBitmap& bitmap,
                           int x,
                           int y,
-                          const SkPaint& paint) SK_OVERRIDE {
+                          const SkPaint& paint) override {
     // Sprites aren't affected by current matrix, so we can't reuse drawRect.
     SkMatrix matrix;
     matrix.setTranslate(x, y);
@@ -176,7 +176,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                         size_t len,
                         SkScalar x,
                         SkScalar y,
-                        const SkPaint& paint) SK_OVERRIDE {
+                        const SkPaint& paint) override {
     SkBitmap bitmap;
     if (!GetBitmapFromPaint(paint, &bitmap))
       return;
@@ -224,7 +224,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                            const SkScalar pos[],
                            int scalars_per_pos,
                            const SkPoint& offset,
-                           const SkPaint& paint) SK_OVERRIDE {
+                           const SkPaint& paint) override {
     SkBitmap bitmap;
     if (!GetBitmapFromPaint(paint, &bitmap))
       return;
@@ -268,7 +268,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                               size_t len,
                               const SkPath& path,
                               const SkMatrix* matrix,
-                              const SkPaint& paint) SK_OVERRIDE {
+                              const SkPaint& paint) override {
     SkBitmap bitmap;
     if (!GetBitmapFromPaint(paint, &bitmap))
       return;
@@ -295,7 +295,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                             SkXfermode* xmode,
                             const uint16_t indices[],
                             int index_count,
-                            const SkPaint& paint) SK_OVERRIDE {
+                            const SkPaint& paint) override {
     GatherPixelRefDevice::drawPoints(
         draw, SkCanvas::kPolygon_PointMode, vertex_count, verts, paint);
   }
@@ -303,14 +303,14 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                           SkBaseDevice*,
                           int x,
                           int y,
-                          const SkPaint&) SK_OVERRIDE {}
+                          const SkPaint&) override {}
 
  protected:
   virtual bool onReadPixels(const SkImageInfo& info,
                             void* pixels,
                             size_t rowBytes,
                             int x,
-                            int y) SK_OVERRIDE {
+                            int y) override {
     return false;
   }
 
@@ -318,7 +318,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                              const void* pixels,
                              size_t rowBytes,
                              int x,
-                             int y) SK_OVERRIDE {
+                             int y) override {
     return false;
   }
 

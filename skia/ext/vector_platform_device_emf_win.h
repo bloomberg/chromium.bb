@@ -31,56 +31,56 @@ class VectorPlatformDeviceEmf : public SkBitmapDevice, public PlatformDevice {
   virtual ~VectorPlatformDeviceEmf();
 
   // PlatformDevice methods
-  virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
+  virtual PlatformSurface BeginPlatformPaint() override;
   virtual void DrawToNativeContext(HDC dc, int x, int y,
-                                   const RECT* src_rect) OVERRIDE;
+                                   const RECT* src_rect) override;
   // SkBaseDevice methods.
-  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
+  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) override;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
                           size_t count, const SkPoint[],
-                          const SkPaint& paint) OVERRIDE;
+                          const SkPaint& paint) override;
   virtual void drawRect(const SkDraw& draw, const SkRect& r,
-                        const SkPaint& paint) OVERRIDE;
+                        const SkPaint& paint) override;
   virtual void drawRRect(const SkDraw&, const SkRRect& rr,
-                         const SkPaint& paint) OVERRIDE;
+                         const SkPaint& paint) override;
   virtual void drawPath(const SkDraw& draw, const SkPath& path,
                         const SkPaint& paint,
                         const SkMatrix* prePathMatrix = NULL,
-                        bool pathIsMutable = false) OVERRIDE;
+                        bool pathIsMutable = false) override;
   virtual void drawBitmapRect(const SkDraw& draw, const SkBitmap& bitmap,
                               const SkRect* src, const SkRect& dst,
                               const SkPaint& paint,
-                              SkCanvas::DrawBitmapRectFlags flags) SK_OVERRIDE;
+                              SkCanvas::DrawBitmapRectFlags flags) override;
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
                           const SkMatrix& matrix,
-                          const SkPaint& paint) OVERRIDE;
+                          const SkPaint& paint) override;
   virtual void drawSprite(const SkDraw& draw, const SkBitmap& bitmap,
-                          int x, int y, const SkPaint& paint) OVERRIDE;
+                          int x, int y, const SkPaint& paint) override;
   virtual void drawText(const SkDraw& draw, const void* text, size_t len,
-                        SkScalar x, SkScalar y, const SkPaint& paint) OVERRIDE;
+                        SkScalar x, SkScalar y, const SkPaint& paint) override;
   virtual void drawPosText(const SkDraw& draw, const void* text, size_t len,
                            const SkScalar pos[], int scalarsPerPos,
-                           const SkPoint& offset, const SkPaint& paint) OVERRIDE;
+                           const SkPoint& offset, const SkPaint& paint) override;
   virtual void drawTextOnPath(const SkDraw& draw, const void* text, size_t len,
                               const SkPath& path, const SkMatrix* matrix,
-                              const SkPaint& paint) OVERRIDE;
+                              const SkPaint& paint) override;
   virtual void drawVertices(const SkDraw& draw, SkCanvas::VertexMode,
                             int vertexCount,
                             const SkPoint verts[], const SkPoint texs[],
                             const SkColor colors[], SkXfermode* xmode,
                             const uint16_t indices[], int indexCount,
-                            const SkPaint& paint) OVERRIDE;
+                            const SkPaint& paint) override;
   virtual void drawDevice(const SkDraw& draw, SkBaseDevice*, int x, int y,
-                          const SkPaint&) OVERRIDE;
+                          const SkPaint&) override;
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&) OVERRIDE;
+                             const SkClipStack&) override;
 
   void LoadClipRegion();
 
  protected:
   virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
-                                       Usage usage) OVERRIDE;
+                                       Usage usage) override;
 
  private:
   // Applies the SkPaint's painting properties in the current GDI context, if

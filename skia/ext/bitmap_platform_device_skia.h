@@ -42,13 +42,13 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   explicit BitmapPlatformDevice(const SkBitmap& other);
   virtual ~BitmapPlatformDevice();
 
-  virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
+  virtual PlatformSurface BeginPlatformPaint() override;
   virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect) OVERRIDE;
+                                   const PlatformRect* src_rect) override;
 
  protected:
   virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
-                                       Usage usage) OVERRIDE;
+                                       Usage usage) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);

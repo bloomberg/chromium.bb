@@ -9,9 +9,9 @@
 namespace skia {
 
 class SkChromiumEventTracer: public SkEventTracer {
-  virtual const uint8_t* getCategoryGroupEnabled(const char* name) OVERRIDE;
+  virtual const uint8_t* getCategoryGroupEnabled(const char* name) override;
   virtual const char* getCategoryGroupName(
-      const uint8_t* categoryEnabledFlag) OVERRIDE;
+      const uint8_t* categoryEnabledFlag) override;
   virtual SkEventTracer::Handle
     addTraceEvent(char phase,
                   const uint8_t* categoryEnabledFlag,
@@ -21,11 +21,11 @@ class SkChromiumEventTracer: public SkEventTracer {
                   const char** argNames,
                   const uint8_t* argTypes,
                   const uint64_t* argValues,
-                  uint8_t flags) OVERRIDE;
+                  uint8_t flags) override;
   virtual void
     updateTraceEventDuration(const uint8_t* categoryEnabledFlag,
                              const char *name,
-                             SkEventTracer::Handle handle) OVERRIDE;
+                             SkEventTracer::Handle handle) override;
 };
 
 const uint8_t*

@@ -36,18 +36,18 @@ class TestDiscardableShader : public SkShader {
 
   virtual SkShader::BitmapType asABitmap(SkBitmap* bitmap,
                                          SkMatrix* matrix,
-                                         TileMode xy[2]) const OVERRIDE {
+                                         TileMode xy[2]) const override {
     if (bitmap)
       *bitmap = bitmap_;
     return SkShader::kDefault_BitmapType;
   }
 
   // not indended to return an actual context. Just need to supply this.
-  virtual size_t contextSize() const OVERRIDE {
+  virtual size_t contextSize() const override {
     return sizeof(SkShader::Context);
   }
 
-  virtual void flatten(SkWriteBuffer&) const OVERRIDE {}
+  virtual void flatten(SkWriteBuffer&) const override {}
 
   SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestDiscardableShader);
 

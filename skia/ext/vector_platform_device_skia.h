@@ -26,26 +26,26 @@ class VectorPlatformDeviceSkia : public SkPDFDevice, public PlatformDevice {
   virtual ~VectorPlatformDeviceSkia();
 
   // PlatformDevice methods.
-  virtual bool SupportsPlatformPaint() OVERRIDE;
+  virtual bool SupportsPlatformPaint() override;
 
-  virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
-  virtual void EndPlatformPaint() OVERRIDE;
+  virtual PlatformSurface BeginPlatformPaint() override;
+  virtual void EndPlatformPaint() override;
 #if defined(OS_WIN)
   virtual void DrawToNativeContext(HDC dc,
                                    int x,
                                    int y,
-                                   const RECT* src_rect) OVERRIDE;
+                                   const RECT* src_rect) override;
 #elif defined(OS_MACOSX)
   virtual void DrawToNativeContext(CGContext* context,
                                    int x,
                                    int y,
-                                   const CGRect* src_rect) OVERRIDE;
-  virtual CGContextRef GetBitmapContext() OVERRIDE;
+                                   const CGRect* src_rect) override;
+  virtual CGContextRef GetBitmapContext() override;
 #elif defined(OS_POSIX)
   virtual void DrawToNativeContext(PlatformSurface surface,
                                    int x,
                                    int y,
-                                   const PlatformRect* src_rect) OVERRIDE;
+                                   const PlatformRect* src_rect) override;
 #endif
 
  private:
