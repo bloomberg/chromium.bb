@@ -57,6 +57,9 @@ def AddCommonOptions(option_parser):
                    const='Release', dest='build_type',
                    help=('If set, run test suites under out/Release.'
                          ' Default is env var BUILDTYPE or Debug.'))
+  group.add_option('--build-directory', dest='build_directory',
+                   help=('Path to the directory in which build files are'
+                         ' located (should not include build type)'))
   group.add_option('-c', dest='cleanup_test_files',
                    help='Cleanup test files on the device after run',
                    action='store_true')
@@ -93,6 +96,8 @@ def ProcessCommonOptions(options):
   """Processes and handles all common options."""
   run_tests_helper.SetLogLevel(options.verbose_count)
   constants.SetBuildType(options.build_type)
+  if options.build_directory:
+    constants.SetBuildDirectory(options.build_directory)
 
 
 def AddGTestOptions(option_parser):

@@ -172,6 +172,10 @@ def SetBuildType(build_type):
   os.environ['BUILDTYPE'] = build_type
 
 
+def SetBuildDirectory(build_directory):
+  os.environ['CHROMIUM_OUT_DIR'] = build_directory
+
+
 def GetOutDirectory(build_type=None):
   """Returns the out directory where the output binaries are built.
 
