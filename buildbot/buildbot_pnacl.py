@@ -24,9 +24,8 @@ def RunSconsTests(status, context):
   # Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
   # We make the assumption here that there are no "exotic tests" which
   # are trusted in nature but are somehow depedent on the untrusted TC.
-  flags_build = ['skip_trusted_tests=1', 'do_not_run_tests=1',
-                 'naclsdk_validate=0']
-  flags_run = ['skip_trusted_tests=1', 'naclsdk_validate=0']
+  flags_build = ['skip_trusted_tests=1', 'do_not_run_tests=1']
+  flags_run = ['skip_trusted_tests=1']
   smoke_tests = ['small_tests', 'medium_tests']
 
   arch = context['default_scons_platform']
