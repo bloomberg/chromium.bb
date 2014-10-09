@@ -246,10 +246,20 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
             function(items) {
               var localData = items[Constants.AccessLocalWallpaperInfoKey];
               if (localData && localData.url == detail.fileEntry.name &&
-                  localData.source == Constants.WallpaperSourceEnum.Custom)
-                WallpaperUtil.setSyncCustomWallpaper(localData.url,
-                                                     localData.layout);
+                  localData.source == Constants.WallpaperSourceEnum.Custom) {
+                WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
+                                                           localData.layout);
+              } else if (localData.url !=
+                         detail.fileEntry.name.replace(
+                             Constants.CustomWallpaperThumbnailSuffix, '')) {
+                WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(
+                    detail.fileEntry);
+              }
            });
+      } else if (detail.action == 'deleted') {
+        var fileName = detail.fileEntry.name.replace(
+            Constants.CustomWallpaperThumbnailSuffix, '');
+        WallpaperUtil.deleteWallpaperFromLocalFS(fileName);
       }
     }
   });
@@ -257,7 +267,7 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
   WallpaperUtil.enabledExperimentalFeatureCallback(function() {
-    WallpaperUtil.requestSyncFs(function() {});
+    WallpaperUtil.requestSyncFS(function() {});
   });
   if (changes[Constants.AccessSurpriseMeEnabledKey]) {
     if (changes[Constants.AccessSurpriseMeEnabledKey].newValue) {
@@ -287,7 +297,10 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
           WallpaperUtil.setOnlineWallpaper(newValue.url, newValue.layout,
             function() {}, function() {});
         } else if (newValue.source == Constants.WallpaperSourceEnum.Custom) {
-          WallpaperUtil.setSyncCustomWallpaper(newValue.url, newValue.layout);
+          WallpaperUtil.enabledExperimentalFeatureCallback(function() {
+            WallpaperUtil.setCustomWallpaperFromSyncFS(newValue.url,
+                                                       newValue.layout);
+          });
         }
         WallpaperUtil.saveToStorage(Constants.AccessLocalWallpaperInfoKey,
                                     newValue, false);

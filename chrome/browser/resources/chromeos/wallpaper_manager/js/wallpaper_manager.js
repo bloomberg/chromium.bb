@@ -515,25 +515,28 @@ function WallpaperManager(dialogDom) {
               reader.readAsArrayBuffer(file);
               reader.addEventListener('error', errorHandler);
               reader.addEventListener('load', function(e) {
-                self.setCustomWallpaper(e.target.result,
-                                        selectedItem.layout,
-                                        false, selectedItem.baseURL,
-                                        self.onWallpaperChanged_.bind(self,
-                                            selectedItem, selectedItem.baseURL),
-                                        errorHandler);
-                WallpaperUtil.enabledExperimentalFeatureCallback(function() {
-                  WallpaperUtil.storePictureToSyncFileSystem(
-                    selectedItem.baseURL,
-                    e.target.result,
-                    function() {}
-                  );
-                });
+                self.setCustomWallpaper(e.target.result, selectedItem.layout,
+                    false, selectedItem.baseURL,
+                    function(thumbnailData) {
+                      self.onWallpaperChanged_(selectedItem,
+                          selectedItem.baseURL, thumbnailData);
+                      WallpaperUtil.enabledExperimentalFeatureCallback(
+                          function() {
+                            WallpaperUtil.storeWallpaperToSyncFS(
+                                selectedItem.baseURL, e.target.result);
+                            WallpaperUtil.storeWallpaperToSyncFS(
+                                selectedItem.baseURL +
+                                    Constants.CustomWallpaperThumbnailSuffix,
+                                thumbnailData);
+                          });
+                    },
+                    errorHandler);
               });
             }, errorHandler);
           }, errorHandler);
         };
-        this.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL,
-                                         success, errorHandler);
+        this.wallpaperDirs_.getDirectory(
+            Constants.WallpaperDirNameEnum.ORIGINAL, success, errorHandler);
         break;
       case Constants.WallpaperSourceEnum.OEM:
         // Resets back to default wallpaper.
@@ -837,13 +840,15 @@ function WallpaperManager(dialogDom) {
             }, errorHandler);
           }, errorHandler);
         };
-        self.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.THUMBNAIL,
-            success, errorHandler);
+        self.wallpaperDirs_.getDirectory(
+            Constants.WallpaperDirNameEnum.THUMBNAIL, success, errorHandler);
       };
       var onCustomWallpaperSuccess = function(thumbnailData, wallpaperData) {
         WallpaperUtil.enabledExperimentalFeatureCallback(function() {
-          WallpaperUtil.storePictureToSyncFileSystem(fileName, wallpaperData,
-                                             function() {});
+          WallpaperUtil.storeWallpaperToSyncFS(fileName, wallpaperData);
+          WallpaperUtil.storeWallpaperToSyncFS(
+              fileName + Constants.CustomWallpaperThumbnailSuffix,
+              thumbnailData);
         });
         saveThumbnail(thumbnailData);
       };
@@ -870,7 +875,8 @@ function WallpaperManager(dialogDom) {
           }, errorHandler);
         }, errorHandler);
       };
-      self.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL, success,
+      self.wallpaperDirs_.getDirectory(Constants.WallpaperDirNameEnum.ORIGINAL,
+                                       success,
                                        errorHandler);
     };
     setSelectedFile(files[0], layout, new Date().getTime().toString());
@@ -888,16 +894,21 @@ function WallpaperManager(dialogDom) {
       var success = function(dirEntry) {
         dirEntry.getFile(fileName, {create: false}, function(fileEntry) {
           fileEntry.remove(function() {
+            WallpaperUtil.enabledExperimentalFeatureCallback(function() {
+              WallpaperUtil.deleteWallpaperFromSyncFS(fileName);
+            });
           }, errorHandler);
         }, errorHandler);
       };
 
       // Removes copy of original.
-      self.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL, success,
+      self.wallpaperDirs_.getDirectory(Constants.WallpaperDirNameEnum.ORIGINAL,
+                                       success,
                                        errorHandler);
 
       // Removes generated thumbnail.
-      self.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.THUMBNAIL, success,
+      self.wallpaperDirs_.getDirectory(Constants.WallpaperDirNameEnum.THUMBNAIL,
+                                       success,
                                        errorHandler);
     };
     removeFile(fileName);
@@ -1043,7 +1054,7 @@ function WallpaperManager(dialogDom) {
         };
         readEntries(); // Start reading dirs.
       };
-      this.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL,
+      this.wallpaperDirs_.getDirectory(Constants.WallpaperDirNameEnum.ORIGINAL,
                                        success, errorHandler);
     } else {
       this.document_.body.removeAttribute('custom');

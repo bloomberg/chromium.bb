@@ -41,6 +41,8 @@ var chrome = {
     }
   },
   syncFileSystem: {
+    requestFileSystem: function(fs) {
+    },
     onFileStatusChanged: {
       addListener: function(listener) {
         this.dispatch = listener;

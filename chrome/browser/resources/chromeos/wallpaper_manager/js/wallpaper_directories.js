@@ -7,14 +7,6 @@
  */
 /** @const */ var WallpaperQuota = 1024 * 1024 * 100;
 
-/**
- * Wallpaper directories enum.
- */
-/** @const */ var WallpaperDirNameEnum = {
-                  ORIGINAL: 'original',
-                  THUMBNAIL: 'thumbnail'
-              };
-
 var wallpaperDirectories = null;
 
 /**
@@ -24,8 +16,8 @@ var wallpaperDirectories = null;
  */
 function WallpaperDirectories() {
   this.wallpaperDirs_ = {};
-  this.wallpaperDirs_[WallpaperDirNameEnum.ORIGINAL] = null;
-  this.wallpaperDirs_[WallpaperDirNameEnum.THUMBNAIL] = null;
+  this.wallpaperDirs_[Constants.WallpaperDirNameEnum.ORIGINAL] = null;
+  this.wallpaperDirs_[Constants.WallpaperDirNameEnum.THUMBNAIL] = null;
 }
 
 /**
@@ -57,8 +49,8 @@ WallpaperDirectories.prototype = {
    *     requested directory.
    */
   requestDir: function(dirName, success, failure) {
-    if (dirName != WallpaperDirNameEnum.ORIGINAL &&
-        dirName != WallpaperDirNameEnum.THUMBNAIL) {
+    if (dirName != Constants.WallpaperDirNameEnum.ORIGINAL &&
+        dirName != Constants.WallpaperDirNameEnum.THUMBNAIL) {
       console.error('Error: Unknow directory name.');
       var e = new Error();
       e.code = FileError.NOT_FOUND_ERR;

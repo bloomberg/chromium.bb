@@ -4,7 +4,87 @@
 
 var WallpaperUtil = {
   strings: null,  // Object that contains all the flags
-  syncFs: null    // syncFileSystem handler
+  syncFs: null,   // syncFileSystem handler
+  webkitFs: null  // webkitFileSystem handler
+};
+
+/**
+ * Deletes |wallpaperFileName| and its associated thumbnail from local FS.
+ * @param {string} wallpaperFilename Name of the file that will be deleted
+ */
+WallpaperUtil.deleteWallpaperFromLocalFS = function(wallpaperFilename) {
+  WallpaperUtil.requestLocalFS(function(fs) {
+    var originalPath = Constants.WallpaperDirNameEnum.ORIGINAL + '/' +
+                       wallpaperFilename;
+    var thumbnailPath = Constants.WallpaperDirNameEnum.THUMBNAIL + '/' +
+                        wallpaperFilename;
+    fs.root.getFile(originalPath,
+                    {create: false},
+                    function(fe) {
+                      fe.remove(function() {}, null);
+                    },
+                    // NotFoundError is expected. After we receive a delete
+                    // event from either original wallpaper or wallpaper
+                    // thumbnail, we delete both of them in local FS to achieve
+                    // a faster synchronization. So each file is expected to be
+                    // deleted twice and the second attempt is a noop.
+                    function(e) {
+                      if (e.name != 'NotFoundError')
+                        WallpaperUtil.onFileSystemError(e);
+                    });
+    fs.root.getFile(thumbnailPath,
+                    {create: false},
+                    function(fe) {
+                      fe.remove(function() {}, null);
+                    },
+                    function(e) {
+                      if (e.name != 'NotFoundError')
+                        WallpaperUtil.onFileSystemError(e);
+                    });
+  });
+};
+
+/**
+ * Loads a wallpaper from sync file system and saves it and its thumbnail to
+ *     local file system.
+ * @param {string} wallpaperFileEntry File name of wallpaper image.
+ */
+WallpaperUtil.storeWallpaperFromSyncFSToLocalFS = function(wallpaperFileEntry) {
+  var filenName = wallpaperFileEntry.name;
+  var storeDir = Constants.WallpaperDirNameEnum.ORIGINAL;
+  if (filenName.indexOf(Constants.CustomWallpaperThumbnailSuffix) != -1)
+    storeDir = Constants.WallpaperDirNameEnum.THUMBNAIL;
+  wallpaperFileEntry.file(function(file) {
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      WallpaperUtil.storeWallpaperToLocalFS(filenName, reader.result, storeDir);
+    };
+    reader.readAsArrayBuffer(file);
+  }, WallpaperUtil.onFileSystemError);
+};
+
+/**
+ * Deletes |wallpaperFileName| and its associated thumbnail from syncFileSystem.
+ * @param {string} wallpaperFilename Name of the file that will be deleted.
+ */
+WallpaperUtil.deleteWallpaperFromSyncFS = function(wallpaperFilename) {
+  var thumbnailFilename = wallpaperFilename +
+                          Constants.CustomWallpaperThumbnailSuffix;
+  var success = function(fs) {
+    fs.root.getFile(wallpaperFilename,
+                    {create: false},
+                    function(fe) {
+                      fe.remove(function() {}, null);
+                    },
+                    WallpaperUtil.onFileSystemError);
+    fs.root.getFile(thumbnailFilename,
+                    {create: false},
+                    function(fe) {
+                      fe.remove(function() {}, null);
+                    },
+                    WallpaperUtil.onFileSystemError);
+  };
+  WallpaperUtil.requestSyncFS(success);
 };
 
 /**
@@ -30,7 +110,7 @@ WallpaperUtil.enabledExperimentalFeatureCallback = function(callback) {
  * @param {function} callback The callback to execute after syncFileSystem
  *     handler is available.
  */
-WallpaperUtil.requestSyncFs = function(callback) {
+WallpaperUtil.requestSyncFS = function(callback) {
   if (WallpaperUtil.syncFs) {
     callback(WallpaperUtil.syncFs);
   } else {
@@ -38,6 +118,23 @@ WallpaperUtil.requestSyncFs = function(callback) {
       WallpaperUtil.syncFs = fs;
       callback(WallpaperUtil.syncFs);
     });
+  }
+};
+
+/**
+ * Request a Local Fs handle and run callback on it.
+ * @param {function} callback The callback to execute after Local handler is
+ *     available.
+ */
+WallpaperUtil.requestLocalFS = function(callback) {
+  if (WallpaperUtil.webkitFs) {
+    callback(WallpaperUtil.webkitFs);
+  } else {
+    window.webkitRequestFileSystem(window.PERSISTENT, 1024 * 1024 * 100,
+                                   function(fs) {
+                                     WallpaperUtil.webkitFs = fs;
+                                     callback(fs);
+                                   });
   }
 };
 
@@ -71,25 +168,23 @@ WallpaperUtil.writeFile = function(fileEntry, wallpaperData, writeCallback) {
  * Write jpeg/png file data into syncFileSystem.
  * @param {string} wallpaperFilename The filename that going to be writen.
  * @param {ArrayBuffer} wallpaperData Data for image file.
- * @param {function} onSuccess The callback that will be executed after.
- *     writing data
  */
-WallpaperUtil.storePictureToSyncFileSystem = function(
-    wallpaperFilename, wallpaperData, onSuccess) {
+WallpaperUtil.storeWallpaperToSyncFS = function(wallpaperFilename,
+                                                wallpaperData) {
   var callback = function(fs) {
     fs.root.getFile(wallpaperFilename,
                     {create: false},
-                    function() { onSuccess();},  // already exists
+                    function() {},  // already exists
                     function(e) {  // not exists, create
                       fs.root.getFile(wallpaperFilename, {create: true},
                                       function(fe) {
                                         WallpaperUtil.writeFile(
-                                            fe, wallpaperData, onSuccess);
+                                            fe, wallpaperData);
                                       },
                                       WallpaperUtil.onFileSystemError);
                     });
   };
-  WallpaperUtil.requestSyncFs(callback);
+  WallpaperUtil.requestSyncFS(callback);
 };
 
 /**
@@ -98,8 +193,8 @@ WallpaperUtil.storePictureToSyncFileSystem = function(
  * @param {ArrayBuffer} wallpaperData The wallpaper data.
  * @param {string} saveDir The path to store wallpaper in local file system.
  */
-WallpaperUtil.storePictureToLocal = function(wallpaperFilename, wallpaperData,
-    saveDir) {
+WallpaperUtil.storeWallpaperToLocalFS = function(wallpaperFilename,
+    wallpaperData, saveDir) {
   if (!wallpaperData) {
     console.error('wallpaperData is null');
     return;
@@ -110,20 +205,17 @@ WallpaperUtil.storePictureToLocal = function(wallpaperFilename, wallpaperData,
                     function() {},  // already exists
                     function(e) {   // not exists, create
                     dirEntry.getFile(wallpaperFilename, {create: true},
-                                    function(fe) {
-                                      WallpaperUtil.writeFile(fe,
-                                                              wallpaperData);
-                                    },
-                                    WallpaperUtil.onFileSystemError);
+                                     function(fe) {
+                                       WallpaperUtil.writeFile(fe,
+                                                               wallpaperData);
+                                     },
+                                     WallpaperUtil.onFileSystemError);
                     });
   };
-  window.webkitRequestFileSystem(window.PERSISTENT, 1024 * 1024 * 100,
-                                 function(fs) {
-                                   fs.root.getDirectory(
-                                       saveDir, {create: true}, getDirSuccess,
-                                       WallpaperUtil.onFileSystemError);
-                                 },
-                                 WallpaperUtil.onFileSystemError);
+  WallpaperUtil.requestLocalFS(function(fs) {
+    fs.root.getDirectory(saveDir, {create: true}, getDirSuccess,
+                         WallpaperUtil.onFileSystemError);
+  });
 };
 
 /**
@@ -132,7 +224,7 @@ WallpaperUtil.storePictureToLocal = function(wallpaperFilename, wallpaperData,
  * @param {string} wallpaperLayout Layout used to set wallpaper.
  * @param {function=} onSuccess Callback if set successfully.
  */
-WallpaperUtil.setSyncCustomWallpaper = function(
+WallpaperUtil.setCustomWallpaperFromSyncFS = function(
     wallpaperFilename, wallpaperLayout, onSuccess) {
   var setWallpaperFromSyncCallback = function(fs) {
     if (!wallpaperFilename) {
@@ -156,10 +248,10 @@ WallpaperUtil.setSyncCustomWallpaper = function(
                   console.error(chrome.runtime.lastError.message);
                   return;
                 }
-                WallpaperUtil.storePictureToLocal(wallpaperFilename,
-                                                  reader.result, 'original');
-                WallpaperUtil.storePictureToLocal(wallpaperFilename,
-                                                  reader.result, 'thumbnail');
+                WallpaperUtil.storeWallpaperToLocalFS(wallpaperFilename,
+                    reader.result, Constants.WallpaperDirNameEnum.ORIGINAL);
+                WallpaperUtil.storeWallpaperToLocalFS(wallpaperFilename,
+                    reader.result, Constants.WallpaperDirNameEnum.THUMBNAIL);
                 if (onSuccess)
                   onSuccess();
               });
@@ -169,7 +261,7 @@ WallpaperUtil.setSyncCustomWallpaper = function(
     }, function(e) {}  // fail to read file, expected due to download delay
     );
   };
-  WallpaperUtil.requestSyncFs(setWallpaperFromSyncCallback);
+  WallpaperUtil.requestSyncFS(setWallpaperFromSyncCallback);
 };
 
 /**

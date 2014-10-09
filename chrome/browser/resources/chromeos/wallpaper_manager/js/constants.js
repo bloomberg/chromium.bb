@@ -70,5 +70,18 @@
   /**
    * Sync storage.
    */
-  WallpaperSyncStorage: chrome.storage.sync
+  WallpaperSyncStorage: chrome.storage.sync,
+
+  /**
+   * Suffix to append to file name if it is a thumbnail.
+   */
+  CustomWallpaperThumbnailSuffix: '_thumbnail',
+
+  /**
+   * Wallpaper directory enum.
+   */
+  WallpaperDirNameEnum: {
+      ORIGINAL: 'original',
+      THUMBNAIL: 'thumbnail'
+  }
 };

@@ -84,8 +84,8 @@ cr.define('wallpapers', function() {
               self.callback(self.dataModelId);
             };
             var fallback = function() {
-              wallpaperDirectories.getDirectory(WallpaperDirNameEnum.ORIGINAL,
-                                          function(dirEntry) {
+              wallpaperDirectories.getDirectory(
+                  Constants.WallpaperDirNameEnum.ORIGINAL, function(dirEntry) {
                 dirEntry.getFile(fileName, {create: false}, setURL,
                                  errorHandler);
               }, errorHandler);
@@ -93,10 +93,9 @@ cr.define('wallpapers', function() {
             var success = function(dirEntry) {
               dirEntry.getFile(fileName, {create: false}, setURL, fallback);
             };
-            wallpaperDirectories.getDirectory(WallpaperDirNameEnum.THUMBNAIL,
-                                              success,
-                                              errorHandler);
-          }
+            wallpaperDirectories.getDirectory(
+               Constants.WallpaperDirNameEnum.THUMBNAIL, success, errorHandler);
+          };
           getThumbnail(self.dataItem.baseURL);
           break;
         case Constants.WallpaperSourceEnum.OEM:
