@@ -51,7 +51,7 @@ var DRIVE_FAKE_TASKS = [
  */
 function setupTaskTest(rootPath, fakeTasks) {
   return setupAndWaitUntilReady(null, rootPath).then(function(windowId) {
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'overrideTasks',
         windowId,
         [fakeTasks]).then(function() {
@@ -69,12 +69,12 @@ function setupTaskTest(rootPath, fakeTasks) {
 function executeDefaultTask(expectedTaskId, windowId) {
   // Select file.
   var selectFilePromise =
-      callRemoteTestUtil('selectFile', windowId, ['hello.txt']);
+      remoteCall.callRemoteTestUtil('selectFile', windowId, ['hello.txt']);
 
   // Double-click the file.
   var doubleClickPromise = selectFilePromise.then(function(result) {
     chrome.test.assertTrue(result);
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'fakeMouseDoubleClick',
         windowId,
         ['#file-list li.table-row[selected] .filename-label span']);
@@ -83,7 +83,7 @@ function executeDefaultTask(expectedTaskId, windowId) {
   // Wait until the task is executed.
   return doubleClickPromise.then(function(result) {
     chrome.test.assertTrue(!!result);
-    return waitUntilTaskExecutes(windowId, expectedTaskId);
+    return remoteCall.waitUntilTaskExecutes(windowId, expectedTaskId);
   });
 }
 
@@ -105,18 +105,19 @@ function defaultActionDialog(expectedTaskId, windowId) {
 
   // Select file.
   var selectFilePromise =
-      callRemoteTestUtil('selectFile', windowId, ['hello.txt']);
+      remoteCall.callRemoteTestUtil('selectFile', windowId, ['hello.txt']);
 
   // Click the change default menu.
   var menuClickedPromise = selectFilePromise.
       then(function() {
-        return waitForElement(windowId, '#tasks[multiple]');
+        return remoteCall.waitForElement(windowId, '#tasks[multiple]');
       }).
       then(function() {
-        return waitForElement(windowId, '#tasks-menu .change-default');
+        return remoteCall.waitForElement(
+            windowId, '#tasks-menu .change-default');
       }).
       then(function() {
-        return callRemoteTestUtil(
+        return remoteCall.callRemoteTestUtil(
             'fakeEvent', windowId, ['#tasks', 'select', {item: {}}]);
       }).
       then(function(result) {
@@ -127,7 +128,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
   var menuPreparedPromise = menuClickedPromise.then(function() {
     return repeatUntil(function() {
       // Obtains menu items.
-      var menuItemsPromise = callRemoteTestUtil(
+      var menuItemsPromise = remoteCall.callRemoteTestUtil(
           'queryAllElements',
           windowId,
           ['#default-action-dialog #default-actions-list li']);
@@ -149,7 +150,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
   // Click the non default item.
   var itemClickedPromise = menuPreparedPromise.
       then(function() {
-        return callRemoteTestUtil(
+        return remoteCall.callRemoteTestUtil(
             'fakeEvent',
             windowId,
             [
@@ -159,7 +160,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
             ]);
       }).
       then(function() {
-        return callRemoteTestUtil(
+        return remoteCall.callRemoteTestUtil(
             'fakeEvent',
             windowId,
             [
@@ -174,13 +175,15 @@ function defaultActionDialog(expectedTaskId, windowId) {
 
   // Wait for the dialog hidden, and the task is executed.
   var dialogHiddenPromise = itemClickedPromise.then(function() {
-    return waitForElement.bind(null, windowId, '#default-action-dialog', null);
+    return remoteCall.waitForElement.bind(
+        remoteCall, windowId, '#default-action-dialog', null);
   });
 
   // Execute the new default task.
   var taskButtonClicked = dialogHiddenPromise.
       then(function() {
-        return callRemoteTestUtil('fakeEvent', windowId, ['#tasks', 'click']);
+        return remoteCall.callRemoteTestUtil(
+            'fakeEvent', windowId, ['#tasks', 'click']);
       }).
       then(function(result) {
         chrome.test.assertTrue(result);
@@ -188,7 +191,7 @@ function defaultActionDialog(expectedTaskId, windowId) {
 
   // Check the executed tasks.
   return dialogHiddenPromise.then(function() {
-    return waitUntilTaskExecutes(windowId, expectedTaskId);
+    return remoteCall.waitUntilTaskExecutes(windowId, expectedTaskId);
   });
 }
 

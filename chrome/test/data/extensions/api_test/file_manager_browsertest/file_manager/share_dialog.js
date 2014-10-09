@@ -18,32 +18,32 @@ function share(path) {
     // Select the source file.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'selectFile', appId, [path], this.next);
     },
     // Wait for the share button.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(appId, '#share-button:not([disabled])').
+      remoteCall.waitForElement(appId, '#share-button:not([disabled])').
           then(this.next);
     },
     // Invoke the share dialog.
     function(result) {
-      callRemoteTestUtil('fakeMouseClick',
-                         appId,
-                         ['#share-button'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeMouseClick',
+                                    appId,
+                                    ['#share-button'],
+                                    this.next);
     },
     // Wait until the share dialog's contents are shown.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(appId, '.share-dialog-webview-wrapper.loaded').
+      remoteCall.waitForElement(appId, '.share-dialog-webview-wrapper.loaded').
           then(this.next);
     },
     function(result) {
       chrome.test.assertTrue(!!result);
       repeatUntil(function() {
-        return callRemoteTestUtil(
+        return remoteCall.callRemoteTestUtil(
             'queryAllElements',
             appId,
             [
@@ -68,16 +68,18 @@ function share(path) {
     },
     // Wait until the share dialog's contents are shown.
     function(result) {
-      callRemoteTestUtil('executeScriptInWebView',
-                         appId,
-                         ['.share-dialog-webview-wrapper.loaded webview',
-                          'document.querySelector("button").click()'],
-                         this.next);
+      remoteCall.callRemoteTestUtil(
+          'executeScriptInWebView',
+          appId,
+          ['.share-dialog-webview-wrapper.loaded webview',
+           'document.querySelector("button").click()'],
+          this.next);
     },
     // Wait until the share dialog's contents are hidden.
     function(result) {
       chrome.test.assertTrue(!!result);
-      waitForElementLost(appId, '.share-dialog-webview-wrapper.loaded').
+      remoteCall.waitForElementLost(
+          appId, '.share-dialog-webview-wrapper.loaded').
           then(this.next);
     },
     // Check for Javascript errros.

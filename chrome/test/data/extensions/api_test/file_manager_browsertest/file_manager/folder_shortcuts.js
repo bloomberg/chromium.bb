@@ -85,8 +85,8 @@ function openWindows() {
     openNewWindow(null, RootPath.DRIVE)
   ]).then(function(windowIds) {
     return Promise.all([
-      waitForElement(windowIds[0], '#detail-table'),
-      waitForElement(windowIds[1], '#detail-table')
+      remoteCall.waitForElement(windowIds[0], '#detail-table'),
+      remoteCall.waitForElement(windowIds[1], '#detail-table')
     ]).then(function() {
       return windowIds;
     });
@@ -100,13 +100,14 @@ function openWindows() {
  * @return {Promise} Promise fulfilled on success.
  */
 function expandTreeItem(windowId, directory) {
-  return waitForElement(
+  return remoteCall.waitForElement(
       windowId, directory.treeItem + EXPAND_ICON).then(function() {
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'fakeMouseClick', windowId, [directory.treeItem + EXPAND_ICON]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForElement(windowId, directory.treeItem + EXPANDED_SUBTREE);
+    return remoteCall.waitForElement(windowId,
+                                     directory.treeItem + EXPANDED_SUBTREE);
   });
 }
 
@@ -132,13 +133,13 @@ function expandDirectoryTree(windowId) {
  * @return {Promise} Promise fulfilled on success.
  */
 function navigateToDirectory(windowId, directory) {
-  return waitForElement(
+  return remoteCall.waitForElement(
       windowId, directory.treeItem + VOLUME_ICON).then(function() {
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'fakeMouseClick', windowId, [directory.treeItem + VOLUME_ICON]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForFiles(windowId, directory.contents);
+    return remoteCall.waitForFiles(windowId, directory.contents);
   });
 }
 
@@ -150,24 +151,26 @@ function navigateToDirectory(windowId, directory) {
  * @return {Promise} Promise fulfilled on success.
  */
 function createShortcut(windowId, directory) {
-  return callRemoteTestUtil(
+  return remoteCall.callRemoteTestUtil(
       'selectFile', windowId, [directory.name]).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForElement(windowId, ['.table-row[selected]']);
+    return remoteCall.waitForElement(windowId, ['.table-row[selected]']);
   }).then(function() {
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'fakeMouseRightClick', windowId, ['.table-row[selected]']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForElement(windowId, '#file-context-menu:not([hidden])');
+    return remoteCall.waitForElement(
+        windowId, '#file-context-menu:not([hidden])');
   }).then(function() {
-    return waitForElement(windowId, '[command="#create-folder-shortcut"]');
+    return remoteCall.waitForElement(
+        windowId, '[command="#create-folder-shortcut"]');
   }).then(function() {
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'fakeMouseClick', windowId, ['[command="#create-folder-shortcut"]']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForElement(windowId, directory.navItem);
+    return remoteCall.waitForElement(windowId, directory.navItem);
   });
 }
 
@@ -179,20 +182,22 @@ function createShortcut(windowId, directory) {
  * @return {Promise} Promise fullfilled on success.
  */
 function removeShortcut(windowId, directory) {
-  return callRemoteTestUtil(
+  return remoteCall.callRemoteTestUtil(
       'fakeMouseRightClick',
       windowId,
       [directory.navItem]).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForElement(windowId, '#roots-context-menu:not([hidden])');
+    return remoteCall.waitForElement(
+        windowId, '#roots-context-menu:not([hidden])');
   }).then(function() {
-    return waitForElement(windowId, '[command="#remove-folder-shortcut"]');
+    return remoteCall.waitForElement(
+        windowId, '[command="#remove-folder-shortcut"]');
   }).then(function() {
-    return callRemoteTestUtil(
+    return remoteCall.callRemoteTestUtil(
         'fakeMouseClick', windowId, ['[command="#remove-folder-shortcut"]']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return waitForElementLost(windowId, directory.navItem);
+    return remoteCall.waitForElementLost(windowId, directory.navItem);
   });
 }
 
@@ -205,9 +210,11 @@ function removeShortcut(windowId, directory) {
  * @return {Promise} Promise fullfilled on success.
  */
 function expectSelection(windowId, currentDir, shortcutDir) {
-  return waitForFiles(windowId, currentDir.contents).then(function() {
-    return waitForElement(windowId, shortcutDir.navItem + '[selected]');
-  });
+  return remoteCall.waitForFiles(windowId, currentDir.contents).
+      then(function() {
+        return remoteCall.waitForElement(
+            windowId, shortcutDir.navItem + '[selected]');
+      });
 }
 
 /**
@@ -217,9 +224,11 @@ function expectSelection(windowId, currentDir, shortcutDir) {
  * @return {Promise} Promise fullfilled with result of fakeMouseClick.
  */
 function clickShortcut(windowId, directory) {
-  return waitForElement(windowId, directory.navItem).then(function() {
-    return callRemoteTestUtil('fakeMouseClick', windowId, [directory.navItem]);
-  });
+  return remoteCall.waitForElement(windowId, directory.navItem).
+    then(function() {
+      return remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', windowId, [directory.navItem]);
+    });
 }
 
 /**
@@ -238,13 +247,14 @@ testcase.traverseFolderShortcuts = function() {
     },
     function(inWindowId) {
       windowId = inWindowId;
-      waitForElement(windowId, '#detail-table').then(this.next);
+      remoteCall.waitForElement(windowId, '#detail-table').then(this.next);
     },
     function() {
       expandDirectoryTree(windowId).then(this.next);
     },
     function() {
-      waitForFiles(windowId, DIRECTORY.Drive.contents).then(this.next);
+      remoteCall.waitForFiles(windowId, DIRECTORY.Drive.contents).
+          then(this.next);
     },
 
     // Create shortcut to D
@@ -275,7 +285,7 @@ testcase.traverseFolderShortcuts = function() {
     // Current directory should be D.
     // Shortcut to C should be selected.
     function() {
-      callRemoteTestUtil('fakeKeyDown', windowId,
+      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
           ['#file-list', 'U+0034', true], this.next);
     },
     function(result) {
@@ -287,7 +297,7 @@ testcase.traverseFolderShortcuts = function() {
     // Current directory should be C.
     // Shortcut to C should be selected.
     function() {
-      callRemoteTestUtil('fakeKeyDown', windowId,
+      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
           ['#directory-tree', 'Up', false], this.next);
     },
     function(result) {
@@ -326,10 +336,12 @@ testcase.addRemoveFolderShortcuts = function() {
       expandDirectoryTree(windowId2).then(this.next);
     },
     function() {
-      waitForFiles(windowId1, DIRECTORY.Drive.contents).then(this.next);
+      remoteCall.waitForFiles(windowId1, DIRECTORY.Drive.contents).
+          then(this.next);
     },
     function() {
-      waitForFiles(windowId2, DIRECTORY.Drive.contents).then(this.next);
+      remoteCall.waitForFiles(windowId2, DIRECTORY.Drive.contents).
+          then(this.next);
     },
 
     // Create shortcut to D
@@ -366,7 +378,8 @@ testcase.addRemoveFolderShortcuts = function() {
 
     // Directory D in the directory tree should be selected.
     function() {
-      waitForElement(windowId1, TREEITEM_D + '[selected]').then(this.next);
+      remoteCall.waitForElement(windowId1, TREEITEM_D + '[selected]').
+          then(this.next);
     },
 
     function() {

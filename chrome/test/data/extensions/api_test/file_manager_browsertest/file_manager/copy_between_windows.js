@@ -16,8 +16,8 @@ function openTwoWindows(rootPath1, rootPath2) {
     openNewWindow(null, rootPath2)
   ]).then(function(windowIds) {
     return Promise.all([
-      waitForElement(windowIds[0], '#detail-table'),
-      waitForElement(windowIds[1], '#detail-table'),
+      remoteCall.waitForElement(windowIds[0], '#detail-table'),
+      remoteCall.waitForElement(windowIds[1], '#detail-table'),
     ]).then(function() {
       return windowIds;
     });
@@ -33,25 +33,27 @@ function openTwoWindows(rootPath1, rootPath2) {
  */
 function copyBetweenWindows(windowId1, windowId2, file) {
   // Select the file.
-  return waitForFiles(windowId1, [file.getExpectedRow()]).
+  return remoteCall.waitForFiles(windowId1, [file.getExpectedRow()]).
   then(function() {
-    return callRemoteTestUtil('selectFile', windowId1, [file.nameText]);
+    return remoteCall.callRemoteTestUtil('selectFile',
+                                         windowId1,
+                                         [file.nameText]);
   }).
   then(function(result) {
     chrome.test.assertTrue(result);
-    callRemoteTestUtil('execCommand', windowId1, ['copy']);
+    remoteCall.callRemoteTestUtil('execCommand', windowId1, ['copy']);
   }).
   then(function() {
-    return waitForFiles(windowId2, []);
+    return remoteCall.waitForFiles(windowId2, []);
   }).
   then(function() {
     // Paste it.
-    return callRemoteTestUtil('execCommand', windowId2, ['paste']);
+    return remoteCall.callRemoteTestUtil('execCommand', windowId2, ['paste']);
   }).
   then(function() {
-    return waitForFiles(windowId2,
-                        [file.getExpectedRow()],
-                        {ignoreLastModifiedTime: true});
+    return remoteCall.waitForFiles(windowId2,
+                                   [file.getExpectedRow()],
+                                   {ignoreLastModifiedTime: true});
   });
 };
 
@@ -75,8 +77,9 @@ testcase.copyBetweenWindowsDriveToLocal = function() {
       function(appIds) {
         windowId1 = appIds[0];
         windowId2 = appIds[1];
-        waitForFiles(windowId1,
-                     [ENTRIES.hello.getExpectedRow()]).then(this.next);
+        remoteCall.waitForFiles(
+            windowId1,
+            [ENTRIES.hello.getExpectedRow()]).then(this.next);
       },
       // Copy a file between windows.
       function() {
@@ -107,8 +110,9 @@ testcase.copyBetweenWindowsDriveToUsb = function() {
       function(appIds) {
         windowId1 = appIds[0];
         windowId2 = appIds[1];
-        waitForFiles(windowId1,
-                     [ENTRIES.hello.getExpectedRow()]).then(this.next);
+        remoteCall.waitForFiles(
+            windowId1,
+            [ENTRIES.hello.getExpectedRow()]).then(this.next);
       },
       // Mount a fake USB volume.
       function() {
@@ -117,11 +121,12 @@ testcase.copyBetweenWindowsDriveToUsb = function() {
       },
       // Wait for the mount.
       function(result) {
-        waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).then(this.next);
+        remoteCall.waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).
+            then(this.next);
       },
       // Click the USB volume.
       function() {
-        callRemoteTestUtil(
+        remoteCall.callRemoteTestUtil(
             'fakeMouseClick', windowId2, [REMOVABLE_VOLUME_QUERY], this.next);
       },
       // Copy a file between windows.
@@ -174,7 +179,8 @@ testcase.copyBetweenWindowsLocalToUsb = function() {
     function(appIds) {
       windowId1 = appIds[0];
       windowId2 = appIds[1];
-      waitForFiles(windowId2, [ENTRIES.hello.getExpectedRow()]).then(this.next);
+      remoteCall.waitForFiles(windowId2, [ENTRIES.hello.getExpectedRow()]).
+          then(this.next);
     },
     // Mount a fake USB volume.
     function() {
@@ -183,11 +189,12 @@ testcase.copyBetweenWindowsLocalToUsb = function() {
     },
     // Wait for the mount.
     function(result) {
-      waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).then(this.next);
+      remoteCall.waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).
+          then(this.next);
     },
     // Click the USB volume.
     function() {
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'fakeMouseClick', windowId2, [REMOVABLE_VOLUME_QUERY], this.next);
     },
     // Copy a file between windows.
@@ -220,11 +227,12 @@ testcase.copyBetweenWindowsUsbToDrive = function() {
     // Wait for the mount.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).then(this.next);
+      remoteCall.waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).
+          then(this.next);
     },
     // Click the volume.
     function() {
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'fakeMouseClick', windowId1, [REMOVABLE_VOLUME_QUERY], this.next);
     },
     // Copy a file between windows.
@@ -257,11 +265,12 @@ testcase.copyBetweenWindowsUsbToLocal = function() {
     // Wait for the mount.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).then(this.next);
+      remoteCall.waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).
+          then(this.next);
     },
     // Click the volume.
     function() {
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'fakeMouseClick', windowId1, [REMOVABLE_VOLUME_QUERY], this.next);
     },
     // Copy a file between windows.

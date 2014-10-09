@@ -14,127 +14,6 @@ var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 var remoteCall = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
 
 /**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} func Function name.
- * @param {?string} appId Target window's App ID or null for functions
- *     not requiring a window.
- * @param {Array.<*>} args Array of arguments.
- * @param {function(*)=} opt_callback Callback handling the function's result.
- * @return {Promise} Promise to be fulfilled with the result of the remote
- *     utility.
- */
-function callRemoteTestUtil(func, appId, args, opt_callback) {
-  return remoteCall.callRemoteTestUtil(func, appId, args, opt_callback);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowIdPrefix ID prefix of the requested window.
- * @return {Promise} promise Promise to be fulfilled with a found window's ID.
- */
-function waitForWindow(windowIdPrefix) {
-  return remoteCall.waitForWindow(windowIdPrefix);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId ID of the window to close.
- * @return {Promise} promise Promise to be fulfilled with the result (true:
- *     success, false: failed).
- */
-function closeWindowAndWait(windowId) {
-  return remoteCall.closeWindowAndWait(windowId);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Target window ID.
- * @param {number} width Requested width in pixels.
- * @param {number} height Requested height in pixels.
- */
-function waitForWindowGeometry(windowId, width, height) {
-  return remoteCall.waitForWindowGeometry(windowId, width, height);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Target window ID.
- * @param {string} query Query string for the element.
- * @param {string=} opt_iframeQuery Query string for the iframe containing the
- *     element.
- * @return {Promise} Promise to be fulfilled when the element appears.
- */
-function waitForElement(windowId, query, opt_iframeQuery) {
-  return remoteCall.waitForElement(windowId, query, opt_iframeQuery);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Target window ID.
- * @param {string} query Query string for the element.
- * @param {string=} opt_iframeQuery Query string for the iframe containing the
- *     element.
- * @return {Promise} Promise to be fulfilled when the element is lost.
- */
-function waitForElementLost(windowId, query, opt_iframeQuery) {
-  return remoteCall.waitForElementLost(windowId, query, opt_iframeQuery);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Target window ID.
- * @param {Array.<Array.<string>>} expected Expected contents of file list.
- * @param {{orderCheck:boolean=, ignoreLastModifiedTime:boolean=}=} opt_options
- *     Options of the comparison. If orderCheck is true, it also compares the
- *     order of files. If ignoreLastModifiedTime is true, it compares the file
- *     without its last modified time.
- * @return {Promise} Promise to be fulfilled when the file list turns to the
- *     given contents.
- */
-function waitForFiles(windowId, expected, opt_options) {
-  return remoteCall.waitForFiles(windowId, expected, opt_options);
-}
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Target window ID.
- * @param {number} lengthBefore Number of items visible before.
- * @return {Promise} Promise to be fulfilled with the contents of files.
- */
-function waitForFileListChange(windowId, lengthBefore) {
-  return remoteCall.waitForFileListChange(windowId, lengthBefore);
-};
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Target window ID.
- * @param {string} taskId Task ID to watch.
- * @return {Promise} Promise to be fulfilled when the task appears in the
- *     executed task list.
- */
-function waitUntilTaskExecutes(windowId, taskId) {
-  return remoteCall.waitUntilTaskExecutes(windowId, taskId);
-}
-
-/**
  * Adds check of chrome.test to the end of the given promise.
  * @param {Promise} promise Promise.
  */
@@ -148,21 +27,6 @@ function testPromise(promise) {
     chrome.test.fail(error.stack || error);
   });
 };
-
-/**
- * Wrapper function.
- * TODO(yoshiki): remove this. We should use methods in |remoteCall| directly.
- *
- * @param {string} windowId Window ID.
- * @param {string} query Query for the target element.
- * @param {string} keyIdentifer Key identifier.
- * @param {boolean} ctrlKey Control key flag.
- * @return {Promise} Promise to be fulfilled or rejected depending on the
- *     result.
- */
-function fakeKeyDown(windowId, query, keyIdentifer, ctrlKey) {
-  return remoteCall.fakeKeyDown(windowId, query, keyIdentifer, ctrlKey);
-}
 
 /**
  * Executes a sequence of test steps.
@@ -330,10 +194,10 @@ function openNewWindow(appState, initialRoot, opt_callback) {
         '/external' + initialRoot;
   }
 
-  return callRemoteTestUtil('openMainWindow',
-                            null,
-                            [processedAppState],
-                            opt_callback);
+  return remoteCall.callRemoteTestUtil('openMainWindow',
+                                       null,
+                                       [processedAppState],
+                                       opt_callback);
 }
 
 /**
@@ -356,10 +220,11 @@ function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
   var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
   var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
   var detailedTablePromise = windowPromise.then(function(windowId) {
-    return waitForElement(windowId, '#detail-table').then(function() {
-      // Wait until the elements are loaded in the table.
-      return waitForFileListChange(windowId, 0);
-    });
+    return remoteCall.waitForElement(windowId, '#detail-table').
+      then(function() {
+        // Wait until the elements are loaded in the table.
+        return remoteCall.waitForFileListChange(windowId, 0);
+      });
   });
 
   if (opt_callback)
@@ -384,7 +249,7 @@ function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
  * @param {function()} Completion callback.
  */
 function checkIfNoErrorsOccured(callback) {
-  callRemoteTestUtil('getErrorCount', null, [], function(count) {
+  remoteCall.callRemoteTestUtil('getErrorCount', null, [], function(count) {
     chrome.test.assertEq(0, count, 'The error count is not 0.');
     callback();
   });

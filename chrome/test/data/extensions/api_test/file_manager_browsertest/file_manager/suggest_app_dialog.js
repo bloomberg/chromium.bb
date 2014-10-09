@@ -31,12 +31,13 @@ testcase.suggestAppDialog = function() {
     function(inAppId, inFileListBefore) {
       appId = inAppId;
 
-      callRemoteTestUtil('selectFile', appId, ['unsupported.foo'], this.next);
+      remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['unsupported.foo'], this.next);
     },
     // Double-click the file.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'fakeMouseDoubleClick',
           appId,
           ['#file-list li.table-row[selected] .filename-label span'],
@@ -45,18 +46,20 @@ testcase.suggestAppDialog = function() {
     // Wait for the widget is loaded.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(appId, '#suggest-app-dialog webview[src]').then(this.next);
+      remoteCall.waitForElement(appId, '#suggest-app-dialog webview[src]').
+          then(this.next);
     },
     // Wait for the widget is initialized.
     function(result) {
       chrome.test.assertTrue(!!result);
-      waitForElement(appId, '#suggest-app-dialog:not(.show-spinner)').
+      remoteCall.waitForElement(
+          appId, '#suggest-app-dialog:not(.show-spinner)').
           then(this.next);
     },
     // Override task APIs for test.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'overrideTasks',
           appId,
           [[
@@ -73,7 +76,7 @@ testcase.suggestAppDialog = function() {
     // Override installWebstoreItem API for test.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'overrideInstallWebstoreItemApi',
           appId,
           [
@@ -85,7 +88,7 @@ testcase.suggestAppDialog = function() {
     // Initiate an installation from the widget.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'executeScriptInWebView',
           appId,
           ['#suggest-app-dialog webview',
@@ -95,12 +98,13 @@ testcase.suggestAppDialog = function() {
     // Wait until the installation is finished and the dialog is closed.
     function(result) {
       chrome.test.assertTrue(!!result);
-      waitForElementLost(appId, '#suggest-app-dialog').then(this.next);
+      remoteCall.waitForElementLost(appId, '#suggest-app-dialog').
+          then(this.next);
     },
     // Wait until the task is executed.
     function(result) {
       chrome.test.assertTrue(!!result);
-      waitUntilTaskExecutes(appId, 'dummytaskid|drive|open-with').
+      remoteCall.waitUntilTaskExecutes(appId, 'dummytaskid|drive|open-with').
           then(this.next);
     },
     // Check error

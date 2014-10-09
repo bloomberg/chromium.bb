@@ -24,30 +24,32 @@ testcase.restoreSortColumn = function() {
     // Sort by name.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('fakeMouseClick',
-                         appId,
-                         ['.table-header-cell:nth-of-type(1)'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeMouseClick',
+                                    appId,
+                                    ['.table-header-cell:nth-of-type(1)'],
+                                    this.next);
     },
     // Check the sorted style of the header.
     function() {
-      waitForElement(appId, '.table-header-sort-image-asc').then(this.next);
+      remoteCall.waitForElement(appId, '.table-header-sort-image-asc').
+          then(this.next);
     },
     // Sort by name.
     function() {
-      callRemoteTestUtil('fakeMouseClick',
-                         appId,
-                         ['.table-header-cell:nth-of-type(1)'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeMouseClick',
+                                    appId,
+                                    ['.table-header-cell:nth-of-type(1)'],
+                                    this.next);
     },
     // Check the sorted style of the header.
     function() {
-      waitForElement(appId, '.table-header-sort-image-desc').
+      remoteCall.waitForElement(appId, '.table-header-sort-image-desc').
           then(this.next);
     },
     // Check the sorted files.
     function() {
-      waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).then(this.next);
+      remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).
+          then(this.next);
     },
     // Open another window, where the sorted column should be restored.
     function() {
@@ -56,12 +58,13 @@ testcase.restoreSortColumn = function() {
     // Check the sorted style of the header.
     function(inAppId) {
       appId = inAppId;
-      waitForElement(appId, '.table-header-sort-image-desc').
+      remoteCall.waitForElement(appId, '.table-header-sort-image-desc').
           then(this.next);
     },
     // Check the sorted files.
     function() {
-      waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).then(this.next);
+      remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).
+          then(this.next);
     },
     // Check the error.
     function() {
@@ -83,19 +86,21 @@ testcase.restoreCurrentView = function() {
     // Check the initial view.
     function(inAppId) {
       appId = inAppId;
-      waitForElement(appId, '.thumbnail-grid[hidden]').then(this.next);
+      remoteCall.waitForElement(appId, '.thumbnail-grid[hidden]').
+          then(this.next);
     },
     // Change the current view.
     function() {
-      callRemoteTestUtil('fakeMouseClick',
-                         appId,
-                         ['#view-button'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeMouseClick',
+                                    appId,
+                                    ['#view-button'],
+                                    this.next);
     },
     // Check the new current view.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(appId, '.detail-table[hidden]').then(this.next);
+      remoteCall.waitForElement(appId, '.detail-table[hidden]').
+          then(this.next);
     },
     // Open another window, where the current view is restored.
     function() {
@@ -104,7 +109,7 @@ testcase.restoreCurrentView = function() {
     // Check the current view.
     function(inAppId) {
       appId = inAppId;
-      waitForElement(appId, '.detail-table[hidden]').then(this.next);
+      remoteCall.waitForElement(appId, '.detail-table[hidden]').then(this.next);
     },
     // Check the error.
     function() {

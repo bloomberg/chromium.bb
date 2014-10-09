@@ -75,7 +75,7 @@ function videoOpen(path) {
     function(inAppId) {
       appId = inAppId;
       // Select the song.
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'openFile', appId, ['world.ogv'], this.next);
     },
     function(result) {

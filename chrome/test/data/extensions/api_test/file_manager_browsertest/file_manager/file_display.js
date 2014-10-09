@@ -33,7 +33,8 @@ function fileDisplay(path) {
     },
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFileListChange(appId, expectedFilesBefore.length).then(this.next);
+      remoteCall.waitForFileListChange(appId, expectedFilesBefore.length).
+          then(this.next);
     },
     // Confirm the file list.
     function(actualFilesAfter) {
@@ -69,17 +70,19 @@ testcase.fileDisplayMtp = function() {
     // Wait for the mount.
     function(result) {
       chrome.test.assertTrue(JSON.parse(result));
-      waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
+      remoteCall.waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
     },
     // Click the MTP volume.
     function() {
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, [MTP_VOLUME_QUERY], this.next);
     },
     // Wait for the file list to change.
     function(appIds) {
-      waitForFiles(appId, TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET),
-                   {ignoreLastModifiedTime: true}).then(this.next);
+      remoteCall.waitForFiles(
+          appId,
+          TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET),
+          {ignoreLastModifiedTime: true}).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);

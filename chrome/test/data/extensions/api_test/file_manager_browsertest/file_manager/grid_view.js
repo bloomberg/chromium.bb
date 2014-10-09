@@ -21,16 +21,16 @@ function showGridView(rootPath, expectedSet) {
   var setupPromise = setupAndWaitUntilReady(null, rootPath);
   return setupPromise.then(function(windowId) {
     // Click the grid view button.
-    var clickedPromise = waitForElement(windowId, '#view-button').then(
-        function() {
-          return callRemoteTestUtil(
+    var clickedPromise = remoteCall.waitForElement(windowId, '#view-button').
+        then(function() {
+          return remoteCall.callRemoteTestUtil(
               'fakeEvent', windowId, ['#view-button', 'click']);
         });
 
     // Compare the grid labels of the entries.
     return clickedPromise.then(function() {
       return repeatUntil(function() {
-        var labelsPromise = callRemoteTestUtil(
+        var labelsPromise = remoteCall.callRemoteTestUtil(
             'queryAllElements',
             windowId,
             ['grid:not([hidden]) .thumbnail-item .entry-name']);

@@ -18,21 +18,21 @@ testcase.restoreGeometry = function() {
     // Resize the window to minimal dimensions.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'resizeWindow', appId, [640, 480], this.next);
     },
     // Check the current window's size.
     function(inAppId) {
-      waitForWindowGeometry(appId, 640, 480).then(this.next);
+      remoteCall.waitForWindowGeometry(appId, 640, 480).then(this.next);
     },
     // Enlarge the window by 10 pixels.
     function(result) {
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'resizeWindow', appId, [650, 490], this.next);
     },
     // Check the current window's size.
     function() {
-      waitForWindowGeometry(appId, 650, 490).then(this.next);
+      remoteCall.waitForWindowGeometry(appId, 650, 490).then(this.next);
     },
     // Open another window, where the current view is restored.
     function() {
@@ -41,7 +41,7 @@ testcase.restoreGeometry = function() {
     // Check the next window's size.
     function(inAppId) {
       appId2 = inAppId;
-      waitForWindowGeometry(appId2, 650, 490).then(this.next);
+      remoteCall.waitForWindowGeometry(appId2, 650, 490).then(this.next);
     },
     // Check for errors.
     function() {

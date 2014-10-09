@@ -23,46 +23,47 @@ function zipOpen(path) {
     // Wait for going back.
     function(inAppId) {
       appId = inAppId;
-      waitForElement(appId, '#detail-table').then(this.next);
+      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
     },
     function() {
-      waitForFiles(appId, [ENTRIES.zipArchive.getExpectedRow()]).
+      remoteCall.waitForFiles(appId, [ENTRIES.zipArchive.getExpectedRow()]).
           then(this.next);
     },
     // Open a file.
     function(result) {
-      callRemoteTestUtil('openFile',
-                         appId,
-                         [ENTRIES.zipArchive.nameText],
-                         this.next);
+      remoteCall.callRemoteTestUtil('openFile',
+                                    appId,
+                                    [ENTRIES.zipArchive.nameText],
+                                    this.next);
     },
     // Wait for ZIP contents.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId,
-                   [[
-                     'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt',
-                     '21 bytes',
-                     'Plain text',
-                     ''
-                   ]],
-                   {ignoreLastModifiedTime: true}).then(this.next);
+      remoteCall.waitForFiles(appId,
+                              [[
+                                'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt',
+                                '21 bytes',
+                                 'Plain text',
+                                ''
+                              ]],
+                              {ignoreLastModifiedTime: true}).then(this.next);
     },
     // Unmount the zip.
     function(result) {
-      waitForElement(appId, '.root-eject', this.next).then(this.next);
+      remoteCall.waitForElement(appId, '.root-eject', this.next).
+          then(this.next);
     },
     // Unmount the zip.
     function(element) {
-      callRemoteTestUtil('fakeMouseClick',
-                         appId,
-                         ['.root-eject'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeMouseClick',
+                                    appId,
+                                    ['.root-eject'],
+                                    this.next);
     },
     // Wait for going back.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId, [ENTRIES.zipArchive.getExpectedRow()]).
+      remoteCall.waitForFiles(appId, [ENTRIES.zipArchive.getExpectedRow()]).
           then(this.next);
     },
     function() {

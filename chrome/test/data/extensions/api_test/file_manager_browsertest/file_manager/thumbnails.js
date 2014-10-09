@@ -17,15 +17,16 @@ testcase.thumbnailsDownloads = function() {
     // Select the image.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('selectFile',
-                         appId,
-                         ['My Desktop Background.png'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('selectFile',
+                                    appId,
+                                    ['My Desktop Background.png'],
+                                    this.next);
     },
     // Wait until the thumbnail shows up.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(appId, '.preview-thumbnails .img-container img').
+      remoteCall.waitForElement(
+          appId, '.preview-thumbnails .img-container img').
           then(this.next);
     },
     // Verify the thumbnail.

@@ -18,34 +18,34 @@ function traverseDirectories(path) {
     // Check the initial view.
     function(inAppId) {
       appId = inAppId;
-      waitForElement(appId, '#detail-table').then(this.next);
+      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
     },
     function() {
       addEntries(['local', 'drive'], NESTED_ENTRY_SET, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId, [ENTRIES.directoryA.getExpectedRow()]).
+      remoteCall.waitForFiles(appId, [ENTRIES.directoryA.getExpectedRow()]).
           then(this.next);
     },
     // Open the directory
     function() {
-      callRemoteTestUtil('openFile', appId, ['A'], this.next);
+      remoteCall.callRemoteTestUtil('openFile', appId, ['A'], this.next);
     },
     // Check the contents of current directory.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId, [ENTRIES.directoryB.getExpectedRow()]).
+      remoteCall.waitForFiles(appId, [ENTRIES.directoryB.getExpectedRow()]).
           then(this.next);
     },
     // Open the directory
     function() {
-      callRemoteTestUtil('openFile', appId, ['B'], this.next);
+      remoteCall.callRemoteTestUtil('openFile', appId, ['B'], this.next);
     },
     // Check the contents of current directory.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]).
+      remoteCall.waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]).
           then(this.next);
     },
     // Check the error.

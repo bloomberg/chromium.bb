@@ -19,13 +19,13 @@ testcase.openSidebarRecent = function() {
     // Click the icon of the Recent volume.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
         'selectVolume', appId, ['drive_recent'], this.next);
     },
     // Wait until the file list is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
           then(this.next);
     },
     // Verify the file list.
@@ -53,13 +53,13 @@ testcase.openSidebarOffline = function() {
     // Click the icon of the Offline volume.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
         'selectVolume', appId, ['drive_offline'], this.next);
     },
     // Wait until the file list is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
           then(this.next);
     },
     // Verify the file list.
@@ -87,14 +87,14 @@ testcase.openSidebarSharedWithMe = function() {
     function(inAppId) {
       appId = inAppId;
       // Use the icon for a click target.
-      callRemoteTestUtil('selectVolume',
-                         appId,
-                         ['drive_shared_with_me'], this.next);
+      remoteCall.callRemoteTestUtil('selectVolume',
+                                    appId,
+                                    ['drive_shared_with_me'], this.next);
     },
     // Wait until the file list is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
           then(this.next);
     },
     // Verify the file list.
@@ -125,33 +125,33 @@ testcase.autocomplete = function() {
     // Focus the search box.
     function(inAppId, list) {
       appId = inAppId;
-      callRemoteTestUtil('fakeEvent',
-                         appId,
-                         ['#search-box input', 'focus'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'focus'],
+                                    this.next);
     },
     // Input a text.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('inputText',
-                         appId,
-                         ['#search-box input', 'hello'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('inputText',
+                                    appId,
+                                    ['#search-box input', 'hello'],
+                                    this.next);
     },
     // Notify the element of the input.
     function() {
-      callRemoteTestUtil('fakeEvent',
-                         appId,
-                         ['#search-box input', 'input'],
-                         this.next);
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'input'],
+                                    this.next);
     },
     // Wait for the auto complete list getting the expected contents.
     function(result) {
       chrome.test.assertTrue(result);
       repeatUntil(function() {
-        return callRemoteTestUtil('queryAllElements',
-                                  appId,
-                                  ['#autocomplete-list li']).
+        return remoteCall.callRemoteTestUtil('queryAllElements',
+                                             appId,
+                                             ['#autocomplete-list li']).
             then(function(elements) {
               var list = elements.map(
                   function(element) { return element.text; });

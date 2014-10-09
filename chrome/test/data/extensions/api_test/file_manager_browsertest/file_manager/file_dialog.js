@@ -22,27 +22,29 @@ function openAndWaitForClosingDialog(volumeName, expectedSet, closeDialog) {
         function(entry) { fulfill(entry); });
   });
 
-  return waitForWindow('dialog#').then(function(windowId) {
-    return waitForElement(windowId, '#file-list').
+  return remoteCall.waitForWindow('dialog#').then(function(windowId) {
+    return remoteCall.waitForElement(windowId, '#file-list').
         then(function() {
           // Wait for initialization of Files.app.
-          return waitForFiles(
+          return remoteCall.waitForFiles(
               windowId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
         }).
         then(function() {
-          return callRemoteTestUtil('selectVolume', windowId, [volumeName]);
+          return remoteCall.callRemoteTestUtil(
+              'selectVolume', windowId, [volumeName]);
         }).
         then(function() {
           var expectedRows = TestEntryInfo.getExpectedRows(expectedSet);
-          return waitForFiles(windowId, expectedRows);
+          return remoteCall.waitForFiles(windowId, expectedRows);
         }).
         then(function() {
-          return callRemoteTestUtil('selectFile', windowId, ['hello.txt']);
+          return remoteCall.callRemoteTestUtil(
+              'selectFile', windowId, ['hello.txt']);
         }).
         then(closeDialog.bind(null, windowId)).
         then(function() {
           return repeatUntil(function() {
-            return callRemoteTestUtil('getWindows', null, []).
+            return remoteCall.callRemoteTestUtil('getWindows', null, []).
                 then(function(windows) {
                   if (windows[windowId])
                     return pending('Window %s does not hide.', windowId);
@@ -73,9 +75,10 @@ function openFileDialog(volumeName, expectedSet) {
         volumeName,
         expectedSet,
         function(windowId) {
-          return waitForElement(windowId, '.button-panel button.cancel').then(
-              function() {
-                return callRemoteTestUtil(
+          return remoteCall.waitForElement(windowId,
+                                           '.button-panel button.cancel').
+              then(function() {
+                return remoteCall.callRemoteTestUtil(
                     'fakeEvent',
                     windowId,
                     ['.button-panel button.cancel', 'click']);
@@ -91,7 +94,7 @@ function openFileDialog(volumeName, expectedSet) {
         volumeName,
         expectedSet,
         function(windowId) {
-          return callRemoteTestUtil(
+          return remoteCall.callRemoteTestUtil(
               'fakeKeyDown',
               windowId,
               ['#file-list', 'U+001B', false]);
@@ -106,9 +109,9 @@ function openFileDialog(volumeName, expectedSet) {
         volumeName,
         expectedSet,
         function(windowId) {
-          return waitForElement(windowId, '.button-panel button.ok').then(
-              function() {
-                return callRemoteTestUtil(
+          return remoteCall.waitForElement(windowId, '.button-panel button.ok').
+              then(function() {
+                return remoteCall.callRemoteTestUtil(
                     'fakeEvent',
                     windowId,
                     ['.button-panel button.ok', 'click']);

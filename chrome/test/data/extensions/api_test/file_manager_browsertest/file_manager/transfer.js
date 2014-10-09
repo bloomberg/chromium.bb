@@ -32,38 +32,38 @@ function copyBetweenVolumes(targetFile,
     // Select the source volume.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'selectVolume', appId, [srcName], this.next);
     },
     // Wait for the expected files to appear in the file list.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId, srcContents).then(this.next);
+      remoteCall.waitForFiles(appId, srcContents).then(this.next);
     },
     // Select the source file.
     function() {
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'selectFile', appId, [targetFile.nameText], this.next);
     },
     // Copy the file.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('execCommand', appId, ['copy'], this.next);
+      remoteCall.callRemoteTestUtil('execCommand', appId, ['copy'], this.next);
     },
     // Select the destination volume.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
+      remoteCall.callRemoteTestUtil(
           'selectVolume', appId, [dstName], this.next);
     },
     // Wait for the expected files to appear in the file list.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForFiles(appId, dstContents).then(this.next);
+      remoteCall.waitForFiles(appId, dstContents).then(this.next);
     },
     // Paste the file.
     function() {
-      callRemoteTestUtil('execCommand', appId, ['paste'], this.next);
+      remoteCall.callRemoteTestUtil('execCommand', appId, ['paste'], this.next);
     },
     // Wait for the file list to change.
     function(result) {
@@ -84,7 +84,7 @@ function copyBetweenVolumes(targetFile,
         }
       }
       dstContentsAfterPaste.push(pasteFile);
-      waitForFiles(appId, dstContentsAfterPaste, {
+      remoteCall.waitForFiles(appId, dstContentsAfterPaste, {
         ignoreFileSize: ignoreFileSize,
         ignoreLastModifiedTime: true
       }).then(this.next);
