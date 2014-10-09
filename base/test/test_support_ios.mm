@@ -70,6 +70,7 @@ static char** g_argv;
 
   // Yes, this is leaked, it's just to make what's running visible.
   window_.reset([[UIWindow alloc] initWithFrame:bounds]);
+  [window_ setBackgroundColor:[UIColor whiteColor]];
   [window_ makeKeyAndVisible];
 
   // Add a label with the app name.
