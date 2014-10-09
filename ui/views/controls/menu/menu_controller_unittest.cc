@@ -61,7 +61,7 @@ class TestNullTargeter : public ui::EventTargeter {
   virtual ~TestNullTargeter() {}
 
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                              ui::Event* event) OVERRIDE {
+                                              ui::Event* event) override {
     return NULL;
   }
 
@@ -82,7 +82,7 @@ class TestDispatcherClient : public aura::client::DispatcherClient {
   virtual void PrepareNestedLoopClosures(
       base::MessagePumpDispatcher* dispatcher,
       base::Closure* run_closure,
-      base::Closure* quit_closure) OVERRIDE {
+      base::Closure* quit_closure) override {
     scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
     *quit_closure = run_loop->QuitClosure();
     *run_closure = base::Bind(&TestDispatcherClient::RunNestedDispatcher,

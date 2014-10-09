@@ -261,7 +261,7 @@ class DesktopAuraTopLevelWindowTest
   // views::TestViewsDelegate overrides.
   virtual void OnBeforeWidgetInit(
       Widget::InitParams* params,
-      internal::NativeWidgetDelegate* delegate) OVERRIDE {
+      internal::NativeWidgetDelegate* delegate) override {
     if (!params->native_widget)
       params->native_widget = new views::DesktopNativeWidgetAura(delegate);
   }
@@ -311,7 +311,7 @@ class DesktopAuraTopLevelWindowTest
     top_level_widget_->CloseNow();
   }
 
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     window->RemoveObserver(this);
     if (window == owned_window_) {
       owned_window_destroyed_ = true;

@@ -45,26 +45,26 @@ class TestScreen : public gfx::Screen,
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowDestroying(Window* window) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
+  virtual void OnWindowDestroying(Window* window) override;
 
   // gfx::Screen overrides:
-  virtual bool IsDIPEnabled() OVERRIDE;
-  virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
-  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE;
+  virtual bool IsDIPEnabled() override;
+  virtual gfx::Point GetCursorScreenPoint() override;
+  virtual gfx::NativeWindow GetWindowUnderCursor() override;
   virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      OVERRIDE;
-  virtual int GetNumDisplays() const OVERRIDE;
-  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE;
+      override;
+  virtual int GetNumDisplays() const override;
+  virtual std::vector<gfx::Display> GetAllDisplays() const override;
   virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const OVERRIDE;
+      gfx::NativeView view) const override;
   virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE;
+      const gfx::Point& point) const override;
   virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const OVERRIDE;
-  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
-  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
+      const gfx::Rect& match_rect) const override;
+  virtual gfx::Display GetPrimaryDisplay() const override;
+  virtual void AddObserver(gfx::DisplayObserver* observer) override;
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
   explicit TestScreen(const gfx::Rect& screen_bounds);

@@ -125,13 +125,13 @@ class ViewLayerOwner : public ui::LayerOwner,
 
  private:
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
     // TODO(beng): paint processor.
   }
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
     // TODO(beng): ???
   }
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+  virtual base::Closure PrepareForLayerBoundsChange() override {
     return base::Bind(&ViewLayerOwner::OnLayerBoundsChanged,
                       base::Unretained(this));
   }

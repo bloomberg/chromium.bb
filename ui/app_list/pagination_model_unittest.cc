@@ -61,9 +61,9 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   }
 
   // PaginationModelObserver overrides:
-  virtual void TotalPagesChanged() OVERRIDE {}
+  virtual void TotalPagesChanged() override {}
   virtual void SelectedPageChanged(int old_selected,
-                                   int new_selected) OVERRIDE {
+                                   int new_selected) override {
     AppendSelectedPage(new_selected);
     ++selection_count_;
     if (expected_page_selection_ &&
@@ -72,10 +72,10 @@ class TestPaginationModelObserver : public PaginationModelObserver {
     }
   }
 
-  virtual void TransitionStarted() OVERRIDE {
+  virtual void TransitionStarted() override {
   }
 
-  virtual void TransitionChanged() OVERRIDE {
+  virtual void TransitionChanged() override {
     if (transition_page_ == -1 ||
         model_->transition().target_page == transition_page_) {
       if (model_->transition().progress == 0)
@@ -117,13 +117,13 @@ class PaginationModelTest : public testing::Test {
   virtual ~PaginationModelTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     pagination_.SetTotalPages(5);
     pagination_.SetTransitionDurations(1, 1);
     observer_.set_model(&pagination_);
     pagination_.AddObserver(&observer_);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     pagination_.RemoveObserver(&observer_);
     observer_.set_model(NULL);
   }

@@ -24,10 +24,10 @@ class DialogExample : public DialogDelegateView {
  public:
   DialogExample();
   virtual ~DialogExample();
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual View* CreateExtraView() OVERRIDE;
-  virtual View* CreateTitlebarExtraView() OVERRIDE;
-  virtual View* CreateFootnoteView() OVERRIDE;
+  virtual base::string16 GetWindowTitle() const override;
+  virtual View* CreateExtraView() override;
+  virtual View* CreateTitlebarExtraView() override;
+  virtual View* CreateFootnoteView() override;
 };
 
 DialogExample::DialogExample() {

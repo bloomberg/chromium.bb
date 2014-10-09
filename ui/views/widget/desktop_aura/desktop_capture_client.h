@@ -38,10 +38,10 @@ class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
   virtual ~DesktopCaptureClient();
 
   // Overridden from aura::client::CaptureClient:
-  virtual void SetCapture(aura::Window* window) OVERRIDE;
-  virtual void ReleaseCapture(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetCaptureWindow() OVERRIDE;
-  virtual aura::Window* GetGlobalCaptureWindow() OVERRIDE;
+  virtual void SetCapture(aura::Window* window) override;
+  virtual void ReleaseCapture(aura::Window* window) override;
+  virtual aura::Window* GetCaptureWindow() override;
+  virtual aura::Window* GetGlobalCaptureWindow() override;
 
  private:
   typedef std::set<DesktopCaptureClient*> CaptureClients;

@@ -69,10 +69,10 @@ class ItemModelObserverBridge : public app_list::AppListItemObserver {
   AppListItem* model() { return model_; }
   NSMenu* GetContextMenu();
 
-  virtual void ItemIconChanged() OVERRIDE;
-  virtual void ItemNameChanged() OVERRIDE;
-  virtual void ItemIsInstallingChanged() OVERRIDE;
-  virtual void ItemPercentDownloadedChanged() OVERRIDE;
+  virtual void ItemIconChanged() override;
+  virtual void ItemNameChanged() override;
+  virtual void ItemIsInstallingChanged() override;
+  virtual void ItemPercentDownloadedChanged() override;
 
  private:
   AppsGridViewItem* parent_;  // Weak. Owns us.

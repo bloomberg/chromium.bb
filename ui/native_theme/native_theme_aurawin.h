@@ -23,12 +23,12 @@ class NATIVE_THEME_EXPORT NativeThemeAuraWin : public NativeThemeAura {
   // Overridden from NativeThemeBase:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
-                                const ExtraParams& extra) const OVERRIDE;
+                                const ExtraParams& extra) const override;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
-                     const ExtraParams& extra) const OVERRIDE;
+                     const ExtraParams& extra) const override;
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAuraWin);
 };
 

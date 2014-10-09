@@ -33,21 +33,21 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   static Widget* CreateBubble(BubbleDelegateView* bubble_delegate);
 
   // WidgetDelegateView overrides:
-  virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
-  virtual bool ShouldShowCloseButton() const OVERRIDE;
-  virtual View* GetContentsView() OVERRIDE;
-  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual BubbleDelegateView* AsBubbleDelegate() override;
+  virtual bool ShouldShowCloseButton() const override;
+  virtual View* GetContentsView() override;
+  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // WidgetObserver overrides:
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) override;
   virtual void OnWidgetVisibilityChanging(Widget* widget, bool visible)
-      OVERRIDE;
+      override;
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible)
-      OVERRIDE;
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
+      override;
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) override;
   virtual void OnWidgetBoundsChanged(Widget* widget,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
 
   bool close_on_esc() const { return close_on_esc_; }
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
@@ -119,8 +119,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual const gfx::FontList& GetTitleFontList() const;
 
   // View overrides:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();

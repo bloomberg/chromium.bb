@@ -23,14 +23,14 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
   FocusManager* GetFocusManager();
 
   // Overridden from ViewsTestBase:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Overridden from WidgetDelegate:
-  virtual View* GetContentsView() OVERRIDE;
-  virtual Widget* GetWidget() OVERRIDE;
-  virtual const Widget* GetWidget() const OVERRIDE;
-  virtual void GetAccessiblePanes(std::vector<View*>* panes) OVERRIDE;
+  virtual View* GetContentsView() override;
+  virtual Widget* GetWidget() override;
+  virtual const Widget* GetWidget() const override;
+  virtual void GetAccessiblePanes(std::vector<View*>* panes) override;
 
  protected:
   // Called after the Widget is initialized and the content view is added.
@@ -65,9 +65,9 @@ class TestFocusChangeListener : public FocusChangeListener {
 
   // Overridden from FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
+                                 View* focused_now) override;
   virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
+                                View* focused_now) override;
 
  private:
   // A vector of which views lost/gained focus.
@@ -91,7 +91,7 @@ class TestWidgetFocusChangeListener : public WidgetFocusChangeListener {
 
   // Overridden from WidgetFocusChangeListener:
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) OVERRIDE;
+                                   gfx::NativeView focused_now) override;
 
  private:
   // Pairs of (focused_before, focused_now) parameters we've received via calls

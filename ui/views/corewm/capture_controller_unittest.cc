@@ -30,7 +30,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
  public:
   CaptureControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AuraTestBase::SetUp();
     capture_controller_.reset(new wm::ScopedCaptureClient(root_window()));
 
@@ -50,7 +50,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 #endif
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     RunAllPendingInMessageLoop();
 
 #if !defined(OS_CHROMEOS)

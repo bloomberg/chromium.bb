@@ -34,10 +34,10 @@ class InvertingObserver : public ImplicitAnimationObserver {
       inverse_layers_.push_back(inverse_layer);
     }
 
-    virtual void OnImplicitAnimationsCompleted() OVERRIDE {}
+    virtual void OnImplicitAnimationsCompleted() override {}
 
     virtual void OnLayerAnimationScheduled(
-        LayerAnimationSequence* sequence) OVERRIDE {
+        LayerAnimationSequence* sequence) override {
       DCHECK(base_layer_  != NULL)
         << "Must set base layer with ScopedLayerAnimationSettings::"
         << "SetInverslyAnimatedBaseLayer";

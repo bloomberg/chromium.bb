@@ -50,18 +50,18 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   gfx::Size GetSizeForWidthAndLines(int width, int lines);
 
   // views::View:
-  virtual int GetBaseline() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
+  virtual int GetBaseline() const override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
   virtual void Paint(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) OVERRIDE;
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+                     const views::CullSet& cull_set) override;
+  virtual bool CanProcessEventsWithinSubtree() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
   // Overridden from views::View.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
   friend class test::BoundedLabelTest;

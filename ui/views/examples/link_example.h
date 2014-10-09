@@ -19,11 +19,11 @@ class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
   virtual ~LinkExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // LinkListener:
-  virtual void LinkClicked(Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(Link* source, int event_flags) override;
 
   Link* link_;
 

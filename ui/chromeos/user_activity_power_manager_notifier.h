@@ -26,7 +26,7 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
   virtual ~UserActivityPowerManagerNotifier();
 
   // UserActivityObserver implementation.
-  virtual void OnUserActivity(const Event* event) OVERRIDE;
+  virtual void OnUserActivity(const Event* event) override;
 
  private:
   ::wm::UserActivityDetector* detector_;  // not owned

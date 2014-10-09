@@ -47,7 +47,7 @@ class WindowAnimationsTest : public aura::test::AuraTestBase {
  public:
   WindowAnimationsTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     AuraTestBase::TearDown();
   }
 
@@ -258,13 +258,13 @@ class NotifyHideCompletedAnimationHost : public aura::client::AnimationHost {
   virtual ~NotifyHideCompletedAnimationHost() {}
 
   // Overridden from TestWindowDelegate:
-  virtual void OnWindowHidingAnimationCompleted() OVERRIDE {
+  virtual void OnWindowHidingAnimationCompleted() override {
     hide_completed_ = true;
   }
 
   virtual void SetHostTransitionOffsets(
       const gfx::Vector2d& top_left,
-      const gfx::Vector2d& bottom_right) OVERRIDE {}
+      const gfx::Vector2d& bottom_right) override {}
 
   bool hide_completed() const { return hide_completed_; }
 

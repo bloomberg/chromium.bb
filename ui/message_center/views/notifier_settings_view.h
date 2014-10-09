@@ -41,10 +41,10 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
 
   // Overridden from NotifierSettingsDelegate:
   virtual void UpdateIconImage(const NotifierId& notifier_id,
-                               const gfx::Image& icon) OVERRIDE;
-  virtual void NotifierGroupChanged() OVERRIDE;
+                               const gfx::Image& icon) override;
+  virtual void NotifierGroupChanged() override;
   virtual void NotifierEnabledChanged(const NotifierId& notifier_id,
-                                      bool enabled) OVERRIDE;
+                                      bool enabled) override;
 
   void set_provider(NotifierSettingsProvider* new_provider) {
     provider_ = new_provider;
@@ -72,8 +72,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
    private:
     // Overridden from views::ButtonListener:
     virtual void ButtonPressed(views::Button* button,
-                               const ui::Event& event) OVERRIDE;
-    virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+                               const ui::Event& event) override;
+    virtual void GetAccessibleState(ui::AXViewState* state) override;
 
     bool ShouldHaveLearnMoreButton() const;
     // Helper function to reset the layout when the view has substantially
@@ -96,19 +96,19 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   void UpdateContentsView(const std::vector<Notifier*>& notifiers);
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
+                                   const gfx::Point& point) override;
 
   views::ImageButton* title_arrow_;
   views::Label* title_label_;

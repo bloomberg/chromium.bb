@@ -45,7 +45,7 @@ class TestEventRewriteProcessor : public test::TestEventProcessor {
   void CheckAllReceived() { EXPECT_TRUE(expected_events_.empty()); }
 
   // EventProcessor:
-  virtual EventDispatchDetails OnEventFromSource(Event* event) OVERRIDE {
+  virtual EventDispatchDetails OnEventFromSource(Event* event) override {
     EXPECT_FALSE(expected_events_.empty());
     EXPECT_EQ(expected_events_.front(), event->type());
     expected_events_.pop_front();
@@ -62,7 +62,7 @@ class TestEventRewriteSource : public EventSource {
  public:
   explicit TestEventRewriteSource(EventProcessor* processor)
       : processor_(processor) {}
-  virtual EventProcessor* GetEventProcessor() OVERRIDE { return processor_; }
+  virtual EventProcessor* GetEventProcessor() override { return processor_; }
   void Send(EventType type) {
     scoped_ptr<Event> event(new TestEvent(type));
     (void)SendEventToProcessor(event.get());
@@ -85,14 +85,14 @@ class TestConstantEventRewriter : public EventRewriter {
 
   virtual EventRewriteStatus RewriteEvent(const Event& event,
                                           scoped_ptr<Event>* rewritten_event)
-      OVERRIDE {
+      override {
     if (status_ == EVENT_REWRITE_REWRITTEN)
       rewritten_event->reset(new TestEvent(type_));
     return status_;
   }
   virtual EventRewriteStatus NextDispatchEvent(const Event& last_event,
                                                scoped_ptr<Event>* new_event)
-      OVERRIDE {
+      override {
     NOTREACHED();
     return status_;
   }
@@ -115,7 +115,7 @@ class TestStateMachineEventRewriter : public EventRewriter {
   }
   virtual EventRewriteStatus RewriteEvent(const Event& event,
                                           scoped_ptr<Event>* rewritten_event)
-      OVERRIDE {
+      override {
     RewriteRules::iterator find =
         rules_.find(RewriteCase(state_, event.type()));
     if (find == rules_.end())
@@ -132,7 +132,7 @@ class TestStateMachineEventRewriter : public EventRewriter {
   }
   virtual EventRewriteStatus NextDispatchEvent(const Event& last_event,
                                                scoped_ptr<Event>* new_event)
-      OVERRIDE {
+      override {
     EXPECT_TRUE(last_rewritten_event_);
     const TestEvent* arg_last = static_cast<const TestEvent*>(&last_event);
     EXPECT_EQ(last_rewritten_event_->unique_id(), arg_last->unique_id());

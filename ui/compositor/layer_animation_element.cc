@@ -35,13 +35,13 @@ class Pause : public LayerAnimationElement {
   virtual ~Pause() {}
 
  private:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {}
   virtual bool OnProgress(double t,
-                          LayerAnimationDelegate* delegate) OVERRIDE {
+                          LayerAnimationDelegate* delegate) override {
     return false;
   }
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {}
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnGetTarget(TargetValue* target) const override {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
   DISALLOW_COPY_AND_ASSIGN(Pause);
 };
@@ -57,21 +57,21 @@ class TransformTransition : public LayerAnimationElement {
   virtual ~TransformTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetTransformForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetTransformFromAnimation(
         gfx::Tween::TransformValueBetween(t, start_, target_));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->transform = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   gfx::Transform start_;
@@ -92,20 +92,20 @@ class InterpolatedTransformTransition : public LayerAnimationElement {
   virtual ~InterpolatedTransformTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetTransformFromAnimation(
         interpolated_transform_->Interpolate(static_cast<float>(t)));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->transform = interpolated_transform_->Interpolate(1.0f);
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   scoped_ptr<InterpolatedTransform> interpolated_transform_;
@@ -124,21 +124,21 @@ class BoundsTransition : public LayerAnimationElement {
   virtual ~BoundsTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetBoundsForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetBoundsFromAnimation(
         gfx::Tween::RectValueBetween(t, start_, target_));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->bounds = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   gfx::Rect start_;
@@ -159,21 +159,21 @@ class OpacityTransition : public LayerAnimationElement {
   virtual ~OpacityTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetOpacityForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetOpacityFromAnimation(
         gfx::Tween::FloatValueBetween(t, start_, target_));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->opacity = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   float start_;
@@ -194,20 +194,20 @@ class VisibilityTransition : public LayerAnimationElement {
   virtual ~VisibilityTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetVisibilityForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetVisibilityFromAnimation(t == 1.0 ? target_ : start_);
     return t == 1.0;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->visibility = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   bool start_;
@@ -228,21 +228,21 @@ class BrightnessTransition : public LayerAnimationElement {
   virtual ~BrightnessTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetBrightnessForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetBrightnessFromAnimation(
         gfx::Tween::FloatValueBetween(t, start_, target_));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->brightness = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   float start_;
@@ -263,21 +263,21 @@ class GrayscaleTransition : public LayerAnimationElement {
   virtual ~GrayscaleTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetGrayscaleForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetGrayscaleFromAnimation(
         gfx::Tween::FloatValueBetween(t, start_, target_));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->grayscale = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   float start_;
@@ -298,21 +298,21 @@ class ColorTransition : public LayerAnimationElement {
   virtual ~ColorTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetColorForAnimation();
   }
 
-  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetColorFromAnimation(
         gfx::Tween::ColorValueBetween(t, start_, target_));
     return true;
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->color = target_;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
   SkColor start_;
@@ -331,7 +331,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
   }
   virtual ~ThreadedLayerAnimationElement() {}
 
-  virtual bool IsThreaded() const OVERRIDE {
+  virtual bool IsThreaded() const override {
     return (duration() != base::TimeDelta());
   }
 
@@ -341,7 +341,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
   }
 
   virtual bool OnProgress(double t,
-                          LayerAnimationDelegate* delegate) OVERRIDE {
+                          LayerAnimationDelegate* delegate) override {
     if (t < 1.0)
       return false;
 
@@ -353,14 +353,14 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
     return true;
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
       delegate->RemoveThreadedAnimation(animation_id());
     }
   }
 
   virtual void RequestEffectiveStart(
-      LayerAnimationDelegate* delegate) OVERRIDE {
+      LayerAnimationDelegate* delegate) override {
     DCHECK(animation_group_id());
     if (duration() == base::TimeDelta()) {
       set_effective_start_time(requested_start_time());
@@ -392,11 +392,11 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
   virtual ~ThreadedOpacityTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetOpacityForAnimation();
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
       delegate->SetOpacityFromAnimation(gfx::Tween::FloatValueBetween(
@@ -406,11 +406,11 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
     }
   }
 
-  virtual void OnEnd(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnEnd(LayerAnimationDelegate* delegate) override {
     delegate->SetOpacityFromAnimation(target_);
   }
 
-  virtual scoped_ptr<cc::Animation> CreateCCAnimation() OVERRIDE {
+  virtual scoped_ptr<cc::Animation> CreateCCAnimation() override {
     scoped_ptr<cc::AnimationCurve> animation_curve(
         new FloatAnimationCurveAdapter(tween_type(),
                                        start_,
@@ -424,7 +424,7 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
     return animation.Pass();
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->opacity = target_;
   }
 
@@ -447,11 +447,11 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   virtual ~ThreadedTransformTransition() {}
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetTransformForAnimation();
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
       delegate->SetTransformFromAnimation(gfx::Tween::TransformValueBetween(
@@ -461,11 +461,11 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
     }
   }
 
-  virtual void OnEnd(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnEnd(LayerAnimationDelegate* delegate) override {
     delegate->SetTransformFromAnimation(target_);
   }
 
-  virtual scoped_ptr<cc::Animation> CreateCCAnimation() OVERRIDE {
+  virtual scoped_ptr<cc::Animation> CreateCCAnimation() override {
     scoped_ptr<cc::AnimationCurve> animation_curve(
         new TransformAnimationCurveAdapter(tween_type(),
                                            start_,
@@ -479,7 +479,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
     return animation.Pass();
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->transform = target_;
   }
 
@@ -512,7 +512,7 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
   }
 
  protected:
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnStart(LayerAnimationDelegate* delegate) override {
     gfx::Transform start(delegate->GetTransformForAnimation());
     effective_start_ = base_transform_ * start;
 
@@ -533,18 +533,18 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
                                                           base_target_);
   }
 
-  virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
       delegate->SetTransformFromAnimation(ComputeCurrentTransform());
     }
   }
 
-  virtual void OnEnd(LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual void OnEnd(LayerAnimationDelegate* delegate) override {
     delegate->SetTransformFromAnimation(computed_target_transform_);
   }
 
-  virtual scoped_ptr<cc::Animation> CreateCCAnimation() OVERRIDE {
+  virtual scoped_ptr<cc::Animation> CreateCCAnimation() override {
     scoped_ptr<cc::Animation> animation(
         cc::Animation::Create(animation_curve_->Clone(),
                               animation_id(),
@@ -553,7 +553,7 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
     return animation.Pass();
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+  virtual void OnGetTarget(TargetValue* target) const override {
     target->transform = computed_target_transform_;
   }
 

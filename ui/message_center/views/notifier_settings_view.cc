@@ -129,14 +129,14 @@ class EntryView : public views::View {
   virtual ~EntryView();
 
   // views::View:
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual void OnFocus() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnBlur() override;
 
  private:
   scoped_ptr<views::Painter> focus_painter_;
@@ -210,12 +210,12 @@ class NotifierGroupMenuModel : public ui::SimpleMenuModel,
   virtual ~NotifierGroupMenuModel();
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   NotifierSettingsProvider* notifier_settings_provider_;

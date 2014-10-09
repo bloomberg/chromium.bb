@@ -154,35 +154,35 @@ class MockInputMethodBase : public InputMethodBase {
   // Overriden from InputMethod.
   virtual bool OnUntranslatedIMEMessage(
       const base::NativeEvent& event,
-      InputMethod::NativeEventResult* result) OVERRIDE {
+      InputMethod::NativeEventResult* result) override {
     return false;
   }
-  virtual bool DispatchKeyEvent(const ui::KeyEvent&) OVERRIDE {
+  virtual bool DispatchKeyEvent(const ui::KeyEvent&) override {
     return false;
   }
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) override {
   }
-  virtual void CancelComposition(const TextInputClient* client) OVERRIDE {
+  virtual void CancelComposition(const TextInputClient* client) override {
   }
-  virtual void OnInputLocaleChanged() OVERRIDE {
+  virtual void OnInputLocaleChanged() override {
   }
-  virtual std::string GetInputLocale() OVERRIDE{
+  virtual std::string GetInputLocale() override{
     return "";
   }
-  virtual bool IsActive() OVERRIDE {
+  virtual bool IsActive() override {
     return false;
   }
-  virtual bool IsCandidatePopupOpen() const OVERRIDE {
+  virtual bool IsCandidatePopupOpen() const override {
     return false;
   }
   // Overriden from InputMethodBase.
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
-                                         TextInputClient* focused) OVERRIDE {
+                                         TextInputClient* focused) override {
     verifier_->OnWillChangeFocusedClient(focused_before, focused);
   }
 
   virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                        TextInputClient* focused) OVERRIDE {
+                                        TextInputClient* focused) override {
     verifier_->OnDidChangeFocusedClient(focused_before, focused);
   }
 
@@ -202,20 +202,20 @@ class MockInputMethodObserver : public InputMethodObserver {
   }
 
  private:
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) override {
   }
-  virtual void OnFocus() OVERRIDE {
+  virtual void OnFocus() override {
   }
-  virtual void OnBlur() OVERRIDE {
+  virtual void OnBlur() override {
   }
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) override {
   }
-  virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE {
+  virtual void OnTextInputStateChanged(const TextInputClient* client) override {
     verifier_->OnTextInputStateChanged(client);
   }
-  virtual void OnShowImeIfNeeded() OVERRIDE {
+  virtual void OnShowImeIfNeeded() override {
   }
-  virtual void OnInputMethodDestroyed(const InputMethod* client) OVERRIDE {
+  virtual void OnInputMethodDestroyed(const InputMethod* client) override {
   }
 
   ClientChangeVerifier* verifier_;
@@ -230,13 +230,13 @@ class MockTextInputClient : public DummyTextInputClient {
   virtual ~MockTextInputClient() {
   }
 
-  virtual void OnCandidateWindowShown() OVERRIDE {
+  virtual void OnCandidateWindowShown() override {
     ++shown_event_count_;
   }
-  virtual void OnCandidateWindowUpdated() OVERRIDE {
+  virtual void OnCandidateWindowUpdated() override {
     ++updated_event_count_;
   }
-  virtual void OnCandidateWindowHidden() OVERRIDE {
+  virtual void OnCandidateWindowHidden() override {
     ++hidden_event_count_;
   }
 

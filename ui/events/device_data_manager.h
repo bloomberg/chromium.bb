@@ -61,7 +61,7 @@ class EVENTS_BASE_EXPORT DeviceDataManager : public DeviceHotplugEventObserver {
 
   // DeviceHotplugEventObserver:
   virtual void OnTouchscreenDevicesUpdated(
-      const std::vector<TouchscreenDevice>& devices) OVERRIDE;
+      const std::vector<TouchscreenDevice>& devices) override;
 
   double touch_radius_scale_map_[kMaxDeviceNum];
 

@@ -35,7 +35,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   ScopedVector<GestureEvent>* GetAndResetPendingGestures();
 
   // GestureProviderClient implementation
-  virtual void OnGestureEvent(const GestureEventData& gesture) OVERRIDE;
+  virtual void OnGestureEvent(const GestureEventData& gesture) override;
 
  private:
   bool IsConsideredDoubleTap(const GestureEventData& previous_tap,

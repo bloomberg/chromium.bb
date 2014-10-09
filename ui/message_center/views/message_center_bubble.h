@@ -29,16 +29,16 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
   void SetSettingsVisible();
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) override;
 
   // Overridden from MessageBubbleBase:
   virtual views::TrayBubbleView::InitParams GetInitParams(
-      views::TrayBubbleView::AnchorAlignment anchor_alignment) OVERRIDE;
-  virtual void InitializeContents(views::TrayBubbleView* bubble_view) OVERRIDE;
-  virtual void OnBubbleViewDestroyed() OVERRIDE;
-  virtual void UpdateBubbleView() OVERRIDE;
-  virtual void OnMouseEnteredView() OVERRIDE;
-  virtual void OnMouseExitedView() OVERRIDE;
+      views::TrayBubbleView::AnchorAlignment anchor_alignment) override;
+  virtual void InitializeContents(views::TrayBubbleView* bubble_view) override;
+  virtual void OnBubbleViewDestroyed() override;
+  virtual void UpdateBubbleView() override;
+  virtual void OnMouseEnteredView() override;
+  virtual void OnMouseExitedView() override;
 
   size_t NumMessageViewsForTest() const;
 

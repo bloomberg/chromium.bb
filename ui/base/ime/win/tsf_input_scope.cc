@@ -29,18 +29,18 @@ void AppendNonTrivialInputScope(std::vector<InputScope>* input_scopes,
   input_scopes->push_back(input_scope);
 }
 
-class TSFInputScope FINAL : public ITfInputScope {
+class TSFInputScope final : public ITfInputScope {
  public:
   explicit TSFInputScope(const std::vector<InputScope>& input_scopes)
       : input_scopes_(input_scopes),
         ref_count_(0) {}
 
   // ITfInputScope:
-  STDMETHOD_(ULONG, AddRef)() OVERRIDE {
+  STDMETHOD_(ULONG, AddRef)() override {
     return InterlockedIncrement(&ref_count_);
   }
 
-  STDMETHOD_(ULONG, Release)() OVERRIDE {
+  STDMETHOD_(ULONG, Release)() override {
     const LONG count = InterlockedDecrement(&ref_count_);
     if (!count) {
       delete this;
@@ -49,7 +49,7 @@ class TSFInputScope FINAL : public ITfInputScope {
     return static_cast<ULONG>(count);
   }
 
-  STDMETHOD(QueryInterface)(REFIID iid, void** result) OVERRIDE {
+  STDMETHOD(QueryInterface)(REFIID iid, void** result) override {
     if (!result)
       return E_INVALIDARG;
     if (iid == IID_IUnknown || iid == IID_ITfInputScope) {
@@ -62,7 +62,7 @@ class TSFInputScope FINAL : public ITfInputScope {
     return S_OK;
   }
 
-  STDMETHOD(GetInputScopes)(InputScope** input_scopes, UINT* count) OVERRIDE {
+  STDMETHOD(GetInputScopes)(InputScope** input_scopes, UINT* count) override {
     if (!count || !input_scopes)
       return E_INVALIDARG;
     *input_scopes = static_cast<InputScope*>(CoTaskMemAlloc(
@@ -78,19 +78,19 @@ class TSFInputScope FINAL : public ITfInputScope {
     return S_OK;
   }
 
-  STDMETHOD(GetPhrase)(BSTR** phrases, UINT* count) OVERRIDE {
+  STDMETHOD(GetPhrase)(BSTR** phrases, UINT* count) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(GetRegularExpression)(BSTR* regexp) OVERRIDE {
+  STDMETHOD(GetRegularExpression)(BSTR* regexp) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(GetSRGS)(BSTR* srgs) OVERRIDE {
+  STDMETHOD(GetSRGS)(BSTR* srgs) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(GetXML)(BSTR* xml) OVERRIDE {
+  STDMETHOD(GetXML)(BSTR* xml) override {
     return E_NOTIMPL;
   }
 

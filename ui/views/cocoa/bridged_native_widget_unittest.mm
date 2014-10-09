@@ -51,7 +51,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   }
 
   // internal::NativeWidgetPrivate:
-  virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE {
+  virtual void InitNativeWidget(const Widget::InitParams& params) override {
     ownership_ = params.ownership;
 
     // Usually the bridge gets initialized here. It is skipped to run extra
@@ -59,7 +59,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
     delegate()->OnNativeWidgetCreated(true);
   }
 
-  virtual void ReorderNativeViews() OVERRIDE {
+  virtual void ReorderNativeViews() override {
     // Called via Widget::Init to set the content view. No-op in these tests.
   }
 
@@ -80,7 +80,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   }
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ui::CocoaTest::SetUp();
 
     Widget::InitParams params;
@@ -109,8 +109,8 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   std::string GetText();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   // TODO(tapted): Make this a EventCountView from widget_unittest.cc.

@@ -33,15 +33,15 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   virtual ~NativeMenuWin();
 
   // Overridden from MenuWrapper:
-  virtual void RunMenuAt(const gfx::Point& point, int alignment) OVERRIDE;
-  virtual void CancelMenu() OVERRIDE;
-  virtual void Rebuild(MenuInsertionDelegateWin* delegate) OVERRIDE;
-  virtual void UpdateStates() OVERRIDE;
-  virtual HMENU GetNativeMenu() const OVERRIDE;
-  virtual MenuAction GetMenuAction() const OVERRIDE;
-  virtual void AddMenuListener(MenuListener* listener) OVERRIDE;
-  virtual void RemoveMenuListener(MenuListener* listener) OVERRIDE;
-  virtual void SetMinimumWidth(int width) OVERRIDE;
+  virtual void RunMenuAt(const gfx::Point& point, int alignment) override;
+  virtual void CancelMenu() override;
+  virtual void Rebuild(MenuInsertionDelegateWin* delegate) override;
+  virtual void UpdateStates() override;
+  virtual HMENU GetNativeMenu() const override;
+  virtual MenuAction GetMenuAction() const override;
+  virtual void AddMenuListener(MenuListener* listener) override;
+  virtual void RemoveMenuListener(MenuListener* listener) override;
+  virtual void SetMinimumWidth(int width) override;
 
  private:
   // IMPORTANT: Note about indices.

@@ -18,7 +18,7 @@ class SpeechViewTest : public views::test::WidgetTest,
   virtual ~SpeechViewTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::test::WidgetTest::SetUp();
     widget_ = CreateTopLevelPlatformWidget();
     widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
@@ -27,7 +27,7 @@ class SpeechViewTest : public views::test::WidgetTest,
     view_->SetBoundsRect(widget_->GetContentsView()->GetLocalBounds());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     widget_->CloseNow();
     views::test::WidgetTest::TearDown();
   }

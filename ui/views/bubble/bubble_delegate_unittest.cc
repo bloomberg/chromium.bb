@@ -33,8 +33,8 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   }
 
   // BubbleDelegateView overrides:
-  virtual View* GetInitiallyFocusedView() OVERRIDE { return view_; }
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual View* GetInitiallyFocusedView() override { return view_; }
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(200, 200);
   }
 

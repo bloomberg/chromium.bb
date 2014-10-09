@@ -35,10 +35,10 @@ class WM_EXPORT InputMethodEventFilter
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Overridden from ui::internal::InputMethodDelegate:
-  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
 
   scoped_ptr<ui::InputMethod> input_method_;
 

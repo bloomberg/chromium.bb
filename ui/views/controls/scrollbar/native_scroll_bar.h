@@ -40,25 +40,25 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, Scrolling);
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual const char* GetClassName() const override;
 
   // Overrideen from View for keyboard UI purpose.
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) override;
 
   // Overridden from ui::EventHandler.
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from ScrollBar.
   virtual void Update(int viewport_size,
                       int content_size,
-                      int current_pos) OVERRIDE;
-  virtual int GetPosition() const OVERRIDE;
-  virtual int GetLayoutSize() const OVERRIDE;
+                      int current_pos) override;
+  virtual int GetPosition() const override;
+  virtual int GetLayoutSize() const override;
 
   // init border
   NativeScrollBarWrapper* native_wrapper_;

@@ -154,24 +154,24 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void set_hdcp_state(HDCPState state) { hdcp_state_ = state; }
 
   // DisplayConfigurator::Delegate overrides:
-  virtual void Initialize() OVERRIDE { log_->AppendAction(kInitXRandR); }
-  virtual void GrabServer() OVERRIDE { log_->AppendAction(kGrab); }
-  virtual void UngrabServer() OVERRIDE { log_->AppendAction(kUngrab); }
-  virtual void SyncWithServer() OVERRIDE { log_->AppendAction(kSync); }
-  virtual void SetBackgroundColor(uint32_t color_argb) OVERRIDE {
+  virtual void Initialize() override { log_->AppendAction(kInitXRandR); }
+  virtual void GrabServer() override { log_->AppendAction(kGrab); }
+  virtual void UngrabServer() override { log_->AppendAction(kUngrab); }
+  virtual void SyncWithServer() override { log_->AppendAction(kSync); }
+  virtual void SetBackgroundColor(uint32_t color_argb) override {
     log_->AppendAction(GetBackgroundAction(color_argb));
   }
-  virtual void ForceDPMSOn() OVERRIDE { log_->AppendAction(kForceDPMS); }
-  virtual std::vector<DisplaySnapshot*> GetDisplays() OVERRIDE {
+  virtual void ForceDPMSOn() override { log_->AppendAction(kForceDPMS); }
+  virtual std::vector<DisplaySnapshot*> GetDisplays() override {
     return outputs_;
   }
   virtual void AddMode(const DisplaySnapshot& output,
-                       const DisplayMode* mode) OVERRIDE {
+                       const DisplayMode* mode) override {
     log_->AppendAction(GetAddOutputModeAction(output, mode));
   }
   virtual bool Configure(const DisplaySnapshot& output,
                          const DisplayMode* mode,
-                         const gfx::Point& origin) OVERRIDE {
+                         const gfx::Point& origin) override {
     log_->AppendAction(GetCrtcAction(output, mode, origin));
 
     if (max_configurable_pixels_ == 0)
@@ -182,38 +182,38 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
 
     return mode->size().GetArea() <= max_configurable_pixels_;
   }
-  virtual void CreateFrameBuffer(const gfx::Size& size) OVERRIDE {
+  virtual void CreateFrameBuffer(const gfx::Size& size) override {
     log_->AppendAction(
         GetFramebufferAction(size,
                              outputs_.size() >= 1 ? outputs_[0] : NULL,
                              outputs_.size() >= 2 ? outputs_[1] : NULL));
   }
   virtual bool GetHDCPState(const DisplaySnapshot& output,
-                            HDCPState* state) OVERRIDE {
+                            HDCPState* state) override {
     *state = hdcp_state_;
     return true;
   }
 
   virtual bool SetHDCPState(const DisplaySnapshot& output,
-                            HDCPState state) OVERRIDE {
+                            HDCPState state) override {
     log_->AppendAction(GetSetHDCPStateAction(output, state));
     return true;
   }
 
   virtual std::vector<ui::ColorCalibrationProfile>
-  GetAvailableColorCalibrationProfiles(const DisplaySnapshot& output) OVERRIDE {
+  GetAvailableColorCalibrationProfiles(const DisplaySnapshot& output) override {
     return std::vector<ui::ColorCalibrationProfile>();
   }
 
   virtual bool SetColorCalibrationProfile(
       const DisplaySnapshot& output,
-      ui::ColorCalibrationProfile new_profile) OVERRIDE {
+      ui::ColorCalibrationProfile new_profile) override {
     return false;
   }
 
-  virtual void AddObserver(NativeDisplayObserver* observer) OVERRIDE {}
+  virtual void AddObserver(NativeDisplayObserver* observer) override {}
 
-  virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE {}
+  virtual void RemoveObserver(NativeDisplayObserver* observer) override {}
 
  private:
   // Outputs to be returned by GetDisplays().
@@ -262,13 +262,13 @@ class TestObserver : public DisplayConfigurator::Observer {
 
   // DisplayConfigurator::Observer overrides:
   virtual void OnDisplayModeChanged(
-      const DisplayConfigurator::DisplayStateList& outputs) OVERRIDE {
+      const DisplayConfigurator::DisplayStateList& outputs) override {
     num_changes_++;
     latest_outputs_ = outputs;
   }
 
   virtual void OnDisplayModeChangeFailed(MultipleDisplayState failed_new_state)
-      OVERRIDE {
+      override {
     num_failures_++;
     latest_failed_state_ = failed_new_state;
   }
@@ -296,11 +296,11 @@ class TestStateController : public DisplayConfigurator::StateController {
 
   // DisplayConfigurator::StateController overrides:
   virtual MultipleDisplayState GetStateForDisplayIds(
-      const std::vector<int64_t>& outputs) const OVERRIDE {
+      const std::vector<int64_t>& outputs) const override {
     return state_;
   }
   virtual bool GetResolutionForDisplayId(int64_t display_id,
-                                         gfx::Size* size) const OVERRIDE {
+                                         gfx::Size* size) const override {
     return false;
   }
 
@@ -316,11 +316,11 @@ class TestMirroringController
   TestMirroringController() : software_mirroring_enabled_(false) {}
   virtual ~TestMirroringController() {}
 
-  virtual void SetSoftwareMirroring(bool enabled) OVERRIDE {
+  virtual void SetSoftwareMirroring(bool enabled) override {
     software_mirroring_enabled_ = enabled;
   }
 
-  virtual bool SoftwareMirroringEnabled() const OVERRIDE {
+  virtual bool SoftwareMirroringEnabled() const override {
     return software_mirroring_enabled_;
   }
 
@@ -339,7 +339,7 @@ class DisplayConfiguratorTest : public testing::Test {
         test_api_(&configurator_) {}
   virtual ~DisplayConfiguratorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     log_.reset(new ActionLogger());
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());

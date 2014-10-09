@@ -33,7 +33,7 @@ class EventCapturer : public ui::EventHandler {
     events_.clear();
   }
 
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     if (event->IsMouseEvent()) {
       events_.push_back(
           new ui::MouseEvent(static_cast<ui::MouseEvent&>(*event)));
@@ -75,21 +75,21 @@ int Factorial(int n) {
 class MockTouchExplorationControllerDelegate
     : public ui::TouchExplorationControllerDelegate {
  public:
-  virtual void SetOutputLevel(int volume) OVERRIDE {
+  virtual void SetOutputLevel(int volume) override {
     volume_changes_.push_back(volume);
   }
-  virtual void SilenceSpokenFeedback() OVERRIDE {
+  virtual void SilenceSpokenFeedback() override {
   }
-  virtual void PlayVolumeAdjustEarcon() OVERRIDE {
+  virtual void PlayVolumeAdjustEarcon() override {
     ++num_times_adjust_sound_played_;
   }
-  virtual void PlayPassthroughEarcon() OVERRIDE {
+  virtual void PlayPassthroughEarcon() override {
     ++num_times_passthrough_played_;
   }
-  virtual void PlayExitScreenEarcon() OVERRIDE {
+  virtual void PlayExitScreenEarcon() override {
     ++num_times_exit_screen_played_;
   }
-  virtual void PlayEnterScreenEarcon() OVERRIDE {
+  virtual void PlayEnterScreenEarcon() override {
     ++num_times_enter_screen_played_;
   }
 
@@ -204,7 +204,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   }
   virtual ~TouchExplorationTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     if (gfx::GetGLImplementation() == gfx::kGLImplementationNone)
       gfx::GLSurface::InitializeOneOffForTests();
     aura::test::AuraTestBase::SetUp();
@@ -217,7 +217,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     cursor_client()->DisableMouseEvents();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     root_window()->RemovePreTargetHandler(&event_capturer_);
     SwitchTouchExplorationMode(false);
     cursor_client_.reset();

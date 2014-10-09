@@ -120,17 +120,17 @@ class VIEWS_EXPORT Label : public View {
   const base::string16& GetLayoutTextForTesting() const;
 
   // View:
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual int GetBaseline() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int w) const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE;
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual gfx::Insets GetInsets() const override;
+  virtual int GetBaseline() const override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual int GetHeightForWidth(int w) const override;
+  virtual const char* GetClassName() const override;
+  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  virtual bool CanProcessEventsWithinSubtree() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const override;
 
  protected:
   // Called by Paint to paint the text.
@@ -144,9 +144,9 @@ class VIEWS_EXPORT Label : public View {
   SkColor disabled_color() const { return actual_disabled_color_; }
 
   // View:
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
   // These tests call CalculateDrawStringParams in order to verify the

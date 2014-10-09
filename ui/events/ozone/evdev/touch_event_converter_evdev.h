@@ -33,8 +33,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   virtual ~TouchEventConverterEvdev();
 
   // EventConverterEvdev:
-  virtual bool HasTouchscreen() const OVERRIDE;
-  virtual gfx::Size GetTouchscreenSize() const OVERRIDE;
+  virtual bool HasTouchscreen() const override;
+  virtual gfx::Size GetTouchscreenSize() const override;
 
  private:
   friend class MockTouchEventConverterEvdev;
@@ -43,7 +43,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void Init(const EventDeviceInfo& info);
 
   // Overidden from base::MessagePumpLibevent::Watcher.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
 
   virtual bool Reinitialize();
 

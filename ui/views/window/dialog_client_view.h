@@ -46,27 +46,27 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void UpdateDialogButtons();
 
   // ClientView implementation:
-  virtual bool CanClose() OVERRIDE;
-  virtual DialogClientView* AsDialogClientView() OVERRIDE;
-  virtual const DialogClientView* AsDialogClientView() const OVERRIDE;
+  virtual bool CanClose() override;
+  virtual DialogClientView* AsDialogClientView() override;
+  virtual const DialogClientView* AsDialogClientView() const override;
 
   // FocusChangeListener implementation:
   virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
+                                 View* focused_now) override;
   virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
+                                View* focused_now) override;
 
   // View implementation:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual void NativeViewHierarchyChanged() OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual void NativeViewHierarchyChanged() override;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // ButtonListener implementation:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  protected:
   // For testing.
@@ -82,8 +82,8 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void CreateFootnoteView();
 
   // View implementation.
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual void ChildVisibilityChanged(View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) override;
+  virtual void ChildVisibilityChanged(View* child) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DialogClientViewTest, FocusManager);

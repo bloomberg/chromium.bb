@@ -23,7 +23,7 @@ class WebViewExample : public ExampleBase {
   virtual ~WebViewExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   WebView* webview_;

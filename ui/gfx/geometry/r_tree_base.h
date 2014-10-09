@@ -96,10 +96,10 @@ class GFX_EXPORT RTreeBase {
     virtual ~RecordBase();
 
     virtual void AppendIntersectingRecords(const Rect& query_rect,
-                                           Records* records_out) const OVERRIDE;
-    virtual void AppendAllRecords(Records* records_out) const OVERRIDE;
-    virtual scoped_ptr<NodeBase> RemoveAndReturnLastChild() OVERRIDE;
-    virtual int Level() const OVERRIDE;
+                                           Records* records_out) const override;
+    virtual void AppendAllRecords(Records* records_out) const override;
+    virtual scoped_ptr<NodeBase> RemoveAndReturnLastChild() override;
+    virtual int Level() const override;
 
    private:
     friend class RTreeTest;
@@ -115,10 +115,10 @@ class GFX_EXPORT RTreeBase {
     virtual ~Node();
 
     virtual void AppendIntersectingRecords(const Rect& query_rect,
-                                           Records* records_out) const OVERRIDE;
-    virtual scoped_ptr<NodeBase> RemoveAndReturnLastChild() OVERRIDE;
-    virtual int Level() const OVERRIDE;
-    virtual void AppendAllRecords(Records* matches_out) const OVERRIDE;
+                                           Records* records_out) const override;
+    virtual scoped_ptr<NodeBase> RemoveAndReturnLastChild() override;
+    virtual int Level() const override;
+    virtual void AppendAllRecords(Records* matches_out) const override;
 
     // Constructs a new Node that is the parent of this Node and already has
     // this Node as its sole child. Valid to call only on root Nodes, meaning
@@ -219,7 +219,7 @@ class GFX_EXPORT RTreeBase {
                                 Rects* vertical_bounds,
                                 Rects* horizontal_bounds);
 
-    virtual void RecomputeLocalBounds() OVERRIDE;
+    virtual void RecomputeLocalBounds() override;
 
     // Returns the increase in overlap value, as defined in Beckmann et al. as
     // the sum of the areas of the intersection of all child rectangles

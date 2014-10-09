@@ -28,36 +28,36 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
   virtual void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
-      const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
+      const MenuBackgroundExtraParams& menu_background) const override;
   virtual void PaintMenuItemBackground(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const OVERRIDE;
+      const MenuListExtraParams& menu_list) const override;
   virtual void PaintArrowButton(SkCanvas* gc,
                                 const gfx::Rect& rect,
                                 Part direction,
-                                State state) const OVERRIDE;
+                                State state) const override;
   virtual void PaintScrollbarTrack(
       SkCanvas* sk_canvas,
       Part part,
       State state,
       const ScrollbarTrackExtraParams& extra_params,
-      const gfx::Rect& rect) const OVERRIDE;
+      const gfx::Rect& rect) const override;
   virtual void PaintScrollbarThumb(SkCanvas* sk_canvas,
                                    Part part,
                                    State state,
-                                   const gfx::Rect& rect) const OVERRIDE;
+                                   const gfx::Rect& rect) const override;
   virtual void PaintScrollbarCorner(SkCanvas* canvas,
                                     State state,
-                                    const gfx::Rect& rect) const OVERRIDE;
+                                    const gfx::Rect& rect) const override;
 
   virtual void PaintScrollbarThumbStateTransition(SkCanvas* canvas,
                                                   State startState,
                                                   State endState,
                                                   double progress,
                                                   const gfx::Rect& rect) const
-      OVERRIDE;
+      override;
 
   // Returns the NineImagePainter used to paint the specified state, creating if
   // necessary. If no image is provided for the specified state the normal state

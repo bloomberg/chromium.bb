@@ -59,7 +59,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
         new TouchEvent(*static_cast<TouchEvent*>(event)));
   }
 
-  virtual bool Reinitialize() OVERRIDE { return true; }
+  virtual bool Reinitialize() override { return true; }
 
  private:
   int read_pipe_;
@@ -120,7 +120,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
   TouchEventConverterEvdevTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Set up pipe to satisfy message pump (unused).
     int evdev_io[2];
     if (pipe(evdev_io))
@@ -133,7 +133,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
         events_in_, base::FilePath(kTestDevicePath));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     delete device_;
     delete loop_;
   }

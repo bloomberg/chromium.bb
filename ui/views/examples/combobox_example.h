@@ -20,8 +20,8 @@ class VIEWS_EXAMPLES_EXPORT ComboboxModelExample : public ui::ComboboxModel {
   virtual ~ComboboxModelExample();
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ComboboxModelExample);
@@ -34,11 +34,11 @@ class VIEWS_EXAMPLES_EXPORT ComboboxExample : public ExampleBase,
   virtual ~ComboboxExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // ComboboxListener:
-  virtual void OnPerformAction(Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(Combobox* combobox) override;
 
   ComboboxModelExample combobox_model_;
   Combobox* combobox_;

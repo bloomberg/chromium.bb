@@ -27,15 +27,15 @@ class TestFontDelegate : public LinuxFontDelegate {
 
   void set_params(const FontRenderParams& params) { params_ = params; }
 
-  virtual FontRenderParams GetDefaultFontRenderParams() const OVERRIDE {
+  virtual FontRenderParams GetDefaultFontRenderParams() const override {
     return params_;
   }
   virtual scoped_ptr<ScopedPangoFontDescription>
-      GetDefaultPangoFontDescription() const OVERRIDE {
+      GetDefaultPangoFontDescription() const override {
     NOTIMPLEMENTED();
     return scoped_ptr<ScopedPangoFontDescription>();
   }
-  virtual double GetFontDPI() const OVERRIDE {
+  virtual double GetFontDPI() const override {
     NOTIMPLEMENTED();
     return 96.0;
   }

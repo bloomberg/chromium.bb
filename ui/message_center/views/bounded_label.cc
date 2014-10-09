@@ -44,12 +44,12 @@ class InnerBoundedLabel : public views::Label {
   std::vector<base::string16> GetWrappedText(int width, int lines);
 
   // Overridden from views::Label.
-  virtual void SetText(const base::string16& text) OVERRIDE;
+  virtual void SetText(const base::string16& text) override;
 
  protected:
   // Overridden from views::Label.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   int GetTextFlags();

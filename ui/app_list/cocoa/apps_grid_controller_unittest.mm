@@ -96,7 +96,7 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
     return [attributes objectForKey:NSForegroundColorAttributeName];
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     owned_apps_grid_controller_.reset([[AppsGridController alloc] init]);
     owned_delegate_.reset(new AppListTestViewDelegate);
     [owned_apps_grid_controller_ setDelegate:owned_delegate_.get()];
@@ -108,7 +108,7 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
         [apps_grid_controller_ collectionViewAtPageIndex:0]];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [owned_apps_grid_controller_ setDelegate:NULL];
     owned_apps_grid_controller_.reset();
     AppsGridControllerTestHelper::TearDown();
@@ -145,7 +145,7 @@ class AppListItemWithMenu : public AppListItem {
     menu_ready_ = ready;
   }
 
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE {
+  virtual ui::MenuModel* GetContextMenuModel() override {
     if (!menu_ready_)
       return NULL;
 

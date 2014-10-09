@@ -24,9 +24,9 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   Button::ButtonStyle style() const { return style_; }
 
   // Overridden from Border:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) override;
+  virtual gfx::Insets GetInsets() const override;
+  virtual gfx::Size GetMinimumSize() const override;
 
   void set_insets(const gfx::Insets& insets) { insets_ = insets; }
 

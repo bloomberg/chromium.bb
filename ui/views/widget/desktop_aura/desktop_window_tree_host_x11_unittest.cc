@@ -53,7 +53,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
+  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<Atom> hints;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints)) {
       std::vector<Atom>::iterator it = std::find(
@@ -87,18 +87,18 @@ class ShapedNonClientFrameView : public NonClientFrameView {
   }
 
   // NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE {
+  virtual gfx::Rect GetBoundsForClientView() const override {
     return bounds();
   }
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE {
+      const gfx::Rect& client_bounds) const override {
     return client_bounds;
   }
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE {
+  virtual int NonClientHitTest(const gfx::Point& point) override {
     return HTNOWHERE;
   }
   virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) OVERRIDE {
+                             gfx::Path* window_mask) override {
     int right = size.width();
     int bottom = size.height();
 
@@ -110,13 +110,13 @@ class ShapedNonClientFrameView : public NonClientFrameView {
     window_mask->lineTo(right - 10, 0);
     window_mask->close();
   }
-  virtual void ResetWindowControls() OVERRIDE {
+  virtual void ResetWindowControls() override {
   }
-  virtual void UpdateWindowIcon() OVERRIDE {
+  virtual void UpdateWindowIcon() override {
   }
-  virtual void UpdateWindowTitle() OVERRIDE {
+  virtual void UpdateWindowTitle() override {
   }
-  virtual void SizeConstraintsChanged() OVERRIDE {
+  virtual void SizeConstraintsChanged() override {
   }
 
  private:
@@ -133,7 +133,7 @@ class ShapedWidgetDelegate : public WidgetDelegateView {
 
   // WidgetDelegateView:
   virtual NonClientFrameView* CreateNonClientFrameView(
-      Widget* widget) OVERRIDE {
+      Widget* widget) override {
     return new ShapedNonClientFrameView;
   }
 
@@ -198,7 +198,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
   virtual ~DesktopWindowTreeHostX11Test() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -206,7 +206,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     XSynchronize(gfx::GetXDisplay(), True);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     XSynchronize(gfx::GetXDisplay(), False);
     ViewsTestBase::TearDown();
   }

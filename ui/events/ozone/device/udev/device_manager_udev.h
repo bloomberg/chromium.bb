@@ -28,13 +28,13 @@ class DeviceManagerUdev
   void CreateMonitor();
 
   // DeviceManager overrides:
-  virtual void ScanDevices(DeviceEventObserver* observer) OVERRIDE;
-  virtual void AddObserver(DeviceEventObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DeviceEventObserver* observer) OVERRIDE;
+  virtual void ScanDevices(DeviceEventObserver* observer) override;
+  virtual void AddObserver(DeviceEventObserver* observer) override;
+  virtual void RemoveObserver(DeviceEventObserver* observer) override;
 
   // base::MessagePumpLibevent::Watcher overrides:
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   device::ScopedUdevPtr udev_;
   device::ScopedUdevMonitorPtr monitor_;

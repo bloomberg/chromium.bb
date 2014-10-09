@@ -40,10 +40,10 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
   void AddHandler(scoped_ptr<GpuPlatformSupport> handler);
 
   // GpuPlatformSupport:
-  virtual void OnChannelEstablished(IPC::Sender* sender) OVERRIDE;
+  virtual void OnChannelEstablished(IPC::Sender* sender) override;
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnCreateWindowDelegate(gfx::AcceleratedWidget widget);

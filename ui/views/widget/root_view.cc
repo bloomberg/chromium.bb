@@ -64,7 +64,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     if (event->handled())
       return;
@@ -106,7 +106,7 @@ class PostEventDispatchHandler : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     DCHECK_EQ(ui::EP_POSTTARGET, event->phase());
     if (event->handled())
       return;

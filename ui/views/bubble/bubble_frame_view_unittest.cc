@@ -29,7 +29,7 @@ class TestBubbleFrameView : public BubbleFrameView {
   virtual ~TestBubbleFrameView() {}
 
   // BubbleFrameView overrides:
-  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) OVERRIDE {
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
     return available_bounds_;
   }
 

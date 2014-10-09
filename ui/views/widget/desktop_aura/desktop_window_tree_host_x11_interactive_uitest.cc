@@ -44,7 +44,7 @@ class ActivationWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
+  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     XID xid = 0;
     ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
     return xid != window_;
@@ -64,7 +64,7 @@ class MouseMoveCounterHandler : public ui::EventHandler {
   }
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_MOVED)
       ++count_;
   }
@@ -135,7 +135,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
   }
 
   // testing::Test
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -143,7 +143,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     XSynchronize(gfx::GetXDisplay(), True);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     XSynchronize(gfx::GetXDisplay(), False);
     ViewsTestBase::TearDown();
   }

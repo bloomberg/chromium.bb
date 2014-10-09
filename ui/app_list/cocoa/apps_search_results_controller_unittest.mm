@@ -74,7 +74,7 @@ class SearchResultWithMenu : public TestSearchResult {
     menu_ready_ = ready;
   }
 
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE {
+  virtual ui::MenuModel* GetContextMenuModel() override {
     if (!menu_ready_)
       return NULL;
 
@@ -123,8 +123,8 @@ class AppsSearchResultsControllerTest : public ui::CocoaTest {
   void ExpectConsistent();
 
   // ui::CocoaTest overrides:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   base::scoped_nsobject<TestAppsSearchResultsDelegate> delegate_;

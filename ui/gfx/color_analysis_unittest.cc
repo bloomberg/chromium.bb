@@ -120,7 +120,7 @@ class MockKMeanImageSampler : public KMeanImageSampler {
     prebaked_sample_results_.push_back(sample);
   }
 
-  virtual int GetSample(int width, int height) OVERRIDE {
+  virtual int GetSample(int width, int height) override {
     if (current_result_index_ >= prebaked_sample_results_.size()) {
       current_result_index_ = 0;
     }

@@ -212,37 +212,37 @@ class VIEWS_EXPORT HWNDMessageHandler :
   typedef std::set<DWORD> TouchIDs;
 
   // Overridden from internal::InputMethodDelegate:
-  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
   // Overridden from WindowImpl:
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE;
+  virtual HICON GetDefaultWindowIcon() const override;
   virtual LRESULT OnWndProc(UINT message,
                             WPARAM w_param,
-                            LPARAM l_param) OVERRIDE;
+                            LPARAM l_param) override;
 
   // Overridden from WindowEventTarget
   virtual LRESULT HandleMouseMessage(unsigned int message,
                                      WPARAM w_param,
                                      LPARAM l_param,
-                                     bool* handled) OVERRIDE;
+                                     bool* handled) override;
   virtual LRESULT HandleKeyboardMessage(unsigned int message,
                                         WPARAM w_param,
                                         LPARAM l_param,
-                                        bool* handled) OVERRIDE;
+                                        bool* handled) override;
   virtual LRESULT HandleTouchMessage(unsigned int message,
                                      WPARAM w_param,
                                      LPARAM l_param,
-                                     bool* handled) OVERRIDE;
+                                     bool* handled) override;
 
   virtual LRESULT HandleScrollMessage(unsigned int message,
                                       WPARAM w_param,
                                       LPARAM l_param,
-                                      bool* handled) OVERRIDE;
+                                      bool* handled) override;
 
   virtual LRESULT HandleNcHitTestMessage(unsigned int message,
                                          WPARAM w_param,
                                          LPARAM l_param,
-                                         bool* handled) OVERRIDE;
+                                         bool* handled) override;
 
   // Returns the auto-hide edges of the appbar. See
   // ViewsDelegate::GetAppbarAutohideEdges() for details. If the edges change,

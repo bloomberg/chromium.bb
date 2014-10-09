@@ -47,16 +47,16 @@ class ListModelTest : public testing::Test,
   }
 
   // ListModelObserver implementation:
-  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE {
+  virtual void ListItemsAdded(size_t start, size_t count) override {
     added_count_ += count;
   }
-  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE {
+  virtual void ListItemsRemoved(size_t start, size_t count) override {
     removed_count_ += count;
   }
-  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE {
+  virtual void ListItemMoved(size_t index, size_t target_index) override {
     ++moved_count_;
   }
-  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE {
+  virtual void ListItemsChanged(size_t start, size_t count) override {
     changed_count_ += count;
   }
 

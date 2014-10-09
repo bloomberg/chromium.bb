@@ -177,9 +177,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // Overridden from ui::EventRewriter
   virtual ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
-      scoped_ptr<ui::Event>* rewritten_event) OVERRIDE;
+      scoped_ptr<ui::Event>* rewritten_event) override;
   virtual ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event, scoped_ptr<ui::Event>* new_event) OVERRIDE;
+      const ui::Event& last_event, scoped_ptr<ui::Event>* new_event) override;
 
   // Event handlers based on the current state - see State, below.
   ui::EventRewriteStatus InNoFingersDown(
@@ -235,7 +235,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // the user moves fast enough to trigger a gesture. After the user
   // completes their gesture, this method will decide what keyboard
   // input their gesture corresponded to.
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override;
 
   // Process the gesture events that have been created.
   void ProcessGestureEvents();

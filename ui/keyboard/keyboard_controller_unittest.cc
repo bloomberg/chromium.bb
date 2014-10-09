@@ -68,7 +68,7 @@ class TestFocusController : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     if (event->type() == ui::ET_MOUSE_PRESSED ||
         event->type() == ui::ET_TOUCH_PRESSED) {
@@ -92,8 +92,8 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
   }
 
   // Overridden from KeyboardControllerProxy:
-  virtual bool HasKeyboardWindow() const OVERRIDE { return window_; }
-  virtual aura::Window* GetKeyboardWindow() OVERRIDE {
+  virtual bool HasKeyboardWindow() const override { return window_; }
+  virtual aura::Window* GetKeyboardWindow() override {
     if (!window_) {
       window_.reset(new aura::Window(&delegate_));
       window_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
@@ -101,15 +101,15 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
     }
     return window_.get();
   }
-  virtual content::BrowserContext* GetBrowserContext() OVERRIDE { return NULL; }
-  virtual ui::InputMethod* GetInputMethod() OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() override { return NULL; }
+  virtual ui::InputMethod* GetInputMethod() override {
     return input_method_.get();
   }
   virtual void RequestAudioInput(content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE { return; }
-  virtual void LoadSystemKeyboard() OVERRIDE {};
-  virtual void ReloadKeyboardIfNeeded() OVERRIDE {};
+      const content::MediaResponseCallback& callback) override { return; }
+  virtual void LoadSystemKeyboard() override {};
+  virtual void ReloadKeyboardIfNeeded() override {};
 
  private:
   scoped_ptr<aura::Window> window_;
@@ -131,7 +131,7 @@ class EventObserver : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     ui::EventHandler::OnEvent(event);
     event_counts_[event->type()]++;
   }
@@ -151,7 +151,7 @@ class KeyboardContainerObserver : public aura::WindowObserver {
 
  private:
   virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     if (!visible)
       base::MessageLoop::current()->Quit();
   }
@@ -168,7 +168,7 @@ class KeyboardControllerTest : public testing::Test {
   KeyboardControllerTest() {}
   virtual ~KeyboardControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
     ui::ContextFactory* context_factory =
@@ -185,7 +185,7 @@ class KeyboardControllerTest : public testing::Test {
     controller_.reset(new KeyboardController(proxy_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     focus_controller_.reset();
     if (::switches::IsTextInputFocusManagerEnabled())
@@ -499,7 +499,7 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest,
   KeyboardControllerAnimationTest() {}
   virtual ~KeyboardControllerAnimationTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // We cannot short-circuit animations for this test.
     ui::ScopedAnimationDurationScaleMode test_duration_mode(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -512,14 +512,14 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest,
     controller()->AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller()->RemoveObserver(this);
     KeyboardControllerTest::TearDown();
   }
 
  protected:
   // KeyboardControllerObserver overrides
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE {
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {
     notified_bounds_ = new_bounds;
   }
 

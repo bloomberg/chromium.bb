@@ -27,19 +27,19 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
  public:
   explicit MenuRunnerImpl(MenuItemView* menu);
 
-  virtual bool IsRunning() const OVERRIDE;
-  virtual void Release() OVERRIDE;
+  virtual bool IsRunning() const override;
+  virtual void Release() override;
   virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
                                           MenuButton* button,
                                           const gfx::Rect& bounds,
                                           MenuAnchorPosition anchor,
-                                          int32 run_types) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual base::TimeDelta GetClosingEventTime() const OVERRIDE;
+                                          int32 run_types) override;
+  virtual void Cancel() override;
+  virtual base::TimeDelta GetClosingEventTime() const override;
 
   // MenuControllerDelegate:
-  virtual void DropMenuClosed(NotifyType type, MenuItemView* menu) OVERRIDE;
-  virtual void SiblingMenuCreated(MenuItemView* menu) OVERRIDE;
+  virtual void DropMenuClosed(NotifyType type, MenuItemView* menu) override;
+  virtual void SiblingMenuCreated(MenuItemView* menu) override;
 
  private:
   virtual ~MenuRunnerImpl();

@@ -48,17 +48,17 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
   class SelectedColorPatchView;
 
   // WidgetDelegate overrides:
-  virtual bool CanMinimize() const OVERRIDE;
-  virtual View* GetInitiallyFocusedView() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
-  virtual View* GetContentsView() OVERRIDE;
+  virtual bool CanMinimize() const override;
+  virtual View* GetInitiallyFocusedView() override;
+  virtual ui::ModalType GetModalType() const override;
+  virtual void WindowClosing() override;
+  virtual View* GetContentsView() override;
 
   // TextfieldController overrides:
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
 
   // The current color in HSV coordinate.
   SkScalar hsv_[3];

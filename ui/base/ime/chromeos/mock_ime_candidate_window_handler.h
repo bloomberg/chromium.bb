@@ -30,11 +30,11 @@ class UI_BASE_EXPORT MockIMECandidateWindowHandler
   // IMECandidateWindowHandlerInterface override.
   virtual void UpdateLookupTable(
       const ui::CandidateWindow& candidate_window,
-      bool visible) OVERRIDE;
+      bool visible) override;
   virtual void UpdatePreeditText(
-      const base::string16& text, uint32 cursor_pos, bool visible) OVERRIDE;
+      const base::string16& text, uint32 cursor_pos, bool visible) override;
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
-                               const gfx::Rect& composition_head) OVERRIDE;
+                               const gfx::Rect& composition_head) override;
 
   int set_cursor_bounds_call_count() const {
     return set_cursor_bounds_call_count_;

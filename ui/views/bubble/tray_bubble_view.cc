@@ -56,7 +56,7 @@ class MouseMoveDetectorHost : public MouseWatcherHost {
   virtual ~MouseMoveDetectorHost();
 
   virtual bool Contains(const gfx::Point& screen_point,
-                        MouseEventType type) OVERRIDE;
+                        MouseEventType type) override;
  private:
   DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
 };
@@ -94,7 +94,7 @@ class TrayBubbleBorder : public BubbleBorder {
   // Overridden from BubbleBorder.
   // Sets the bubble on top of the anchor when it has no arrow.
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
-                              const gfx::Size& contents_size) const OVERRIDE {
+                              const gfx::Size& contents_size) const override {
     if (has_arrow(arrow())) {
       gfx::Rect rect =
           BubbleBorder::GetBounds(position_relative_to, contents_size);
@@ -182,11 +182,11 @@ class TrayBubbleContentMask : public ui::LayerDelegate {
   ui::Layer* layer() { return &layer_; }
 
   // Overridden from LayerDelegate.
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
+      const gfx::Rect& damage_rect_in_dip) override {}
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  virtual base::Closure PrepareForLayerBoundsChange() override;
 
  private:
   ui::Layer layer_;
@@ -234,7 +234,7 @@ class BottomAlignedBoxLayout : public BoxLayout {
   virtual ~BottomAlignedBoxLayout() {}
 
  private:
-  virtual void Layout(View* host) OVERRIDE {
+  virtual void Layout(View* host) override {
     if (host->height() >= host->GetPreferredSize().height() ||
         !bubble_view_->is_gesture_dragging()) {
       BoxLayout::Layout(host);

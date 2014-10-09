@@ -74,21 +74,21 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
   message_center::MessageCenter* message_center() { return message_center_; }
 
   // Overridden from MessageCenterObserver:
-  virtual void OnNotificationAdded(const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationAdded(const std::string& notification_id) override;
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) OVERRIDE;
+                                     bool by_user) override;
   virtual void OnNotificationUpdated(
-      const std::string& notification_id) OVERRIDE;
+      const std::string& notification_id) override;
   virtual void OnNotificationClicked(
-      const std::string& notification_id) OVERRIDE;
+      const std::string& notification_id) override;
   virtual void OnNotificationButtonClicked(
       const std::string& notification_id,
-      int button_index) OVERRIDE;
+      int button_index) override;
   virtual void OnNotificationDisplayed(
       const std::string& notification_id,
-      const DisplaySource source) OVERRIDE;
-  virtual void OnQuietModeChanged(bool in_quiet_mode) OVERRIDE;
-  virtual void OnBlockingStateChanged(NotificationBlocker* blocker) OVERRIDE;
+      const DisplaySource source) override;
+  virtual void OnQuietModeChanged(bool in_quiet_mode) override;
+  virtual void OnBlockingStateChanged(NotificationBlocker* blocker) override;
 
  private:
   void OnMessageCenterChanged();

@@ -29,10 +29,10 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
   bool is_active() const { return !root_windows_.empty(); }
 
   // Overridden from aura::client::CaptureClient:
-  virtual void SetCapture(aura::Window* window) OVERRIDE;
-  virtual void ReleaseCapture(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetCaptureWindow() OVERRIDE;
-  virtual aura::Window* GetGlobalCaptureWindow() OVERRIDE;
+  virtual void SetCapture(aura::Window* window) override;
+  virtual void ReleaseCapture(aura::Window* window) override;
+  virtual aura::Window* GetCaptureWindow() override;
+  virtual aura::Window* GetGlobalCaptureWindow() override;
 
  private:
   friend class ScopedCaptureClient;
@@ -66,7 +66,7 @@ class WM_EXPORT ScopedCaptureClient : public aura::WindowObserver {
   }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   // Invoked from destructor and OnWindowDestroyed() to cleanup.

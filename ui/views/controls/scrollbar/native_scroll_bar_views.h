@@ -34,32 +34,32 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
 
  private:
   // View overrides:
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
 
   // ScrollBar overrides:
-  virtual int GetLayoutSize() const OVERRIDE;
+  virtual int GetLayoutSize() const override;
 
   // BaseScrollBar overrides:
-  virtual void ScrollToPosition(int position) OVERRIDE;
-  virtual int GetScrollIncrement(bool is_page, bool is_positive) OVERRIDE;
+  virtual void ScrollToPosition(int position) override;
+  virtual int GetScrollIncrement(bool is_page, bool is_positive) override;
 
   // BaseButton::ButtonListener overrides:
   virtual void ButtonPressed(Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // NativeScrollBarWrapper overrides:
-  virtual int GetPosition() const OVERRIDE;
-  virtual View* GetView() OVERRIDE;
+  virtual int GetPosition() const override;
+  virtual View* GetView() override;
   virtual void Update(int viewport_size,
                       int content_size,
-                      int current_pos) OVERRIDE;
+                      int current_pos) override;
 
   // Returns the area for the track. This is the area of the scrollbar minus
   // the size of the arrow buttons.
-  virtual gfx::Rect GetTrackBounds() const OVERRIDE;
+  virtual gfx::Rect GetTrackBounds() const override;
 
   // The NativeScrollBar we are bound to.
   NativeScrollBar* native_scroll_bar_;

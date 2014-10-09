@@ -26,7 +26,7 @@ class TestWindow : public gfx::WindowImpl {
                                     WPARAM w_param,
                                     LPARAM l_param,
                                     LRESULT& result,
-                                    DWORD msg_map_id) OVERRIDE {
+                                    DWORD msg_map_id) override {
     if (message == WM_NCHITTEST)
       saw_message = true;
 
@@ -54,7 +54,7 @@ class TestMessageFilter : public HWNDMessageFilter {
                              UINT message,
                              WPARAM w_param,
                              LPARAM l_param,
-                             LRESULT* l_result) OVERRIDE {
+                             LRESULT* l_result) override {
     if (message == WM_NCHITTEST) {
       saw_message = true;
       return consume_messages;

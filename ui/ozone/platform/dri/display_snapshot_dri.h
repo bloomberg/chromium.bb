@@ -27,7 +27,7 @@ class DisplaySnapshotDri : public DisplaySnapshot {
   drmModePropertyRes* dpms_property() const { return dpms_property_.get(); }
 
   // DisplaySnapshot overrides:
-  virtual std::string ToString() const OVERRIDE;
+  virtual std::string ToString() const override;
 
  private:
   uint32_t connector_;

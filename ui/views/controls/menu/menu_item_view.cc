@@ -49,7 +49,7 @@ class EmptyMenuMenuItem : public MenuItemView {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE {
+                              base::string16* tooltip) const override {
     // Empty menu items shouldn't have a tooltip.
     return false;
   }

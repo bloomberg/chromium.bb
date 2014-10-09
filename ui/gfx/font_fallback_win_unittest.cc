@@ -24,7 +24,7 @@ class TestLinkedFontsIterator : public internal::LinkedFontsIterator {
     test_linked_fonts.push_back(font);
   }
 
-  virtual const std::vector<Font>* GetLinkedFonts() const OVERRIDE {
+  virtual const std::vector<Font>* GetLinkedFonts() const override {
     return &test_linked_fonts;
   }
 

@@ -16,31 +16,31 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
   virtual ~NativeDisplayDelegateOzone();
 
   // NativeDisplayDelegate overrides:
-  virtual void Initialize() OVERRIDE;
-  virtual void GrabServer() OVERRIDE;
-  virtual void UngrabServer() OVERRIDE;
-  virtual void SyncWithServer() OVERRIDE;
-  virtual void SetBackgroundColor(uint32_t color_argb) OVERRIDE;
-  virtual void ForceDPMSOn() OVERRIDE;
-  virtual std::vector<ui::DisplaySnapshot*> GetDisplays() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void GrabServer() override;
+  virtual void UngrabServer() override;
+  virtual void SyncWithServer() override;
+  virtual void SetBackgroundColor(uint32_t color_argb) override;
+  virtual void ForceDPMSOn() override;
+  virtual std::vector<ui::DisplaySnapshot*> GetDisplays() override;
   virtual void AddMode(const ui::DisplaySnapshot& output,
-                       const ui::DisplayMode* mode) OVERRIDE;
+                       const ui::DisplayMode* mode) override;
   virtual bool Configure(const ui::DisplaySnapshot& output,
                          const ui::DisplayMode* mode,
-                         const gfx::Point& origin) OVERRIDE;
-  virtual void CreateFrameBuffer(const gfx::Size& size) OVERRIDE;
+                         const gfx::Point& origin) override;
+  virtual void CreateFrameBuffer(const gfx::Size& size) override;
   virtual bool GetHDCPState(const ui::DisplaySnapshot& output,
-                            ui::HDCPState* state) OVERRIDE;
+                            ui::HDCPState* state) override;
   virtual bool SetHDCPState(const ui::DisplaySnapshot& output,
-                            ui::HDCPState state) OVERRIDE;
+                            ui::HDCPState state) override;
   virtual std::vector<ui::ColorCalibrationProfile>
   GetAvailableColorCalibrationProfiles(
-      const ui::DisplaySnapshot& output) OVERRIDE;
+      const ui::DisplaySnapshot& output) override;
   virtual bool SetColorCalibrationProfile(
       const ui::DisplaySnapshot& output,
-      ui::ColorCalibrationProfile new_profile) OVERRIDE;
-  virtual void AddObserver(NativeDisplayObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE;
+      ui::ColorCalibrationProfile new_profile) override;
+  virtual void AddObserver(NativeDisplayObserver* observer) override;
+  virtual void RemoveObserver(NativeDisplayObserver* observer) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayDelegateOzone);

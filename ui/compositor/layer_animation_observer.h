@@ -43,7 +43,7 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
 
   // If the animator is destroyed during an animation, the animations are
   // aborted. The resulting NotifyAborted notifications will NOT be sent to
-  // this observer if this function returns false. NOTE: IF YOU OVERRIDE THIS
+  // this observer if this function returns false. NOTE: IF YOU override THIS
   // FUNCTION TO RETURN TRUE, YOU MUST REMEMBER TO REMOVE YOURSELF AS AN
   // OBSERVER WHEN YOU ARE DESTROYED.
   virtual bool RequiresNotificationWhenAnimatorDestroyed() const;
@@ -117,15 +117,15 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
 
   // LayerAnimationObserver implementation
   virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) override;
   virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) override;
   virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) override;
   virtual void OnAttachedToSequence(
-      LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) override;
   virtual void OnDetachedFromSequence(
-      LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) override;
 
   // OnImplicitAnimationsCompleted is not fired unless the observer is active.
   bool active() const { return active_; }

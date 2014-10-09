@@ -50,19 +50,19 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   // Overridden from wm::NativeCursorManager:
   virtual void SetDisplay(
       const gfx::Display& display,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetCursor(
       gfx::NativeCursor cursor,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetVisibility(
       bool visible,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) override;
   virtual void SetMouseEventsEnabled(
       bool enabled,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) override;
 
   // The set of hosts to notify of changes in cursor state.
   typedef std::set<aura::WindowTreeHost*> Hosts;

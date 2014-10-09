@@ -17,7 +17,7 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
  public:
   AppListViewControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     app_list_view_controller_.reset([[AppListViewController alloc] init]);
     delegate_.reset(new AppListTestViewDelegate);
     [app_list_view_controller_ setDelegate:delegate_.get()];
@@ -25,7 +25,7 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
     [[test_window() contentView] addSubview:[app_list_view_controller_ view]];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [app_list_view_controller_ setDelegate:NULL];
     app_list_view_controller_.reset();
     AppsGridControllerTestHelper::TearDown();

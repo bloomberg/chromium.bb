@@ -33,23 +33,23 @@ class DriWindow : public PlatformWindow,
   void Initialize();
 
   // PlatformWindow:
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Rect GetBounds() OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
-  virtual void ToggleFullscreen() OVERRIDE;
-  virtual void Maximize() OVERRIDE;
-  virtual void Minimize() OVERRIDE;
-  virtual void Restore() OVERRIDE;
-  virtual void SetCursor(PlatformCursor cursor) OVERRIDE;
-  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual void Close() override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual gfx::Rect GetBounds() override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
+  virtual void ToggleFullscreen() override;
+  virtual void Maximize() override;
+  virtual void Minimize() override;
+  virtual void Restore() override;
+  virtual void SetCursor(PlatformCursor cursor) override;
+  virtual void MoveCursorTo(const gfx::Point& location) override;
 
   // PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // ChannelObserver:
   virtual void OnChannelEstablished() OVERRIDE;

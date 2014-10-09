@@ -24,8 +24,8 @@ class CompositorTestSuite : public base::TestSuite {
 
  protected:
   // Overridden from base::TestSuite:
-  virtual void Initialize() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void Shutdown() override;
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;

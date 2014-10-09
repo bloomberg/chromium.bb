@@ -53,13 +53,13 @@ class NonClientDelegate : public test::TestWindowDelegate {
   gfx::Point mouse_event_location() const { return mouse_event_location_; }
   int mouse_event_flags() const { return mouse_event_flags_; }
 
-  virtual int GetNonClientComponent(const gfx::Point& location) const OVERRIDE {
+  virtual int GetNonClientComponent(const gfx::Point& location) const override {
     NonClientDelegate* self = const_cast<NonClientDelegate*>(this);
     self->non_client_count_++;
     self->non_client_location_ = location;
     return HTTOPLEFT;
   }
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     mouse_event_count_++;
     mouse_event_location_ = event->location();
     mouse_event_flags_ = event->flags();
@@ -83,7 +83,7 @@ class ConsumeKeyHandler : public ui::test::TestEventHandler {
   virtual ~ConsumeKeyHandler() {}
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     ui::test::TestEventHandler::OnKeyEvent(event);
     event->StopPropagation();
   }
@@ -268,13 +268,13 @@ class TestEventClient : public client::EventClient {
  private:
   // Overridden from client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
-      const Window* window) const OVERRIDE {
+      const Window* window) const override {
     return lock_ ?
         window->Contains(GetLockWindow()) || GetLockWindow()->Contains(window) :
         true;
   }
 
-  virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE {
+  virtual ui::EventTarget* GetToplevelEventTarget() override {
     return NULL;
   }
 
@@ -486,7 +486,7 @@ class EventFilterRecorder : public ui::EventHandler {
   }
 
   // ui::EventHandler overrides:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     ui::EventHandler::OnEvent(event);
     events_.push_back(event->type());
     if (wait_until_event_ == event->type() && run_loop_) {
@@ -495,16 +495,16 @@ class EventFilterRecorder : public ui::EventHandler {
     }
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     mouse_locations_.push_back(event->location());
     mouse_event_flags_.push_back(event->flags());
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     touch_locations_.push_back(event->location());
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     gesture_locations_.push_back(event->location());
   }
 
@@ -838,7 +838,7 @@ class HoldPointerOnScrollHandler : public ui::test::TestEventHandler {
 
  private:
   // ui::test::TestEventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
     if (!holding_moves_ && gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
       holding_moves_ = true;
       dispatcher_->HoldPointerMoves();
@@ -1141,12 +1141,12 @@ class DeletingEventFilter : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     if (delete_during_pre_handle_)
       delete event->target();
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (delete_during_pre_handle_)
       delete event->target();
   }
@@ -1173,13 +1173,13 @@ class DeletingWindowDelegate : public test::TestWindowDelegate {
 
  private:
   // Overridden from WindowDelegate:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     if (delete_during_handle_)
       delete window_;
     got_event_ = true;
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (delete_during_handle_)
       delete window_;
     got_event_ = true;
@@ -1242,7 +1242,7 @@ class DetachesParentOnTapDelegate : public test::TestWindowDelegate {
   virtual ~DetachesParentOnTapDelegate() {}
 
  private:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       event->SetHandled();
       return;
@@ -1287,7 +1287,7 @@ class NestedGestureDelegate : public test::TestWindowDelegate {
   int gesture_end_count() const { return gesture_end_count_; }
 
  private:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     switch (event->type()) {
       case ui::ET_GESTURE_TAP_DOWN:
         event->SetHandled();
@@ -1373,7 +1373,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
 
   virtual ~RepostGestureEventRecorder() {}
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     if (reposted_ && event->type() == ui::ET_TOUCH_PRESSED) {
       done_cleanup_ = true;
       Reset();
@@ -1381,7 +1381,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
     EventFilterRecorder::OnTouchEvent(event);
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     EXPECT_EQ(done_cleanup_ ? repost_target_ : repost_source_, event->target());
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       if (!reposted_) {
@@ -1399,7 +1399,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
 
   // Ignore mouse events as they don't fire at all times. This causes
   // the GestureRepostEventOrder test to fail randomly.
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {}
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {}
 
  private:
   aura::Window* repost_source_;
@@ -1481,7 +1481,7 @@ class OnMouseExitDeletingEventFilter : public EventFilterRecorder {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     EventFilterRecorder::OnMouseEvent(event);
     if (window_to_delete_) {
       delete window_to_delete_;
@@ -1547,7 +1547,7 @@ class ValidRootDuringDestructionWindowObserver : public aura::WindowObserver {
   }
 
   // WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     *got_destroying_ = true;
     *has_valid_root_ = (window->GetRootWindow() != NULL);
   }
@@ -1592,7 +1592,7 @@ class DontResetHeldEventWindowDelegate : public test::TestWindowDelegate {
   int mouse_event_count() const { return mouse_event_count_; }
 
   // TestWindowDelegate:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if ((event->flags() & ui::EF_SHIFT_DOWN) != 0 &&
         mouse_event_count_++ == 0) {
       ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED,
@@ -1653,13 +1653,13 @@ class DeleteHostFromHeldMouseEventDelegate
   bool got_destroy() const { return got_destroy_; }
 
   // TestWindowDelegate:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if ((event->flags() & ui::EF_SHIFT_DOWN) != 0) {
       got_mouse_event_ = true;
       delete host_;
     }
   }
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     got_destroy_ = true;
   }
 
@@ -1824,11 +1824,11 @@ class CaptureWindowTracker : public test::TestWindowDelegate {
     capture_window_.reset();
   }
 
-  virtual void OnCaptureLost() OVERRIDE {
+  virtual void OnCaptureLost() override {
     capture_window_.reset();
   }
 
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     TestWindowDelegate::OnWindowDestroyed(window);
     capture_window_.reset();
   }
@@ -1865,7 +1865,7 @@ class ExitMessageLoopOnMousePress : public ui::test::TestEventHandler {
   virtual ~ExitMessageLoopOnMousePress() {}
 
  protected:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     ui::test::TestEventHandler::OnMouseEvent(event);
     if (event->type() == ui::ET_MOUSE_PRESSED)
       base::MessageLoopForUI::current()->Quit();
@@ -1915,13 +1915,13 @@ class WindowEventDispatcherTestWithMessageLoop
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     WindowEventDispatcherTest::SetUp();
     window_.reset(CreateNormalWindow(1, root_window(), NULL));
     window_->AddPreTargetHandler(&handler_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     window_.reset();
     WindowEventDispatcherTest::TearDown();
   }
@@ -1956,7 +1956,7 @@ class WindowEventDispatcherTestInHighDPI : public WindowEventDispatcherTest {
   virtual ~WindowEventDispatcherTestInHighDPI() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     WindowEventDispatcherTest::SetUp();
     test_screen()->SetDeviceScaleFactor(2.f);
   }
@@ -2034,7 +2034,7 @@ class SelfDestructDelegate : public test::TestWindowDelegate {
   SelfDestructDelegate() {}
   virtual ~SelfDestructDelegate() {}
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     window_.reset();
   }
 
@@ -2087,11 +2087,11 @@ class StaticFocusClient : public client::FocusClient {
 
  private:
   // client::FocusClient:
-  virtual void AddObserver(client::FocusChangeObserver* observer) OVERRIDE {}
-  virtual void RemoveObserver(client::FocusChangeObserver* observer) OVERRIDE {}
-  virtual void FocusWindow(Window* window) OVERRIDE {}
-  virtual void ResetFocusWithinActiveWindow(Window* window) OVERRIDE {}
-  virtual Window* GetFocusedWindow() OVERRIDE { return focused_; }
+  virtual void AddObserver(client::FocusChangeObserver* observer) override {}
+  virtual void RemoveObserver(client::FocusChangeObserver* observer) override {}
+  virtual void FocusWindow(Window* window) override {}
+  virtual void ResetFocusWithinActiveWindow(Window* window) override {}
+  virtual Window* GetFocusedWindow() override { return focused_; }
 
   Window* focused_;
 
@@ -2126,7 +2126,7 @@ class DispatchEventHandler : public ui::EventHandler {
   bool dispatched() const { return dispatched_; }
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* mouse) override {
     if (mouse->type() == ui::ET_MOUSE_MOVED) {
       ui::MouseEvent move(ui::ET_MOUSE_MOVED, target_->bounds().CenterPoint(),
           target_->bounds().CenterPoint(), ui::EF_NONE, ui::EF_NONE);
@@ -2156,7 +2156,7 @@ class MoveWindowHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* mouse) override {
     if (mouse->type() == ui::ET_MOUSE_MOVED) {
       root_window_to_move_to_->AddChild(window_to_move_);
     }
@@ -2222,7 +2222,7 @@ class AlwaysMouseDownInputStateLookup : public InputStateLookup {
 
  private:
   // InputStateLookup:
-  virtual bool IsMouseButtonDown() const OVERRIDE { return true; }
+  virtual bool IsMouseButtonDown() const override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysMouseDownInputStateLookup);
 };
@@ -2319,7 +2319,7 @@ class AsyncWindowDelegate : public test::TestWindowDelegate {
     window_ = window;
   }
  private:
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     // Convert touch event back to root window coordinates.
     event->ConvertLocationToTarget(window_, window_->GetRootWindow());
     dispatcher_->ProcessedTouchEvent(event, window_, ui::ER_UNHANDLED);

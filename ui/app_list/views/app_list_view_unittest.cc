@@ -144,12 +144,12 @@ class UnitTestViewDelegate : public app_list::test::AppListTestViewDelegate {
   UnitTestViewDelegate(AppListViewTestContext* parent) : parent_(parent) {}
 
   // Overridden from app_list::AppListViewDelegate:
-  virtual bool ShouldCenterWindow() const OVERRIDE {
+  virtual bool ShouldCenterWindow() const override {
     return app_list::switches::IsCenteredAppListEnabled();
   }
 
   // Overridden from app_list::test::AppListTestViewDelegate:
-  virtual void ViewClosing() OVERRIDE { parent_->NativeWidgetClosing(); }
+  virtual void ViewClosing() override { parent_->NativeWidgetClosing(); }
 
  private:
   AppListViewTestContext* parent_;
@@ -563,7 +563,7 @@ class AppListViewTestAura : public views::ViewsTestBase,
   virtual ~AppListViewTestAura() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     // On Ash (only) the app list is placed into an aura::Window "container",
@@ -578,7 +578,7 @@ class AppListViewTestAura : public views::ViewsTestBase,
     test_context_.reset(new AppListViewTestContext(GetParam(), container));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test_context_.reset();
     views::ViewsTestBase::TearDown();
   }
@@ -597,13 +597,13 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
   virtual ~AppListViewTestDesktop() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     set_views_delegate(new AppListViewTestViewsDelegate(this));
     views::ViewsTestBase::SetUp();
     test_context_.reset(new AppListViewTestContext(GetParam(), NULL));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test_context_.reset();
     views::ViewsTestBase::TearDown();
   }
@@ -620,7 +620,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
     // Overridden from views::ViewsDelegate:
     virtual void OnBeforeWidgetInit(
         views::Widget::InitParams* params,
-        views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
+        views::internal::NativeWidgetDelegate* delegate) override;
 
    private:
     AppListViewTestDesktop* parent_;

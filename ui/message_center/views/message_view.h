@@ -74,21 +74,21 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   }
 
   // Overridden from views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void Layout() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() { return notification_id_; }
@@ -97,7 +97,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
  protected:
   // Overridden from views::SlideOutView:
-  virtual void OnSlideOut() OVERRIDE;
+  virtual void OnSlideOut() override;
 
   views::ImageView* small_image() { return small_image_view_.get(); }
   views::ImageButton* close_button() { return close_button_.get(); }

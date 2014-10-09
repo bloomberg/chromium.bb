@@ -28,7 +28,7 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
                                     int z_order,
                                     gfx::OverlayTransform transform,
                                     const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) OVERRIDE {
+                                    const gfx::RectF& crop_rect) override {
     return SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
         widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
   }

@@ -20,11 +20,11 @@ class VIEWS_EXAMPLES_EXPORT SingleSplitViewExample
   virtual ~SingleSplitViewExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // SingleSplitViewListener:
-  virtual bool SplitHandleMoved(SingleSplitView* sender) OVERRIDE;
+  virtual bool SplitHandleMoved(SingleSplitView* sender) override;
 
   SingleSplitView* single_split_view_;
 

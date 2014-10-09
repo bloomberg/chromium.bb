@@ -21,21 +21,21 @@ class OzonePlatformCaca : public OzonePlatform {
   virtual ~OzonePlatformCaca() {}
 
   // OzonePlatform:
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return window_manager_.get();
   }
-  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() override {
     return NULL;  // no GPU support
   }
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return NULL;  // no GPU support
   }
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) OVERRIDE {
+      const gfx::Rect& bounds) override {
     scoped_ptr<CacaWindow> caca_window(new CacaWindow(
         delegate, window_manager_.get(), event_source_.get(), bounds));
     if (!caca_window->Initialize())
@@ -43,17 +43,17 @@ class OzonePlatformCaca : public OzonePlatform {
     return caca_window.PassAs<PlatformWindow>();
   }
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      OVERRIDE {
+      override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
   }
 
-  virtual void InitializeUI() OVERRIDE {
+  virtual void InitializeUI() override {
     window_manager_.reset(new CacaWindowManager);
     event_source_.reset(new CacaEventSource());
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
   }
 
-  virtual void InitializeGPU() OVERRIDE {}
+  virtual void InitializeGPU() override {}
 
  private:
   scoped_ptr<CacaWindowManager> window_manager_;

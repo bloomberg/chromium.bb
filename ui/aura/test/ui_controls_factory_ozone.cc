@@ -24,7 +24,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                             bool control,
                             bool shift,
                             bool alt,
-                            bool command) OVERRIDE {
+                            bool command) override {
     return SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, base::Closure());
   }
@@ -35,7 +35,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       bool shift,
       bool alt,
       bool command,
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     int flags = button_down_mask_;
 
     if (control) {
@@ -85,13 +85,13 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return true;
   }
 
-  virtual bool SendMouseMove(long screen_x, long screen_y) OVERRIDE {
+  virtual bool SendMouseMove(long screen_x, long screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
   }
   virtual bool SendMouseMoveNotifyWhenDone(
       long screen_x,
       long screen_y,
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     gfx::Point root_location(screen_x, screen_y);
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -112,13 +112,13 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return true;
   }
   virtual bool SendMouseEvents(ui_controls::MouseButton type,
-                               int state) OVERRIDE {
+                               int state) override {
     return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
   }
   virtual bool SendMouseEventsNotifyWhenDone(
       ui_controls::MouseButton type,
       int state,
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     gfx::Point loc = aura::Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -155,11 +155,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseClick(ui_controls::MouseButton type) OVERRIDE {
+  virtual bool SendMouseClick(ui_controls::MouseButton type) override {
     return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
   }
   virtual void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     if (!closure.is_null())
       base::MessageLoop::current()->PostTask(FROM_HERE, closure);
   }

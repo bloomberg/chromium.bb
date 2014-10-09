@@ -14,7 +14,7 @@ namespace message_center {
 
 class TrayControllerTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ui::CocoaTest::SetUp();
     message_center::MessageCenter::Initialize();
     tray_.reset(new message_center::MessageCenterTray(
@@ -23,7 +23,7 @@ class TrayControllerTest : public ui::CocoaTest {
         [[MCTrayController alloc] initWithMessageCenterTray:tray_.get()]);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     controller_.reset();
     tray_.reset();
     message_center::MessageCenter::Shutdown();

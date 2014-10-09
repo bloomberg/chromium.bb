@@ -23,7 +23,7 @@ class EventProcessorTest : public testing::Test {
   virtual ~EventProcessorTest() {}
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     processor_.SetRoot(scoped_ptr<EventTarget>(new TestEventTarget()));
     processor_.Reset();
     root()->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
@@ -69,7 +69,7 @@ class BoundsEventTargeter : public EventTargeter {
 
  protected:
   virtual bool SubtreeShouldBeExploredForEvent(
-      EventTarget* target, const LocatedEvent& event) OVERRIDE {
+      EventTarget* target, const LocatedEvent& event) override {
     T* t = static_cast<T*>(target);
     return (t->bounds().Contains(event.location()));
   }
@@ -107,7 +107,7 @@ class BoundsTestTarget : public TestEventTarget {
  private:
   // EventTarget:
   virtual void ConvertEventToTarget(EventTarget* target,
-                                    LocatedEvent* event) OVERRIDE {
+                                    LocatedEvent* event) override {
     event->ConvertLocationToTarget(this,
                                    static_cast<BoundsTestTarget*>(target));
   }
@@ -185,7 +185,7 @@ class ReDispatchEventHandler : public TestEventHandler {
   virtual ~ReDispatchEventHandler() {}
 
   // TestEventHandler:
-  virtual void OnMouseEvent(MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(MouseEvent* event) override {
     TestEventHandler::OnMouseEvent(event);
 
     EXPECT_EQ(expected_target_, event->target());
@@ -327,7 +327,7 @@ class IgnoreEventTargeter : public EventTargeter {
  private:
   // EventTargeter:
   virtual bool SubtreeShouldBeExploredForEvent(
-      EventTarget* target, const LocatedEvent& event) OVERRIDE {
+      EventTarget* target, const LocatedEvent& event) override {
     return false;
   }
 };
@@ -369,12 +369,12 @@ class BubblingEventTargeter : public EventTargeter {
  private:
   // EventTargeter:
   virtual EventTarget* FindTargetForEvent(EventTarget* root,
-                                          Event* event) OVERRIDE {
+                                          Event* event) override {
     return initial_target_;
   }
 
   virtual EventTarget* FindNextBestTarget(EventTarget* previous_target,
-                                          Event* event) OVERRIDE {
+                                          Event* event) override {
     return previous_target->GetParentTarget();
   }
 

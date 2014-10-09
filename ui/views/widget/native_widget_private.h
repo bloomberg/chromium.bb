@@ -231,7 +231,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void RepostNativeEvent(gfx::NativeEvent native_event) = 0;
 
   // Overridden from NativeWidget:
-  virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;
+  virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() override;
 };
 
 }  // namespace internal

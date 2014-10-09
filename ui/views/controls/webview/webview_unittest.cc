@@ -26,7 +26,7 @@ class WebViewTestViewsDelegate : public views::TestViewsDelegate {
   // Overriden from TestViewsDelegate.
   virtual content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE {
+      content::SiteInstance* site_instance) override {
     return content::WebContentsTester::CreateTestWebContents(browser_context,
                                                              site_instance);
   }
@@ -46,7 +46,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
 
   virtual ~WebViewUnitTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // The ViewsDelegate is deleted when the ViewsTestBase class is torn down.
     WidgetTest::set_views_delegate(new WebViewTestViewsDelegate);
     browser_context_.reset(new content::TestBrowserContext);
@@ -56,7 +56,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
     SetBrowserClientForTesting(&test_browser_client_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     browser_context_.reset(NULL);
     // Flush the message loop to execute pending relase tasks as this would
     // upset ASAN and Valgrind.
@@ -95,20 +95,20 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
       content::WebContentsObserver::Observe(NULL);
   }
 
-  virtual void WebContentsDestroyed() OVERRIDE {
+  virtual void WebContentsDestroyed() override {
     DCHECK(web_contents_);
     content::WebContentsObserver::Observe(NULL);
     web_contents_ = NULL;
   }
 
-  virtual void WasShown() OVERRIDE {
+  virtual void WasShown() override {
     valid_root_while_shown_ =
         web_contents()->GetNativeView()->GetRootWindow() != NULL;
     was_shown_ = true;
     ++shown_count_;
   }
 
-  virtual void WasHidden() OVERRIDE {
+  virtual void WasHidden() override {
     was_shown_ = false;
     ++hidden_count_;
   }

@@ -36,25 +36,25 @@ class VIEWS_EXAMPLES_EXPORT TableExample : public ExampleBase,
   virtual ~TableExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
   // ui::TableModel:
-  virtual int RowCount() OVERRIDE;
-  virtual base::string16 GetText(int row, int column_id) OVERRIDE;
-  virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
-  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
+  virtual int RowCount() override;
+  virtual base::string16 GetText(int row, int column_id) override;
+  virtual gfx::ImageSkia GetIcon(int row) override;
+  virtual void SetObserver(ui::TableModelObserver* observer) override;
 
   // TableGrouper:
-  virtual void GetGroupRange(int model_index, GroupRange* range) OVERRIDE;
+  virtual void GetGroupRange(int model_index, GroupRange* range) override;
 
   // TableViewObserver:
-  virtual void OnSelectionChanged() OVERRIDE;
-  virtual void OnDoubleClick() OVERRIDE;
-  virtual void OnMiddleClick() OVERRIDE;
-  virtual void OnKeyDown(ui::KeyboardCode virtual_keycode) OVERRIDE;
+  virtual void OnSelectionChanged() override;
+  virtual void OnDoubleClick() override;
+  virtual void OnMiddleClick() override;
+  virtual void OnKeyDown(ui::KeyboardCode virtual_keycode) override;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
   // The table to be tested.

@@ -89,8 +89,8 @@ const int kThumbnailSuperStarID = count++;
 class DummyComboboxModel : public ui::ComboboxModel {
  public:
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE { return 10; }
-  virtual base::string16 GetItemAt(int index) OVERRIDE {
+  virtual int GetItemCount() const override { return 10; }
+  virtual base::string16 GetItemAt(int index) override {
     return ASCIIToUTF16("Item ") + base::IntToString16(index);
   }
 };
@@ -108,7 +108,7 @@ class PaneView : public View, public FocusTraversable {
   }
 
   // Overridden from View:
-  virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE {
+  virtual FocusTraversable* GetPaneFocusTraversable() override {
     if (focus_search_)
       return this;
     else
@@ -116,13 +116,13 @@ class PaneView : public View, public FocusTraversable {
   }
 
   // Overridden from FocusTraversable:
-  virtual views::FocusSearch* GetFocusSearch() OVERRIDE {
+  virtual views::FocusSearch* GetFocusSearch() override {
     return focus_search_;
   }
-  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE {
+  virtual FocusTraversable* GetFocusTraversableParent() override {
     return NULL;
   }
-  virtual View* GetFocusTraversableParentView() OVERRIDE {
+  virtual View* GetFocusTraversableParentView() override {
     return NULL;
   }
 
@@ -146,12 +146,12 @@ class BorderView : public NativeViewHost {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
-  virtual FocusTraversable* GetFocusTraversable() OVERRIDE {
+  virtual FocusTraversable* GetFocusTraversable() override {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
+      const ViewHierarchyChangedDetails& details) override {
     NativeViewHost::ViewHierarchyChanged(details);
 
     if (details.child == this && details.is_add) {
@@ -185,7 +185,7 @@ class FocusTraversalTest : public FocusManagerTest {
  public:
   virtual ~FocusTraversalTest();
 
-  virtual void InitContentView() OVERRIDE;
+  virtual void InitContentView() override;
 
  protected:
   FocusTraversalTest();

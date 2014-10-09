@@ -20,18 +20,18 @@ class VIEWS_EXPORT NativeViewHostMac : public NativeViewHostWrapper {
   virtual ~NativeViewHostMac();
 
   // Overridden from NativeViewHostWrapper:
-  virtual void AttachNativeView() OVERRIDE;
-  virtual void NativeViewDetaching(bool destroyed) OVERRIDE;
-  virtual void AddedToWidget() OVERRIDE;
-  virtual void RemovedFromWidget() OVERRIDE;
-  virtual void InstallClip(int x, int y, int w, int h) OVERRIDE;
-  virtual bool HasInstalledClip() OVERRIDE;
-  virtual void UninstallClip() OVERRIDE;
-  virtual void ShowWidget(int x, int y, int w, int h) OVERRIDE;
-  virtual void HideWidget() OVERRIDE;
-  virtual void SetFocus() OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(int x, int y) OVERRIDE;
+  virtual void AttachNativeView() override;
+  virtual void NativeViewDetaching(bool destroyed) override;
+  virtual void AddedToWidget() override;
+  virtual void RemovedFromWidget() override;
+  virtual void InstallClip(int x, int y, int w, int h) override;
+  virtual bool HasInstalledClip() override;
+  virtual void UninstallClip() override;
+  virtual void ShowWidget(int x, int y, int w, int h) override;
+  virtual void HideWidget() override;
+  virtual void SetFocus() override;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  virtual gfx::NativeCursor GetCursor(int x, int y) override;
 
  private:
   // Our associated NativeViewHost. Owns this.

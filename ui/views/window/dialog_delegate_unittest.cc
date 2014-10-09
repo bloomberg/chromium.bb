@@ -27,24 +27,24 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   virtual ~TestDialog() {}
 
   // DialogDelegateView overrides:
-  virtual bool Cancel() OVERRIDE {
+  virtual bool Cancel() override {
     canceled_ = true;
     return closeable_;
   }
-  virtual bool Accept() OVERRIDE {
+  virtual bool Accept() override {
     accepted_ = true;
     return closeable_;
   }
 
   // DialogDelegateView overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(200, 200);
   }
-  virtual base::string16 GetWindowTitle() const OVERRIDE { return title_; }
-  virtual bool UseNewStyleForThisDialog() const OVERRIDE { return true; }
+  virtual base::string16 GetWindowTitle() const override { return title_; }
+  virtual bool UseNewStyleForThisDialog() const override { return true; }
 
   // ButtonListener override:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override {
     last_pressed_button_ = sender;
   }
 
@@ -94,13 +94,13 @@ class DialogTest : public ViewsTestBase {
   DialogTest() : dialog_(NULL) {}
   virtual ~DialogTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewsTestBase::SetUp();
     dialog_ = new TestDialog();
     DialogDelegate::CreateDialogWidget(dialog_, GetContext(), NULL)->Show();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     dialog_->TearDown();
     ViewsTestBase::TearDown();
   }

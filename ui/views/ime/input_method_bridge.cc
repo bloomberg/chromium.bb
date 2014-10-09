@@ -24,16 +24,16 @@ class InputMethodBridge::HostObserver : public ui::InputMethodObserver {
   virtual ~HostObserver();
 
   virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) OVERRIDE {}
-  virtual void OnFocus() OVERRIDE {}
-  virtual void OnBlur() OVERRIDE {}
+      const ui::TextInputClient* client) override {}
+  virtual void OnFocus() override {}
+  virtual void OnBlur() override {}
   virtual void OnCaretBoundsChanged(
-      const ui::TextInputClient* client) OVERRIDE {}
+      const ui::TextInputClient* client) override {}
   virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) OVERRIDE {}
+      const ui::TextInputClient* client) override {}
   virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) OVERRIDE;
-  virtual void OnShowImeIfNeeded() OVERRIDE {}
+      const ui::InputMethod* input_method) override;
+  virtual void OnShowImeIfNeeded() override {}
 
  private:
   InputMethodBridge* bridge_;

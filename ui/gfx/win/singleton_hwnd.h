@@ -42,7 +42,7 @@ class GFX_EXPORT SingletonHwnd : public WindowImpl {
                                     WPARAM wparam,
                                     LPARAM lparam,
                                     LRESULT& result,
-                                    DWORD msg_map_id) OVERRIDE;
+                                    DWORD msg_map_id) override;
 
  private:
   friend struct DefaultSingletonTraits<SingletonHwnd>;

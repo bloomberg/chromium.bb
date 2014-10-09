@@ -22,7 +22,7 @@ class TestBoundsAnimator : public BoundsAnimator {
   }
 
  protected:
-  virtual SlideAnimation* CreateAnimation() OVERRIDE {
+  virtual SlideAnimation* CreateAnimation() override {
     SlideAnimation* animation = BoundsAnimator::CreateAnimation();
     animation->SetSlideDuration(10);
     return animation;
@@ -53,7 +53,7 @@ class OwnedDelegate : public gfx::AnimationDelegate {
   }
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const Animation* animation) override {
     canceled_ = true;
   }
 
@@ -72,7 +72,7 @@ class TestView : public View {
  public:
   TestView() {}
 
-  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE {
+  virtual void SchedulePaintInRect(const gfx::Rect& r) override {
     if (dirty_rect_.IsEmpty())
       dirty_rect_ = r;
     else

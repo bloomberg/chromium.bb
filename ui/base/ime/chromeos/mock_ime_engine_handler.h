@@ -16,17 +16,17 @@ class UI_BASE_EXPORT MockIMEEngineHandler : public IMEEngineHandlerInterface {
   MockIMEEngineHandler();
   virtual ~MockIMEEngineHandler();
 
-  virtual void FocusIn(const InputContext& input_context) OVERRIDE;
-  virtual void FocusOut() OVERRIDE;
-  virtual void Enable(const std::string& component_id) OVERRIDE;
-  virtual void Disable() OVERRIDE;
-  virtual void PropertyActivate(const std::string& property_name) OVERRIDE;
-  virtual void Reset() OVERRIDE;
+  virtual void FocusIn(const InputContext& input_context) override;
+  virtual void FocusOut() override;
+  virtual void Enable(const std::string& component_id) override;
+  virtual void Disable() override;
+  virtual void PropertyActivate(const std::string& property_name) override;
+  virtual void Reset() override;
   virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                               const KeyEventDoneCallback& callback) OVERRIDE;
-  virtual void CandidateClicked(uint32 index) OVERRIDE;
+                               const KeyEventDoneCallback& callback) override;
+  virtual void CandidateClicked(uint32 index) override;
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
-                                  uint32 anchor_pos) OVERRIDE;
+                                  uint32 anchor_pos) override;
 
   int focus_in_call_count() const { return focus_in_call_count_; }
   int focus_out_call_count() const { return focus_out_call_count_; }

@@ -27,8 +27,8 @@ class ViewsTestBase : public PlatformTest {
   virtual ~ViewsTestBase();
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void RunPendingMessages();
 

@@ -40,8 +40,8 @@ struct MockMotionEvent : public MotionEventGeneric {
   virtual ~MockMotionEvent();
 
   // MotionEvent methods.
-  virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
-  virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
+  virtual scoped_ptr<MotionEvent> Clone() const override;
+  virtual scoped_ptr<MotionEvent> Cancel() const override;
 
   // Utility methods.
   void PressPoint(float x, float y);

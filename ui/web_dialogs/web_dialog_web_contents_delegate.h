@@ -55,18 +55,18 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
   // content::WebContentsDelegate declarations.
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
+                              bool* was_blocked) override;
   virtual bool IsPopupOrPanel(
-      const content::WebContents* source) const OVERRIDE;
+      const content::WebContents* source) const override;
   virtual bool PreHandleGestureEvent(
       content::WebContents* source,
-      const blink::WebGestureEvent& event) OVERRIDE;
+      const blink::WebGestureEvent& event) override;
 
  private:
   // Weak pointer.  Always an original profile.

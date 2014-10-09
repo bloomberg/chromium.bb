@@ -17,7 +17,7 @@ class VIEWS_EXPORT ViewsTouchSelectionControllerFactory
 
   // Overridden from ui::TouchSelectionControllerFactory.
   virtual ui::TouchSelectionController* create(
-      ui::TouchEditable* client_view) OVERRIDE;
+      ui::TouchEditable* client_view) override;
 };
 
 }  // namespace views

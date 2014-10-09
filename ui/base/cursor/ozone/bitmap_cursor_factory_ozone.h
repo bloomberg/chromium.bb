@@ -60,15 +60,15 @@ class UI_BASE_EXPORT BitmapCursorFactoryOzone : public CursorFactoryOzone {
       PlatformCursor platform_cursor);
 
   // CursorFactoryOzone:
-  virtual PlatformCursor GetDefaultCursor(int type) OVERRIDE;
+  virtual PlatformCursor GetDefaultCursor(int type) override;
   virtual PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
-                                           const gfx::Point& hotspot) OVERRIDE;
+                                           const gfx::Point& hotspot) override;
   virtual PlatformCursor CreateAnimatedCursor(
       const std::vector<SkBitmap>& bitmaps,
       const gfx::Point& hotspot,
-      int frame_delay_ms) OVERRIDE;
-  virtual void RefImageCursor(PlatformCursor cursor) OVERRIDE;
-  virtual void UnrefImageCursor(PlatformCursor cursor) OVERRIDE;
+      int frame_delay_ms) override;
+  virtual void RefImageCursor(PlatformCursor cursor) override;
+  virtual void UnrefImageCursor(PlatformCursor cursor) override;
 
  private:
   // Get cached BitmapCursorOzone for a default cursor.

@@ -39,16 +39,16 @@ class VIEWS_EXPORT ProgressBar : public View {
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+                              base::string16* tooltip) const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   static const char kViewClassName[];
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // Inclusive range used when displaying values.
   double min_display_value_;

@@ -61,7 +61,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   NSWindow* ns_window() { return window_; }
 
   // Overridden from internal::InputMethodDelegate:
-  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
  private:
   // Closes all child windows. BridgedNativeWidget children will be destroyed.
@@ -76,9 +76,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
 
   // Overridden from FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
+                                 View* focused_now) override;
   virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
+                                View* focused_now) override;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);
 };

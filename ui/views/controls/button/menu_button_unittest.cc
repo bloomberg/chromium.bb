@@ -19,7 +19,7 @@ class MenuButtonTest : public ViewsTestBase {
   MenuButtonTest() : widget_(NULL), button_(NULL) {}
   virtual ~MenuButtonTest() {}
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (widget_ && !widget_->IsClosed())
       widget_->Close();
 
@@ -85,7 +85,7 @@ class TestButtonListener : public ButtonListener {
         last_event_type_(ui::ET_UNKNOWN) {}
   virtual ~TestButtonListener() {}
 
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override {
     last_sender_ = sender;
     CustomButton* custom_button = CustomButton::AsCustomButton(sender);
     DCHECK(custom_button);
@@ -111,7 +111,7 @@ class TestMenuButtonListener : public MenuButtonListener {
   virtual ~TestMenuButtonListener() {}
 
   virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& /*point*/) OVERRIDE {
+                                   const gfx::Point& /*point*/) override {
     last_source_ = source;
     CustomButton* custom_button = CustomButton::AsCustomButton(source);
     DCHECK(custom_button);

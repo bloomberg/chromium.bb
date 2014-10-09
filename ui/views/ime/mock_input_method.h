@@ -23,21 +23,21 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   virtual ~MockInputMethod();
 
   // Overridden from InputMethod:
-  virtual void Init(Widget* widget) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+  virtual void Init(Widget* widget) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) OVERRIDE;
-  virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;
-  virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
-  virtual void OnCaretBoundsChanged(View* view) OVERRIDE;
-  virtual void CancelComposition(View* view) OVERRIDE;
-  virtual void OnInputLocaleChanged() OVERRIDE;
-  virtual std::string GetInputLocale() OVERRIDE;
-  virtual bool IsActive() OVERRIDE;
-  virtual bool IsCandidatePopupOpen() const OVERRIDE;
-  virtual void ShowImeIfNeeded() OVERRIDE;
-  virtual bool IsMock() const OVERRIDE;
+                                        NativeEventResult* result) override;
+  virtual void DispatchKeyEvent(const ui::KeyEvent& key) override;
+  virtual void OnTextInputTypeChanged(View* view) override;
+  virtual void OnCaretBoundsChanged(View* view) override;
+  virtual void CancelComposition(View* view) override;
+  virtual void OnInputLocaleChanged() override;
+  virtual std::string GetInputLocale() override;
+  virtual bool IsActive() override;
+  virtual bool IsCandidatePopupOpen() const override;
+  virtual void ShowImeIfNeeded() override;
+  virtual bool IsMock() const override;
 
   bool focus_changed() const { return focus_changed_; }
   bool untranslated_ime_message_called() const {
@@ -59,7 +59,7 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
  private:
   // Overridden from InputMethodBase.
-  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) override;
 
   // Clears boolean states defined below.
   void ClearStates();

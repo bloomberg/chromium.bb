@@ -25,11 +25,11 @@ class DriWindowDelegateImpl : public DriWindowDelegate {
   virtual ~DriWindowDelegateImpl();
 
   // DriWindowDelegate:
-  virtual void Initialize() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual HardwareDisplayController* GetController() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
+  virtual void Initialize() override;
+  virtual void Shutdown() override;
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  virtual HardwareDisplayController* GetController() override;
+  virtual void OnBoundsChanged(const gfx::Rect& bounds) override;
 
  private:
   gfx::AcceleratedWidget widget_;

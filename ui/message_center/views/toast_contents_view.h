@@ -71,34 +71,34 @@ class ToastContentsView : public views::WidgetDelegateView,
   const std::string& id() { return id_; }
 
   // Overridden from views::View:
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   // Overridden from MessageCenterController:
-  virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
+  virtual void ClickOnNotification(const std::string& notification_id) override;
   virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) OVERRIDE;
+                                  bool by_user) override;
   virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
-      const base::string16& display_source) OVERRIDE;
-  virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
+      const base::string16& display_source) override;
+  virtual bool HasClickedListener(const std::string& notification_id) override;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
-                                         int button_index) OVERRIDE;
+                                         int button_index) override;
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationCanceled(const gfx::Animation* animation) override;
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
-  virtual void OnDisplayChanged() OVERRIDE;
-  virtual void OnWorkAreaChanged() OVERRIDE;
+  virtual views::View* GetContentsView() override;
+  virtual void WindowClosing() override;
+  virtual void OnDisplayChanged() override;
+  virtual void OnWorkAreaChanged() override;
 
   // Initialization and update.
   void CreateWidget(gfx::NativeView parent);

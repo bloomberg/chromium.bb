@@ -27,10 +27,10 @@ class DriSurface : public SurfaceOzoneCanvas {
   virtual ~DriSurface();
 
   // SurfaceOzoneCanvas:
-  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
-  virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
-  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE;
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
+  virtual skia::RefPtr<SkCanvas> GetCanvas() override;
+  virtual void ResizeCanvas(const gfx::Size& viewport_size) override;
+  virtual void PresentCanvas(const gfx::Rect& damage) override;
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
   void UpdateNativeSurface(const gfx::Rect& damage);

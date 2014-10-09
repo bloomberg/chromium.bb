@@ -39,7 +39,7 @@ class ConsumeGestureEventFilter : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* e) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* e) override {
     e->StopPropagation();
   }
 

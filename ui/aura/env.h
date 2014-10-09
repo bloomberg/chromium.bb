@@ -87,10 +87,10 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   void NotifyHostActivated(WindowTreeHost* host);
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
-  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
-  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual ui::EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  virtual ui::EventTargeter* GetEventTargeter() override;
 
   ObserverList<EnvObserver> observers_;
 

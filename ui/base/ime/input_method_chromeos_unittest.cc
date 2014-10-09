@@ -80,7 +80,7 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
 
   // Overridden from InputMethodChromeOS:
   virtual void ProcessKeyEventPostIME(const ui::KeyEvent& key_event,
-                                      bool handled) OVERRIDE {
+                                      bool handled) override {
     process_key_event_post_ime_args_.event = &key_event;
     process_key_event_post_ime_args_.handled = handled;
     ++process_key_event_post_ime_call_count_;
@@ -210,7 +210,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   virtual ~InputMethodChromeOSTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     chromeos::IMEBridge::Initialize();
 
     mock_ime_engine_handler_.reset(
@@ -230,7 +230,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
       ime_->SetFocusedTextInputClient(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     if (ime_.get()) {
       if (switches::IsTextInputFocusManagerEnabled())
         TextInputFocusManager::GetInstance()->BlurTextInputClient(this);
@@ -246,89 +246,89 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   }
 
   // Overridden from ui::internal::InputMethodDelegate:
-  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
     dispatched_key_event_ = event;
     return false;
   }
 
   // Overridden from ui::TextInputClient:
   virtual void SetCompositionText(
-      const CompositionText& composition) OVERRIDE {
+      const CompositionText& composition) override {
     composition_text_ = composition;
   }
-  virtual void ConfirmCompositionText() OVERRIDE {
+  virtual void ConfirmCompositionText() override {
     confirmed_text_ = composition_text_;
     composition_text_.Clear();
   }
-  virtual void ClearCompositionText() OVERRIDE {
+  virtual void ClearCompositionText() override {
     composition_text_.Clear();
   }
-  virtual void InsertText(const base::string16& text) OVERRIDE {
+  virtual void InsertText(const base::string16& text) override {
     inserted_text_ = text;
   }
-  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE {
+  virtual void InsertChar(base::char16 ch, int flags) override {
     inserted_char_ = ch;
     inserted_char_flags_ = flags;
   }
-  virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {
+  virtual gfx::NativeWindow GetAttachedWindow() const override {
     return static_cast<gfx::NativeWindow>(NULL);
   }
-  virtual TextInputType GetTextInputType() const OVERRIDE {
+  virtual TextInputType GetTextInputType() const override {
     return input_type_;
   }
-  virtual TextInputMode GetTextInputMode() const OVERRIDE {
+  virtual TextInputMode GetTextInputMode() const override {
     return input_mode_;
   }
-  virtual bool CanComposeInline() const OVERRIDE {
+  virtual bool CanComposeInline() const override {
     return can_compose_inline_;
   }
-  virtual gfx::Rect GetCaretBounds() const OVERRIDE {
+  virtual gfx::Rect GetCaretBounds() const override {
     return caret_bounds_;
   }
   virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) const OVERRIDE {
+                                             gfx::Rect* rect) const override {
     return false;
   }
-  virtual bool HasCompositionText() const OVERRIDE {
+  virtual bool HasCompositionText() const override {
     CompositionText empty;
     return composition_text_ != empty;
   }
-  virtual bool GetTextRange(gfx::Range* range) const OVERRIDE {
+  virtual bool GetTextRange(gfx::Range* range) const override {
     *range = text_range_;
     return true;
   }
-  virtual bool GetCompositionTextRange(gfx::Range* range) const OVERRIDE {
+  virtual bool GetCompositionTextRange(gfx::Range* range) const override {
     return false;
   }
-  virtual bool GetSelectionRange(gfx::Range* range) const OVERRIDE {
+  virtual bool GetSelectionRange(gfx::Range* range) const override {
     *range = selection_range_;
     return true;
   }
 
-  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE {
+  virtual bool SetSelectionRange(const gfx::Range& range) override {
     return false;
   }
-  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
+  virtual bool DeleteRange(const gfx::Range& range) override { return false; }
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                base::string16* text) const OVERRIDE {
+                                base::string16* text) const override {
     *text = surrounding_text_.substr(range.GetMin(), range.length());
     return true;
   }
-  virtual void OnInputMethodChanged() OVERRIDE {
+  virtual void OnInputMethodChanged() override {
     ++on_input_method_changed_call_count_;
   }
   virtual bool ChangeTextDirectionAndLayoutAlignment(
-      base::i18n::TextDirection direction) OVERRIDE { return false; }
+      base::i18n::TextDirection direction) override { return false; }
   virtual void ExtendSelectionAndDelete(size_t before,
-                                        size_t after) OVERRIDE {}
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE {}
-  virtual void OnCandidateWindowShown() OVERRIDE {}
-  virtual void OnCandidateWindowUpdated() OVERRIDE {}
-  virtual void OnCandidateWindowHidden() OVERRIDE {}
-  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE {
+                                        size_t after) override {}
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) override {}
+  virtual void OnCandidateWindowShown() override {}
+  virtual void OnCandidateWindowUpdated() override {}
+  virtual void OnCandidateWindowHidden() override {}
+  virtual bool IsEditingCommandEnabled(int command_id) override {
     return false;
   }
-  virtual void ExecuteEditingCommand(int command_id) OVERRIDE {}
+  virtual void ExecuteEditingCommand(int command_id) override {}
 
   bool HasNativeEvent() const {
     return dispatched_key_event_.HasNativeEvent();
@@ -945,7 +945,7 @@ class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {
   InputMethodChromeOSKeyEventTest() {}
   virtual ~InputMethodChromeOSKeyEventTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InputMethodChromeOSTest::SetUp();
     ime_->Init(true);
   }

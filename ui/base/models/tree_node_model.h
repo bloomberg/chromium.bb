@@ -154,7 +154,7 @@ class TreeNode : public TreeModelNode {
   virtual void SetTitle(const base::string16& title) { title_ = title; }
 
   // TreeModelNode:
-  virtual const base::string16& GetTitle() const OVERRIDE { return title_; }
+  virtual const base::string16& GetTitle() const override { return title_; }
 
   // Returns true if this == ancestor, or one of this nodes parents is
   // ancestor.
@@ -251,40 +251,40 @@ class TreeNodeModel : public TreeModel {
   }
 
   // TreeModel:
-  virtual NodeType* GetRoot() OVERRIDE {
+  virtual NodeType* GetRoot() override {
     return root_.get();
   }
 
-  virtual int GetChildCount(TreeModelNode* parent) OVERRIDE {
+  virtual int GetChildCount(TreeModelNode* parent) override {
     DCHECK(parent);
     return AsNode(parent)->child_count();
   }
 
-  virtual NodeType* GetChild(TreeModelNode* parent, int index) OVERRIDE {
+  virtual NodeType* GetChild(TreeModelNode* parent, int index) override {
     DCHECK(parent);
     return AsNode(parent)->GetChild(index);
   }
 
-  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) OVERRIDE {
+  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) override {
     DCHECK(parent);
     return AsNode(parent)->GetIndexOf(AsNode(child));
   }
 
-  virtual TreeModelNode* GetParent(TreeModelNode* node) OVERRIDE {
+  virtual TreeModelNode* GetParent(TreeModelNode* node) override {
     DCHECK(node);
     return AsNode(node)->parent();
   }
 
-  virtual void AddObserver(TreeModelObserver* observer) OVERRIDE {
+  virtual void AddObserver(TreeModelObserver* observer) override {
     observer_list_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(TreeModelObserver* observer) OVERRIDE {
+  virtual void RemoveObserver(TreeModelObserver* observer) override {
     observer_list_.RemoveObserver(observer);
   }
 
   virtual void SetTitle(TreeModelNode* node,
-                        const base::string16& title) OVERRIDE {
+                        const base::string16& title) override {
     DCHECK(node);
     AsNode(node)->SetTitle(title);
     NotifyObserverTreeNodeChanged(node);

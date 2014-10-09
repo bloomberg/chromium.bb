@@ -105,8 +105,8 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   }
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE { return example_list_.size(); }
-  virtual base::string16 GetItemAt(int index) OVERRIDE {
+  virtual int GetItemCount() const override { return example_list_.size(); }
+  virtual base::string16 GetItemAt(int index) override {
     return base::UTF8ToUTF16(example_list_[index]->example_title());
   }
 
@@ -172,21 +172,21 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
  private:
   // WidgetDelegateView:
-  virtual bool CanResize() const OVERRIDE { return true; }
-  virtual bool CanMaximize() const OVERRIDE { return true; }
-  virtual bool CanMinimize() const OVERRIDE { return true; }
-  virtual base::string16 GetWindowTitle() const OVERRIDE {
+  virtual bool CanResize() const override { return true; }
+  virtual bool CanMaximize() const override { return true; }
+  virtual bool CanMinimize() const override { return true; }
+  virtual base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Views Examples");
   }
-  virtual View* GetContentsView() OVERRIDE { return this; }
-  virtual void WindowClosing() OVERRIDE {
+  virtual View* GetContentsView() override { return this; }
+  virtual void WindowClosing() override {
     instance_ = NULL;
     if (operation_ == QUIT_ON_CLOSE)
       base::MessageLoopForUI::current()->Quit();
   }
 
   // ComboboxListener:
-  virtual void OnPerformAction(Combobox* combobox) OVERRIDE {
+  virtual void OnPerformAction(Combobox* combobox) override {
     DCHECK_EQ(combobox, combobox_);
     DCHECK(combobox->selected_index() < combobox_model_.GetItemCount());
     example_shown_->RemoveAllChildViews(false);

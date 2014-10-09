@@ -27,46 +27,46 @@ class IMEBridgeImpl : public IMEBridge {
 
   // IMEBridge override.
   virtual IMEInputContextHandlerInterface*
-      GetInputContextHandler() const OVERRIDE {
+      GetInputContextHandler() const override {
     return input_context_handler_;
   }
 
   // IMEBridge override.
   virtual void SetInputContextHandler(
-      IMEInputContextHandlerInterface* handler) OVERRIDE {
+      IMEInputContextHandlerInterface* handler) override {
     input_context_handler_ = handler;
   }
 
   // IMEBridge override.
   virtual void SetCurrentEngineHandler(
-      IMEEngineHandlerInterface* handler) OVERRIDE {
+      IMEEngineHandlerInterface* handler) override {
     engine_handler_ = handler;
   }
 
   // IMEBridge override.
-  virtual IMEEngineHandlerInterface* GetCurrentEngineHandler() const OVERRIDE {
+  virtual IMEEngineHandlerInterface* GetCurrentEngineHandler() const override {
     return engine_handler_;
   }
 
   // IMEBridge override.
   virtual IMECandidateWindowHandlerInterface* GetCandidateWindowHandler() const
-      OVERRIDE {
+      override {
     return candidate_window_handler_;
   }
 
   // IMEBridge override.
   virtual void SetCandidateWindowHandler(
-      IMECandidateWindowHandlerInterface* handler) OVERRIDE {
+      IMECandidateWindowHandlerInterface* handler) override {
     candidate_window_handler_ = handler;
   }
 
   // IMEBridge override.
-  virtual void SetCurrentTextInputType(ui::TextInputType input_type) OVERRIDE {
+  virtual void SetCurrentTextInputType(ui::TextInputType input_type) override {
     current_text_input_ = input_type;
   }
 
   // IMEBridge override.
-  virtual ui::TextInputType GetCurrentTextInputType() const OVERRIDE {
+  virtual ui::TextInputType GetCurrentTextInputType() const override {
     return current_text_input_;
   }
 

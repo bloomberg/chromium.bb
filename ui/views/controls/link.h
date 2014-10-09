@@ -34,24 +34,24 @@ class VIEWS_EXPORT Link : public Label {
   void set_listener(LinkListener* listener) { listener_ = listener; }
 
   // Label:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  virtual bool CanProcessEventsWithinSubtree() const override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnMouseCaptureLost() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
   virtual bool SkipDefaultKeyEventProcessing(
-      const ui::KeyEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void OnEnabledChanged() OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void SetFontList(const gfx::FontList& font_list) OVERRIDE;
-  virtual void SetText(const base::string16& text) OVERRIDE;
-  virtual void SetEnabledColor(SkColor color) OVERRIDE;
+      const ui::KeyEvent& event) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual void OnEnabledChanged() override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void SetFontList(const gfx::FontList& font_list) override;
+  virtual void SetText(const base::string16& text) override;
+  virtual void SetEnabledColor(SkColor color) override;
 
   void SetPressedColor(SkColor color);
   void SetUnderline(bool underline);

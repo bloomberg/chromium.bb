@@ -37,16 +37,16 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
 
   // Overridden from GestureRecognizer
   virtual GestureConsumer* GetTouchLockedTarget(
-      const TouchEvent& event) OVERRIDE;
+      const TouchEvent& event) override;
   virtual GestureConsumer* GetTargetForGestureEvent(
-      const GestureEvent& event) OVERRIDE;
+      const GestureEvent& event) override;
   virtual GestureConsumer* GetTargetForLocation(
-      const gfx::PointF& location, int source_device_id) OVERRIDE;
+      const gfx::PointF& location, int source_device_id) override;
   virtual void TransferEventsTo(GestureConsumer* current_consumer,
-                                GestureConsumer* new_consumer) OVERRIDE;
+                                GestureConsumer* new_consumer) override;
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
-                                          gfx::PointF* point) OVERRIDE;
-  virtual bool CancelActiveTouches(GestureConsumer* consumer) OVERRIDE;
+                                          gfx::PointF* point) override;
+  virtual bool CancelActiveTouches(GestureConsumer* consumer) override;
 
  protected:
   virtual GestureProviderAura* GetGestureProviderForConsumer(
@@ -60,25 +60,25 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
 
   // Overridden from GestureRecognizer
   virtual bool ProcessTouchEventPreDispatch(const TouchEvent& event,
-                                            GestureConsumer* consumer) OVERRIDE;
+                                            GestureConsumer* consumer) override;
 
   virtual Gestures* ProcessTouchEventPostDispatch(
       const TouchEvent& event,
       ui::EventResult result,
-      GestureConsumer* consumer) OVERRIDE;
+      GestureConsumer* consumer) override;
 
   virtual Gestures* ProcessTouchEventOnAsyncAck(
       const TouchEvent& event,
       ui::EventResult result,
-      GestureConsumer* consumer) OVERRIDE;
+      GestureConsumer* consumer) override;
 
   virtual bool CleanupStateForConsumer(GestureConsumer* consumer)
-      OVERRIDE;
-  virtual void AddGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
-  virtual void RemoveGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
+      override;
+  virtual void AddGestureEventHelper(GestureEventHelper* helper) override;
+  virtual void RemoveGestureEventHelper(GestureEventHelper* helper) override;
 
   // Overridden from GestureProviderAuraClient
-  virtual void OnGestureEvent(GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(GestureEvent* event) override;
 
   // Convenience method to find the GestureEventHelper that can dispatch events
   // to a specific |consumer|.

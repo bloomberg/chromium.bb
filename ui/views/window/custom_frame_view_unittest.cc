@@ -35,8 +35,8 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
   }
 
   // WidgetDelegate:
-  virtual bool CanMaximize() const OVERRIDE { return can_maximize_; }
-  virtual bool CanMinimize() const OVERRIDE { return can_minimize_; }
+  virtual bool CanMaximize() const override { return can_maximize_; }
+  virtual bool CanMinimize() const override { return can_minimize_; }
 
  private:
   bool can_maximize_;
@@ -66,8 +66,8 @@ class CustomFrameViewTest : public ViewsTestBase {
   }
 
   // ViewsTestBase:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   const std::vector<views::FrameButton>& leading_buttons() {

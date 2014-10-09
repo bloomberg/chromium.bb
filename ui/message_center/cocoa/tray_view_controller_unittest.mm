@@ -26,7 +26,7 @@ class TrayViewControllerTest : public ui::CocoaTest {
     : center_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ui::CocoaTest::SetUp();
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
@@ -41,7 +41,7 @@ class TrayViewControllerTest : public ui::CocoaTest {
     [tray_ view];  // Create the view.
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     tray_.reset();
     message_center::MessageCenter::Shutdown();
     ui::CocoaTest::TearDown();

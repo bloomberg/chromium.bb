@@ -65,25 +65,25 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   virtual bool Activate();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
   // Paint the menu marker image.
   void PaintMenuMarker(gfx::Canvas* canvas);
 
   // Overridden from LabelButton:
-  virtual gfx::Rect GetChildAreaBounds() OVERRIDE;
+  virtual gfx::Rect GetChildAreaBounds() override;
 
   // Offset of the associated menu position.
   gfx::Point menu_offset_;

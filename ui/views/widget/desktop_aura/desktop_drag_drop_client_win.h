@@ -30,13 +30,13 @@ class VIEWS_EXPORT DesktopDragDropClientWin
       aura::Window* source_window,
       const gfx::Point& root_location,
       int operation,
-      ui::DragDropTypes::DragEventSource source) OVERRIDE;
+      ui::DragDropTypes::DragEventSource source) override;
   virtual void DragUpdate(aura::Window* target,
-                          const ui::LocatedEvent& event) OVERRIDE;
+                          const ui::LocatedEvent& event) override;
   virtual void Drop(aura::Window* target,
-                    const ui::LocatedEvent& event) OVERRIDE;
-  virtual void DragCancel() OVERRIDE;
-  virtual bool IsDragDropInProgress() OVERRIDE;
+                    const ui::LocatedEvent& event) override;
+  virtual void DragCancel() override;
+  virtual bool IsDragDropInProgress() override;
 
   void OnNativeWidgetDestroying(HWND window);
 

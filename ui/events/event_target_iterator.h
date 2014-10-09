@@ -30,7 +30,7 @@ class EventTargetIteratorImpl : public EventTargetIterator {
   }
   virtual ~EventTargetIteratorImpl() {}
 
-  virtual EventTarget* GetNextTarget() OVERRIDE {
+  virtual EventTarget* GetNextTarget() override {
     if (begin_ == end_)
       return NULL;
     EventTarget* target = *(begin_);

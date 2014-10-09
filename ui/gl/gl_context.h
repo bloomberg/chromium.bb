@@ -188,7 +188,7 @@ class GL_EXPORT GLContextReal : public GLContext {
  protected:
   virtual ~GLContextReal();
 
-  virtual void SetCurrent(GLSurface* surface) OVERRIDE;
+  virtual void SetCurrent(GLSurface* surface) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);

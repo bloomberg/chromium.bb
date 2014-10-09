@@ -19,10 +19,10 @@ class UI_BASE_EXPORT SimpleComboboxModel : public ComboboxModel {
   virtual ~SimpleComboboxModel();
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
-  virtual bool IsItemSeparatorAt(int index) OVERRIDE;
-  virtual int GetDefaultIndex() const OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
+  virtual bool IsItemSeparatorAt(int index) override;
+  virtual int GetDefaultIndex() const override;
 
  private:
   const std::vector<base::string16> items_;

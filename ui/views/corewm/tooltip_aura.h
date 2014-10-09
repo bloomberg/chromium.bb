@@ -51,13 +51,13 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   // Tooltip:
   virtual void SetText(aura::Window* window,
                        const base::string16& tooltip_text,
-                       const gfx::Point& location) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual bool IsVisible() OVERRIDE;
+                       const gfx::Point& location) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual bool IsVisible() override;
 
   // WidgetObserver:
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) override;
 
   const gfx::ScreenType screen_type_;
 

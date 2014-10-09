@@ -34,7 +34,7 @@ class WM_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
   // ui::EventTargeter:
   virtual bool EventLocationInsideBounds(
       ui::EventTarget* target,
-      const ui::LocatedEvent& event) const OVERRIDE;
+      const ui::LocatedEvent& event) const override;
 
  private:
   // Returns true if the hit testing (EventLocationInsideBounds()) should use

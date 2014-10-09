@@ -85,7 +85,7 @@ class EventsXTest : public testing::Test {
   EventsXTest() {}
   virtual ~EventsXTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DeviceDataManagerX11::CreateInstance();
     ui::TouchFactory::GetInstance()->ResetForTest();
   }

@@ -88,7 +88,7 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest {
     Init();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     apps_search_box_controller_.reset(
         [[AppsSearchBoxController alloc] initWithFrame:
             NSMakeRect(0, 0, 400, 100)]);
@@ -99,7 +99,7 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest {
     [[test_window() contentView] addSubview:[apps_search_box_controller_ view]];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     [apps_search_box_controller_ setDelegate:nil];
     ui::CocoaTest::TearDown();
   }

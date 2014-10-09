@@ -745,7 +745,7 @@ void Layer::SetForceRenderSurface(bool force) {
 class LayerDebugInfo : public base::debug::ConvertableToTraceFormat {
  public:
   explicit LayerDebugInfo(std::string name) : name_(name) { }
-  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+  virtual void AppendAsTraceFormat(std::string* out) const override {
     base::DictionaryValue dictionary;
     dictionary.SetString("layer_name", name_);
     base::JSONWriter::Write(&dictionary, out);

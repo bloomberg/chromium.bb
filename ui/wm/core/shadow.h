@@ -54,7 +54,7 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   void SetStyle(Style style);
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
  private:
   // Updates the shadow images to the current |style_|.

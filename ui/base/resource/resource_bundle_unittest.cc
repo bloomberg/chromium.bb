@@ -77,20 +77,20 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
       ui::ScaleFactor scale_factor));
   virtual bool GetRawDataResource(int resource_id,
                                   ui::ScaleFactor scale_factor,
-                                  base::StringPiece* value) OVERRIDE {
+                                  base::StringPiece* value) override {
     *value = GetRawDataResourceMock(resource_id, scale_factor);
     return true;
   }
   MOCK_METHOD1(GetLocalizedStringMock, base::string16(int message_id));
   virtual bool GetLocalizedString(int message_id,
-                                  base::string16* value) OVERRIDE {
+                                  base::string16* value) override {
     *value = GetLocalizedStringMock(message_id);
     return true;
   }
   MOCK_METHOD1(GetFontMock,
                gfx::Font*(ui::ResourceBundle::FontStyle style));
   virtual scoped_ptr<gfx::Font> GetFont(
-      ui::ResourceBundle::FontStyle style) OVERRIDE {
+      ui::ResourceBundle::FontStyle style) override {
     return scoped_ptr<gfx::Font>(GetFontMock(style));
   }
 };
@@ -153,7 +153,7 @@ class ResourceBundleTest : public testing::Test {
   }
 
   // Overridden from testing::Test:
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     delete resource_bundle_;
   }
 
@@ -383,7 +383,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   virtual ~ResourceBundleImageTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Create a temporary directory to write test resource bundles to.
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
   }

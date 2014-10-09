@@ -27,19 +27,19 @@ class InProcessContextFactory : public ContextFactory {
   // ContextFactory implementation
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor,
-      bool software_fallback) OVERRIDE;
+      bool software_fallback) override;
 
   virtual scoped_refptr<Reflector> CreateReflector(
       Compositor* mirrored_compositor,
-      Layer* mirroring_layer) OVERRIDE;
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
+      Layer* mirroring_layer) override;
+  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) override;
 
   virtual scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider()
-      OVERRIDE;
-  virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
-  virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
+      override;
+  virtual void RemoveCompositor(Compositor* compositor) override;
+  virtual bool DoesCreateTestContexts() override;
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
 
  private:
   scoped_ptr<base::Thread> compositor_thread_;

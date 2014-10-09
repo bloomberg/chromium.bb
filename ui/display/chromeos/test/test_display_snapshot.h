@@ -39,7 +39,7 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
   }
 
   // DisplaySnapshot overrides:
-  virtual std::string ToString() const OVERRIDE;
+  virtual std::string ToString() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDisplaySnapshot);

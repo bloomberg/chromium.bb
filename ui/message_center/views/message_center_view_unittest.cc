@@ -40,9 +40,9 @@ class MockNotificationView : public NotificationView {
                                 Test* test);
   virtual ~MockNotificationView();
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int w) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int w) const override;
+  virtual void Layout() override;
 
  private:
   Test* test_;
@@ -87,26 +87,26 @@ class MessageCenterViewTest : public testing::Test,
   MessageCenterViewTest();
   virtual ~MessageCenterViewTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   MessageCenterView* GetMessageCenterView();
   int GetNotificationCount();
   int GetCallCount(CallType type);
 
  // Overridden from MessageCenterController:
-  virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
+  virtual void ClickOnNotification(const std::string& notification_id) override;
   virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) OVERRIDE;
+                                  bool by_user) override;
   virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
-      const base::string16& display_source) OVERRIDE;
-  virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
+      const base::string16& display_source) override;
+  virtual bool HasClickedListener(const std::string& notification_id) override;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
-                                         int button_index) OVERRIDE;
+                                         int button_index) override;
 
   // Overridden from MockNotificationView::Test
-  virtual void RegisterCall(CallType type) OVERRIDE;
+  virtual void RegisterCall(CallType type) override;
 
   void LogBounds(int depth, views::View* view);
 

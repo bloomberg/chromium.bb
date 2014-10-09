@@ -51,7 +51,7 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
+  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
       std::vector<Atom>::iterator it = std::find(
@@ -82,7 +82,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
   }
 
   // X11PropertyChangeWaiter:
-  virtual void Wait() OVERRIDE {
+  virtual void Wait() override {
     // StackingClientListWaiter may be created after
     // _NET_CLIENT_LIST_STACKING already contains |expected_windows|.
     if (!ShouldKeepOnWaiting(NULL))
@@ -93,7 +93,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
+  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<XID> stack;
     ui::GetXWindowStack(ui::GetX11RootWindow(), &stack);
     for (size_t i = 0; i < expected_windows_.size(); ++i) {
@@ -205,7 +205,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
   }
 
   // ViewsTestBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -217,7 +217,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
     X11DesktopHandler::get();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     XSynchronize(xdisplay(), False);
     ViewsTestBase::TearDown();
   }

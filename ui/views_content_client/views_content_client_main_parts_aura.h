@@ -23,8 +23,8 @@ class ViewsContentClientMainPartsAura : public ViewsContentClientMainParts {
   virtual ~ViewsContentClientMainPartsAura();
 
   // content::BrowserMainParts:
-  virtual void ToolkitInitialized() OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void ToolkitInitialized() override;
+  virtual void PostMainMessageLoopRun() override;
 
  private:
   scoped_ptr< ::wm::WMState> wm_state_;

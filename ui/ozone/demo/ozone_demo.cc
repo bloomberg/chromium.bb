@@ -66,22 +66,22 @@ class DemoWindow : public ui::PlatformWindowDelegate {
    }
 
   // PlatformWindowDelegate:
-  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {}
-  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE {}
-  virtual void DispatchEvent(ui::Event* event) OVERRIDE {}
-  virtual void OnCloseRequest() OVERRIDE {
+  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) override {}
+  virtual void DispatchEvent(ui::Event* event) override {}
+  virtual void OnCloseRequest() override {
     Quit();
   }
-  virtual void OnClosed() OVERRIDE {}
+  virtual void OnClosed() override {}
   virtual void OnWindowStateChanged(
-      ui::PlatformWindowState new_state) OVERRIDE {}
-  virtual void OnLostCapture() OVERRIDE {}
+      ui::PlatformWindowState new_state) override {}
+  virtual void OnLostCapture() override {}
   virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) OVERRIDE {
+      gfx::AcceleratedWidget widget) override {
     DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
     widget_ = widget;
   }
-  virtual void OnActivationChanged(bool active) OVERRIDE {}
+  virtual void OnActivationChanged(bool active) override {}
 
  private:
   bool InitializeGLSurface() {

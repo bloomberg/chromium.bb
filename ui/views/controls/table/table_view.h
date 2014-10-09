@@ -165,28 +165,28 @@ class VIEWS_EXPORT TableView
   int row_height() const { return row_height_; }
 
   // View overrides:
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const override;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
-                                    gfx::Point* loc) const OVERRIDE;
+                                    gfx::Point* loc) const override;
 
   // ui::TableModelObserver overrides:
-  virtual void OnModelChanged() OVERRIDE;
-  virtual void OnItemsChanged(int start, int length) OVERRIDE;
-  virtual void OnItemsAdded(int start, int length) OVERRIDE;
-  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
+  virtual void OnModelChanged() override;
+  virtual void OnItemsChanged(int start, int length) override;
+  virtual void OnItemsAdded(int start, int length) override;
+  virtual void OnItemsRemoved(int start, int length) override;
 
  protected:
   // View overrides:
-  virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+  virtual gfx::Point GetKeyboardContextMenuLocation() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
 
  private:
   friend class TableViewTestHelper;

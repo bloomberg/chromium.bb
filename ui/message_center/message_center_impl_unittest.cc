@@ -27,7 +27,7 @@ class MessageCenterImplTest : public testing::Test,
  public:
   MessageCenterImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     MessageCenter::Initialize();
     message_center_ = MessageCenter::Get();
     loop_.reset(new base::MessageLoop);
@@ -35,7 +35,7 @@ class MessageCenterImplTest : public testing::Test,
     closure_ = run_loop_->QuitClosure();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     run_loop_.reset();
     loop_.reset();
     message_center_ = NULL;
@@ -118,7 +118,7 @@ class ToggledNotificationBlocker : public NotificationBlocker {
 
   // NotificationBlocker overrides:
   virtual  bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const OVERRIDE {
+      const message_center::NotifierId& notifier_id) const override {
     return notifications_enabled_;
   }
 
@@ -138,7 +138,7 @@ class PopupNotificationBlocker : public ToggledNotificationBlocker {
 
   // NotificationBlocker overrides:
   virtual bool ShouldShowNotificationAsPopup(
-      const NotifierId& notifier_id) const OVERRIDE {
+      const NotifierId& notifier_id) const override {
     return (notifier_id == allowed_notifier_) ||
         ToggledNotificationBlocker::ShouldShowNotificationAsPopup(notifier_id);
   }
@@ -158,7 +158,7 @@ class TotalNotificationBlocker : public PopupNotificationBlocker {
 
   // NotificationBlocker overrides:
   virtual bool ShouldShowNotification(
-      const NotifierId& notifier_id) const OVERRIDE {
+      const NotifierId& notifier_id) const override {
     return ShouldShowNotificationAsPopup(notifier_id);
   }
 
@@ -202,7 +202,7 @@ class MockPopupTimersController : public PopupTimersController {
         quit_closure_(quit_closure) {}
   virtual ~MockPopupTimersController() {}
 
-  virtual void TimerFinished(const std::string& id) OVERRIDE {
+  virtual void TimerFinished(const std::string& id) override {
     base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
     timer_finished_ = true;
     last_id_ = id;

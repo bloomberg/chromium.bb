@@ -57,12 +57,12 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   void ProcessXEvent(XEvent* event);
 
   // ui::PlatformEventDispatcher
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // Overridden from aura::EnvObserver:
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
-  virtual void OnWillDestroyEnv() OVERRIDE;
+  virtual void OnWindowInitialized(aura::Window* window) override;
+  virtual void OnWillDestroyEnv() override;
 
  private:
   enum ActiveState {

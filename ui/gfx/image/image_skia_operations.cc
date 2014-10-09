@@ -58,7 +58,7 @@ class BinaryImageSource : public gfx::ImageSkiaSource {
   }
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     ImageSkiaRep first_rep = first_.GetRepresentation(scale);
     ImageSkiaRep second_rep = second_.GetRepresentation(scale);
     if (first_rep.pixel_size() != second_rep.pixel_size()) {
@@ -112,7 +112,7 @@ class BlendingImageSource : public BinaryImageSource {
   // BinaryImageSource overrides:
   virtual ImageSkiaRep CreateImageSkiaRep(
       const ImageSkiaRep& first_rep,
-      const ImageSkiaRep& second_rep) const OVERRIDE {
+      const ImageSkiaRep& second_rep) const override {
     SkBitmap blended = SkBitmapOperations::CreateBlendedBitmap(
         first_rep.sk_bitmap(), second_rep.sk_bitmap(), alpha_);
     return ImageSkiaRep(blended, first_rep.scale());
@@ -136,7 +136,7 @@ class SuperimposedImageSource : public gfx::CanvasImageSource {
   virtual ~SuperimposedImageSource() {}
 
   // gfx::CanvasImageSource override.
-  virtual void Draw(Canvas* canvas) OVERRIDE {
+  virtual void Draw(Canvas* canvas) override {
     canvas->DrawImageInt(first_, 0, 0);
     canvas->DrawImageInt(second_,
                          (first_.width() - second_.width()) / 2,
@@ -161,7 +161,7 @@ class TransparentImageSource : public gfx::ImageSkiaSource {
 
  private:
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale);
     SkBitmap alpha;
     alpha.allocN32Pixels(image_rep.pixel_width(),
@@ -190,7 +190,7 @@ class MaskedImageSource : public BinaryImageSource {
   // BinaryImageSource overrides:
   virtual ImageSkiaRep CreateImageSkiaRep(
       const ImageSkiaRep& first_rep,
-      const ImageSkiaRep& second_rep) const OVERRIDE {
+      const ImageSkiaRep& second_rep) const override {
     return ImageSkiaRep(SkBitmapOperations::CreateMaskedBitmap(
         first_rep.sk_bitmap(), second_rep.sk_bitmap()),
                         first_rep.scale());
@@ -216,7 +216,7 @@ class TiledImageSource : public gfx::ImageSkiaSource {
   }
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     ImageSkiaRep source_rep = source_.GetRepresentation(scale);
     gfx::Rect bounds = DIPToPixelBounds(gfx::Rect(src_x_, src_y_, dst_w_,
                                                   dst_h_), source_rep.scale());
@@ -249,7 +249,7 @@ class HSLImageSource : public gfx::ImageSkiaSource {
   }
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale);
     return gfx::ImageSkiaRep(
         SkBitmapOperations::CreateHSLShiftedBitmap(image_rep.sk_bitmap(),
@@ -279,7 +279,7 @@ class ButtonImageSource: public gfx::ImageSkiaSource {
   }
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale);
     ImageSkiaRep mask_rep = mask_.GetRepresentation(scale);
     if (image_rep.scale() != mask_rep.scale()) {
@@ -314,7 +314,7 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
   }
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale);
     SkIRect subset_bounds_in_pixel = RectToSkIRect(
         DIPToPixelBounds(subset_bounds_, image_rep.scale()));
@@ -346,7 +346,7 @@ class ResizeSource : public ImageSkiaSource {
   virtual ~ResizeSource() {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     const ImageSkiaRep& image_rep = source_.GetRepresentation(scale);
     if (image_rep.GetWidth() == target_dip_size_.width() &&
         image_rep.GetHeight() == target_dip_size_.height())
@@ -381,7 +381,7 @@ class DropShadowSource : public ImageSkiaSource {
   virtual ~DropShadowSource() {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     const ImageSkiaRep& image_rep = source_.GetRepresentation(scale);
 
     ShadowValues shadows_in_pixel;
@@ -413,7 +413,7 @@ class RotatedSource : public ImageSkiaSource {
   virtual ~RotatedSource() {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     const ImageSkiaRep& image_rep = source_.GetRepresentation(scale);
     const SkBitmap rotated_bitmap =
         SkBitmapOperations::Rotate(image_rep.sk_bitmap(), rotation_);

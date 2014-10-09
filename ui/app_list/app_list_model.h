@@ -135,7 +135,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // AppListItemListObserver
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItem* item) OVERRIDE;
+                               AppListItem* item) override;
 
   // Returns an existing folder matching |folder_id| or creates a new folder.
   AppListFolderItem* FindOrCreateFolderItem(const std::string& folder_id);

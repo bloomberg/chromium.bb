@@ -31,9 +31,9 @@ class CacaWindowManager : public SurfaceFactoryOzone {
   // ui::SurfaceFactoryOzone overrides:
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
   virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget) OVERRIDE;
+      gfx::AcceleratedWidget widget) override;
 
  private:
   IDMap<CacaWindow> windows_;

@@ -80,11 +80,11 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
 
  private:
   // ImplicitAnimationObserver implementation
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     animations_completed_ = true;
   }
 
-  virtual bool RequiresNotificationWhenAnimatorDestroyed() const OVERRIDE {
+  virtual bool RequiresNotificationWhenAnimatorDestroyed() const override {
     return notify_when_animator_destructed_;
   }
 
@@ -102,17 +102,17 @@ class DeletingLayerAnimationObserver : public LayerAnimationObserver {
   }
 
   virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) OVERRIDE {
+      LayerAnimationSequence* sequence) override {
     animator_->StopAnimating();
   }
 
   virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) OVERRIDE {
+      LayerAnimationSequence* sequence) override {
     animator_->StopAnimating();
   }
 
   virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) OVERRIDE {
+      LayerAnimationSequence* sequence) override {
   }
 
  private:
@@ -158,7 +158,7 @@ class TestLayerAnimator : public LayerAnimator {
   }
 
   virtual void ProgressAnimation(LayerAnimationSequence* sequence,
-                                 base::TimeTicks now) OVERRIDE {
+                                 base::TimeTicks now) override {
     EXPECT_TRUE(HasAnimation(sequence));
     LayerAnimator::ProgressAnimation(sequence, now);
   }
@@ -1948,7 +1948,7 @@ TEST(LayerAnimatorTest, CallbackDeletesAnimationInProgress) {
         max_width_(max_width) {
     }
 
-    virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE {
+    virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) override {
       TestLayerAnimationDelegate::SetBoundsFromAnimation(bounds);
       if (bounds.width() > max_width_)
         animator_->StopAnimating();
@@ -2282,19 +2282,19 @@ public:
 
   // LayerAnimationObserver implementation.
   virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) OVERRIDE {
+      LayerAnimationSequence* sequence) override {
     if (delete_on_animation_ended_)
       delete this;
   }
 
   virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) OVERRIDE {
+      LayerAnimationSequence* sequence) override {
     if (delete_on_animation_aborted_)
       delete this;
   }
 
   virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) OVERRIDE {
+      LayerAnimationSequence* sequence) override {
     if (delete_on_animation_scheduled_)
       delete this;
   }
@@ -2508,7 +2508,7 @@ class CollectionLayerAnimationDelegate : public TestLayerAnimationDelegate {
   virtual ~CollectionLayerAnimationDelegate() {}
 
   // LayerAnimationDelegate:
-  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() OVERRIDE {
+  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() override {
     return &collection;
   }
 

@@ -26,7 +26,7 @@ static const char kTempIconFilename[] = "temp_test_icon.ico";
 
 class IconUtilTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::RegisterPathProvider();
     ASSERT_TRUE(PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_));
     temp_directory_.CreateUniqueTempDir();

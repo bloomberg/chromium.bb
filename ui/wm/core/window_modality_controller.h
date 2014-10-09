@@ -38,20 +38,20 @@ class WM_EXPORT WindowModalityController : public ui::EventHandler,
   virtual ~WindowModalityController();
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Overridden from aura::EnvObserver:
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
+  virtual void OnWindowInitialized(aura::Window* window) override;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE;
+                                       intptr_t old) override;
   virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+                                         bool visible) override;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   // Processes a mouse/touch event, and returns true if the event should be

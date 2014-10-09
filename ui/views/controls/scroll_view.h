@@ -75,21 +75,21 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetVerticalScrollBar(ScrollBar* vert_sb);
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual const char* GetClassName() const override;
 
   // ScrollBarController overrides:
-  virtual void ScrollToPosition(ScrollBar* source, int position) OVERRIDE;
+  virtual void ScrollToPosition(ScrollBar* source, int position) override;
   virtual int GetScrollIncrement(ScrollBar* source,
                                  bool is_page,
-                                 bool is_positive) OVERRIDE;
+                                 bool is_positive) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollViewTest, CornerViewVisibility);
@@ -211,7 +211,7 @@ class FixedRowHeightScrollHelper : public VariableRowHeightScrollHelper {
 
  protected:
   // Calculates the bounds of the row from the top margin and row height.
-  virtual RowInfo GetRowInfo(int y) OVERRIDE;
+  virtual RowInfo GetRowInfo(int y) override;
 
  private:
   int top_margin_;

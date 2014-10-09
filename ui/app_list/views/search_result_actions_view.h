@@ -34,11 +34,11 @@ class SearchResultActionsView : public views::View,
   void CreateBlueButton(const SearchResult::Action& action);
 
   // views::View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   SearchResultActionsViewDelegate* delegate_;  // Not owned.
   int selected_action_;

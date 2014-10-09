@@ -19,7 +19,7 @@ class VIEWS_EXAMPLES_EXPORT DoubleSplitViewExample : public ExampleBase {
   virtual ~DoubleSplitViewExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // The SingleSplitViews to be embedded.

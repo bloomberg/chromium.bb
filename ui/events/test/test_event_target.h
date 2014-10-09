@@ -54,13 +54,13 @@ class TestEventTarget : public EventTarget {
   bool Contains(TestEventTarget* target) const;
 
   // EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
-  virtual EventTarget* GetParentTarget() OVERRIDE;
-  virtual scoped_ptr<EventTargetIterator> GetChildIterator() const OVERRIDE;
-  virtual EventTargeter* GetEventTargeter() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<EventTargetIterator> GetChildIterator() const override;
+  virtual EventTargeter* GetEventTargeter() override;
 
   // EventHandler:
-  virtual void OnEvent(Event* event) OVERRIDE;
+  virtual void OnEvent(Event* event) override;
 
  private:
   void set_parent(TestEventTarget* parent) { parent_ = parent; }

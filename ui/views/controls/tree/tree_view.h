@@ -120,54 +120,54 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   views::Textfield* editor() { return editor_; }
 
   // View overrides:
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual ui::TextInputClient* GetTextInputClient() override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
   virtual void ShowContextMenu(const gfx::Point& p,
-                               ui::MenuSourceType source_type) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+                               ui::MenuSourceType source_type) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual const char* GetClassName() const override;
 
   // TreeModelObserver overrides:
   virtual void TreeNodesAdded(ui::TreeModel* model,
                               ui::TreeModelNode* parent,
                               int start,
-                              int count) OVERRIDE;
+                              int count) override;
   virtual void TreeNodesRemoved(ui::TreeModel* model,
                                 ui::TreeModelNode* parent,
                                 int start,
-                                int count) OVERRIDE;
+                                int count) override;
   virtual void TreeNodeChanged(ui::TreeModel* model,
-                               ui::TreeModelNode* model_node) OVERRIDE;
+                               ui::TreeModelNode* model_node) override;
 
   // TextfieldController overrides:
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
 
   // FocusChangeListener overrides:
   virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
+                                 View* focused_now) override;
   virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
+                                View* focused_now) override;
 
   // PrefixDelegate overrides:
-  virtual int GetRowCount() OVERRIDE;
-  virtual int GetSelectedRow() OVERRIDE;
-  virtual void SetSelectedRow(int row) OVERRIDE;
-  virtual base::string16 GetTextForRow(int row) OVERRIDE;
+  virtual int GetRowCount() override;
+  virtual int GetSelectedRow() override;
+  virtual void SetSelectedRow(int row) override;
+  virtual base::string16 GetTextForRow(int row) override;
 
  protected:
   // View overrides:
-  virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+  virtual gfx::Point GetKeyboardContextMenuLocation() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
 
  private:
   friend class TreeViewTest;

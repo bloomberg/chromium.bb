@@ -66,7 +66,7 @@ class GFX_EXPORT SlideAnimation : public LinearAnimation {
   int GetSlideDuration() const { return slide_duration_; }
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
-  virtual double GetCurrentValue() const OVERRIDE;
+  virtual double GetCurrentValue() const override;
   bool IsShowing() const { return showing_; }
   bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
 
@@ -74,7 +74,7 @@ class GFX_EXPORT SlideAnimation : public LinearAnimation {
 
  private:
   // Overridden from Animation.
-  virtual void AnimateToState(double state) OVERRIDE;
+  virtual void AnimateToState(double state) override;
 
   AnimationDelegate* target_;
 

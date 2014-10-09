@@ -59,13 +59,13 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   FolderType folder_type() const { return folder_type_; }
 
   // AppListItem
-  virtual void Activate(int event_flags) OVERRIDE;
-  virtual const char* GetItemType() const OVERRIDE;
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
-  virtual AppListItem* FindChildItem(const std::string& id) OVERRIDE;
-  virtual size_t ChildItemCount() const OVERRIDE;
-  virtual void OnExtensionPreferenceChanged() OVERRIDE;
-  virtual bool CompareForTest(const AppListItem* other) const OVERRIDE;
+  virtual void Activate(int event_flags) override;
+  virtual const char* GetItemType() const override;
+  virtual ui::MenuModel* GetContextMenuModel() override;
+  virtual AppListItem* FindChildItem(const std::string& id) override;
+  virtual size_t ChildItemCount() const override;
+  virtual void OnExtensionPreferenceChanged() override;
+  virtual bool CompareForTest(const AppListItem* other) const override;
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
@@ -77,15 +77,15 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
 
  private:
   // AppListItemObserver
-  virtual void ItemIconChanged() OVERRIDE;
+  virtual void ItemIconChanged() override;
 
   // AppListItemListObserver
-  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE;
+  virtual void OnListItemAdded(size_t index, AppListItem* item) override;
   virtual void OnListItemRemoved(size_t index,
-                                 AppListItem* item) OVERRIDE;;
+                                 AppListItem* item) override;;
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItem* item) OVERRIDE;
+                               AppListItem* item) override;
 
   void UpdateTopItems();
 

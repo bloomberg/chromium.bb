@@ -21,9 +21,9 @@ class FloatAnimationCurveAdapter : public cc::FloatAnimationCurve {
   virtual ~FloatAnimationCurveAdapter() { }
 
   // FloatAnimationCurve implementation.
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<cc::AnimationCurve> Clone() const OVERRIDE;
-  virtual float GetValue(double t) const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<cc::AnimationCurve> Clone() const override;
+  virtual float GetValue(double t) const override;
 
  private:
   gfx::Tween::Type tween_type_;

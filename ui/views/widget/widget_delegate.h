@@ -204,9 +204,9 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
   virtual ~WidgetDelegateView();
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual Widget* GetWidget() OVERRIDE;
-  virtual const Widget* GetWidget() const OVERRIDE;
+  virtual void DeleteDelegate() override;
+  virtual Widget* GetWidget() override;
+  virtual const Widget* GetWidget() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegateView);

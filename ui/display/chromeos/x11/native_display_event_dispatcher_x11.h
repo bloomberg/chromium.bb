@@ -25,8 +25,8 @@ class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
   virtual ~NativeDisplayEventDispatcherX11();
 
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
 

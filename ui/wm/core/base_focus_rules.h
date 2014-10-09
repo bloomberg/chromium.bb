@@ -26,15 +26,15 @@ class WM_EXPORT BaseFocusRules : public FocusRules {
       aura::Window* window) const;
 
   // Overridden from FocusRules:
-  virtual bool IsToplevelWindow(aura::Window* window) const OVERRIDE;
-  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
-  virtual bool CanFocusWindow(aura::Window* window) const OVERRIDE;
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) const OVERRIDE;
+  virtual bool IsToplevelWindow(aura::Window* window) const override;
+  virtual bool CanActivateWindow(aura::Window* window) const override;
+  virtual bool CanFocusWindow(aura::Window* window) const override;
+  virtual aura::Window* GetToplevelWindow(aura::Window* window) const override;
   virtual aura::Window* GetActivatableWindow(
-      aura::Window* window) const OVERRIDE;
-  virtual aura::Window* GetFocusableWindow(aura::Window* window) const OVERRIDE;
+      aura::Window* window) const override;
+  virtual aura::Window* GetFocusableWindow(aura::Window* window) const override;
   virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* ignore) const OVERRIDE;
+      aura::Window* ignore) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseFocusRules);

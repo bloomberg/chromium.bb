@@ -29,7 +29,7 @@ class WM_EXPORT NestedAcceleratorController
   virtual void PrepareNestedLoopClosures(
       base::MessagePumpDispatcher* dispatcher,
       base::Closure* run_closure,
-      base::Closure* quit_closure) OVERRIDE;
+      base::Closure* quit_closure) override;
 
  private:
   void RunNestedMessageLoop(scoped_ptr<base::RunLoop> run_loop,

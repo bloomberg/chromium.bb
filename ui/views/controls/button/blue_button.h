@@ -20,9 +20,9 @@ class VIEWS_EXPORT BlueButton : public LabelButton {
 
  private:
   // Overridden from LabelButton:
-  virtual void ResetColorsFromNativeTheme() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const OVERRIDE;
+  virtual void ResetColorsFromNativeTheme() override;
+  virtual const char* GetClassName() const override;
+  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BlueButton);
 };

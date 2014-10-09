@@ -64,7 +64,7 @@ class TestTextfield : public views::Textfield {
        key_received_(false),
        weak_ptr_factory_(this) {}
 
-  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) override {
     key_received_ = true;
 
     // Since OnKeyPressed() might destroy |this|, get a weak pointer and
@@ -80,7 +80,7 @@ class TestTextfield : public views::Textfield {
     return key_handled_;
   }
 
-  virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyReleased(const ui::KeyEvent& e) override {
     key_received_ = true;
     key_handled_ = views::Textfield::OnKeyReleased(e);
     return key_handled_;
@@ -123,7 +123,7 @@ class TextfieldDestroyerController : public views::TextfieldController {
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE {
+                              const ui::KeyEvent& key_event) override {
     target_.reset();
     return false;
   }
@@ -177,22 +177,22 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE {
+                               const base::string16& new_contents) override {
     // Paste calls TextfieldController::ContentsChanged() explicitly even if the
     // paste action did not change the content. So |new_contents| may match
     // |last_contents_|. For more info, see http://crbug.com/79002
     last_contents_ = new_contents;
   }
 
-  virtual void OnBeforeUserAction(Textfield* sender) OVERRIDE {
+  virtual void OnBeforeUserAction(Textfield* sender) override {
     ++on_before_user_action_;
   }
 
-  virtual void OnAfterUserAction(Textfield* sender) OVERRIDE {
+  virtual void OnAfterUserAction(Textfield* sender) override {
     ++on_after_user_action_;
   }
 
-  virtual void OnAfterCutOrCopy(ui::ClipboardType clipboard_type) OVERRIDE {
+  virtual void OnAfterCutOrCopy(ui::ClipboardType clipboard_type) override {
     copied_to_clipboard_ = clipboard_type;
   }
 
@@ -632,7 +632,7 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
 
     virtual bool MatchEvent(
         const ui::Event& event,
-        std::vector<ui::TextEditCommandAuraLinux>* commands) OVERRIDE {
+        std::vector<ui::TextEditCommandAuraLinux>* commands) override {
       return false;
     }
 

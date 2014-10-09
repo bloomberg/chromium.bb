@@ -28,15 +28,15 @@ class VIEWS_EXPORT TableHeader : public views::View {
   const gfx::FontList& font_list() const { return font_list_; }
 
   // views::View overrides.
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void Layout() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnMouseCaptureLost() override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Used to track the column being resized.

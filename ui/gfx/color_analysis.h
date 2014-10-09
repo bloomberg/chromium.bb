@@ -42,7 +42,7 @@ class GFX_EXPORT GridSampler : public KMeanImageSampler {
    GridSampler();
    virtual ~GridSampler();
 
-   virtual int GetSample(int width, int height) OVERRIDE;
+   virtual int GetSample(int width, int height) override;
 
   private:
    // The number of times GetSample has been called.

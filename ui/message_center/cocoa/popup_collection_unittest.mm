@@ -35,7 +35,7 @@ class PopupCollectionTest : public ui::CocoaTest {
     }];
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     collection_.reset();  // Close all popups.
     ui::CocoaTest::TearDown();
   }

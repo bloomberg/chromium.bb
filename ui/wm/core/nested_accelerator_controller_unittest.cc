@@ -40,10 +40,10 @@ class MockDispatcher : public ui::PlatformEventDispatcher {
 
  private:
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override {
     return true;
   }
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;
     return ui::POST_DISPATCH_NONE;
@@ -62,11 +62,11 @@ class TestTarget : public ui::AcceleratorTarget {
   int accelerator_pressed_count() const { return accelerator_pressed_count_; }
 
   // Overridden from ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     accelerator_pressed_count_++;
     return true;
   }
-  virtual bool CanHandleAccelerators() const OVERRIDE { return true; }
+  virtual bool CanHandleAccelerators() const override { return true; }
 
  private:
   int accelerator_pressed_count_;
@@ -105,7 +105,7 @@ class MockNestedAcceleratorDelegate : public NestedAcceleratorDelegate {
 
   // NestedAcceleratorDelegate:
   virtual Result ProcessAccelerator(
-      const ui::Accelerator& accelerator) OVERRIDE {
+      const ui::Accelerator& accelerator) override {
     return accelerator_manager_->Process(accelerator) ?
         RESULT_PROCESSED : RESULT_NOT_PROCESSED;
   }
@@ -127,7 +127,7 @@ class NestedAcceleratorTest : public aura::test::AuraTestBase {
   NestedAcceleratorTest() {}
   virtual ~NestedAcceleratorTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AuraTestBase::SetUp();
     delegate_ = new MockNestedAcceleratorDelegate();
     nested_accelerator_controller_.reset(
@@ -136,7 +136,7 @@ class NestedAcceleratorTest : public aura::test::AuraTestBase {
                                       nested_accelerator_controller_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     aura::client::SetDispatcherClient(root_window(), NULL);
     AuraTestBase::TearDown();
     delegate_ = NULL;

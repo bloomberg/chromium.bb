@@ -32,26 +32,26 @@ class TestCursorClient : public aura::client::CursorClient {
   }
 
   // Overridden from aura::client::CursorClient:
-  virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor() const OVERRIDE;
-  virtual void ShowCursor() OVERRIDE;
-  virtual void HideCursor() OVERRIDE;
-  virtual void SetCursorSet(ui::CursorSetType cursor_set) OVERRIDE;
-  virtual ui::CursorSetType GetCursorSet() const OVERRIDE;
-  virtual bool IsCursorVisible() const OVERRIDE;
-  virtual void EnableMouseEvents() OVERRIDE;
-  virtual void DisableMouseEvents() OVERRIDE;
-  virtual bool IsMouseEventsEnabled() const OVERRIDE;
-  virtual void SetDisplay(const gfx::Display& display) OVERRIDE;
-  virtual void LockCursor() OVERRIDE;
-  virtual void UnlockCursor() OVERRIDE;
-  virtual bool IsCursorLocked() const OVERRIDE;
+  virtual void SetCursor(gfx::NativeCursor cursor) override;
+  virtual gfx::NativeCursor GetCursor() const override;
+  virtual void ShowCursor() override;
+  virtual void HideCursor() override;
+  virtual void SetCursorSet(ui::CursorSetType cursor_set) override;
+  virtual ui::CursorSetType GetCursorSet() const override;
+  virtual bool IsCursorVisible() const override;
+  virtual void EnableMouseEvents() override;
+  virtual void DisableMouseEvents() override;
+  virtual bool IsMouseEventsEnabled() const override;
+  virtual void SetDisplay(const gfx::Display& display) override;
+  virtual void LockCursor() override;
+  virtual void UnlockCursor() override;
+  virtual bool IsCursorLocked() const override;
   virtual void AddObserver(
-      aura::client::CursorClientObserver* observer) OVERRIDE;
+      aura::client::CursorClientObserver* observer) override;
   virtual void RemoveObserver(
-      aura::client::CursorClientObserver* observer) OVERRIDE;
+      aura::client::CursorClientObserver* observer) override;
   virtual bool ShouldHideCursorOnKeyEvent(
-      const ui::KeyEvent& event) const OVERRIDE;
+      const ui::KeyEvent& event) const override;
 
  private:
   bool visible_;

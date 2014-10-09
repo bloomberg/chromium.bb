@@ -73,7 +73,7 @@ class LatencyInfoTracedValue : public base::debug::ConvertableToTraceFormat {
   static scoped_refptr<ConvertableToTraceFormat> FromValue(
       scoped_ptr<base::Value> value);
 
-  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE;
+  virtual void AppendAsTraceFormat(std::string* out) const override;
 
  private:
   explicit LatencyInfoTracedValue(base::Value* value);

@@ -29,7 +29,7 @@ class KeyPressCounterView : public views::View {
 
  private:
   // Overridden from views::View:
-  virtual bool OnKeyPressed(const ui::KeyEvent& key_event) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& key_event) override {
     if (!::isalnum(static_cast<int>(key_event.key_code()))) {
       ++count_;
       return true;
@@ -48,7 +48,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   virtual ~SearchBoxViewTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::test::WidgetTest::SetUp();
     widget_ = CreateTopLevelPlatformWidget();
     view_ = new SearchBoxView(this, &view_delegate_);
@@ -58,7 +58,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     view_->set_contents_view(counter_view_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     widget_->CloseNow();
     views::test::WidgetTest::TearDown();
   }
@@ -107,7 +107,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
  private:
   // Overridden from SearchBoxViewDelegate:
-  virtual void QueryChanged(SearchBoxView* sender) OVERRIDE {
+  virtual void QueryChanged(SearchBoxView* sender) override {
     ++query_changed_count_;
     last_query_ = sender->search_box()->text();
   }

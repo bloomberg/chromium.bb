@@ -21,11 +21,11 @@ class VIEWS_EXAMPLES_EXPORT ProgressBarExample : public ExampleBase,
   virtual ~ProgressBarExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* button, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* button, const ui::Event& event) override;
 
   Button* minus_button_;
   Button* plus_button_;

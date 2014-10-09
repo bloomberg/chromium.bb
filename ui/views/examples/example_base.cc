@@ -29,7 +29,7 @@ class ContainerView : public View {
  private:
   // View:
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
+      const ViewHierarchyChangedDetails& details) override {
     View::ViewHierarchyChanged(details);
     // We're not using child == this because a Widget may not be
     // available when this is added to the hierarchy.

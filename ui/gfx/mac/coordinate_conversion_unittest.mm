@@ -35,8 +35,8 @@ class MacCoordinateConversionTest : public PlatformTest {
   MacCoordinateConversionTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  private:
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_frame_;

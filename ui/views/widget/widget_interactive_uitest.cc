@@ -47,7 +47,7 @@ class ExitLoopOnRelease : public View {
 
  private:
   // Overridden from View:
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override {
     GetWidget()->Close();
     base::MessageLoop::current()->QuitNow();
   }
@@ -63,7 +63,7 @@ class GestureCaptureView : public View {
 
  private:
   // Overridden from View:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       GetWidget()->SetCapture(this);
       event->StopPropagation();
@@ -84,16 +84,16 @@ class MouseView : public View {
   }
   virtual ~MouseView() {}
 
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
     pressed_++;
     return true;
   }
 
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override {
     entered_++;
   }
 
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseExited(const ui::MouseEvent& event) override {
     exited_++;
   }
 
@@ -131,7 +131,7 @@ class NestedLoopCaptureView : public View {
 
  private:
   // Overridden from View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
     // Start a nested loop.
     widget_->Show();
     widget_->SetCapture(widget_->GetContentsView());
@@ -157,7 +157,7 @@ class WidgetTestInteractive : public WidgetTest {
   WidgetTestInteractive() {}
   virtual ~WidgetTestInteractive() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
@@ -587,7 +587,7 @@ class WidgetActivationTest : public Widget {
 
   virtual ~WidgetActivationTest() {}
 
-  virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE {
+  virtual void OnNativeWidgetActivationChanged(bool active) override {
     active_ = active;
   }
 
@@ -640,7 +640,7 @@ class ModalDialogDelegate : public DialogDelegateView {
   virtual ~ModalDialogDelegate() {}
 
   // WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return type_;
   }
 
@@ -867,7 +867,7 @@ class CaptureLostTrackingWidget : public Widget {
   }
 
   // Widget:
-  virtual void OnMouseCaptureLost() OVERRIDE {
+  virtual void OnMouseCaptureLost() override {
     got_capture_lost_ = true;
     Widget::OnMouseCaptureLost();
   }
@@ -888,7 +888,7 @@ class WidgetCaptureTest : public ViewsTestBase {
   virtual ~WidgetCaptureTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
@@ -1048,7 +1048,7 @@ class CaptureOnActivationObserver : public WidgetObserver {
   }
 
   // WidgetObserver:
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE {
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) override {
     if (active)
       widget->SetCapture(NULL);
   }
@@ -1101,7 +1101,7 @@ class MouseEventTrackingWidget : public Widget {
   }
 
   // Widget:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     got_mouse_event_ = true;
     Widget::OnMouseEvent(event);
   }

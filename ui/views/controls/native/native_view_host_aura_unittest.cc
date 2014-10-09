@@ -45,7 +45,7 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
 
   // aura::WindowObserver overrides
   virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     EventDetails event;
     event.type = visible ? EVENT_SHOWN : EVENT_HIDDEN;
     event.window = window;
@@ -59,7 +59,7 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
 
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     EventDetails event;
     event.type = EVENT_BOUNDS_CHANGED;
     event.window = window;

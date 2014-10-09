@@ -80,14 +80,14 @@ class VIEWS_EXPORT ImageView : public View {
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
 
   // Overriden from View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
+                              base::string16* tooltip) const override;
+  virtual bool CanProcessEventsWithinSubtree() const override;
 
  private:
   void OnPaintImage(gfx::Canvas* canvas);

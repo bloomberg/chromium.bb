@@ -17,7 +17,7 @@ class DisplaySnapshotProxy : public DisplaySnapshot {
   virtual ~DisplaySnapshotProxy();
 
   // DisplaySnapshot override:
-  virtual std::string ToString() const OVERRIDE;
+  virtual std::string ToString() const override;
 
  private:
   std::string string_representation_;

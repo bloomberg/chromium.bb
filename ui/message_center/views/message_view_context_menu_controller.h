@@ -22,7 +22,7 @@ class MessageViewContextMenuController : public views::ContextMenuController {
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   MessageCenterController* controller_;
 

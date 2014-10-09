@@ -32,28 +32,28 @@ class UI_BASE_EXPORT InputMethodBase
   virtual ~InputMethodBase();
 
   // Overriden from InputMethod.
-  virtual void SetDelegate(internal::InputMethodDelegate* delegate) OVERRIDE;
-  virtual void Init(bool focused) OVERRIDE;
+  virtual void SetDelegate(internal::InputMethodDelegate* delegate) override;
+  virtual void Init(bool focused) override;
   // If a derived class overrides OnFocus()/OnBlur(), it should call parent's
   // implementation first, to make sure |system_toplevel_window_focused_| flag
   // can be updated correctly.
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual TextInputClient* GetTextInputClient() const OVERRIDE;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void SetFocusedTextInputClient(TextInputClient* client) override;
+  virtual void DetachTextInputClient(TextInputClient* client) override;
+  virtual TextInputClient* GetTextInputClient() const override;
 
   // If a derived class overrides this method, it should call parent's
   // implementation.
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) override;
 
-  virtual TextInputType GetTextInputType() const OVERRIDE;
-  virtual TextInputMode GetTextInputMode() const OVERRIDE;
-  virtual bool CanComposeInline() const OVERRIDE;
-  virtual void ShowImeIfNeeded() OVERRIDE;
+  virtual TextInputType GetTextInputType() const override;
+  virtual TextInputMode GetTextInputMode() const override;
+  virtual bool CanComposeInline() const override;
+  virtual void ShowImeIfNeeded() override;
 
-  virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
+  virtual void AddObserver(InputMethodObserver* observer) override;
+  virtual void RemoveObserver(InputMethodObserver* observer) override;
 
  protected:
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,

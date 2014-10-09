@@ -45,12 +45,12 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   virtual ~NativeViewGLSurfaceOSMesa();
 
   // Implement subset of GLSurface.
-  virtual bool Initialize() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
-  virtual bool IsOffscreen() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
-  virtual bool SupportsPostSubBuffer() OVERRIDE;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual bool Initialize() override;
+  virtual void Destroy() override;
+  virtual bool IsOffscreen() override;
+  virtual bool SwapBuffers() override;
+  virtual bool SupportsPostSubBuffer() override;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
 
  private:
   gfx::AcceleratedWidget window_;

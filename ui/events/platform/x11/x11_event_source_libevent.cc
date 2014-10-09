@@ -39,16 +39,16 @@ class X11EventSourceLibevent : public X11EventSource,
   }
 
   // PlatformEventSource:
-  virtual void OnDispatcherListChanged() OVERRIDE {
+  virtual void OnDispatcherListChanged() override {
     AddEventWatcher();
   }
 
   // base::MessagePumpLibevent::Watcher:
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanReadWithoutBlocking(int fd) override {
     DispatchXEvents();
   }
 
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {
     NOTREACHED();
   }
 

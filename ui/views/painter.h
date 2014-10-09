@@ -100,8 +100,8 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   virtual ~HorizontalPainter();
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   // The image chunks.

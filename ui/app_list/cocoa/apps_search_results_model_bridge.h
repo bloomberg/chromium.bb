@@ -34,10 +34,10 @@ class AppsSearchResultsModelBridge : public ui::ListModelObserver {
   void ReloadDataForItems(size_t start, size_t count) const;
 
   // Overridden from ui::ListModelObserver:
-  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
-  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
-  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemsAdded(size_t start, size_t count) override;
+  virtual void ListItemsRemoved(size_t start, size_t count) override;
+  virtual void ListItemMoved(size_t index, size_t target_index) override;
+  virtual void ListItemsChanged(size_t start, size_t count) override;
 
   AppsSearchResultsController* parent_;  // Weak. Owns us.
   ScopedVector<ItemObserver> item_observers_;

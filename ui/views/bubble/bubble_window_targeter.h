@@ -23,7 +23,7 @@ class VIEWS_EXPORT BubbleWindowTargeter
  private:
   // wm::MaskedWindowTargeter:
   virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const OVERRIDE;
+                              gfx::Path* mask) const override;
 
   views::BubbleDelegateView* bubble_;
 

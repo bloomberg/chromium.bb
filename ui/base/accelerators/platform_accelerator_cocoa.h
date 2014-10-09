@@ -20,8 +20,8 @@ class UI_BASE_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
   virtual ~PlatformAcceleratorCocoa();
 
   // PlatformAccelerator:
-  virtual scoped_ptr<PlatformAccelerator> CreateCopy() const OVERRIDE;
-  virtual bool Equals(const PlatformAccelerator& rhs) const OVERRIDE;
+  virtual scoped_ptr<PlatformAccelerator> CreateCopy() const override;
+  virtual bool Equals(const PlatformAccelerator& rhs) const override;
 
   // The keyEquivalent of the NSMenuItem associated with the accelerator.
   NSString* characters() const { return characters_.get(); }

@@ -69,12 +69,12 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     WindowInvalid();
   }
 
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     WindowInvalid();
   }
@@ -168,7 +168,7 @@ class ImplicitHidingWindowAnimationObserver
   virtual ~ImplicitHidingWindowAnimationObserver() {}
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImplicitHidingWindowAnimationObserver);
@@ -410,15 +410,15 @@ class RotateHidingWindowAnimationObserver
 
   // ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     OnAnimationCompleted();
   }
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     OnAnimationCompleted();
   }
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
+      ui::LayerAnimationSequence* sequence) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RotateHidingWindowAnimationObserver);

@@ -32,7 +32,7 @@ class DesktopCaptureControllerTest : public ViewsTestBase {
   DesktopCaptureControllerTest() {}
   virtual ~DesktopCaptureControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
@@ -50,7 +50,7 @@ class DesktopViewInputTest : public View {
   DesktopViewInputTest()
       : received_gesture_event_(false) {}
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     received_gesture_event_ = true;
     return View::OnGestureEvent(event);
   }

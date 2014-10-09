@@ -19,7 +19,7 @@ class DeleteOnKeyEventView : public View {
   explicit DeleteOnKeyEventView(bool* set_on_key) : set_on_key_(set_on_key) {}
   virtual ~DeleteOnKeyEventView() {}
 
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override {
     *set_on_key_ = true;
     delete this;
     return true;
@@ -89,7 +89,7 @@ class TestContextMenuController : public ContextMenuController {
   virtual void ShowContextMenuForView(
       View* source,
       const gfx::Point& point,
-      ui::MenuSourceType source_type) OVERRIDE {
+      ui::MenuSourceType source_type) override {
     show_context_menu_calls_++;
     menu_source_view_ = source;
     menu_source_type_ = source_type;
@@ -163,7 +163,7 @@ class GestureHandlingView : public View {
   virtual ~GestureHandlingView() {
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     event->SetHandled();
   }
 

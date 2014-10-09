@@ -21,7 +21,7 @@ class WM_EXPORT TransientWindowStackingClient
   // WindowStackingClient:
   virtual bool AdjustStacking(aura::Window** child,
                               aura::Window** target,
-                              aura::Window::StackDirection* direction) OVERRIDE;
+                              aura::Window::StackDirection* direction) override;
 
  private:
   // Purely for DCHECKs.

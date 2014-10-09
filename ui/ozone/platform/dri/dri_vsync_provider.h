@@ -16,7 +16,7 @@ class DriVSyncProvider : public gfx::VSyncProvider {
   DriVSyncProvider(DriWindowDelegate* window_delegate);
   virtual ~DriVSyncProvider();
 
-  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) OVERRIDE;
+  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  private:
   DriWindowDelegate* window_delegate_;  // Not owned.

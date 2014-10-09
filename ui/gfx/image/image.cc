@@ -68,7 +68,7 @@ class PNGImageSource : public ImageSkiaSource {
   PNGImageSource() {}
   virtual ~PNGImageSource() {}
 
-  virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual ImageSkiaRep GetImageForScale(float scale) override {
     if (image_skia_reps_.empty())
       return ImageSkiaRep();
 
@@ -224,15 +224,15 @@ class ImageRepPNG : public ImageRep {
   virtual ~ImageRepPNG() {
   }
 
-  virtual int Width() const OVERRIDE {
+  virtual int Width() const override {
     return Size().width();
   }
 
-  virtual int Height() const OVERRIDE {
+  virtual int Height() const override {
     return Size().height();
   }
 
-  virtual gfx::Size Size() const OVERRIDE {
+  virtual gfx::Size Size() const override {
     // Read the PNG data to get the image size, caching it.
     if (!size_cache_) {
       for (std::vector<ImagePNGRep>::const_iterator it = image_reps().begin();
@@ -270,15 +270,15 @@ class ImageRepSkia : public ImageRep {
   virtual ~ImageRepSkia() {
   }
 
-  virtual int Width() const OVERRIDE {
+  virtual int Width() const override {
     return image_->width();
   }
 
-  virtual int Height() const OVERRIDE {
+  virtual int Height() const override {
     return image_->height();
   }
 
-  virtual gfx::Size Size() const OVERRIDE {
+  virtual gfx::Size Size() const override {
     return image_->size();
   }
 
@@ -304,15 +304,15 @@ class ImageRepCocoaTouch : public ImageRep {
     image_ = nil;
   }
 
-  virtual int Width() const OVERRIDE {
+  virtual int Width() const override {
     return Size().width();
   }
 
-  virtual int Height() const OVERRIDE {
+  virtual int Height() const override {
     return Size().height();
   }
 
-  virtual gfx::Size Size() const OVERRIDE {
+  virtual gfx::Size Size() const override {
     return internal::UIImageSize(image_);
   }
 
@@ -337,15 +337,15 @@ class ImageRepCocoa : public ImageRep {
     image_ = nil;
   }
 
-  virtual int Width() const OVERRIDE {
+  virtual int Width() const override {
     return Size().width();
   }
 
-  virtual int Height() const OVERRIDE {
+  virtual int Height() const override {
     return Size().height();
   }
 
-  virtual gfx::Size Size() const OVERRIDE {
+  virtual gfx::Size Size() const override {
     return internal::NSImageSize(image_);
   }
 

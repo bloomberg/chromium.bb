@@ -35,17 +35,17 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
       const aura::Window* window) const = 0;
 
   // Overridden from ui::test::EventGeneratorDelegate:
-  virtual ui::EventTarget* GetTargetAt(const gfx::Point& location) OVERRIDE;
-  virtual ui::EventSource* GetEventSource(ui::EventTarget* target) OVERRIDE;
+  virtual ui::EventTarget* GetTargetAt(const gfx::Point& location) override;
+  virtual ui::EventSource* GetEventSource(ui::EventTarget* target) override;
   virtual gfx::Point CenterOfTarget(
-      const ui::EventTarget* target) const OVERRIDE;
-  virtual gfx::Point CenterOfWindow(gfx::NativeWindow window) const OVERRIDE;
+      const ui::EventTarget* target) const override;
+  virtual gfx::Point CenterOfWindow(gfx::NativeWindow window) const override;
   virtual void ConvertPointFromTarget(const ui::EventTarget* target,
-                                      gfx::Point* point) const OVERRIDE;
+                                      gfx::Point* point) const override;
   virtual void ConvertPointToTarget(const ui::EventTarget* target,
-                                    gfx::Point* point) const OVERRIDE;
+                                    gfx::Point* point) const override;
   virtual void ConvertPointFromHost(const ui::EventTarget* hosted_target,
-                                    gfx::Point* point) const OVERRIDE;
+                                    gfx::Point* point) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateAura);

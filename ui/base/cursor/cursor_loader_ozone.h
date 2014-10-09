@@ -20,13 +20,13 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
   // CursorLoader overrides:
   virtual void LoadImageCursor(int id,
                                int resource_id,
-                               const gfx::Point& hot) OVERRIDE;
+                               const gfx::Point& hot) override;
   virtual void LoadAnimatedCursor(int id,
                                   int resource_id,
                                   const gfx::Point& hot,
-                                  int frame_delay_ms) OVERRIDE;
-  virtual void UnloadAll() OVERRIDE;
-  virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
+                                  int frame_delay_ms) override;
+  virtual void UnloadAll() override;
+  virtual void SetPlatformCursor(gfx::NativeCursor* cursor) override;
 
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.

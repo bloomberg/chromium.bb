@@ -18,7 +18,7 @@ class SyncControlVSyncProvider : public VSyncProvider {
   SyncControlVSyncProvider();
   virtual ~SyncControlVSyncProvider();
 
-  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) OVERRIDE;
+  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  protected:
   virtual bool GetSyncValues(int64* system_time,

@@ -20,7 +20,7 @@ class WindowButtonOrderObserverDelegate : public WindowButtonOrderProvider,
   // WindowButtonOrderObserver:
   virtual void OnWindowButtonOrderingChange(
       const std::vector<views::FrameButton>& leading_buttons,
-      const std::vector<views::FrameButton>& trailing_buttons) OVERRIDE;
+      const std::vector<views::FrameButton>& trailing_buttons) override;
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowButtonOrderObserverDelegate);
 };

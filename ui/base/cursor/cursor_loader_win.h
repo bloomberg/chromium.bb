@@ -18,13 +18,13 @@ class UI_BASE_EXPORT CursorLoaderWin : public CursorLoader {
   // Overridden from CursorLoader:
   virtual void LoadImageCursor(int id,
                                int resource_id,
-                               const gfx::Point& hot) OVERRIDE;
+                               const gfx::Point& hot) override;
   virtual void LoadAnimatedCursor(int id,
                                   int resource_id,
                                   const gfx::Point& hot,
-                                  int frame_delay_ms) OVERRIDE;
-  virtual void UnloadAll() OVERRIDE;
-  virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
+                                  int frame_delay_ms) override;
+  virtual void UnloadAll() override;
+  virtual void SetPlatformCursor(gfx::NativeCursor* cursor) override;
 
   // Used to pass the cursor resource module name to the cursor loader. This is
   // typically used to load non system cursors.

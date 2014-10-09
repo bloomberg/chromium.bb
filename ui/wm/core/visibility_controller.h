@@ -29,7 +29,7 @@ class WM_EXPORT VisibilityController
  private:
   // Overridden from aura::client::VisibilityClient:
   virtual void UpdateLayerVisibility(aura::Window* window,
-                                     bool visible) OVERRIDE;
+                                     bool visible) override;
 
   DISALLOW_COPY_AND_ASSIGN(VisibilityController);
 };

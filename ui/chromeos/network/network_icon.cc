@@ -214,7 +214,7 @@ class EmptyImageSource: public gfx::ImageSkiaSource {
       : size_(size) {
   }
 
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
     gfx::Size pixel_size = gfx::ToFlooredSize(gfx::ScaleSize(size_, scale));
     SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
     return gfx::ImageSkiaRep(empty_bitmap, scale);
@@ -237,7 +237,7 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
 
   // TODO(pkotwicz): Figure out what to do when a new image resolution becomes
   // available.
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
     gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale);
     if (icon_rep.is_null())
       return gfx::ImageSkiaRep();

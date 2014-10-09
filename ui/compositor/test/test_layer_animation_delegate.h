@@ -19,27 +19,27 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual ~TestLayerAnimationDelegate();
 
   // Implementation of LayerAnimationDelegate
-  virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) override;
   virtual void SetTransformFromAnimation(
-      const gfx::Transform& transform) OVERRIDE;
-  virtual void SetOpacityFromAnimation(float opacity) OVERRIDE;
-  virtual void SetVisibilityFromAnimation(bool visibility) OVERRIDE;
-  virtual void SetBrightnessFromAnimation(float brightness) OVERRIDE;
-  virtual void SetGrayscaleFromAnimation(float grayscale) OVERRIDE;
-  virtual void SetColorFromAnimation(SkColor color) OVERRIDE;
-  virtual void ScheduleDrawForAnimation() OVERRIDE;
-  virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
-  virtual gfx::Transform GetTransformForAnimation() const OVERRIDE;
-  virtual float GetOpacityForAnimation() const OVERRIDE;
-  virtual bool GetVisibilityForAnimation() const OVERRIDE;
-  virtual float GetBrightnessForAnimation() const OVERRIDE;
-  virtual float GetGrayscaleForAnimation() const OVERRIDE;
-  virtual SkColor GetColorForAnimation() const OVERRIDE;
-  virtual float GetDeviceScaleFactor() const OVERRIDE;
+      const gfx::Transform& transform) override;
+  virtual void SetOpacityFromAnimation(float opacity) override;
+  virtual void SetVisibilityFromAnimation(bool visibility) override;
+  virtual void SetBrightnessFromAnimation(float brightness) override;
+  virtual void SetGrayscaleFromAnimation(float grayscale) override;
+  virtual void SetColorFromAnimation(SkColor color) override;
+  virtual void ScheduleDrawForAnimation() override;
+  virtual const gfx::Rect& GetBoundsForAnimation() const override;
+  virtual gfx::Transform GetTransformForAnimation() const override;
+  virtual float GetOpacityForAnimation() const override;
+  virtual bool GetVisibilityForAnimation() const override;
+  virtual float GetBrightnessForAnimation() const override;
+  virtual float GetGrayscaleForAnimation() const override;
+  virtual SkColor GetColorForAnimation() const override;
+  virtual float GetDeviceScaleFactor() const override;
   virtual void AddThreadedAnimation(
-      scoped_ptr<cc::Animation> animation) OVERRIDE;
-  virtual void RemoveThreadedAnimation(int animation_id) OVERRIDE;
-  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() OVERRIDE;
+      scoped_ptr<cc::Animation> animation) override;
+  virtual void RemoveThreadedAnimation(int animation_id) override;
+  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() override;
 
  private:
   gfx::Rect bounds_;

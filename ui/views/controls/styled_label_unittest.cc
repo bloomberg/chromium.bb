@@ -28,7 +28,7 @@ class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
 
   // StyledLabelListener implementation.
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) OVERRIDE {}
+                                      int event_flags) override {}
 
  protected:
   StyledLabel* styled() { return styled_.get(); }

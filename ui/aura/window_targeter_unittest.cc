@@ -23,7 +23,7 @@ class StaticWindowTargeter : public ui::EventTargeter {
   // ui::EventTargeter:
   virtual ui::EventTarget* FindTargetForLocatedEvent(
       ui::EventTarget* root,
-      ui::LocatedEvent* event) OVERRIDE {
+      ui::LocatedEvent* event) override {
     return window_;
   }
 

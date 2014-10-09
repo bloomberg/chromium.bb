@@ -35,10 +35,10 @@ class DriCursor : public CursorDelegateEvdev {
 
   // CursorDelegateEvdev:
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
-                            const gfx::PointF& location) OVERRIDE;
-  virtual void MoveCursor(const gfx::Vector2dF& delta) OVERRIDE;
-  virtual bool IsCursorVisible() OVERRIDE;
-  virtual gfx::PointF location() OVERRIDE;
+                            const gfx::PointF& location) override;
+  virtual void MoveCursor(const gfx::Vector2dF& delta) override;
+  virtual bool IsCursorVisible() override;
+  virtual gfx::PointF location() override;
 
  private:
   // The location of the bitmap (the cursor location is the hotspot location).

@@ -24,9 +24,9 @@ class PaddedButton : public views::ImageButton {
   virtual ~PaddedButton();
 
   // Overridden from views::ImageButton:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
 
   // The SetPadding() method also sets the button's image alignment (positive
   // values yield left/top alignments, negative values yield right/bottom ones,

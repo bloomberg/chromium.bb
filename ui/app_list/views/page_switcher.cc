@@ -49,11 +49,11 @@ class PageSwitcherButton : public views::CustomButton {
   void set_button_width(int button_width) { button_width_ = button_width; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(button_width_, kButtonHeight);
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     if (state() == STATE_HOVERED)
       PaintButton(canvas, kPagerHoverColor);
     else

@@ -54,10 +54,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // DeviceEventObserver overrides:
   //
   // Callback for device add (on UI thread).
-  virtual void OnDeviceEvent(const DeviceEvent& event) OVERRIDE;
+  virtual void OnDeviceEvent(const DeviceEvent& event) override;
 
   // PlatformEventSource:
-  virtual void OnDispatcherListChanged() OVERRIDE;
+  virtual void OnDispatcherListChanged() override;
 
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;

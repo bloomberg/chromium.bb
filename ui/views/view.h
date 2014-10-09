@@ -714,19 +714,19 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   ViewTargeter* targeter() const { return targeter_.get(); }
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
-  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
-  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual ui::EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  virtual ui::EventTargeter* GetEventTargeter() override;
   virtual void ConvertEventToTarget(ui::EventTarget* target,
-                                    ui::LocatedEvent* event) OVERRIDE;
+                                    ui::LocatedEvent* event) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE FINAL;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override final;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Accelerators --------------------------------------------------------------
 
@@ -744,12 +744,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void ResetAccelerators();
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // Returns whether accelerators are enabled for this view. Accelerators are
   // enabled if the containing widget is visible and the view is enabled() and
   // IsDrawn()
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool CanHandleAccelerators() const override;
 
   // Focus ---------------------------------------------------------------------
 
@@ -1117,11 +1117,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void UpdateChildLayerBounds(const gfx::Vector2d& offset);
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
+      const gfx::Rect& damage_rect_in_dip) override;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  virtual base::Closure PrepareForLayerBoundsChange() override;
 
   // Finds the layer that this view paints to (it may belong to an ancestor
   // view), then reorders the immediate children of that layer to match the

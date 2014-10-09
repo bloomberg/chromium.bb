@@ -115,7 +115,7 @@ class ItemView : public views::View {
   virtual ~ItemView();
 
   // Overridden from views::View:
-  virtual void SetVisible(bool visible) OVERRIDE;
+  virtual void SetVisible(bool visible) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ItemView);
@@ -194,8 +194,8 @@ class NotificationProgressBar : public views::ProgressBar {
 
  private:
   // Overriden from View
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationProgressBar);
 };

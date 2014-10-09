@@ -23,7 +23,7 @@ class VIEWS_EXPORT WidgetDeletionObserver : public WidgetObserver {
   bool IsWidgetAlive() { return widget_ != NULL; }
 
   // Overridden from WidgetObserver.
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) override;
 
  private:
   void CleanupWidget();

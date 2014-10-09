@@ -88,8 +88,8 @@ class TestCompositorHostMac : public TestCompositorHost,
 
  private:
   // TestCompositorHost:
-  virtual void Show() OVERRIDE;
-  virtual ui::Compositor* GetCompositor() OVERRIDE;
+  virtual void Show() override;
+  virtual ui::Compositor* GetCompositor() override;
 
   gfx::Rect bounds_;
 

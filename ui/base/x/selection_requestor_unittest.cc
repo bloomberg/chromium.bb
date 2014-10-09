@@ -65,7 +65,7 @@ class SelectionRequestorTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Make X11 synchronous for our display connection.
     XSynchronize(x_display_, True);
 
@@ -85,7 +85,7 @@ class SelectionRequestorTest : public testing::Test {
     requestor_.reset(new SelectionRequestor(x_display_, x_window_, NULL));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     requestor_.reset();
     event_source_.reset();
     XDestroyWindow(x_display_, x_window_);

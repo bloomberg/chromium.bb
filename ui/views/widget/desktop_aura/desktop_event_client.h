@@ -19,8 +19,8 @@ class VIEWS_EXPORT DesktopEventClient : public aura::client::EventClient {
 
   // Overridden from aura::client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
-      const aura::Window* window) const OVERRIDE;
-  virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE;
+      const aura::Window* window) const override;
+  virtual ui::EventTarget* GetToplevelEventTarget() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopEventClient);

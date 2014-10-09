@@ -34,8 +34,8 @@ class APP_LIST_EXPORT SpeechView : public views::View,
   void Reset();
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   views::ImageButton* mic_button() { return mic_button_; }
 
@@ -44,14 +44,14 @@ class APP_LIST_EXPORT SpeechView : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from SpeechUIModelObserver:
-  virtual void OnSpeechSoundLevelChanged(uint8 level) OVERRIDE;
+  virtual void OnSpeechSoundLevelChanged(uint8 level) override;
   virtual void OnSpeechResult(const base::string16& result,
-                              bool is_final) OVERRIDE;
+                              bool is_final) override;
   virtual void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) OVERRIDE;
+      SpeechRecognitionState new_state) override;
 
   AppListViewDelegate* delegate_;
 

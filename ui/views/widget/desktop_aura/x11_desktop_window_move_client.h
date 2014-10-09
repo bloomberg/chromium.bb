@@ -31,16 +31,16 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient :
   virtual ~X11DesktopWindowMoveClient();
 
   // Overridden from X11WholeScreenMoveLoopDelegate:
-  virtual void OnMouseMovement(XMotionEvent* event) OVERRIDE;
-  virtual void OnMouseReleased() OVERRIDE;
-  virtual void OnMoveLoopEnded() OVERRIDE;
+  virtual void OnMouseMovement(XMotionEvent* event) override;
+  virtual void OnMouseReleased() override;
+  virtual void OnMoveLoopEnded() override;
 
   // Overridden from aura::client::WindowMoveClient:
   virtual aura::client::WindowMoveResult RunMoveLoop(
       aura::Window* window,
       const gfx::Vector2d& drag_offset,
-      aura::client::WindowMoveSource move_source) OVERRIDE;
-  virtual void EndMoveLoop() OVERRIDE;
+      aura::client::WindowMoveSource move_source) override;
+  virtual void EndMoveLoop() override;
 
  private:
   X11WholeScreenMoveLoop move_loop_;

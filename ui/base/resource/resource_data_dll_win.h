@@ -18,13 +18,13 @@ class ResourceDataDLL : public ResourceHandle {
   virtual ~ResourceDataDLL();
 
   // ResourceHandle implementation:
-  virtual bool HasResource(uint16 resource_id) const OVERRIDE;
+  virtual bool HasResource(uint16 resource_id) const override;
   virtual bool GetStringPiece(uint16 resource_id,
-                              base::StringPiece* data) const OVERRIDE;
+                              base::StringPiece* data) const override;
   virtual base::RefCountedStaticMemory* GetStaticMemory(
-      uint16 resource_id) const OVERRIDE;
-  virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
-  virtual ScaleFactor GetScaleFactor() const OVERRIDE;
+      uint16 resource_id) const override;
+  virtual TextEncodingType GetTextEncodingType() const override;
+  virtual ScaleFactor GetScaleFactor() const override;
 
  private:
   const HINSTANCE module_;

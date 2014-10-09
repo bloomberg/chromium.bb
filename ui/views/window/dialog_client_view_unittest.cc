@@ -23,7 +23,7 @@ class TestDialogClientView : public DialogClientView {
   virtual ~TestDialogClientView() {}
 
   // DialogClientView implementation.
-  virtual DialogDelegate* GetDialogDelegate() const OVERRIDE { return dialog_; }
+  virtual DialogDelegate* GetDialogDelegate() const override { return dialog_; }
 
   View* GetContentsView() { return contents_view(); }
 
@@ -48,7 +48,7 @@ class DialogClientViewTest : public ViewsTestBase,
   virtual ~DialogClientViewTest() {}
 
   // testing::Test implementation.
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
     contents_.reset(new StaticSizedView(gfx::Size(100, 200)));
     client_view_.reset(new TestDialogClientView(contents_.get(), this));
@@ -57,10 +57,10 @@ class DialogClientViewTest : public ViewsTestBase,
   }
 
   // DialogDelegateView implementation.
-  virtual View* GetContentsView() OVERRIDE { return contents_.get(); }
-  virtual View* CreateExtraView() OVERRIDE { return extra_view_; }
-  virtual View* CreateFootnoteView() OVERRIDE { return footnote_view_; }
-  virtual int GetDialogButtons() const OVERRIDE { return dialog_buttons_; }
+  virtual View* GetContentsView() override { return contents_.get(); }
+  virtual View* CreateExtraView() override { return extra_view_; }
+  virtual View* CreateFootnoteView() override { return footnote_view_; }
+  virtual int GetDialogButtons() const override { return dialog_buttons_; }
 
  protected:
   gfx::Rect GetUpdatedClientBounds() {

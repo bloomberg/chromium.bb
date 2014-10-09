@@ -21,16 +21,16 @@ class MockDisplayObserver : public DisplayObserver {
 
   virtual ~MockDisplayObserver() { }
 
-  virtual void OnDisplayAdded(const Display& display) OVERRIDE {
+  virtual void OnDisplayAdded(const Display& display) override {
     display_added_++;
   }
 
-  virtual void OnDisplayRemoved(const Display& display) OVERRIDE {
+  virtual void OnDisplayRemoved(const Display& display) override {
     display_removed_++;
   }
 
   virtual void OnDisplayMetricsChanged(const Display& display,
-                                       uint32_t metrics) OVERRIDE {
+                                       uint32_t metrics) override {
     display_changed_++;
     latest_metrics_change_ = metrics;
   }

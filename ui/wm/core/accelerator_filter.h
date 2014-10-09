@@ -25,7 +25,7 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
   virtual ~AcceleratorFilter();
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
   scoped_ptr<AcceleratorDelegate> delegate_;

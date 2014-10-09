@@ -196,7 +196,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     run_loop_->Run();
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
     events_.push_back(gesture->type());
     bounding_box_ = gesture->details().bounding_box();
     flags_ = gesture->flags();
@@ -346,7 +346,7 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
     }
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     if (queue_events_) {
       queue_.push(new ui::TouchEvent(*event, window_, window_));
       event->StopPropagation();
@@ -409,7 +409,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   bool mouse_release() const { return mouse_release_; }
   bool double_click() const { return double_click_; }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     switch (event->type()) {
       case ui::ET_MOUSE_PRESSED:
         double_click_ = event->flags() & ui::EF_IS_DOUBLE_CLICK;
@@ -538,7 +538,7 @@ class TestEventHandler : public ui::EventHandler {
 
   virtual ~TestEventHandler() {}
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     switch (event->type()) {
       case ui::ET_TOUCH_RELEASED:
         touch_released_count_++;
@@ -592,7 +592,7 @@ class RemoveOnTouchCancelHandler : public TestEventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     TestEventHandler::OnTouchEvent(event);
     if (event->type() == ui::ET_TOUCH_CANCELLED) {
       Window* target = static_cast<Window*>(event->target());
@@ -633,7 +633,7 @@ class GestureRecognizerTest : public AuraTestBase,
  public:
   GestureRecognizerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AuraTestBase::SetUp();
     ui::GestureConfiguration::set_show_press_delay_in_ms(2);
     ui::GestureConfiguration::set_long_press_time_in_seconds(0.003);
@@ -2979,7 +2979,7 @@ class ConsumesTouchMovesDelegate : public GestureEventConsumeDelegate {
   void set_consume_touch_move(bool consume) { consume_touch_move_ = consume; }
 
  private:
-  virtual void OnTouchEvent(ui::TouchEvent* touch) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* touch) override {
     if (consume_touch_move_ && touch->type() == ui::ET_TOUCH_MOVED)
       touch->SetHandled();
     else
@@ -4105,7 +4105,7 @@ class GestureEventDeleteWindowOnLongPress : public GestureEventConsumeDelegate {
 
   void set_window(aura::Window** window) { window_ = window; }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
     GestureEventConsumeDelegate::OnGestureEvent(gesture);
     if (gesture->type() != ui::ET_GESTURE_LONG_PRESS)
       return;

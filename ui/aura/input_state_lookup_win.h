@@ -18,7 +18,7 @@ class AURA_EXPORT InputStateLookupWin : public InputStateLookup {
   virtual ~InputStateLookupWin();
 
   // InputStateLookup overrides:
-  virtual bool IsMouseButtonDown() const OVERRIDE;
+  virtual bool IsMouseButtonDown() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputStateLookupWin);

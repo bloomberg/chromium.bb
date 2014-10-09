@@ -20,7 +20,7 @@ class UiThreadGpuForwardingSender : public IPC::Sender {
   virtual ~UiThreadGpuForwardingSender() {}
 
   // IPC::Sender:
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
+  virtual bool Send(IPC::Message* msg) override {
     listener_->OnMessageReceived(*msg);
     delete msg;
     return true;

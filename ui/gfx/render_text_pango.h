@@ -19,27 +19,27 @@ class RenderTextPango : public RenderText {
   virtual ~RenderTextPango();
 
   // Overridden from RenderText:
-  virtual Size GetStringSize() OVERRIDE;
-  virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
-  virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
+  virtual Size GetStringSize() override;
+  virtual SelectionModel FindCursorPosition(const Point& point) override;
+  virtual std::vector<FontSpan> GetFontSpansForTesting() override;
 
  protected:
   // Overridden from RenderText:
-  virtual int GetLayoutTextBaseline() OVERRIDE;
+  virtual int GetLayoutTextBaseline() override;
   virtual SelectionModel AdjacentCharSelectionModel(
       const SelectionModel& selection,
-      VisualCursorDirection direction) OVERRIDE;
+      VisualCursorDirection direction) override;
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
-      VisualCursorDirection direction) OVERRIDE;
-  virtual Range GetGlyphBounds(size_t index) OVERRIDE;
-  virtual std::vector<Rect> GetSubstringBounds(const Range& range) OVERRIDE;
-  virtual size_t TextIndexToLayoutIndex(size_t index) const OVERRIDE;
-  virtual size_t LayoutIndexToTextIndex(size_t index) const OVERRIDE;
-  virtual bool IsValidCursorIndex(size_t index) OVERRIDE;
-  virtual void ResetLayout() OVERRIDE;
-  virtual void EnsureLayout() OVERRIDE;
-  virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
+      VisualCursorDirection direction) override;
+  virtual Range GetGlyphBounds(size_t index) override;
+  virtual std::vector<Rect> GetSubstringBounds(const Range& range) override;
+  virtual size_t TextIndexToLayoutIndex(size_t index) const override;
+  virtual size_t LayoutIndexToTextIndex(size_t index) const override;
+  virtual bool IsValidCursorIndex(size_t index) override;
+  virtual void ResetLayout() override;
+  virtual void EnsureLayout() override;
+  virtual void DrawVisualText(Canvas* canvas) override;
 
  private:
   friend class RenderTextTest;

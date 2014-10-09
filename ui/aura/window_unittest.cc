@@ -55,7 +55,7 @@ class WindowTest : public AuraTestBase {
   WindowTest() : max_separation_(0) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AuraTestBase::SetUp();
     // TODO: there needs to be an easier way to do this.
     max_separation_ = ui::GestureConfiguration::
@@ -64,7 +64,7 @@ class WindowTest : public AuraTestBase {
         set_max_separation_for_gesture_touches_in_pixels(0);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     AuraTestBase::TearDown();
     ui::GestureConfiguration::
         set_max_separation_for_gesture_touches_in_pixels(max_separation_);
@@ -94,13 +94,13 @@ class DestroyTrackingDelegateImpl : public TestWindowDelegate {
 
   bool in_destroying() const { return in_destroying_; }
 
-  virtual void OnWindowDestroying(Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(Window* window) override {
     EXPECT_FALSE(in_destroying_);
     in_destroying_ = true;
     destroying_count_++;
   }
 
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     EXPECT_TRUE(in_destroying_);
     in_destroying_ = false;
     destroyed_count_++;
@@ -123,7 +123,7 @@ class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
       : parent_delegate_(parent_delegate) {
   }
 
-  virtual void OnWindowDestroying(Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(Window* window) override {
     EXPECT_TRUE(parent_delegate_->in_destroying());
     DestroyTrackingDelegateImpl::OnWindowDestroying(window);
   }
@@ -143,7 +143,7 @@ class DestroyOrphanDelegate : public TestWindowDelegate {
 
   void set_window(Window* window) { window_ = window; }
 
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     EXPECT_FALSE(window_->parent());
   }
 
@@ -175,18 +175,18 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   int touch_event_count() const { return touch_event_count_; }
   int gesture_event_count() const { return gesture_event_count_; }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
       capture_changed_event_count_++;
     mouse_event_count_++;
   }
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+  virtual void OnTouchEvent(ui::TouchEvent* event) override {
     touch_event_count_++;
   }
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     gesture_event_count_++;
   }
-  virtual void OnCaptureLost() OVERRIDE {
+  virtual void OnCaptureLost() override {
     capture_lost_count_++;
   }
 
@@ -205,7 +205,7 @@ class GestureTrackPositionDelegate : public TestWindowDelegate {
  public:
   GestureTrackPositionDelegate() {}
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     position_ = event->location();
     event->StopPropagation();
   }
@@ -228,7 +228,7 @@ class SelfEventHandlingWindowDelegate : public TestWindowDelegate {
 
   virtual bool ShouldDescendIntoChildForEventHandling(
       Window* child,
-      const gfx::Point& location) OVERRIDE {
+      const gfx::Point& location) override {
     return false;
   }
 
@@ -245,7 +245,7 @@ class DestroyWindowDelegate : public TestWindowDelegate {
   virtual ~DestroyWindowDelegate() {}
 
   // Overridden from WindowDelegate.
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     delete this;
   }
 
@@ -576,7 +576,7 @@ class AddedToRootWindowObserver : public WindowObserver {
  public:
   AddedToRootWindowObserver() : called_(false) {}
 
-  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
+  virtual void OnWindowAddedToRootWindow(Window* window) override {
     called_ = true;
   }
 
@@ -1087,7 +1087,7 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
  public:
   MouseEnterExitWindowDelegate() : entered_(false), exited_(false) {}
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     switch (event->type()) {
       case ui::ET_MOUSE_ENTERED:
         EXPECT_TRUE(event->flags() & ui::EF_IS_SYNTHESIZED);
@@ -1372,7 +1372,7 @@ class VisibilityWindowDelegate : public TestWindowDelegate {
     hidden_ = 0;
   }
 
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
+  virtual void OnWindowTargetVisibilityChanged(bool visible) override {
     if (visible)
       shown_++;
     else
@@ -1721,16 +1721,16 @@ class WindowObserverTest : public WindowTest,
   }
 
  private:
-  virtual void OnWindowAdded(Window* new_window) OVERRIDE {
+  virtual void OnWindowAdded(Window* new_window) override {
     added_count_++;
   }
 
-  virtual void OnWillRemoveWindow(Window* window) OVERRIDE {
+  virtual void OnWillRemoveWindow(Window* window) override {
     removed_count_++;
   }
 
   virtual void OnWindowVisibilityChanged(Window* window,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     if (!visibility_info_) {
       visibility_info_.reset(new VisibilityInfo);
       visibility_info_->changed_count = 0;
@@ -1740,20 +1740,20 @@ class WindowObserverTest : public WindowTest,
     visibility_info_->changed_count++;
   }
 
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     EXPECT_FALSE(window->parent());
     destroyed_count_++;
   }
 
   virtual void OnWindowPropertyChanged(Window* window,
                                        const void* key,
-                                       intptr_t old) OVERRIDE {
+                                       intptr_t old) override {
     property_key_ = key;
     old_property_value_ = old;
   }
 
   virtual void OnAncestorWindowTransformed(Window* source,
-                                           Window* window) OVERRIDE {
+                                           Window* window) override {
     transform_notifications_.push_back(
         std::make_pair(source->id(), window->id()));
   }
@@ -2043,7 +2043,7 @@ class TestVisibilityClient : public client::VisibilityClient {
 
   // Overridden from client::VisibilityClient:
   virtual void UpdateLayerVisibility(aura::Window* window,
-                                     bool visible) OVERRIDE {
+                                     bool visible) override {
     if (!ignore_visibility_changes_)
       window->layer()->SetVisible(visible);
   }
@@ -2179,11 +2179,11 @@ class RootWindowAttachmentObserver : public WindowObserver {
   }
 
   // Overridden from WindowObserver:
-  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
+  virtual void OnWindowAddedToRootWindow(Window* window) override {
     ++added_count_;
   }
   virtual void OnWindowRemovingFromRootWindow(Window* window,
-                                              Window* new_root) OVERRIDE {
+                                              Window* new_root) override {
     ++removed_count_;
   }
 
@@ -2265,7 +2265,7 @@ class BoundsChangedWindowObserver : public WindowObserver {
 
   virtual void OnWindowBoundsChanged(Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     root_set_ = window->GetRootWindow() != NULL;
   }
 
@@ -2344,7 +2344,7 @@ class OwningWindowDelegate : public TestWindowDelegate {
     owned_window_.reset(window);
   }
 
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) override {
     owned_window_.reset(NULL);
   }
 
@@ -2390,7 +2390,7 @@ class BoundsChangeDelegate : public TestWindowDelegate {
 
   // Window
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {
+                               const gfx::Rect& new_bounds) override {
     bounds_changed_ = true;
   }
 
@@ -2498,11 +2498,11 @@ class AddChildNotificationsObserver : public WindowObserver {
   }
 
   // WindowObserver overrides:
-  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
+  virtual void OnWindowAddedToRootWindow(Window* window) override {
     added_count_++;
   }
   virtual void OnWindowRemovingFromRootWindow(Window* window,
-                                              Window* new_root) OVERRIDE {
+                                              Window* new_root) override {
     removed_count_++;
   }
 
@@ -2564,11 +2564,11 @@ class HierarchyObserver : public WindowObserver {
  private:
   // Overridden from WindowObserver:
   virtual void OnWindowHierarchyChanging(
-      const HierarchyChangeParams& params) OVERRIDE {
+      const HierarchyChangeParams& params) override {
     params_.push_back(params);
   }
   virtual void OnWindowHierarchyChanged(
-      const HierarchyChangeParams& params) OVERRIDE {
+      const HierarchyChangeParams& params) override {
     params_.push_back(params);
   }
 
@@ -2949,7 +2949,7 @@ class PaintWindowDelegate : public TestWindowDelegate {
   int paint_count() const { return paint_count_; }
 
   // TestWindowDelegate::
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     paint_count_++;
     canvas->GetClipBounds(&most_recent_paint_clip_bounds_);
     const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();
@@ -3425,17 +3425,17 @@ class TestLayerAnimationObserver : public ui::LayerAnimationObserver {
  private:
   // ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     animation_completed_ = true;
   }
 
   virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
     animation_aborted_ = true;
   }
 
   virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
+      ui::LayerAnimationSequence* sequence) override {
   }
 
   bool animation_completed_;

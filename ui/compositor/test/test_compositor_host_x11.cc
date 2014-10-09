@@ -27,8 +27,8 @@ class TestCompositorHostX11 : public TestCompositorHost {
 
  private:
   // Overridden from TestCompositorHost:
-  virtual void Show() OVERRIDE;
-  virtual ui::Compositor* GetCompositor() OVERRIDE;
+  virtual void Show() override;
+  virtual ui::Compositor* GetCompositor() override;
 
   gfx::Rect bounds_;
 

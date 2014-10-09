@@ -19,7 +19,7 @@ class AppListWindowControllerTest : public ui::CocoaTest {
   AppListWindowControllerTest();
 
  protected:
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   base::scoped_nsobject<AppListWindowController> controller_;
 

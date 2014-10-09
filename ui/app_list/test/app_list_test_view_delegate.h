@@ -48,43 +48,43 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   int GetToggleSpeechRecognitionCountAndReset();
 
   // AppListViewDelegate overrides:
-  virtual bool ForceNativeDesktop() const OVERRIDE;
-  virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
-  virtual AppListModel* GetModel() OVERRIDE;
-  virtual SpeechUIModel* GetSpeechUI() OVERRIDE;
+  virtual bool ForceNativeDesktop() const override;
+  virtual void SetProfileByPath(const base::FilePath& profile_path) override;
+  virtual AppListModel* GetModel() override;
+  virtual SpeechUIModel* GetSpeechUI() override;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
-  virtual void StartSearch() OVERRIDE {}
-  virtual void StopSearch() OVERRIDE {}
+      const base::Callback<void(const base::FilePath&)>& callback) override;
+  virtual void StartSearch() override {}
+  virtual void StopSearch() override {}
   virtual void OpenSearchResult(SearchResult* result,
                                 bool auto_launch,
-                                int event_flags) OVERRIDE;
+                                int event_flags) override;
   virtual void InvokeSearchResultAction(SearchResult* result,
                                         int action_index,
-                                        int event_flags) OVERRIDE {}
-  virtual base::TimeDelta GetAutoLaunchTimeout() OVERRIDE;
-  virtual void AutoLaunchCanceled() OVERRIDE;
-  virtual void ViewInitialized() OVERRIDE {}
-  virtual void Dismiss() OVERRIDE;
-  virtual void ViewClosing() OVERRIDE {}
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual void OpenSettings() OVERRIDE {}
-  virtual void OpenHelp() OVERRIDE {}
-  virtual void OpenFeedback() OVERRIDE {}
-  virtual void ToggleSpeechRecognition() OVERRIDE;
+                                        int event_flags) override {}
+  virtual base::TimeDelta GetAutoLaunchTimeout() override;
+  virtual void AutoLaunchCanceled() override;
+  virtual void ViewInitialized() override {}
+  virtual void Dismiss() override;
+  virtual void ViewClosing() override {}
+  virtual gfx::ImageSkia GetWindowIcon() override;
+  virtual void OpenSettings() override {}
+  virtual void OpenHelp() override {}
+  virtual void OpenFeedback() override {}
+  virtual void ToggleSpeechRecognition() override;
   virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) OVERRIDE {}
+      const base::FilePath& profile_path) override {}
 #if defined(TOOLKIT_VIEWS)
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
+  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override;
   virtual std::vector<views::View*> CreateCustomPageWebViews(
-      const gfx::Size& size) OVERRIDE;
+      const gfx::Size& size) override;
 #endif
-  virtual bool IsSpeechRecognitionEnabled() OVERRIDE;
-  virtual const Users& GetUsers() const OVERRIDE;
-  virtual bool ShouldCenterWindow() const OVERRIDE;
-  virtual void AddObserver(AppListViewDelegateObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(AppListViewDelegateObserver* observer) OVERRIDE;
+  virtual bool IsSpeechRecognitionEnabled() override;
+  virtual const Users& GetUsers() const override;
+  virtual bool ShouldCenterWindow() const override;
+  virtual void AddObserver(AppListViewDelegateObserver* observer) override;
+  virtual void RemoveObserver(AppListViewDelegateObserver* observer) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

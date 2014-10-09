@@ -61,16 +61,16 @@ class ActivationChangeObserverImpl
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE {
+                                 aura::Window* lost_active) override {
     if (!controller_->drag_in_progress())
       controller_->CancelAll();
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE { Cleanup(); }
+  virtual void OnWindowDestroying(aura::Window* window) override { Cleanup(); }
 
   // ui::EventHandler:
-  virtual void OnCancelMode(ui::CancelModeEvent* event) OVERRIDE {
+  virtual void OnCancelMode(ui::CancelModeEvent* event) override {
     controller_->CancelAll();
   }
 

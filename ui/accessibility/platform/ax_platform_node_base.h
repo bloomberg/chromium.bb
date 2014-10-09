@@ -26,8 +26,8 @@ class AXPlatformNodeBase : public AXPlatformNode {
   gfx::NativeViewAccessible ChildAtIndex(int index);
 
   // AXPlatformNode
-  virtual void Destroy() OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual void Destroy() override;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
 
  protected:
   AXPlatformNodeBase();

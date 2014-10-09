@@ -138,7 +138,7 @@ class TouchHandleWindowTargeter : public wm::MaskedWindowTargeter {
  private:
   // wm::MaskedWindowTargeter:
   virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const OVERRIDE;
+                              gfx::Path* mask) const override;
 
   EditingHandleView* handle_view_;
 
@@ -170,11 +170,11 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   // Overridden from views::WidgetDelegateView:
-  virtual bool WidgetHasHitTestMask() const OVERRIDE {
+  virtual bool WidgetHasHitTestMask() const override {
     return true;
   }
 
-  virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE {
+  virtual void GetWidgetHitTestMask(gfx::Path* mask) const override {
     gfx::Size image_size = GetHandleImageSize();
     mask->addRect(SkIntToScalar(0), SkIntToScalar(selection_rect_.height()),
         SkIntToScalar(image_size.width()) + 2 * kSelectionHandleHorizPadding,
@@ -182,12 +182,12 @@ class TouchSelectionControllerImpl::EditingHandleView
             kSelectionHandleVertPadding));
   }
 
-  virtual void DeleteDelegate() OVERRIDE {
+  virtual void DeleteDelegate() override {
     // We are owned and deleted by TouchSelectionController.
   }
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     if (draw_invisible_)
       return;
     gfx::Size image_size = GetHandleImageSize();
@@ -205,7 +205,7 @@ class TouchSelectionControllerImpl::EditingHandleView
         kSelectionHandleHorizPadding, selection_rect_.height());
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     event->SetHandled();
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -230,7 +230,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     }
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     gfx::Size image_size = GetHandleImageSize();
     return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
                      image_size.height() + selection_rect_.height() +

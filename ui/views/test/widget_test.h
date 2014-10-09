@@ -51,9 +51,9 @@ class NativeWidgetCapture : public PlatformNativeWidget {
   explicit NativeWidgetCapture(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetCapture();
 
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
-  virtual bool HasCapture() const OVERRIDE;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
+  virtual bool HasCapture() const override;
 
  private:
   bool mouse_capture_;

@@ -36,7 +36,7 @@ class ViewsContentClientMainPartsMac : public ViewsContentClientMainParts {
   virtual ~ViewsContentClientMainPartsMac();
 
   // content::BrowserMainParts:
-  virtual void PreMainMessageLoopRun() OVERRIDE;
+  virtual void PreMainMessageLoopRun() override;
 
  private:
   base::scoped_nsobject<ViewsContentClientAppController> app_controller_;

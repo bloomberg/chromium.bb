@@ -97,18 +97,18 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   void OnItemIconLoaded(IconLoader* loader);
 
   // Overridden from AppsGridViewDelegate:
-  virtual void ActivateApp(AppListItem* item, int event_flags) OVERRIDE;
+  virtual void ActivateApp(AppListItem* item, int event_flags) override;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
-  virtual void CancelDragInActiveFolder() OVERRIDE;
+      const base::Callback<void(const base::FilePath&)>& callback) override;
+  virtual void CancelDragInActiveFolder() override;
 
   // Overridden from SearchBoxViewDelegate:
-  virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;
+  virtual void QueryChanged(SearchBoxView* sender) override;
 
   // Overridden from SearchResultListViewDelegate:
-  virtual void OnResultInstalled(SearchResult* result) OVERRIDE;
-  virtual void OnResultUninstalled(SearchResult* result) OVERRIDE;
+  virtual void OnResultInstalled(SearchResult* result) override;
+  virtual void OnResultUninstalled(SearchResult* result) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.

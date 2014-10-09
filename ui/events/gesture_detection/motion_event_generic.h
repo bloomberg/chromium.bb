@@ -39,25 +39,25 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   virtual ~MotionEventGeneric();
 
   // MotionEvent implementation.
-  virtual int GetId() const OVERRIDE;
-  virtual Action GetAction() const OVERRIDE;
-  virtual int GetActionIndex() const OVERRIDE;
-  virtual size_t GetPointerCount() const OVERRIDE;
-  virtual int GetPointerId(size_t pointer_index) const OVERRIDE;
-  virtual float GetX(size_t pointer_index) const OVERRIDE;
-  virtual float GetY(size_t pointer_index) const OVERRIDE;
-  virtual float GetRawX(size_t pointer_index) const OVERRIDE;
-  virtual float GetRawY(size_t pointer_index) const OVERRIDE;
-  virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
-  virtual float GetTouchMinor(size_t pointer_index) const OVERRIDE;
-  virtual float GetOrientation(size_t pointer_index) const OVERRIDE;
-  virtual float GetPressure(size_t pointer_index) const OVERRIDE;
-  virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
-  virtual int GetButtonState() const OVERRIDE;
-  virtual int GetFlags() const OVERRIDE;
-  virtual base::TimeTicks GetEventTime() const OVERRIDE;
-  virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
-  virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
+  virtual int GetId() const override;
+  virtual Action GetAction() const override;
+  virtual int GetActionIndex() const override;
+  virtual size_t GetPointerCount() const override;
+  virtual int GetPointerId(size_t pointer_index) const override;
+  virtual float GetX(size_t pointer_index) const override;
+  virtual float GetY(size_t pointer_index) const override;
+  virtual float GetRawX(size_t pointer_index) const override;
+  virtual float GetRawY(size_t pointer_index) const override;
+  virtual float GetTouchMajor(size_t pointer_index) const override;
+  virtual float GetTouchMinor(size_t pointer_index) const override;
+  virtual float GetOrientation(size_t pointer_index) const override;
+  virtual float GetPressure(size_t pointer_index) const override;
+  virtual ToolType GetToolType(size_t pointer_index) const override;
+  virtual int GetButtonState() const override;
+  virtual int GetFlags() const override;
+  virtual base::TimeTicks GetEventTime() const override;
+  virtual scoped_ptr<MotionEvent> Clone() const override;
+  virtual scoped_ptr<MotionEvent> Cancel() const override;
 
   void PushPointer(const PointerProperties& pointer);
 

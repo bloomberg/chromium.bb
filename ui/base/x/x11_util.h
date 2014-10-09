@@ -295,8 +295,8 @@ class UI_BASE_EXPORT XRefcountedMemory : public base::RefCountedMemory {
       : x11_data_(length ? x11_data : NULL), length_(length) {}
 
   // Overridden from RefCountedMemory:
-  virtual const unsigned char* front() const OVERRIDE;
-  virtual size_t size() const OVERRIDE;
+  virtual const unsigned char* front() const override;
+  virtual size_t size() const override;
 
  private:
   virtual ~XRefcountedMemory();

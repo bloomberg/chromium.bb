@@ -38,9 +38,9 @@ class TooltipManagerAura : public TooltipManager {
   static const gfx::FontList& GetDefaultFontList();
 
   // TooltipManager:
-  virtual const gfx::FontList& GetFontList() const OVERRIDE;
-  virtual void UpdateTooltip() OVERRIDE;
-  virtual void TooltipTextChanged(View* view) OVERRIDE;
+  virtual const gfx::FontList& GetFontList() const override;
+  virtual void UpdateTooltip() override;
+  virtual void TooltipTextChanged(View* view) override;
 
  private:
   View* GetViewUnderPoint(const gfx::Point& point);

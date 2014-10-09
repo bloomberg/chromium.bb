@@ -32,13 +32,13 @@ class ScrollBarButton : public BaseScrollBarButton {
   ScrollBarButton(ButtonListener* listener, Type type);
   virtual ~ScrollBarButton();
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override {
     return "ScrollBarButton";
   }
 
  protected:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   ui::NativeTheme::ExtraParams GetNativeThemeParams() const;
@@ -54,13 +54,13 @@ class ScrollBarThumb : public BaseScrollBarThumb {
   explicit ScrollBarThumb(BaseScrollBar* scroll_bar);
   virtual ~ScrollBarThumb();
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override {
     return "ScrollBarThumb";
   }
 
  protected:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   ui::NativeTheme::ExtraParams GetNativeThemeParams() const;

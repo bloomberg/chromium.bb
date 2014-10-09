@@ -27,7 +27,7 @@ class WM_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
   // ui::EventTargeter:
   virtual bool EventLocationInsideBounds(
       ui::EventTarget* target,
-      const ui::LocatedEvent& event) const OVERRIDE;
+      const ui::LocatedEvent& event) const override;
 
  private:
   aura::Window* masked_window_;

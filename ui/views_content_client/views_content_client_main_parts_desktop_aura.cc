@@ -22,7 +22,7 @@ class ViewsContentClientMainPartsDesktopAura
   virtual ~ViewsContentClientMainPartsDesktopAura() {}
 
   // content::BrowserMainParts:
-  virtual void PreMainMessageLoopRun() OVERRIDE;
+  virtual void PreMainMessageLoopRun() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainPartsDesktopAura);

@@ -30,30 +30,30 @@ class OzonePlatformTest : public OzonePlatform {
   virtual ~OzonePlatformTest() {}
 
   // OzonePlatform:
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return window_manager_.get();
   }
-  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() override {
     return gpu_platform_support_.get();
   }
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) OVERRIDE {
+      const gfx::Rect& bounds) override {
     return make_scoped_ptr<PlatformWindow>(
         new TestWindow(delegate, window_manager_.get(), bounds));
   }
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      OVERRIDE {
+      override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
   }
 
-  virtual void InitializeUI() OVERRIDE {
+  virtual void InitializeUI() override {
     window_manager_.reset(new TestWindowManager(file_path_));
     window_manager_->Initialize();
     // This unbreaks tests that create their own.
@@ -64,7 +64,7 @@ class OzonePlatformTest : public OzonePlatform {
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
-  virtual void InitializeGPU() OVERRIDE {
+  virtual void InitializeGPU() override {
     gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 

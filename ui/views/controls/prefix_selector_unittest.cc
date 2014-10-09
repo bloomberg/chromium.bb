@@ -26,19 +26,19 @@ class TestPrefixDelegate : public PrefixDelegate {
 
   virtual ~TestPrefixDelegate() {}
 
-  virtual int GetRowCount() OVERRIDE {
+  virtual int GetRowCount() override {
     return static_cast<int>(rows_.size());
   }
 
-  virtual int GetSelectedRow() OVERRIDE {
+  virtual int GetSelectedRow() override {
     return selected_row_;
   }
 
-  virtual void SetSelectedRow(int row) OVERRIDE {
+  virtual void SetSelectedRow(int row) override {
     selected_row_ = row;
   }
 
-  virtual base::string16 GetTextForRow(int row) OVERRIDE {
+  virtual base::string16 GetTextForRow(int row) override {
     return rows_[row];
   }
 

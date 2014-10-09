@@ -33,7 +33,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
   virtual ~X11WindowEventFilter();
 
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   // Called when the user clicked the caption area.

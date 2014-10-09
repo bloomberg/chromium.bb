@@ -28,10 +28,10 @@ class NotifierSettingsObserverMac : public NotifierSettingsObserver {
 
   // Overridden from NotifierSettingsObserver:
   virtual void UpdateIconImage(const NotifierId& notifier_id,
-                               const gfx::Image& icon) OVERRIDE;
-  virtual void NotifierGroupChanged() OVERRIDE;
+                               const gfx::Image& icon) override;
+  virtual void NotifierGroupChanged() override;
   virtual void NotifierEnabledChanged(const NotifierId& notifier_id,
-                                      bool enabled) OVERRIDE;
+                                      bool enabled) override;
 
  private:
   MCSettingsController* settings_controller_;  // weak, owns this

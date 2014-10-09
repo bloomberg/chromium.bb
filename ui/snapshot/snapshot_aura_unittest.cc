@@ -43,7 +43,7 @@ class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
   virtual ~TestPaintingWindowDelegate() {
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     for (int y = 0; y < window_size_.height(); ++y) {
       for (int x = 0; x < window_size_.width(); ++x)
         canvas->FillRect(gfx::Rect(x, y, 1, 1), GetExpectedColorForPoint(x, y));
@@ -84,7 +84,7 @@ class SnapshotAuraTest : public testing::Test {
   SnapshotAuraTest() {}
   virtual ~SnapshotAuraTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
 
     // The ContextFactory must exist before any Compositors are created.
@@ -99,7 +99,7 @@ class SnapshotAuraTest : public testing::Test {
     new ::wm::DefaultActivationClient(helper_->root_window());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     test_window_.reset();
     delegate_.reset();
     helper_->RunAllPendingInMessageLoop();

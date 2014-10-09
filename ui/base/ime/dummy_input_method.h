@@ -18,30 +18,30 @@ class DummyInputMethod : public InputMethod {
 
   // InputMethod overrides:
   virtual void SetDelegate(
-      internal::InputMethodDelegate* delegate) OVERRIDE;
-  virtual void Init(bool focused) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+      internal::InputMethodDelegate* delegate) override;
+  virtual void Init(bool focused) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
   virtual bool OnUntranslatedIMEMessage(
-      const base::NativeEvent& event, NativeEventResult* result) OVERRIDE;
-  virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual TextInputClient* GetTextInputClient() const OVERRIDE;
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
-  virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
-  virtual void OnInputLocaleChanged() OVERRIDE;
-  virtual std::string GetInputLocale() OVERRIDE;
-  virtual bool IsActive() OVERRIDE;
-  virtual TextInputType GetTextInputType() const OVERRIDE;
-  virtual TextInputMode GetTextInputMode() const OVERRIDE;
-  virtual bool CanComposeInline() const OVERRIDE;
-  virtual bool IsCandidatePopupOpen() const OVERRIDE;
-  virtual void ShowImeIfNeeded() OVERRIDE;
+      const base::NativeEvent& event, NativeEventResult* result) override;
+  virtual void SetFocusedTextInputClient(TextInputClient* client) override;
+  virtual void DetachTextInputClient(TextInputClient* client) override;
+  virtual TextInputClient* GetTextInputClient() const override;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) override;
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) override;
+  virtual void CancelComposition(const TextInputClient* client) override;
+  virtual void OnInputLocaleChanged() override;
+  virtual std::string GetInputLocale() override;
+  virtual bool IsActive() override;
+  virtual TextInputType GetTextInputType() const override;
+  virtual TextInputMode GetTextInputMode() const override;
+  virtual bool CanComposeInline() const override;
+  virtual bool IsCandidatePopupOpen() const override;
+  virtual void ShowImeIfNeeded() override;
 
-  virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
+  virtual void AddObserver(InputMethodObserver* observer) override;
+  virtual void RemoveObserver(InputMethodObserver* observer) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethod);

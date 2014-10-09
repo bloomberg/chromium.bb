@@ -137,7 +137,7 @@ class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
   virtual ~RowMoveAnimationDelegate() {}
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) override {
     view_->layer()->SetOpacity(animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
 
@@ -148,11 +148,11 @@ class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
       layer_->ScheduleDraw();
     }
   }
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) override {
     view_->layer()->SetOpacity(1.0f);
     view_->SchedulePaint();
   }
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) override {
     view_->layer()->SetOpacity(1.0f);
     view_->SchedulePaint();
   }
@@ -181,7 +181,7 @@ class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
   }
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationProgressed(const gfx::Animation* animation) override {
     view_->layer()->SetOpacity(1 - animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
   }
@@ -199,10 +199,10 @@ class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
  public:
   ItemMoveAnimationDelegate(views::View* view) : view_(view) {}
 
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationEnded(const gfx::Animation* animation) override {
     view_->SchedulePaint();
   }
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
+  virtual void AnimationCanceled(const gfx::Animation* animation) override {
     view_->SchedulePaint();
   }
 
@@ -301,14 +301,14 @@ class SynchronousDrag : public ui::DragSourceWin {
 
  private:
   // Overridden from ui::DragSourceWin.
-  virtual void OnDragSourceCancel() OVERRIDE {
+  virtual void OnDragSourceCancel() override {
     canceled_ = true;
   }
 
-  virtual void OnDragSourceDrop() OVERRIDE {
+  virtual void OnDragSourceDrop() override {
   }
 
-  virtual void OnDragSourceMove() OVERRIDE {
+  virtual void OnDragSourceMove() override {
     grid_view_->UpdateDrag(AppsGridView::MOUSE, GetCursorInGridViewCoords());
   }
 

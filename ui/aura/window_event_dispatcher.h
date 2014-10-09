@@ -168,44 +168,44 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   Window* GetGestureTarget(ui::GestureEvent* event);
 
   // Overridden from aura::client::CaptureDelegate:
-  virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
-  virtual void OnOtherRootGotCapture() OVERRIDE;
-  virtual void SetNativeCapture() OVERRIDE;
-  virtual void ReleaseNativeCapture() OVERRIDE;
+  virtual void UpdateCapture(Window* old_capture, Window* new_capture) override;
+  virtual void OnOtherRootGotCapture() override;
+  virtual void SetNativeCapture() override;
+  virtual void ReleaseNativeCapture() override;
 
   // Overridden from ui::EventProcessor:
-  virtual ui::EventTarget* GetRootTarget() OVERRIDE;
-  virtual void OnEventProcessingStarted(ui::Event* event) OVERRIDE;
+  virtual ui::EventTarget* GetRootTarget() override;
+  virtual void OnEventProcessingStarted(ui::Event* event) override;
 
   // Overridden from ui::EventDispatcherDelegate.
-  virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
+  virtual bool CanDispatchToTarget(ui::EventTarget* target) override;
   virtual ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
-                                                    ui::Event* event) OVERRIDE;
+                                                    ui::Event* event) override;
   virtual ui::EventDispatchDetails PostDispatchEvent(
-      ui::EventTarget* target, const ui::Event& event) OVERRIDE;
+      ui::EventTarget* target, const ui::Event& event) override;
 
   // Overridden from ui::GestureEventHelper.
-  virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
-  virtual void DispatchGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) override;
+  virtual void DispatchGestureEvent(ui::GestureEvent* event) override;
+  virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) override;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroying(Window* window) OVERRIDE;
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE;
-  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(Window* window) override;
+  virtual void OnWindowDestroyed(Window* window) override;
+  virtual void OnWindowAddedToRootWindow(Window* window) override;
   virtual void OnWindowRemovingFromRootWindow(Window* window,
-                                              Window* new_root) OVERRIDE;
+                                              Window* new_root) override;
   virtual void OnWindowVisibilityChanging(Window* window,
-                                          bool visible) OVERRIDE;
-  virtual void OnWindowVisibilityChanged(Window* window, bool visible) OVERRIDE;
+                                          bool visible) override;
+  virtual void OnWindowVisibilityChanged(Window* window, bool visible) override;
   virtual void OnWindowBoundsChanged(Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowTransforming(Window* window) OVERRIDE;
-  virtual void OnWindowTransformed(Window* window) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
+  virtual void OnWindowTransforming(Window* window) override;
+  virtual void OnWindowTransformed(Window* window) override;
 
   // Overridden from EnvObserver:
-  virtual void OnWindowInitialized(Window* window) OVERRIDE;
+  virtual void OnWindowInitialized(Window* window) override;
 
   // We hold and aggregate mouse drags and touch moves as a way of throttling
   // resizes when HoldMouseMoves() is called. The following methods are used to

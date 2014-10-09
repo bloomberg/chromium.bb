@@ -31,13 +31,13 @@ class TestingNotifierSettingsProvider
   virtual ~TestingNotifierSettingsProvider() {}
 
   virtual bool NotifierHasAdvancedSettings(const NotifierId& notifier_id) const
-      OVERRIDE {
+      override {
     return notifier_id == settings_handler_id_;
   }
 
   virtual void OnNotifierAdvancedSettingsRequested(
       const NotifierId& notifier_id,
-      const std::string* notification_id) OVERRIDE {
+      const std::string* notification_id) override {
     request_count_++;
     last_notifier_id_settings_requested_.reset(new NotifierId(notifier_id));
   }
@@ -60,8 +60,8 @@ class NotifierSettingsViewTest : public testing::Test {
   NotifierSettingsViewTest();
   virtual ~NotifierSettingsViewTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   NotifierSettingsView* GetView() const;
   TestingNotifierSettingsProvider* settings_provider() const {

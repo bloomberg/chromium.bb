@@ -33,7 +33,7 @@ class AURA_EXPORT ScopedWindowTargeter : public WindowObserver {
 
  private:
   // WindowObserver:
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(Window* window) override;
 
   Window* window_;
   scoped_ptr<ui::EventTargeter> old_targeter_;

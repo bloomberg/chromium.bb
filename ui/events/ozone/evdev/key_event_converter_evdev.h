@@ -27,7 +27,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
   virtual ~KeyEventConverterEvdev();
 
   // EventConverterEvdev:
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
 
   void ProcessEvents(const struct input_event* inputs, int count);
 

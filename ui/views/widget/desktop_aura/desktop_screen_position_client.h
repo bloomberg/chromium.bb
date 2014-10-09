@@ -20,14 +20,14 @@ class VIEWS_EXPORT DesktopScreenPositionClient
 
   // aura::client::ScreenPositionClient overrides:
   virtual void ConvertPointToScreen(const aura::Window* window,
-                                    gfx::Point* point) OVERRIDE;
+                                    gfx::Point* point) override;
   virtual void ConvertPointFromScreen(const aura::Window* window,
-                                      gfx::Point* point) OVERRIDE;
+                                      gfx::Point* point) override;
   virtual void ConvertHostPointToScreen(aura::Window* window,
-                                        gfx::Point* point) OVERRIDE;
+                                        gfx::Point* point) override;
   virtual void SetBounds(aura::Window* window,
                          const gfx::Rect& bounds,
-                         const gfx::Display& display) OVERRIDE;
+                         const gfx::Display& display) override;
 
  private:
   aura::Window* root_window_;

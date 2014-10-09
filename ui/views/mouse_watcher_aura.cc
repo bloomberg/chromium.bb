@@ -36,7 +36,7 @@ class MouseWatcher::Observer : public ui::EventHandler {
   }
 
   // ui::EventHandler implementation:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     switch (event->type()) {
       case ui::ET_MOUSE_MOVED:
       case ui::ET_MOUSE_DRAGGED:

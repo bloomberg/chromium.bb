@@ -24,7 +24,7 @@ class ScrollViewWithBorder : public views::ScrollView {
   ScrollViewWithBorder() {}
 
   // View overrides;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     SetBorder(Border::CreateSolidBorder(
         1,
         theme->GetSystemColor(ui::NativeTheme::kColorId_UnfocusedBorderColor)));
@@ -38,7 +38,7 @@ class ScrollCornerView : public views::View {
  public:
   ScrollCornerView() {}
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     ui::NativeTheme::ExtraParams ignored;
     GetNativeTheme()->Paint(canvas->sk_canvas(),
                             ui::NativeTheme::kScrollbarCorner,
@@ -96,11 +96,11 @@ class ScrollView::Viewport : public View {
   Viewport() {}
   virtual ~Viewport() {}
 
-  virtual const char* GetClassName() const OVERRIDE {
+  virtual const char* GetClassName() const override {
     return "ScrollView::Viewport";
   }
 
-  virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE {
+  virtual void ScrollRectToVisible(const gfx::Rect& rect) override {
     if (!has_children() || !parent())
       return;
 
@@ -111,7 +111,7 @@ class ScrollView::Viewport : public View {
         scroll_rect);
   }
 
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE {
+  virtual void ChildPreferredSizeChanged(View* child) override {
     if (parent())
       parent()->Layout();
   }

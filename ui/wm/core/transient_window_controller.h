@@ -20,12 +20,12 @@ class WM_EXPORT TransientWindowController
 
   // TransientWindowClient:
   virtual void AddTransientChild(aura::Window* parent,
-                                 aura::Window* child) OVERRIDE;
+                                 aura::Window* child) override;
   virtual void RemoveTransientChild(aura::Window* parent,
-                                    aura::Window* child) OVERRIDE;
-  virtual aura::Window* GetTransientParent(aura::Window* window) OVERRIDE;
+                                    aura::Window* child) override;
+  virtual aura::Window* GetTransientParent(aura::Window* window) override;
   virtual const aura::Window* GetTransientParent(
-      const aura::Window* window) OVERRIDE;
+      const aura::Window* window) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransientWindowController);

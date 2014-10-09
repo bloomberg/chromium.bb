@@ -195,21 +195,21 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   // ScaleGestureListener implementation.
   virtual bool OnScaleBegin(const ScaleGestureDetector& detector,
-                            const MotionEvent& e) OVERRIDE {
+                            const MotionEvent& e) override {
     if (ignore_multitouch_zoom_events_ && !detector.InDoubleTapMode())
       return false;
     return true;
   }
 
   virtual void OnScaleEnd(const ScaleGestureDetector& detector,
-                          const MotionEvent& e) OVERRIDE {
+                          const MotionEvent& e) override {
     if (!pinch_event_sent_)
       return;
     Send(CreateGesture(ET_GESTURE_PINCH_END, e));
   }
 
   virtual bool OnScale(const ScaleGestureDetector& detector,
-                       const MotionEvent& e) OVERRIDE {
+                       const MotionEvent& e) override {
     if (ignore_multitouch_zoom_events_ && !detector.InDoubleTapMode())
       return false;
     if (!pinch_event_sent_) {
@@ -264,7 +264,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   }
 
   // GestureListener implementation.
-  virtual bool OnDown(const MotionEvent& e) OVERRIDE {
+  virtual bool OnDown(const MotionEvent& e) override {
     GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN);
     Send(CreateGesture(tap_details, e));
 
@@ -275,7 +275,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   virtual bool OnScroll(const MotionEvent& e1,
                         const MotionEvent& e2,
                         float raw_distance_x,
-                        float raw_distance_y) OVERRIDE {
+                        float raw_distance_y) override {
     float distance_x = raw_distance_x;
     float distance_y = raw_distance_y;
     if (!scroll_event_sent_) {
@@ -348,7 +348,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   virtual bool OnFling(const MotionEvent& e1,
                        const MotionEvent& e2,
                        float velocity_x,
-                       float velocity_y) OVERRIDE {
+                       float velocity_y) override {
     if (snap_scroll_controller_.IsSnappingScrolls()) {
       if (snap_scroll_controller_.IsSnapHorizontal()) {
         velocity_y = 0;
@@ -378,14 +378,14 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   virtual bool OnSwipe(const MotionEvent& e1,
                        const MotionEvent& e2,
                        float velocity_x,
-                       float velocity_y) OVERRIDE {
+                       float velocity_y) override {
     GestureEventDetails swipe_details(ET_GESTURE_SWIPE, velocity_x, velocity_y);
     Send(CreateGesture(swipe_details, e2));
     return true;
   }
 
   virtual bool OnTwoFingerTap(const MotionEvent& e1,
-                              const MotionEvent& e2) OVERRIDE {
+                              const MotionEvent& e2) override {
     // The location of the two finger tap event should be the location of the
     // primary pointer.
     GestureEventDetails two_finger_tap_details(
@@ -404,13 +404,13 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     return true;
   }
 
-  virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
+  virtual void OnShowPress(const MotionEvent& e) override {
     GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS);
     show_press_event_sent_ = true;
     Send(CreateGesture(show_press_details, e));
   }
 
-  virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE {
+  virtual bool OnSingleTapUp(const MotionEvent& e) override {
     // This is a hack to address the issue where user hovers
     // over a link for longer than double_tap_timeout_, then
     // OnSingleTapConfirmed() is not triggered. But we still
@@ -444,7 +444,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   }
 
   // DoubleTapListener implementation.
-  virtual bool OnSingleTapConfirmed(const MotionEvent& e) OVERRIDE {
+  virtual bool OnSingleTapConfirmed(const MotionEvent& e) override {
     // Long taps in the edges of the screen have their events delayed by
     // ContentViewHolder for tab swipe operations. As a consequence of the delay
     // this method might be called after receiving the up event.
@@ -458,11 +458,11 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     return true;
   }
 
-  virtual bool OnDoubleTap(const MotionEvent& e) OVERRIDE {
+  virtual bool OnDoubleTap(const MotionEvent& e) override {
     return scale_gesture_detector_.OnDoubleTap(e);
   }
 
-  virtual bool OnDoubleTapEvent(const MotionEvent& e) OVERRIDE {
+  virtual bool OnDoubleTapEvent(const MotionEvent& e) override {
     switch (e.GetAction()) {
       case MotionEvent::ACTION_DOWN:
         gesture_detector_.set_longpress_enabled(false);
@@ -481,7 +481,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     return false;
   }
 
-  virtual void OnLongPress(const MotionEvent& e) OVERRIDE {
+  virtual void OnLongPress(const MotionEvent& e) override {
     DCHECK(!IsDoubleTapInProgress());
     SetIgnoreSingleTap(true);
     GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS);

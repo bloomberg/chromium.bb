@@ -23,17 +23,17 @@ class TestObserver : public AppListItemListObserver {
   }
 
   // AppListItemListObserver overriden:
-  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE {
+  virtual void OnListItemAdded(size_t index, AppListItem* item) override {
     ++items_added_;
   }
 
-  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE {
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) override {
     ++items_removed_;
   }
 
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItem* item) OVERRIDE {
+                               AppListItem* item) override {
     ++items_moved_;
   }
 
@@ -67,11 +67,11 @@ class AppListItemListTest : public testing::Test {
   virtual ~AppListItemListTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     item_list_.AddObserver(&observer_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     item_list_.RemoveObserver(&observer_);
   }
 

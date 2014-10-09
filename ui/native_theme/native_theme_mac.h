@@ -17,7 +17,7 @@ class NativeThemeMac : public FallbackTheme {
   static NativeThemeMac* instance();
 
   // Overridden from NativeTheme:
-  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
+  virtual SkColor GetSystemColor(ColorId color_id) const override;
 
   // Overridden from NativeThemeBase:
   virtual void PaintScrollbarTrack(
@@ -25,23 +25,23 @@ class NativeThemeMac : public FallbackTheme {
       Part part,
       State state,
       const ScrollbarTrackExtraParams& extra_params,
-      const gfx::Rect& rect) const OVERRIDE;
+      const gfx::Rect& rect) const override;
   virtual void PaintScrollbarThumb(SkCanvas* sk_canvas,
                                    Part part,
                                    State state,
-                                   const gfx::Rect& rect) const OVERRIDE;
+                                   const gfx::Rect& rect) const override;
   virtual void PaintScrollbarCorner(SkCanvas* canvas,
                                     State state,
-                                    const gfx::Rect& rect) const OVERRIDE;
+                                    const gfx::Rect& rect) const override;
   virtual void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
-      const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
+      const MenuBackgroundExtraParams& menu_background) const override;
   virtual void PaintMenuItemBackground(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const OVERRIDE;
+      const MenuListExtraParams& menu_list) const override;
 
  private:
   NativeThemeMac();

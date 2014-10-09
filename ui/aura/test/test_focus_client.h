@@ -22,14 +22,14 @@ class TestFocusClient : public client::FocusClient,
 
  private:
   // Overridden from client::FocusClient:
-  virtual void AddObserver(client::FocusChangeObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(client::FocusChangeObserver* observer) OVERRIDE;
-  virtual void FocusWindow(Window* window) OVERRIDE;
-  virtual void ResetFocusWithinActiveWindow(Window* window) OVERRIDE;
-  virtual Window* GetFocusedWindow() OVERRIDE;
+  virtual void AddObserver(client::FocusChangeObserver* observer) override;
+  virtual void RemoveObserver(client::FocusChangeObserver* observer) override;
+  virtual void FocusWindow(Window* window) override;
+  virtual void ResetFocusWithinActiveWindow(Window* window) override;
+  virtual Window* GetFocusedWindow() override;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroying(Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(Window* window) override;
 
   Window* focused_window_;
   ScopedObserver<Window, WindowObserver> observer_manager_;

@@ -37,7 +37,7 @@ class PreferredSizeLabel : public Label {
   virtual ~PreferredSizeLabel() {}
 
   // Label:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(50, Label::GetPreferredSize().height());
   }
 

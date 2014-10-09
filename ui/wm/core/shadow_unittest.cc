@@ -40,15 +40,15 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   // ResourceBundle::Delegate:
   virtual base::FilePath GetPathForResourcePack(
       const base::FilePath& pack_path,
-      ui::ScaleFactor scale_factor) OVERRIDE {
+      ui::ScaleFactor scale_factor) override {
     return base::FilePath();
   }
   virtual base::FilePath GetPathForLocalePack(
       const base::FilePath& pack_path,
-      const std::string& locale) OVERRIDE {
+      const std::string& locale) override {
     return base::FilePath();
   }
-  virtual gfx::Image GetImageNamed(int resource_id) OVERRIDE {
+  virtual gfx::Image GetImageNamed(int resource_id) override {
     last_resource_id_ = resource_id;
     switch (resource_id) {
       case IDR_WINDOW_BUBBLE_SHADOW_SMALL:
@@ -62,24 +62,24 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
     }
   }
   virtual gfx::Image GetNativeImageNamed(
-      int resource_id, ui::ResourceBundle::ImageRTL rtl) OVERRIDE {
+      int resource_id, ui::ResourceBundle::ImageRTL rtl) override {
     return gfx::Image();
   }
   virtual base::RefCountedStaticMemory* LoadDataResourceBytes(
-      int resource_id, ui::ScaleFactor scale_factor) OVERRIDE {
+      int resource_id, ui::ScaleFactor scale_factor) override {
     return NULL;
   }
   virtual bool GetRawDataResource(
       int resource_id, ui::ScaleFactor scale_factor,
-      base::StringPiece* value) OVERRIDE {
+      base::StringPiece* value) override {
     return false;
   }
   virtual bool GetLocalizedString(
-      int message_id, base::string16* value) OVERRIDE {
+      int message_id, base::string16* value) override {
     return false;
   }
   virtual scoped_ptr<gfx::Font> GetFont(
-      ui::ResourceBundle::FontStyle style) OVERRIDE {
+      ui::ResourceBundle::FontStyle style) override {
     return scoped_ptr<gfx::Font>();
   }
 
@@ -103,7 +103,7 @@ class ShadowTest: public aura::test::AuraTestBase {
   MockResourceBundleDelegate* delegate() { return delegate_.get(); }
 
   // aura::testAuraBase:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     aura::test::AuraTestBase::SetUp();
     delegate_.reset(new MockResourceBundleDelegate());
     if (ResourceBundle::HasSharedInstance())
@@ -111,7 +111,7 @@ class ShadowTest: public aura::test::AuraTestBase {
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", delegate(), ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ui::ResourceBundle::CleanupSharedInstance();
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));

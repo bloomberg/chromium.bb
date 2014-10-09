@@ -23,7 +23,7 @@ class VIEWS_EXPORT SlideOutView : public views::View,
   virtual void OnSlideOut() = 0;
 
   // Overridden from views::View.
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   enum SlideDirection {
@@ -38,7 +38,7 @@ class VIEWS_EXPORT SlideOutView : public views::View,
   void SlideOutAndClose(SlideDirection direction);
 
   // Overridden from ImplicitAnimationObserver.
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
   float gesture_scroll_amount_;
 

@@ -37,7 +37,7 @@ class AURA_EXPORT WindowTracker : public WindowObserver {
   bool Contains(Window* window);
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(Window* window) override;
 
  private:
   Windows windows_;

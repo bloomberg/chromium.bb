@@ -41,11 +41,11 @@ class WM_EXPORT UserActivityDetector : public ui::EventHandler {
   void OnDisplayPowerChanging();
 
   // ui::EventHandler implementation.
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
+  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Returns |now_for_test_| if set or base::TimeTicks::Now() otherwise.

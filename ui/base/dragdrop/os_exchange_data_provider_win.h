@@ -182,9 +182,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   virtual void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download_info);
   virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2d& cursor_offset) OVERRIDE;
-  virtual const gfx::ImageSkia& GetDragImage() const OVERRIDE;
-  virtual const gfx::Vector2d& GetDragImageOffset() const OVERRIDE;
+                            const gfx::Vector2d& cursor_offset) override;
+  virtual const gfx::ImageSkia& GetDragImage() const override;
+  virtual const gfx::Vector2d& GetDragImageOffset() const override;
 
  private:
   scoped_refptr<DataObjectImpl> data_;

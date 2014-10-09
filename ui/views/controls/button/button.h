@@ -57,8 +57,8 @@ class VIEWS_EXPORT Button : public View {
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+                              base::string16* tooltip) const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
   // Construct the Button with a Listener. The listener can be NULL. This can be

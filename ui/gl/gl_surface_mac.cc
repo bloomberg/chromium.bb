@@ -30,16 +30,16 @@ class GL_EXPORT NoOpGLSurface : public GLSurface {
   explicit NoOpGLSurface(const gfx::Size& size) : size_(size) {}
 
   // Implement GLSurface.
-  virtual bool Initialize() OVERRIDE { return true; }
-  virtual void Destroy() OVERRIDE {}
-  virtual bool IsOffscreen() OVERRIDE { return true; }
-  virtual bool SwapBuffers() OVERRIDE {
+  virtual bool Initialize() override { return true; }
+  virtual void Destroy() override {}
+  virtual bool IsOffscreen() override { return true; }
+  virtual bool SwapBuffers() override {
     NOTREACHED() << "Cannot call SwapBuffers on a NoOpGLSurface.";
     return false;
   }
-  virtual gfx::Size GetSize() OVERRIDE { return size_; }
-  virtual void* GetHandle() OVERRIDE { return NULL; }
-  virtual void* GetDisplay() OVERRIDE { return NULL; }
+  virtual gfx::Size GetSize() override { return size_; }
+  virtual void* GetHandle() override { return NULL; }
+  virtual void* GetDisplay() override { return NULL; }
 
  protected:
   virtual ~NoOpGLSurface() {}

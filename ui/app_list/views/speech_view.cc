@@ -53,7 +53,7 @@ class SoundLevelIndicator : public views::View {
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   DISALLOW_COPY_AND_ASSIGN(SoundLevelIndicator);
 };
@@ -79,7 +79,7 @@ class MicButton : public views::ImageButton,
 
  private:
   // views::MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+  virtual bool GetHitTestMask(gfx::Path* mask) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MicButton);
 };

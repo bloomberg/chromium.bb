@@ -24,11 +24,11 @@ class VIEWS_EXAMPLES_EXPORT MessageBoxExample : public ExampleBase,
   virtual ~MessageBoxExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // The MessageBoxView to be tested.
   MessageBoxView* message_box_view_;

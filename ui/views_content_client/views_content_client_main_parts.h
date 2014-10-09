@@ -32,9 +32,9 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
   virtual ~ViewsContentClientMainParts();
 
   // content::BrowserMainParts:
-  virtual void PreMainMessageLoopRun() OVERRIDE;
-  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PreMainMessageLoopRun() override;
+  virtual bool MainMessageLoopRun(int* result_code) override;
+  virtual void PostMainMessageLoopRun() override;
 
   content::ShellBrowserContext* browser_context() {
     return browser_context_.get();

@@ -17,7 +17,7 @@ class VIEWS_EXAMPLES_EXPORT ThrobberExample : public ExampleBase {
   virtual ~ThrobberExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThrobberExample);

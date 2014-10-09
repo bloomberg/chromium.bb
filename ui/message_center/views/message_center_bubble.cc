@@ -22,11 +22,11 @@ class ContentsView : public views::View {
   virtual ~ContentsView();
 
   // Overridden from views::View:
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const override;
 
  protected:
   // Overridden from views::View:
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) override;
 
  private:
   base::WeakPtr<MessageCenterBubble> bubble_;

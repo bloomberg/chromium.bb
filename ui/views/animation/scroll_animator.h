@@ -41,9 +41,9 @@ class VIEWS_EXPORT ScrollAnimator : public gfx::AnimationDelegate {
 
  private:
   // Implementation of gfx::AnimationDelegate.
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationCanceled(const gfx::Animation* animation) override;
 
   ScrollDelegate* delegate_;
 

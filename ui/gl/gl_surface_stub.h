@@ -15,11 +15,11 @@ class GL_EXPORT GLSurfaceStub : public GLSurface {
   void SetSize(const gfx::Size& size) { size_ = size; }
 
   // Implement GLSurface.
-  virtual void Destroy() OVERRIDE;
-  virtual bool IsOffscreen() OVERRIDE;
-  virtual bool SwapBuffers() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual void* GetHandle() OVERRIDE;
+  virtual void Destroy() override;
+  virtual bool IsOffscreen() override;
+  virtual bool SwapBuffers() override;
+  virtual gfx::Size GetSize() override;
+  virtual void* GetHandle() override;
 
  protected:
   virtual ~GLSurfaceStub();

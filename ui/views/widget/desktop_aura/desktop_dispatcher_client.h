@@ -22,7 +22,7 @@ class VIEWS_EXPORT DesktopDispatcherClient
   virtual void PrepareNestedLoopClosures(
       base::MessagePumpDispatcher* dispatcher,
       base::Closure* run_closure,
-      base::Closure* quit_closure) OVERRIDE;
+      base::Closure* quit_closure) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopDispatcherClient);

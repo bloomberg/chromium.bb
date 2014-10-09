@@ -17,9 +17,9 @@ class DeviceManagerManual : public DeviceManager {
 
  private:
   // DeviceManager overrides:
-  virtual void ScanDevices(DeviceEventObserver* observer) OVERRIDE;
-  virtual void AddObserver(DeviceEventObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DeviceEventObserver* observer) OVERRIDE;
+  virtual void ScanDevices(DeviceEventObserver* observer) override;
+  virtual void AddObserver(DeviceEventObserver* observer) override;
+  virtual void RemoveObserver(DeviceEventObserver* observer) override;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerManual);
 };

@@ -62,9 +62,9 @@ NativeViewAccessibilityWin
 
   // NativeViewAccessibility.
   virtual void NotifyAccessibilityEvent(
-      ui::AXEvent event_type) OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeObject() OVERRIDE;
-  virtual void Destroy() OVERRIDE;
+      ui::AXEvent event_type) override;
+  virtual gfx::NativeViewAccessible GetNativeObject() override;
+  virtual void Destroy() override;
 
   // Supported IAccessible methods.
 

@@ -62,20 +62,20 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
                                        int index);
 
   // views::MenuDelegate implementation.
-  virtual void ExecuteCommand(int id) OVERRIDE;
-  virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
+  virtual void ExecuteCommand(int id) override;
+  virtual void ExecuteCommand(int id, int mouse_event_flags) override;
   virtual bool IsTriggerableEvent(MenuItemView* source,
-                                  const ui::Event& e) OVERRIDE;
+                                  const ui::Event& e) override;
   virtual bool GetAccelerator(int id,
-                              ui::Accelerator* accelerator) const OVERRIDE;
-  virtual base::string16 GetLabel(int id) const OVERRIDE;
-  virtual const gfx::FontList* GetLabelFontList(int id) const OVERRIDE;
-  virtual bool IsCommandEnabled(int id) const OVERRIDE;
-  virtual bool IsCommandVisible(int id) const OVERRIDE;
-  virtual bool IsItemChecked(int id) const OVERRIDE;
-  virtual void SelectionChanged(MenuItemView* menu) OVERRIDE;
-  virtual void WillShowMenu(MenuItemView* menu) OVERRIDE;
-  virtual void WillHideMenu(MenuItemView* menu) OVERRIDE;
+                              ui::Accelerator* accelerator) const override;
+  virtual base::string16 GetLabel(int id) const override;
+  virtual const gfx::FontList* GetLabelFontList(int id) const override;
+  virtual bool IsCommandEnabled(int id) const override;
+  virtual bool IsCommandVisible(int id) const override;
+  virtual bool IsItemChecked(int id) const override;
+  virtual void SelectionChanged(MenuItemView* menu) override;
+  virtual void WillShowMenu(MenuItemView* menu) override;
+  virtual void WillHideMenu(MenuItemView* menu) override;
 
  private:
   // Implementation of BuildMenu().

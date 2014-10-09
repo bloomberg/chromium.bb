@@ -32,12 +32,12 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
  protected:
   // Overridden from LabelButton:
-  virtual void Layout() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual const gfx::ImageSkia& GetImage(ButtonState for_state) OVERRIDE;
+  virtual void Layout() override;
+  virtual const char* GetClassName() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual const gfx::ImageSkia& GetImage(ButtonState for_state) override;
 
   // Set the image shown for each button state depending on whether it is
   // [checked] or [focused].
@@ -48,11 +48,11 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
  private:
   // Overridden from Button:
-  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
+  virtual void NotifyClick(const ui::Event& event) override;
 
-  virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
+  virtual ui::NativeTheme::Part GetThemePart() const override;
   virtual void GetExtraParams(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+      ui::NativeTheme::ExtraParams* params) const override;
 
   // True if the checkbox is checked.
   bool checked_;

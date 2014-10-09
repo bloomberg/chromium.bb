@@ -33,18 +33,18 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
 
   // Overridden from aura::client::ActivationClient:
   virtual void AddObserver(
-      aura::client::ActivationChangeObserver* observer) OVERRIDE;
+      aura::client::ActivationChangeObserver* observer) override;
   virtual void RemoveObserver(
-      aura::client::ActivationChangeObserver* observer) OVERRIDE;
-  virtual void ActivateWindow(aura::Window* window) OVERRIDE;
-  virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetActiveWindow() OVERRIDE;
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) OVERRIDE;
-  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
+      aura::client::ActivationChangeObserver* observer) override;
+  virtual void ActivateWindow(aura::Window* window) override;
+  virtual void DeactivateWindow(aura::Window* window) override;
+  virtual aura::Window* GetActiveWindow() override;
+  virtual aura::Window* GetActivatableWindow(aura::Window* window) override;
+  virtual aura::Window* GetToplevelWindow(aura::Window* window) override;
+  virtual bool CanActivateWindow(aura::Window* window) const override;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   class Deleter;

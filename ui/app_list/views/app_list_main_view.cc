@@ -57,7 +57,7 @@ class SearchBoxContainerView : public views::View {
 
  private:
   // Overridden from views::View:
-  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
+  virtual void ChildVisibilityChanged(views::View* child) override {
     DCHECK_EQ(search_box_, child);
     host_->NotifySearchBoxVisibilityChanged();
   }
@@ -92,7 +92,7 @@ class AppListMainView::IconLoader : public AppListItemObserver {
 
  private:
   // AppListItemObserver overrides:
-  virtual void ItemIconChanged() OVERRIDE {
+  virtual void ItemIconChanged() override {
     owner_->OnItemIconLoaded(this);
     // Note that IconLoader is released here.
   }

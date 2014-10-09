@@ -89,8 +89,8 @@ class WEBVIEW_EXPORT WebView : public View,
   void SetPreferredSize(const gfx::Size& preferred_size);
 
   // Overridden from View:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual ui::TextInputClient* GetTextInputClient() override;
 
  protected:
   // Swaps the owned WebContents |wc_owner_| with |new_web_contents|. Returns
@@ -99,38 +99,38 @@ class WEBVIEW_EXPORT WebView : public View,
       scoped_ptr<content::WebContents> new_web_contents);
 
   // Overridden from View:
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
   virtual bool SkipDefaultKeyEventProcessing(
-      const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+      const ui::KeyEvent& event) override;
+  virtual void OnFocus() override;
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Overridden from content::WebContentsDelegate:
-  virtual void WebContentsFocused(content::WebContents* web_contents) OVERRIDE;
-  virtual bool EmbedsFullscreenWidget() const OVERRIDE;
+  virtual void WebContentsFocused(content::WebContents* web_contents) override;
+  virtual bool EmbedsFullscreenWidget() const override;
 
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
   virtual void RenderViewHostChanged(
       content::RenderViewHost* old_host,
-      content::RenderViewHost* new_host) OVERRIDE;
-  virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE;
-  virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE;
-  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE;
-  virtual void DidAttachInterstitialPage() OVERRIDE;
-  virtual void DidDetachInterstitialPage() OVERRIDE;
+      content::RenderViewHost* new_host) override;
+  virtual void DidShowFullscreenWidget(int routing_id) override;
+  virtual void DidDestroyFullscreenWidget(int routing_id) override;
+  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
+  virtual void DidAttachInterstitialPage() override;
+  virtual void DidDetachInterstitialPage() override;
   // Workaround for MSVC++ linker bug/feature that requires
   // instantiation of the inline IPC::Listener methods in all translation units.
-  virtual void OnChannelConnected(int32 peer_id) OVERRIDE {}
-  virtual void OnChannelError() OVERRIDE {}
-  virtual void OnBadMessageReceived(const IPC::Message& message) OVERRIDE {}
+  virtual void OnChannelConnected(int32 peer_id) override {}
+  virtual void OnChannelError() override {}
+  virtual void OnBadMessageReceived(const IPC::Message& message) override {}
 
  private:
   void AttachWebContents();

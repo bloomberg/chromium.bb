@@ -54,12 +54,12 @@ class TopIconAnimationView : public views::View,
 
  private:
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
-  virtual bool RequiresNotificationWhenAnimatorDestroyed() const OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
+  virtual bool RequiresNotificationWhenAnimatorDestroyed() const override;
 
   gfx::Size icon_size_;
   views::ImageView* icon_;  // Owned by views hierarchy.

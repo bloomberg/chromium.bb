@@ -17,15 +17,15 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   virtual ~AXViewObjWrapper();
 
   // AXAuraObjWrapper overrides.
-  virtual AXAuraObjWrapper* GetParent() OVERRIDE;
+  virtual AXAuraObjWrapper* GetParent() override;
   virtual void GetChildren(
-      std::vector<AXAuraObjWrapper*>* out_children) OVERRIDE;
-  virtual void Serialize(ui::AXNodeData* out_node_data) OVERRIDE;
-  virtual int32 GetID() OVERRIDE;
-  virtual void DoDefault() OVERRIDE;
-  virtual void Focus() OVERRIDE;
-  virtual void MakeVisible() OVERRIDE;
-  virtual void SetSelection(int32 start, int32 end) OVERRIDE;
+      std::vector<AXAuraObjWrapper*>* out_children) override;
+  virtual void Serialize(ui::AXNodeData* out_node_data) override;
+  virtual int32 GetID() override;
+  virtual void DoDefault() override;
+  virtual void Focus() override;
+  virtual void MakeVisible() override;
+  virtual void SetSelection(int32 start, int32 end) override;
 
  private:
   View* view_;

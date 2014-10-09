@@ -102,15 +102,15 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void AddBlankPageForTesting();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() OVERRIDE;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
-  virtual void TransitionStarted() OVERRIDE;
-  virtual void TransitionChanged() OVERRIDE;
+  virtual void TotalPagesChanged() override;
+  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
+  virtual void TransitionStarted() override;
+  virtual void TransitionChanged() override;
 
   // Returns the pagination model for the ContentsView.
   const PaginationModel& pagination_model() { return pagination_model_; }

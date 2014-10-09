@@ -65,7 +65,7 @@ class TestPlatformEventSource : public PlatformEventSource {
   }
 
   // PlatformEventSource:
-  virtual void StopCurrentEventStream() OVERRIDE {
+  virtual void StopCurrentEventStream() override {
     stop_stream_ = true;
   }
 
@@ -93,11 +93,11 @@ class TestPlatformEventDispatcher : public PlatformEventDispatcher {
 
  protected:
   // PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE {
+  virtual bool CanDispatchEvent(const PlatformEvent& event) override {
     return true;
   }
 
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE {
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override {
     list_->push_back(id_);
     return post_dispatch_action_;
   }
@@ -123,11 +123,11 @@ class TestPlatformEventObserver : public PlatformEventObserver {
 
  protected:
   // PlatformEventObserver:
-  virtual void WillProcessEvent(const PlatformEvent& event) OVERRIDE {
+  virtual void WillProcessEvent(const PlatformEvent& event) override {
     list_->push_back(id_);
   }
 
-  virtual void DidProcessEvent(const PlatformEvent& event) OVERRIDE {}
+  virtual void DidProcessEvent(const PlatformEvent& event) override {}
 
  private:
   int id_;
@@ -145,7 +145,7 @@ class PlatformEventTest : public testing::Test {
 
  protected:
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     source_.reset(new TestPlatformEventSource());
   }
 
@@ -342,7 +342,7 @@ class RunCallbackDuringDispatch : public TestPlatformEventDispatcher {
 
  protected:
   // PlatformEventDispatcher:
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE {
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override {
     if (!callback_.is_null())
       callback_.Run();
     return TestPlatformEventDispatcher::DispatchEvent(event);
@@ -530,7 +530,7 @@ class ScopedDispatcherRestoresAfterDestroy
     : public PlatformEventTestWithMessageLoop {
  public:
   // PlatformEventTestWithMessageLoop:
-  virtual void RunTestImpl() OVERRIDE {
+  virtual void RunTestImpl() override {
     std::vector<int> list;
     TestPlatformEventDispatcher dispatcher(10, &list);
     TestPlatformEventObserver observer(15, &list);
@@ -581,11 +581,11 @@ class DestroyScopedHandleDispatcher : public TestPlatformEventDispatcher {
 
  private:
   // PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE {
+  virtual bool CanDispatchEvent(const PlatformEvent& event) override {
     return true;
   }
 
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE {
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override {
     handler_.reset();
     uint32_t action = TestPlatformEventDispatcher::DispatchEvent(event);
     if (!callback_.is_null()) {
@@ -640,7 +640,7 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
   }
 
   // PlatformEventTestWithMessageLoop:
-  virtual void RunTestImpl() OVERRIDE {
+  virtual void RunTestImpl() override {
     std::vector<int> list;
     TestPlatformEventDispatcher dispatcher(10, &list);
     TestPlatformEventObserver observer(15, &list);
@@ -740,7 +740,7 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
   }
 
   // PlatformEventTestWithMessageLoop:
-  virtual void RunTestImpl() OVERRIDE {
+  virtual void RunTestImpl() override {
     std::vector<int> list;
     TestPlatformEventDispatcher dispatcher(10, &list);
     TestPlatformEventObserver observer(15, &list);

@@ -17,11 +17,11 @@ public:
 
  private:
   // Overridden from gfx::ScreenWin:
-  virtual bool IsDIPEnabled() OVERRIDE;
+  virtual bool IsDIPEnabled() override;
   virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const OVERRIDE;
-  virtual HWND GetHWNDFromNativeView(gfx::NativeView window) const OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const OVERRIDE;
+      const gfx::Rect& match_rect) const override;
+  virtual HWND GetHWNDFromNativeView(gfx::NativeView window) const override;
+  virtual gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenWin);
 };

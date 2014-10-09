@@ -30,10 +30,10 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
         ozone_surface_(ozone_surface.Pass()),
         widget_(widget) {}
 
-  virtual bool Initialize() OVERRIDE {
+  virtual bool Initialize() override {
     return Initialize(ozone_surface_->CreateVSyncProvider());
   }
-  virtual bool Resize(const gfx::Size& size) OVERRIDE {
+  virtual bool Resize(const gfx::Size& size) override {
     if (!ozone_surface_->ResizeNativeWindow(size)) {
       if (!ReinitializeNativeSurface() ||
           !ozone_surface_->ResizeNativeWindow(size))
@@ -42,7 +42,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
 
     return NativeViewGLSurfaceEGL::Resize(size);
   }
-  virtual bool SwapBuffers() OVERRIDE {
+  virtual bool SwapBuffers() override {
     if (!NativeViewGLSurfaceEGL::SwapBuffers())
       return false;
 
@@ -52,7 +52,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
                                     OverlayTransform transform,
                                     GLImage* image,
                                     const Rect& bounds_rect,
-                                    const RectF& crop_rect) OVERRIDE {
+                                    const RectF& crop_rect) override {
     return image->ScheduleOverlayPlane(
         widget_, z_order, transform, bounds_rect, crop_rect);
   }
@@ -107,7 +107,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
         ozone_surface_(ozone_surface.Pass()),
         widget_(widget) {}
 
-  virtual bool Initialize() OVERRIDE {
+  virtual bool Initialize() override {
     if (!SurfacelessEGL::Initialize())
       return false;
     vsync_provider_ = ozone_surface_->CreateVSyncProvider();
@@ -115,13 +115,13 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
       return false;
     return true;
   }
-  virtual bool Resize(const gfx::Size& size) OVERRIDE {
+  virtual bool Resize(const gfx::Size& size) override {
     if (!ozone_surface_->ResizeNativeWindow(size))
       return false;
 
     return SurfacelessEGL::Resize(size);
   }
-  virtual bool SwapBuffers() OVERRIDE {
+  virtual bool SwapBuffers() override {
     // TODO: this should be replaced by a fence when supported by the driver.
     glFinish();
     return ozone_surface_->OnSwapBuffers();
@@ -130,21 +130,21 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                                     OverlayTransform transform,
                                     GLImage* image,
                                     const Rect& bounds_rect,
-                                    const RectF& crop_rect) OVERRIDE {
+                                    const RectF& crop_rect) override {
     return image->ScheduleOverlayPlane(
         widget_, z_order, transform, bounds_rect, crop_rect);
   }
-  virtual bool IsOffscreen() OVERRIDE { return false; }
-  virtual VSyncProvider* GetVSyncProvider() OVERRIDE {
+  virtual bool IsOffscreen() override { return false; }
+  virtual VSyncProvider* GetVSyncProvider() override {
     return vsync_provider_.get();
   }
-  virtual bool SupportsPostSubBuffer() OVERRIDE { return true; }
-  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE {
+  virtual bool SupportsPostSubBuffer() override { return true; }
+  virtual bool PostSubBuffer(int x, int y, int width, int height) override {
     // The actual sub buffer handling is handled at higher layers.
     SwapBuffers();
     return true;
   }
-  virtual bool IsSurfaceless() const OVERRIDE { return true; }
+  virtual bool IsSurfaceless() const override { return true; }
 
  private:
   virtual ~GLSurfaceOzoneSurfaceless() {

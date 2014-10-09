@@ -19,7 +19,7 @@ class DesktopTestViewsDelegate : public TestViewsDelegate {
 
   // Overridden from ViewsDelegate:
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
-                            internal::NativeWidgetDelegate* delegate) OVERRIDE;
+                            internal::NativeWidgetDelegate* delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopTestViewsDelegate);

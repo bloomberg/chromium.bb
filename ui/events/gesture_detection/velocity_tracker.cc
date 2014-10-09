@@ -121,13 +121,13 @@ class LeastSquaresVelocityTrackerStrategy : public VelocityTrackerStrategy {
                                       Weighting weighting = WEIGHTING_NONE);
   virtual ~LeastSquaresVelocityTrackerStrategy();
 
-  virtual void Clear() OVERRIDE;
-  virtual void ClearPointers(BitSet32 id_bits) OVERRIDE;
+  virtual void Clear() override;
+  virtual void ClearPointers(BitSet32 id_bits) override;
   virtual void AddMovement(const TimeTicks& event_time,
                            BitSet32 id_bits,
-                           const Position* positions) OVERRIDE;
+                           const Position* positions) override;
   virtual bool GetEstimator(uint32_t id,
-                            Estimator* out_estimator) const OVERRIDE;
+                            Estimator* out_estimator) const override;
 
  private:
   // Sample horizon.
@@ -160,13 +160,13 @@ class IntegratingVelocityTrackerStrategy : public VelocityTrackerStrategy {
   explicit IntegratingVelocityTrackerStrategy(uint32_t degree);
   virtual ~IntegratingVelocityTrackerStrategy();
 
-  virtual void Clear() OVERRIDE;
-  virtual void ClearPointers(BitSet32 id_bits) OVERRIDE;
+  virtual void Clear() override;
+  virtual void ClearPointers(BitSet32 id_bits) override;
   virtual void AddMovement(const TimeTicks& event_time,
                            BitSet32 id_bits,
-                           const Position* positions) OVERRIDE;
+                           const Position* positions) override;
   virtual bool GetEstimator(uint32_t id,
-                            Estimator* out_estimator) const OVERRIDE;
+                            Estimator* out_estimator) const override;
 
  private:
   // Current state estimate for a particular pointer.

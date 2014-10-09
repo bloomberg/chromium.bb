@@ -17,14 +17,14 @@ class TestScrollBarController : public views::ScrollBarController {
   virtual ~TestScrollBarController() {}
 
   virtual void ScrollToPosition(views::ScrollBar* source,
-                                int position) OVERRIDE {
+                                int position) override {
     last_source = source;
     last_position = position;
   }
 
   virtual int GetScrollIncrement(views::ScrollBar* source,
                                  bool is_page,
-                                 bool is_positive) OVERRIDE {
+                                 bool is_positive) override {
     last_source = source;
     last_is_page = is_page;
     last_is_positive = is_positive;

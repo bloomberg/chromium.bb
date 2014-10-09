@@ -116,20 +116,20 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // aura::WindowObserver overrides
   virtual void OnWindowHierarchyChanged(
-      const HierarchyChangeParams& params) OVERRIDE;
+      const HierarchyChangeParams& params) override;
 
   // InputMethodObserver overrides
   virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) OVERRIDE {}
-  virtual void OnFocus() OVERRIDE {}
-  virtual void OnBlur() OVERRIDE {}
+      const ui::TextInputClient* client) override {}
+  virtual void OnFocus() override {}
+  virtual void OnBlur() override {}
   virtual void OnCaretBoundsChanged(
-      const ui::TextInputClient* client) OVERRIDE {}
+      const ui::TextInputClient* client) override {}
   virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) OVERRIDE;
+      const ui::TextInputClient* client) override;
   virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) OVERRIDE;
-  virtual void OnShowImeIfNeeded() OVERRIDE;
+      const ui::InputMethod* input_method) override;
+  virtual void OnShowImeIfNeeded() override;
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal();

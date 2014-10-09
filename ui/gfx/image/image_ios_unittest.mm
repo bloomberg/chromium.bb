@@ -48,11 +48,11 @@ class ImageIOSTest : public testing::Test {
   ImageIOSTest() {}
   virtual ~ImageIOSTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     original_scale_factors_ = gfx::ImageSkia::GetSupportedScales();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     gfx::ImageSkia::SetSupportedScales(original_scale_factors_);
   }
 

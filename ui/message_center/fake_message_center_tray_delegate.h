@@ -27,15 +27,15 @@ class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
   }
 
   // Overridden from MessageCenterTrayDelegate:
-  virtual void OnMessageCenterTrayChanged() OVERRIDE;
-  virtual bool ShowPopups() OVERRIDE;
-  virtual void HidePopups() OVERRIDE;
-  virtual bool ShowMessageCenter() OVERRIDE;
-  virtual void HideMessageCenter() OVERRIDE;
-  virtual bool ShowNotifierSettings() OVERRIDE;
-  virtual bool IsContextMenuEnabled() const OVERRIDE;
-  virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE;
-  virtual void DisplayFirstRunBalloon() OVERRIDE;
+  virtual void OnMessageCenterTrayChanged() override;
+  virtual bool ShowPopups() override;
+  virtual void HidePopups() override;
+  virtual bool ShowMessageCenter() override;
+  virtual void HideMessageCenter() override;
+  virtual bool ShowNotifierSettings() override;
+  virtual bool IsContextMenuEnabled() const override;
+  virtual MessageCenterTray* GetMessageCenterTray() override;
+  virtual void DisplayFirstRunBalloon() override;
 
  private:
   scoped_ptr<MessageCenterTray> tray_;

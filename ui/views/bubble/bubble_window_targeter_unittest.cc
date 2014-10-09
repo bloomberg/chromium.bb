@@ -26,7 +26,7 @@ class WidgetOwnsNativeBubble : public BubbleDelegateView {
  private:
   // BubbleDelegateView:
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
-                                        Widget* widget) const OVERRIDE {
+                                        Widget* widget) const override {
     params->ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   }
 
@@ -42,7 +42,7 @@ class BubbleWindowTargeterTest : public ViewsTestBase {
   }
   virtual ~BubbleWindowTargeterTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewsTestBase::SetUp();
     CreateAnchorWidget();
     CreateBubbleWidget();
@@ -51,7 +51,7 @@ class BubbleWindowTargeterTest : public ViewsTestBase {
     bubble_widget()->Show();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     bubble_delegate_ = NULL;
     bubble_widget_.reset();
     anchor_.reset();

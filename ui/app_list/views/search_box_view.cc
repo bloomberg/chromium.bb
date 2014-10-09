@@ -52,7 +52,7 @@ class SearchBoxBackground : public views::Background {
 
  private:
   // views::Background overrides:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
     gfx::Rect bounds = view->GetContentsBounds();
 
     SkPaint paint;

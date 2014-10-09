@@ -470,7 +470,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   // Overridden from LocatedEvent.
   virtual void UpdateForRootTransform(
-      const gfx::Transform& inverted_root_transform) OVERRIDE;
+      const gfx::Transform& inverted_root_transform) override;
 
  private:
   gfx::Vector2d offset_;
@@ -522,7 +522,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // Overridden from LocatedEvent.
   virtual void UpdateForRootTransform(
-      const gfx::Transform& inverted_root_transform) OVERRIDE;
+      const gfx::Transform& inverted_root_transform) override;
 
  protected:
   void set_radius(float radius_x, float radius_y) {

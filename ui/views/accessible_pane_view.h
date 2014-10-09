@@ -40,23 +40,23 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   virtual bool SetPaneFocusAndFocusDefault();
 
   // Overridden from View:
-  virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
+  virtual FocusTraversable* GetPaneFocusTraversable() override;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
-      OVERRIDE;
-  virtual void SetVisible(bool flag) OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void RequestFocus() OVERRIDE;
+      override;
+  virtual void SetVisible(bool flag) override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual void RequestFocus() override;
 
   // Overridden from FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
+                                 View* focused_now) override;
   virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
+                                View* focused_now) override;
 
   // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch() OVERRIDE;
-  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
-  virtual View* GetFocusTraversableParentView() OVERRIDE;
+  virtual FocusSearch* GetFocusSearch() override;
+  virtual FocusTraversable* GetFocusTraversableParent() override;
+  virtual View* GetFocusTraversableParentView() override;
 
   // For testing only.
   const ui::Accelerator& home_key() const { return home_key_; }

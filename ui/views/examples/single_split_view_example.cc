@@ -22,9 +22,9 @@ class SplittedView : public View {
 
  private:
   // View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Layout() override;
 
   DISALLOW_COPY_AND_ASSIGN(SplittedView);
 };

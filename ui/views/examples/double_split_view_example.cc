@@ -22,7 +22,7 @@ class SplittedView : public View {
   void SetColor(SkColor from, SkColor to);
 
   // View:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SplittedView);

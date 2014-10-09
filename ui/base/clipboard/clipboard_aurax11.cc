@@ -77,8 +77,8 @@ class SelectionChangeObserver : public ui::PlatformEventObserver {
   virtual ~SelectionChangeObserver();
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE {}
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) override {}
 
   int event_base_;
   Atom clipboard_atom_;
@@ -290,8 +290,8 @@ class Clipboard::AuraX11Details : public PlatformEventDispatcher {
 
  private:
   // PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // Our X11 state.
   Display* x_display_;

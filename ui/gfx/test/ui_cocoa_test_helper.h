@@ -59,7 +59,7 @@ class CocoaTest : public PlatformTest {
   // to close them before CocoaTest::TearDown is called. A standard way of doing
   // this would be to create them in SetUp (after calling CocoaTest::Setup) and
   // then close them in TearDown before calling CocoaTest::TearDown.
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // Retuns a test window that can be used by views and other UI objects
   // as part of their tests. Is created lazily, and will be closed correctly

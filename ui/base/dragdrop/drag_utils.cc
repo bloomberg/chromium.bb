@@ -40,7 +40,7 @@ class FileDragImageSource : public gfx::CanvasImageSource {
   }
 
   // Overridden from gfx::CanvasImageSource.
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     if (!icon_.isNull()) {
       // Paint the icon.
       canvas->DrawImageInt(icon_, (size().width() - icon_.width()) / 2, 0);

@@ -15,29 +15,29 @@ class TestingCursorManager : public wm::NativeCursorManager {
   // Overridden from wm::NativeCursorManager:
   virtual void SetDisplay(
       const gfx::Display& display,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {}
+      wm::NativeCursorManagerDelegate* delegate) override {}
 
   virtual void SetCursor(
       gfx::NativeCursor cursor,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitCursor(cursor);
   }
 
   virtual void SetVisibility(
       bool visible,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitVisibility(visible);
   }
 
   virtual void SetMouseEventsEnabled(
       bool enabled,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitMouseEventsEnabled(enabled);
   }
 
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitCursorSet(cursor_set);
   }
 };
@@ -66,7 +66,7 @@ class TestingCursorClientObserver : public aura::client::CursorClientObserver {
   bool did_visibility_change() const { return did_visibility_change_; }
 
   // Overridden from aura::client::CursorClientObserver:
-  virtual void OnCursorVisibilityChanged(bool is_visible) OVERRIDE {
+  virtual void OnCursorVisibilityChanged(bool is_visible) override {
     cursor_visibility_ = is_visible;
     did_visibility_change_ = true;
   }

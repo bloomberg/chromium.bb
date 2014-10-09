@@ -57,7 +57,7 @@ class KeyEventConverterEvdevTest : public testing::Test {
   KeyEventConverterEvdevTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
 
     // Set up pipe to satisfy message pump (unused).
     int evdev_io[2];
@@ -69,7 +69,7 @@ class KeyEventConverterEvdevTest : public testing::Test {
     modifiers_ = new ui::EventModifiersEvdev();
     device_ = new ui::MockKeyEventConverterEvdev(events_in_, modifiers_);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     delete device_;
     delete modifiers_;
     close(events_in_);

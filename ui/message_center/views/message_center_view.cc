@@ -62,9 +62,9 @@ class NoNotificationMessageView : public views::View {
   virtual ~NoNotificationMessageView();
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void Layout() override;
 
  private:
   views::Label* label_;
@@ -121,17 +121,17 @@ class MessageListView : public views::View,
 
  protected:
   // Overridden from views::View.
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
+  virtual void Layout() override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
   virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
-  virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
+                             const views::CullSet& cull_set) override;
+  virtual void ReorderChildLayers(ui::Layer* parent_layer) override;
 
   // Overridden from views::BoundsAnimatorObserver.
   virtual void OnBoundsAnimatorProgressed(
-      views::BoundsAnimator* animator) OVERRIDE;
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
+      views::BoundsAnimator* animator) override;
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
  private:
   bool IsValidChild(const views::View* child) const;

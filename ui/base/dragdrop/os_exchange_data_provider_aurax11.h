@@ -61,45 +61,45 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   }
 
   // Overridden from OSExchangeData::Provider:
-  virtual Provider* Clone() const OVERRIDE;
-  virtual void MarkOriginatedFromRenderer() OVERRIDE;
-  virtual bool DidOriginateFromRenderer() const OVERRIDE;
-  virtual void SetString(const base::string16& data) OVERRIDE;
-  virtual void SetURL(const GURL& url, const base::string16& title) OVERRIDE;
-  virtual void SetFilename(const base::FilePath& path) OVERRIDE;
-  virtual void SetFilenames(const std::vector<FileInfo>& filenames) OVERRIDE;
+  virtual Provider* Clone() const override;
+  virtual void MarkOriginatedFromRenderer() override;
+  virtual bool DidOriginateFromRenderer() const override;
+  virtual void SetString(const base::string16& data) override;
+  virtual void SetURL(const GURL& url, const base::string16& title) override;
+  virtual void SetFilename(const base::FilePath& path) override;
+  virtual void SetFilenames(const std::vector<FileInfo>& filenames) override;
   virtual void SetPickledData(const OSExchangeData::CustomFormat& format,
-                              const Pickle& pickle) OVERRIDE;
-  virtual bool GetString(base::string16* data) const OVERRIDE;
+                              const Pickle& pickle) override;
+  virtual bool GetString(base::string16* data) const override;
   virtual bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
                               GURL* url,
-                              base::string16* title) const OVERRIDE;
-  virtual bool GetFilename(base::FilePath* path) const OVERRIDE;
-  virtual bool GetFilenames(std::vector<FileInfo>* filenames) const OVERRIDE;
+                              base::string16* title) const override;
+  virtual bool GetFilename(base::FilePath* path) const override;
+  virtual bool GetFilenames(std::vector<FileInfo>* filenames) const override;
   virtual bool GetPickledData(const OSExchangeData::CustomFormat& format,
-                              Pickle* pickle) const OVERRIDE;
-  virtual bool HasString() const OVERRIDE;
+                              Pickle* pickle) const override;
+  virtual bool HasString() const override;
   virtual bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const
-      OVERRIDE;
-  virtual bool HasFile() const OVERRIDE;
+      override;
+  virtual bool HasFile() const override;
   virtual bool HasCustomFormat(const OSExchangeData::CustomFormat& format) const
-      OVERRIDE;
+      override;
 
   virtual void SetFileContents(const base::FilePath& filename,
-                               const std::string& file_contents) OVERRIDE;
+                               const std::string& file_contents) override;
 
   virtual void SetHtml(const base::string16& html,
-                       const GURL& base_url) OVERRIDE;
-  virtual bool GetHtml(base::string16* html, GURL* base_url) const OVERRIDE;
-  virtual bool HasHtml() const OVERRIDE;
+                       const GURL& base_url) override;
+  virtual bool GetHtml(base::string16* html, GURL* base_url) const override;
+  virtual bool HasHtml() const override;
   virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2d& cursor_offset) OVERRIDE;
-  virtual const gfx::ImageSkia& GetDragImage() const OVERRIDE;
-  virtual const gfx::Vector2d& GetDragImageOffset() const OVERRIDE;
+                            const gfx::Vector2d& cursor_offset) override;
+  virtual const gfx::ImageSkia& GetDragImage() const override;
+  virtual const gfx::Vector2d& GetDragImageOffset() const override;
 
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) override;
 
  private:
   friend class OSExchangeDataProviderAuraX11Test;

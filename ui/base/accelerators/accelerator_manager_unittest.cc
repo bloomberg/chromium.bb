@@ -28,8 +28,8 @@ class TestTarget : public AcceleratorTarget {
   }
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) override;
+  virtual bool CanHandleAccelerators() const override;
 
  private:
   int accelerator_pressed_count_;

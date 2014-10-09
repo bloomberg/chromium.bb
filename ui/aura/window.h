@@ -312,7 +312,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   typedef void (*PropertyDeallocator)(int64 value);
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
 
 #if !defined(NDEBUG)
   // These methods are useful when debugging.
@@ -455,18 +455,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void OnWindowBoundsChanged(const gfx::Rect& old_bounds);
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
   virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
-  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
+      const gfx::Rect& damage_rect_in_dip) override;
+  virtual base::Closure PrepareForLayerBoundsChange() override;
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
-  virtual EventTarget* GetParentTarget() OVERRIDE;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
-  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  virtual ui::EventTargeter* GetEventTargeter() override;
   virtual void ConvertEventToTarget(ui::EventTarget* target,
-                                    ui::LocatedEvent* event) OVERRIDE;
+                                    ui::LocatedEvent* event) override;
 
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();

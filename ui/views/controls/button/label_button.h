@@ -86,11 +86,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   Painter* focus_painter() { return focus_painter_.get(); }
 
   // View:
-  virtual void SetBorder(scoped_ptr<Border> border) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int w) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual void SetBorder(scoped_ptr<Border> border) override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int w) const override;
+  virtual void Layout() override;
+  virtual const char* GetClassName() const override;
 
  protected:
   ImageView* image() const { return image_; }
@@ -101,10 +101,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual gfx::Rect GetChildAreaBounds();
 
   // View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Fill |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
@@ -124,7 +124,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void UpdateThemedBorder();
 
   // NativeThemeDelegate:
-  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
+  virtual gfx::Rect GetThemePaintRect() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
@@ -134,20 +134,20 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, FontList);
 
   // CustomButton:
-  virtual void StateChanged() OVERRIDE;
+  virtual void StateChanged() override;
 
   // View:
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) override;
 
   // NativeThemeDelegate:
-  virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
+  virtual ui::NativeTheme::Part GetThemePart() const override;
   virtual ui::NativeTheme::State GetThemeState(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual const gfx::Animation* GetThemeAnimation() const OVERRIDE;
+      ui::NativeTheme::ExtraParams* params) const override;
+  virtual const gfx::Animation* GetThemeAnimation() const override;
   virtual ui::NativeTheme::State GetBackgroundThemeState(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+      ui::NativeTheme::ExtraParams* params) const override;
   virtual ui::NativeTheme::State GetForegroundThemeState(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+      ui::NativeTheme::ExtraParams* params) const override;
 
   // Resets |cached_preferred_size_| and marks |cached_preferred_size_valid_|
   // as false.

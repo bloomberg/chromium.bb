@@ -52,11 +52,11 @@ class SearchBoxModelObserverBridge : public SearchBoxModelObserver {
 
   void SetSearchText(const base::string16& text);
 
-  virtual void IconChanged() OVERRIDE;
-  virtual void SpeechRecognitionButtonPropChanged() OVERRIDE;
-  virtual void HintTextChanged() OVERRIDE;
-  virtual void SelectionModelChanged() OVERRIDE;
-  virtual void TextChanged() OVERRIDE;
+  virtual void IconChanged() override;
+  virtual void SpeechRecognitionButtonPropChanged() override;
+  virtual void HintTextChanged() override;
+  virtual void SelectionModelChanged() override;
+  virtual void TextChanged() override;
 
  private:
   SearchBoxModel* GetModel();

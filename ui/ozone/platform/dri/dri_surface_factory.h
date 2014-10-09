@@ -50,18 +50,18 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
 
   // SurfaceFactoryOzone:
   virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget) OVERRIDE;
+      gfx::AcceleratedWidget widget) override;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
   // HardwareCursorDelegate:
   virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
                                  const std::vector<SkBitmap>& bitmaps,
                                  const gfx::Point& location,
-                                 int frame_delay_ms) OVERRIDE;
+                                 int frame_delay_ms) override;
   virtual void MoveHardwareCursor(gfx::AcceleratedWidget window,
-                                  const gfx::Point& location) OVERRIDE;
+                                  const gfx::Point& location) override;
 
  protected:
   // Draw the last set cursor & update the cursor plane.

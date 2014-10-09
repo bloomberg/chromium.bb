@@ -34,9 +34,9 @@ class GbmSurface : public GbmSurfaceless {
   bool Initialize();
 
   // GbmSurfaceless:
-  virtual intptr_t GetNativeWindow() OVERRIDE;
-  virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) OVERRIDE;
-  virtual bool OnSwapBuffers() OVERRIDE;
+  virtual intptr_t GetNativeWindow() override;
+  virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
+  virtual bool OnSwapBuffers() override;
 
  private:
   gbm_device* gbm_device_;

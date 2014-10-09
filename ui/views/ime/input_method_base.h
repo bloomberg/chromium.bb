@@ -29,16 +29,16 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
   virtual ~InputMethodBase();
 
   // Overridden from InputMethod.
-  virtual void SetDelegate(internal::InputMethodDelegate* delegate) OVERRIDE;
-  virtual void Init(Widget* widget) OVERRIDE;
-  virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
-  virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE;
-  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
-  virtual bool IsMock() const OVERRIDE;
+  virtual void SetDelegate(internal::InputMethodDelegate* delegate) override;
+  virtual void Init(Widget* widget) override;
+  virtual void OnTextInputTypeChanged(View* view) override;
+  virtual ui::TextInputClient* GetTextInputClient() const override;
+  virtual ui::TextInputType GetTextInputType() const override;
+  virtual bool IsMock() const override;
 
   // Overridden from FocusChangeListener.
-  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
-  virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) override;
+  virtual void OnDidChangeFocus(View* focused_before, View* focused) override;
 
  protected:
   internal::InputMethodDelegate* delegate() const { return delegate_; }

@@ -25,7 +25,7 @@ class NestedAcceleratorDelegate : public ::wm::NestedAcceleratorDelegate {
 
   // ::wm::NestedAcceleratorDelegate:
   virtual Result ProcessAccelerator(
-      const ui::Accelerator& accelerator) OVERRIDE {
+      const ui::Accelerator& accelerator) override {
     return RESULT_NOT_PROCESSED;
   }
 
@@ -42,8 +42,8 @@ class ViewsContentClientMainPartsChromeOS
   virtual ~ViewsContentClientMainPartsChromeOS() {}
 
   // content::BrowserMainParts:
-  virtual void PreMainMessageLoopRun() OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PreMainMessageLoopRun() override;
+  virtual void PostMainMessageLoopRun() override;
 
  private:
   // Enable a minimal set of views::corewm to be initialized.

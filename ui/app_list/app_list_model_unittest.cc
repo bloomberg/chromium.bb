@@ -33,19 +33,19 @@ class TestObserver : public AppListModelObserver {
   }
 
   // AppListModelObserver
-  virtual void OnAppListModelStatusChanged() OVERRIDE {
+  virtual void OnAppListModelStatusChanged() override {
     ++status_changed_count_;
   }
 
-  virtual void OnAppListItemAdded(AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemAdded(AppListItem* item) override {
     items_added_++;
   }
 
-  virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) override {
     items_removed_++;
   }
 
-  virtual void OnAppListItemUpdated(AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemUpdated(AppListItem* item) override {
     items_updated_++;
   }
 
@@ -78,10 +78,10 @@ class AppListModelTest : public testing::Test {
   virtual ~AppListModelTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     model_.AddObserver(&observer_);
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     model_.RemoveObserver(&observer_);
   }
 
@@ -237,10 +237,10 @@ class AppListModelFolderTest : public AppListModelTest {
   virtual ~AppListModelFolderTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AppListModelTest::SetUp();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     AppListModelTest::TearDown();
   }
 

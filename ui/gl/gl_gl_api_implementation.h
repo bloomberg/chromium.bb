@@ -57,8 +57,8 @@ class RealGLApi : public GLApiBase {
   void Initialize(DriverGL* driver);
 
  private:
-  virtual void glFinishFn() OVERRIDE;
-  virtual void glFlushFn() OVERRIDE;
+  virtual void glFinishFn() override;
+  virtual void glFlushFn() override;
 };
 
 // Inserts a TRACE for every GL call.
@@ -104,9 +104,9 @@ class VirtualGLApi : public GLApiBase {
 
 private:
   // Overridden functions from GLApiBase
-  virtual const GLubyte* glGetStringFn(GLenum name) OVERRIDE;
-  virtual void glFinishFn() OVERRIDE;
-  virtual void glFlushFn() OVERRIDE;
+  virtual const GLubyte* glGetStringFn(GLenum name) override;
+  virtual void glFinishFn() override;
+  virtual void glFlushFn() override;
 
   // The real context we're running on.
   GLContext* real_context_;

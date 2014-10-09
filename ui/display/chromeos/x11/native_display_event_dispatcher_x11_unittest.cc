@@ -58,10 +58,10 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
 
   // NativeDisplayDelegateX11::HelperDelegate overrides:
   virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
-      OVERRIDE;
+      override;
   virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const
-      OVERRIDE;
-  virtual void NotifyDisplayObservers() OVERRIDE;
+      override;
+  virtual void NotifyDisplayObservers() override;
 
  private:
   int num_calls_update_xrandr_config_;

@@ -26,34 +26,34 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
 
  private:
   // ui::PlatformWindowDelegate:
-  virtual void OnBoundsChanged(const gfx::Rect&) OVERRIDE;
-  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE;
-  virtual void DispatchEvent(ui::Event* event) OVERRIDE;
-  virtual void OnCloseRequest() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
-  virtual void OnWindowStateChanged(ui::PlatformWindowState new_state) OVERRIDE;
-  virtual void OnLostCapture() OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect&) override;
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) override;
+  virtual void DispatchEvent(ui::Event* event) override;
+  virtual void OnCloseRequest() override;
+  virtual void OnClosed() override;
+  virtual void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  virtual void OnLostCapture() override;
   virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) OVERRIDE;
-  virtual void OnActivationChanged(bool active) OVERRIDE;
+      gfx::AcceleratedWidget widget) override;
+  virtual void OnActivationChanged(bool active) override;
 
   // WindowTreeHost:
-  virtual ui::EventSource* GetEventSource() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
-  virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void SetCursorNative(gfx::NativeCursor cursor_type) OVERRIDE;
-  virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
-  virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
+  virtual ui::EventSource* GetEventSource() override;
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual gfx::Rect GetBounds() const override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual gfx::Point GetLocationOnNativeScreen() const override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
+  virtual void PostNativeEvent(const base::NativeEvent& event) override;
+  virtual void SetCursorNative(gfx::NativeCursor cursor_type) override;
+  virtual void MoveCursorToNative(const gfx::Point& location) override;
+  virtual void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource overrides.
-  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+  virtual ui::EventProcessor* GetEventProcessor() override;
 
   // Platform-specific part of this WindowTreeHost.
   scoped_ptr<ui::PlatformWindow> platform_window_;

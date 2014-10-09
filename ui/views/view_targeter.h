@@ -33,15 +33,15 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
  protected:
   // ui::EventTargeter:
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                              ui::Event* event) OVERRIDE;
+                                              ui::Event* event) override;
   virtual ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
-                                              ui::Event* event) OVERRIDE;
+                                              ui::Event* event) override;
   virtual bool SubtreeCanAcceptEvent(
       ui::EventTarget* target,
-      const ui::LocatedEvent& event) const OVERRIDE;
+      const ui::LocatedEvent& event) const override;
   virtual bool EventLocationInsideBounds(
       ui::EventTarget* target,
-      const ui::LocatedEvent& event) const OVERRIDE;
+      const ui::LocatedEvent& event) const override;
 
  private:
   // TODO(tdanderson): Un-friend RootView once RootView::DispatchGestureEvent()

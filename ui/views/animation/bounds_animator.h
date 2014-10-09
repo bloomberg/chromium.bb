@@ -144,15 +144,15 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
                                 AnimationEndType type);
 
   // gfx::AnimationDelegate overrides.
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  virtual void AnimationCanceled(const gfx::Animation* animation) override;
 
   // gfx::AnimationContainerObserver overrides.
   virtual void AnimationContainerProgressed(
-      gfx::AnimationContainer* container) OVERRIDE;
+      gfx::AnimationContainer* container) override;
   virtual void AnimationContainerEmpty(
-      gfx::AnimationContainer* container) OVERRIDE;
+      gfx::AnimationContainer* container) override;
 
   // Parent of all views being animated.
   View* parent_;

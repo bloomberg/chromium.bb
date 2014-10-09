@@ -21,13 +21,13 @@ class TransientWindowStackingClientTest : public aura::test::AuraTestBase {
   TransientWindowStackingClientTest() {}
   virtual ~TransientWindowStackingClientTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AuraTestBase::SetUp();
     client_.reset(new TransientWindowStackingClient);
     aura::client::SetWindowStackingClient(client_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     aura::client::SetWindowStackingClient(NULL);
     AuraTestBase::TearDown();
   }

@@ -34,7 +34,7 @@ class TestingView : public View, public ViewTargeterDelegate {
   }
 
   // View:
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+  virtual bool CanProcessEventsWithinSubtree() const override {
     return can_process_events_within_subtree_;
   }
 
@@ -58,7 +58,7 @@ class TestMaskedView : public View, public MaskedTargeterDelegate {
 
  private:
   // MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+  virtual bool GetHitTestMask(gfx::Path* mask) const override {
     DCHECK(mask);
     SkScalar w = SkIntToScalar(width());
     SkScalar h = SkIntToScalar(height());

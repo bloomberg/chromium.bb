@@ -56,9 +56,9 @@ class TestSliderListener : public views::SliderListener {
   virtual void SliderValueChanged(views::Slider* sender,
                                   float value,
                                   float old_value,
-                                  views::SliderChangeReason reason) OVERRIDE;
-  virtual void SliderDragStarted(views::Slider* sender) OVERRIDE;
-  virtual void SliderDragEnded(views::Slider* sender) OVERRIDE;
+                                  views::SliderChangeReason reason) override;
+  virtual void SliderDragStarted(views::Slider* sender) override;
+  virtual void SliderDragEnded(views::Slider* sender) override;
 
  private:
   // The epoch of the last event.
@@ -143,8 +143,8 @@ class SliderTest : public views::ViewsTestBase {
   virtual void ClickAt(int x, int y);
 
   // testing::Test:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   ui::test::EventGenerator* event_generator() {
     return event_generator_.get();

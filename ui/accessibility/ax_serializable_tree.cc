@@ -20,44 +20,44 @@ class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<const AXNode*> {
   virtual ~AXTreeSourceAdapter() {}
 
   // AXTreeSource implementation.
-  virtual AXNode* GetRoot() const OVERRIDE {
+  virtual AXNode* GetRoot() const override {
     return tree_->GetRoot();
   }
 
-  virtual AXNode* GetFromId(int32 id) const OVERRIDE {
+  virtual AXNode* GetFromId(int32 id) const override {
     return tree_->GetFromId(id);
   }
 
-  virtual int32 GetId(const AXNode* node) const OVERRIDE {
+  virtual int32 GetId(const AXNode* node) const override {
     return node->id();
   }
 
   virtual void GetChildren(
       const AXNode* node,
-      std::vector<const AXNode*>* out_children) const OVERRIDE {
+      std::vector<const AXNode*>* out_children) const override {
     for (int i = 0; i < node->child_count(); ++i)
       out_children->push_back(node->ChildAtIndex(i));
   }
 
-  virtual AXNode* GetParent(const AXNode* node) const OVERRIDE {
+  virtual AXNode* GetParent(const AXNode* node) const override {
     return node->parent();
   }
 
-  virtual bool IsValid(const AXNode* node) const OVERRIDE {
+  virtual bool IsValid(const AXNode* node) const override {
     return node != NULL;
   }
 
   virtual bool IsEqual(const AXNode* node1,
-                       const AXNode* node2) const OVERRIDE {
+                       const AXNode* node2) const override {
     return node1 == node2;
   }
 
-  virtual const AXNode* GetNull() const OVERRIDE {
+  virtual const AXNode* GetNull() const override {
     return NULL;
   }
 
   virtual void SerializeNode(
-      const AXNode* node, AXNodeData* out_data) const OVERRIDE {
+      const AXNode* node, AXNodeData* out_data) const override {
     *out_data = node->data();
   }
 

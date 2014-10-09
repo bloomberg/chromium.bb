@@ -25,11 +25,11 @@ class VIEWS_EXAMPLES_EXPORT RadioButtonExample : public ExampleBase,
   virtual ~RadioButtonExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Group of 3 radio buttons.
   RadioButton* radio_buttons_[3];

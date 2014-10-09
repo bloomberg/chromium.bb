@@ -58,12 +58,12 @@ class AppsContainerView : public views::View,
   bool IsInFolderView() const;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // TopIconAnimationObserver overrides:
-  virtual void OnTopIconAnimationsComplete() OVERRIDE;
+  virtual void OnTopIconAnimationsComplete() override;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {

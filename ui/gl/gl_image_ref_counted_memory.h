@@ -21,7 +21,7 @@ class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
   bool Initialize(base::RefCountedMemory* ref_counted_memory);
 
   // Overridden from GLImage:
-  virtual void Destroy(bool have_context) OVERRIDE;
+  virtual void Destroy(bool have_context) override;
 
  protected:
   virtual ~GLImageRefCountedMemory();

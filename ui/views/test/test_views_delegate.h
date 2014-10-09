@@ -33,7 +33,7 @@ class TestViewsDelegate : public ViewsDelegate {
   // ViewsDelegate:
   virtual void OnBeforeWidgetInit(
       Widget::InitParams* params,
-      internal::NativeWidgetDelegate* delegate) OVERRIDE;
+      internal::NativeWidgetDelegate* delegate) override;
 
  private:
   bool use_desktop_native_widgets_;

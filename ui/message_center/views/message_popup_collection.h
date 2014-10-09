@@ -62,15 +62,15 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   virtual ~MessagePopupCollection();
 
   // Overridden from MessageCenterController:
-  virtual void ClickOnNotification(const std::string& notification_id) OVERRIDE;
+  virtual void ClickOnNotification(const std::string& notification_id) override;
   virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) OVERRIDE;
+                                  bool by_user) override;
   virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
-      const base::string16& display_source) OVERRIDE;
-  virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
+      const base::string16& display_source) override;
+  virtual bool HasClickedListener(const std::string& notification_id) override;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
-                                         int button_index) OVERRIDE;
+                                         int button_index) override;
 
   void MarkAllPopupsShown();
 
@@ -128,11 +128,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   int GetBaseLine(ToastContentsView* last_toast) const;
 
   // Overridden from MessageCenterObserver:
-  virtual void OnNotificationAdded(const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationAdded(const std::string& notification_id) override;
   virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) OVERRIDE;
+                                     bool by_user) override;
   virtual void OnNotificationUpdated(
-      const std::string& notification_id) OVERRIDE;
+      const std::string& notification_id) override;
 
   ToastContentsView* FindToast(const std::string& notification_id) const;
 

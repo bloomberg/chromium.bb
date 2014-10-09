@@ -24,8 +24,8 @@ class VIEWS_EXPORT RoundRectPainter : public Painter {
   virtual ~RoundRectPainter();
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   const SkColor border_color_;

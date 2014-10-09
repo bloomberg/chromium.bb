@@ -17,9 +17,9 @@ class ProportionalImageView : public views::View {
   virtual ~ProportionalImageView();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetHeightForWidth(int width) const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual int GetHeightForWidth(int width) const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   gfx::Size GetImageDrawingSize();

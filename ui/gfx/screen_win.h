@@ -21,28 +21,28 @@ class GFX_EXPORT ScreenWin : public Screen,
 
  protected:
   // Overridden from gfx::Screen:
-  virtual bool IsDIPEnabled() OVERRIDE;
-  virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
-  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE;
+  virtual bool IsDIPEnabled() override;
+  virtual gfx::Point GetCursorScreenPoint() override;
+  virtual gfx::NativeWindow GetWindowUnderCursor() override;
   virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      OVERRIDE;
-  virtual int GetNumDisplays() const OVERRIDE;
-  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE;
+      override;
+  virtual int GetNumDisplays() const override;
+  virtual std::vector<gfx::Display> GetAllDisplays() const override;
   virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView window) const OVERRIDE;
+      gfx::NativeView window) const override;
   virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE;
+      const gfx::Point& point) const override;
   virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const OVERRIDE;
-  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
-  virtual void AddObserver(DisplayObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DisplayObserver* observer) OVERRIDE;
+      const gfx::Rect& match_rect) const override;
+  virtual gfx::Display GetPrimaryDisplay() const override;
+  virtual void AddObserver(DisplayObserver* observer) override;
+  virtual void RemoveObserver(DisplayObserver* observer) override;
 
   // Overriden from gfx::SingletonHwnd::Observer.
   virtual void OnWndProc(HWND hwnd,
                          UINT message,
                          WPARAM wparam,
-                         LPARAM lparam) OVERRIDE;
+                         LPARAM lparam) override;
 
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(NativeView window) const;

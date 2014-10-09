@@ -74,16 +74,16 @@ class DefaultWidgetDelegate : public WidgetDelegate {
   virtual ~DefaultWidgetDelegate() {}
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE {
+  virtual void DeleteDelegate() override {
     delete this;
   }
-  virtual Widget* GetWidget() OVERRIDE {
+  virtual Widget* GetWidget() override {
     return widget_;
   }
-  virtual const Widget* GetWidget() const OVERRIDE {
+  virtual const Widget* GetWidget() const override {
     return widget_;
   }
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
     // In most situations where a Widget is used without a delegate the Widget
     // is used as a container, so that we want focus to advance to the top-level
     // widget. A good example of this is the find bar.

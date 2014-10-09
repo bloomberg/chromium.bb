@@ -164,7 +164,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   void UpdateSubmenuSelection(SubmenuView* source);
 
   // WidgetObserver overrides:
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(Widget* widget) override;
 
   // Only used for testing.
   bool IsCancelAllTimerRunningForTest();

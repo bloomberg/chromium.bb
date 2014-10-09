@@ -196,9 +196,9 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int GetArrowOffset(const gfx::Size& border_size) const;
 
   // Overridden from Border:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) override;
+  virtual gfx::Insets GetInsets() const override;
+  virtual gfx::Size GetMinimumSize() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetSizeForContentsSizeTest);
@@ -233,7 +233,7 @@ class VIEWS_EXPORT BubbleBackground : public Background {
   explicit BubbleBackground(BubbleBorder* border) : border_(border) {}
 
   // Overridden from Background:
-  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, View* view) const override;
 
  private:
   BubbleBorder* border_;

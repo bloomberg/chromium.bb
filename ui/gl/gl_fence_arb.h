@@ -18,9 +18,9 @@ class GL_EXPORT GLFenceARB : public GLFence {
   virtual ~GLFenceARB();
 
   // GLFence implementation:
-  virtual bool HasCompleted() OVERRIDE;
-  virtual void ClientWait() OVERRIDE;
-  virtual void ServerWait() OVERRIDE;
+  virtual bool HasCompleted() override;
+  virtual void ClientWait() override;
+  virtual void ServerWait() override;
 
  private:
   GLsync sync_;

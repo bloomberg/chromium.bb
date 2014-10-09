@@ -68,31 +68,31 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual ~NativeDisplayDelegateX11();
 
   // NativeDisplayDelegate overrides:
-  virtual void Initialize() OVERRIDE;
-  virtual void GrabServer() OVERRIDE;
-  virtual void UngrabServer() OVERRIDE;
-  virtual void SyncWithServer() OVERRIDE;
-  virtual void SetBackgroundColor(uint32_t color_argb) OVERRIDE;
-  virtual void ForceDPMSOn() OVERRIDE;
-  virtual std::vector<DisplaySnapshot*> GetDisplays() OVERRIDE;
+  virtual void Initialize() override;
+  virtual void GrabServer() override;
+  virtual void UngrabServer() override;
+  virtual void SyncWithServer() override;
+  virtual void SetBackgroundColor(uint32_t color_argb) override;
+  virtual void ForceDPMSOn() override;
+  virtual std::vector<DisplaySnapshot*> GetDisplays() override;
   virtual void AddMode(const DisplaySnapshot& output,
-                       const DisplayMode* mode) OVERRIDE;
+                       const DisplayMode* mode) override;
   virtual bool Configure(const DisplaySnapshot& output,
                          const DisplayMode* mode,
-                         const gfx::Point& origin) OVERRIDE;
-  virtual void CreateFrameBuffer(const gfx::Size& size) OVERRIDE;
+                         const gfx::Point& origin) override;
+  virtual void CreateFrameBuffer(const gfx::Size& size) override;
   virtual bool GetHDCPState(const DisplaySnapshot& output,
-                            HDCPState* state) OVERRIDE;
+                            HDCPState* state) override;
   virtual bool SetHDCPState(const DisplaySnapshot& output,
-                            HDCPState state) OVERRIDE;
+                            HDCPState state) override;
   virtual std::vector<ColorCalibrationProfile>
       GetAvailableColorCalibrationProfiles(
-          const DisplaySnapshot& output) OVERRIDE;
+          const DisplaySnapshot& output) override;
   virtual bool SetColorCalibrationProfile(
       const DisplaySnapshot& output,
-      ColorCalibrationProfile new_profile) OVERRIDE;
-  virtual void AddObserver(NativeDisplayObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE;
+      ColorCalibrationProfile new_profile) override;
+  virtual void AddObserver(NativeDisplayObserver* observer) override;
+  virtual void RemoveObserver(NativeDisplayObserver* observer) override;
 
  private:
   class HelperDelegateX11;

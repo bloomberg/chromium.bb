@@ -28,8 +28,8 @@ class KennedyScrollBarThumb : public BaseScrollBarThumb {
 
  protected:
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KennedyScrollBarThumb);

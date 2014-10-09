@@ -39,22 +39,22 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
   void RemoveChannelObserver(ChannelObserver* observer);
 
   // GpuPlatformSupportHost:
-  virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) OVERRIDE;
-  virtual void OnChannelDestroyed(int host_id) OVERRIDE;
+  virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
+  virtual void OnChannelDestroyed(int host_id) override;
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender:
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   // HardwareCursorDelegate:
   virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
                                  const std::vector<SkBitmap>& bitmaps,
                                  const gfx::Point& location,
-                                 int frame_delay_ms) OVERRIDE;
+                                 int frame_delay_ms) override;
   virtual void MoveHardwareCursor(gfx::AcceleratedWidget widget,
-                                  const gfx::Point& location) OVERRIDE;
+                                  const gfx::Point& location) override;
 
  private:
   int host_id_;

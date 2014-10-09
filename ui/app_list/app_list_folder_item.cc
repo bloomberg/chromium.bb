@@ -47,7 +47,7 @@ class FolderImageSource : public gfx::CanvasImageSource {
   }
 
   // gfx::CanvasImageSource overrides:
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) override {
     // Draw folder circle.
     gfx::Point center = gfx::Point(size().width() / 2 , size().height() / 2);
     SkPaint paint;

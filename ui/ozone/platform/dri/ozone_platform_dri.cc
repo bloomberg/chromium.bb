@@ -50,21 +50,21 @@ class OzonePlatformDri : public OzonePlatform {
   virtual ~OzonePlatformDri() {}
 
   // OzonePlatform:
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return surface_factory_ozone_.get();
   }
-  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() override {
     return gpu_platform_support_.get();
   }
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) OVERRIDE {
+      const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
         new DriWindow(delegate,
                       bounds,
@@ -75,11 +75,11 @@ class OzonePlatformDri : public OzonePlatform {
     return platform_window.PassAs<PlatformWindow>();
   }
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      OVERRIDE {
+      override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateDri(
         dri_.get(), screen_manager_.get(), device_manager_.get()));
   }
-  virtual void InitializeUI() OVERRIDE {
+  virtual void InitializeUI() override {
     dri_->Initialize();
     surface_factory_ozone_.reset(new DriSurfaceFactory(
         dri_.get(), screen_manager_.get(), &window_delegate_manager_));
@@ -101,7 +101,7 @@ class OzonePlatformDri : public OzonePlatform {
       LOG(FATAL) << "Failed to initialize dummy channel.";
   }
 
-  virtual void InitializeGPU() OVERRIDE {}
+  virtual void InitializeGPU() override {}
 
  private:
   scoped_ptr<VirtualTerminalManager> vt_manager_;

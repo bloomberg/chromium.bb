@@ -66,33 +66,33 @@ class SearchResultView : public views::CustomButton,
   void UpdateDetailsText();
 
   // views::View overrides:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual void ChildPreferredSizeChanged(views::View* child) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   // SearchResultObserver overrides:
-  virtual void OnIconChanged() OVERRIDE;
-  virtual void OnActionsChanged() OVERRIDE;
-  virtual void OnIsInstallingChanged() OVERRIDE;
-  virtual void OnPercentDownloadedChanged() OVERRIDE;
-  virtual void OnItemInstalled() OVERRIDE;
-  virtual void OnItemUninstalled() OVERRIDE;
+  virtual void OnIconChanged() override;
+  virtual void OnActionsChanged() override;
+  virtual void OnIsInstallingChanged() override;
+  virtual void OnPercentDownloadedChanged() override;
+  virtual void OnItemInstalled() override;
+  virtual void OnItemUninstalled() override;
 
   // SearchResultActionsViewDelegate overrides:
   virtual void OnSearchResultActionActivated(size_t index,
-                                             int event_flags) OVERRIDE;
+                                             int event_flags) override;
 
   SearchResult* result_;  // Owned by AppListModel::SearchResults.
 

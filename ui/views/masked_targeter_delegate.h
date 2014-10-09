@@ -32,7 +32,7 @@ class VIEWS_EXPORT MaskedTargeterDelegate : public ViewTargeterDelegate {
 
   // ViewTargeterDelegate:
   virtual bool DoesIntersectRect(const View* target,
-                                 const gfx::Rect& rect) const OVERRIDE;
+                                 const gfx::Rect& rect) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MaskedTargeterDelegate);

@@ -25,7 +25,7 @@ class MockScreenManager : public ui::ScreenManager {
                     ui::ScanoutBufferGenerator* buffer_generator)
       : ScreenManager(dri, buffer_generator), dri_(dri) {}
 
-  virtual void ForceInitializationOfPrimaryDisplay() OVERRIDE {}
+  virtual void ForceInitializationOfPrimaryDisplay() override {}
 
  private:
   ui::DriWrapper* dri_;
@@ -50,13 +50,13 @@ class ScreenManagerTest : public testing::Test {
         kDefaultMode.hdisplay, 0, kDefaultMode.hdisplay, kDefaultMode.vdisplay);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     dri_.reset(new ui::MockDriWrapper(3));
     buffer_generator_.reset(new ui::DriBufferGenerator(dri_.get()));
     screen_manager_.reset(new MockScreenManager(
         dri_.get(), buffer_generator_.get()));
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     screen_manager_.reset();
     dri_.reset();
   }

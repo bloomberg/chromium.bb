@@ -31,17 +31,17 @@ class VIEWS_EXPORT SingleSplitView : public View {
                   Orientation orientation,
                   SingleSplitViewListener* listener);
 
-  virtual void Layout() OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual void Layout() override;
+  virtual const char* GetClassName() const override;
 
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // SingleSplitView's preferred size is the sum of the preferred widths
   // and the max of the heights.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
   // Overriden to return a resize cursor when over the divider.
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
 
   Orientation orientation() const {
     return is_horizontal_ ? HORIZONTAL_SPLIT : VERTICAL_SPLIT;
@@ -81,10 +81,10 @@ class VIEWS_EXPORT SingleSplitView : public View {
 
  protected:
   // View overrides.
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void OnMouseCaptureLost() override;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   // This test calls OnMouse* functions.

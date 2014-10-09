@@ -69,14 +69,14 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   }
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  protected:
   // Overridden from View:
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
 
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
@@ -141,14 +141,14 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void SetToggledTooltipText(const base::string16& tooltip);
 
   // Overridden from ImageButton:
-  virtual const gfx::ImageSkia& GetImage(ButtonState state) const OVERRIDE;
+  virtual const gfx::ImageSkia& GetImage(ButtonState state) const override;
   virtual void SetImage(ButtonState state,
-                        const gfx::ImageSkia* image) OVERRIDE;
+                        const gfx::ImageSkia* image) override;
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+                              base::string16* tooltip) const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   // The parent class's images_ member is used for the current images,

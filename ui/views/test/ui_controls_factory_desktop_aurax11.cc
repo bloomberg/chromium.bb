@@ -77,7 +77,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
                             bool control,
                             bool shift,
                             bool alt,
-                            bool command) OVERRIDE {
+                            bool command) override {
     DCHECK(!command);  // No command key on Aura
     return SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, base::Closure());
@@ -90,7 +90,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
       bool shift,
       bool alt,
       bool command,
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     DCHECK(!command);  // No command key on Aura
 
     aura::WindowTreeHost* host = window->GetHost();
@@ -124,13 +124,13 @@ class UIControlsDesktopX11 : public UIControlsAura {
     return true;
   }
 
-  virtual bool SendMouseMove(long screen_x, long screen_y) OVERRIDE {
+  virtual bool SendMouseMove(long screen_x, long screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
   }
   virtual bool SendMouseMoveNotifyWhenDone(
       long screen_x,
       long screen_y,
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     gfx::Point screen_location(screen_x, screen_y);
     gfx::Point root_location = screen_location;
     aura::Window* root_window = RootWindowForPoint(screen_location);
@@ -165,13 +165,13 @@ class UIControlsDesktopX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseEvents(MouseButton type, int state) OVERRIDE {
+  virtual bool SendMouseEvents(MouseButton type, int state) override {
     return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
   }
   virtual bool SendMouseEventsNotifyWhenDone(
       MouseButton type,
       int state,
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
@@ -211,11 +211,11 @@ class UIControlsDesktopX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseClick(MouseButton type) OVERRIDE {
+  virtual bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
   }
   virtual void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) OVERRIDE {
+      const base::Closure& closure) override {
     if (closure.is_null())
       return;
     static XEvent* marker_event = NULL;

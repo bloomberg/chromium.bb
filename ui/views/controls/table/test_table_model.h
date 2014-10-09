@@ -14,10 +14,10 @@ class TestTableModel : public ui::TableModel {
   virtual ~TestTableModel();
 
   // ui::TableModel overrides:
-  virtual int RowCount() OVERRIDE;
-  virtual base::string16 GetText(int row, int column_id) OVERRIDE;
-  virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
-  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
+  virtual int RowCount() override;
+  virtual base::string16 GetText(int row, int column_id) override;
+  virtual gfx::ImageSkia GetIcon(int row) override;
+  virtual void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
   int row_count_;

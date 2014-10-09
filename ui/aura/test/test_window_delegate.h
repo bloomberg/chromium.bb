@@ -42,24 +42,24 @@ class TestWindowDelegate : public WindowDelegate {
   void set_can_focus(bool can_focus) { can_focus_ = can_focus; }
 
   // Overridden from WindowDelegate:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual gfx::Size GetMaximumSize() const override;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
+                               const gfx::Rect& new_bounds) override;
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) override;
+  virtual int GetNonClientComponent(const gfx::Point& point) const override;
   virtual bool ShouldDescendIntoChildForEventHandling(
       Window* child,
-      const gfx::Point& location) OVERRIDE;
-  virtual bool CanFocus() OVERRIDE;
-  virtual void OnCaptureLost() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-  virtual void OnWindowDestroying(Window* window) OVERRIDE;
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE;
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+      const gfx::Point& location) override;
+  virtual bool CanFocus() override;
+  virtual void OnCaptureLost() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  virtual void OnWindowDestroying(Window* window) override;
+  virtual void OnWindowDestroyed(Window* window) override;
+  virtual void OnWindowTargetVisibilityChanged(bool visible) override;
+  virtual bool HasHitTestMask() const override;
+  virtual void GetHitTestMask(gfx::Path* mask) const override;
 
  private:
   int window_component_;
@@ -81,9 +81,9 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
   ui::KeyboardCode last_key_code() const { return last_key_code_; }
 
   // Overridden from TestWindowDelegate:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnWindowDestroyed(Window* window) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnWindowDestroyed(Window* window) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   SkColor color_;
@@ -98,8 +98,8 @@ class MaskedWindowDelegate : public TestWindowDelegate {
   explicit MaskedWindowDelegate(const gfx::Rect mask_rect);
 
   // Overridden from TestWindowDelegate:
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+  virtual bool HasHitTestMask() const override;
+  virtual void GetHitTestMask(gfx::Path* mask) const override;
 
  private:
   gfx::Rect mask_rect_;
@@ -113,9 +113,9 @@ class EventCountDelegate : public TestWindowDelegate {
   EventCountDelegate();
 
   // Overridden from TestWindowDelegate:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Returns the counts of mouse motion events in the
   // form of "<enter> <move> <leave>".

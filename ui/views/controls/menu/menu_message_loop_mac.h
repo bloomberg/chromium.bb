@@ -18,13 +18,13 @@ class MenuMessageLoopMac : public MenuMessageLoop {
   // Overridden from MenuMessageLoop:
   virtual void Run(MenuController* controller,
                    Widget* owner,
-                   bool nested_menu) OVERRIDE;
-  virtual bool ShouldQuitNow() const OVERRIDE;
-  virtual void QuitNow() OVERRIDE;
+                   bool nested_menu) override;
+  virtual bool ShouldQuitNow() const override;
+  virtual void QuitNow() override;
   virtual void RepostEventToWindow(const ui::LocatedEvent& event,
                                    gfx::NativeWindow window,
-                                   const gfx::Point& screen_loc) OVERRIDE;
-  virtual void ClearOwner() OVERRIDE;
+                                   const gfx::Point& screen_loc) override;
+  virtual void ClearOwner() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MenuMessageLoopMac);

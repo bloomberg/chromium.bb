@@ -30,14 +30,14 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
         last_clicked_index_(-1) {}
 
   virtual void RemoveNotification(const std::string& id,
-                                  bool by_user) OVERRIDE {
+                                  bool by_user) override {
     last_removed_id_ = id;
     last_removed_by_user_ = by_user;
     ++remove_count_;
   }
 
   virtual void ClickOnNotificationButton(const std::string& id,
-                                         int button_index) OVERRIDE {
+                                         int button_index) override {
     last_clicked_id_ = id;
     last_clicked_index_ = button_index;
   }

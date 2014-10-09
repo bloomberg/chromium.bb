@@ -58,15 +58,15 @@ class AppListFolderView : public views::View,
   void CloseFolderPage();
 
   // views::View
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // AppListModelObserver
-  virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE;
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) override;
 
   // ui::ImplicitAnimationObserver
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
   AppsGridView* items_grid_view() { return items_grid_view_; }
 
@@ -81,29 +81,29 @@ class AppListFolderView : public views::View,
       const gfx::Point& drag_point_in_root_grid);
 
   // Overridden from views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from FolderHeaderViewDelegate:
   virtual void NavigateBack(AppListFolderItem* item,
-                            const ui::Event& event_flags) OVERRIDE;
-  virtual void GiveBackFocusToSearchBox() OVERRIDE;
+                            const ui::Event& event_flags) override;
+  virtual void GiveBackFocusToSearchBox() override;
   virtual void SetItemName(AppListFolderItem* item,
-                           const std::string& name) OVERRIDE;
+                           const std::string& name) override;
 
   // Overridden from AppsGridViewFolderDelegate:
-  virtual void UpdateFolderViewBackground(bool show_bubble) OVERRIDE;
+  virtual void UpdateFolderViewBackground(bool show_bubble) override;
   virtual void ReparentItem(AppListItemView* original_drag_view,
                             const gfx::Point& drag_point_in_folder_grid)
-      OVERRIDE;
+      override;
   virtual void DispatchDragEventForReparent(
       AppsGridView::Pointer pointer,
-      const gfx::Point& drag_point_in_folder_grid) OVERRIDE;
+      const gfx::Point& drag_point_in_folder_grid) override;
   virtual void DispatchEndDragEventForReparent(
       bool events_forwarded_to_drag_drop_host,
-      bool cancel_drag) OVERRIDE;
-  virtual bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) OVERRIDE;
-  virtual bool IsOEMFolder() const OVERRIDE;
-  virtual void SetRootLevelDragViewVisible(bool visible) OVERRIDE;
+      bool cancel_drag) override;
+  virtual bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) override;
+  virtual bool IsOEMFolder() const override;
+  virtual void SetRootLevelDragViewVisible(bool visible) override;
 
   AppsContainerView* container_view_;  // Not owned.
   AppListMainView* app_list_main_view_;   // Not Owned.

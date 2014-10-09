@@ -97,16 +97,16 @@ class ShadowController::Impl :
   static Impl* GetInstance();
 
   // aura::EnvObserver override:
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
+  virtual void OnWindowInitialized(aura::Window* window) override;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(
-      aura::Window* window, const void* key, intptr_t old) OVERRIDE;
+      aura::Window* window, const void* key, intptr_t old) override;
   virtual void OnWindowBoundsChanged(
       aura::Window* window,
       const gfx::Rect& old_bounds,
-      const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+      const gfx::Rect& new_bounds) override;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   friend class base::RefCounted<Impl>;

@@ -138,7 +138,7 @@ class TreeChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewTreeChange(const TreeChangeParams& params) OVERRIDE {
+  virtual void OnViewTreeChange(const TreeChangeParams& params) override {
     received_params_.push_back(params);
   }
 
@@ -394,7 +394,7 @@ class VisibilityObserver : public ViewObserver {
   // Overridden from ViewObserver:
   virtual void OnViewVisibilityChange(
       View* view,
-      ViewObserver::DispositionChangePhase phase) OVERRIDE {
+      ViewObserver::DispositionChangePhase phase) override {
     DCHECK_EQ(view_, view);
     log_entries_.push_back(std::make_pair(phase, view->visible()));
   }
@@ -436,7 +436,7 @@ class BoundsObserver : public ViewObserver {
  private:
   virtual void OnViewBoundsChanged(View* view,
                                   const gfx::Rect& old_bounds,
-                                  const gfx::Rect& new_bounds) OVERRIDE {
+                                  const gfx::Rect& new_bounds) override {
     DCHECK_EQ(view_, view);
     bounds_changes_.push_back(std::make_pair(old_bounds, new_bounds));
   }

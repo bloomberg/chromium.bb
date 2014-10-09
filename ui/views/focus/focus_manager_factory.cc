@@ -18,7 +18,7 @@ class DefaultFocusManagerFactory : public FocusManagerFactory {
 
  protected:
   virtual FocusManager* CreateFocusManager(Widget* widget,
-                                           bool desktop_widget) OVERRIDE {
+                                           bool desktop_widget) override {
     return new FocusManager(widget, NULL /* delegate */);
   }
 

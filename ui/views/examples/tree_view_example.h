@@ -31,7 +31,7 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   virtual ~TreeViewExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // IDs used by the context menu.
@@ -48,24 +48,24 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   bool IsCommandIdEnabled(int command_id);
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // TreeViewController:
-  virtual void OnTreeViewSelectionChanged(TreeView* tree_view) OVERRIDE;
-  virtual bool CanEdit(TreeView* tree_view, ui::TreeModelNode* node) OVERRIDE;
+  virtual void OnTreeViewSelectionChanged(TreeView* tree_view) override;
+  virtual bool CanEdit(TreeView* tree_view, ui::TreeModelNode* node) override;
 
   // ContextMenuController:
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   // SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
   // The tree view to be tested.
   TreeView* tree_view_;

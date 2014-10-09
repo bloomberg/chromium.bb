@@ -30,8 +30,8 @@ class DashedFocusPainter : public Painter {
   virtual ~DashedFocusPainter();
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   const gfx::Insets insets_;
@@ -64,8 +64,8 @@ class SolidFocusPainter : public Painter {
   virtual ~SolidFocusPainter();
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   const SkColor color_;
@@ -104,8 +104,8 @@ class GradientPainter : public Painter {
   virtual ~GradientPainter();
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   // If |horizontal_| is true then the gradient is painted horizontally.
@@ -175,8 +175,8 @@ class ImagePainter : public Painter {
   virtual ~ImagePainter();
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const override;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   scoped_ptr<gfx::NineImagePainter> nine_painter_;

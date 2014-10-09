@@ -37,8 +37,8 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
 
  private:
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   XID x_window_;
   const char* property_;

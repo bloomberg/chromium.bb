@@ -25,11 +25,11 @@ class ThrobberView : public View {
     throbber_->Start();
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(width(), height());
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     View* child = child_at(0);
     gfx::Size ps = child->GetPreferredSize();
     child->SetBounds((width() - ps.width()) / 2,

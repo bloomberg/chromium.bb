@@ -26,19 +26,19 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   // NativeTheme implementation:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
-                                const ExtraParams& extra) const OVERRIDE;
+                                const ExtraParams& extra) const override;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
-                     const ExtraParams& extra) const OVERRIDE;
+                     const ExtraParams& extra) const override;
 
   virtual void PaintStateTransition(SkCanvas* canvas,
                                     Part part,
                                     State startState,
                                     State endState,
                                     double progress,
-                                    const gfx::Rect& rect) const OVERRIDE;
+                                    const gfx::Rect& rect) const override;
 
  protected:
   NativeThemeBase();

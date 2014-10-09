@@ -58,13 +58,13 @@ class VIEWS_EXPORT TouchEditingMenuView : public BubbleDelegateView,
                        gfx::NativeView context);
 
   // views::WidgetDelegate overrides:
-  virtual void WindowClosing() OVERRIDE;
+  virtual void WindowClosing() override;
 
   // Overridden from ButtonListener.
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Overridden from BubbleDelegateView.
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // Queries the |controller_| for what elements to show in the menu and sizes
   // the menu appropriately.

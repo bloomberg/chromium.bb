@@ -63,7 +63,7 @@ static STGMEDIUM* GetStorageForFileDescriptor(const base::FilePath& path);
 // some sort of sequential data (why not just use an array?). See comments
 // throughout.
 //
-class FormatEtcEnumerator FINAL : public IEnumFORMATETC {
+class FormatEtcEnumerator final : public IEnumFORMATETC {
  public:
   FormatEtcEnumerator(DataObjectImpl::StoredData::const_iterator begin,
                       DataObjectImpl::StoredData::const_iterator end);

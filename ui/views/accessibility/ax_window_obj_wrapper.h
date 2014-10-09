@@ -22,14 +22,14 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   virtual ~AXWindowObjWrapper();
 
   // AXAuraObjWrapper overrides.
-  virtual AXAuraObjWrapper* GetParent() OVERRIDE;
+  virtual AXAuraObjWrapper* GetParent() override;
   virtual void GetChildren(
-      std::vector<AXAuraObjWrapper*>* out_children) OVERRIDE;
-  virtual void Serialize(ui::AXNodeData* out_node_data) OVERRIDE;
-  virtual int32 GetID() OVERRIDE;
+      std::vector<AXAuraObjWrapper*>* out_children) override;
+  virtual void Serialize(ui::AXNodeData* out_node_data) override;
+  virtual int32 GetID() override;
 
   // WindowObserver overrides.
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
  private:
   aura::Window* window_;

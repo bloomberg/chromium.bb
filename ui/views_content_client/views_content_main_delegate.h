@@ -21,9 +21,9 @@ class ViewsContentMainDelegate : public content::ContentMainDelegate {
   virtual ~ViewsContentMainDelegate();
 
   // content::ContentMainDelegate implementation
-  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
-  virtual void PreSandboxStartup() OVERRIDE;
-  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
+  virtual bool BasicStartupComplete(int* exit_code) override;
+  virtual void PreSandboxStartup() override;
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() override;
 
  private:
   scoped_ptr<ViewsContentBrowserClient> browser_client_;

@@ -51,13 +51,13 @@ class UI_BASE_EXPORT DataPack : public ResourceHandle {
                         TextEncodingType textEncodingType);
 
   // ResourceHandle implementation:
-  virtual bool HasResource(uint16 resource_id) const OVERRIDE;
+  virtual bool HasResource(uint16 resource_id) const override;
   virtual bool GetStringPiece(uint16 resource_id,
-                              base::StringPiece* data) const OVERRIDE;
+                              base::StringPiece* data) const override;
   virtual base::RefCountedStaticMemory* GetStaticMemory(
-      uint16 resource_id) const OVERRIDE;
-  virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
-  virtual ui::ScaleFactor GetScaleFactor() const OVERRIDE;
+      uint16 resource_id) const override;
+  virtual TextEncodingType GetTextEncodingType() const override;
+  virtual ui::ScaleFactor GetScaleFactor() const override;
 
  private:
   // Does the actual loading of a pack file. Called by Load and LoadFromFile.

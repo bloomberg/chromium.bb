@@ -91,13 +91,13 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   }
 
   // View implementation:
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual int GetHeightForWidth(int w) const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void PreferredSizeChanged() OVERRIDE;
+  virtual gfx::Insets GetInsets() const override;
+  virtual int GetHeightForWidth(int w) const override;
+  virtual void Layout() override;
+  virtual void PreferredSizeChanged() override;
 
   // LinkListener implementation:
-  virtual void LinkClicked(Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(Link* source, int event_flags) override;
 
  private:
   struct StyleRange {

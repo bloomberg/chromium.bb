@@ -115,8 +115,8 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   // aura::WindowObserver overrides:
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   friend class TestApi;

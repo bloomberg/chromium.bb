@@ -28,11 +28,11 @@ class UI_BASE_EXPORT MockIMEInputContextHandler
   MockIMEInputContextHandler();
   virtual ~MockIMEInputContextHandler();
 
-  virtual void CommitText(const std::string& text) OVERRIDE;
+  virtual void CommitText(const std::string& text) override;
   virtual void UpdateCompositionText(const CompositionText& text,
                                  uint32 cursor_pos,
-                                 bool visible) OVERRIDE;
-  virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
+                                 bool visible) override;
+  virtual void DeleteSurroundingText(int32 offset, uint32 length) override;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
 

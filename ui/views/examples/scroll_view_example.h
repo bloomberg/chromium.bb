@@ -25,11 +25,11 @@ class VIEWS_EXAMPLES_EXPORT ScrollViewExample : public ExampleBase,
   virtual ~ScrollViewExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Control buttons to change the size of scrollable and jump to
   // predefined position.

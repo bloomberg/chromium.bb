@@ -41,7 +41,7 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   void OnFolderItemRemoved();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
 
  private:
   class FolderNameView;
@@ -61,20 +61,20 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   bool IsFolderNameEnabledForTest() const;
 
   // views::View overrides:
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // views::TextfieldController overrides:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // AppListItemObserver overrides:
-  virtual void ItemNameChanged() OVERRIDE;
+  virtual void ItemNameChanged() override;
 
   AppListFolderItem* folder_item_;  // Not owned.
 

@@ -71,8 +71,8 @@ class WindowReorderer::AssociationObserver : public aura::WindowObserver {
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                       const void* key,
-                                      intptr_t old) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+                                      intptr_t old) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // Not owned.
   WindowReorderer* reorderer_;

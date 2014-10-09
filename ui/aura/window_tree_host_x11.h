@@ -38,26 +38,26 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   virtual ~WindowTreeHostX11();
 
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // WindowTreeHost:
-  virtual ui::EventSource* GetEventSource() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
-  virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void SetCursorNative(gfx::NativeCursor cursor_type) OVERRIDE;
-  virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
-  virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
+  virtual ui::EventSource* GetEventSource() override;
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual gfx::Rect GetBounds() const override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual gfx::Point GetLocationOnNativeScreen() const override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
+  virtual void PostNativeEvent(const base::NativeEvent& event) override;
+  virtual void SetCursorNative(gfx::NativeCursor cursor_type) override;
+  virtual void MoveCursorToNative(const gfx::Point& location) override;
+  virtual void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource overrides.
-  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+  virtual ui::EventProcessor* GetEventProcessor() override;
 
  protected:
   // Called when X Configure Notify event is recevied.

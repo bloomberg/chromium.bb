@@ -38,10 +38,10 @@ class FolderBackgroundView : public views::View,
 
  private:
   // views::View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
   AppListFolderView* folder_view_;
   ShowState show_state_;

@@ -34,21 +34,21 @@ class PageSwitcher : public views::View,
   void UpdateUIForDragPoint(const gfx::Point& point);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
 
  private:
   void CalculateButtonWidthAndSpacing(int contents_width);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() OVERRIDE;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
-  virtual void TransitionStarted() OVERRIDE;
-  virtual void TransitionChanged() OVERRIDE;
+  virtual void TotalPagesChanged() override;
+  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
+  virtual void TransitionStarted() override;
+  virtual void TransitionChanged() override;
 
   PaginationModel* model_;  // Owned by AppsGridView.
   views::View* buttons_;  // Owned by views hierarchy.

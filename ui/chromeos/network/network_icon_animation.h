@@ -33,7 +33,7 @@ class UI_CHROMEOS_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
   void RemoveObserver(AnimationObserver* observer);
 
   // gfx::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
 
   static NetworkIconAnimation* GetInstance();
 

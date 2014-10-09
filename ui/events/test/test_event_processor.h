@@ -32,11 +32,11 @@ class TestEventProcessor : public EventProcessor {
   void Reset();
 
   // EventProcessor:
-  virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
-  virtual EventTarget* GetRootTarget() OVERRIDE;
-  virtual EventDispatchDetails OnEventFromSource(Event* event) OVERRIDE;
-  virtual void OnEventProcessingStarted(Event* event) OVERRIDE;
-  virtual void OnEventProcessingFinished(Event* event) OVERRIDE;
+  virtual bool CanDispatchToTarget(EventTarget* target) override;
+  virtual EventTarget* GetRootTarget() override;
+  virtual EventDispatchDetails OnEventFromSource(Event* event) override;
+  virtual void OnEventProcessingStarted(Event* event) override;
+  virtual void OnEventProcessingFinished(Event* event) override;
 
  private:
   scoped_ptr<EventTarget> root_;

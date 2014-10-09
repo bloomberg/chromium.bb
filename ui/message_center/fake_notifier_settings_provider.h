@@ -19,25 +19,25 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
       const std::vector<Notifier*>& notifiers);
   virtual ~FakeNotifierSettingsProvider();
 
-  virtual size_t GetNotifierGroupCount() const OVERRIDE;
-  virtual const NotifierGroup& GetNotifierGroupAt(size_t index) const OVERRIDE;
-  virtual bool IsNotifierGroupActiveAt(size_t index) const OVERRIDE;
-  virtual void SwitchToNotifierGroup(size_t index) OVERRIDE;
-  virtual const NotifierGroup& GetActiveNotifierGroup() const OVERRIDE;
+  virtual size_t GetNotifierGroupCount() const override;
+  virtual const NotifierGroup& GetNotifierGroupAt(size_t index) const override;
+  virtual bool IsNotifierGroupActiveAt(size_t index) const override;
+  virtual void SwitchToNotifierGroup(size_t index) override;
+  virtual const NotifierGroup& GetActiveNotifierGroup() const override;
 
-  virtual void GetNotifierList(std::vector<Notifier*>* notifiers) OVERRIDE;
+  virtual void GetNotifierList(std::vector<Notifier*>* notifiers) override;
 
   virtual void SetNotifierEnabled(const Notifier& notifier,
-                                  bool enabled) OVERRIDE;
+                                  bool enabled) override;
 
-  virtual void OnNotifierSettingsClosing() OVERRIDE;
+  virtual void OnNotifierSettingsClosing() override;
   virtual bool NotifierHasAdvancedSettings(const NotifierId& notifier_id) const
-      OVERRIDE;
+      override;
   virtual void OnNotifierAdvancedSettingsRequested(
       const NotifierId& notifier_id,
-      const std::string* notification_id) OVERRIDE;
-  virtual void AddObserver(NotifierSettingsObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(NotifierSettingsObserver* observer) OVERRIDE;
+      const std::string* notification_id) override;
+  virtual void AddObserver(NotifierSettingsObserver* observer) override;
+  virtual void RemoveObserver(NotifierSettingsObserver* observer) override;
 
   bool WasEnabled(const Notifier& notifier);
   int closed_called_count();

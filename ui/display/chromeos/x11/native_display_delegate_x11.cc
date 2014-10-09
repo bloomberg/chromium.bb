@@ -83,14 +83,14 @@ class NativeDisplayDelegateX11::HelperDelegateX11
 
   // NativeDisplayDelegateX11::HelperDelegate overrides:
   virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
-      OVERRIDE {
+      override {
     XRRUpdateConfiguration(event);
   }
   virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const
-      OVERRIDE {
+      override {
     return delegate_->cached_outputs_.get();
   }
-  virtual void NotifyDisplayObservers() OVERRIDE {
+  virtual void NotifyDisplayObservers() override {
     FOR_EACH_OBSERVER(
         NativeDisplayObserver, delegate_->observers_, OnConfigurationChanged());
   }

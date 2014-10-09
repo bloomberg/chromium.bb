@@ -54,8 +54,8 @@ class VIEWS_EXPORT TabbedPane : public View {
   void SelectTab(Tab* tab);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual const char* GetClassName() const override;
 
  private:
    friend class TabStrip;
@@ -64,12 +64,12 @@ class VIEWS_EXPORT TabbedPane : public View {
    Tab* GetTabAt(int index);
 
   // Overridden from View:
-  virtual void Layout() OVERRIDE;
+  virtual void Layout() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  virtual void OnFocus() override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
 
   // A listener notified when tab selection changes. Weak, not owned.
   TabbedPaneListener* listener_;

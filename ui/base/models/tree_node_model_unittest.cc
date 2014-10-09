@@ -37,16 +37,16 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
                               int start,
-                              int count) OVERRIDE {
+                              int count) override {
     added_count_++;
   }
   virtual void TreeNodesRemoved(TreeModel* model,
                                 TreeModelNode* parent,
                                 int start,
-                                int count) OVERRIDE {
+                                int count) override {
     removed_count_++;
   }
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) OVERRIDE {
+  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) override {
     changed_count_++;
   }
 

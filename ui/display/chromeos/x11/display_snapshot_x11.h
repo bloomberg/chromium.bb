@@ -38,7 +38,7 @@ class DISPLAY_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
   int index() const { return index_; }
 
   // DisplaySnapshot overrides:
-  virtual std::string ToString() const OVERRIDE;
+  virtual std::string ToString() const override;
 
  private:
   RROutput output_;

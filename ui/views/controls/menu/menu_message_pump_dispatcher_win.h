@@ -23,7 +23,7 @@ class MenuMessagePumpDispatcher : public base::MessagePumpDispatcher {
 
  private:
   // base::MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual uint32_t Dispatch(const base::NativeEvent& event) override;
 
   MenuController* menu_controller_;
 

@@ -34,11 +34,11 @@ class TestTransientWindowObserver : public TransientWindowObserver {
 
   // TransientWindowObserver overrides:
   virtual void OnTransientChildAdded(Window* window,
-                                     Window* transient) OVERRIDE {
+                                     Window* transient) override {
     add_count_++;
   }
   virtual void OnTransientChildRemoved(Window* window,
-                                       Window* transient) OVERRIDE {
+                                       Window* transient) override {
     remove_count_++;
   }
 
@@ -54,12 +54,12 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
   TransientWindowManagerTest() {}
   virtual ~TransientWindowManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AuraTestBase::SetUp();
     wm_state_.reset(new wm::WMState);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     wm_state_.reset();
     AuraTestBase::TearDown();
   }
@@ -349,7 +349,7 @@ class DestroyedTrackingDelegate : public aura::test::TestWindowDelegate {
       : name_(name),
         results_(results) {}
 
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(aura::Window* window) override {
     results_->push_back(name_);
   }
 
@@ -462,12 +462,12 @@ class StackingMadrigalLayoutManager : public aura::LayoutManager {
 
  private:
   // Overridden from LayoutManager:
-  virtual void OnWindowResized() OVERRIDE {}
-  virtual void OnWindowAddedToLayout(Window* child) OVERRIDE {}
-  virtual void OnWillRemoveWindowFromLayout(Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(Window* child) OVERRIDE {}
+  virtual void OnWindowResized() override {}
+  virtual void OnWindowAddedToLayout(Window* child) override {}
+  virtual void OnWillRemoveWindowFromLayout(Window* child) override {}
+  virtual void OnWindowRemovedFromLayout(Window* child) override {}
   virtual void OnChildWindowVisibilityChanged(Window* child,
-                                              bool visible) OVERRIDE {
+                                              bool visible) override {
     Window::Windows::const_iterator it = root_window_->children().begin();
     Window* last_window = NULL;
     for (; it != root_window_->children().end(); ++it) {
@@ -482,7 +482,7 @@ class StackingMadrigalLayoutManager : public aura::LayoutManager {
     }
   }
   virtual void SetChildBounds(Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
+                              const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
@@ -506,7 +506,7 @@ class StackingMadrigalVisibilityClient : public aura::client::VisibilityClient {
 
  private:
   // Overridden from client::VisibilityClient:
-  virtual void UpdateLayerVisibility(Window* window, bool visible) OVERRIDE {
+  virtual void UpdateLayerVisibility(Window* window, bool visible) override {
     if (!visible) {
       if (window == ignored_window_)
         window->layer()->set_delegate(NULL);

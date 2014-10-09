@@ -20,7 +20,7 @@ class HoverImageMenuButtonTest : public CocoaTest {
   HoverImageMenuButtonTest() {}
 
   // CocoaTest override:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   base::scoped_nsobject<HoverImageMenuButton> menu_button_;

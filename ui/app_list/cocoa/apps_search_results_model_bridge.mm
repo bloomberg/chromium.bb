@@ -43,14 +43,14 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   }
 
   // SearchResultObserver overrides:
-  virtual void OnIconChanged() OVERRIDE {
+  virtual void OnIconChanged() override {
     bridge_->ReloadDataForItems(row_in_view_, 1);
   }
-  virtual void OnActionsChanged() OVERRIDE {}
-  virtual void OnIsInstallingChanged() OVERRIDE {}
-  virtual void OnPercentDownloadedChanged() OVERRIDE {}
-  virtual void OnItemInstalled() OVERRIDE {}
-  virtual void OnItemUninstalled() OVERRIDE;
+  virtual void OnActionsChanged() override {}
+  virtual void OnIsInstallingChanged() override {}
+  virtual void OnPercentDownloadedChanged() override {}
+  virtual void OnItemInstalled() override {}
+  virtual void OnItemUninstalled() override;
 
  private:
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.

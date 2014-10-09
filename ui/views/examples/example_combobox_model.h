@@ -17,8 +17,8 @@ class ExampleComboboxModel : public ui::ComboboxModel {
   virtual ~ExampleComboboxModel();
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetItemCount() const override;
+  virtual base::string16 GetItemAt(int index) override;
 
  private:
   const char** strings_;

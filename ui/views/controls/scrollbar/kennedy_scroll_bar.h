@@ -19,15 +19,15 @@ class VIEWS_EXPORT KennedyScrollBar : public BaseScrollBar {
 
  protected:
   // BaseScrollBar overrides:
-  virtual gfx::Rect GetTrackBounds() const OVERRIDE;
+  virtual gfx::Rect GetTrackBounds() const override;
 
   // ScrollBar overrides:
-  virtual int GetLayoutSize() const OVERRIDE;
+  virtual int GetLayoutSize() const override;
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KennedyScrollBar);

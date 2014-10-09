@@ -94,7 +94,7 @@ class TransparentButton : public CustomButton {
   }
   virtual ~TransparentButton() {}
 
-  virtual bool OnMousePressed(const ui::MouseEvent& mouse_event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
     parent()->RequestFocus();
     return true;
   }

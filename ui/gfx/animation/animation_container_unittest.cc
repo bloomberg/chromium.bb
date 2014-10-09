@@ -26,12 +26,12 @@ class FakeAnimationContainerObserver : public AnimationContainerObserver {
 
  private:
   virtual void AnimationContainerProgressed(
-      AnimationContainer* container) OVERRIDE {
+      AnimationContainer* container) override {
     progressed_count_++;
   }
 
   // Invoked when no more animations are being managed by this container.
-  virtual void AnimationContainerEmpty(AnimationContainer* container) OVERRIDE {
+  virtual void AnimationContainerEmpty(AnimationContainer* container) override {
     empty_ = true;
   }
 
@@ -47,7 +47,7 @@ class TestAnimation : public LinearAnimation {
       : LinearAnimation(20, 20, delegate) {
   }
 
-  virtual void AnimateToState(double state) OVERRIDE {
+  virtual void AnimateToState(double state) override {
   }
 
  private:

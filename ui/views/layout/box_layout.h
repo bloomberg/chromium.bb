@@ -98,13 +98,13 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   void SetDefaultFlex(int default_flex);
 
   // Overridden from views::LayoutManager:
-  virtual void Installed(View* host) OVERRIDE;
-  virtual void Uninstalled(View* host) OVERRIDE;
-  virtual void ViewRemoved(View* host, View* view) OVERRIDE;
-  virtual void Layout(View* host) OVERRIDE;
-  virtual gfx::Size GetPreferredSize(const View* host) const OVERRIDE;
+  virtual void Installed(View* host) override;
+  virtual void Uninstalled(View* host) override;
+  virtual void ViewRemoved(View* host, View* view) override;
+  virtual void Layout(View* host) override;
+  virtual gfx::Size GetPreferredSize(const View* host) const override;
   virtual int GetPreferredHeightForWidth(const View* host,
-                                         int width) const OVERRIDE;
+                                         int width) const override;
 
  private:
   // Returns the flex for the specified |view|.

@@ -87,8 +87,8 @@ class AppListModelObserverBridge : public AppListViewDelegateObserver {
 
  private:
   // Overridden from app_list::AppListViewDelegateObserver:
-  virtual void OnProfilesChanged() OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+  virtual void OnProfilesChanged() override;
+  virtual void OnShutdown() override;
 
   AppListViewController* parent_;  // Weak. Owns us.
 

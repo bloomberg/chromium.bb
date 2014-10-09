@@ -26,17 +26,17 @@ class VIEWS_EXAMPLES_EXPORT MultilineExample : public ExampleBase,
   virtual ~MultilineExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
   class RenderTextView;
 
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
 
   RenderTextView* render_text_view_;
   Label* label_;

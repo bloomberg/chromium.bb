@@ -39,10 +39,10 @@ class VIEWS_EXPORT TooltipWin : public Tooltip {
   // Tooltip:
   virtual void SetText(aura::Window* window,
                        const base::string16& tooltip_text,
-                       const gfx::Point& location) OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual bool IsVisible() OVERRIDE;
+                       const gfx::Point& location) override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual bool IsVisible() override;
 
   // The window |tooltip_hwnd_| is parented to.
   HWND parent_hwnd_;

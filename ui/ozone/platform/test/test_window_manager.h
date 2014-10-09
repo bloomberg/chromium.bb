@@ -33,10 +33,10 @@ class TestWindowManager : public SurfaceFactoryOzone {
 
   // SurfaceFactoryOzone:
   virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget w) OVERRIDE;
+      gfx::AcceleratedWidget w) override;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
  private:
   base::FilePath location_;

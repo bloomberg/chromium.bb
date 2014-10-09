@@ -116,28 +116,28 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   void OnImeInputSourceChanged(uint16 language_id, bool is_ime);
 
   // WindowTreeHost overrides:
-  virtual ui::EventSource* GetEventSource() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
-  virtual void ReleaseCapture() OVERRIDE;
-  virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
-  virtual void SetCursorNative(gfx::NativeCursor cursor) OVERRIDE;
-  virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
-  virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
+  virtual ui::EventSource* GetEventSource() override;
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  virtual void Show() override;
+  virtual void Hide() override;
+  virtual gfx::Rect GetBounds() const override;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
+  virtual gfx::Point GetLocationOnNativeScreen() const override;
+  virtual void SetCapture() override;
+  virtual void ReleaseCapture() override;
+  virtual void PostNativeEvent(const base::NativeEvent& native_event) override;
+  virtual void SetCursorNative(gfx::NativeCursor cursor) override;
+  virtual void MoveCursorToNative(const gfx::Point& location) override;
+  virtual void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource:
-  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+  virtual ui::EventProcessor* GetEventProcessor() override;
 
   // ui::internal::RemoteInputMethodDelegateWin overrides:
-  virtual void CancelComposition() OVERRIDE;
+  virtual void CancelComposition() override;
   virtual void OnTextInputClientUpdated(
       const std::vector<int32>& input_scopes,
-      const std::vector<gfx::Rect>& composition_character_bounds) OVERRIDE;
+      const std::vector<gfx::Rect>& composition_character_bounds) override;
 
   // Helper function to dispatch a keyboard message to the desired target.
   // The default target is the WindowEventDispatcher. For nested message loop

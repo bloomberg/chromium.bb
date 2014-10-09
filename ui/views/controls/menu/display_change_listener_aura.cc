@@ -22,8 +22,8 @@ class AuraDisplayChangeListener
   // aura::WindowObserver overrides:
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+                                     const gfx::Rect& new_bounds) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
  private:
   MenuRunner* menu_runner_;

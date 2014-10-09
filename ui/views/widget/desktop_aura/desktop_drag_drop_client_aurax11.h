@@ -86,21 +86,21 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       aura::Window* source_window,
       const gfx::Point& root_location,
       int operation,
-      ui::DragDropTypes::DragEventSource source) OVERRIDE;
+      ui::DragDropTypes::DragEventSource source) override;
   virtual void DragUpdate(aura::Window* target,
-                          const ui::LocatedEvent& event) OVERRIDE;
+                          const ui::LocatedEvent& event) override;
   virtual void Drop(aura::Window* target,
-                    const ui::LocatedEvent& event) OVERRIDE;
-  virtual void DragCancel() OVERRIDE;
-  virtual bool IsDragDropInProgress() OVERRIDE;
+                    const ui::LocatedEvent& event) override;
+  virtual void DragCancel() override;
+  virtual bool IsDragDropInProgress() override;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) override;
 
   // Overridden from X11WholeScreenMoveLoopDelegate:
-  virtual void OnMouseMovement(XMotionEvent* event) OVERRIDE;
-  virtual void OnMouseReleased() OVERRIDE;
-  virtual void OnMoveLoopEnded() OVERRIDE;
+  virtual void OnMouseMovement(XMotionEvent* event) override;
+  virtual void OnMouseReleased() override;
+  virtual void OnMoveLoopEnded() override;
 
  protected:
   // The following methods are virtual for the sake of testing.

@@ -107,36 +107,36 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   void SetTitleSubpixelAA();
 
   // views::View overrides:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual void Layout() override;
+  virtual void SchedulePaintInRect(const gfx::Rect& r) override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
+                                      ui::MenuSourceType source_type) override;
 
   // views::CustomButton overrides:
-  virtual void StateChanged() OVERRIDE;
-  virtual bool ShouldEnterPushedState(const ui::Event& event) OVERRIDE;
+  virtual void StateChanged() override;
+  virtual bool ShouldEnterPushedState(const ui::Event& event) override;
 
   // views::View overrides:
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnMouseCaptureLost() override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
 
   // ui::EventHandler overrides:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AppListItemObserver overrides:
-  virtual void ItemIconChanged() OVERRIDE;
-  virtual void ItemNameChanged() OVERRIDE;
-  virtual void ItemIsInstallingChanged() OVERRIDE;
-  virtual void ItemPercentDownloadedChanged() OVERRIDE;
-  virtual void ItemBeingDestroyed() OVERRIDE;
+  virtual void ItemIconChanged() override;
+  virtual void ItemNameChanged() override;
+  virtual void ItemIsInstallingChanged() override;
+  virtual void ItemPercentDownloadedChanged() override;
+  virtual void ItemBeingDestroyed() override;
 
   const bool is_folder_;
   const bool is_in_folder_;

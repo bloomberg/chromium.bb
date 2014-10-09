@@ -37,9 +37,9 @@ class WindowReorderer : public aura::WindowObserver {
 
  private:
   // aura::WindowObserver overrides:
-  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowAdded(aura::Window* new_window) override;
+  virtual void OnWillRemoveWindow(aura::Window* window) override;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // The window and the root view of the native widget which owns the
   // WindowReorderer.

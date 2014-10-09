@@ -24,7 +24,7 @@ class AURA_EXPORT ScopedTooltipDisabler : aura::WindowObserver {
   void EnableTooltips();
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) override;
 
   // The RootWindow to disable Tooltips on; NULL if the Window passed to the
   // constructor was not in a root or the root has been destroyed.

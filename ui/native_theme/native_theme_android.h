@@ -14,7 +14,7 @@ class NativeThemeAndroid : public NativeThemeBase {
  public:
   static NativeThemeAndroid* instance();
 
-  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
+  virtual SkColor GetSystemColor(ColorId color_id) const override;
 
  private:
   NativeThemeAndroid();

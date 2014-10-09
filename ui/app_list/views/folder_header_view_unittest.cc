@@ -32,12 +32,12 @@ class TestFolderHeaderViewDelegate : public FolderHeaderViewDelegate {
 
   // FolderHeaderViewDelegate
   virtual void NavigateBack(AppListFolderItem* item,
-                            const ui::Event& event_flags) OVERRIDE {}
+                            const ui::Event& event_flags) override {}
 
-  virtual void GiveBackFocusToSearchBox() OVERRIDE {}
+  virtual void GiveBackFocusToSearchBox() override {}
 
   virtual void SetItemName(AppListFolderItem* item,
-                           const std::string& name) OVERRIDE {
+                           const std::string& name) override {
     folder_name_ = name;
   }
 
@@ -57,7 +57,7 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
   virtual ~FolderHeaderViewTest() {}
 
   // testing::Test overrides:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     views::ViewsTestBase::SetUp();
     model_.reset(new AppListTestModel);
     model_->SetFoldersEnabled(true);
@@ -66,7 +66,7 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
     folder_header_view_.reset(new FolderHeaderView(delegate_.get()));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     folder_header_view_.reset();  // Release apps grid view before models.
     delegate_.reset();
     views::ViewsTestBase::TearDown();

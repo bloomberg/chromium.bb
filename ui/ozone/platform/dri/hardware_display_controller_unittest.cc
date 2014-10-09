@@ -30,9 +30,9 @@ class MockScanoutBuffer : public ui::ScanoutBuffer {
   MockScanoutBuffer(const gfx::Size& size) : size_(size) {}
 
   // ScanoutBuffer:
-  virtual uint32_t GetFramebufferId() const OVERRIDE {return 0; }
-  virtual uint32_t GetHandle() const OVERRIDE { return 0; }
-  virtual gfx::Size GetSize() const OVERRIDE { return size_; }
+  virtual uint32_t GetFramebufferId() const override {return 0; }
+  virtual uint32_t GetHandle() const override { return 0; }
+  virtual gfx::Size GetSize() const override { return size_; }
 
  private:
   virtual ~MockScanoutBuffer() {}
@@ -49,8 +49,8 @@ class HardwareDisplayControllerTest : public testing::Test {
   HardwareDisplayControllerTest() {}
   virtual ~HardwareDisplayControllerTest() {}
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
  protected:
   scoped_ptr<ui::HardwareDisplayController> controller_;
   scoped_ptr<ui::MockDriWrapper> drm_;

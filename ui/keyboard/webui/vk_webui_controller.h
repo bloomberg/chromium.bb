@@ -33,7 +33,7 @@ class VKWebUIController : public content::WebUIController {
       mojo::InterfaceRequest<KeyboardUIHandlerMojo> request);
 
   // content::WebUIController:
-  virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
+  virtual void RenderViewCreated(content::RenderViewHost* host) override;
 
   scoped_ptr<VKMojoHandler> ui_handler_;
   base::WeakPtrFactory<VKWebUIController> weak_factory_;
@@ -47,14 +47,14 @@ class KEYBOARD_EXPORT VKWebUIControllerFactory
   // WebUIControllerFactory:
   virtual content::WebUI::TypeID GetWebUIType(
       content::BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE;
+      const GURL& url) const override;
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE;
+                              const GURL& url) const override;
   virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE;
+                                      const GURL& url) const override;
   virtual content::WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui,
-      const GURL& url) const OVERRIDE;
+      const GURL& url) const override;
 
   static VKWebUIControllerFactory* GetInstance();
 

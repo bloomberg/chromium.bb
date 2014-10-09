@@ -35,56 +35,56 @@ class InputMethodBridge : public InputMethodBase,
   virtual ~InputMethodBridge();
 
   // Overridden from InputMethod:
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) OVERRIDE;
-  virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;
-  virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
-  virtual void OnCaretBoundsChanged(View* view) OVERRIDE;
-  virtual void CancelComposition(View* view) OVERRIDE;
-  virtual void OnInputLocaleChanged() OVERRIDE;
-  virtual std::string GetInputLocale() OVERRIDE;
-  virtual bool IsActive() OVERRIDE;
-  virtual bool IsCandidatePopupOpen() const OVERRIDE;
-  virtual void ShowImeIfNeeded() OVERRIDE;
+                                        NativeEventResult* result) override;
+  virtual void DispatchKeyEvent(const ui::KeyEvent& key) override;
+  virtual void OnTextInputTypeChanged(View* view) override;
+  virtual void OnCaretBoundsChanged(View* view) override;
+  virtual void CancelComposition(View* view) override;
+  virtual void OnInputLocaleChanged() override;
+  virtual std::string GetInputLocale() override;
+  virtual bool IsActive() override;
+  virtual bool IsCandidatePopupOpen() const override;
+  virtual void ShowImeIfNeeded() override;
 
   // Overridden from TextInputClient:
   virtual void SetCompositionText(
-      const ui::CompositionText& composition) OVERRIDE;
-  virtual void ConfirmCompositionText() OVERRIDE;
-  virtual void ClearCompositionText() OVERRIDE;
-  virtual void InsertText(const base::string16& text) OVERRIDE;
-  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE;
-  virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
-  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
-  virtual ui::TextInputMode GetTextInputMode() const OVERRIDE;
-  virtual bool CanComposeInline() const OVERRIDE;
-  virtual gfx::Rect GetCaretBounds() const OVERRIDE;
+      const ui::CompositionText& composition) override;
+  virtual void ConfirmCompositionText() override;
+  virtual void ClearCompositionText() override;
+  virtual void InsertText(const base::string16& text) override;
+  virtual void InsertChar(base::char16 ch, int flags) override;
+  virtual gfx::NativeWindow GetAttachedWindow() const override;
+  virtual ui::TextInputType GetTextInputType() const override;
+  virtual ui::TextInputMode GetTextInputMode() const override;
+  virtual bool CanComposeInline() const override;
+  virtual gfx::Rect GetCaretBounds() const override;
   virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) const OVERRIDE;
-  virtual bool HasCompositionText() const OVERRIDE;
-  virtual bool GetTextRange(gfx::Range* range) const OVERRIDE;
-  virtual bool GetCompositionTextRange(gfx::Range* range) const OVERRIDE;
-  virtual bool GetSelectionRange(gfx::Range* range) const OVERRIDE;
-  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
-  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
+                                             gfx::Rect* rect) const override;
+  virtual bool HasCompositionText() const override;
+  virtual bool GetTextRange(gfx::Range* range) const override;
+  virtual bool GetCompositionTextRange(gfx::Range* range) const override;
+  virtual bool GetSelectionRange(gfx::Range* range) const override;
+  virtual bool SetSelectionRange(const gfx::Range& range) override;
+  virtual bool DeleteRange(const gfx::Range& range) override;
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                base::string16* text) const OVERRIDE;
-  virtual void OnInputMethodChanged() OVERRIDE;
+                                base::string16* text) const override;
+  virtual void OnInputMethodChanged() override;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
-      base::i18n::TextDirection direction) OVERRIDE;
-  virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE;
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE;
-  virtual void OnCandidateWindowShown() OVERRIDE;
-  virtual void OnCandidateWindowUpdated() OVERRIDE;
-  virtual void OnCandidateWindowHidden() OVERRIDE;
-  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE;
-  virtual void ExecuteEditingCommand(int command_id) OVERRIDE;
+      base::i18n::TextDirection direction) override;
+  virtual void ExtendSelectionAndDelete(size_t before, size_t after) override;
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) override;
+  virtual void OnCandidateWindowShown() override;
+  virtual void OnCandidateWindowUpdated() override;
+  virtual void OnCandidateWindowHidden() override;
+  virtual bool IsEditingCommandEnabled(int command_id) override;
+  virtual void ExecuteEditingCommand(int command_id) override;
 
   // Overridden from FocusChangeListener.
-  virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
-  virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
+  virtual void OnWillChangeFocus(View* focused_before, View* focused) override;
+  virtual void OnDidChangeFocus(View* focused_before, View* focused) override;
 
   ui::InputMethod* GetHostInputMethod() const;
 

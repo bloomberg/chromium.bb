@@ -21,7 +21,7 @@ class TestWindowTreeClient : public client::WindowTreeClient {
   // Overridden from client::WindowTreeClient:
   virtual Window* GetDefaultParent(Window* context,
                                    Window* window,
-                                   const gfx::Rect& bounds) OVERRIDE;
+                                   const gfx::Rect& bounds) override;
  private:
   Window* root_window_;
 

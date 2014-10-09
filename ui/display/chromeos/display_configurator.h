@@ -186,7 +186,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   bool SetDisplayMode(MultipleDisplayState new_state);
 
   // NativeDisplayDelegate::Observer overrides:
-  virtual void OnConfigurationChanged() OVERRIDE;
+  virtual void OnConfigurationChanged() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

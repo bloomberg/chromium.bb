@@ -144,8 +144,8 @@ class DesktopDragDropClientAuraX11::X11DragContext
   void MaskOperation(::Atom xdnd_operation, int* drag_operation) const;
 
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // The atom cache owned by our parent.
   ui::X11AtomCache* atom_cache_;

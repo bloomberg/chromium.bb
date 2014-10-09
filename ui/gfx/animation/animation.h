@@ -81,9 +81,9 @@ class GFX_EXPORT Animation : public AnimationContainerElement {
   AnimationDelegate* delegate() { return delegate_; }
 
   // AnimationContainer::Element overrides
-  virtual void SetStartTime(base::TimeTicks start_time) OVERRIDE;
+  virtual void SetStartTime(base::TimeTicks start_time) override;
   virtual void Step(base::TimeTicks time_now) = 0;
-  virtual base::TimeDelta GetTimerInterval() const OVERRIDE;
+  virtual base::TimeDelta GetTimerInterval() const override;
 
  private:
   // Interval for the animation.

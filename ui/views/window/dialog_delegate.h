@@ -83,20 +83,20 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual bool Close();
 
   // Overridden from ui::DialogModel:
-  virtual base::string16 GetDialogLabel() const OVERRIDE;
-  virtual base::string16 GetDialogTitle() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE;
-  virtual bool ShouldDefaultButtonBeBlue() const OVERRIDE;
+  virtual base::string16 GetDialogLabel() const override;
+  virtual base::string16 GetDialogTitle() const override;
+  virtual int GetDialogButtons() const override;
+  virtual int GetDefaultDialogButton() const override;
+  virtual bool ShouldDefaultButtonBeBlue() const override;
   virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+      ui::DialogButton button) const override;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // Overridden from WidgetDelegate:
-  virtual View* GetInitiallyFocusedView() OVERRIDE;
-  virtual DialogDelegate* AsDialogDelegate() OVERRIDE;
-  virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
-  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
+  virtual View* GetInitiallyFocusedView() override;
+  virtual DialogDelegate* AsDialogDelegate() override;
+  virtual ClientView* CreateClientView(Widget* widget) override;
+  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
 
   // Create a frame view using the new dialog style.
   static NonClientFrameView* CreateDialogFrameView(Widget* widget);
@@ -114,7 +114,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
  protected:
   // Overridden from WidgetDelegate:
-  virtual ui::AXRole GetAccessibleWindowRole() const OVERRIDE;
+  virtual ui::AXRole GetAccessibleWindowRole() const override;
 
  private:
   // A flag indicating whether this dialog supports the new style.
@@ -132,10 +132,10 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
   virtual ~DialogDelegateView();
 
   // Overridden from DialogDelegate:
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual Widget* GetWidget() OVERRIDE;
-  virtual const Widget* GetWidget() const OVERRIDE;
-  virtual View* GetContentsView() OVERRIDE;
+  virtual void DeleteDelegate() override;
+  virtual Widget* GetWidget() override;
+  virtual const Widget* GetWidget() const override;
+  virtual View* GetContentsView() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DialogDelegateView);

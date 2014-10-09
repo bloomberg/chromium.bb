@@ -64,8 +64,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
                                 ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation.
-  virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE;
-  virtual void ListenerDestroyed() OVERRIDE;
+  virtual bool IsRunning(gfx::NativeWindow parent_window) const override;
+  virtual void ListenerDestroyed() override;
 
   // Callback from ObjC bridge.
   void FileWasSelected(NSSavePanel* dialog,
@@ -88,7 +88,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
       int file_type_index,
       const base::FilePath::StringType& default_extension,
       gfx::NativeWindow owning_window,
-      void* params) OVERRIDE;
+      void* params) override;
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -97,7 +97,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   NSView* GetAccessoryView(const FileTypeInfo* file_types,
                            int file_type_index);
 
-  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
+  virtual bool HasMultipleFileTypeChoicesImpl() override;
 
   // The bridge for results from Cocoa to return to us.
   base::scoped_nsobject<SelectFileDialogBridge> bridge_;

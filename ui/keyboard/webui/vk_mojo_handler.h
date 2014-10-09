@@ -21,27 +21,27 @@ class VKMojoHandler : public mojo::InterfaceImpl<KeyboardUIHandlerMojo>,
   ui::InputMethod* GetInputMethod();
 
   // mojo::InterfaceImpl<>:
-  virtual void OnConnectionEstablished() OVERRIDE;
+  virtual void OnConnectionEstablished() override;
 
   // KeyboardUIHandlerMojo:
   virtual void SendKeyEvent(const mojo::String& event_type,
                             int32_t char_value,
                             int32_t key_code,
                             const mojo::String& key_name,
-                            int32_t modifiers) OVERRIDE;
-  virtual void HideKeyboard() OVERRIDE;
+                            int32_t modifiers) override;
+  virtual void HideKeyboard() override;
 
   // ui::InputMethodObserver:
   virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) OVERRIDE;
+      const ui::TextInputClient* client) override;
+  virtual void OnFocus() override;
+  virtual void OnBlur() override;
+  virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* text_client) OVERRIDE;
+      const ui::TextInputClient* text_client) override;
   virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) OVERRIDE;
-  virtual void OnShowImeIfNeeded() OVERRIDE;
+      const ui::InputMethod* input_method) override;
+  virtual void OnShowImeIfNeeded() override;
 
   DISALLOW_COPY_AND_ASSIGN(VKMojoHandler);
 };

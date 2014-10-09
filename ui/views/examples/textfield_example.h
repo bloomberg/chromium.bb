@@ -27,19 +27,19 @@ class VIEWS_EXAMPLES_EXPORT TextfieldExample : public ExampleBase,
   virtual ~TextfieldExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) override;
   virtual bool HandleMouseEvent(Textfield* sender,
-                                const ui::MouseEvent& mouse_event) OVERRIDE;
+                                const ui::MouseEvent& mouse_event) override;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Textfields for name and password.
   Textfield* name_;

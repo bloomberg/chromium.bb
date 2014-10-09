@@ -87,23 +87,23 @@ class EventCountView : public View {
 
  protected:
   // Overridden from View:
-  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseMoved(const ui::MouseEvent& event) override {
     // MouseMove events are not re-dispatched from the RootView.
     ++event_count_[ui::ET_MOUSE_MOVED];
     last_flags_ = 0;
   }
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     RecordEvent(event);
   }
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     RecordEvent(event);
   }
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override {
     RecordEvent(event);
   }
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     RecordEvent(event);
   }
 
@@ -131,7 +131,7 @@ class ScrollableEventCountView : public EventCountView {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     EventCountView::OnGestureEvent(event);
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -145,7 +145,7 @@ class ScrollableEventCountView : public EventCountView {
     }
   }
 
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override {
     EventCountView::OnScrollEvent(event);
     if (event->type() == ui::ET_SCROLL)
       event->SetHandled();
@@ -162,7 +162,7 @@ class MinimumSizeFrameView : public NativeFrameView {
 
  private:
   // Overridden from View:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const override {
     return gfx::Size(300, 400);
   }
 
@@ -186,7 +186,7 @@ class EventCountHandler : public ui::EventHandler {
 
  protected:
   // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     RecordEvent(*event);
     ui::EventHandler::OnEvent(event);
   }
@@ -210,7 +210,7 @@ class CloseWidgetView : public View {
   }
 
   // ui::EventHandler override:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) override {
     if (event->type() == event_type_) {
       // Go through NativeWidgetPrivate to simulate what happens if the OS
       // deletes the NativeWindow out from under us.
@@ -718,14 +718,14 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   virtual ~WidgetObserverTest() {}
 
   // Overridden from WidgetObserver:
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(Widget* widget) override {
     if (active_ == widget)
       active_ = NULL;
     widget_closed_ = widget;
   }
 
   virtual void OnWidgetActivationChanged(Widget* widget,
-                                         bool active) OVERRIDE {
+                                         bool active) override {
     if (active) {
       if (widget_activated_)
         widget_activated_->Deactivate();
@@ -739,7 +739,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   }
 
   virtual void OnWidgetVisibilityChanged(Widget* widget,
-                                         bool visible) OVERRIDE {
+                                         bool visible) override {
     if (visible)
       widget_shown_ = widget;
     else
@@ -747,7 +747,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   }
 
   virtual void OnWidgetBoundsChanged(Widget* widget,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     widget_bounds_changed_ = widget;
   }
 
@@ -1062,7 +1062,7 @@ class TestBubbleDelegateView : public BubbleDelegateView {
         reset_controls_called_(false) {}
   virtual ~TestBubbleDelegateView() {}
 
-  virtual bool ShouldShowCloseButton() const OVERRIDE {
+  virtual bool ShouldShowCloseButton() const override {
     reset_controls_called_ = true;
     return true;
   }
@@ -1120,12 +1120,12 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
   virtual ~DesktopAuraTestValidPaintWidget() {
   }
 
-  virtual void Show() OVERRIDE {
+  virtual void Show() override {
     expect_paint_ = true;
     views::Widget::Show();
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     expect_paint_ = false;
     views::Widget::Close();
   }
@@ -1135,7 +1135,7 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
     views::Widget::Hide();
   }
 
-  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) override {
     EXPECT_TRUE(expect_paint_);
     if (!expect_paint_)
       received_paint_while_hidden_ = true;
@@ -1551,7 +1551,7 @@ class MousePressEventConsumer : public ui::EventHandler {
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED)
       event->SetHandled();
   }
@@ -1596,9 +1596,9 @@ class ClosingDelegate : public WidgetDelegate {
   void set_widget(views::Widget* widget) { widget_ = widget; }
 
   // WidgetDelegate overrides:
-  virtual Widget* GetWidget() OVERRIDE { return widget_; }
-  virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
-  virtual void WindowClosing() OVERRIDE {
+  virtual Widget* GetWidget() override { return widget_; }
+  virtual const Widget* GetWidget() const override { return widget_; }
+  virtual void WindowClosing() override {
     count_++;
   }
 
@@ -1732,7 +1732,7 @@ class GetNativeThemeFromDestructorView : public WidgetDelegateView {
     VerifyNativeTheme();
   }
 
-  virtual View* GetContentsView() OVERRIDE {
+  virtual View* GetContentsView() override {
     return this;
   }
 
@@ -1807,7 +1807,7 @@ class AnimationEndObserver : public ui::ImplicitAnimationObserver {
   bool animation_completed() const { return animation_completed_; }
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+  virtual void OnImplicitAnimationsCompleted() override {
     animation_completed_ = true;
   }
 
@@ -1826,7 +1826,7 @@ class WidgetBoundsObserver : public WidgetObserver {
   gfx::Rect bounds() { return bounds_; }
 
   // WidgetObserver:
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(Widget* widget) override {
     bounds_ = widget->GetWindowBoundsInScreen();
   }
 
@@ -1897,11 +1897,11 @@ class RootViewTestView : public View {
   RootViewTestView(): View() {}
 
  private:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
     return true;
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN)
       event->SetHandled();
   }
@@ -2447,7 +2447,7 @@ class GestureLocationView : public EventCountView {
   }
 
   // EventCountView:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) override {
     EventCountView::OnGestureEvent(event);
 
     // Verify that the location of |event| is in the local coordinate
@@ -2774,7 +2774,7 @@ class ModalDialogDelegate : public DialogDelegateView {
   virtual ~ModalDialogDelegate() {}
 
   // WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE {
+  virtual ui::ModalType GetModalType() const override {
     return ui::MODAL_TYPE_WINDOW;
   }
 
@@ -2903,19 +2903,19 @@ class ModalWindowTestWidgetDelegate : public WidgetDelegate {
   virtual ~ModalWindowTestWidgetDelegate() {}
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() OVERRIDE {
+  virtual void DeleteDelegate() override {
     delete this;
   }
-  virtual Widget* GetWidget() OVERRIDE {
+  virtual Widget* GetWidget() override {
     return widget_;
   }
-  virtual const Widget* GetWidget() const OVERRIDE {
+  virtual const Widget* GetWidget() const override {
     return widget_;
   }
-  virtual bool CanActivate() const OVERRIDE {
+  virtual bool CanActivate() const override {
     return can_activate_;
   }
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
     return true;
   }
 
@@ -3086,25 +3086,25 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
   virtual ~FullscreenAwareFrame() {}
 
   // views::NonClientFrameView overrides:
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE {
+  virtual gfx::Rect GetBoundsForClientView() const override {
     return gfx::Rect();
   }
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE {
+      const gfx::Rect& client_bounds) const override {
     return gfx::Rect();
   }
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE {
+  virtual int NonClientHitTest(const gfx::Point& point) override {
     return HTNOWHERE;
   }
   virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) OVERRIDE {}
-  virtual void ResetWindowControls() OVERRIDE {}
-  virtual void UpdateWindowIcon() OVERRIDE {}
-  virtual void UpdateWindowTitle() OVERRIDE {}
-  virtual void SizeConstraintsChanged() OVERRIDE {}
+                             gfx::Path* window_mask) override {}
+  virtual void ResetWindowControls() override {}
+  virtual void UpdateWindowIcon() override {}
+  virtual void UpdateWindowTitle() override {}
+  virtual void SizeConstraintsChanged() override {}
 
   // views::View overrides:
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     if (widget_->IsFullscreen())
       fullscreen_layout_called_ = true;
   }
@@ -3148,7 +3148,7 @@ class IsActiveFromDestroyObserver : public WidgetObserver {
  public:
   IsActiveFromDestroyObserver() {}
   virtual ~IsActiveFromDestroyObserver() {}
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
+  virtual void OnWidgetDestroying(Widget* widget) override {
     widget->IsActive();
   }
 

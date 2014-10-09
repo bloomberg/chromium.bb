@@ -127,22 +127,22 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   PaginationModel* pagination_model() { return &pagination_model_; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
+      std::set<OSExchangeData::CustomFormat>* custom_formats) override;
+  virtual bool CanDrop(const OSExchangeData& data) override;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
@@ -369,27 +369,27 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // Overridden from AppListItemListObserver:
-  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE;
-  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE;
+  virtual void OnListItemAdded(size_t index, AppListItem* item) override;
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) override;
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItem* item) OVERRIDE;
-  virtual void OnAppListItemHighlight(size_t index, bool highlight) OVERRIDE;
+                               AppListItem* item) override;
+  virtual void OnAppListItemHighlight(size_t index, bool highlight) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() OVERRIDE;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
-  virtual void TransitionStarted() OVERRIDE;
-  virtual void TransitionChanged() OVERRIDE;
+  virtual void TotalPagesChanged() override;
+  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
+  virtual void TransitionStarted() override;
+  virtual void TransitionChanged() override;
 
   // Overridden from AppListModelObserver:
-  virtual void OnAppListModelStatusChanged() OVERRIDE;
+  virtual void OnAppListModelStatusChanged() override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  virtual void OnImplicitAnimationsCompleted() override;
 
   // Hide a given view temporarily without losing (mouse) events and / or
   // changing the size of it. If |immediate| is set the change will be

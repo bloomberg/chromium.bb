@@ -19,7 +19,7 @@ class VIEWS_EXAMPLES_EXPORT MenuExample : public ExampleBase {
   virtual ~MenuExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MenuExample);

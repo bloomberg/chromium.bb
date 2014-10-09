@@ -162,26 +162,26 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
 
   // Notification we've been installed on a particular host. Checks that host
   // is the same as the View supplied in the constructor.
-  virtual void Installed(View* host) OVERRIDE;
+  virtual void Installed(View* host) override;
 
   // Notification we've been uninstalled on a particular host. Checks that host
   // is the same as the View supplied in the constructor.
-  virtual void Uninstalled(View* host) OVERRIDE;
+  virtual void Uninstalled(View* host) override;
 
   // Notification that a view has been added.
-  virtual void ViewAdded(View* host, View* view) OVERRIDE;
+  virtual void ViewAdded(View* host, View* view) override;
 
   // Notification that a view has been removed.
-  virtual void ViewRemoved(View* host, View* view) OVERRIDE;
+  virtual void ViewRemoved(View* host, View* view) override;
 
   // Layouts out the components.
-  virtual void Layout(View* host) OVERRIDE;
+  virtual void Layout(View* host) override;
 
   // Returns the preferred size for the GridLayout.
-  virtual gfx::Size GetPreferredSize(const View* host) const OVERRIDE;
+  virtual gfx::Size GetPreferredSize(const View* host) const override;
 
   virtual int GetPreferredHeightForWidth(const View* host,
-                                         int width) const OVERRIDE;
+                                         int width) const override;
 
   void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
 

@@ -21,20 +21,20 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   virtual ~RadioButton();
 
   // Overridden from View:
-  virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual View* GetSelectedViewForGroup(int group) OVERRIDE;
-  virtual bool IsGroupFocusTraversable() const OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
+  virtual const char* GetClassName() const override;
+  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  virtual View* GetSelectedViewForGroup(int group) override;
+  virtual bool IsGroupFocusTraversable() const override;
+  virtual void OnFocus() override;
 
   // Overridden from Button:
-  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
+  virtual void NotifyClick(const ui::Event& event) override;
 
   // Overridden from LabelButton:
-  virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
+  virtual ui::NativeTheme::Part GetThemePart() const override;
 
   // Overridden from Checkbox:
-  virtual void SetChecked(bool checked) OVERRIDE;
+  virtual void SetChecked(bool checked) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RadioButton);

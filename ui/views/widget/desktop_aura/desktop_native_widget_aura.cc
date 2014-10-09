@@ -118,7 +118,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   }
 
   // aura::WindowObserver overrides
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) override {
     window->RemoveObserver(this);
 
     // If the widget is being destroyed by the OS then we should not try and
@@ -143,7 +143,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
 
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
+                                     const gfx::Rect& new_bounds) override {
     if (top_level_widget_ && window == child_window_)
       top_level_widget_->SetSize(new_bounds.size());
   }
@@ -176,7 +176,7 @@ class DesktopNativeWidgetAuraWindowTreeClient :
   // Overridden from client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
-                                         const gfx::Rect& bounds) OVERRIDE {
+                                         const gfx::Rect& bounds) override {
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
         ui::SHOW_STATE_FULLSCREEN;
     bool is_menu = window->type() == ui::wm::WINDOW_TYPE_MENU;
@@ -208,7 +208,7 @@ class FocusManagerEventHandler : public ui::EventHandler {
       : desktop_native_widget_aura_(desktop_native_widget_aura) {}
 
   // Implementation of ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnKeyEvent(ui::KeyEvent* event) override {
     Widget* widget = desktop_native_widget_aura_->GetWidget();
     if (widget && widget->GetFocusManager()->GetFocusedView() &&
         !widget->GetFocusManager()->OnKeyEvent(*event)) {
@@ -230,7 +230,7 @@ class RootWindowDestructionObserver : public aura::WindowObserver {
 
  private:
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  virtual void OnWindowDestroyed(aura::Window* window) override {
     parent_->RootWindowDestroyed();
     window->RemoveObserver(this);
     delete this;

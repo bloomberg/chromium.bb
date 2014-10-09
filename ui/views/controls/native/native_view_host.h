@@ -79,20 +79,20 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void NativeViewDestroyed();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const override;
+  virtual void Layout() override;
+  virtual void OnPaint(gfx::Canvas* canvas) override;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) override;
+  virtual void OnFocus() override;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
 
  protected:
-  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
-  virtual void OnVisibleBoundsChanged() OVERRIDE;
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  virtual void OnVisibleBoundsChanged() override;
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
+  virtual const char* GetClassName() const override;
 
  private:
   friend class test::NativeViewHostTestBase;

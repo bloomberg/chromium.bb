@@ -40,11 +40,11 @@ class TestEventHandler : public EventHandler {
   }
 
   // EventHandler overrides:
-  virtual void OnKeyEvent(KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ScrollEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(TouchEvent* event) OVERRIDE;
-  virtual void OnGestureEvent(GestureEvent* event) OVERRIDE;
+  virtual void OnKeyEvent(KeyEvent* event) override;
+  virtual void OnMouseEvent(MouseEvent* event) override;
+  virtual void OnScrollEvent(ScrollEvent* event) override;
+  virtual void OnTouchEvent(TouchEvent* event) override;
+  virtual void OnGestureEvent(GestureEvent* event) override;
 
  private:
   // How many events have been received of each type?

@@ -57,7 +57,7 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
 
   gbm_device* device() const { return device_; }
 
-  virtual scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) OVERRIDE {
+  virtual scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) override {
     return GbmBuffer::CreateBuffer(
         dri_, device_, SurfaceFactoryOzone::RGBA_8888, size, true);
   }
@@ -82,21 +82,21 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual ~OzonePlatformGbm() {}
 
   // OzonePlatform:
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return surface_factory_ozone_.get();
   }
-  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() override {
     return gpu_platform_support_.get();
   }
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) OVERRIDE {
+      const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
         new DriWindow(delegate,
                       bounds,
@@ -107,11 +107,11 @@ class OzonePlatformGbm : public OzonePlatform {
     return platform_window.PassAs<PlatformWindow>();
   }
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      OVERRIDE {
+      override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get()));
   }
-  virtual void InitializeUI() OVERRIDE {
+  virtual void InitializeUI() override {
     vt_manager_.reset(new VirtualTerminalManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
@@ -125,7 +125,7 @@ class OzonePlatformGbm : public OzonePlatform {
                                                      device_manager_.get()));
   }
 
-  virtual void InitializeGPU() OVERRIDE {
+  virtual void InitializeGPU() override {
     dri_.reset(new DriWrapper(kDefaultGraphicsCardPath));
     dri_->Initialize();
     buffer_generator_.reset(new GbmBufferGenerator(dri_.get()));

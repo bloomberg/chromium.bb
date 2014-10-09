@@ -50,11 +50,11 @@ class MessageCenterButtonBar : public views::View,
   void ViewVisibilityChanged();
 
   // Overridden from views::View:
-  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE;
+  virtual void ChildVisibilityChanged(views::View* child) override;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   MessageCenterView* message_center_view() const {
     return message_center_view_;

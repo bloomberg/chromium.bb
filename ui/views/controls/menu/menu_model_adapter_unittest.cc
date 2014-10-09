@@ -30,95 +30,95 @@ class MenuModelBase : public ui::MenuModel {
 
   // ui::MenuModel implementation:
 
-  virtual bool HasIcons() const OVERRIDE {
+  virtual bool HasIcons() const override {
     return false;
   }
 
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() const override {
     return static_cast<int>(items_.size());
   }
 
-  virtual ItemType GetTypeAt(int index) const OVERRIDE {
+  virtual ItemType GetTypeAt(int index) const override {
     return items_[index].type;
   }
 
   virtual ui::MenuSeparatorType GetSeparatorTypeAt(
-      int index) const OVERRIDE {
+      int index) const override {
     return ui::NORMAL_SEPARATOR;
   }
 
-  virtual int GetCommandIdAt(int index) const OVERRIDE {
+  virtual int GetCommandIdAt(int index) const override {
     return index + command_id_base_;
   }
 
-  virtual base::string16 GetLabelAt(int index) const OVERRIDE {
+  virtual base::string16 GetLabelAt(int index) const override {
     return items_[index].label;
   }
 
-  virtual bool IsItemDynamicAt(int index) const OVERRIDE {
+  virtual bool IsItemDynamicAt(int index) const override {
     return false;
   }
 
-  virtual const gfx::FontList* GetLabelFontListAt(int index) const OVERRIDE {
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const override {
     return NULL;
   }
 
   virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const OVERRIDE {
+                                ui::Accelerator* accelerator) const override {
     return false;
   }
 
-  virtual bool IsItemCheckedAt(int index) const OVERRIDE {
+  virtual bool IsItemCheckedAt(int index) const override {
     return false;
   }
 
-  virtual int GetGroupIdAt(int index) const OVERRIDE {
+  virtual int GetGroupIdAt(int index) const override {
     return 0;
   }
 
-  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE {
+  virtual bool GetIconAt(int index, gfx::Image* icon) override {
     return false;
   }
 
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
-      int index) const OVERRIDE {
+      int index) const override {
     return NULL;
   }
 
-  virtual bool IsEnabledAt(int index) const OVERRIDE {
+  virtual bool IsEnabledAt(int index) const override {
     return true;
   }
 
-  virtual bool IsVisibleAt(int index) const OVERRIDE {
+  virtual bool IsVisibleAt(int index) const override {
     return true;
   }
 
-  virtual MenuModel* GetSubmenuModelAt(int index) const OVERRIDE {
+  virtual MenuModel* GetSubmenuModelAt(int index) const override {
     return items_[index].submenu;
   }
 
-  virtual void HighlightChangedTo(int index) OVERRIDE {
+  virtual void HighlightChangedTo(int index) override {
   }
 
-  virtual void ActivatedAt(int index) OVERRIDE {
+  virtual void ActivatedAt(int index) override {
     set_last_activation(index);
   }
 
-  virtual void ActivatedAt(int index, int event_flags) OVERRIDE {
+  virtual void ActivatedAt(int index, int event_flags) override {
     ActivatedAt(index);
   }
 
-  virtual void MenuWillShow() OVERRIDE {
+  virtual void MenuWillShow() override {
   }
 
-  virtual void MenuClosed() OVERRIDE {
+  virtual void MenuClosed() override {
   }
 
   virtual void SetMenuModelDelegate(
-      ui::MenuModelDelegate* delegate) OVERRIDE {
+      ui::MenuModelDelegate* delegate) override {
   }
 
-  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE {
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const override {
     return NULL;
   }
 

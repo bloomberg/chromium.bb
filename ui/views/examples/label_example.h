@@ -30,17 +30,17 @@ class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase,
   virtual ~LabelExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) override;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* button, const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* button, const ui::Event& event) override;
 
   // ComboboxListener:
-  virtual void OnPerformAction(Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(Combobox* combobox) override;
 
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) override;
 
  private:
    // Add a customizable label and various controls to modify its presentation.

@@ -219,23 +219,23 @@ class TestView : public View {
     can_process_events_within_subtree_ = can_process;
   }
 
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+  virtual bool CanProcessEventsWithinSubtree() const override {
     return can_process_events_within_subtree_;
   }
 
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
+  virtual void OnMouseExited(const ui::MouseEvent& event) override;
 
-  virtual void Paint(gfx::Canvas* canvas, const CullSet& cull_set) OVERRIDE;
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, const CullSet& cull_set) override;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) override;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   virtual void OnNativeThemeChanged(const ui::NativeTheme* native_theme)
-      OVERRIDE;
+      override;
 
   // OnBoundsChanged.
   bool did_change_bounds_;
@@ -1495,14 +1495,14 @@ class ToplevelWidgetObserverView : public View {
 
   // View overrides:
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
+      const ViewHierarchyChangedDetails& details) override {
     if (details.is_add) {
       toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
     } else {
       toplevel_ = NULL;
     }
   }
-  virtual void NativeViewHierarchyChanged() OVERRIDE {
+  virtual void NativeViewHierarchyChanged() override {
     toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
   }
 
@@ -1569,7 +1569,7 @@ class TransformPaintView : public TestView {
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
   // Overridden from View:
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE {
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) override {
     gfx::Rect xrect = ConvertRectToParent(rect);
     scheduled_paint_rect_.Union(xrect);
   }
@@ -1808,10 +1808,10 @@ class VisibleBoundsView : public View {
 
  private:
   // Overridden from View:
-  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE {
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const override {
      return true;
   }
-  virtual void OnVisibleBoundsChanged() OVERRIDE {
+  virtual void OnVisibleBoundsChanged() override {
     received_notification_ = true;
   }
 
@@ -2233,7 +2233,7 @@ class ObserverView : public View {
  private:
   // View:
   virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
+      const ViewHierarchyChangedDetails& details) override;
 
   bool has_add_details_;
   bool has_remove_details_;
@@ -2652,7 +2652,7 @@ class ActiveWidget : public Widget {
   ActiveWidget() {}
   virtual ~ActiveWidget() {}
 
-  virtual bool IsActive() const OVERRIDE {
+  virtual bool IsActive() const override {
     return true;
   }
 
@@ -2718,7 +2718,7 @@ class TestLayerAnimator : public ui::LayerAnimator {
   const gfx::Rect& last_bounds() const { return last_bounds_; }
 
   // LayerAnimator.
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) override;
 
  protected:
   virtual ~TestLayerAnimator() { }
@@ -2751,7 +2751,7 @@ class ViewLayerTest : public ViewsTestBase {
     return widget()->GetLayer();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ViewTest::SetUp();
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -2761,7 +2761,7 @@ class ViewLayerTest : public ViewsTestBase {
     widget_->GetRootView()->SetBounds(0, 0, 200, 200);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     widget_->CloseNow();
     ViewsTestBase::TearDown();
   }
@@ -3070,7 +3070,7 @@ class PaintTrackingView : public View {
   bool painted() const { return painted_; }
   void set_painted(bool value) { painted_ = value; }
 
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) override {
     painted_ = true;
   }
 
@@ -3312,7 +3312,7 @@ class BoundsTreeTestView : public View {
   BoundsTreeTestView() {}
 
   virtual void PaintChildren(gfx::Canvas* canvas,
-                             const CullSet& cull_set) OVERRIDE {
+                             const CullSet& cull_set) override {
     // Save out a copy of the cull_set before calling the base implementation.
     last_cull_set_.clear();
     if (cull_set.cull_set_) {

@@ -19,10 +19,10 @@ class SquareView : public views::View {
   virtual ~SquareView() {}
 
  private:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     return gfx::Size(1, 1);
   }
-  virtual int GetHeightForWidth(int width) const OVERRIDE {
+  virtual int GetHeightForWidth(int width) const override {
     return width;
   }
 };

@@ -18,7 +18,7 @@ class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
   bool Initialize(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from GLImage:
-  virtual void Destroy(bool have_context) OVERRIDE;
+  virtual void Destroy(bool have_context) override;
 
  protected:
   virtual ~GLImageSharedMemory();

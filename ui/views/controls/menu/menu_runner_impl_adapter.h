@@ -18,15 +18,15 @@ class MenuRunnerImplAdapter : public MenuRunnerImplInterface {
   explicit MenuRunnerImplAdapter(ui::MenuModel* menu_model);
 
   // MenuRunnerImplInterface:
-  virtual bool IsRunning() const OVERRIDE;
-  virtual void Release() OVERRIDE;
+  virtual bool IsRunning() const override;
+  virtual void Release() override;
   virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
                                           MenuButton* button,
                                           const gfx::Rect& bounds,
                                           MenuAnchorPosition anchor,
-                                          int32 types) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
-  virtual base::TimeDelta GetClosingEventTime() const OVERRIDE;
+                                          int32 types) override;
+  virtual void Cancel() override;
+  virtual base::TimeDelta GetClosingEventTime() const override;
 
  private:
   virtual ~MenuRunnerImplAdapter();

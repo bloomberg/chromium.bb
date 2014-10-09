@@ -122,8 +122,8 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   void ResetTransitionAnimation();
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  virtual void AnimationEnded(const gfx::Animation* animation) override;
 
   int total_pages_;
   int selected_page_;

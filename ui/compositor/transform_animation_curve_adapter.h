@@ -25,14 +25,14 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
   virtual ~TransformAnimationCurveAdapter();
 
   // TransformAnimationCurve implementation.
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
-  virtual gfx::Transform GetValue(double t) const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<AnimationCurve> Clone() const override;
+  virtual gfx::Transform GetValue(double t) const override;
   virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                                    gfx::BoxF* bounds) const OVERRIDE;
-  virtual bool AffectsScale() const OVERRIDE;
-  virtual bool IsTranslation() const OVERRIDE;
-  virtual bool MaximumScale(float* max_scale) const OVERRIDE;
+                                    gfx::BoxF* bounds) const override;
+  virtual bool AffectsScale() const override;
+  virtual bool IsTranslation() const override;
+  virtual bool MaximumScale(float* max_scale) const override;
 
  private:
   gfx::Tween::Type tween_type_;
@@ -54,14 +54,14 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
 
   virtual ~InverseTransformCurveAdapter();
 
-  virtual double Duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
-  virtual gfx::Transform GetValue(double t) const OVERRIDE;
+  virtual double Duration() const override;
+  virtual scoped_ptr<AnimationCurve> Clone() const override;
+  virtual gfx::Transform GetValue(double t) const override;
   virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                                    gfx::BoxF* bounds) const OVERRIDE;
-  virtual bool AffectsScale() const OVERRIDE;
-  virtual bool IsTranslation() const OVERRIDE;
-  virtual bool MaximumScale(float* max_scale) const OVERRIDE;
+                                    gfx::BoxF* bounds) const override;
+  virtual bool AffectsScale() const override;
+  virtual bool IsTranslation() const override;
+  virtual bool MaximumScale(float* max_scale) const override;
 
  private:
   TransformAnimationCurveAdapter base_curve_;
