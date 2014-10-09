@@ -32,6 +32,7 @@ class TranslateErrors {
     BAD_ORIGIN,               // The library is blocked because of bad origin.
     SCRIPT_LOAD_ERROR,        // Loader fails to load a dependent JavaScript.
     TRANSLATE_ERROR_MAX,
+    TYPE_LAST = TRANSLATE_ERROR_MAX
   };
 
  private:

@@ -12,7 +12,8 @@
 
 #define IPC_MESSAGE_START TranslateMsgStart
 
-IPC_ENUM_TRAITS(translate::TranslateErrors::Type)
+IPC_ENUM_TRAITS_MAX_VALUE(translate::TranslateErrors::Type,
+                          translate::TranslateErrors::TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(translate::LanguageDetectionDetails)
   IPC_STRUCT_TRAITS_MEMBER(time)
