@@ -204,10 +204,8 @@ bool InfoMap::MapUrlToLocalFilePath(const GURL& file_url,
     if (!new_extension)
       return false;
 
-    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) ||
-        !SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path)) {
+    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id))
       return false;
-    }
 
     resource = new_extension->GetResource(new_relative_path);
   } else {

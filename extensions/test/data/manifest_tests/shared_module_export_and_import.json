@@ -2,11 +2,7 @@
   "name": "shared_module_export unittest",
   "manifest_version": 2,
   "version": "1.0",
-  "export": {
-    "resources": [
-      "*"
-    ]
-  },
+  "export": {},
   "import": [{
     "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   }],

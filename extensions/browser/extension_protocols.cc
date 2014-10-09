@@ -482,26 +482,8 @@ ExtensionProtocolHandler::MaybeCreateJob(
     const Extension* new_extension =
         extension_info_map_->extensions().GetByID(new_extension_id);
 
-    bool first_party_in_import = false;
-    // NB: This first_party_for_cookies call is not for security, it is only
-    // used so an exported extension can limit the visible surface to the
-    // extension that imports it, more or less constituting its API.
-    const std::string& first_party_path =
-        request->first_party_for_cookies().path();
-    if (SharedModuleInfo::IsImportedPath(first_party_path)) {
-      std::string first_party_id;
-      std::string dummy;
-      SharedModuleInfo::ParseImportedPath(first_party_path, &first_party_id,
-                                          &dummy);
-      if (first_party_id == new_extension_id) {
-        first_party_in_import = true;
-      }
-    }
-
     if (SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) &&
-        new_extension &&
-        (first_party_in_import ||
-         SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path))) {
+        new_extension) {
       directory_path = new_extension->path();
       extension_id = new_extension_id;
       relative_path = base::FilePath::FromUTF8Unsafe(new_relative_path);

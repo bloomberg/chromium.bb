@@ -79,13 +79,6 @@ bool SharedModuleInfo::IsSharedModule(const Extension* extension) {
 }
 
 // static
-bool SharedModuleInfo::IsExportAllowed(const Extension* extension,
-                                       const std::string& relative_path) {
-  return GetSharedModuleInfo(extension).
-      exported_set_.MatchesURL(extension->url().Resolve(relative_path));
-}
-
-// static
 bool SharedModuleInfo::IsExportAllowedByWhitelist(const Extension* extension,
                                                   const std::string& other_id) {
   // Sanity check. In case the caller did not check |extension| to make sure it
@@ -141,11 +134,6 @@ bool SharedModuleInfo::Parse(const Extension* extension,
       *error = base::ASCIIToUTF16(errors::kInvalidExport);
       return false;
     }
-    const base::ListValue* resources_list = NULL;
-    if (!export_value->GetList(keys::kResources, &resources_list)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidExportResources);
-      return false;
-    }
     if (export_value->HasKey(keys::kWhitelist)) {
       const base::ListValue* whitelist = NULL;
       if (!export_value->GetList(keys::kWhitelist, &whitelist)) {
@@ -162,22 +150,6 @@ bool SharedModuleInfo::Parse(const Extension* extension,
         }
         export_whitelist_.insert(extension_id);
       }
-    }
-    for (size_t i = 0; i < resources_list->GetSize(); ++i) {
-      std::string resource_path;
-      if (!resources_list->GetString(i, &resource_path)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidExportResourcesString, base::IntToString(i));
-        return false;
-      }
-      const GURL& resolved_path = extension->url().Resolve(resource_path);
-      if (!resolved_path.is_valid()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidExportResourcesString, base::IntToString(i));
-        return false;
-      }
-      exported_set_.AddPattern(
-          URLPattern(URLPattern::SCHEME_EXTENSION, resolved_path.spec()));
     }
   }
 

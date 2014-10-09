@@ -121,7 +121,6 @@ const char kPluginsPath[] = "path";
 const char kPluginsPublic[] = "public";
 const char kPublicKey[] = "key";
 const char kRemoveButton[] = "remove_button";
-const char kResources[] = "resources";
 const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
 const char kSandboxedPages[] = "sandbox.pages";
@@ -337,10 +336,6 @@ const char kInvalidExport[] =
     "Invalid value for 'export'.";
 const char kInvalidExportPermissions[] =
     "Permissions are not allowed for extensions that export resources.";
-const char kInvalidExportResources[] =
-    "Invalid value for 'export.resources'.";
-const char kInvalidExportResourcesString[] =
-    "Invalid value for 'export.resources[*]'.";
 const char kInvalidExportWhitelist[] =
     "Invalid value for 'export.whitelist'.";
 const char kInvalidExportWhitelistString[] =
