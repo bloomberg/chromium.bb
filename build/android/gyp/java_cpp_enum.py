@@ -36,22 +36,22 @@ class EnumDefinition(object):
     assert self.entries
 
   def _AssignEntryIndices(self):
-    # Supporting the same set enum value assignments the compiler does is rather
-    # complicated, so we limit ourselves to these cases:
-    # - all the enum constants have values assigned,
-    # - enum constants reference other enum constants or have no value assigned.
-
+    # Enums, if given no value, are given the value of the previous enum + 1.
     if not all(self.entries.values()):
-      index = 0
+      prev_enum_value = -1
       for key, value in self.entries.iteritems():
         if not value:
-          self.entries[key] = index
-          index = index + 1
+          self.entries[key] = prev_enum_value + 1
         elif value in self.entries:
           self.entries[key] = self.entries[value]
         else:
-          raise Exception('You can only reference other enum constants unless '
-                          'you assign values to all of the constants.')
+          try:
+            self.entries[key] = int(value)
+          except ValueError:
+            raise Exception('Could not interpret integer from enum value "%s" '
+                            'for key %s.' % (value, key))
+        prev_enum_value = self.entries[key]
+
 
   def _StripPrefix(self):
     if not self.prefix_to_strip:
@@ -69,7 +69,7 @@ class HeaderParser(object):
   single_line_comment_re = re.compile(r'\s*//')
   multi_line_comment_start_re = re.compile(r'\s*/\*')
   enum_start_re = re.compile(r'^\s*enum\s+(\w+)\s+{\s*$')
-  enum_line_re = re.compile(r'^\s*(\w+)(\s*\=\s*([^,\n]+))?,?\s*$')
+  enum_line_re = re.compile(r'^\s*(\w+)(\s*\=\s*([^,\n]+))?,?')
   enum_end_re = re.compile(r'^\s*}\s*;\s*$')
   generator_directive_re = re.compile(
       r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]+)$')
