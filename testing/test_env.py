@@ -72,6 +72,7 @@ def run_executable(cmd, env):
     - environment variable CHROME_DEVEL_SANDBOX set if need
     - Reuses sys.executable automatically.
   """
+  env = collections.defaultdict(str, env)
   # Many tests assume a English interface...
   env['LANG'] = 'en_US.UTF-8'
   # Used by base/base_paths_linux.cc as an override. Just make sure the default
@@ -115,8 +116,7 @@ def run_executable(cmd, env):
 
 
 def main():
-  return run_executable(sys.argv[1:],
-                        collections.defaultdict(str, os.environ.copy()))
+  return run_executable(sys.argv[1:], os.environ.copy())
 
 
 if __name__ == '__main__':
