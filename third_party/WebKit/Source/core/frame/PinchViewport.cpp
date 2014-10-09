@@ -284,19 +284,21 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 
     int thumbThickness = m_frameHost.settings().pinchOverlayScrollbarThickness();
     int scrollbarThickness = thumbThickness;
+    int scrollbarMargin = scrollbarThickness;
 
     // FIXME: Rather than manually creating scrollbar layers, we should create
     // real scrollbars so we can reuse all the machinery from ScrollbarTheme.
 #if OS(ANDROID)
     thumbThickness = ScrollbarTheme::theme()->thumbThickness(0);
     scrollbarThickness = ScrollbarTheme::theme()->scrollbarThickness(RegularScrollbar);
+    scrollbarMargin = ScrollbarTheme::theme()->scrollbarMargin();
 #endif
 
     if (!webScrollbarLayer) {
         ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
         ASSERT(coordinator);
         ScrollbarOrientation webcoreOrientation = isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
-        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, thumbThickness, 0, false);
+        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, thumbThickness, scrollbarMargin, false);
 
         webScrollbarLayer->setClipLayer(m_innerViewportContainerLayer->platformLayer());
         scrollbarGraphicsLayer->setContentsToPlatformLayer(webScrollbarLayer->layer());

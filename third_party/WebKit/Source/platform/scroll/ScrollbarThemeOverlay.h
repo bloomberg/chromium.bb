@@ -42,6 +42,7 @@ public:
     virtual ~ScrollbarThemeOverlay() { }
 
     virtual int scrollbarThickness(ScrollbarControlSize) override;
+    virtual int scrollbarMargin() const override;
     virtual bool usesOverlayScrollbars() const override;
 
     virtual int thumbPosition(ScrollbarThemeClient*) override;

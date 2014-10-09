@@ -62,6 +62,11 @@ int ScrollbarThemeOverlay::scrollbarThickness(ScrollbarControlSize controlSize)
     return m_thumbThickness + m_scrollbarMargin;
 }
 
+int ScrollbarThemeOverlay::scrollbarMargin() const
+{
+    return m_scrollbarMargin;
+}
+
 bool ScrollbarThemeOverlay::usesOverlayScrollbars() const
 {
     return true;

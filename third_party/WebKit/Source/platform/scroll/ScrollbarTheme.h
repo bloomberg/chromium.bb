@@ -48,6 +48,7 @@ public:
     virtual ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&);
 
     virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) { return 0; }
+    virtual int scrollbarMargin() const { return 0; }
 
     virtual ScrollbarButtonsPlacement buttonsPlacement() const { return ScrollbarButtonsSingle; }
 
