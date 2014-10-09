@@ -121,7 +121,7 @@ class CompiledFileSystem(object):
       '''
       return self.Create(file_system,
                          Cache(SingleFile(lambda _, data:
-                             json_parse.Parse(ToUnicode(data)))),
+                                          json_parse.Parse(ToUnicode(data)))),
                          CompiledFileSystem,
                          category='json')
 
@@ -131,7 +131,8 @@ class CompiledFileSystem(object):
       '''
       return self.Create(
           file_system,
-          SingleFile(lambda path, text: Motemplate(ToUnicode(text), name=path)),
+          Cache(SingleFile(lambda path, text:
+                           Motemplate(ToUnicode(text), name=path))),
           CompiledFileSystem)
 
     @memoize

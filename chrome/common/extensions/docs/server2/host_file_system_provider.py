@@ -6,7 +6,6 @@ from caching_file_system import CachingFileSystem
 from gitiles_file_system import GitilesFileSystem
 from local_file_system import LocalFileSystem
 from offline_file_system import OfflineFileSystem
-from gitiles_file_system import GitilesFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
 
