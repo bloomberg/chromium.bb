@@ -55,7 +55,7 @@ const int kWidthOfDescriptionText = 320;
 // Distance between checkbox and the text to the right of it.
 const int kCheckboxTextDistance = 4;
 
-// The color of the text and background of the sub panel to offer UMA optin.
+// The color of the text and background of the sub panel to offer UMA opt-in.
 // These values match the BookmarkSyncPromoView colors.
 const SkColor kBackgroundColor = SkColorSetRGB(245, 245, 245);
 const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
@@ -294,7 +294,7 @@ void SessionCrashedBubbleView::Init() {
     layout->StartRow(1, kUMAOptionColumnSetId);
     layout->AddView(CreateUMAOptinView());
 
-    // Since the UMA optin row has a different background than the default
+    // Since the UMA opt-in row has a different background than the default
     // background color of bubbles, the bottom margin has to be 0 to make sure
     // the background extends to the bottom edge of the bubble.
     bottom_margin = 0;
@@ -336,6 +336,8 @@ views::View* SessionCrashedBubbleView::CreateUMAOptinView() {
   gfx::Range after_link_range(offset + link_text.length(), uma_text.length());
   if (!after_link_range.is_empty())
     uma_label->AddStyleRange(after_link_range, uma_style);
+  // Shift the text down by 1px to align with the checkbox.
+  uma_label->SetBorder(views::Border::CreateEmptyBorder(1, 0, 0, 0));
 
   // Create a view to hold the checkbox and the text.
   views::View* uma_view = new views::View();
@@ -345,8 +347,11 @@ views::View* SessionCrashedBubbleView::CreateUMAOptinView() {
   uma_view->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
   int inset_left = GetBubbleFrameView()->GetTitleInsets().left();
+
+  // Bottom inset for UMA opt-in view in pixels.
+  const int kUMAOptinViewBottomInset = 10;
   uma_layout->SetInsets(views::kRelatedControlVerticalSpacing, inset_left,
-                        views::kRelatedControlVerticalSpacing, inset_left);
+                        kUMAOptinViewBottomInset, inset_left);
 
   const int kReportColumnSetId = 0;
   views::ColumnSet* cs = uma_layout->AddColumnSet(kReportColumnSetId);
@@ -420,8 +425,8 @@ void SessionCrashedBubbleView::RestorePreviousSession(views::Button* sender) {
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_RESTORED);
   restored_ = true;
 
-  // Record user's choice for opting in to UMA.
-  // There's no opting-out choice in the crash restore bubble.
+  // Record user's choice for opt-in in to UMA.
+  // There's no opt-out choice in the crash restore bubble.
   if (uma_option_ && uma_option_->checked()) {
     InitiateMetricsReportingChange(true, OnMetricsReportingCallbackType());
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);
