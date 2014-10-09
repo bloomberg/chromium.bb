@@ -56,7 +56,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/MixedContentChecker.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/SubstituteData.h"
 #include "core/loader/UniqueIdentifier.h"

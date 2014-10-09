@@ -442,12 +442,12 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
     if (!targetFrame->page())
         return;
 
-    UseCounter::count(document(), UseCounter::FormsSubmitted);
-    if (MixedContentChecker::checkFormAction(document().frame(), submission->action())) {
-        // FIXME: Once we have a better feel for what the numbers are here, we can decide
-        // whether we want to do more than degrade the UI (which is a side-effect of
-        // checkFormAction.
+    if (MixedContentChecker::isMixedContent(document().securityOrigin(), submission->action())) {
         UseCounter::count(document(), UseCounter::MixedContentFormsSubmitted);
+        if (!document().frame()->loader().mixedContentChecker()->canSubmitToInsecureForm(document().securityOrigin(), submission->action()))
+            return;
+    } else {
+        UseCounter::count(document(), UseCounter::FormsSubmitted);
     }
 
     targetFrame->navigationScheduler().scheduleFormSubmission(submission);
@@ -519,7 +519,8 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         // If the new action attribute is pointing to insecure "action" location from a secure page
         // it is marked as "passive" mixed content.
         KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().string() : m_attributes.action());
-        MixedContentChecker::checkFormAction(document().frame(), actionURL);
+        if (document().frame() && MixedContentChecker::isMixedContent(document().securityOrigin(), actionURL))
+            document().frame()->loader().mixedContentChecker()->canSubmitToInsecureForm(document().securityOrigin(), actionURL);
     } else if (name == targetAttr)
         m_attributes.setTarget(value);
     else if (name == methodAttr)

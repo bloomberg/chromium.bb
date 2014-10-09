@@ -32,7 +32,6 @@
 #define MixedContentChecker_h
 
 #include "platform/heap/Handle.h"
-#include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
 
@@ -49,12 +48,7 @@ class MixedContentChecker final {
 public:
     explicit MixedContentChecker(LocalFrame*);
 
-    static bool shouldBlockFetch(LocalFrame* frame, const ResourceRequest& request, const KURL& url)
-    {
-        return shouldBlockFetch(frame, request.requestContext(), request.frameType(), url);
-    }
-    static bool shouldBlockFetch(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, const KURL&);
-    static bool checkFormAction(LocalFrame*, const KURL&);
+    static bool shouldBlockFetch(LocalFrame*, const ResourceRequest&, const KURL&);
 
     bool canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
     {
@@ -66,6 +60,7 @@ public:
         return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::Execution);
     }
 
+    bool canSubmitToInsecureForm(SecurityOrigin*, const KURL&) const;
     bool canConnectInsecureWebSocket(SecurityOrigin*, const KURL&) const;
     bool canFrameInsecureContent(SecurityOrigin*, const KURL&) const;
     static bool isMixedContent(SecurityOrigin*, const KURL&);
@@ -88,8 +83,6 @@ private:
         ContextTypeShouldBeBlockable,
         ContextTypeBlockableUnlessLax
     };
-
-    static LocalFrame* inWhichFrameIsThisContentMixed(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, const KURL&);
 
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
