@@ -8,8 +8,8 @@ from telemetry.page import page_set as page_set_module
 class KeySilkCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(KeySilkCasesPage, self).__init__(url=url, page_set=page_set)
-    self.credentials_path = 'data/credentials.json'
+    super(KeySilkCasesPage, self).__init__(
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_silk_cases.json'
 
@@ -669,7 +669,6 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(KeySilkCasesPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='mobile',
       archive_data_file='data/key_silk_cases.json',
       bucket=page_set_module.PARTNER_BUCKET)

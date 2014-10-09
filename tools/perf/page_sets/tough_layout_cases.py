@@ -8,8 +8,8 @@ from telemetry.page import page_set as page_set_module
 class ToughLayoutCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(ToughLayoutCasesPage, self).__init__(url=url, page_set=page_set)
-    self.credentials_path = 'data/credentials.json'
+    super(ToughLayoutCasesPage, self).__init__(
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/tough_layout_cases.json'
 
@@ -28,7 +28,6 @@ class ToughLayoutCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughLayoutCasesPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       archive_data_file='data/tough_layout_cases.json',
       bucket=page_set_module.PARTNER_BUCKET)

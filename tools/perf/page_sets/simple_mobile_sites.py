@@ -8,8 +8,10 @@ from telemetry.page import page_set as page_set_module
 class SimplePage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(SimplePage, self).__init__(url=url, page_set=page_set)
-    self.credentials_path = 'data/credentials.json'
+    super(SimplePage, self).__init__(
+        url=url,
+        page_set=page_set,
+        credentials_path='data/credentials.json')
     self.archive_data_file = 'data/simple_mobile_sites.json'
 
   def RunNavigateSteps(self, action_runner):
@@ -35,7 +37,6 @@ class SimpleMobileSitesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(SimpleMobileSitesPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='tablet_10_inch',
       archive_data_file='data/simple_mobile_sites.json',
       bucket=page_set_module.PUBLIC_BUCKET)

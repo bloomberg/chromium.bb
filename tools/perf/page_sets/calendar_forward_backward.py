@@ -13,8 +13,8 @@ class CalendarForwardBackwardPage(page_module.Page):
     super(CalendarForwardBackwardPage, self).__init__(
       url='https://www.google.com/calendar/',
       page_set=page_set,
-      name='calendar_forward_backward')
-    self.credentials_path = 'data/credentials.json'
+      name='calendar_forward_backward',
+      credentials_path = 'data/credentials.json')
     self.credentials = 'google'
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/calendar_forward_backward.json'
@@ -64,7 +64,6 @@ class CalendarForwardBackwardPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(CalendarForwardBackwardPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       archive_data_file='data/calendar_forward_backward.json',
       bucket=page_set_module.PUBLIC_BUCKET)

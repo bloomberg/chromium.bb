@@ -7,7 +7,9 @@ from telemetry.page import page_set as page_set_module
 
 class SimpleScrollPage(page_module.Page):
   def __init__(self, url, page_set, credentials='', name=''):
-    super(SimpleScrollPage, self).__init__(url, page_set=page_set, name=name)
+    super(SimpleScrollPage, self).__init__(
+        url, page_set=page_set, name=name,
+        credentials_path='data/credentials.json')
     self.credentials = credentials
 
   def RunSmoothness(self, action_runner):
@@ -90,7 +92,6 @@ class Top10PageSet(page_set_module.PageSet):
   def __init__(self):
     super(Top10PageSet, self).__init__(
       archive_data_file='data/top_10.json',
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       bucket=page_set_module.PARTNER_BUCKET)
 

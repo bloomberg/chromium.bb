@@ -15,8 +15,8 @@ class GmailExpandCollapseConversationPage(
     super(GmailExpandCollapseConversationPage, self).__init__(
       url='https://mail.google.com/mail/u/0/#inbox/13c6a141fa95ffe0',
       page_set=page_set,
-      name='gmail_expand_collapse_conversation')
-    self.credentials_path = 'data/credentials.json'
+      name='gmail_expand_collapse_conversation',
+      credentials_path='data/credentials.json')
     self.credentials = 'google'
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/gmail_expand_collapse_conversation.json'
@@ -47,7 +47,6 @@ class GmailExpandCollapseConversationPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(GmailExpandCollapseConversationPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       archive_data_file='data/gmail_expand_collapse_conversation.json',
       bucket=page_set_module.PUBLIC_BUCKET)

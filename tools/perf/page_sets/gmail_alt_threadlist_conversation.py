@@ -35,8 +35,8 @@ class GmailAltThreadlistConversationPage(
     super(GmailAltThreadlistConversationPage, self).__init__(
       url='https://mail.google.com/mail/',
       page_set=page_set,
-      name='gmail_alt_threadlist_conversation')
-    self.credentials_path = 'data/credentials.json'
+      name='gmail_alt_threadlist_conversation',
+      credentials_path = 'data/credentials.json')
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/gmail_alt_threadlist_conversation.json'
     self.credentials = 'google'
@@ -66,7 +66,6 @@ class GmailAltThreadlistConversationPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(GmailAltThreadlistConversationPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       archive_data_file='data/gmail_alt_threadlist_conversation.json',
       bucket=page_set_module.PUBLIC_BUCKET)

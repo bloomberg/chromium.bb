@@ -8,8 +8,8 @@ from telemetry.page import page_set as page_set_module
 class ToughEnergyCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(ToughEnergyCasesPage, self).__init__(url=url, page_set=page_set)
-    self.credentials_path = 'data/credentials.json'
+    super(ToughEnergyCasesPage, self).__init__(
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
 
 class CodePenPage(ToughEnergyCasesPage):
 
@@ -39,8 +39,7 @@ class ToughEnergyCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ToughEnergyCasesPageSet, self).__init__(
         archive_data_file='data/tough_energy_cases.json',
-        bucket=page_set_module.PUBLIC_BUCKET,
-        credentials_path='data/credentials.json')
+        bucket=page_set_module.PUBLIC_BUCKET)
 
     # Why: productivity, top google properties
     self.AddPage(GooglePage('https://mail.google.com/mail/', self))

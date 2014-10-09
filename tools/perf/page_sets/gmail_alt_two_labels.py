@@ -22,9 +22,8 @@ class GmailAltTwoLabelsPage(page_module.Page):
     super(GmailAltTwoLabelsPage, self).__init__(
       url='https://mail.google.com/mail/',
       page_set=page_set,
-      name='gmail_alt_two_labels')
-
-    self.credentials_path = 'data/credentials.json'
+      name='gmail_alt_two_labels',
+      credentials_path = 'data/credentials.json')
     self.credentials = 'google'
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/gmail_alt_two_labels.json'
@@ -54,7 +53,6 @@ class GmailAltTwoLabelsPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(GmailAltTwoLabelsPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       archive_data_file='data/gmail_alt_two_labels.json',
       bucket=page_set_module.PUBLIC_BUCKET)

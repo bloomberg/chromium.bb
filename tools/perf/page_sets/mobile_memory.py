@@ -8,8 +8,8 @@ from telemetry.page import page_set as page_set_module
 class MobileMemoryPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(MobileMemoryPage, self).__init__(url=url, page_set=page_set)
-    self.credentials_path = 'data/credentials.json'
+    super(MobileMemoryPage, self).__init__(
+        url=url, page_set=page_set, credentials_path = 'data/credentials.json')
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/mobile_memory.json'
 
@@ -88,7 +88,6 @@ class MobileMemoryPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(MobileMemoryPageSet, self).__init__(
-        credentials_path='data/credentials.json',
         user_agent_type='mobile',
         archive_data_file='data/mobile_memory.json',
         bucket=page_set_module.PARTNER_BUCKET)

@@ -20,4 +20,3 @@ class ToughLayerCasesPageSet(page_set_module.PageSet):
 
     self.AddPage(ToughLayerCasesPage(
       'file://layer_stress_tests/opacity.html', self))
-

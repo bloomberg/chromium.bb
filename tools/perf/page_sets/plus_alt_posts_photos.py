@@ -13,8 +13,8 @@ class PlusAltPostsPhotosPage(page_module.Page):
     super(PlusAltPostsPhotosPage, self).__init__(
       url='https://plus.google.com/+BarackObama/posts',
       page_set=page_set,
-      name='plus_alt_posts_photos')
-    self.credentials_path = 'data/credentials.json'
+      name='plus_alt_posts_photos',
+      credentials_path = 'data/credentials.json')
     self.credentials = 'google'
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/plus_alt_posts_photos.json'
@@ -42,7 +42,6 @@ class PlusAltPostsPhotosPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(PlusAltPostsPhotosPageSet, self).__init__(
-      credentials_path='data/credentials.json',
       user_agent_type='desktop',
       archive_data_file='data/plus_alt_posts_photos.json',
       bucket=page_set_module.PUBLIC_BUCKET)
