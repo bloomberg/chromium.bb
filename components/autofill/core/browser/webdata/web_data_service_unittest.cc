@@ -347,7 +347,14 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   ASSERT_EQ(0U, consumer2.result().size());
 }
 
-TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
+// This is flakey on iOS
+// http://crbug.com/420023
+#if defined(OS_IOS)
+#define MAYBE_ProfileUpdate DISABLED_ProfileUpdate
+#else
+#define MAYBE_ProfileUpdate ProfileUpdate
+#endif
+TEST_F(WebDataServiceAutofillTest, MAYBE_ProfileUpdate) {
   // The GUIDs are alphabetical for easier testing.
   AutofillProfile profile1("087151C8-6AB1-487C-9095-28E80BE5DA15",
                            "http://example.com");
