@@ -37189,6 +37189,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Variations.UserChannel" enum="UserChannels">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Log the user channel assigned at browser startup used for evaluating the
+    variations seeds.
+  </summary>
+</histogram>
+
 <histogram name="Viewport.MetaTagType" enum="MetaTagTypeEnum">
   <owner>bokan@chromium.org</owner>
   <summary>
@@ -53018,6 +53026,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
   <int value="10" label="kFileSystemScheme"/>
+</enum>
+
+<enum name="UserChannels" type="int">
+  <int value="-1" label="Unknown"/>
+  <int value="0" label="Canary"/>
+  <int value="1" label="Dev"/>
+  <int value="2" label="Beta"/>
+  <int value="3" label="Stable"/>
 </enum>
 
 <enum name="UserInitiatedEvent" type="int">

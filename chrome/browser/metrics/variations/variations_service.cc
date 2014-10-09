@@ -284,12 +284,15 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!current_version.IsValid())
     return false;
 
+  variations::Study_Channel channel = GetChannelForVariations();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", channel);
+
   variations::VariationsSeedProcessor().CreateTrialsFromSeed(
       seed,
       g_browser_process->GetApplicationLocale(),
       GetReferenceDateForExpiryChecks(local_state_),
       current_version,
-      GetChannelForVariations(),
+      channel,
       GetCurrentFormFactor(),
       GetHardwareClass(),
       base::Bind(&OverrideUIString));
