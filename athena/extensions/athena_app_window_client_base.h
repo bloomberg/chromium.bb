@@ -20,7 +20,7 @@ class AthenaAppWindowClientBase : public extensions::AppWindowClient {
   // extensions::AppWindowClient
   virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
-      const extensions::AppWindow::CreateParams& params) override;
+      extensions::AppWindow::CreateParams* params) override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaAppWindowClientBase);
 };

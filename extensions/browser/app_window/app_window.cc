@@ -282,7 +282,7 @@ void AppWindow::Init(const GURL& url,
 
   AppWindowClient* app_window_client = AppWindowClient::Get();
   native_app_window_.reset(
-      app_window_client->CreateNativeAppWindow(this, new_params));
+      app_window_client->CreateNativeAppWindow(this, &new_params));
 
   helper_.reset(new AppWebContentsHelper(
       browser_context_, extension_id_, web_contents, app_delegate_.get()));

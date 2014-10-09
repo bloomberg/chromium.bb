@@ -73,6 +73,9 @@ class AppActivityProxy : public Activity,
   // The content proxy.
   scoped_ptr<ContentProxy> content_proxy_;
 
+  // True if restart got already called.
+  bool restart_called_;
+
   DISALLOW_COPY_AND_ASSIGN(AppActivityProxy);
 };
 

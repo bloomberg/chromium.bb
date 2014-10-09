@@ -22,7 +22,7 @@ class ShellAppWindowClient : public AppWindowClient {
                                      const Extension* extension) override;
   virtual NativeAppWindow* CreateNativeAppWindow(
       AppWindow* window,
-      const AppWindow::CreateParams& params) override;
+      AppWindow::CreateParams* params) override;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
                                   const base::Closure& callback) override;
   virtual bool IsCurrentChannelOlderThanDev() override;

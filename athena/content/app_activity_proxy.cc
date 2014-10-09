@@ -21,7 +21,8 @@ AppActivityProxy::AppActivityProxy(AppActivity* replaced_activity,
     title_(replaced_activity->GetActivityViewModel()->GetTitle()),
     color_(replaced_activity->GetActivityViewModel()->GetRepresentativeColor()),
     replaced_activity_(replaced_activity),
-    view_(new views::View()) {
+    view_(new views::View()),
+    restart_called_(false) {
 }
 
 AppActivityProxy::~AppActivityProxy() {
@@ -33,9 +34,11 @@ ActivityViewModel* AppActivityProxy::GetActivityViewModel() {
 }
 
 void AppActivityProxy::SetCurrentState(ActivityState state) {
-  // We only restart the application when we are switching to visible.
-  if (state != ACTIVITY_VISIBLE)
+  // We only restart the application when we are switching to visible, and only
+  // once.
+  if (state != ACTIVITY_VISIBLE || restart_called_)
     return;
+  restart_called_ = true;
   app_activity_registry_->RestartApplication(this);
   // Note: This object is now destroyed.
 }
@@ -69,10 +72,6 @@ void AppActivityProxy::Init() {
       WindowManager::Get()->GetWindowListProvider();
   window_list_provider->StackWindowBehindTo(GetWindow(),
                                             replaced_activity_->GetWindow());
-  // Creating this object was moving the activation to this window which should
-  // not be the active window. As such we re-activate the top activity window.
-  // TODO(skuhne): This should possibly move to the WindowListProvider.
-  wm::ActivateWindow(window_list_provider->GetWindowList().back());
   // After the Init() function returns, the passed |replaced_activity_| might
   // get destroyed. Since we do not need it anymore we reset it.
   replaced_activity_ = NULL;

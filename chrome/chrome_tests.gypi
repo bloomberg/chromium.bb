@@ -1850,7 +1850,6 @@
           ],
           'sources!': [
              '<@(chrome_browser_tests_sources)',
-             'browser/extensions/api/networking_private/networking_private_apitest.cc',
           ],
           'sources': [
             '../athena/test/base/activity_lifetime_tracker.h',
@@ -2090,7 +2089,7 @@
             '../components/components.gyp:wifi_test_support',
           ],
         }],
-        ['chromeos == 1', {
+        ['chromeos == 1 and use_athena == 0', {
           'sources': [
             'browser/extensions/api/networking_private/networking_private_apitest.cc',
             'browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc',

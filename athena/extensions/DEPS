@@ -2,6 +2,7 @@ include_rules = [
   "+athena/env/public",
   "+athena/activity/public",
   "+athena/home/public",
+  "+athena/wm/public",
   "+content/public/browser",
   "+extensions/browser",
   "+extensions/common",

@@ -26,9 +26,9 @@ AppWindow* ShellAppWindowClient::CreateAppWindow(
 
 NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
       AppWindow* window,
-      const AppWindow::CreateParams& params) {
+      AppWindow::CreateParams* params) {
   ShellNativeAppWindow* native_app_window =
-      new ShellNativeAppWindow(window, params);
+      new ShellNativeAppWindow(window, *params);
   DesktopController::instance()->AddAppWindow(
       native_app_window->GetNativeWindow());
   return native_app_window;

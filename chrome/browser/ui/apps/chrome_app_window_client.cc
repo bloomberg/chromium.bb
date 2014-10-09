@@ -44,11 +44,11 @@ extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(
 
 extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindow(
     extensions::AppWindow* window,
-    const extensions::AppWindow::CreateParams& params) {
+    extensions::AppWindow::CreateParams* params) {
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  return CreateNativeAppWindowImpl(window, params);
+  return CreateNativeAppWindowImpl(window, *params);
 #endif
 }
 

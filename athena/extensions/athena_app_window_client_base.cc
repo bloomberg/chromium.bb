@@ -7,6 +7,8 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/extensions/athena_native_app_window_views.h"
+#include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/public/window_manager.h"
 #include "extensions/common/extension.h"
 
 namespace athena {
@@ -19,11 +21,23 @@ AthenaAppWindowClientBase::~AthenaAppWindowClientBase() {
 
 extensions::NativeAppWindow* AthenaAppWindowClientBase::CreateNativeAppWindow(
     extensions::AppWindow* app_window,
-    const extensions::AppWindow::CreateParams& params) {
+    extensions::AppWindow::CreateParams* params) {
   AthenaNativeAppWindowViews* native_window = new AthenaNativeAppWindowViews;
-  native_window->Init(app_window, params);
+  native_window->Init(app_window, *params);
   ActivityFactory::Get()->CreateAppActivity(app_window->extension_id(),
                                             native_window->GetWebView());
+  if (params->focused) {
+    // Windows are created per default at the top of the stack. If - at this
+    // point of initialization - it is has been moved into a different Z-order
+    // location we should respect this, not allowing the application activation
+    // to bring it to the front. This can happen as part of the resource
+    // manager's reloading or intelligent preloading of an application.
+    const aura::Window::Windows& list =
+        WindowManager::Get()->GetWindowListProvider()->GetWindowList();
+    aura::Window* native_app_window =
+        native_window->widget()->GetNativeWindow();
+    params->focused = !list.size() || list.back() == native_app_window;
+  }
   return native_window;
 }
 

@@ -45,7 +45,7 @@ class ExtensionRegistry : public KeyedService {
 
   content::BrowserContext* browser_context() const { return browser_context_; }
 
-  // NOTE: These sets are *eventually* mututally exclusive, but an extension can
+  // NOTE: These sets are *eventually* mutually exclusive, but an extension can
   // appear in two sets for short periods of time.
   const ExtensionSet& enabled_extensions() const {
     return enabled_extensions_;

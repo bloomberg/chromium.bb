@@ -33,7 +33,7 @@ class AppWindowClient {
   // Creates a new extensions::NativeAppWindow for |window|.
   virtual NativeAppWindow* CreateNativeAppWindow(
       AppWindow* window,
-      const AppWindow::CreateParams& params) = 0;
+      AppWindow::CreateParams* params) = 0;
 
   // Opens DevTools window and runs the callback.
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,

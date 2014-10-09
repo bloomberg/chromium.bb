@@ -15,6 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
@@ -108,10 +109,29 @@ void AppActivity::Init() {
     // |ResourceManager| - so we can move it around if needed.
     WindowListProvider* window_list_provider =
         WindowManager::Get()->GetWindowListProvider();
-    window_list_provider->StackWindowFrontOf(app_proxy->GetWindow(),
-                                             GetWindow());
-    Activity::Delete(app_proxy);
-    // With the removal the object, the proxy should be deleted.
+    // TODO(skuhne): After the decision is made how we want to handle visibility
+    // transitions (issue 421680) this code might change.
+    // If the proxy was the active window, its deletion will cause a window
+    // reordering since the next activatable window in line will move up to the
+    // front. Since the application window is still hidden at this time, it is
+    // not yet activatable and the window behind it will move to the front.
+    if (wm::IsActiveWindow(app_proxy->GetWindow())) {
+      // Delete the proxy window first and then move the new window to the top
+      // of the stack, replacing the proxy window. Note that by deleting the
+      // proxy the activation will change to the next (activatable) object and
+      // thus we have to move the window in front at the end.
+      Activity::Delete(app_proxy);
+      window_list_provider->StackWindowFrontOf(
+          GetWindow(),
+          window_list_provider->GetWindowList().back());
+    } else {
+      // The app window goes in front of the proxy window (we need to first
+      // place the window before we can delete it).
+      window_list_provider->StackWindowFrontOf(GetWindow(),
+                                               app_proxy->GetWindow());
+      Activity::Delete(app_proxy);
+    }
+    // The proxy should now be deleted.
     DCHECK(!app_activity_registry_->unloaded_activity_proxy());
   }
 }
@@ -134,6 +154,10 @@ bool AppActivity::UsesFrame() const {
 }
 
 views::Widget* AppActivity::CreateWidget() {
+  // Before we remove the proxy, we have to register the activity and
+  // initialize its to move it to the proper activity list location.
+  RegisterActivity();
+  Init();
   // Make sure the content gets properly shown.
   if (current_state_ == ACTIVITY_VISIBLE) {
     HideContentProxy();
@@ -143,7 +167,6 @@ views::Widget* AppActivity::CreateWidget() {
     // If not previously specified, we change the state now to invisible..
     SetCurrentState(ACTIVITY_INVISIBLE);
   }
-  RegisterActivity();
   return web_view_->GetWidget();
 }
 

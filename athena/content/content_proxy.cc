@@ -144,7 +144,10 @@ void ContentProxy::CreateProxyContent() {
 
   content::RenderViewHost* host =
       web_view_->GetWebContents()->GetRenderViewHost();
-  DCHECK(host && host->GetView());
+  DCHECK(host);
+  // A never fully initialized content can come here with no view.
+  if (!host->GetView())
+    return;
   gfx::Size source = host->GetView()->GetViewBounds().size();
   gfx::Size target = gfx::Size(source.width() / 2, source.height() / 2);
   host->CopyFromBackingStore(
