@@ -70,6 +70,7 @@ struct gl_border_image {
 struct gl_output_state {
 	EGLSurface egl_surface;
 	pixman_region32_t buffer_damage[BUFFER_DAMAGE_COUNT];
+	int buffer_damage_index;
 	enum gl_border_status border_damage[BUFFER_DAMAGE_COUNT];
 	struct gl_border_image borders[4];
 	enum gl_border_status border_status;
@@ -815,7 +816,7 @@ output_get_damage(struct weston_output *output,
 		*border_damage = BORDER_ALL_DIRTY;
 	} else {
 		for (i = 0; i < buffer_age - 1; i++)
-			*border_damage |= go->border_damage[i];
+			*border_damage |= go->border_damage[(go->buffer_damage_index + i) % BUFFER_DAMAGE_COUNT];
 
 		if (*border_damage & BORDER_SIZE_CHANGED) {
 			/* If we've had a resize, we have to do a full
@@ -826,7 +827,7 @@ output_get_damage(struct weston_output *output,
 			for (i = 0; i < buffer_age - 1; i++)
 				pixman_region32_union(buffer_damage,
 						      buffer_damage,
-						      &go->buffer_damage[i]);
+						      &go->buffer_damage[(go->buffer_damage_index + i) % BUFFER_DAMAGE_COUNT]);
 		}
 	}
 }
@@ -838,19 +839,15 @@ output_rotate_damage(struct weston_output *output,
 {
 	struct gl_output_state *go = get_output_state(output);
 	struct gl_renderer *gr = get_renderer(output->compositor);
-	int i;
 
 	if (!gr->has_egl_buffer_age)
 		return;
 
-	for (i = BUFFER_DAMAGE_COUNT - 1; i >= 1; i--) {
-		go->border_damage[i] = go->border_damage[i - 1];
-		pixman_region32_copy(&go->buffer_damage[i],
-				     &go->buffer_damage[i - 1]);
-	}
+	go->buffer_damage_index += BUFFER_DAMAGE_COUNT - 1;
+	go->buffer_damage_index %= BUFFER_DAMAGE_COUNT;
 
-	go->border_damage[0] = border_status;
-	pixman_region32_copy(&go->buffer_damage[0], output_damage);
+	pixman_region32_copy(&go->buffer_damage[go->buffer_damage_index], output_damage);
+	go->border_damage[go->buffer_damage_index] = border_status;
 }
 
 static void
@@ -1782,6 +1779,8 @@ gl_renderer_output_create(struct weston_output *output,
 
 	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
 		pixman_region32_init(&go->buffer_damage[i]);
+
+	go->buffer_damage_index = 0;
 
 	output->renderer_state = go;
 
