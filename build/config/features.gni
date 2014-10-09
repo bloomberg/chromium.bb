@@ -123,7 +123,7 @@ enable_task_manager = !is_ios && !is_android
 
 use_cups = is_desktop_linux || is_mac
 
-enable_themes = !is_android && !is_chromeos
+enable_themes = !is_android && !is_ios
 
 # TODO(scottmg) remove this when we've fixed printing.
 win_pdf_metafile_for_printing = true
