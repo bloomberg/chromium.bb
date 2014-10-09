@@ -5,6 +5,7 @@
 
 """Sets environment variables needed to run a chromium unit test."""
 
+import collections
 import os
 import stat
 import subprocess
@@ -114,7 +115,8 @@ def run_executable(cmd, env):
 
 
 def main():
-  return run_executable(sys.argv[1:], os.environ.copy())
+  return run_executable(sys.argv[1:],
+                        collections.defaultdict(str, os.environ.copy()))
 
 
 if __name__ == '__main__':
