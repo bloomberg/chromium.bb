@@ -30,7 +30,7 @@
 
 #include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#import "platform/fonts/harfbuzz/HarfBuzzFace.h"
+#import "platform/fonts/shaping/HarfBuzzFace.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
 
 

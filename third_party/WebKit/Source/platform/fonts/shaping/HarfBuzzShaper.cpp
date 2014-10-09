@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
+#include "platform/fonts/shaping/HarfBuzzShaper.h"
 
 #include "hb.h"
 #include "platform/LayoutUnit.h"
@@ -38,19 +38,19 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/harfbuzz/HarfBuzzFace.h"
+#include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/Unicode.h"
-#include <unicode/normlzr.h>
-#include <unicode/uchar.h>
-#include <unicode/uscript.h>
 
 #include <list>
 #include <map>
 #include <string>
+#include <unicode/normlzr.h>
+#include <unicode/uchar.h>
+#include <unicode/uscript.h>
 
 namespace blink {
 
@@ -349,8 +349,9 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
     if (run.is8Bit()) {
         stringFor8BitRun = String::make16BitFrom8BitSource(run.characters8(), run.length());
         source = stringFor8BitRun.characters16();
-    } else
+    } else {
         source = run.characters16();
+    }
 
     *destinationLength = 0;
     while (position < length) {
@@ -1127,14 +1128,16 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
         if (!foundFromX && from >= 0 && from < numCharacters) {
             fromX = m_harfBuzzRuns[i]->xPositionForOffset(from) + currentX;
             foundFromX = true;
-        } else
+        } else {
             from -= numCharacters;
+        }
 
         if (!foundToX && to >= 0 && to < numCharacters) {
             toX = m_harfBuzzRuns[i]->xPositionForOffset(to) + currentX;
             foundToX = true;
-        } else
+        } else {
             to -= numCharacters;
+        }
 
         if (foundFromX && foundToX)
             break;

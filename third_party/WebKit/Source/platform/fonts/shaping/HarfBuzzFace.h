@@ -31,12 +31,12 @@
 #ifndef HarfBuzzFace_h
 #define HarfBuzzFace_h
 
-#include <hb.h>
-
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+
+#include <hb.h>
 
 namespace blink {
 

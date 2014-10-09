@@ -50,7 +50,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/SimpleShaper.h"
+#include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"

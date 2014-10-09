@@ -24,7 +24,7 @@
 #include "SkEndian.h"
 #include "SkTypeface.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/fonts/harfbuzz/HarfBuzzFace.h"
+#include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"

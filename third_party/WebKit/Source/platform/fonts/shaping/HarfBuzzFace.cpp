@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/fonts/harfbuzz/HarfBuzzFace.h"
+#include "platform/fonts/shaping/HarfBuzzFace.h"
 
 #include "hb-ot.h"
 #include "hb.h"
@@ -44,7 +44,7 @@
 #include "SkUtils.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
+#include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "wtf/HashMap.h"
 
 namespace blink {

@@ -33,7 +33,7 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/SVGGlyph.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/SimpleShaper.h"
+#include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/text/TextRun.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"

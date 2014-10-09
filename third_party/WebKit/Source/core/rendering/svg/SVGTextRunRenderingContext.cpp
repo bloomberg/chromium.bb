@@ -32,7 +32,7 @@
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGGlyphElement.h"
 #include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/SimpleShaper.h"
+#include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {

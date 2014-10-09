@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "platform/fonts/SimpleShaper.h"
+#include "platform/fonts/shaping/SimpleShaper.h"
 
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
