@@ -42,6 +42,7 @@
 namespace blink {
 
 class GraphicsContext;
+class ReferenceFilter;
 class RenderLayer;
 class RenderObject;
 
@@ -84,7 +85,7 @@ public:
     void updateBackingStoreRect(const FloatRect& filterRect);
     void clearIntermediateResults();
 
-    LayoutRect computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect);
+    LayoutRect computeSourceImageRectForDirtyRect(const LayoutRect& dirtyRect);
 
     PassRefPtr<FilterEffect> lastEffect() const
     {
@@ -99,6 +100,7 @@ private:
 
     RefPtr<SourceGraphic> m_sourceGraphic;
     RefPtr<FilterEffect> m_lastEffect;
+    Vector<RefPtr<ReferenceFilter> > m_referenceFilters;
 };
 
 } // namespace blink

@@ -80,7 +80,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
 {
     // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
     const RenderStyle* style = renderer->style();
-    float invZoom = style ? 1.0f / style->effectiveZoom() : 1.0f;
+    float zoom = style ? style->effectiveZoom() : 1.0f;
 
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {
@@ -88,7 +88,11 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            effect = ReferenceFilterBuilder::build(this, renderer, previousEffect.get(), toReferenceFilterOperation(filterOperation));
+            RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
+            referenceFilter->setAbsoluteTransform(AffineTransform().scale(zoom, zoom));
+            effect = ReferenceFilterBuilder::build(referenceFilter.get(), renderer, previousEffect.get(), toReferenceFilterOperation(filterOperation));
+            referenceFilter->setLastEffect(effect);
+            m_referenceFilters.append(referenceFilter);
             break;
         }
         case FilterOperation::GRAYSCALE: {
@@ -204,15 +208,15 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
             break;
         }
         case FilterOperation::BLUR: {
-            float stdDeviation = floatValueForLength(toBlurFilterOperation(filterOperation)->stdDeviation(), 0) * invZoom;
+            float stdDeviation = floatValueForLength(toBlurFilterOperation(filterOperation)->stdDeviation(), 0);
             effect = FEGaussianBlur::create(this, stdDeviation, stdDeviation);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
             DropShadowFilterOperation* dropShadowOperation = toDropShadowFilterOperation(filterOperation);
-            float stdDeviation = dropShadowOperation->stdDeviation() * invZoom;
-            float x = dropShadowOperation->x() * invZoom;
-            float y = dropShadowOperation->y() * invZoom;
+            float stdDeviation = dropShadowOperation->stdDeviation();
+            float x = dropShadowOperation->x();
+            float y = dropShadowOperation->y();
             effect = FEDropShadow::create(this, stdDeviation, stdDeviation, x, y, dropShadowOperation->color(), 1);
             break;
         }
@@ -256,14 +260,13 @@ void FilterEffectRenderer::clearIntermediateResults()
         m_lastEffect->clearResultsRecursive();
 }
 
-LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
+LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const LayoutRect& dirtyRect)
 {
-    // The result of this function is the area in the "filterBoxRect" that needs paint invalidation, so that we fully cover the "dirtyRect".
+    // The result of this function is the area that needs paint invalidation, so that we fully cover the "dirtyRect".
     FloatRect rectForPaintInvalidation = dirtyRect;
     float inf = std::numeric_limits<float>::infinity();
     FloatRect clipRect = FloatRect(FloatPoint(-inf, -inf), FloatSize(inf, inf));
     rectForPaintInvalidation = lastEffect()->getSourceRect(rectForPaintInvalidation, clipRect);
-    rectForPaintInvalidation.intersect(filterBoxRect);
     return LayoutRect(rectForPaintInvalidation);
 }
 
@@ -272,22 +275,9 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     ASSERT(m_haveFilterEffect && renderLayer->filterRenderer());
     m_renderLayer = renderLayer;
 
-    // Get the zoom factor to scale the filterSourceRect input
-    const RenderLayerModelObject* renderer = renderLayer->renderer();
-    const RenderStyle* style = renderer ? renderer->style() : 0;
-    float zoom = style ? style->effectiveZoom() : 1.0f;
-
-    // Prepare a transformation that brings the coordinates into the space
-    // filter coordinates are defined in.
-    AffineTransform absoluteTransform;
-    // FIXME: Should these really be upconverted to doubles and not rounded? crbug.com/350474
-    absoluteTransform.translate(filterBoxRect.x().toDouble(), filterBoxRect.y().toDouble());
-    absoluteTransform.scale(zoom, zoom);
-
     FilterEffectRenderer* filter = renderLayer->filterRenderer();
-    filter->setAbsoluteTransform(absoluteTransform);
 
-    IntRect filterSourceRect = pixelSnappedIntRect(filter->computeSourceImageRectForDirtyRect(filterBoxRect, dirtyRect));
+    IntRect filterSourceRect = pixelSnappedIntRect(filter->computeSourceImageRectForDirtyRect(dirtyRect));
 
     if (filterSourceRect.isEmpty()) {
         // The dirty rect is not in view, just bail out.
@@ -296,7 +286,6 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     }
 
     m_filterBoxRect = filterBoxRect;
-    filter->setFilterRegion(filter->mapAbsoluteRectToLocalRect(filterSourceRect));
     filter->lastEffect()->determineFilterPrimitiveSubregion(MapRectForward);
 
     filter->updateBackingStoreRect(filterSourceRect);
