@@ -310,11 +310,11 @@ def OnAccessError(func, path, _):
     raise
 
 
-def _CleanupPreviousGitRuns():
+def _CleanupPreviousGitRuns(cwd=os.getcwd()):
   """Cleans up any leftover index.lock files after running git."""
   # If a previous run of git crashed, or bot was reset, etc., then we might
   # end up with leftover index.lock files.
-  for path, _, files in os.walk(os.getcwd()):
+  for path, _, files in os.walk(cwd):
     for cur_file in files:
       if cur_file.endswith('index.lock'):
         path_to_file = os.path.join(path, cur_file)
@@ -422,9 +422,10 @@ def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
     (output, _) = RunGit(['rev-parse', '--is-inside-work-tree'],
                          cwd=path_to_dir)
     if output.strip() == 'true':
+      # Before checking out master, cleanup up any leftover index.lock files.
+      _CleanupPreviousGitRuns(path_to_dir)
       # Checks out the master branch, throws an exception if git command fails.
       CheckRunGit(['checkout', '-f', 'master'], cwd=path_to_dir)
-
   if not _CreateAndChangeToSourceDirectory(opts.working_directory):
     raise RuntimeError('Could not create bisect directory.')
 
