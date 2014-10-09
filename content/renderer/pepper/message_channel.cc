@@ -249,15 +249,17 @@ bool MessageChannel::SetNamedProperty(v8::Isolate* isolate,
   PepperTryCatchV8 try_catch(instance_, V8VarConverter::kDisallowObjectVars,
                              isolate);
   if (identifier == kPostMessage ||
-      (identifier == kPostMessageAndAwaitResponse)) {
+      identifier == kPostMessageAndAwaitResponse) {
     try_catch.ThrowException("Cannot set properties with the name postMessage"
                              "or postMessageAndAwaitResponse");
     return true;
   }
 
-  // We don't forward this to the passthrough object; no plugins use that
-  // feature.
-  // TODO(raymes): Remove SetProperty support from PPP_Class.
+  // TODO(raymes): This is only used by the gTalk plugin which is deprecated.
+  // Remove passthrough of SetProperty calls as soon as it is removed.
+  PluginObject* plugin_object = GetPluginObject(isolate);
+  if (plugin_object)
+    return plugin_object->SetNamedProperty(isolate, identifier, value);
 
   return false;
 }

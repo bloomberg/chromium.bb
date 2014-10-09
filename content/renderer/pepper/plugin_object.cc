@@ -88,6 +88,29 @@ v8::Local<v8::Value> PluginObject::GetNamedProperty(
   return GetPropertyOrMethod(instance_->GetIsolate(), identifier_var.get());
 }
 
+bool PluginObject::SetNamedProperty(v8::Isolate* isolate,
+                                    const std::string& identifier,
+                                    v8::Local<v8::Value> value) {
+  if (!instance_)
+    return false;
+  ScopedPPVar identifier_var(ScopedPPVar::PassRef(),
+                             StringVar::StringToPPVar(identifier));
+  PepperTryCatchV8 try_catch(instance_, V8VarConverter::kAllowObjectVars,
+                             isolate);
+  ScopedPPVar var = try_catch.FromV8(value);
+  if (try_catch.ThrowException())
+    return false;
+
+  ppp_class_->SetProperty(ppp_class_data_, identifier_var.get(), var.get(),
+                          try_catch.exception());
+
+  // If the plugin threw an exception, then throw a V8 version of it to
+  // JavaScript. Either way, return true, because we successfully dispatched
+  // the call to the plugin.
+  try_catch.ThrowException();
+  return true;
+}
+
 std::vector<std::string> PluginObject::EnumerateNamedProperties(
     v8::Isolate* isolate) {
   std::vector<std::string> result;
