@@ -756,9 +756,7 @@ void RenderLayerCompositor::setOverlayLayer(GraphicsLayer* layer)
 
 bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
 {
-    // FIXME: We disable accelerated compositing for elements in a RenderFlowThread as it doesn't work properly.
-    // See http://webkit.org/b/84900 to re-enable it.
-    return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && !layer->subtreeIsInvisible() && layer->renderer()->flowThreadState() == RenderObject::NotInsideFlowThread;
+    return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && !layer->subtreeIsInvisible();
 }
 
 // Return true if the given layer is a stacking context and has compositing child

@@ -102,6 +102,11 @@ public:
     void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
     LayoutRect fragmentsBoundingBox(const LayoutRect& layerBoundingBox);
 
+    LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const
+    {
+        return flowThreadPoint + columnOffset(flowThreadPoint);
+    }
+
     void pushFlowThreadLayoutState(const RenderObject&);
     void popFlowThreadLayoutState();
     LayoutUnit offsetFromLogicalTopOfFirstRegion(const RenderBlock*) const;

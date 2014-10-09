@@ -802,12 +802,11 @@ LayoutPoint RenderLayer::location() const
             localPoint += offset;
         }
     } else if (parent()) {
-        // FIXME: This code is very wrong. The compositing system doesn't
-        // understand columns and we're hacking around that fact by faking
-        // the position of the RenderLayers when we think we'll end up being
-        // composited. Hopefully we'll be able to unwind this hack when we
-        // implement multi-column using regions.
-        if (hasStyleDeterminedDirectCompositingReasons()) {
+        // FIXME: This code is very wrong, but luckily only needed in the old/current multicol
+        // implementation. The compositing system doesn't understand columns and we're hacking
+        // around that fact by faking the position of the RenderLayers when we think we'll end up
+        // being composited.
+        if (hasStyleDeterminedDirectCompositingReasons() && !useRegionBasedColumns()) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             if (!parent()->renderer()->hasColumns() && parent()->renderer()->isDocumentElement() && renderer()->view()->hasColumns())
@@ -1472,15 +1471,24 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
     LayoutRect layerBoundingBoxInFlowThread = layerBoundingBox ? *layerBoundingBox : physicalBoundingBox(enclosingPaginationLayer(), &offsetWithinPaginatedLayer);
     layerBoundingBoxInFlowThread.intersect(backgroundRectInFlowThread.rect());
 
-    // Shift the dirty rect into flow thread coordinates.
+    // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
+    RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
     LayoutPoint offsetOfPaginationLayerFromRoot;
-    enclosingPaginationLayer()->convertToLayerCoords(rootLayer, offsetOfPaginationLayerFromRoot);
+    // FIXME: more work needed if there are nested pagination layers.
+    if (rootLayer != enclosingPaginationLayer() && rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer()) {
+        // The root layer is inside the fragmentation context. So we need to look inside it and find
+        // the visual offset from the fragmentation context.
+        LayoutPoint flowThreadOffset;
+        rootLayer->convertToLayerCoords(enclosingPaginationLayer(), flowThreadOffset);
+        offsetOfPaginationLayerFromRoot = -enclosingFlowThread->flowThreadPointToVisualPoint(flowThreadOffset);
+    } else {
+        enclosingPaginationLayer()->convertToLayerCoords(rootLayer, offsetOfPaginationLayerFromRoot);
+    }
     LayoutRect dirtyRectInFlowThread(dirtyRect);
     dirtyRectInFlowThread.moveBy(-offsetOfPaginationLayerFromRoot);
 
     // Tell the flow thread to collect the fragments. We pass enough information to create a minimal number of fragments based off the pages/columns
     // that intersect the actual dirtyRect as well as the pages/columns that intersect our layer's bounding box.
-    RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
     enclosingFlowThread->collectLayerFragments(fragments, layerBoundingBoxInFlowThread, dirtyRectInFlowThread);
 
     if (fragments.isEmpty())
