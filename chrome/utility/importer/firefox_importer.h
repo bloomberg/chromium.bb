@@ -32,7 +32,7 @@ class FirefoxImporter : public Importer {
   // Importer:
   virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
-                           ImporterBridge* bridge) OVERRIDE;
+                           ImporterBridge* bridge) override;
 
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;

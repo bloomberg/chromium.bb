@@ -103,7 +103,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
       sender_->Send(new Msg_Decryptor_Quit());
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FFDecryptorServerChannelListener, msg)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_InitReturnCode, OnInitDecryptorResponse)
@@ -115,7 +115,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
   }
 
   // If an error occured, just kill the message Loop.
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     got_result = false;
     base::MessageLoop::current()->Quit();
   }
@@ -264,7 +264,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     base::MessageLoop::current()->Quit();
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FFDecryptorClientChannelListener, msg)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_Init, OnDecryptor_Init)
@@ -276,7 +276,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     return handled;
   }
 
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     base::MessageLoop::current()->Quit();
   }
 

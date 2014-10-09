@@ -33,7 +33,7 @@ class ShellHandler : public UtilityMessageHandler {
   virtual ~ShellHandler();
 
   // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnOpenItemViaShell(const base::FilePath& full_path);

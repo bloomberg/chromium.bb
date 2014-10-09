@@ -34,7 +34,7 @@ class PhotosXmlDictReader : public iapps::XmlDictReader {
   PhotosXmlDictReader(XmlReader* reader, PhotoInfo* photo_info)
     : iapps::XmlDictReader(reader), photo_info_(photo_info) {}
 
-  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+  virtual bool HandleKeyImpl(const std::string& key) override {
     if (key == "ImagePath") {
       std::string value;
       if (!iapps::ReadString(reader_, &value))
@@ -51,7 +51,7 @@ class PhotosXmlDictReader : public iapps::XmlDictReader {
     return true;
   }
 
-  virtual bool FinishedOk() OVERRIDE {
+  virtual bool FinishedOk() override {
     return Found("ImagePath");
   }
 
@@ -95,11 +95,11 @@ class AlbumXmlDictReader : public iapps::XmlDictReader {
   AlbumXmlDictReader(XmlReader* reader, AlbumInfo* album_info)
     : iapps::XmlDictReader(reader), album_info_(album_info) {}
 
-  virtual bool ShouldLoop() OVERRIDE {
+  virtual bool ShouldLoop() override {
     return !(Found("AlbumId") && Found("AlbumName") && Found("KeyList"));
   }
 
-  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+  virtual bool HandleKeyImpl(const std::string& key) override {
     if (key == "AlbumId") {
       if (!iapps::ReadInteger(reader_, &album_info_->id))
         return false;
@@ -117,7 +117,7 @@ class AlbumXmlDictReader : public iapps::XmlDictReader {
     return true;
   }
 
-  virtual bool FinishedOk() OVERRIDE {
+  virtual bool FinishedOk() override {
     return !ShouldLoop();
   }
 
@@ -198,11 +198,11 @@ class IPhotoLibraryXmlDictReader : public iapps::XmlDictReader {
   IPhotoLibraryXmlDictReader(XmlReader* reader, parser::Library* library)
     : iapps::XmlDictReader(reader), library_(library), ok_(true) {}
 
-  virtual bool ShouldLoop() OVERRIDE {
+  virtual bool ShouldLoop() override {
     return !(Found("List of Albums") && Found("Master Image List"));
   }
 
-  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+  virtual bool HandleKeyImpl(const std::string& key) override {
     if (key == "List of Albums") {
       if (!iapps::SeekToNodeAtCurrentDepth(reader_, "array") ||
           !reader_->Read()) {
@@ -231,13 +231,13 @@ class IPhotoLibraryXmlDictReader : public iapps::XmlDictReader {
     return true;
   }
 
-  virtual bool FinishedOk() OVERRIDE {
+  virtual bool FinishedOk() override {
     return ok_;
   }
 
   // The IPhotoLibrary allows duplicate "List of Albums" and
   // "Master Image List" keys (although that seems odd.)
-  virtual bool AllowRepeats() OVERRIDE {
+  virtual bool AllowRepeats() override {
     return true;
   }
 

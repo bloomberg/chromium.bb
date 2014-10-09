@@ -16,7 +16,7 @@ class BookmarksFileImporter : public Importer {
 
   virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
-                           ImporterBridge* bridge) OVERRIDE;
+                           ImporterBridge* bridge) override;
 
  private:
   virtual ~BookmarksFileImporter();

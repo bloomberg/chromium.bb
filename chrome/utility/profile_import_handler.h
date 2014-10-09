@@ -30,7 +30,7 @@ class ProfileImportHandler : public UtilityMessageHandler {
   virtual ~ProfileImportHandler();
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnImportStart(

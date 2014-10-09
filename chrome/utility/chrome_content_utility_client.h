@@ -26,8 +26,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   ChromeContentUtilityClient();
   virtual ~ChromeContentUtilityClient();
 
-  virtual void UtilityThreadStarted() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void UtilityThreadStarted() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   static void PreSandboxStartup();
 

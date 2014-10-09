@@ -33,7 +33,7 @@ class PicasaINIParser : public INIParser {
  private:
   virtual void HandleTriplet(const std::string& section,
                              const std::string& key,
-                             const std::string& value) OVERRIDE {
+                             const std::string& value) override {
     if (key != kAlbumsKey)
       return;
 

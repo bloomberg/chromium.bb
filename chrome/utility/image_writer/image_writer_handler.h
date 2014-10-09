@@ -32,7 +32,7 @@ class ImageWriterHandler : public UtilityMessageHandler {
   virtual void SendProgress(int64 progress);
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Small wrapper for sending on the UtilityProcess.
   void Send(IPC::Message* msg);

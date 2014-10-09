@@ -32,12 +32,12 @@ class TrackInfoXmlDictReader : public iapps::XmlDictReader {
   TrackInfoXmlDictReader(XmlReader* reader, TrackInfo* track_info) :
     iapps::XmlDictReader(reader), track_info_(track_info) {}
 
-  virtual bool ShouldLoop() OVERRIDE {
+  virtual bool ShouldLoop() override {
     return !(Found("Track ID") && Found("Location") &&
              Found("Album Artist") && Found("Album"));
   }
 
-  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+  virtual bool HandleKeyImpl(const std::string& key) override {
     if (key == "Track ID") {
       return iapps::ReadInteger(reader_, &track_info_->id);
     } else if (key == "Location") {
@@ -75,7 +75,7 @@ class TrackInfoXmlDictReader : public iapps::XmlDictReader {
     return true;
   }
 
-  virtual bool FinishedOk() OVERRIDE {
+  virtual bool FinishedOk() override {
     return Found("Track ID") && Found("Location");
   }
 

@@ -141,7 +141,7 @@ namespace {
 
 class BookmarkHTMLReaderTestWithData : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   void ExpectFirstFirefox2Bookmark(const ImportedBookmarkEntry& entry);

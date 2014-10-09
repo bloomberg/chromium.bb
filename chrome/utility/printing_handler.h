@@ -30,7 +30,7 @@ class PrintingHandler : public UtilityMessageHandler {
   static void PreSandboxStartup();
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // IPC message handlers.

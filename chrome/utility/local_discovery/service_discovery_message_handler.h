@@ -39,7 +39,7 @@ class ServiceDiscoveryMessageHandler : public UtilityMessageHandler {
   virtual ~ServiceDiscoveryMessageHandler();
 
   // UtilityMessageHandler implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   static void PreSandboxStartup();
 

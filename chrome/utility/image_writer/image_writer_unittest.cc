@@ -27,14 +27,14 @@ const int kTestPattern = 0x55555555;
 
 class ImageWriterUtilityTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_));
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.path(), &device_path_));
   }
 
-  virtual void TearDown() OVERRIDE {}
+  virtual void TearDown() override {}
 
   void FillFile(const base::FilePath& path, int pattern) {
     scoped_ptr<char[]> buffer(new char[kTestFileSize]);
@@ -67,7 +67,7 @@ class VerifyingHandler : public MockHandler {
  public:
   VerifyingHandler() : image_writer_(NULL), verified_(false) {}
 
-  virtual void SendSucceeded() OVERRIDE {
+  virtual void SendSucceeded() override {
     MockHandler::SendSucceeded();
     if (!verified_) {
       image_writer_->Verify();

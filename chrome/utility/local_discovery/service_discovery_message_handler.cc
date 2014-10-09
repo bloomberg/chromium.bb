@@ -35,7 +35,7 @@ class ScopedSocketFactory : public net::PlatformSocketFactory {
   }
 
   virtual net::SocketDescriptor CreateSocket(int family, int type,
-                                             int protocol) OVERRIDE {
+                                             int protocol) override {
     DCHECK_EQ(type, SOCK_DGRAM);
     DCHECK(family == AF_INET || family == AF_INET6);
     net::SocketDescriptor result = net::kInvalidSocket;
@@ -73,7 +73,7 @@ class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
 
   // net::MDnsSocketFactory implementation:
   virtual void CreateSockets(
-      ScopedVector<net::DatagramServerSocket>* sockets) OVERRIDE {
+      ScopedVector<net::DatagramServerSocket>* sockets) override {
     sockets->swap(sockets_);
     Reset();
   }

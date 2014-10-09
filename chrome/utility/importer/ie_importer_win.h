@@ -24,7 +24,7 @@ class IEImporter : public Importer {
   // Importer:
   virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
-                           ImporterBridge* bridge) OVERRIDE;
+                           ImporterBridge* bridge) override;
 
  private:
   typedef std::vector<ImportedBookmarkEntry> BookmarkVector;
