@@ -27,7 +27,6 @@ source_set("view_manager") {
   ]
   deps = [
     "//base",
-    "//mojo/application",
     "//mojo/public/c/gles2",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/interfaces/application",

@@ -359,7 +359,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        'mojo_application_manager',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_geometry_lib',
         'public/mojo_public.gyp:mojo_application_base',
