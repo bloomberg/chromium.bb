@@ -529,7 +529,8 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
   scoped_refptr<ContentLayer> root_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
+SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
+    LayerTreeHostTestSetNextCommitForcesRedraw);
 
 // Tests that if a layer is not drawn because of some reason in the parent then
 // its damage is preserved until the next time it is drawn.
@@ -737,7 +738,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_EQ(frame_count_with_pending_tree_, 0);
-    impl->BlockNotifyReadyToActivateForTesting(true);
+    if (impl->settings().impl_side_painting)
+      impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
@@ -748,7 +750,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     if (frame_count_with_pending_tree_ == 1) {
       EXPECT_EQ(first_frame_time_.ToInternalValue(), 0);
       first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
-    } else if (frame_count_with_pending_tree_ == 2) {
+    } else if (frame_count_with_pending_tree_ == 2 &&
+               impl->settings().impl_side_painting) {
       impl->BlockNotifyReadyToActivateForTesting(false);
     }
   }
@@ -777,7 +780,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   base::TimeTicks first_frame_time_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
     LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
 
 // This test verifies that LayerTreeHostImpl's current frame time gets
@@ -2406,12 +2409,18 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
   LayerTreeHostTestChangeLayerPropertiesInPaintContents() : num_commits_(0) {}
 
   virtual void SetupTree() override {
-    scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
+    if (layer_tree_host()->settings().impl_side_painting) {
+      scoped_refptr<PictureLayer> root_layer = PictureLayer::Create(&client_);
+      layer_tree_host()->SetRootLayer(root_layer);
+    } else {
+      scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
+      layer_tree_host()->SetRootLayer(root_layer);
+    }
+    Layer* root_layer = layer_tree_host()->root_layer();
     root_layer->SetIsDrawable(true);
     root_layer->SetBounds(gfx::Size(1, 1));
 
-    layer_tree_host()->SetRootLayer(root_layer);
-    client_.set_layer(root_layer.get());
+    client_.set_layer(root_layer);
 
     LayerTreeHostTest::SetupTree();
   }
@@ -2419,7 +2428,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
   virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
   virtual void AfterTest() override {}
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     num_commits_++;
     if (num_commits_ == 1) {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
@@ -2436,7 +2445,8 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
   int num_commits_;
 };
 
-SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestChangeLayerPropertiesInPaintContents);
 
 class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
  public:
@@ -5078,5 +5088,82 @@ class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
 
 // TODO(vmpstr): Enable with single thread impl-side painting.
 MULTI_THREAD_TEST_F(LayerTreeHostTestActivateOnInvisible);
+
+// Do a synchronous composite and assert that the swap promise succeeds.
+class LayerTreeHostTestSynchronousCompositeSwapPromise
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestSynchronousCompositeSwapPromise() : commit_count_(0) {}
+
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->single_thread_proxy_scheduler = false;
+  }
+
+  virtual void BeginTest() override {
+    // Successful composite.
+    scoped_ptr<SwapPromise> swap_promise0(
+        new TestSwapPromise(&swap_promise_result_[0]));
+    layer_tree_host()->QueueSwapPromise(swap_promise0.Pass());
+    layer_tree_host()->Composite(gfx::FrameTime::Now());
+
+    // Fail to swap (no damage).
+    scoped_ptr<SwapPromise> swap_promise1(
+        new TestSwapPromise(&swap_promise_result_[1]));
+    layer_tree_host()->QueueSwapPromise(swap_promise1.Pass());
+    layer_tree_host()->SetNeedsCommit();
+    layer_tree_host()->Composite(gfx::FrameTime::Now());
+
+    // Fail to draw (not visible).
+    scoped_ptr<SwapPromise> swap_promise2(
+        new TestSwapPromise(&swap_promise_result_[2]));
+    layer_tree_host()->QueueSwapPromise(swap_promise2.Pass());
+    layer_tree_host()->SetNeedsDisplayOnAllLayers();
+    layer_tree_host()->SetVisible(false);
+    layer_tree_host()->Composite(gfx::FrameTime::Now());
+
+    EndTest();
+  }
+
+  virtual void DidCommit() override {
+    commit_count_++;
+    ASSERT_LE(commit_count_, 3);
+  }
+
+  virtual void AfterTest() override {
+    EXPECT_EQ(3, commit_count_);
+
+    // Initial swap promise should have succeded.
+    {
+      base::AutoLock lock(swap_promise_result_[0].lock);
+      EXPECT_TRUE(swap_promise_result_[0].did_swap_called);
+      EXPECT_FALSE(swap_promise_result_[0].did_not_swap_called);
+      EXPECT_TRUE(swap_promise_result_[0].dtor_called);
+    }
+
+    // Second swap promise fails to swap.
+    {
+      base::AutoLock lock(swap_promise_result_[1].lock);
+      EXPECT_FALSE(swap_promise_result_[1].did_swap_called);
+      EXPECT_TRUE(swap_promise_result_[1].did_not_swap_called);
+      EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[1].reason);
+      EXPECT_TRUE(swap_promise_result_[1].dtor_called);
+    }
+
+    // Third swap promises also fails to swap (and draw).
+    {
+      base::AutoLock lock(swap_promise_result_[2].lock);
+      EXPECT_FALSE(swap_promise_result_[2].did_swap_called);
+      EXPECT_TRUE(swap_promise_result_[2].did_not_swap_called);
+      EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[2].reason);
+      EXPECT_TRUE(swap_promise_result_[2].dtor_called);
+    }
+  }
+
+  int commit_count_;
+  TestSwapPromiseResult swap_promise_result_[3];
+};
+
+// Impl-side painting is not supported for synchronous compositing.
+SINGLE_THREAD_NOIMPL_TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise);
 
 }  // namespace cc

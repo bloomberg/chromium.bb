@@ -300,6 +300,8 @@ class CC_EXPORT LayerTreeHost {
 
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
 
+  size_t num_queued_swap_promises() const { return swap_promise_list_.size(); }
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* manager,

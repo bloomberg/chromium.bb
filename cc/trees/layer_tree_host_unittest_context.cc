@@ -107,6 +107,13 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
       DrawResult draw_result) override {
+    if (draw_result == DRAW_ABORTED_MISSING_HIGH_RES_CONTENT) {
+      // Only valid for single-threaded impl-side painting, which activates
+      // immediately and will try to draw again when content has finished.
+      DCHECK(!host_impl->proxy()->HasImplThread());
+      DCHECK(layer_tree_host()->settings().impl_side_painting);
+      return draw_result;
+    }
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     if (!times_to_lose_during_draw_)
       return draw_result;
