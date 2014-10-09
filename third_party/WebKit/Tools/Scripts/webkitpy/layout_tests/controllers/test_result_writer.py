@@ -92,7 +92,8 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
         else:
             assert isinstance(failure, (test_failures.FailureTimeout, test_failures.FailureReftestNoImagesGenerated))
 
-        writer.create_repaint_overlay_result(driver_output.text, expected_driver_output.text)
+        if expected_driver_output is not None:
+            writer.create_repaint_overlay_result(driver_output.text, expected_driver_output.text)
 
 
 class TestResultWriter(object):
