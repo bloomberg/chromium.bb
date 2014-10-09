@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "chromecast/crash/android/crash_handler.h"
 #include "chromecast/shell/browser/android/cast_window_android.h"
 #include "chromecast/shell/browser/android/cast_window_manager.h"
 #include "chromecast/shell/browser/android/external_video_surface_container_impl.h"
@@ -20,6 +21,7 @@ static base::android::RegistrationMethod kMethods[] = {
   { "CastWindowManager", shell::RegisterCastWindowManager },
   { "ExternalVideoSurfaceContainer",
         shell::RegisterExternalVideoSurfaceContainer },
+  { "CrashHandler", CrashHandler::RegisterCastCrashJni },
 };
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "chromecast/shell/app/cast_main_delegate.h"
 
+#include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -16,6 +17,10 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_ANDROID)
+#include "chromecast/crash/android/crash_handler.h"
+#endif  // defined(OS_ANDROID)
 
 namespace chromecast {
 namespace shell {
@@ -55,6 +60,16 @@ void CastMainDelegate::PreSandboxStartup() {
   // longer allowed.
   base::CPU cpu_info;
 #endif
+
+  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+
+#if defined(OS_ANDROID)
+  base::FilePath log_file;
+  PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
+  chromecast::CrashHandler::Initialize(process_type, log_file);
+#endif  // defined(OS_ANDROID)
 
   InitializeResourceBundle();
 }

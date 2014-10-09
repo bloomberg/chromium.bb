@@ -17,6 +17,7 @@
 #include "chromecast/shell/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/shell/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
+#include "components/crash/app/breakpad_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,6 +29,10 @@
 
 #if defined(OS_ANDROID)
 #include "chromecast/shell/browser/android/external_video_surface_container_impl.h"
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+#include "components/crash/browser/crash_dump_manager_android.h"
 #endif  // defined(OS_ANDROID)
 
 namespace chromecast {
@@ -228,6 +233,19 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   mappings->Transfer(
       kAndroidPakDescriptor,
       base::ScopedFD(pak_with_flags.TakePlatformFile()));
+
+  if (breakpad::IsCrashReporterEnabled()) {
+    base::File minidump_file(
+        breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
+            child_process_id));
+    if (!minidump_file.IsValid()) {
+      LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
+                 << "be disabled for this process.";
+    } else {
+      mappings->Transfer(kAndroidMinidumpDescriptor,
+                         base::ScopedFD(minidump_file.TakePlatformFile()));
+    }
+  }
 #endif  // defined(OS_ANDROID)
 }
 

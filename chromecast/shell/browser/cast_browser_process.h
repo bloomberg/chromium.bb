@@ -39,6 +39,9 @@ class CastBrowserProcess {
   void SetRemoteDebuggingServer(RemoteDebuggingServer* remote_debugging_server);
   void SetMetricsServiceClient(
       metrics::CastMetricsServiceClient* metrics_service_client);
+#if defined(OS_ANDROID)
+  void SetCrashDumpManager(breakpad::CrashDumpManager* crash_dump_manager);
+#endif  // defined(OS_ANDROID)
 
   CastBrowserContext* browser_context() const { return browser_context_.get(); }
   CastService* cast_service() const { return cast_service_.get(); }
@@ -50,6 +53,9 @@ class CastBrowserProcess {
   scoped_ptr<CastBrowserContext> browser_context_;
   scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
+#if defined(OS_ANDROID)
+  scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
+#endif  // defined(OS_ANDROID)
 
   // Note: CastService must be destroyed before others.
   scoped_ptr<CastService> cast_service_;

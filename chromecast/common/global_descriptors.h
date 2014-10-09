@@ -15,6 +15,7 @@ enum {
   kDummyValue = kContentIPCDescriptorMax + 1,
 #if defined(OS_ANDROID)
   kAndroidPakDescriptor,
+  kAndroidMinidumpDescriptor,
 #endif  // defined(OS_ANDROID)
 };
 

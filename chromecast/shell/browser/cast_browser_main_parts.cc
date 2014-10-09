@@ -23,6 +23,8 @@
 #include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
+#include "chromecast/crash/android/crash_handler.h"
+#include "components/crash/browser/crash_dump_manager_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #endif  // defined(OS_ANDROID)
 
@@ -109,6 +111,16 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           content::BrowserThread::GetBlockingPool(),
           ChromecastConfig::GetInstance()->pref_service(),
           cast_browser_process_->browser_context()->GetRequestContext()));
+
+#if defined(OS_ANDROID)
+  base::FilePath crash_dumps_dir;
+  if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
+    LOG(ERROR) << "Could not find crash dump location.";
+  }
+  cast_browser_process_->SetCrashDumpManager(
+      new breakpad::CrashDumpManager(crash_dumps_dir));
+#endif
+
   cast_browser_process_->SetRemoteDebuggingServer(new RemoteDebuggingServer());
 
   InitializeWebUI();

@@ -1,4 +1,6 @@
 include_rules = [
-  # Include for JNI.
+  # Includes for JNI.
+  "+chromecast/android",
+  "+chromecast/crash/android",
   "+chromecast/shell/browser/android",
 ]

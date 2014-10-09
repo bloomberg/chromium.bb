@@ -18,6 +18,10 @@ class ChromecastConfigAndroid {
  public:
   static ChromecastConfigAndroid* GetInstance();
 
+  // Returns whether or not the user has allowed sending usage stats and
+  // crash reports.
+  bool CanSendUsageStats();
+
   // Registers a handler to be notified when SendUsageStats is changed.
   void SetSendUsageStatsChangedCallback(
       const base::Callback<void(bool)>& callback);

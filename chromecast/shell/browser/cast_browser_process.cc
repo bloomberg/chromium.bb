@@ -10,6 +10,10 @@
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/devtools/remote_debugging_server.h"
 
+#if defined(OS_ANDROID)
+#include "components/crash/browser/crash_dump_manager_android.h"
+#endif  // defined(OS_ANDROID)
+
 namespace chromecast {
 namespace shell {
 
@@ -55,6 +59,14 @@ void CastBrowserProcess::SetMetricsServiceClient(
   DCHECK(!metrics_service_client_);
   metrics_service_client_.reset(metrics_service_client);
 }
+
+#if defined(OS_ANDROID)
+void CastBrowserProcess::SetCrashDumpManager(
+    breakpad::CrashDumpManager* crash_dump_manager) {
+  DCHECK(!crash_dump_manager_);
+  crash_dump_manager_.reset(crash_dump_manager);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace shell
 }  // namespace chromecast

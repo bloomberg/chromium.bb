@@ -327,11 +327,17 @@
             'cast_shell_pak',
             'cast_version_header',
             '../base/base.gyp:base',
+            '../breakpad/breakpad.gyp:breakpad_client',
+            '../components/components.gyp:breakpad_host',
+            '../components/components.gyp:crash_component',
             '../content/content.gyp:content_app_browser',
             '../content/content.gyp:content',
             '../skia/skia.gyp:skia',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gl/gl.gyp:gl',
+          ],
+          'include_dirs': [
+            '../breakpad/src',
           ],
           'sources': [
             'android/cast_jni_registrar.cc',
@@ -339,6 +345,10 @@
             'android/chromecast_config_android.cc',
             'android/chromecast_config_android.h',
             'android/platform_jni_loader.h',
+            'crash/android/cast_crash_reporter_client_android.cc',
+            'crash/android/cast_crash_reporter_client_android.h',
+            'crash/android/crash_handler.cc',
+            'crash/android/crash_handler.h',
             'shell/app/android/cast_jni_loader.cc',
             'shell/browser/android/cast_window_android.cc',
             'shell/browser/android/cast_window_android.h',
@@ -354,6 +364,7 @@
               ],
             }, {
               'sources': [
+                'android/chromecast_config_android_stub.cc',
                 'android/platform_jni_loader_stub.cc',
               ],
             }]
@@ -407,6 +418,7 @@
           'target_name': 'cast_jni_headers',
           'type': 'none',
           'sources': [
+            'shell/android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java',
             'shell/android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java',
             'shell/android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java',
             'shell/android/apk/src/org/chromium/chromecast/shell/ExternalVideoSurfaceContainer.java',
