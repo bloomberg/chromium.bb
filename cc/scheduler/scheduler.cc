@@ -682,9 +682,16 @@ void Scheduler::AsValueInto(base::debug::TracedValue* state) const {
   state_machine_.AsValueInto(state, Now());
   state->EndDictionary();
 
-  state->BeginDictionary("frame_source_");
-  frame_source_->AsValueInto(state);
-  state->EndDictionary();
+  // Only trace frame sources when explicitly enabled - http://crbug.com/420607
+  bool frame_tracing_enabled = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
+      &frame_tracing_enabled);
+  if (frame_tracing_enabled) {
+    state->BeginDictionary("frame_source_");
+    frame_source_->AsValueInto(state);
+    state->EndDictionary();
+  }
 
   state->BeginDictionary("scheduler_state");
   state->SetDouble("time_until_anticipated_draw_time_ms",
