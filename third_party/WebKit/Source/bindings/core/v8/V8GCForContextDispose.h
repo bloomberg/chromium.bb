@@ -38,16 +38,18 @@ namespace blink {
 class V8GCForContextDispose {
 public:
     void notifyContextDisposed(bool isMainFrame);
-    void notifyIdleSooner(double maximumFireInterval);
+    void notifyIdle();
 
-    static V8GCForContextDispose& instanceTemplate();
+    static V8GCForContextDispose& instance();
 
 private:
     V8GCForContextDispose(); // Use instance() instead.
     void pseudoIdleTimerFired(Timer<V8GCForContextDispose>*);
+    void reset();
 
     Timer<V8GCForContextDispose> m_pseudoIdleTimer;
     bool m_didDisposeContextForMainFrame;
+    double m_lastContextDisposalTime;
 };
 
 }
