@@ -112,7 +112,8 @@ void ChromeWebViewGuestDelegate::OnDidCommitProvisionalLoadForFrame(
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(guest_web_contents());
   DCHECK(zoom_controller);
-  current_zoom_factor_ = zoom_controller->GetZoomLevel();
+  current_zoom_factor_ =
+      content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
   if (is_main_frame)
     chromevox_injected_ = false;
 }

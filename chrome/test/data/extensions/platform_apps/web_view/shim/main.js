@@ -1705,7 +1705,7 @@ function testZoomAPI() {
   webview.addEventListener('loadstop', function(e) {
     // getZoom() should work initially.
     webview.getZoom(function(zoomFactor) {
-      embedder.test.assertFalse(zoomFactor == undefined);
+      embedder.test.assertEq(zoomFactor, 1);
     });
 
     // Two consecutive calls to getZoom() should return the same result.
