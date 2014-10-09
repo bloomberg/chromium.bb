@@ -718,8 +718,6 @@ public class ContentViewCore
                     public void run() {
                         if (mContainerViewAtCreation.indexOfChild(zoomer) == -1) {
                             mContainerViewAtCreation.addView(zoomer);
-                        } else {
-                            assert false : "PopupZoomer should never be shown without being hidden";
                         }
                     }
                 });
@@ -733,8 +731,6 @@ public class ContentViewCore
                         if (mContainerViewAtCreation.indexOfChild(zoomer) != -1) {
                             mContainerViewAtCreation.removeView(zoomer);
                             mContainerViewAtCreation.invalidate();
-                        } else {
-                            assert false : "PopupZoomer should never be hidden without being shown";
                         }
                     }
                 });
