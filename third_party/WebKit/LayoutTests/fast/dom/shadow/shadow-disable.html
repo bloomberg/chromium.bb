@@ -5,7 +5,11 @@
 </head>
 <body>
 <p id="description"></p>
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><tref id="tref" /></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <g id="g"></g>
+    <rect id="rect"></rect>
+    <svg id="svg"></svg>
+</svg>
 <pre id="console"></pre>
 <script>
 description("Tests to ensure that shadow element cannot be created in elements having dynamically created shadow root.");
@@ -28,11 +32,13 @@ var elementsToSuccess = [
     document.createElement('applet'),
     document.createElement('embed'),
     document.createElement('object'),
+    document.getElementById('g'),
+    document.getElementById('rect'),
+    document.getElementById('svg'),
 ];
 
 // See crbug.com/234020 .
 var elementsToFail = [
-    document.getElementById('tref'),
     document.createElement('audio'),
     document.createElement('video'),
     document.createElement('select'),

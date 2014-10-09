@@ -226,10 +226,6 @@ protected:
     bool hasFocusEventListeners() const;
 
 private:
-    // FIXME: Author shadows should be allowed
-    // https://bugs.webkit.org/show_bug.cgi?id=77938
-    virtual bool areAuthorShadowsAllowed() const override final { return false; }
-
     bool isSVGElement() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
     bool isStyledElement() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 

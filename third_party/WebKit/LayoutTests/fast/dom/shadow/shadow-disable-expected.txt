@@ -19,8 +19,12 @@ EMBED
 PASS element.createShadowRoot() is not null
 OBJECT
 PASS element.createShadowRoot() is not null
-tref
-PASS element.createShadowRoot() threw exception HierarchyRequestError: Failed to execute 'createShadowRoot' on 'Element': Author-created shadow roots are disabled for this element..
+g
+PASS element.createShadowRoot() is not null
+rect
+PASS element.createShadowRoot() is not null
+svg
+PASS element.createShadowRoot() is not null
 AUDIO
 PASS element.createShadowRoot() threw exception HierarchyRequestError: Failed to execute 'createShadowRoot' on 'Element': Author-created shadow roots are disabled for this element..
 VIDEO
