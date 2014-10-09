@@ -151,9 +151,8 @@ StyleResolver::StyleResolver(Document& document)
 #if ENABLE(SVG_FONTS)
     if (document.svgExtensions()) {
         const WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
-        WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >::const_iterator end = svgFontFaceElements.end();
-        for (WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
-            addFontFaceRule(&document, document.styleEngine()->fontSelector(), (*it)->fontFaceRule());
+        for (const auto& element : svgFontFaceElements)
+            addFontFaceRule(&document, document.styleEngine()->fontSelector(), element->fontFaceRule());
     }
 #endif
 }
@@ -210,8 +209,8 @@ void StyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, TreeScope* treeSc
 
 void StyleResolver::appendPendingAuthorStyleSheets()
 {
-    for (WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16>::iterator it = m_pendingStyleSheets.begin(); it != m_pendingStyleSheets.end(); ++it)
-        appendCSSStyleSheet(*it);
+    for (const auto& styleSheet : m_pendingStyleSheets)
+        appendCSSStyleSheet(styleSheet);
 
     m_pendingStyleSheets.clear();
     finishAppendAuthorStyleSheets();
@@ -1058,11 +1057,11 @@ void StyleResolver::styleTreeResolveScopedKeyframesRules(const Element* element,
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolations)
 {
-    for (WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >::const_iterator iter = activeInterpolations.begin(); iter != activeInterpolations.end(); ++iter) {
-        CSSPropertyID property = iter->key;
+    for (const auto& interpolationEntry : activeInterpolations) {
+        CSSPropertyID property = interpolationEntry.key;
         if (!isPropertyForPass<pass>(property))
             continue;
-        const StyleInterpolation* interpolation = toStyleInterpolation(iter->value.get());
+        const StyleInterpolation* interpolation = toStyleInterpolation(interpolationEntry.value.get());
         interpolation->apply(state);
     }
 }

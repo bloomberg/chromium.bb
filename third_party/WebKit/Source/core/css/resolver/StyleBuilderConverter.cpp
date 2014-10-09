@@ -445,16 +445,15 @@ bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
 
 void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap& namedGridAreas, NamedGridLinesMap& namedGridLines, GridTrackSizingDirection direction)
 {
-    NamedGridAreaMap::const_iterator end = namedGridAreas.end();
-    for (NamedGridAreaMap::const_iterator it = namedGridAreas.begin(); it != end; ++it) {
-        GridSpan areaSpan = direction == ForRows ? it->value.rows : it->value.columns;
+    for (const auto& namedGridAreaEntry : namedGridAreas) {
+        GridSpan areaSpan = direction == ForRows ? namedGridAreaEntry.value.rows : namedGridAreaEntry.value.columns;
         {
-            NamedGridLinesMap::AddResult startResult = namedGridLines.add(it->key + "-start", Vector<size_t>());
+            NamedGridLinesMap::AddResult startResult = namedGridLines.add(namedGridAreaEntry.key + "-start", Vector<size_t>());
             startResult.storedValue->value.append(areaSpan.resolvedInitialPosition.toInt());
             std::sort(startResult.storedValue->value.begin(), startResult.storedValue->value.end());
         }
         {
-            NamedGridLinesMap::AddResult endResult = namedGridLines.add(it->key + "-end", Vector<size_t>());
+            NamedGridLinesMap::AddResult endResult = namedGridLines.add(namedGridAreaEntry.key + "-end", Vector<size_t>());
             endResult.storedValue->value.append(areaSpan.resolvedFinalPosition.toInt() + 1);
             std::sort(endResult.storedValue->value.begin(), endResult.storedValue->value.end());
         }
