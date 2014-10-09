@@ -1,0 +1,38 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webbluetoothcg.github.io/web-bluetooth/#idl-def-BluetoothDevice
+
+// Implement BluetoothDevice interface: http://crbug.com/421668
+// enum VendorIdSource {
+//     "bluetooth",
+//     "usb"
+// };
+
+[
+    GarbageCollected,
+    NoInterfaceObject,
+    RuntimeEnabled=Bluetooth,
+] interface BluetoothDevice
+// Implement ServiceEventHandlers interface: http://crbug.com/421670
+// : ServiceEventHandlers 
+{
+// Implement BluetoothDevice interface: http://crbug.com/421668
+//    readonly    attribute DOMString       instanceId;
+//    readonly    attribute DOMString?      name;
+//    readonly    attribute long?           deviceClass;
+//    readonly    attribute VendorIdSource? vendorIdSource;
+//    readonly    attribute long?           vendorId;
+//    readonly    attribute long?           productId;
+//    readonly    attribute long?           productVersion;
+//    readonly    attribute boolean?        paired;
+//    readonly    attribute boolean?        connected;
+//    readonly    attribute sequence<UUID>? uuids;
+//    Promise<void>                         connect ();
+//    Promise<void>                         disconnect ();
+//    Promise<BluetoothGATTService>         getService (BluetoothServiceUuid service);
+//    Promise<BluetoothGATTServiceSequence> getAllServices ();
+//    Promise<BluetoothGATTServiceSequence> getAllServices (BluetoothServiceUuid service);
+//    Promise<BluetoothGATTServiceSequence> getAllServices (sequence<BluetoothServiceUuid> services);
+};

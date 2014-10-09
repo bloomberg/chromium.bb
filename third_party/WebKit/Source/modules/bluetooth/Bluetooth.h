@@ -6,19 +6,18 @@
 #define Bluetooth_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "modules/bluetooth/BluetoothDiscovery.h"
 
 namespace blink {
 
-class Bluetooth final : public GarbageCollected<Bluetooth>, public ScriptWrappable {
+class Bluetooth final
+    : public BluetoothDiscovery {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Bluetooth* create()
     {
         return new Bluetooth();
     }
-
-    void trace(Visitor*) { }
 };
 
 } // namespace blink

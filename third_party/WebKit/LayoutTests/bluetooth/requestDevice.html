@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+  navigator.bluetooth.requestDevice()
+    .then(
+      t.step_func(function() { assert_unreached(
+        'bluetooth.requestDevice() should not succeed until implemented.'); }),
+      t.step_func(function() { t.done() }));
+}, 'navigator.bluetooth.requestDevice not yet supported');
+</script>

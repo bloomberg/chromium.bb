@@ -3,12 +3,9 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 test(function() {
-  assert_throws(null, function() { new Bluetooth(); },
+  assert_throws(null, function() { new BluetoothDevice(); },
                 'the constructor should not be callable with "new"');
-  assert_throws(null, function() { Bluetooth(); },
+  assert_throws(null, function() { BluetoothDevice(); },
                 'the constructor should not be callable');
-
-  // Bluetooth implements BluetoothDiscovery;
-  assert_true('requestDevice' in navigator.bluetooth);
-}, 'Bluetooth IDL test');
+}, 'BluetoothDevice IDL test');
 </script>

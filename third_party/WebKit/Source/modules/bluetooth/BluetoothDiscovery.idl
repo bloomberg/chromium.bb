@@ -1,0 +1,17 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webbluetoothcg.github.io/web-bluetooth/#idl-def-BluetoothDiscovery
+
+[
+    GarbageCollected,
+    NoInterfaceObject,
+    RuntimeEnabled=Bluetooth,
+] interface BluetoothDiscovery {
+    // Should be "Promise<BluetoothDevice>": http://crbug.com/421539
+    [CallWith=ScriptState] Promise requestDevice (
+        // Implement requestDevice: http://crbug.com/420284
+        // sequence<BluetoothScanFilter> filters, optional RequestDeviceOptions options
+        );
+};

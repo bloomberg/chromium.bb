@@ -11,5 +11,4 @@
 ] interface Bluetooth {
 };
 
-// http://crbug.com/420284
-// Bluetooth implements BluetoothDiscovery;
+Bluetooth implements BluetoothDiscovery;
