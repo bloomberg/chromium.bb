@@ -42,15 +42,6 @@ public:
 
     virtual bool isSVGResourceContainer() const override final { return true; }
 
-    template<class Renderer>
-    Renderer* cast()
-    {
-        if (Renderer::s_resourceType == resourceType())
-            return static_cast<Renderer*>(this);
-
-        return 0;
-    }
-
     static AffineTransform transformOnNonScalingStroke(RenderObject*, const AffineTransform& resourceTransform);
 
     void idChanged();
@@ -114,9 +105,10 @@ inline RenderSVGResourceContainer* getRenderSVGResourceContainerById(TreeScope& 
 template<typename Renderer>
 Renderer* getRenderSVGResourceById(TreeScope& treeScope, const AtomicString& id)
 {
-    if (RenderSVGResourceContainer* container = getRenderSVGResourceContainerById(treeScope, id))
-        return container->cast<Renderer>();
-
+    if (RenderSVGResourceContainer* container = getRenderSVGResourceContainerById(treeScope, id)) {
+        if (container->resourceType() == Renderer::s_resourceType)
+            return static_cast<Renderer*>(container);
+    }
     return 0;
 }
 
