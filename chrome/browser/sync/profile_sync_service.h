@@ -763,8 +763,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
-  // changes.
-  bool backend_initialized() const;
+  // changes. This should only be used for sync's internal configuration logic
+  // (such as deciding when to prompt for an encryption passphrase).
+  virtual bool backend_initialized() const;
 
   // Returns the current mode the backend is in.
   BackendMode backend_mode() const;
