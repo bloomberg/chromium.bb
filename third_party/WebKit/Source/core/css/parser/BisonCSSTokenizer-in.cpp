@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/css/parser/CSSTokenizer.h"
+#include "core/css/parser/BisonCSSTokenizer.h"
 
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/MediaQuery.h"
@@ -293,20 +293,20 @@ static inline CharacterType* skipWhiteSpace(CharacterType* currentCharacter)
 // Main CSS tokenizer functions.
 
 template <>
-inline LChar*& CSSTokenizer::currentCharacter<LChar>()
+inline LChar*& BisonCSSTokenizer::currentCharacter<LChar>()
 {
     return m_currentCharacter8;
 }
 
 template <>
-inline UChar*& CSSTokenizer::currentCharacter<UChar>()
+inline UChar*& BisonCSSTokenizer::currentCharacter<UChar>()
 {
     return m_currentCharacter16;
 }
 
-UChar* CSSTokenizer::allocateStringBuffer16(size_t len)
+UChar* BisonCSSTokenizer::allocateStringBuffer16(size_t len)
 {
-    // Allocates and returns a CSSTokenizer owned buffer for storing
+    // Allocates and returns a BisonCSSTokenizer owned buffer for storing
     // UTF-16 data. Used to get a suitable life span for UTF-16
     // strings, identifiers and URIs created by the tokenizer.
     OwnPtr<UChar[]> buffer = adoptArrayPtr(new UChar[len]);
@@ -318,19 +318,19 @@ UChar* CSSTokenizer::allocateStringBuffer16(size_t len)
 }
 
 template <>
-inline LChar* CSSTokenizer::dataStart<LChar>()
+inline LChar* BisonCSSTokenizer::dataStart<LChar>()
 {
     return m_dataStart8.get();
 }
 
 template <>
-inline UChar* CSSTokenizer::dataStart<UChar>()
+inline UChar* BisonCSSTokenizer::dataStart<UChar>()
 {
     return m_dataStart16.get();
 }
 
 template <typename CharacterType>
-inline CSSParserLocation CSSTokenizer::tokenLocation()
+inline CSSParserLocation BisonCSSTokenizer::tokenLocation()
 {
     CSSParserLocation location;
     location.token.init(tokenStart<CharacterType>(), currentCharacter<CharacterType>() - tokenStart<CharacterType>());
@@ -339,7 +339,7 @@ inline CSSParserLocation CSSTokenizer::tokenLocation()
     return location;
 }
 
-CSSParserLocation CSSTokenizer::currentLocation()
+CSSParserLocation BisonCSSTokenizer::currentLocation()
 {
     if (is8BitSource())
         return tokenLocation<LChar>();
@@ -347,7 +347,7 @@ CSSParserLocation CSSTokenizer::currentLocation()
 }
 
 template <typename CharacterType>
-inline bool CSSTokenizer::isIdentifierStart()
+inline bool BisonCSSTokenizer::isIdentifierStart()
 {
     // Check whether an identifier is started.
     return isIdentifierStartAfterDash((*currentCharacter<CharacterType>() != '-') ? currentCharacter<CharacterType>() : currentCharacter<CharacterType>() + 1);
@@ -397,7 +397,7 @@ static inline CharacterType* checkAndSkipString(CharacterType* currentCharacter,
 }
 
 template <typename CharacterType>
-unsigned CSSTokenizer::parseEscape(CharacterType*& src)
+unsigned BisonCSSTokenizer::parseEscape(CharacterType*& src)
 {
     ASSERT(*src == '\\' && isCSSEscape(src[1]));
 
@@ -427,7 +427,7 @@ unsigned CSSTokenizer::parseEscape(CharacterType*& src)
 }
 
 template <>
-inline void CSSTokenizer::UnicodeToChars<LChar>(LChar*& result, unsigned unicode)
+inline void BisonCSSTokenizer::UnicodeToChars<LChar>(LChar*& result, unsigned unicode)
 {
     ASSERT(unicode <= 0xff);
     *result = unicode;
@@ -436,7 +436,7 @@ inline void CSSTokenizer::UnicodeToChars<LChar>(LChar*& result, unsigned unicode
 }
 
 template <>
-inline void CSSTokenizer::UnicodeToChars<UChar>(UChar*& result, unsigned unicode)
+inline void BisonCSSTokenizer::UnicodeToChars<UChar>(UChar*& result, unsigned unicode)
 {
     // Replace unicode with a surrogate pairs when it is bigger than 0xffff
     if (U16_LENGTH(unicode) == 2) {
@@ -450,7 +450,7 @@ inline void CSSTokenizer::UnicodeToChars<UChar>(UChar*& result, unsigned unicode
 }
 
 template <typename SrcCharacterType>
-size_t CSSTokenizer::peekMaxIdentifierLen(SrcCharacterType* src)
+size_t BisonCSSTokenizer::peekMaxIdentifierLen(SrcCharacterType* src)
 {
     // The decoded form of an identifier (after resolving escape
     // sequences) will not contain more characters (ASCII or UTF-16
@@ -468,7 +468,7 @@ size_t CSSTokenizer::peekMaxIdentifierLen(SrcCharacterType* src)
 }
 
 template <typename SrcCharacterType, typename DestCharacterType>
-inline bool CSSTokenizer::parseIdentifierInternal(SrcCharacterType*& src, DestCharacterType*& result, bool& hasEscape)
+inline bool BisonCSSTokenizer::parseIdentifierInternal(SrcCharacterType*& src, DestCharacterType*& result, bool& hasEscape)
 {
     hasEscape = false;
     do {
@@ -490,7 +490,7 @@ inline bool CSSTokenizer::parseIdentifierInternal(SrcCharacterType*& src, DestCh
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::parseIdentifier(CharacterType*& result, CSSParserString& resultString, bool& hasEscape)
+inline void BisonCSSTokenizer::parseIdentifier(CharacterType*& result, CSSParserString& resultString, bool& hasEscape)
 {
     // If a valid identifier start is found, we can safely
     // parse the identifier until the next invalid character.
@@ -519,7 +519,7 @@ inline void CSSTokenizer::parseIdentifier(CharacterType*& result, CSSParserStrin
 }
 
 template <typename SrcCharacterType>
-size_t CSSTokenizer::peekMaxStringLen(SrcCharacterType* src, UChar quote)
+size_t BisonCSSTokenizer::peekMaxStringLen(SrcCharacterType* src, UChar quote)
 {
     // The decoded form of a CSS string (after resolving escape
     // sequences) will not contain more characters (ASCII or UTF-16
@@ -531,7 +531,7 @@ size_t CSSTokenizer::peekMaxStringLen(SrcCharacterType* src, UChar quote)
 }
 
 template <typename SrcCharacterType, typename DestCharacterType>
-inline bool CSSTokenizer::parseStringInternal(SrcCharacterType*& src, DestCharacterType*& result, UChar quote)
+inline bool BisonCSSTokenizer::parseStringInternal(SrcCharacterType*& src, DestCharacterType*& result, UChar quote)
 {
     while (true) {
         if (UNLIKELY(*src == quote)) {
@@ -564,7 +564,7 @@ inline bool CSSTokenizer::parseStringInternal(SrcCharacterType*& src, DestCharac
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::parseString(CharacterType*& result, CSSParserString& resultString, UChar quote)
+inline void BisonCSSTokenizer::parseString(CharacterType*& result, CSSParserString& resultString, UChar quote)
 {
     CharacterType* start = currentCharacter<CharacterType>();
 
@@ -589,7 +589,7 @@ inline void CSSTokenizer::parseString(CharacterType*& result, CSSParserString& r
 }
 
 template <typename CharacterType>
-inline bool CSSTokenizer::findURI(CharacterType*& start, CharacterType*& end, UChar& quote)
+inline bool BisonCSSTokenizer::findURI(CharacterType*& start, CharacterType*& end, UChar& quote)
 {
     start = skipWhiteSpace(currentCharacter<CharacterType>());
 
@@ -620,7 +620,7 @@ inline bool CSSTokenizer::findURI(CharacterType*& start, CharacterType*& end, UC
 }
 
 template <typename SrcCharacterType>
-inline size_t CSSTokenizer::peekMaxURILen(SrcCharacterType* src, UChar quote)
+inline size_t BisonCSSTokenizer::peekMaxURILen(SrcCharacterType* src, UChar quote)
 {
     // The decoded form of a URI (after resolving escape sequences)
     // will not contain more characters (ASCII or UTF-16 codepoints)
@@ -643,7 +643,7 @@ inline size_t CSSTokenizer::peekMaxURILen(SrcCharacterType* src, UChar quote)
 }
 
 template <typename SrcCharacterType, typename DestCharacterType>
-inline bool CSSTokenizer::parseURIInternal(SrcCharacterType*& src, DestCharacterType*& dest, UChar quote)
+inline bool BisonCSSTokenizer::parseURIInternal(SrcCharacterType*& src, DestCharacterType*& dest, UChar quote)
 {
     if (quote) {
         ASSERT(quote == '"' || quote == '\'');
@@ -665,7 +665,7 @@ inline bool CSSTokenizer::parseURIInternal(SrcCharacterType*& src, DestCharacter
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::parseURI(CSSParserString& string)
+inline void BisonCSSTokenizer::parseURI(CSSParserString& string)
 {
     CharacterType* uriStart;
     CharacterType* uriEnd;
@@ -694,7 +694,7 @@ inline void CSSTokenizer::parseURI(CSSParserString& string)
 }
 
 template <typename CharacterType>
-inline bool CSSTokenizer::parseUnicodeRange()
+inline bool BisonCSSTokenizer::parseUnicodeRange()
 {
     CharacterType* character = currentCharacter<CharacterType>() + 1;
     int length = 6;
@@ -732,7 +732,7 @@ inline bool CSSTokenizer::parseUnicodeRange()
 }
 
 template <typename CharacterType>
-bool CSSTokenizer::parseNthChild()
+bool BisonCSSTokenizer::parseNthChild()
 {
     CharacterType* character = currentCharacter<CharacterType>();
 
@@ -746,7 +746,7 @@ bool CSSTokenizer::parseNthChild()
 }
 
 template <typename CharacterType>
-bool CSSTokenizer::parseNthChildExtra()
+bool BisonCSSTokenizer::parseNthChildExtra()
 {
     CharacterType* character = skipWhiteSpace(currentCharacter<CharacterType>());
     if (*character != '+' && *character != '-')
@@ -765,7 +765,7 @@ bool CSSTokenizer::parseNthChildExtra()
 }
 
 template <typename CharacterType>
-inline bool CSSTokenizer::detectFunctionTypeToken(int length)
+inline bool BisonCSSTokenizer::detectFunctionTypeToken(int length)
 {
     ASSERT(length > 0);
     CharacterType* name = tokenStart<CharacterType>();
@@ -815,7 +815,7 @@ inline bool CSSTokenizer::detectFunctionTypeToken(int length)
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::detectMediaQueryToken(int length)
+inline void BisonCSSTokenizer::detectMediaQueryToken(int length)
 {
     ASSERT(m_parsingMode == MediaQueryMode);
     CharacterType* name = tokenStart<CharacterType>();
@@ -837,7 +837,7 @@ inline void CSSTokenizer::detectMediaQueryToken(int length)
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::detectNumberToken(CharacterType* type, int length)
+inline void BisonCSSTokenizer::detectNumberToken(CharacterType* type, int length)
 {
     ASSERT(length > 0);
 
@@ -930,7 +930,7 @@ inline void CSSTokenizer::detectNumberToken(CharacterType* type, int length)
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::detectDashToken(int length)
+inline void BisonCSSTokenizer::detectDashToken(int length)
 {
     CharacterType* name = tokenStart<CharacterType>();
 
@@ -949,7 +949,7 @@ inline void CSSTokenizer::detectDashToken(int length)
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
+inline void BisonCSSTokenizer::detectAtToken(int length, bool hasEscape)
 {
     CharacterType* name = tokenStart<CharacterType>();
     ASSERT(name[0] == '@' && length >= 2);
@@ -1095,7 +1095,7 @@ inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
 }
 
 template <typename CharacterType>
-inline void CSSTokenizer::detectSupportsToken(int length)
+inline void BisonCSSTokenizer::detectSupportsToken(int length)
 {
     ASSERT(m_parsingMode == SupportsMode);
     CharacterType* name = tokenStart<CharacterType>();
@@ -1114,7 +1114,7 @@ inline void CSSTokenizer::detectSupportsToken(int length)
 }
 
 template <typename SrcCharacterType>
-int CSSTokenizer::realLex(void* yylvalWithoutType)
+int BisonCSSTokenizer::realLex(void* yylvalWithoutType)
 {
     YYSTYPE* yylval = static_cast<YYSTYPE*>(yylvalWithoutType);
     // Write pointer for the next character.
@@ -1513,18 +1513,18 @@ restartAfterComment:
 }
 
 template <>
-inline void CSSTokenizer::setTokenStart<LChar>(LChar* tokenStart)
+inline void BisonCSSTokenizer::setTokenStart<LChar>(LChar* tokenStart)
 {
     m_tokenStart.ptr8 = tokenStart;
 }
 
 template <>
-inline void CSSTokenizer::setTokenStart<UChar>(UChar* tokenStart)
+inline void BisonCSSTokenizer::setTokenStart<UChar>(UChar* tokenStart)
 {
     m_tokenStart.ptr16 = tokenStart;
 }
 
-void CSSTokenizer::setupTokenizer(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
+void BisonCSSTokenizer::setupTokenizer(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_parsedTextPrefixLength = prefixLength;
     m_parsedTextSuffixLength = suffixLength;
@@ -1551,7 +1551,7 @@ void CSSTokenizer::setupTokenizer(const char* prefix, unsigned prefixLength, con
         m_currentCharacter8 = m_dataStart8.get();
         m_currentCharacter16 = 0;
         setTokenStart<LChar>(m_currentCharacter8);
-        m_lexFunc = &CSSTokenizer::realLex<LChar>;
+        m_lexFunc = &BisonCSSTokenizer::realLex<LChar>;
         return;
     }
 
@@ -1573,7 +1573,7 @@ void CSSTokenizer::setupTokenizer(const char* prefix, unsigned prefixLength, con
     m_currentCharacter8 = 0;
     m_currentCharacter16 = m_dataStart16.get();
     setTokenStart<UChar>(m_currentCharacter16);
-    m_lexFunc = &CSSTokenizer::realLex<UChar>;
+    m_lexFunc = &BisonCSSTokenizer::realLex<UChar>;
 }
 
 } // namespace blink

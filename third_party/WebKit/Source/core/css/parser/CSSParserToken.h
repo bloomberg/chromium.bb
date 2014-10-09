@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaQueryToken_h
-#define MediaQueryToken_h
+#ifndef CSSParserToken_h
+#define CSSParserToken_h
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-enum MediaQueryTokenType {
+enum CSSParserTokenType {
     IdentToken = 0,
     FunctionToken,
     DelimiterToken,
@@ -38,7 +38,7 @@ enum NumericValueType {
     NumberValueType,
 };
 
-class MediaQueryToken {
+class CSSParserToken {
 public:
     enum BlockType {
         NotBlock,
@@ -46,11 +46,11 @@ public:
         BlockEnd,
     };
 
-    MediaQueryToken(MediaQueryTokenType, BlockType = NotBlock);
-    MediaQueryToken(MediaQueryTokenType, String value, BlockType = NotBlock);
+    CSSParserToken(CSSParserTokenType, BlockType = NotBlock);
+    CSSParserToken(CSSParserTokenType, String value, BlockType = NotBlock);
 
-    MediaQueryToken(MediaQueryTokenType, UChar); // for DelimiterToken
-    MediaQueryToken(MediaQueryTokenType, double, NumericValueType); // for NumberToken
+    CSSParserToken(CSSParserTokenType, UChar); // for DelimiterToken
+    CSSParserToken(CSSParserTokenType, double, NumericValueType); // for NumberToken
 
     // Converts NumberToken to DimensionToken.
     void convertToDimensionWithUnit(String);
@@ -58,7 +58,7 @@ public:
     // Converts NumberToken to PercentageToken.
     void convertToPercentage();
 
-    MediaQueryTokenType type() const { return m_type; }
+    CSSParserTokenType type() const { return m_type; }
     String value() const { return m_value; }
     String textForUnitTests() const;
 
@@ -69,7 +69,7 @@ public:
     CSSPrimitiveValue::UnitType unitType() const { return m_unit; }
 
 private:
-    MediaQueryTokenType m_type;
+    CSSParserTokenType m_type;
     String m_value;
 
     UChar m_delimiter; // Could be rolled into m_value?
@@ -81,7 +81,7 @@ private:
     BlockType m_blockType;
 };
 
-typedef Vector<MediaQueryToken>::iterator MediaQueryTokenIterator;
+typedef Vector<CSSParserToken>::iterator CSSParserTokenIterator;
 
 } // namespace
 

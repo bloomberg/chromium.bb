@@ -9,7 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/parser/MediaQueryTokenizer.h"
+#include "core/css/parser/CSSTokenizer.h"
 
 #include <gtest/gtest.h>
 
@@ -117,8 +117,8 @@ TEST(SizesCalcParserTest, Basic)
     RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     for (unsigned i = 0; testCases[i].input; ++i) {
-        Vector<MediaQueryToken> tokens;
-        MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
+        Vector<CSSParserToken> tokens;
+        CSSTokenizer::tokenize(testCases[i].input, tokens);
         SizesCalcParser calcParser(tokens.begin(), tokens.end(), mediaValues);
         ASSERT_EQ(testCases[i].valid, calcParser.isValid());
         if (calcParser.isValid()) {

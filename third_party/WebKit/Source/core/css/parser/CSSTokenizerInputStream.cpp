@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/parser/MediaQueryInputStream.h"
+#include "core/css/parser/CSSTokenizerInputStream.h"
 
 #include "core/html/parser/InputStreamPreprocessor.h"
 
 namespace blink {
 
-MediaQueryInputStream::MediaQueryInputStream(String input)
+CSSTokenizerInputStream::CSSTokenizerInputStream(String input)
     : m_offset(0)
     , m_string(input)
 {
 }
 
-UChar MediaQueryInputStream::peek(unsigned lookaheadOffset)
+UChar CSSTokenizerInputStream::peek(unsigned lookaheadOffset)
 {
     ASSERT((m_offset + lookaheadOffset) <= maxLength());
     if ((m_offset + lookaheadOffset) >= m_string.length())
@@ -23,19 +23,19 @@ UChar MediaQueryInputStream::peek(unsigned lookaheadOffset)
     return m_string[m_offset + lookaheadOffset];
 }
 
-void MediaQueryInputStream::advance(unsigned offset)
+void CSSTokenizerInputStream::advance(unsigned offset)
 {
     ASSERT(m_offset + offset <= maxLength());
     m_offset += offset;
 }
 
-void MediaQueryInputStream::pushBack(UChar cc)
+void CSSTokenizerInputStream::pushBack(UChar cc)
 {
     --m_offset;
     ASSERT(nextInputChar() == cc);
 }
 
-unsigned long long MediaQueryInputStream::getUInt(unsigned start, unsigned end)
+unsigned long long CSSTokenizerInputStream::getUInt(unsigned start, unsigned end)
 {
     ASSERT(start <= end && ((m_offset + end) <= m_string.length()));
     bool isResultOK = false;
@@ -49,7 +49,7 @@ unsigned long long MediaQueryInputStream::getUInt(unsigned start, unsigned end)
     return isResultOK ? result : 0;
 }
 
-double MediaQueryInputStream::getDouble(unsigned start, unsigned end)
+double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
 {
     ASSERT(start <= end && ((m_offset + end) <= m_string.length()));
     bool isResultOK = false;

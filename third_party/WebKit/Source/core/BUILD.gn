@@ -376,8 +376,8 @@ source_set("core_generated") {
     # Generated from MediaTypeNames.in
     "$blink_core_output_dir/MediaTypeNames.cpp",
 
-    # Generated from CSSTokenizer-in.cpp
-    "$blink_core_output_dir/CSSTokenizer.cpp",
+    # Generated from BisonCSSTokenizer-in.cpp
+    "$blink_core_output_dir/BisonCSSTokenizer.cpp",
 
     # Generated from BisonCSSParser-in.cpp
     "$blink_core_output_dir/BisonCSSParser.cpp",
@@ -556,10 +556,10 @@ group("make_core_generated") {
     ":make_core_generated_private_script_for_testing",
     ":make_core_generated_html_entity_table",
     ":make_core_generated_css_property_names",
+    ":make_core_generated_css_tokenizer_codepoints",
     ":make_core_generated_media_feature_names",
     ":make_core_generated_media_features",
     ":make_core_generated_media_type_names",
-    ":make_core_generated_media_query_tokenizer_codepoints",
     ":make_core_generated_style_property_shorthand",
     ":make_core_generated_style_builder",
     ":make_core_generated_css_value_keywords",
@@ -887,8 +887,8 @@ make_qualified_names("make_core_generated_xml_names") {
 
 # "MakeTokenMatcher" in make_core_generated from GYP.
 make_token_matcher("make_core_generated_make_token_matcher") {
-  input_file = "css/parser/CSSTokenizer-in.cpp"
-  output_file = "$blink_core_output_dir/CSSTokenizer.cpp"
+  input_file = "css/parser/BisonCSSTokenizer-in.cpp"
+  output_file = "$blink_core_output_dir/BisonCSSTokenizer.cpp"
 }
 
 # "MakeParser" in make_core_generated from GYP.
@@ -969,14 +969,14 @@ action("make_core_generated_html_entity_table") {
   deps = make_core_generated_deps
 }
 
-# "MediaQueryTokenizerCodepoints" in make_core_generated from GYP.
-action("make_core_generated_media_query_tokenizer_codepoints") {
+# "CSSTokenizerCodepoints" in make_core_generated from GYP.
+action("make_core_generated_css_tokenizer_codepoints") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":make_core_generated" ]
-  script = "../build/scripts/make_mediaquery_tokenizer_codepoints.py"
+  script = "../build/scripts/make_css_tokenizer_codepoints.py"
 
   outputs = [
-    "$blink_core_output_dir/MediaQueryTokenizerCodepoints.cpp",
+    "$blink_core_output_dir/CSSTokenizerCodepoints.cpp",
   ]
 
   args = [

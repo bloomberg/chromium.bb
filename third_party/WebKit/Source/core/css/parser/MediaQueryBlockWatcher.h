@@ -7,13 +7,13 @@
 
 namespace blink {
 
-class MediaQueryToken;
+class CSSParserToken;
 
 class MediaQueryBlockWatcher {
 public:
 
     MediaQueryBlockWatcher();
-    void handleToken(const MediaQueryToken&);
+    void handleToken(const CSSParserToken&);
     unsigned blockLevel() const { return m_blockLevel; }
 
 private:

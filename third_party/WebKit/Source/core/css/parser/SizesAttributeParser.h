@@ -22,10 +22,10 @@ public:
     float length();
 
 private:
-    bool parse(Vector<MediaQueryToken>& tokens);
-    bool parseMediaConditionAndLength(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken);
+    bool parse(Vector<CSSParserToken>& tokens);
+    bool parseMediaConditionAndLength(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken);
     float effectiveSize();
-    bool calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, float& result);
+    bool calculateLengthInPixels(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken, float& result);
     bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
     unsigned effectiveSizeDefaultValue();
 
@@ -34,7 +34,7 @@ private:
     float m_length;
     bool m_lengthWasSet;
     bool m_viewportDependant;
-    Vector<MediaQueryToken> m_tokens;
+    Vector<CSSParserToken> m_tokens;
     bool m_isValid;
     MediaQueryBlockWatcher m_blockWatcher;
 };

@@ -33,11 +33,11 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/parser/BisonCSSTokenizer.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserObserver.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSPropertyParser.h"
-#include "core/css/parser/CSSTokenizer.h"
 #include "platform/graphics/Color.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -63,7 +63,7 @@ class StyleRuleKeyframes;
 class StyleKeyframe;
 class StyleSheetContents;
 
-// FIXME: This class is shared with CSSTokenizer so should we rename it to CSSSourceLocation?
+// FIXME: This class is shared with BisonCSSTokenizer so should we rename it to CSSSourceLocation?
 struct CSSParserLocation {
     unsigned offset;
     unsigned lineNumber;
@@ -301,7 +301,7 @@ private:
     bool isLoggingErrors();
     void logError(const String& message, const CSSParserLocation&);
 
-    CSSTokenizer m_tokenizer;
+    BisonCSSTokenizer m_tokenizer;
 
     friend class TransformOperationInfo;
     friend class FilterOperationInfo;

@@ -6,7 +6,7 @@
 #define SizesCalcParser_h
 
 #include "core/css/MediaValues.h"
-#include "core/css/parser/MediaQueryToken.h"
+#include "core/css/parser/CSSParserToken.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -34,19 +34,19 @@ struct SizesCalcValue {
 class SizesCalcParser {
 
 public:
-    SizesCalcParser(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues>);
+    SizesCalcParser(CSSParserTokenIterator start, CSSParserTokenIterator end, PassRefPtr<MediaValues>);
 
     bool viewportDependant() const { return m_viewportDependant; }
     float result() const;
     bool isValid() const { return m_isValid; }
 
 private:
-    bool calcToReversePolishNotation(MediaQueryTokenIterator start, MediaQueryTokenIterator end);
+    bool calcToReversePolishNotation(CSSParserTokenIterator start, CSSParserTokenIterator end);
     bool calculate();
-    void appendNumber(const MediaQueryToken&);
-    bool appendLength(const MediaQueryToken&);
-    bool handleOperator(Vector<MediaQueryToken>& stack, const MediaQueryToken&);
-    void appendOperator(const MediaQueryToken&);
+    void appendNumber(const CSSParserToken&);
+    bool appendLength(const CSSParserToken&);
+    bool handleOperator(Vector<CSSParserToken>& stack, const CSSParserToken&);
+    void appendOperator(const CSSParserToken&);
 
     Vector<SizesCalcValue> m_valueList;
     RefPtr<MediaValues> m_mediaValues;

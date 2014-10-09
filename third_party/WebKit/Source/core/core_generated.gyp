@@ -297,16 +297,16 @@
           ],
         },
         {
-          'action_name': 'MediaQueryTokenizerCodepoints',
+          'action_name': 'CSSTokenizerCodepoints',
           'inputs': [
-            '../build/scripts/make_mediaquery_tokenizer_codepoints.py',
+            '../build/scripts/make_css_tokenizer_codepoints.py',
           ],
           'outputs': [
-            '<(blink_core_output_dir)/MediaQueryTokenizerCodepoints.cpp',
+            '<(blink_core_output_dir)/CSSTokenizerCodepoints.cpp',
           ],
           'action': [
             'python',
-            '../build/scripts/make_mediaquery_tokenizer_codepoints.py',
+            '../build/scripts/make_css_tokenizer_codepoints.py',
             '--output_dir',
             '<(blink_core_output_dir)',
           ],
@@ -728,16 +728,16 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_token_matcher.py',
-            '../core/css/parser/CSSTokenizer-in.cpp',
+            '../core/css/parser/BisonCSSTokenizer-in.cpp',
           ],
           'outputs': [
-            '<(blink_core_output_dir)/CSSTokenizer.cpp',
+            '<(blink_core_output_dir)/BisonCSSTokenizer.cpp',
           ],
           'action': [
             'python',
             '../build/scripts/make_token_matcher.py',
-            '../core/css/parser/CSSTokenizer-in.cpp',
-            '<(blink_core_output_dir)/CSSTokenizer.cpp',
+            '../core/css/parser/BisonCSSTokenizer-in.cpp',
+            '<(blink_core_output_dir)/BisonCSSTokenizer.cpp',
           ],
         },
         {

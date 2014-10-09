@@ -238,8 +238,8 @@
         # Generated from MediaTypeNames.in
         '<(blink_core_output_dir)/MediaTypeNames.cpp',
 
-        # Generated from CSSTokenizer-in.cpp
-        '<(blink_core_output_dir)/CSSTokenizer.cpp',
+        # Generated from BisonCSSTokenizer-in.cpp
+        '<(blink_core_output_dir)/BisonCSSTokenizer.cpp',
 
         # Generated from BisonCSSParser-in.cpp
         '<(blink_core_output_dir)/BisonCSSParser.cpp',

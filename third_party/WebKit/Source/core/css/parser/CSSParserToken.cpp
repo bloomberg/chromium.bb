@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/parser/MediaQueryToken.h"
+#include "core/css/parser/CSSParserToken.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
@@ -12,7 +12,7 @@
 namespace blink {
 
 
-MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, BlockType blockType)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType blockType)
     : m_type(type)
     , m_delimiter(0)
     , m_numericValue(0)
@@ -22,7 +22,7 @@ MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, BlockType blockType)
 }
 
 // Just a helper used for Delimiter tokens.
-MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, UChar c)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
     : m_type(type)
     , m_delimiter(c)
     , m_numericValue(0)
@@ -32,7 +32,7 @@ MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, UChar c)
     ASSERT(m_type == DelimiterToken);
 }
 
-MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, String value, BlockType blockType)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, String value, BlockType blockType)
     : m_type(type)
     , m_value(value)
     , m_delimiter(0)
@@ -42,7 +42,7 @@ MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, String value, BlockTy
 {
 }
 
-MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, double numericValue, NumericValueType numericValueType)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, NumericValueType numericValueType)
     : m_type(type)
     , m_delimiter(0)
     , m_numericValueType(numericValueType)
@@ -53,14 +53,14 @@ MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, double numericValue, 
     ASSERT(type == NumberToken);
 }
 
-void MediaQueryToken::convertToDimensionWithUnit(String unit)
+void CSSParserToken::convertToDimensionWithUnit(String unit)
 {
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;
     m_unit = CSSPrimitiveValue::fromName(unit);
 }
 
-void MediaQueryToken::convertToPercentage()
+void CSSParserToken::convertToPercentage()
 {
     ASSERT(m_type == NumberToken);
     m_type = PercentageToken;
@@ -69,7 +69,7 @@ void MediaQueryToken::convertToPercentage()
 
 // This function is used only for testing
 // FIXME - This doesn't cover all possible Token types, but it's enough for current testing.
-String MediaQueryToken::textForUnitTests() const
+String CSSParserToken::textForUnitTests() const
 {
     char buffer[std::numeric_limits<float>::digits];
     if (!m_value.isNull())
@@ -108,19 +108,19 @@ String MediaQueryToken::textForUnitTests() const
     return String();
 }
 
-UChar MediaQueryToken::delimiter() const
+UChar CSSParserToken::delimiter() const
 {
     ASSERT(m_type == DelimiterToken);
     return m_delimiter;
 }
 
-NumericValueType MediaQueryToken::numericValueType() const
+NumericValueType CSSParserToken::numericValueType() const
 {
     ASSERT(m_type == NumberToken || m_type == PercentageToken || m_type == DimensionToken);
     return m_numericValueType;
 }
 
-double MediaQueryToken::numericValue() const
+double CSSParserToken::numericValue() const
 {
     ASSERT(m_type == NumberToken || m_type == PercentageToken || m_type == DimensionToken);
     return m_numericValue;

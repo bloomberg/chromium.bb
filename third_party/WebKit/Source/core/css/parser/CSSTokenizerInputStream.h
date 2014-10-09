@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaQueryInputStream_h
-#define MediaQueryInputStream_h
+#ifndef CSSTokenizerInputStream_h
+#define CSSTokenizerInputStream_h
 
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class MediaQueryInputStream {
-    WTF_MAKE_NONCOPYABLE(MediaQueryInputStream);
+class CSSTokenizerInputStream {
+    WTF_MAKE_NONCOPYABLE(CSSTokenizerInputStream);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    MediaQueryInputStream(String input);
+    CSSTokenizerInputStream(String input);
 
     UChar peek(unsigned);
     inline UChar nextInputChar()
@@ -53,5 +53,5 @@ private:
 
 } // namespace blink
 
-#endif // MediaQueryInputStream_h
+#endif // CSSTokenizerInputStream_h
 

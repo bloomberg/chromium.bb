@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/parser/MediaQueryTokenizer.h"
+#include "core/css/parser/CSSTokenizer.h"
 
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "wtf/PassOwnPtr.h"
@@ -22,7 +22,7 @@ typedef struct {
     const unsigned finalLevel;
 } BlockTestCase;
 
-TEST(MediaQueryTokenizerTest, Basic)
+TEST(CSSTokenizerTest, Basic)
 {
     TestCase testCases[] = {
         { "(max-width: 50px)", "(max-width: 50px)" },
@@ -61,8 +61,8 @@ TEST(MediaQueryTokenizerTest, Basic)
     };
 
     for (int i = 0; testCases[i].input; ++i) {
-        Vector<MediaQueryToken> tokens;
-        MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
+        Vector<CSSParserToken> tokens;
+        CSSTokenizer::tokenize(testCases[i].input, tokens);
         StringBuilder output;
         for (size_t j = 0; j < tokens.size(); ++j)
             output.append(tokens[j].textForUnitTests());
@@ -70,7 +70,7 @@ TEST(MediaQueryTokenizerTest, Basic)
     }
 }
 
-TEST(MediaQueryTokenizerBlockTest, Basic)
+TEST(CSSTokenizerBlockTest, Basic)
 {
     BlockTestCase testCases[] = {
         {"(max-width: 800px()), (max-width: 800px)", 2, 0},
@@ -102,8 +102,8 @@ TEST(MediaQueryTokenizerBlockTest, Basic)
         {0, 0, 0} // Do not remove the terminator line.
     };
     for (int i = 0; testCases[i].input; ++i) {
-        Vector<MediaQueryToken> tokens;
-        MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
+        Vector<CSSParserToken> tokens;
+        CSSTokenizer::tokenize(testCases[i].input, tokens);
         MediaQueryBlockWatcher blockWatcher;
 
         unsigned maxLevel = 0;
@@ -118,16 +118,16 @@ TEST(MediaQueryTokenizerBlockTest, Basic)
     }
 }
 
-void testToken(UChar c, MediaQueryTokenType tokenType)
+void testToken(UChar c, CSSParserTokenType tokenType)
 {
-    Vector<MediaQueryToken> tokens;
+    Vector<CSSParserToken> tokens;
     StringBuilder input;
     input.append(c);
-    MediaQueryTokenizer::tokenize(input.toString(), tokens);
+    CSSTokenizer::tokenize(input.toString(), tokens);
     ASSERT_EQ(tokens[0].type(), tokenType);
 }
 
-TEST(MediaQueryTokenizerCodepointsTest, Basic)
+TEST(CSSTokenizerCodepointsTest, Basic)
 {
     for (UChar c = 0; c <= 1000; ++c) {
         if (isASCIIDigit(c))

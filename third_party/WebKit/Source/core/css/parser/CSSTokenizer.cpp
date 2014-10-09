@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/parser/MediaQueryTokenizer.h"
+#include "core/css/parser/CSSTokenizer.h"
 
 namespace blink {
-#include "core/MediaQueryTokenizerCodepoints.cpp"
+#include "core/CSSTokenizerCodepoints.cpp"
 }
 
-#include "core/css/parser/MediaQueryInputStream.h"
+#include "core/css/parser/CSSTokenizerInputStream.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/unicode/CharacterNames.h"
 
@@ -37,37 +37,37 @@ static bool twoCharsAreValidEscape(UChar first, UChar second)
     return ((first == '\\') && (second != '\n') && (second != kEndOfFileMarker));
 }
 
-MediaQueryTokenizer::MediaQueryTokenizer(MediaQueryInputStream& inputStream)
+CSSTokenizer::CSSTokenizer(CSSTokenizerInputStream& inputStream)
     : m_input(inputStream)
 {
 }
 
-void MediaQueryTokenizer::reconsume(UChar c)
+void CSSTokenizer::reconsume(UChar c)
 {
     m_input.pushBack(c);
 }
 
-UChar MediaQueryTokenizer::consume()
+UChar CSSTokenizer::consume()
 {
     UChar current = m_input.nextInputChar();
     m_input.advance();
     return current;
 }
 
-void MediaQueryTokenizer::consume(unsigned offset)
+void CSSTokenizer::consume(unsigned offset)
 {
     m_input.advance(offset);
 }
 
-MediaQueryToken MediaQueryTokenizer::whiteSpace(UChar cc)
+CSSParserToken CSSTokenizer::whiteSpace(UChar cc)
 {
     // CSS Tokenization is currently lossy, but we could record
     // the exact whitespace instead of discarding it here.
     consumeUntilNonWhitespace();
-    return MediaQueryToken(WhitespaceToken);
+    return CSSParserToken(WhitespaceToken);
 }
 
-static bool popIfBlockMatches(Vector<MediaQueryTokenType>& blockStack, MediaQueryTokenType type)
+static bool popIfBlockMatches(Vector<CSSParserTokenType>& blockStack, CSSParserTokenType type)
 {
     if (!blockStack.isEmpty() && blockStack.last() == type) {
         blockStack.removeLast();
@@ -76,75 +76,75 @@ static bool popIfBlockMatches(Vector<MediaQueryTokenType>& blockStack, MediaQuer
     return false;
 }
 
-MediaQueryToken MediaQueryTokenizer::blockStart(MediaQueryTokenType type)
+CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType type)
 {
     m_blockStack.append(type);
-    return MediaQueryToken(type, MediaQueryToken::BlockStart);
+    return CSSParserToken(type, CSSParserToken::BlockStart);
 }
 
-MediaQueryToken MediaQueryTokenizer::blockStart(MediaQueryTokenType blockType, MediaQueryTokenType type, String name)
+CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType, CSSParserTokenType type, String name)
 {
     m_blockStack.append(blockType);
-    return MediaQueryToken(type, name, MediaQueryToken::BlockStart);
+    return CSSParserToken(type, name, CSSParserToken::BlockStart);
 }
 
-MediaQueryToken MediaQueryTokenizer::blockEnd(MediaQueryTokenType type, MediaQueryTokenType startType)
+CSSParserToken CSSTokenizer::blockEnd(CSSParserTokenType type, CSSParserTokenType startType)
 {
     if (popIfBlockMatches(m_blockStack, startType))
-        return MediaQueryToken(type, MediaQueryToken::BlockEnd);
-    return MediaQueryToken(type);
+        return CSSParserToken(type, CSSParserToken::BlockEnd);
+    return CSSParserToken(type);
 }
 
-MediaQueryToken MediaQueryTokenizer::leftParenthesis(UChar cc)
+CSSParserToken CSSTokenizer::leftParenthesis(UChar cc)
 {
     return blockStart(LeftParenthesisToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::rightParenthesis(UChar cc)
+CSSParserToken CSSTokenizer::rightParenthesis(UChar cc)
 {
     return blockEnd(RightParenthesisToken, LeftParenthesisToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::leftBracket(UChar cc)
+CSSParserToken CSSTokenizer::leftBracket(UChar cc)
 {
     return blockStart(LeftBracketToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::rightBracket(UChar cc)
+CSSParserToken CSSTokenizer::rightBracket(UChar cc)
 {
     return blockEnd(RightBracketToken, LeftBracketToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::leftBrace(UChar cc)
+CSSParserToken CSSTokenizer::leftBrace(UChar cc)
 {
     return blockStart(LeftBraceToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::rightBrace(UChar cc)
+CSSParserToken CSSTokenizer::rightBrace(UChar cc)
 {
     return blockEnd(RightBraceToken, LeftBraceToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::plusOrFullStop(UChar cc)
+CSSParserToken CSSTokenizer::plusOrFullStop(UChar cc)
 {
     if (nextCharsAreNumber(cc)) {
         reconsume(cc);
         return consumeNumericToken();
     }
-    return MediaQueryToken(DelimiterToken, cc);
+    return CSSParserToken(DelimiterToken, cc);
 }
 
-MediaQueryToken MediaQueryTokenizer::asterisk(UChar cc)
+CSSParserToken CSSTokenizer::asterisk(UChar cc)
 {
-    return MediaQueryToken(DelimiterToken, cc);
+    return CSSParserToken(DelimiterToken, cc);
 }
 
-MediaQueryToken MediaQueryTokenizer::comma(UChar cc)
+CSSParserToken CSSTokenizer::comma(UChar cc)
 {
-    return MediaQueryToken(CommaToken);
+    return CSSParserToken(CommaToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::hyphenMinus(UChar cc)
+CSSParserToken CSSTokenizer::hyphenMinus(UChar cc)
 {
     if (nextCharsAreNumber(cc)) {
         reconsume(cc);
@@ -154,61 +154,61 @@ MediaQueryToken MediaQueryTokenizer::hyphenMinus(UChar cc)
         reconsume(cc);
         return consumeIdentLikeToken();
     }
-    return MediaQueryToken(DelimiterToken, cc);
+    return CSSParserToken(DelimiterToken, cc);
 }
 
-MediaQueryToken MediaQueryTokenizer::solidus(UChar cc)
+CSSParserToken CSSTokenizer::solidus(UChar cc)
 {
     if (consumeIfNext('*')) {
         // We're intentionally deviating from the spec here, by creating tokens for CSS comments.
-        return consumeUntilCommentEndFound()? MediaQueryToken(CommentToken): MediaQueryToken(EOFToken);
+        return consumeUntilCommentEndFound()? CSSParserToken(CommentToken): CSSParserToken(EOFToken);
     }
 
-    return MediaQueryToken(DelimiterToken, cc);
+    return CSSParserToken(DelimiterToken, cc);
 }
 
-MediaQueryToken MediaQueryTokenizer::colon(UChar cc)
+CSSParserToken CSSTokenizer::colon(UChar cc)
 {
-    return MediaQueryToken(ColonToken);
+    return CSSParserToken(ColonToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::semiColon(UChar cc)
+CSSParserToken CSSTokenizer::semiColon(UChar cc)
 {
-    return MediaQueryToken(SemicolonToken);
+    return CSSParserToken(SemicolonToken);
 }
 
-MediaQueryToken MediaQueryTokenizer::reverseSolidus(UChar cc)
+CSSParserToken CSSTokenizer::reverseSolidus(UChar cc)
 {
     if (twoCharsAreValidEscape(cc, m_input.nextInputChar())) {
         reconsume(cc);
         return consumeIdentLikeToken();
     }
-    return MediaQueryToken(DelimiterToken, cc);
+    return CSSParserToken(DelimiterToken, cc);
 }
 
-MediaQueryToken MediaQueryTokenizer::asciiDigit(UChar cc)
+CSSParserToken CSSTokenizer::asciiDigit(UChar cc)
 {
     reconsume(cc);
     return consumeNumericToken();
 }
 
-MediaQueryToken MediaQueryTokenizer::nameStart(UChar cc)
+CSSParserToken CSSTokenizer::nameStart(UChar cc)
 {
     reconsume(cc);
     return consumeIdentLikeToken();
 }
 
-MediaQueryToken MediaQueryTokenizer::stringStart(UChar cc)
+CSSParserToken CSSTokenizer::stringStart(UChar cc)
 {
     return consumeStringTokenUntil(cc);
 }
 
-MediaQueryToken MediaQueryTokenizer::endOfFile(UChar cc)
+CSSParserToken CSSTokenizer::endOfFile(UChar cc)
 {
-    return MediaQueryToken(EOFToken);
+    return CSSParserToken(EOFToken);
 }
 
-void MediaQueryTokenizer::tokenize(String string, Vector<MediaQueryToken>& outTokens)
+void CSSTokenizer::tokenize(String string, Vector<CSSParserToken>& outTokens)
 {
     // According to the spec, we should perform preprocessing here.
     // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
@@ -221,17 +221,17 @@ void MediaQueryTokenizer::tokenize(String string, Vector<MediaQueryToken>& outTo
     if (string.isEmpty())
         return;
 
-    MediaQueryInputStream input(string);
-    MediaQueryTokenizer tokenizer(input);
+    CSSTokenizerInputStream input(string);
+    CSSTokenizer tokenizer(input);
     while (true) {
-        MediaQueryToken token = tokenizer.nextToken();
+        CSSParserToken token = tokenizer.nextToken();
         outTokens.append(token);
         if (token.type() == EOFToken)
             return;
     }
 }
 
-MediaQueryToken MediaQueryTokenizer::nextToken()
+CSSParserToken CSSTokenizer::nextToken()
 {
     // Unlike the HTMLTokenizer, the CSS Syntax spec is written
     // as a stateless, (fixed-size) look-ahead tokenizer.
@@ -247,15 +247,15 @@ MediaQueryToken MediaQueryTokenizer::nextToken()
         ASSERT_WITH_SECURITY_IMPLICATION(cc < codePointsNumber);
         codePointFunc = codePoints[cc];
     } else {
-        codePointFunc = &MediaQueryTokenizer::nameStart;
+        codePointFunc = &CSSTokenizer::nameStart;
     }
 
     if (codePointFunc)
         return ((this)->*(codePointFunc))(cc);
-    return MediaQueryToken(DelimiterToken, cc);
+    return CSSParserToken(DelimiterToken, cc);
 }
 
-static int getSign(MediaQueryInputStream& input, unsigned& offset)
+static int getSign(CSSTokenizerInputStream& input, unsigned& offset)
 {
     int sign = 1;
     if (input.nextInputChar() == '+') {
@@ -267,7 +267,7 @@ static int getSign(MediaQueryInputStream& input, unsigned& offset)
     return sign;
 }
 
-static unsigned long long getInteger(MediaQueryInputStream& input, unsigned& offset)
+static unsigned long long getInteger(CSSTokenizerInputStream& input, unsigned& offset)
 {
     unsigned intStartPos = offset;
     offset = input.skipWhilePredicate<isASCIIDigit>(offset);
@@ -275,7 +275,7 @@ static unsigned long long getInteger(MediaQueryInputStream& input, unsigned& off
     return input.getUInt(intStartPos, intEndPos);
 }
 
-static double getFraction(MediaQueryInputStream& input, unsigned& offset, unsigned& digitsNumber)
+static double getFraction(CSSTokenizerInputStream& input, unsigned& offset, unsigned& digitsNumber)
 {
     unsigned fractionStartPos = 0;
     unsigned fractionEndPos = 0;
@@ -288,7 +288,7 @@ static double getFraction(MediaQueryInputStream& input, unsigned& offset, unsign
     return input.getDouble(fractionStartPos, fractionEndPos);
 }
 
-static unsigned long long getExponent(MediaQueryInputStream& input, unsigned& offset, int& sign)
+static unsigned long long getExponent(CSSTokenizerInputStream& input, unsigned& offset, int& sign)
 {
     unsigned exponentStartPos = 0;
     unsigned exponentEndPos = 0;
@@ -313,7 +313,7 @@ static unsigned long long getExponent(MediaQueryInputStream& input, unsigned& of
 // This method merges the following spec sections for efficiency
 // http://www.w3.org/TR/css3-syntax/#consume-a-number
 // http://www.w3.org/TR/css3-syntax/#convert-a-string-to-a-number
-MediaQueryToken MediaQueryTokenizer::consumeNumber()
+CSSParserToken CSSTokenizer::consumeNumber()
 {
     ASSERT(nextCharsAreNumber());
     NumericValueType type = IntegerValueType;
@@ -332,13 +332,13 @@ MediaQueryToken MediaQueryTokenizer::consumeNumber()
     if (fractionDigits > 0)
         type = NumberValueType;
 
-    return MediaQueryToken(NumberToken, value, type);
+    return CSSParserToken(NumberToken, value, type);
 }
 
 // http://www.w3.org/TR/css3-syntax/#consume-a-numeric-token
-MediaQueryToken MediaQueryTokenizer::consumeNumericToken()
+CSSParserToken CSSTokenizer::consumeNumericToken()
 {
-    MediaQueryToken token = consumeNumber();
+    CSSParserToken token = consumeNumber();
     if (nextCharsAreIdentifier())
         token.convertToDimensionWithUnit(consumeName());
     else if (consumeIfNext('%'))
@@ -347,13 +347,13 @@ MediaQueryToken MediaQueryTokenizer::consumeNumericToken()
 }
 
 // http://www.w3.org/TR/css3-syntax/#consume-an-ident-like-token
-MediaQueryToken MediaQueryTokenizer::consumeIdentLikeToken()
+CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 {
     String name = consumeName();
     if (consumeIfNext('(')) {
         return blockStart(LeftParenthesisToken, FunctionToken, name);
     }
-    return MediaQueryToken(IdentToken, name);
+    return CSSParserToken(IdentToken, name);
 }
 
 static bool isNewLine(UChar cc)
@@ -363,7 +363,7 @@ static bool isNewLine(UChar cc)
 }
 
 // http://dev.w3.org/csswg/css-syntax/#consume-a-string-token
-MediaQueryToken MediaQueryTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
+CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
 {
     StringBuilder output;
     while (true) {
@@ -372,11 +372,11 @@ MediaQueryToken MediaQueryTokenizer::consumeStringTokenUntil(UChar endingCodePoi
             // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
             if (cc == kEndOfFileMarker)
                 reconsume(cc);
-            return MediaQueryToken(StringToken, output.toString());
+            return CSSParserToken(StringToken, output.toString());
         }
         if (isNewLine(cc)) {
             reconsume(cc);
-            return MediaQueryToken(BadStringToken);
+            return CSSParserToken(BadStringToken);
         }
         if (cc == '\\') {
             if (m_input.nextInputChar() == kEndOfFileMarker)
@@ -391,14 +391,14 @@ MediaQueryToken MediaQueryTokenizer::consumeStringTokenUntil(UChar endingCodePoi
     }
 }
 
-void MediaQueryTokenizer::consumeUntilNonWhitespace()
+void CSSTokenizer::consumeUntilNonWhitespace()
 {
     // Using HTML space here rather than CSS space since we don't do preprocessing
     while (isHTMLSpace<UChar>(m_input.nextInputChar()))
         consume();
 }
 
-bool MediaQueryTokenizer::consumeUntilCommentEndFound()
+bool CSSTokenizer::consumeUntilCommentEndFound()
 {
     UChar c = consume();
     while (true) {
@@ -415,7 +415,7 @@ bool MediaQueryTokenizer::consumeUntilCommentEndFound()
     return true;
 }
 
-bool MediaQueryTokenizer::consumeIfNext(UChar character)
+bool CSSTokenizer::consumeIfNext(UChar character)
 {
     if (m_input.nextInputChar() == character) {
         consume();
@@ -425,7 +425,7 @@ bool MediaQueryTokenizer::consumeIfNext(UChar character)
 }
 
 // http://www.w3.org/TR/css3-syntax/#consume-a-name
-String MediaQueryTokenizer::consumeName()
+String CSSTokenizer::consumeName()
 {
     // FIXME: Is this as efficient as it can be?
     // The possibility of escape chars mandates a copy AFAICT.
@@ -446,7 +446,7 @@ String MediaQueryTokenizer::consumeName()
 }
 
 // http://dev.w3.org/csswg/css-syntax/#consume-an-escaped-code-point
-UChar MediaQueryTokenizer::consumeEscape()
+UChar CSSTokenizer::consumeEscape()
 {
     UChar cc = consume();
     ASSERT(cc != '\n');
@@ -472,7 +472,7 @@ UChar MediaQueryTokenizer::consumeEscape()
     return cc;
 }
 
-bool MediaQueryTokenizer::nextTwoCharsAreValidEscape()
+bool CSSTokenizer::nextTwoCharsAreValidEscape()
 {
     if (m_input.leftChars() < 1)
         return false;
@@ -480,7 +480,7 @@ bool MediaQueryTokenizer::nextTwoCharsAreValidEscape()
 }
 
 // http://www.w3.org/TR/css3-syntax/#starts-with-a-number
-bool MediaQueryTokenizer::nextCharsAreNumber(UChar first)
+bool CSSTokenizer::nextCharsAreNumber(UChar first)
 {
     UChar second = m_input.nextInputChar();
     if (isASCIIDigit(first))
@@ -492,7 +492,7 @@ bool MediaQueryTokenizer::nextCharsAreNumber(UChar first)
     return false;
 }
 
-bool MediaQueryTokenizer::nextCharsAreNumber()
+bool CSSTokenizer::nextCharsAreNumber()
 {
     UChar first = consume();
     bool areNumber = nextCharsAreNumber(first);
@@ -501,7 +501,7 @@ bool MediaQueryTokenizer::nextCharsAreNumber()
 }
 
 // http://www.w3.org/TR/css3-syntax/#would-start-an-identifier
-bool MediaQueryTokenizer::nextCharsAreIdentifier(UChar first)
+bool CSSTokenizer::nextCharsAreIdentifier(UChar first)
 {
     UChar second = m_input.nextInputChar();
     if (isNameStart(first) || twoCharsAreValidEscape(first, second))
@@ -516,7 +516,7 @@ bool MediaQueryTokenizer::nextCharsAreIdentifier(UChar first)
     return false;
 }
 
-bool MediaQueryTokenizer::nextCharsAreIdentifier()
+bool CSSTokenizer::nextCharsAreIdentifier()
 {
     UChar first = consume();
     bool areIdentifier = nextCharsAreIdentifier(first);

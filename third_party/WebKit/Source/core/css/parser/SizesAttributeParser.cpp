@@ -7,7 +7,7 @@
 
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/css/parser/MediaQueryTokenizer.h"
+#include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/SizesCalcParser.h"
 
 namespace blink {
@@ -18,7 +18,7 @@ SizesAttributeParser::SizesAttributeParser(PassRefPtr<MediaValues> mediaValues, 
     , m_lengthWasSet(false)
     , m_viewportDependant(false)
 {
-    MediaQueryTokenizer::tokenize(attribute, m_tokens);
+    CSSTokenizer::tokenize(attribute, m_tokens);
     m_isValid = parse(m_tokens);
 }
 
@@ -29,11 +29,11 @@ float SizesAttributeParser::length()
     return effectiveSizeDefaultValue();
 }
 
-bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, float& result)
+bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken, float& result)
 {
     if (startToken == endToken)
         return false;
-    MediaQueryTokenType type = startToken->type();
+    CSSParserTokenType type = startToken->type();
     if (type == DimensionToken) {
         double length;
         if (!CSSPrimitiveValue::isLength(startToken->unitType()))
@@ -58,27 +58,27 @@ bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator start
     return false;
 }
 
-static void reverseSkipIrrelevantTokens(MediaQueryTokenIterator& token, MediaQueryTokenIterator startToken)
+static void reverseSkipIrrelevantTokens(CSSParserTokenIterator& token, CSSParserTokenIterator startToken)
 {
-    MediaQueryTokenIterator endToken = token;
+    CSSParserTokenIterator endToken = token;
     while (token != startToken && (token->type() == WhitespaceToken || token->type() == CommentToken || token->type() == EOFToken))
         --token;
     if (token != endToken)
         ++token;
 }
 
-static void reverseSkipUntilComponentStart(MediaQueryTokenIterator& token, MediaQueryTokenIterator startToken)
+static void reverseSkipUntilComponentStart(CSSParserTokenIterator& token, CSSParserTokenIterator startToken)
 {
     if (token == startToken)
         return;
     --token;
-    if (token->blockType() != MediaQueryToken::BlockEnd)
+    if (token->blockType() != CSSParserToken::BlockEnd)
         return;
     unsigned blockLevel = 0;
     while (token != startToken) {
-        if (token->blockType() == MediaQueryToken::BlockEnd) {
+        if (token->blockType() == CSSParserToken::BlockEnd) {
             ++blockLevel;
-        } else if (token->blockType() == MediaQueryToken::BlockStart) {
+        } else if (token->blockType() == CSSParserToken::BlockStart) {
             --blockLevel;
             if (!blockLevel)
                 break;
@@ -95,10 +95,10 @@ bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQue
     return mediaQueryEvaluator.eval(mediaCondition.get());
 }
 
-bool SizesAttributeParser::parseMediaConditionAndLength(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken)
+bool SizesAttributeParser::parseMediaConditionAndLength(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken)
 {
-    MediaQueryTokenIterator lengthTokenStart;
-    MediaQueryTokenIterator lengthTokenEnd;
+    CSSParserTokenIterator lengthTokenStart;
+    CSSParserTokenIterator lengthTokenEnd;
 
     reverseSkipIrrelevantTokens(endToken, startToken);
     lengthTokenEnd = endToken;
@@ -116,14 +116,14 @@ bool SizesAttributeParser::parseMediaConditionAndLength(MediaQueryTokenIterator 
     return false;
 }
 
-bool SizesAttributeParser::parse(Vector<MediaQueryToken>& tokens)
+bool SizesAttributeParser::parse(Vector<CSSParserToken>& tokens)
 {
     if (tokens.isEmpty())
         return false;
-    MediaQueryTokenIterator startToken = tokens.begin();
-    MediaQueryTokenIterator endToken;
+    CSSParserTokenIterator startToken = tokens.begin();
+    CSSParserTokenIterator endToken;
     // Split on a comma token, and send the result tokens to be parsed as (media-condition, length) pairs
-    for (MediaQueryTokenIterator token = tokens.begin(); token != tokens.end(); ++token) {
+    for (CSSParserTokenIterator token = tokens.begin(); token != tokens.end(); ++token) {
         m_blockWatcher.handleToken(*token);
         if (token->type() == CommaToken && !m_blockWatcher.blockLevel()) {
             endToken = token;

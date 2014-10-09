@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 
-#include "core/css/parser/MediaQueryToken.h"
+#include "core/css/parser/CSSParserToken.h"
 
 namespace blink {
 
@@ -14,11 +14,11 @@ MediaQueryBlockWatcher::MediaQueryBlockWatcher()
 {
 }
 
-void MediaQueryBlockWatcher::handleToken(const MediaQueryToken& token)
+void MediaQueryBlockWatcher::handleToken(const CSSParserToken& token)
 {
-    if (token.blockType() == MediaQueryToken::BlockStart) {
+    if (token.blockType() == CSSParserToken::BlockStart) {
         ++m_blockLevel;
-    } else if (token.blockType() == MediaQueryToken::BlockEnd) {
+    } else if (token.blockType() == CSSParserToken::BlockEnd) {
         ASSERT(m_blockLevel);
         --m_blockLevel;
     }
