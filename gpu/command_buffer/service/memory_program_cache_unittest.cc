@@ -21,10 +21,6 @@ using ::testing::Invoke;
 using ::testing::SetArgPointee;
 using ::testing::SetArrayArgument;
 
-namespace {
-typedef gpu::gles2::ShaderTranslator::VariableMap VariableMap;
-}  // anonymous namespace
-
 namespace gpu {
 namespace gles2 {
 
@@ -105,24 +101,27 @@ class MemoryProgramCacheTest : public GpuServiceTest {
         GL_FRAGMENT_SHADER);
     ASSERT_TRUE(vertex_shader_ != NULL);
     ASSERT_TRUE(fragment_shader_ != NULL);
-    typedef ShaderTranslatorInterface::VariableInfo VariableInfo;
-    typedef ShaderTranslator::VariableMap VariableMap;
-    VariableMap vertex_attrib_map;
-    VariableMap vertex_uniform_map;
-    VariableMap vertex_varying_map;
-    VariableMap fragment_attrib_map;
-    VariableMap fragment_uniform_map;
-    VariableMap fragment_varying_map;
+    AttributeMap vertex_attrib_map;
+    UniformMap vertex_uniform_map;
+    VaryingMap vertex_varying_map;
+    AttributeMap fragment_attrib_map;
+    UniformMap fragment_uniform_map;
+    VaryingMap fragment_varying_map;
 
-    vertex_attrib_map["a"] = VariableInfo(1, 34, SH_PRECISION_LOWP, 0, "a");
-    vertex_uniform_map["a"] = VariableInfo(0, 10, SH_PRECISION_MEDIUMP, 1, "a");
-    vertex_uniform_map["b"] = VariableInfo(2, 3114, SH_PRECISION_HIGHP, 1, "b");
-    vertex_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, 1, "c");
-    fragment_attrib_map["jjjbb"] =
-        VariableInfo(463, 1114, SH_PRECISION_MEDIUMP, 0, "jjjbb");
-    fragment_uniform_map["k"] =
-        VariableInfo(10, 34413, SH_PRECISION_MEDIUMP, 1, "k");
-    fragment_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, 1, "c");
+    vertex_attrib_map["a"] = TestHelper::ConstructAttribute(
+        GL_FLOAT_VEC2, 34, GL_LOW_FLOAT, false, "a");
+    vertex_uniform_map["a"] = TestHelper::ConstructUniform(
+        GL_FLOAT, 10, GL_MEDIUM_FLOAT, true, "a");
+    vertex_uniform_map["b"] = TestHelper::ConstructUniform(
+        GL_FLOAT_VEC3, 3114, GL_HIGH_FLOAT, true, "b");
+    vertex_varying_map["c"] = TestHelper::ConstructVarying(
+        GL_FLOAT_VEC4, 2, GL_HIGH_FLOAT, true, "c");
+    fragment_attrib_map["jjjbb"] = TestHelper::ConstructAttribute(
+        GL_FLOAT_MAT4, 1114, GL_MEDIUM_FLOAT, false, "jjjbb");
+    fragment_uniform_map["k"] = TestHelper::ConstructUniform(
+        GL_FLOAT_MAT2, 34413, GL_MEDIUM_FLOAT, true, "k");
+    fragment_varying_map["c"] = TestHelper::ConstructVarying(
+        GL_FLOAT_VEC4, 2, GL_HIGH_FLOAT, true, "c");
 
     vertex_shader_->set_source("bbbalsldkdkdkd");
     fragment_shader_->set_source("bbbal   sldkdkdkas 134 ad");
@@ -261,19 +260,19 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
                                        base::Unretained(this)));
   EXPECT_EQ(1, shader_cache_count());
 
-  VariableMap vertex_attrib_map = vertex_shader_->attrib_map();
-  VariableMap vertex_uniform_map = vertex_shader_->uniform_map();
-  VariableMap vertex_varying_map = vertex_shader_->varying_map();
-  VariableMap fragment_attrib_map = fragment_shader_->attrib_map();
-  VariableMap fragment_uniform_map = fragment_shader_->uniform_map();
-  VariableMap fragment_varying_map = fragment_shader_->varying_map();
+  AttributeMap vertex_attrib_map = vertex_shader_->attrib_map();
+  UniformMap vertex_uniform_map = vertex_shader_->uniform_map();
+  VaryingMap vertex_varying_map = vertex_shader_->varying_map();
+  AttributeMap fragment_attrib_map = fragment_shader_->attrib_map();
+  UniformMap fragment_uniform_map = fragment_shader_->uniform_map();
+  VaryingMap fragment_varying_map = fragment_shader_->varying_map();
 
-  vertex_shader_->set_attrib_map(VariableMap());
-  vertex_shader_->set_uniform_map(VariableMap());
-  vertex_shader_->set_varying_map(VariableMap());
-  fragment_shader_->set_attrib_map(VariableMap());
-  fragment_shader_->set_uniform_map(VariableMap());
-  fragment_shader_->set_varying_map(VariableMap());
+  vertex_shader_->set_attrib_map(AttributeMap());
+  vertex_shader_->set_uniform_map(UniformMap());
+  vertex_shader_->set_varying_map(VaryingMap());
+  fragment_shader_->set_attrib_map(AttributeMap());
+  fragment_shader_->set_uniform_map(UniformMap());
+  fragment_shader_->set_varying_map(VaryingMap());
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
@@ -316,19 +315,19 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
                                        base::Unretained(this)));
   EXPECT_EQ(1, shader_cache_count());
 
-  VariableMap vertex_attrib_map = vertex_shader_->attrib_map();
-  VariableMap vertex_uniform_map = vertex_shader_->uniform_map();
-  VariableMap vertex_varying_map = vertex_shader_->varying_map();
-  VariableMap fragment_attrib_map = fragment_shader_->attrib_map();
-  VariableMap fragment_uniform_map = fragment_shader_->uniform_map();
-  VariableMap fragment_varying_map = fragment_shader_->varying_map();
+  AttributeMap vertex_attrib_map = vertex_shader_->attrib_map();
+  UniformMap vertex_uniform_map = vertex_shader_->uniform_map();
+  VaryingMap vertex_varying_map = vertex_shader_->varying_map();
+  AttributeMap fragment_attrib_map = fragment_shader_->attrib_map();
+  UniformMap fragment_uniform_map = fragment_shader_->uniform_map();
+  VaryingMap fragment_varying_map = fragment_shader_->varying_map();
 
-  vertex_shader_->set_attrib_map(VariableMap());
-  vertex_shader_->set_uniform_map(VariableMap());
-  vertex_shader_->set_varying_map(VariableMap());
-  fragment_shader_->set_attrib_map(VariableMap());
-  fragment_shader_->set_uniform_map(VariableMap());
-  fragment_shader_->set_varying_map(VariableMap());
+  vertex_shader_->set_attrib_map(AttributeMap());
+  vertex_shader_->set_uniform_map(UniformMap());
+  vertex_shader_->set_varying_map(VaryingMap());
+  fragment_shader_->set_attrib_map(AttributeMap());
+  fragment_shader_->set_uniform_map(UniformMap());
+  fragment_shader_->set_varying_map(VaryingMap());
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 

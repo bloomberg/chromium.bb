@@ -34,6 +34,24 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+template<typename T>
+T ConstructShaderVariable(
+    GLenum type, GLint array_size, GLenum precision,
+    bool static_use, const std::string& name) {
+  T var;
+  var.type = type;
+  var.arraySize = array_size;
+  var.precision = precision;
+  var.staticUse = static_use;
+  var.name = name;
+  var.mappedName = name;  // No name hashing.
+  return var;
+}
+
+}  // namespace anonymous
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const GLuint TestHelper::kServiceBlackTexture2dId;
@@ -648,10 +666,10 @@ void TestHelper::SetShaderStates(
       bool expected_valid,
       const std::string* const expected_log_info,
       const std::string* const expected_translated_source,
-      const ShaderTranslatorInterface::VariableMap* const expected_attrib_map,
-      const ShaderTranslatorInterface::VariableMap* const expected_uniform_map,
-      const ShaderTranslatorInterface::VariableMap* const expected_varying_map,
-      const ShaderTranslatorInterface::NameMap* const expected_name_map) {
+      const AttributeMap* const expected_attrib_map,
+      const UniformMap* const expected_uniform_map,
+      const VaryingMap* const expected_varying_map,
+      const NameMap* const expected_name_map) {
   const std::string empty_log_info;
   const std::string* log_info = (expected_log_info && !expected_valid) ?
       expected_log_info : &empty_log_info;
@@ -659,22 +677,18 @@ void TestHelper::SetShaderStates(
   const std::string* translated_source =
       (expected_translated_source && expected_valid) ?
           expected_translated_source : &empty_translated_source;
-  const ShaderTranslatorInterface::VariableMap empty_attrib_map;
-  const ShaderTranslatorInterface::VariableMap* attrib_map =
-      (expected_attrib_map && expected_valid) ?
-          expected_attrib_map : &empty_attrib_map;
-  const ShaderTranslatorInterface::VariableMap empty_uniform_map;
-  const ShaderTranslatorInterface::VariableMap* uniform_map =
-      (expected_uniform_map && expected_valid) ?
-          expected_uniform_map : &empty_uniform_map;
-  const ShaderTranslatorInterface::VariableMap empty_varying_map;
-  const ShaderTranslatorInterface::VariableMap* varying_map =
-      (expected_varying_map && expected_valid) ?
-          expected_varying_map : &empty_varying_map;
-  const ShaderTranslatorInterface::NameMap empty_name_map;
-  const ShaderTranslatorInterface::NameMap* name_map =
-      (expected_name_map && expected_valid) ?
-          expected_name_map : &empty_name_map;
+  const AttributeMap empty_attrib_map;
+  const AttributeMap* attrib_map = (expected_attrib_map && expected_valid) ?
+      expected_attrib_map : &empty_attrib_map;
+  const UniformMap empty_uniform_map;
+  const UniformMap* uniform_map = (expected_uniform_map && expected_valid) ?
+      expected_uniform_map : &empty_uniform_map;
+  const VaryingMap empty_varying_map;
+  const VaryingMap* varying_map = (expected_varying_map && expected_valid) ?
+      expected_varying_map : &empty_varying_map;
+  const NameMap empty_name_map;
+  const NameMap* name_map = (expected_name_map && expected_valid) ?
+      expected_name_map : &empty_name_map;
 
   MockShaderTranslator translator;
   EXPECT_CALL(translator, Translate(_,
@@ -712,6 +726,30 @@ void TestHelper::SetShaderStates(
 void TestHelper::SetShaderStates(
       ::gfx::MockGLInterface* gl, Shader* shader, bool valid) {
   SetShaderStates(gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL);
+}
+
+// static
+sh::Attribute TestHelper::ConstructAttribute(
+    GLenum type, GLint array_size, GLenum precision,
+    bool static_use, const std::string& name) {
+  return ConstructShaderVariable<sh::Attribute>(
+      type, array_size, precision, static_use, name);
+}
+
+// static
+sh::Uniform TestHelper::ConstructUniform(
+    GLenum type, GLint array_size, GLenum precision,
+    bool static_use, const std::string& name) {
+  return ConstructShaderVariable<sh::Uniform>(
+      type, array_size, precision, static_use, name);
+}
+
+// static
+sh::Varying TestHelper::ConstructVarying(
+    GLenum type, GLint array_size, GLenum precision,
+    bool static_use, const std::string& name) {
+  return ConstructShaderVariable<sh::Varying>(
+      type, array_size, precision, static_use, name);
 }
 
 ScopedGLImplementationSetter::ScopedGLImplementationSetter(

@@ -45,47 +45,96 @@ enum ShaderMapType {
   VARYING_MAP
 };
 
-void StoreShaderInfo(ShaderMapType type, ShaderProto *proto,
-                     const ShaderTranslator::VariableMap& map) {
-  ShaderTranslator::VariableMap::const_iterator iter;
-  for (iter = map.begin(); iter != map.end(); ++iter) {
-    ShaderInfoProto* info = NULL;
-    switch (type) {
-      case UNIFORM_MAP:
-        info = proto->add_uniforms();
-        break;
-      case ATTRIB_MAP:
-        info = proto->add_attribs();
-        break;
-      case VARYING_MAP:
-        info = proto->add_varyings();
-        break;
-      default: NOTREACHED();
-    }
-
-    info->set_key(iter->first);
-    info->set_type(iter->second.type);
-    info->set_size(iter->second.size);
-    info->set_precision(iter->second.precision);
-    info->set_static_use(iter->second.static_use);
-    info->set_name(iter->second.name);
+void FillShaderVariableProto(
+    ShaderVariableProto* proto, const sh::ShaderVariable& variable) {
+  proto->set_type(variable.type);
+  proto->set_precision(variable.precision);
+  proto->set_name(variable.name);
+  proto->set_mapped_name(variable.mappedName);
+  proto->set_array_size(variable.arraySize);
+  proto->set_static_use(variable.staticUse);
+  for (size_t ii = 0; ii < variable.fields.size(); ++ii) {
+    ShaderVariableProto* field = proto->add_fields();
+    FillShaderVariableProto(field, variable.fields[ii]);
   }
+  proto->set_struct_name(variable.structName);
 }
 
-void RetrieveShaderInfo(const ShaderInfoProto& proto,
-                        ShaderTranslator::VariableMap* map) {
-  ShaderTranslator::VariableInfo info(
-      proto.type(), proto.size(), proto.precision(),
-      proto.static_use(), proto.name());
-  (*map)[proto.key()] = info;
+void FillShaderAttributeProto(
+    ShaderAttributeProto* proto, const sh::Attribute& attrib) {
+  FillShaderVariableProto(proto->mutable_basic(), attrib);
+  proto->set_location(attrib.location);
+}
+
+void FillShaderUniformProto(
+    ShaderUniformProto* proto, const sh::Uniform& uniform) {
+  FillShaderVariableProto(proto->mutable_basic(), uniform);
+}
+
+void FillShaderVaryingProto(
+    ShaderVaryingProto* proto, const sh::Varying& varying) {
+  FillShaderVariableProto(proto->mutable_basic(), varying);
+  proto->set_interpolation(varying.interpolation);
+  proto->set_is_invariant(varying.isInvariant);
 }
 
 void FillShaderProto(ShaderProto* proto, const char* sha,
                      const Shader* shader) {
   proto->set_sha(sha, gpu::gles2::ProgramCache::kHashLength);
-  StoreShaderInfo(ATTRIB_MAP, proto, shader->attrib_map());
-  StoreShaderInfo(UNIFORM_MAP, proto, shader->uniform_map());
-  StoreShaderInfo(VARYING_MAP, proto, shader->varying_map());
+  for (AttributeMap::const_iterator iter = shader->attrib_map().begin();
+       iter != shader->attrib_map().end(); ++iter) {
+    ShaderAttributeProto* info = proto->add_attribs();
+    FillShaderAttributeProto(info, iter->second);
+  }
+  for (UniformMap::const_iterator iter = shader->uniform_map().begin();
+       iter != shader->uniform_map().end(); ++iter) {
+    ShaderUniformProto* info = proto->add_uniforms();
+    FillShaderUniformProto(info, iter->second);
+  }
+  for (VaryingMap::const_iterator iter = shader->varying_map().begin();
+       iter != shader->varying_map().end(); ++iter) {
+    ShaderVaryingProto* info = proto->add_varyings();
+    FillShaderVaryingProto(info, iter->second);
+  }
+}
+
+void RetrieveShaderVariableInfo(
+    const ShaderVariableProto& proto, sh::ShaderVariable* variable) {
+  variable->type = proto.type();
+  variable->precision = proto.precision();
+  variable->name = proto.name();
+  variable->mappedName = proto.mapped_name();
+  variable->arraySize = proto.array_size();
+  variable->staticUse = proto.static_use();
+  variable->fields.resize(proto.fields_size());
+  for (int ii = 0; ii < proto.fields_size(); ++ii)
+    RetrieveShaderVariableInfo(proto.fields(ii), &(variable->fields[ii]));
+  variable->structName = proto.struct_name();
+}
+
+void RetrieveShaderAttributeInfo(
+    const ShaderAttributeProto& proto, AttributeMap* map) {
+  sh::Attribute attrib;
+  RetrieveShaderVariableInfo(proto.basic(), &attrib);
+  attrib.location = proto.location();
+  (*map)[proto.basic().mapped_name()] = attrib;
+}
+
+void RetrieveShaderUniformInfo(
+    const ShaderUniformProto& proto, UniformMap* map) {
+  sh::Uniform uniform;
+  RetrieveShaderVariableInfo(proto.basic(), &uniform);
+  (*map)[proto.basic().mapped_name()] = uniform;
+}
+
+void RetrieveShaderVaryingInfo(
+    const ShaderVaryingProto& proto, VaryingMap* map) {
+  sh::Varying varying;
+  RetrieveShaderVariableInfo(proto.basic(), &varying);
+  varying.interpolation = static_cast<sh::InterpolationType>(
+      proto.interpolation());
+  varying.isInvariant = proto.is_invariant();
+  (*map)[proto.basic().mapped_name()] = varying;
 }
 
 void RunShaderCallback(const ShaderCacheCallback& callback,
@@ -270,39 +319,36 @@ void MemoryProgramCache::SaveLinkedProgram(
 void MemoryProgramCache::LoadProgram(const std::string& program) {
   scoped_ptr<GpuProgramProto> proto(GpuProgramProto::default_instance().New());
   if (proto->ParseFromString(program)) {
-    ShaderTranslator::VariableMap vertex_attribs;
-    ShaderTranslator::VariableMap vertex_uniforms;
-    ShaderTranslator::VariableMap vertex_varyings;
-
+    AttributeMap vertex_attribs;
+    UniformMap vertex_uniforms;
+    VaryingMap vertex_varyings;
     for (int i = 0; i < proto->vertex_shader().attribs_size(); i++) {
-      RetrieveShaderInfo(proto->vertex_shader().attribs(i), &vertex_attribs);
+      RetrieveShaderAttributeInfo(proto->vertex_shader().attribs(i),
+                                  &vertex_attribs);
     }
-
     for (int i = 0; i < proto->vertex_shader().uniforms_size(); i++) {
-      RetrieveShaderInfo(proto->vertex_shader().uniforms(i), &vertex_uniforms);
+      RetrieveShaderUniformInfo(proto->vertex_shader().uniforms(i),
+                                &vertex_uniforms);
     }
-
     for (int i = 0; i < proto->vertex_shader().varyings_size(); i++) {
-      RetrieveShaderInfo(proto->vertex_shader().varyings(i), &vertex_varyings);
+      RetrieveShaderVaryingInfo(proto->vertex_shader().varyings(i),
+                                &vertex_varyings);
     }
 
-    ShaderTranslator::VariableMap fragment_attribs;
-    ShaderTranslator::VariableMap fragment_uniforms;
-    ShaderTranslator::VariableMap fragment_varyings;
-
+    AttributeMap fragment_attribs;
+    UniformMap fragment_uniforms;
+    VaryingMap fragment_varyings;
     for (int i = 0; i < proto->fragment_shader().attribs_size(); i++) {
-      RetrieveShaderInfo(proto->fragment_shader().attribs(i),
-                         &fragment_attribs);
+      RetrieveShaderAttributeInfo(proto->fragment_shader().attribs(i),
+                                  &fragment_attribs);
     }
-
     for (int i = 0; i < proto->fragment_shader().uniforms_size(); i++) {
-      RetrieveShaderInfo(proto->fragment_shader().uniforms(i),
-                         &fragment_uniforms);
+      RetrieveShaderUniformInfo(proto->fragment_shader().uniforms(i),
+                                &fragment_uniforms);
     }
-
     for (int i = 0; i < proto->fragment_shader().varyings_size(); i++) {
-      RetrieveShaderInfo(proto->fragment_shader().varyings(i),
-                         &fragment_varyings);
+      RetrieveShaderVaryingInfo(proto->fragment_shader().varyings(i),
+                                &fragment_varyings);
     }
 
     scoped_ptr<char[]> binary(new char[proto->program().length()]);
@@ -336,13 +382,13 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
     const char* data,
     const std::string& program_hash,
     const char* shader_0_hash,
-    const ShaderTranslator::VariableMap& attrib_map_0,
-    const ShaderTranslator::VariableMap& uniform_map_0,
-    const ShaderTranslator::VariableMap& varying_map_0,
+    const AttributeMap& attrib_map_0,
+    const UniformMap& uniform_map_0,
+    const VaryingMap& varying_map_0,
     const char* shader_1_hash,
-    const ShaderTranslator::VariableMap& attrib_map_1,
-    const ShaderTranslator::VariableMap& uniform_map_1,
-    const ShaderTranslator::VariableMap& varying_map_1,
+    const AttributeMap& attrib_map_1,
+    const UniformMap& uniform_map_1,
+    const VaryingMap& varying_map_1,
     MemoryProgramCache* program_cache)
     : length_(length),
       format_(format),

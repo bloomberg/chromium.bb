@@ -29,8 +29,6 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     kGL,  // GL or GLES
   };
 
-  typedef ShaderTranslator::VariableInfo VariableInfo;
-
   void DoCompile(ShaderTranslatorInterface* translator,
                  TranslatedShaderSourceType type);
 
@@ -58,9 +56,9 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     return signature_source_;
   }
 
-  const VariableInfo* GetAttribInfo(const std::string& name) const;
-  const VariableInfo* GetUniformInfo(const std::string& name) const;
-  const VariableInfo* GetVaryingInfo(const std::string& name) const;
+  const sh::Attribute* GetAttribInfo(const std::string& name) const;
+  const sh::Uniform* GetUniformInfo(const std::string& name) const;
+  const sh::Varying* GetVaryingInfo(const std::string& name) const;
 
   // If the original_name is not found, return NULL.
   const std::string* GetAttribMappedName(
@@ -88,42 +86,39 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   // Used by program cache.
-  const ShaderTranslator::VariableMap& attrib_map() const {
+  const AttributeMap& attrib_map() const {
     return attrib_map_;
   }
 
   // Used by program cache.
-  const ShaderTranslator::VariableMap& uniform_map() const {
+  const UniformMap& uniform_map() const {
     return uniform_map_;
   }
 
   // Used by program cache.
-  const ShaderTranslator::VariableMap& varying_map() const {
+  const VaryingMap& varying_map() const {
     return varying_map_;
   }
 
   // Used by program cache.
-  void set_attrib_map(const ShaderTranslator::VariableMap& attrib_map) {
+  void set_attrib_map(const AttributeMap& attrib_map) {
     // copied because cache might be cleared
-    attrib_map_ = ShaderTranslator::VariableMap(attrib_map);
+    attrib_map_ = AttributeMap(attrib_map);
   }
 
   // Used by program cache.
-  void set_uniform_map(const ShaderTranslator::VariableMap& uniform_map) {
+  void set_uniform_map(const UniformMap& uniform_map) {
     // copied because cache might be cleared
-    uniform_map_ = ShaderTranslator::VariableMap(uniform_map);
+    uniform_map_ = UniformMap(uniform_map);
   }
 
   // Used by program cache.
-  void set_varying_map(const ShaderTranslator::VariableMap& varying_map) {
+  void set_varying_map(const VaryingMap& varying_map) {
     // copied because cache might be cleared
-    varying_map_ = ShaderTranslator::VariableMap(varying_map);
+    varying_map_ = VaryingMap(varying_map);
   }
 
  private:
-  typedef ShaderTranslator::VariableMap VariableMap;
-  typedef ShaderTranslator::NameMap NameMap;
-
   friend class base::RefCounted<Shader>;
   friend class ShaderManager;
 
@@ -157,9 +152,9 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   std::string log_info_;
 
   // The type info when the shader was last compiled.
-  VariableMap attrib_map_;
-  VariableMap uniform_map_;
-  VariableMap varying_map_;
+  AttributeMap attrib_map_;
+  UniformMap uniform_map_;
+  VaryingMap varying_map_;
 
   // The name hashing info when the shader was last compiled.
   NameMap name_map_;

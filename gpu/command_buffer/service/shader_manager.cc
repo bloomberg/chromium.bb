@@ -12,6 +12,18 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+// Given a variable name | a[0].b.c[0] |, return |a|.
+std::string GetTopVariableName(const std::string& fullname) {
+  size_t pos = fullname.find_first_of("[.");
+  if (pos == std::string::npos)
+    return fullname;
+  return fullname.substr(0, pos);
+}
+
+}  // namespace anonymous
+
 Shader::Shader(GLuint service_id, GLenum shader_type)
       : use_count_(0),
         service_id_(service_id),
@@ -96,15 +108,17 @@ void Shader::MarkAsDeleted() {
   service_id_ = 0;
 }
 
-const Shader::VariableInfo* Shader::GetAttribInfo(
-    const std::string& name) const {
-  VariableMap::const_iterator it = attrib_map_.find(name);
+const sh::Attribute* Shader::GetAttribInfo(const std::string& name) const {
+  // Vertex attributes can't be arrays or structs (GLSL ES 3.00.4, section
+  // 4.3.4, "Input Variables"), so |name| is the top level name used as
+  // the AttributeMap key.
+  AttributeMap::const_iterator it = attrib_map_.find(name);
   return it != attrib_map_.end() ? &it->second : NULL;
 }
 
 const std::string* Shader::GetAttribMappedName(
     const std::string& original_name) const {
-  for (VariableMap::const_iterator it = attrib_map_.begin();
+  for (AttributeMap::const_iterator it = attrib_map_.begin();
        it != attrib_map_.end(); ++it) {
     if (it->second.name == original_name)
       return &(it->first);
@@ -120,15 +134,13 @@ const std::string* Shader::GetOriginalNameFromHashedName(
   return NULL;
 }
 
-const Shader::VariableInfo* Shader::GetUniformInfo(
-    const std::string& name) const {
-  VariableMap::const_iterator it = uniform_map_.find(name);
+const sh::Uniform* Shader::GetUniformInfo(const std::string& name) const {
+  UniformMap::const_iterator it = uniform_map_.find(GetTopVariableName(name));
   return it != uniform_map_.end() ? &it->second : NULL;
 }
 
-const Shader::VariableInfo* Shader::GetVaryingInfo(
-    const std::string& name) const {
-  VariableMap::const_iterator it = varying_map_.find(name);
+const sh::Varying* Shader::GetVaryingInfo(const std::string& name) const {
+  VaryingMap::const_iterator it = varying_map_.find(GetTopVariableName(name));
   return it != varying_map_.end() ? &it->second : NULL;
 }
 

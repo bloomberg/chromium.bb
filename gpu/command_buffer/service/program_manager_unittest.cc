@@ -151,10 +151,10 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
   static const GLint kAttrib1Size = 1;
   static const GLint kAttrib2Size = 1;
   static const GLint kAttrib3Size = 1;
-  static const int kAttrib1Precision = SH_PRECISION_MEDIUMP;
-  static const int kAttrib2Precision = SH_PRECISION_HIGHP;
-  static const int kAttrib3Precision = SH_PRECISION_LOWP;
-  static const int kAttribStaticUse = 0;
+  static const GLenum kAttrib1Precision = GL_MEDIUM_FLOAT;
+  static const GLenum kAttrib2Precision = GL_HIGH_FLOAT;
+  static const GLenum kAttrib3Precision = GL_LOW_FLOAT;
+  static const bool kAttribStaticUse = false;
   static const GLint kAttrib1Location = 0;
   static const GLint kAttrib2Location = 1;
   static const GLint kAttrib3Location = 2;
@@ -166,8 +166,9 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
 
   static const char* kUniform1Name;
   static const char* kUniform2Name;
-  static const char* kUniform3BadName;
-  static const char* kUniform3GoodName;
+  static const char* kUniform2NameWithArrayIndex;
+  static const char* kUniform3Name;
+  static const char* kUniform3NameWithArrayIndex;
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
@@ -206,10 +207,10 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
   } VarCategory;
 
   typedef struct {
-    int type;
-    int size;
-    int precision;
-    int static_use;
+    GLenum type;
+    GLint size;
+    GLenum precision;
+    bool static_use;
     std::string name;
     VarCategory category;
   } VarInfo;
@@ -283,56 +284,78 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
     const GLuint kFShaderClientId = 2;
     const GLuint kFShaderServiceId = 12;
 
-    ShaderTranslator::VariableMap vertex_attrib_map;
-    ShaderTranslator::VariableMap vertex_uniform_map;
-    ShaderTranslator::VariableMap vertex_varying_map;
+    AttributeMap vertex_attrib_map;
+    UniformMap vertex_uniform_map;
+    VaryingMap vertex_varying_map;
     for (size_t ii = 0; ii < vertex_variable_size; ++ii) {
-      ShaderTranslator::VariableMap* map = NULL;
       switch (vertex_variables[ii].category) {
         case kVarAttribute:
-          map = &vertex_attrib_map;
+          vertex_attrib_map[vertex_variables[ii].name] =
+              TestHelper::ConstructAttribute(
+                  vertex_variables[ii].type,
+                  vertex_variables[ii].size,
+                  vertex_variables[ii].precision,
+                  vertex_variables[ii].static_use,
+                  vertex_variables[ii].name);
           break;
         case kVarUniform:
-          map = &vertex_uniform_map;
+          vertex_uniform_map[vertex_variables[ii].name] =
+              TestHelper::ConstructUniform(
+                  vertex_variables[ii].type,
+                  vertex_variables[ii].size,
+                  vertex_variables[ii].precision,
+                  vertex_variables[ii].static_use,
+                  vertex_variables[ii].name);
           break;
         case kVarVarying:
-          map = &vertex_varying_map;
+          vertex_varying_map[vertex_variables[ii].name] =
+              TestHelper::ConstructVarying(
+                  vertex_variables[ii].type,
+                  vertex_variables[ii].size,
+                  vertex_variables[ii].precision,
+                  vertex_variables[ii].static_use,
+                  vertex_variables[ii].name);
           break;
         default:
           NOTREACHED();
       }
-      (*map)[vertex_variables[ii].name] =
-          ShaderTranslator::VariableInfo(vertex_variables[ii].type,
-                                         vertex_variables[ii].size,
-                                         vertex_variables[ii].precision,
-                                         vertex_variables[ii].static_use,
-                                         vertex_variables[ii].name);
     }
 
-    ShaderTranslator::VariableMap frag_attrib_map;
-    ShaderTranslator::VariableMap frag_uniform_map;
-    ShaderTranslator::VariableMap frag_varying_map;
+    AttributeMap frag_attrib_map;
+    UniformMap frag_uniform_map;
+    VaryingMap frag_varying_map;
     for (size_t ii = 0; ii < fragment_variable_size; ++ii) {
-      ShaderTranslator::VariableMap* map = NULL;
       switch (fragment_variables[ii].category) {
         case kVarAttribute:
-          map = &frag_attrib_map;
+          frag_attrib_map[fragment_variables[ii].name] =
+              TestHelper::ConstructAttribute(
+                  fragment_variables[ii].type,
+                  fragment_variables[ii].size,
+                  fragment_variables[ii].precision,
+                  fragment_variables[ii].static_use,
+                  fragment_variables[ii].name);
           break;
         case kVarUniform:
-          map = &frag_uniform_map;
+          frag_uniform_map[fragment_variables[ii].name] =
+              TestHelper::ConstructUniform(
+                  fragment_variables[ii].type,
+                  fragment_variables[ii].size,
+                  fragment_variables[ii].precision,
+                  fragment_variables[ii].static_use,
+                  fragment_variables[ii].name);
           break;
         case kVarVarying:
-          map = &frag_varying_map;
+          frag_varying_map[fragment_variables[ii].name] =
+              TestHelper::ConstructVarying(
+                  fragment_variables[ii].type,
+                  fragment_variables[ii].size,
+                  fragment_variables[ii].precision,
+                  fragment_variables[ii].static_use,
+                  fragment_variables[ii].name);
           break;
         default:
           NOTREACHED();
       }
-      (*map)[fragment_variables[ii].name] =
-          ShaderTranslator::VariableInfo(fragment_variables[ii].type,
-                                         fragment_variables[ii].size,
-                                         fragment_variables[ii].precision,
-                                         fragment_variables[ii].static_use,
-                                         fragment_variables[ii].name);
     }
 
     // Check we can create shader.
@@ -434,15 +457,15 @@ ProgramManagerWithShaderTest::UniformInfo
     kUniform2FakeLocation,
     kUniform2RealLocation,
     kUniform2DesiredLocation,
-    kUniform2Name,
+    kUniform2NameWithArrayIndex,
   },
-  { kUniform3BadName,
+  { kUniform3Name,
     kUniform3Size,
     kUniform3Type,
     kUniform3FakeLocation,
     kUniform3RealLocation,
     kUniform3DesiredLocation,
-    kUniform3GoodName,
+    kUniform3NameWithArrayIndex,
   },
 };
 
@@ -453,11 +476,12 @@ const char* ProgramManagerWithShaderTest::kAttrib1Name = "attrib1";
 const char* ProgramManagerWithShaderTest::kAttrib2Name = "attrib2";
 const char* ProgramManagerWithShaderTest::kAttrib3Name = "attrib3";
 const char* ProgramManagerWithShaderTest::kUniform1Name = "uniform1";
-// Correctly has array spec.
-const char* ProgramManagerWithShaderTest::kUniform2Name = "uniform2[0]";
-// Incorrectly missing array spec.
-const char* ProgramManagerWithShaderTest::kUniform3BadName = "uniform3";
-const char* ProgramManagerWithShaderTest::kUniform3GoodName = "uniform3[0]";
+const char* ProgramManagerWithShaderTest::kUniform2Name = "uniform2";
+const char* ProgramManagerWithShaderTest::kUniform2NameWithArrayIndex =
+    "uniform2[0]";
+const char* ProgramManagerWithShaderTest::kUniform3Name = "uniform3";
+const char* ProgramManagerWithShaderTest::kUniform3NameWithArrayIndex =
+    "uniform3[0]";
 
 TEST_F(ProgramManagerWithShaderTest, GetAttribInfos) {
   const Program* program = manager_.GetProgram(kClientProgramId);
@@ -514,7 +538,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
   EXPECT_EQ(kUniform2Size, info->size);
   EXPECT_EQ(kUniform2Type, info->type);
   EXPECT_EQ(kUniform2RealLocation, info->element_locations[0]);
-  EXPECT_STREQ(kUniform2Name, info->name.c_str());
+  EXPECT_STREQ(kUniform2NameWithArrayIndex, info->name.c_str());
   info = program->GetUniformInfo(2);
   // We emulate certain OpenGL drivers by supplying the name without
   // the array spec. Our implementation should correctly add the required spec.
@@ -522,7 +546,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
   EXPECT_EQ(kUniform3Size, info->size);
   EXPECT_EQ(kUniform3Type, info->type);
   EXPECT_EQ(kUniform3RealLocation, info->element_locations[0]);
-  EXPECT_STREQ(kUniform3GoodName, info->name.c_str());
+  EXPECT_STREQ(kUniform3NameWithArrayIndex, info->name.c_str());
   EXPECT_TRUE(program->GetUniformInfo(kInvalidIndex) == NULL);
 }
 
@@ -586,7 +610,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformFakeLocation) {
   EXPECT_EQ(kUniform2FakeLocation,
             program->GetUniformFakeLocation(kUniform2Name));
   EXPECT_EQ(kUniform3FakeLocation,
-            program->GetUniformFakeLocation(kUniform3BadName));
+            program->GetUniformFakeLocation(kUniform3Name));
   // Check we can get uniform2 as "uniform2" even though the name is
   // "uniform2[0]"
   EXPECT_EQ(kUniform2FakeLocation,
@@ -594,7 +618,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformFakeLocation) {
   // Check we can get uniform3 as "uniform3[0]" even though we simulated GL
   // returning "uniform3"
   EXPECT_EQ(kUniform3FakeLocation,
-            program->GetUniformFakeLocation(kUniform3GoodName));
+            program->GetUniformFakeLocation(kUniform3NameWithArrayIndex));
   // Check that we can get the locations of the array elements > 1
   EXPECT_EQ(ProgramManager::MakeFakeLocation(kUniform2FakeLocation, 1),
             program->GetUniformFakeLocation("uniform2[1]"));
@@ -653,15 +677,15 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
       kUniform2FakeLocation,
       kUniform2RealLocation,
       kUniform2DesiredLocation,
-      kUniform2Name,
+      kUniform2NameWithArrayIndex,
     },
-    { kUniform3BadName,
+    { kUniform3Name,
       kUniform3Size,
       kUniform3Type,
       kUniform3FakeLocation,
       kUniform3RealLocation,
       kUniform3DesiredLocation,
-      kUniform3GoodName,
+      kUniform3NameWithArrayIndex,
     },
   };
   const size_t kNumUniforms = arraysize(kUniforms);
@@ -698,7 +722,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   // as the "gl_" uniform we skipped.
   // +4u is to account for "gl_" and NULL terminator.
   program->GetProgramiv(GL_ACTIVE_UNIFORM_MAX_LENGTH, &value);
-  EXPECT_EQ(strlen(kUniform3BadName) + 4u, static_cast<size_t>(value));
+  EXPECT_EQ(strlen(kUniform3Name) + 4u, static_cast<size_t>(value));
 }
 
 // Test the bug comparing similar array names is fixed.
@@ -772,27 +796,27 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   static GLenum kAttrib2GoodType = GL_FLOAT_MAT2;
   static GLenum kUniform2BadType = GL_FLOAT_VEC3;
   static GLenum kUniform2GoodType = GL_FLOAT_MAT3;
-  ShaderTranslator::VariableMap attrib_map;
-  ShaderTranslator::VariableMap uniform_map;
-  ShaderTranslator::VariableMap varying_map;
-  attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
+  AttributeMap attrib_map;
+  UniformMap uniform_map;
+  VaryingMap varying_map;
+  attrib_map[kAttrib1Name] = TestHelper::ConstructAttribute(
       kAttrib1Type, kAttrib1Size, kAttrib1Precision,
       kAttribStaticUse, kAttrib1Name);
-  attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
+  attrib_map[kAttrib2Name] = TestHelper::ConstructAttribute(
       kAttrib2GoodType, kAttrib2Size, kAttrib2Precision,
       kAttribStaticUse, kAttrib2Name);
-  attrib_map[kAttrib3Name] = ShaderTranslatorInterface::VariableInfo(
+  attrib_map[kAttrib3Name] = TestHelper::ConstructAttribute(
       kAttrib3Type, kAttrib3Size, kAttrib3Precision,
       kAttribStaticUse, kAttrib3Name);
-  uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
+  uniform_map[kUniform1Name] = TestHelper::ConstructUniform(
       kUniform1Type, kUniform1Size, kUniform1Precision,
       kUniform1StaticUse, kUniform1Name);
-  uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
+  uniform_map[kUniform2Name] = TestHelper::ConstructUniform(
       kUniform2GoodType, kUniform2Size, kUniform2Precision,
       kUniform2StaticUse, kUniform2Name);
-  uniform_map[kUniform3GoodName] = ShaderTranslatorInterface::VariableInfo(
+  uniform_map[kUniform3Name] = TestHelper::ConstructUniform(
       kUniform3Type, kUniform3Size, kUniform3Precision,
-      kUniform3StaticUse, kUniform3GoodName);
+      kUniform3StaticUse, kUniform3Name);
   const GLuint kVShaderClientId = 2001;
   const GLuint kFShaderClientId = 2002;
   const GLuint kVShaderServiceId = 3001;
@@ -829,15 +853,15 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
       kUniform2FakeLocation,
       kUniform2RealLocation,
       kUniform2DesiredLocation,
-      kUniform2Name,
+      kUniform2NameWithArrayIndex,
     },
-    { kUniform3BadName,
+    { kUniform3Name,
       kUniform3Size,
       kUniform3Type,
       kUniform3FakeLocation,
       kUniform3RealLocation,
       kUniform3DesiredLocation,
-      kUniform3GoodName,
+      kUniform3NameWithArrayIndex,
     },
   };
   const size_t kNumAttribs= arraysize(kAttribs);
@@ -859,26 +883,41 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
     const Program::VertexAttrib* attrib_info =
         program->GetAttribInfo(index);
     ASSERT_TRUE(attrib_info != NULL);
-    ShaderTranslator::VariableMap::const_iterator it = attrib_map.find(
-        attrib_info->name);
+    size_t pos = attrib_info->name.find_first_of("[.");
+    std::string top_name;
+    if (pos == std::string::npos)
+      top_name = attrib_info->name;
+    else
+      top_name = attrib_info->name.substr(0, pos);
+    AttributeMap::const_iterator it = attrib_map.find(top_name);
     ASSERT_TRUE(it != attrib_map.end());
-    EXPECT_EQ(it->first, attrib_info->name);
-    EXPECT_EQ(static_cast<GLenum>(it->second.type), attrib_info->type);
-    EXPECT_EQ(it->second.size, attrib_info->size);
-    EXPECT_EQ(it->second.name, attrib_info->name);
+    const sh::ShaderVariable* info;
+    std::string original_name;
+    EXPECT_TRUE(it->second.findInfoByMappedName(
+        attrib_info->name, &info, &original_name));
+    EXPECT_EQ(info->type, attrib_info->type);
+    EXPECT_EQ(static_cast<GLint>(info->arraySize), attrib_info->size);
+    EXPECT_EQ(original_name, attrib_info->name);
   }
   // Check Uniforms
   for (unsigned index = 0; index < kNumUniforms; ++index) {
-    const Program::UniformInfo* uniform_info =
-        program->GetUniformInfo(index);
+    const Program::UniformInfo* uniform_info = program->GetUniformInfo(index);
     ASSERT_TRUE(uniform_info != NULL);
-    ShaderTranslator::VariableMap::const_iterator it = uniform_map.find(
-        uniform_info->name);
+    size_t pos = uniform_info->name.find_first_of("[.");
+    std::string top_name;
+    if (pos == std::string::npos)
+      top_name = uniform_info->name;
+    else
+      top_name = uniform_info->name.substr(0, pos);
+    UniformMap::const_iterator it = uniform_map.find(top_name);
     ASSERT_TRUE(it != uniform_map.end());
-    EXPECT_EQ(it->first, uniform_info->name);
-    EXPECT_EQ(static_cast<GLenum>(it->second.type), uniform_info->type);
-    EXPECT_EQ(it->second.size, uniform_info->size);
-    EXPECT_EQ(it->second.name, uniform_info->name);
+    const sh::ShaderVariable* info;
+    std::string original_name;
+    EXPECT_TRUE(it->second.findInfoByMappedName(
+        uniform_info->name, &info, &original_name));
+    EXPECT_EQ(info->type, uniform_info->type);
+    EXPECT_EQ(static_cast<GLint>(info->arraySize), uniform_info->size);
+    EXPECT_EQ(original_name, uniform_info->name);
   }
 }
 
@@ -1086,9 +1125,9 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   const GLuint kVShaderServiceId = 11;
   const GLuint kFShaderClientId = 2;
   const GLuint kFShaderServiceId = 12;
-  ShaderTranslator::VariableMap attrib_map;
+  AttributeMap attrib_map;
   for (uint32 ii = 0; ii < kNumAttribs; ++ii) {
-    attrib_map[kAttribs[ii].name] = ShaderTranslatorInterface::VariableInfo(
+    attrib_map[kAttribs[ii].name] = TestHelper::ConstructAttribute(
         kAttribs[ii].type,
         kAttribs[ii].size,
         SH_PRECISION_MEDIUMP,
@@ -1106,15 +1145,15 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   TestHelper::SetShaderStates(
       gl_.get(), vshader, true, NULL, NULL, &attrib_map, NULL, NULL, NULL);
   // Check attrib infos got copied.
-  for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
+  for (AttributeMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
-    const Shader::VariableInfo* variable_info =
+    const sh::Attribute* variable_info =
         vshader->GetAttribInfo(it->first);
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
-    EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.arraySize, variable_info->arraySize);
     EXPECT_EQ(it->second.precision, variable_info->precision);
-    EXPECT_EQ(it->second.static_use, variable_info->static_use);
+    EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_EQ(it->second.name, variable_info->name);
   }
   TestHelper::SetShaderStates(
@@ -1156,12 +1195,12 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   const GLuint kFShaderClientId = 2;
   const GLuint kFShaderServiceId = 12;
 
-  ShaderTranslator::VariableMap vertex_uniform_map;
-  vertex_uniform_map["a"] = ShaderTranslator::VariableInfo(
-      1, 3, SH_PRECISION_MEDIUMP, 1, "a");
-  ShaderTranslator::VariableMap frag_uniform_map;
-  frag_uniform_map["a"] = ShaderTranslator::VariableInfo(
-      1, 3, SH_PRECISION_LOWP, 1, "a");
+  UniformMap vertex_uniform_map;
+  vertex_uniform_map["a"] = TestHelper::ConstructUniform(
+      GL_FLOAT, 3, GL_MEDIUM_FLOAT, true, "a");
+  UniformMap frag_uniform_map;
+  frag_uniform_map["a"] = TestHelper::ConstructUniform(
+      GL_FLOAT, 3, GL_LOW_FLOAT, true, "a");
 
   // Check we can create shader.
   Shader* vshader = shader_manager_.CreateShader(
@@ -1198,9 +1237,9 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
 // shader, linking should fail.
 TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
   const VarInfo kVertexVarying =
-      { GL_FLOAT_VEC3, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT_VEC3, 1, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   const VarInfo kFragmentVarying =
-      { GL_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT_VEC4, 1, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
@@ -1215,9 +1254,9 @@ TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
 // shader, linking should fail.
 TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
   const VarInfo kVertexVarying =
-      { GL_FLOAT, 2, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 2, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   const VarInfo kFragmentVarying =
-      { GL_FLOAT, 3, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 3, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
@@ -1232,9 +1271,9 @@ TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
 // shader, linking should succeed.
 TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
   const VarInfo kVertexVarying =
-      { GL_FLOAT, 2, SH_PRECISION_HIGHP, 1, "a", kVarVarying };
+      { GL_FLOAT, 2, GL_HIGH_FLOAT, true, "a", kVarVarying };
   const VarInfo kFragmentVarying =
-      { GL_FLOAT, 2, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 2, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
@@ -1249,7 +1288,7 @@ TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
 // declared in vertex shader, link should fail.
 TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
   const VarInfo kFragmentVarying =
-      { GL_FLOAT, 3, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying };
+      { GL_FLOAT, 3, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       NULL, 0, &kFragmentVarying, 1);
 
@@ -1265,7 +1304,7 @@ TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
 // succeed.
 TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
   const VarInfo kFragmentVarying =
-      { GL_FLOAT, 3, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying };
+      { GL_FLOAT, 3, GL_MEDIUM_FLOAT, false, "a", kVarVarying };
   Program* program = SetupShaderVariableTest(
       NULL, 0, &kFragmentVarying, 1);
 
@@ -1281,9 +1320,9 @@ TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
 // failure.
 TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
   const VarInfo kVertexAttribute =
-      { GL_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarAttribute };
+      { GL_FLOAT_VEC4, 1, GL_MEDIUM_FLOAT, true, "a", kVarAttribute };
   const VarInfo kFragmentUniform =
-      { GL_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1, "a", kVarUniform };
+      { GL_FLOAT_VEC4, 1, GL_MEDIUM_FLOAT, true, "a", kVarUniform };
   Program* program = SetupShaderVariableTest(
       &kVertexAttribute, 1, &kFragmentUniform, 1);
 
@@ -1297,12 +1336,12 @@ TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
 // Varyings go over 8 rows.
 TEST_F(ProgramManagerWithShaderTest, TooManyVaryings) {
   const VarInfo kVertexVaryings[] = {
-      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, true, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
   const VarInfo kFragmentVaryings[] = {
-      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, true, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
   Program* program = SetupShaderVariableTest(
       kVertexVaryings, 2, kFragmentVaryings, 2);
@@ -1315,12 +1354,12 @@ TEST_F(ProgramManagerWithShaderTest, TooManyVaryings) {
 // Varyings go over 8 rows but some are inactive
 TEST_F(ProgramManagerWithShaderTest, TooManyInactiveVaryings) {
   const VarInfo kVertexVaryings[] = {
-      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, true, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
   const VarInfo kFragmentVaryings[] = {
-      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying },
-      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, false, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
   Program* program = SetupShaderVariableTest(
       kVertexVaryings, 2, kFragmentVaryings, 2);
@@ -1334,12 +1373,12 @@ TEST_F(ProgramManagerWithShaderTest, TooManyInactiveVaryings) {
 // However, we still fail the check if kCountAll option is used.
 TEST_F(ProgramManagerWithShaderTest, CountAllVaryingsInPacking) {
   const VarInfo kVertexVaryings[] = {
-      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 1, "a", kVarVarying },
-      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, true, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
   const VarInfo kFragmentVaryings[] = {
-      { GL_FLOAT_VEC4, 4, SH_PRECISION_MEDIUMP, 0, "a", kVarVarying },
-      { GL_FLOAT_VEC4, 5, SH_PRECISION_MEDIUMP, 1, "b", kVarVarying }
+      { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, false, "a", kVarVarying },
+      { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
   Program* program = SetupShaderVariableTest(
       kVertexVaryings, 2, kFragmentVaryings, 2);
@@ -1397,15 +1436,15 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
         kUniform2FakeLocation,
         kUniform2RealLocation,
         kUniform2DesiredLocation,
-        kUniform2Name,
+        kUniform2NameWithArrayIndex,
       },
-      { kUniform3BadName,
+      { kUniform3Name,
         kUniform3Size,
         kUniform3Type,
         kUniform3FakeLocation,
         kUniform3RealLocation,
         kUniform3DesiredLocation,
-        kUniform3GoodName,
+        kUniform3NameWithArrayIndex,
       },
     };
     const size_t kNumAttribs = arraysize(kAttribs);
@@ -1447,7 +1486,7 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
   EXPECT_TRUE(program->SetUniformLocationBinding(
       kUniform1Name, kUniform1DesiredLocation));
   EXPECT_TRUE(program->SetUniformLocationBinding(
-      kUniform3BadName, kUniform3DesiredLocation));
+      kUniform3Name, kUniform3DesiredLocation));
 
   static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
     { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
@@ -1469,15 +1508,15 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
       kUniform2FakeLocation,
       kUniform2RealLocation,
       kUniform2DesiredLocation,
-      kUniform2Name,
+      kUniform2NameWithArrayIndex,
     },
-    { kUniform3BadName,
+    { kUniform3Name,
       kUniform3Size,
       kUniform3Type,
       kUniform3FakeLocation,
       kUniform3RealLocation,
       kUniform3DesiredLocation,
-      kUniform3GoodName,
+      kUniform3NameWithArrayIndex,
     },
   };
 
@@ -1491,9 +1530,9 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
   EXPECT_EQ(kUniform1DesiredLocation,
             program->GetUniformFakeLocation(kUniform1Name));
   EXPECT_EQ(kUniform3DesiredLocation,
-            program->GetUniformFakeLocation(kUniform3BadName));
+            program->GetUniformFakeLocation(kUniform3Name));
   EXPECT_EQ(kUniform3DesiredLocation,
-            program->GetUniformFakeLocation(kUniform3GoodName));
+            program->GetUniformFakeLocation(kUniform3NameWithArrayIndex));
 }
 
 class ProgramManagerWithCacheTest : public GpuServiceTest {

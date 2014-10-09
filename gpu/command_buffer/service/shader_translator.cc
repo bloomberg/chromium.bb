@@ -14,9 +14,10 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
-namespace {
+namespace gpu {
+namespace gles2 {
 
-using gpu::gles2::ShaderTranslator;
+namespace {
 
 class ShaderTranslatorInitializer {
  public:
@@ -34,58 +35,40 @@ class ShaderTranslatorInitializer {
 base::LazyInstance<ShaderTranslatorInitializer> g_translator_initializer =
     LAZY_INSTANCE_INITIALIZER;
 
-void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
-                     ShaderTranslator::VariableMap* var_map) {
+void GetAttributes(ShHandle compiler, AttributeMap* var_map) {
   if (!var_map)
     return;
   var_map->clear();
-
-  size_t name_len = 0, mapped_name_len = 0;
-  switch (var_type) {
-    case SH_ACTIVE_ATTRIBUTES:
-      ShGetInfo(compiler, SH_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len);
-      break;
-    case SH_ACTIVE_UNIFORMS:
-      ShGetInfo(compiler, SH_ACTIVE_UNIFORM_MAX_LENGTH, &name_len);
-      break;
-    case SH_VARYINGS:
-      ShGetInfo(compiler, SH_VARYING_MAX_LENGTH, &name_len);
-      break;
-    default: NOTREACHED();
-  }
-  ShGetInfo(compiler, SH_MAPPED_NAME_MAX_LENGTH, &mapped_name_len);
-  if (name_len <= 1 || mapped_name_len <= 1) return;
-  scoped_ptr<char[]> name(new char[name_len]);
-  scoped_ptr<char[]> mapped_name(new char[mapped_name_len]);
-
-  size_t num_vars = 0;
-  ShGetInfo(compiler, var_type, &num_vars);
-  for (size_t i = 0; i < num_vars; ++i) {
-    size_t len = 0;
-    int size = 0;
-    sh::GLenum type = GL_NONE;
-    ShPrecisionType precision = SH_PRECISION_UNDEFINED;
-    int static_use = 0;
-
-    ShGetVariableInfo(compiler, var_type, i,
-                      &len, &size, &type, &precision, &static_use,
-                      name.get(), mapped_name.get());
-
-    // In theory we should CHECK(len <= name_len - 1) here, but ANGLE needs
-    // to handle long struct field name mapping before we can do this.
-    // Also, we should modify the ANGLE interface to also return a length
-    // for mapped_name.
-    std::string name_string(name.get(), std::min(len, name_len - 1));
-    mapped_name.get()[mapped_name_len - 1] = '\0';
-
-    ShaderTranslator::VariableInfo info(
-        type, size, precision, static_use, name_string);
-    (*var_map)[mapped_name.get()] = info;
+  const std::vector<sh::Attribute>* attribs = ShGetAttributes(compiler);
+  if (attribs) {
+    for (size_t ii = 0; ii < attribs->size(); ++ii)
+      (*var_map)[(*attribs)[ii].mappedName] = (*attribs)[ii];
   }
 }
 
-void GetNameHashingInfo(
-    ShHandle compiler, ShaderTranslator::NameMap* name_map) {
+void GetUniforms(ShHandle compiler, UniformMap* var_map) {
+  if (!var_map)
+    return;
+  var_map->clear();
+  const std::vector<sh::Uniform>* uniforms = ShGetUniforms(compiler);
+  if (uniforms) {
+    for (size_t ii = 0; ii < uniforms->size(); ++ii)
+      (*var_map)[(*uniforms)[ii].mappedName] = (*uniforms)[ii];
+  }
+}
+
+void GetVaryings(ShHandle compiler, VaryingMap* var_map) {
+  if (!var_map)
+    return;
+  var_map->clear();
+  const std::vector<sh::Varying>* varyings = ShGetVaryings(compiler);
+  if (varyings) {
+    for (size_t ii = 0; ii < varyings->size(); ++ii)
+      (*var_map)[(*varyings)[ii].mappedName] = (*varyings)[ii];
+  }
+}
+
+void GetNameHashingInfo(ShHandle compiler, NameMap* name_map) {
   if (!name_map)
     return;
   name_map->clear();
@@ -109,9 +92,6 @@ void GetNameHashingInfo(
 }
 
 }  // namespace
-
-namespace gpu {
-namespace gles2 {
 
 ShaderTranslator::DestructionObserver::DestructionObserver() {
 }
@@ -167,9 +147,9 @@ int ShaderTranslator::GetCompileOptions() const {
 bool ShaderTranslator::Translate(const std::string& shader_source,
                                  std::string* info_log,
                                  std::string* translated_source,
-                                 VariableMap* attrib_map,
-                                 VariableMap* uniform_map,
-                                 VariableMap* varying_map,
+                                 AttributeMap* attrib_map,
+                                 UniformMap* uniform_map,
+                                 VaryingMap* varying_map,
                                  NameMap* name_map) const {
   // Make sure this instance is initialized.
   DCHECK(compiler_ != NULL);
@@ -194,9 +174,9 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
       }
     }
     // Get info for attribs, uniforms, and varyings.
-    GetVariableInfo(compiler_, SH_ACTIVE_ATTRIBUTES, attrib_map);
-    GetVariableInfo(compiler_, SH_ACTIVE_UNIFORMS, uniform_map);
-    GetVariableInfo(compiler_, SH_VARYINGS, varying_map);
+    GetAttributes(compiler_, attrib_map);
+    GetUniforms(compiler_, uniform_map);
+    GetVaryings(compiler_, varying_map);
     // Get info for name hashing.
     GetNameHashingInfo(compiler_, name_map);
   }

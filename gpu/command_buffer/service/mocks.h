@@ -100,9 +100,9 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
       const std::string& shader_source,
       std::string* info_log,
       std::string* translated_source,
-      VariableMap* attrib_map,
-      VariableMap* uniform_map,
-      VariableMap* varying_map,
+      AttributeMap* attrib_map,
+      UniformMap* uniform_map,
+      VaryingMap* varying_map,
       NameMap* name_map));
   MOCK_CONST_METHOD0(
       GetStringForOptionsThatWouldAffectCompilation, std::string());

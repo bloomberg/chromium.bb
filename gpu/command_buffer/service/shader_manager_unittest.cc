@@ -93,28 +93,28 @@ TEST_F(ShaderManagerTest, DoCompile) {
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   const char* kClient1Source = "hello world";
   const GLenum kAttrib1Type = GL_FLOAT_VEC2;
-  const GLsizei kAttrib1Size = 2;
-  const int kAttrib1Precision = SH_PRECISION_MEDIUMP;
+  const GLint kAttrib1Size = 2;
+  const GLenum kAttrib1Precision = GL_MEDIUM_FLOAT;
   const char* kAttrib1Name = "attr1";
   const GLenum kAttrib2Type = GL_FLOAT_VEC3;
-  const GLsizei kAttrib2Size = 4;
-  const int kAttrib2Precision = SH_PRECISION_HIGHP;
+  const GLint kAttrib2Size = 4;
+  const GLenum kAttrib2Precision = GL_HIGH_FLOAT;
   const char* kAttrib2Name = "attr2";
-  const int kAttribStaticUse = 0;
+  const bool kAttribStaticUse = false;
   const GLenum kUniform1Type = GL_FLOAT_MAT2;
-  const GLsizei kUniform1Size = 3;
-  const int kUniform1Precision = SH_PRECISION_LOWP;
-  const int kUniform1StaticUse = 1;
+  const GLint kUniform1Size = 3;
+  const GLenum kUniform1Precision = GL_LOW_FLOAT;
+  const bool kUniform1StaticUse = true;
   const char* kUniform1Name = "uni1";
   const GLenum kUniform2Type = GL_FLOAT_MAT3;
-  const GLsizei kUniform2Size = 5;
-  const int kUniform2Precision = SH_PRECISION_MEDIUMP;
-  const int kUniform2StaticUse = 0;
+  const GLint kUniform2Size = 5;
+  const GLenum kUniform2Precision = GL_MEDIUM_FLOAT;
+  const bool kUniform2StaticUse = false;
   const char* kUniform2Name = "uni2";
   const GLenum kVarying1Type = GL_FLOAT_VEC4;
-  const GLsizei kVarying1Size = 1;
-  const int kVarying1Precision = SH_PRECISION_HIGHP;
-  const int kVarying1StaticUse = 0;
+  const GLint kVarying1Size = 1;
+  const GLenum kVarying1Precision = GL_HIGH_FLOAT;
+  const bool kVarying1StaticUse = false;
   const char* kVarying1Name = "varying1";
 
   // Check we can create shader.
@@ -145,22 +145,22 @@ TEST_F(ShaderManagerTest, DoCompile) {
   const std::string kLog = "foo";
   const std::string kTranslatedSource = "poo";
 
-  ShaderTranslator::VariableMap attrib_map;
-  attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
+  AttributeMap attrib_map;
+  attrib_map[kAttrib1Name] = TestHelper::ConstructAttribute(
       kAttrib1Type, kAttrib1Size, kAttrib1Precision,
       kAttribStaticUse, kAttrib1Name);
-  attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
+  attrib_map[kAttrib2Name] = TestHelper::ConstructAttribute(
       kAttrib2Type, kAttrib2Size, kAttrib2Precision,
       kAttribStaticUse, kAttrib2Name);
-  ShaderTranslator::VariableMap uniform_map;
-  uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
+  UniformMap uniform_map;
+  uniform_map[kUniform1Name] = TestHelper::ConstructUniform(
       kUniform1Type, kUniform1Size, kUniform1Precision,
       kUniform1StaticUse, kUniform1Name);
-  uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
+  uniform_map[kUniform2Name] = TestHelper::ConstructUniform(
       kUniform2Type, kUniform2Size, kUniform2Precision,
       kUniform2StaticUse, kUniform2Name);
-  ShaderTranslator::VariableMap varying_map;
-  varying_map[kVarying1Name] = ShaderTranslatorInterface::VariableInfo(
+  VaryingMap varying_map;
+  varying_map[kVarying1Name] = TestHelper::ConstructVarying(
       kVarying1Type, kVarying1Size, kVarying1Precision,
       kVarying1StaticUse, kVarying1Name);
 
@@ -175,41 +175,38 @@ TEST_F(ShaderManagerTest, DoCompile) {
 
   // Check varying infos got copied.
   EXPECT_EQ(attrib_map.size(), shader1->attrib_map().size());
-  for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
+  for (AttributeMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
-    const Shader::VariableInfo* variable_info =
-        shader1->GetAttribInfo(it->first);
+    const sh::Attribute* variable_info = shader1->GetAttribInfo(it->first);
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
-    EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.arraySize, variable_info->arraySize);
     EXPECT_EQ(it->second.precision, variable_info->precision);
-    EXPECT_EQ(it->second.static_use, variable_info->static_use);
+    EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
   }
   // Check uniform infos got copied.
   EXPECT_EQ(uniform_map.size(), shader1->uniform_map().size());
-  for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
+  for (UniformMap::const_iterator it = uniform_map.begin();
        it != uniform_map.end(); ++it) {
-    const Shader::VariableInfo* variable_info =
-        shader1->GetUniformInfo(it->first);
+    const sh::Uniform* variable_info = shader1->GetUniformInfo(it->first);
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
-    EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.arraySize, variable_info->arraySize);
     EXPECT_EQ(it->second.precision, variable_info->precision);
-    EXPECT_EQ(it->second.static_use, variable_info->static_use);
+    EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
   }
   // Check varying infos got copied.
   EXPECT_EQ(varying_map.size(), shader1->varying_map().size());
-  for (ShaderTranslator::VariableMap::const_iterator it = varying_map.begin();
+  for (VaryingMap::const_iterator it = varying_map.begin();
        it != varying_map.end(); ++it) {
-    const Shader::VariableInfo* variable_info =
-        shader1->GetVaryingInfo(it->first);
+    const sh::Varying* variable_info = shader1->GetVaryingInfo(it->first);
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
-    EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.arraySize, variable_info->arraySize);
     EXPECT_EQ(it->second.precision, variable_info->precision);
-    EXPECT_EQ(it->second.static_use, variable_info->static_use);
+    EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
   }
 

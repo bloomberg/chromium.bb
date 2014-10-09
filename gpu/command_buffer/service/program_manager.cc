@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -32,28 +33,6 @@ namespace gpu {
 namespace gles2 {
 
 namespace {
-
-struct UniformType {
-  explicit UniformType(const ShaderTranslator::VariableInfo uniform)
-      : type(uniform.type),
-        size(uniform.size),
-        precision(uniform.precision) { }
-
-  UniformType()
-      : type(0),
-        size(0),
-        precision(SH_PRECISION_MEDIUMP) { }
-
-  bool operator==(const UniformType& other) const {
-    return type == other.type &&
-        size == other.size &&
-        precision == other.precision;
-  }
-
-  int type;
-  int size;
-  int precision;
-};
 
 int ShaderTypeToIndex(GLenum shader_type) {
   switch (shader_type) {
@@ -389,17 +368,15 @@ void Program::Update() {
     DCHECK(max_len == 0 || length < max_len);
     DCHECK(length == 0 || name_buffer[length] == '\0');
     if (!ProgramManager::IsInvalidPrefix(name_buffer.get(), length)) {
-      std::string name;
       std::string original_name;
-      GetCorrectedVariableInfo(
-          false, name_buffer.get(), &name, &original_name, &size, &type);
+      GetVertexAttribData(name_buffer.get(), &original_name, &type);
       // TODO(gman): Should we check for error?
       GLint location = glGetAttribLocation(service_id_, name_buffer.get());
       if (location > max_location) {
         max_location = location;
       }
       attrib_infos_.push_back(
-          VertexAttrib(size, type, original_name, location));
+          VertexAttrib(1, type, original_name, location));
       max_attrib_name_length_ = std::max(
           max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
     }
@@ -447,9 +424,9 @@ void Program::Update() {
     DCHECK(length == 0 || name_buffer[length] == '\0');
     if (!ProgramManager::IsInvalidPrefix(name_buffer.get(), length)) {
       data.queried_name = std::string(name_buffer.get());
-      GetCorrectedVariableInfo(
-          true, name_buffer.get(), &data.corrected_name, &data.original_name,
-          &data.size, &data.type);
+      GetCorrectedUniformData(
+          data.queried_name,
+          &data.corrected_name, &data.original_name, &data.size, &data.type);
       uniform_data.push_back(data);
     }
   }
@@ -757,38 +734,57 @@ bool Program::SetUniformLocationBinding(
 
 // Note: This is only valid to call right after a program has been linked
 // successfully.
-void Program::GetCorrectedVariableInfo(
-    bool use_uniforms,
-    const std::string& name, std::string* corrected_name,
-    std::string* original_name,
+void Program::GetCorrectedUniformData(
+    const std::string& name,
+    std::string* corrected_name, std::string* original_name,
     GLsizei* size, GLenum* type) const {
-  DCHECK(corrected_name);
-  DCHECK(original_name);
-  DCHECK(size);
-  DCHECK(type);
-  const char* kArraySpec = "[0]";
-  for (int jj = 0; jj < 2; ++jj) {
-    std::string test_name(name + ((jj == 1) ? kArraySpec : ""));
-    for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-      Shader* shader = attached_shaders_[ii].get();
-      if (shader) {
-        const Shader::VariableInfo* variable_info =
-            use_uniforms ? shader->GetUniformInfo(test_name) :
-                           shader->GetAttribInfo(test_name);
-        // Note: There is an assuption here that if an attrib is defined in more
-        // than 1 attached shader their types and sizes match. Should we check
-        // for that case?
-        if (variable_info) {
-          *corrected_name = test_name;
-          *original_name = variable_info->name;
-          *type = variable_info->type;
-          *size = variable_info->size;
-          return;
-        }
+  DCHECK(corrected_name && original_name && size && type);
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    Shader* shader = attached_shaders_[ii].get();
+    if (!shader)
+      continue;
+    const sh::ShaderVariable* info = NULL;
+    const sh::Uniform* uniform = shader->GetUniformInfo(name);
+    bool found = false;
+    if (uniform)
+      found = uniform->findInfoByMappedName(name, &info, original_name);
+    if (found) {
+      const std::string kArraySpec("[0]");
+      if (info->arraySize > 0 && !EndsWith(name, kArraySpec, true)) {
+        *corrected_name = name + kArraySpec;
+        *original_name += kArraySpec;
+      } else {
+        *corrected_name = name;
       }
+      *type = info->type;
+      *size = std::max(1u, info->arraySize);
+      return;
     }
   }
+  // TODO(zmo): this path should never be reached unless there is a serious
+  // bug in the driver or in ANGLE translator.
   *corrected_name = name;
+  *original_name = name;
+}
+
+void Program::GetVertexAttribData(
+    const std::string& name, std::string* original_name, GLenum* type) const {
+  DCHECK(original_name);
+  DCHECK(type);
+  Shader* shader = attached_shaders_[ShaderTypeToIndex(GL_VERTEX_SHADER)].get();
+  if (shader) {
+    // Vertex attributes can not be arrays or structs (GLSL ES 3.00.4, section
+    // 4.3.4, "Input Variables"), so the top level sh::Attribute returns the
+    // information we need.
+    const sh::Attribute* info = shader->GetAttribInfo(name);
+    if (info) {
+      *original_name = info->name;
+      *type = info->type;
+      return;
+    }
+  }
+  // TODO(zmo): this path should never be reached unless there is a serious
+  // bug in the driver or in ANGLE translator.
   *original_name = name;
 }
 
@@ -1014,23 +1010,20 @@ bool Program::DetectAttribLocationBindingConflicts() const {
 }
 
 bool Program::DetectUniformsMismatch(std::string* conflicting_name) const {
-  typedef std::map<std::string, UniformType> UniformMap;
-  UniformMap uniform_map;
+  typedef std::map<std::string, const sh::Uniform*> UniformPointerMap;
+  UniformPointerMap uniform_pointer_map;
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    const ShaderTranslator::VariableMap& shader_uniforms =
-        attached_shaders_[ii]->uniform_map();
-    for (ShaderTranslator::VariableMap::const_iterator iter =
-             shader_uniforms.begin();
+    const UniformMap& shader_uniforms = attached_shaders_[ii]->uniform_map();
+    for (UniformMap::const_iterator iter = shader_uniforms.begin();
          iter != shader_uniforms.end(); ++iter) {
       const std::string& name = iter->first;
-      UniformType type(iter->second);
-      UniformMap::iterator map_entry = uniform_map.find(name);
-      if (map_entry == uniform_map.end()) {
-        uniform_map[name] = type;
+      UniformPointerMap::iterator hit = uniform_pointer_map.find(name);
+      if (hit == uniform_pointer_map.end()) {
+        uniform_pointer_map[name] = &(iter->second);
       } else {
-        // If a uniform is already in the map, i.e., it has already been
-        // declared by other shader, then the type and precision must match.
-        if (map_entry->second == type)
+        // If a uniform is in the map, i.e., it has already been declared by
+        // another shader, then the type, precision, etc. must match.
+        if (hit->second->isSameUniformAtLinkTime(iter->second))
           continue;
         *conflicting_name = name;
         return true;
@@ -1045,30 +1038,25 @@ bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
          attached_shaders_[1].get() &&
          attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
-  const ShaderTranslator::VariableMap* vertex_varyings =
-      &(attached_shaders_[0]->varying_map());
-  const ShaderTranslator::VariableMap* fragment_varyings =
-      &(attached_shaders_[1]->varying_map());
+  const VaryingMap* vertex_varyings = &(attached_shaders_[0]->varying_map());
+  const VaryingMap* fragment_varyings = &(attached_shaders_[1]->varying_map());
 
-  for (ShaderTranslator::VariableMap::const_iterator iter =
-           fragment_varyings->begin();
+  for (VaryingMap::const_iterator iter = fragment_varyings->begin();
        iter != fragment_varyings->end(); ++iter) {
     const std::string& name = iter->first;
     if (IsBuiltInVarying(name))
       continue;
 
-    ShaderTranslator::VariableMap::const_iterator hit =
-        vertex_varyings->find(name);
+    VaryingMap::const_iterator hit = vertex_varyings->find(name);
     if (hit == vertex_varyings->end()) {
-      if (iter->second.static_use) {
+      if (iter->second.staticUse) {
         *conflicting_name = name;
         return true;
       }
       continue;
     }
 
-    if (hit->second.type != iter->second.type ||
-        hit->second.size != iter->second.size) {
+    if (!hit->second.isSameVaryingAtLinkTime(iter->second)) {
       *conflicting_name = name;
       return true;
     }
@@ -1082,14 +1070,14 @@ bool Program::DetectGlobalNameConflicts(std::string* conflicting_name) const {
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
          attached_shaders_[1].get() &&
          attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
-  const ShaderTranslator::VariableMap* uniforms[2];
+  const UniformMap* uniforms[2];
   uniforms[0] = &(attached_shaders_[0]->uniform_map());
   uniforms[1] = &(attached_shaders_[1]->uniform_map());
-  const ShaderTranslator::VariableMap* attribs =
+  const AttributeMap* attribs =
       &(attached_shaders_[0]->attrib_map());
 
-  for (ShaderTranslator::VariableMap::const_iterator iter =
-           attribs->begin(); iter != attribs->end(); ++iter) {
+  for (AttributeMap::const_iterator iter = attribs->begin();
+       iter != attribs->end(); ++iter) {
     for (int ii = 0; ii < 2; ++ii) {
       if (uniforms[ii]->find(iter->first) != uniforms[ii]->end()) {
         *conflicting_name = iter->first;
@@ -1106,30 +1094,27 @@ bool Program::CheckVaryingsPacking(
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
          attached_shaders_[1].get() &&
          attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
-  const ShaderTranslator::VariableMap* vertex_varyings =
-      &(attached_shaders_[0]->varying_map());
-  const ShaderTranslator::VariableMap* fragment_varyings =
-      &(attached_shaders_[1]->varying_map());
+  const VaryingMap* vertex_varyings = &(attached_shaders_[0]->varying_map());
+  const VaryingMap* fragment_varyings = &(attached_shaders_[1]->varying_map());
 
   std::map<std::string, ShVariableInfo> combined_map;
 
-  for (ShaderTranslator::VariableMap::const_iterator iter =
-           fragment_varyings->begin();
+  for (VaryingMap::const_iterator iter = fragment_varyings->begin();
        iter != fragment_varyings->end(); ++iter) {
-    if (!iter->second.static_use && option == kCountOnlyStaticallyUsed)
+    if (!iter->second.staticUse && option == kCountOnlyStaticallyUsed)
       continue;
     if (!IsBuiltInVarying(iter->first)) {
-      ShaderTranslator::VariableMap::const_iterator vertex_iter =
+      VaryingMap::const_iterator vertex_iter =
           vertex_varyings->find(iter->first);
       if (vertex_iter == vertex_varyings->end() ||
-          (!vertex_iter->second.static_use &&
+          (!vertex_iter->second.staticUse &&
            option == kCountOnlyStaticallyUsed))
         continue;
     }
 
     ShVariableInfo var;
     var.type = static_cast<sh::GLenum>(iter->second.type);
-    var.size = iter->second.size;
+    var.size = std::max(1u, iter->second.arraySize);
     combined_map[iter->first] = var;
   }
 

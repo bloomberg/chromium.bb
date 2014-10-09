@@ -114,13 +114,23 @@ class TestHelper {
       bool expected_valid,
       const std::string* const expected_log_info,
       const std::string* const expected_translated_source,
-      const ShaderTranslatorInterface::VariableMap* const expected_attrib_map,
-      const ShaderTranslatorInterface::VariableMap* const expected_uniform_map,
-      const ShaderTranslatorInterface::VariableMap* const expected_varying_map,
-      const ShaderTranslatorInterface::NameMap* const expected_name_map);
+      const AttributeMap* const expected_attrib_map,
+      const UniformMap* const expected_uniform_map,
+      const VaryingMap* const expected_varying_map,
+      const NameMap* const expected_name_map);
 
   static void SetShaderStates(
       ::gfx::MockGLInterface* gl, Shader* shader, bool valid);
+
+  static sh::Attribute ConstructAttribute(
+      GLenum type, GLint array_size, GLenum precision,
+      bool static_use, const std::string& name);
+  static sh::Uniform ConstructUniform(
+      GLenum type, GLint array_size, GLenum precision,
+      bool static_use, const std::string& name);
+  static sh::Varying ConstructVarying(
+      GLenum type, GLint array_size, GLenum precision,
+      bool static_use, const std::string& name);
 
  private:
   static void SetupTextureInitializationExpectations(::gfx::MockGLInterface* gl,

@@ -79,7 +79,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   };
   struct VertexAttrib {
     VertexAttrib(GLsizei _size, GLenum _type, const std::string& _name,
-                     GLint _location)
+                 GLint _location)
         : size(_size),
           type(_type),
           location(_location),
@@ -281,9 +281,17 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
       const std::string& name, const std::string& original_name,
       size_t* next_available_index);
 
-  void GetCorrectedVariableInfo(
-      bool use_uniforms, const std::string& name, std::string* corrected_name,
-      std::string* original_name, GLsizei* size, GLenum* type) const;
+  // Query uniform data returned by ANGLE translator by the mapped name.
+  // Some drivers incorrectly return an uniform name of size-1 array without
+  // "[0]". In this case, we correct the name by appending "[0]" to it.
+  void GetCorrectedUniformData(
+      const std::string& name,
+      std::string* corrected_name, std::string* original_name,
+      GLsizei* size, GLenum* type) const;
+
+  // Query VertexAttrib data returned by ANGLE translator by the mapped name.
+  void GetVertexAttribData(
+      const std::string& name, std::string* original_name, GLenum* type) const;
 
   void DetachShaders(ShaderManager* manager);
 
