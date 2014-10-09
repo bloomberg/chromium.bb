@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model_observer.h"
@@ -21,6 +22,7 @@
 namespace {
 const char* kBookmarkBarId = "f_bookmarks_bar";
 
+const char* kFlagsKey = "stars.flags";
 const char* kIdKey = "stars.id";
 const char* kImageDataKey = "stars.imageData";
 const char* kNoteKey = "stars.note";
@@ -29,6 +31,11 @@ const char* kPageDataKey = "stars.pageData";
 const char* kVersionKey = "stars.version";
 
 const char* kBookmarkPrefix = "ebc_";
+
+enum Flags {
+  // When set the server will attempt to fill in image and snippet information.
+  NEEDS_OFFLINE_PROCESSING = 0x1,
+};
 
 // Helper method for working with bookmark metainfo.
 std::string DataForMetaInfoField(const BookmarkNode* node,
@@ -283,8 +290,19 @@ void EnhancedBookmarkModel::BookmarkNodeAdded(BookmarkModel* model,
                                               const BookmarkNode* parent,
                                               int index) {
   const BookmarkNode* node = parent->GetChild(index);
-  AddToIdMap(node);
-  ScheduleResetDuplicateRemoteIds();
+  std::string remote_id;
+  if (node->GetMetaInfo(kIdKey, &remote_id)) {
+    AddToIdMap(node);
+    ScheduleResetDuplicateRemoteIds();
+  } else if (node->is_url()) {
+    set_needs_offline_processing_tasks_[node] =
+        make_linked_ptr(new base::CancelableClosure(
+            base::Bind(&EnhancedBookmarkModel::SetNeedsOfflineProcessing,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Unretained(node))));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, set_needs_offline_processing_tasks_[node]->callback());
+  }
   FOR_EACH_OBSERVER(
       EnhancedBookmarkModelObserver, observers_, EnhancedBookmarkAdded(node));
 }
@@ -297,6 +315,8 @@ void EnhancedBookmarkModel::BookmarkNodeRemoved(
     const std::set<GURL>& removed_urls) {
   std::string remote_id = GetRemoteId(node);
   id_map_.erase(remote_id);
+  nodes_to_reset_.erase(node);
+  set_needs_offline_processing_tasks_.erase(node);
   FOR_EACH_OBSERVER(
       EnhancedBookmarkModelObserver, observers_, EnhancedBookmarkRemoved(node));
 }
@@ -378,6 +398,19 @@ void EnhancedBookmarkModel::ResetDuplicateRemoteIds() {
     SetMultipleMetaInfo(it->first, meta_info);
   }
   nodes_to_reset_.clear();
+}
+
+void EnhancedBookmarkModel::SetNeedsOfflineProcessing(
+    const BookmarkNode* node) {
+  set_needs_offline_processing_tasks_.erase(node);
+  int flags = 0;
+  std::string flags_str;
+  if (node->GetMetaInfo(kFlagsKey, &flags_str)) {
+    if (!base::StringToInt(flags_str, &flags))
+      flags = 0;
+  }
+  flags |= NEEDS_OFFLINE_PROCESSING;
+  SetMetaInfo(node, kFlagsKey, base::IntToString(flags));
 }
 
 void EnhancedBookmarkModel::SetMetaInfo(const BookmarkNode* node,

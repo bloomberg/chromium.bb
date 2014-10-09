@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -647,5 +648,93 @@ TEST_F(EnhancedBookmarkModelTest, ShutDownWhileResetDuplicationScheduled) {
   bookmark_model_->SetNodeMetaInfo(node2, "stars.id", "c_1");
   model_->Shutdown();
   model_.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(EnhancedBookmarkModelTest, NodeRemovedWhileResetDuplicationScheduled) {
+  const BookmarkNode* node1 = AddBookmark();
+  const BookmarkNode* node2 = AddBookmark();
+  bookmark_model_->SetNodeMetaInfo(node1, "stars.id", "c_1");
+  bookmark_model_->SetNodeMetaInfo(node2, "stars.id", "c_1");
+  bookmark_model_->Remove(node1->parent(), node1->parent()->GetIndexOf(node1));
+  base::RunLoop().RunUntilIdle();
+}
+
+// Verifies that the NEEDS_OFFLINE_PROCESSING flag is set for nodes added
+// with no remote id.
+TEST_F(EnhancedBookmarkModelTest, BookmarkAddedSetsOfflineProcessingFlag) {
+  const BookmarkNode* node =
+      bookmark_model_->AddURL(bookmark_model_->other_node(),
+                              0,
+                              base::ASCIIToUTF16("Some title"),
+                              GURL(BOOKMARK_URL));
+  std::string flags_str;
+  EXPECT_FALSE(node->GetMetaInfo("stars.flags", &flags_str));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(node->GetMetaInfo("stars.flags", &flags_str));
+  int flags;
+  ASSERT_TRUE(base::StringToInt(flags_str, &flags));
+  EXPECT_EQ(1, (flags & 1));
+}
+
+// Verifies that the NEEDS_OFFLINE_PROCESSING_FLAG is not set for added folders.
+TEST_F(EnhancedBookmarkModelTest, FolderAddedDoesNotSetOfflineProcessingFlag) {
+  const BookmarkNode* node = AddFolder();
+  base::RunLoop().RunUntilIdle();
+
+  std::string flags_str;
+  if (node->GetMetaInfo("stars.flags", &flags_str)) {
+    int flags;
+    ASSERT_TRUE(base::StringToInt(flags_str, &flags));
+    EXPECT_EQ(0, (flags & 1));
+  }
+}
+
+// Verifies that when a bookmark is added that has a remote id, the status of
+// the NEEDS_OFFLINE_PROCESSING flag doesn't change.
+TEST_F(EnhancedBookmarkModelTest,
+       BookmarkAddedWithIdKeepsOfflineProcessingFlag) {
+  BookmarkNode::MetaInfoMap meta_info;
+  meta_info["stars.id"] = "some_id";
+  meta_info["stars.flags"] = "1";
+
+  const BookmarkNode* node1 =
+      bookmark_model_->AddURLWithCreationTimeAndMetaInfo(
+          bookmark_model_->other_node(),
+          0,
+          base::ASCIIToUTF16("Some title"),
+          GURL(BOOKMARK_URL),
+          base::Time::Now(),
+          &meta_info);
+  base::RunLoop().RunUntilIdle();
+  std::string flags_str;
+  ASSERT_TRUE(node1->GetMetaInfo("stars.flags", &flags_str));
+  int flags;
+  ASSERT_TRUE(base::StringToInt(flags_str, &flags));
+  EXPECT_EQ(1, (flags & 1));
+
+  meta_info["stars.flags"] = "0";
+  const BookmarkNode* node2 =
+      bookmark_model_->AddURLWithCreationTimeAndMetaInfo(
+          bookmark_model_->other_node(),
+          0,
+          base::ASCIIToUTF16("Some title"),
+          GURL(BOOKMARK_URL),
+          base::Time::Now(),
+          &meta_info);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(node2->GetMetaInfo("stars.flags", &flags_str));
+  ASSERT_TRUE(base::StringToInt(flags_str, &flags));
+  EXPECT_EQ(0, (flags & 1));
+}
+
+TEST_F(EnhancedBookmarkModelTest,
+       NodeRemovedWhileSetNeedsOfflineProcessingIsScheduled) {
+  const BookmarkNode* node =
+      bookmark_model_->AddURL(bookmark_model_->other_node(),
+                              0,
+                              base::ASCIIToUTF16("Some title"),
+                              GURL(BOOKMARK_URL));
+  bookmark_model_->Remove(node->parent(), node->parent()->GetIndexOf(node));
   base::RunLoop().RunUntilIdle();
 }
