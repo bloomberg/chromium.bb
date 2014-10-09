@@ -9,7 +9,7 @@
     '../third_party/icu/icu.isolate',
   ],
   'conditions': [
-    ['OS=="linux" and asan==1', {
+    ['OS=="linux" and asan==1 and chromeos==0', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/lib/libc++.so',
