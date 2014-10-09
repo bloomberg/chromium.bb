@@ -44,9 +44,7 @@ void ServiceRegistryImpl::OnConnectionError() {
 void ServiceRegistryImpl::AddService(
     const std::string& service_name,
     const base::Callback<void(mojo::ScopedMessagePipeHandle)> service_factory) {
-  bool inserted = service_factories_.insert(
-      std::make_pair(service_name, service_factory)).second;
-  DCHECK(inserted);
+  service_factories_[service_name] = service_factory;
 }
 
 void ServiceRegistryImpl::RemoveService(const std::string& service_name) {
