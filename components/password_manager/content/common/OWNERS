@@ -6,6 +6,7 @@ per-file credential_manager_messages*.h=inferno@chromium.org
 per-file credential_manager_messages*.h=jln@chromium.org
 per-file credential_manager_messages*.h=jschuh@chromium.org
 per-file credential_manager_messages*.h=kenrb@chromium.org
+per-file credential_manager_messages*.h=mkwst@chromium.org
 per-file credential_manager_messages*.h=nasko@chromium.org
 per-file credential_manager_messages*.h=palmer@chromium.org
 per-file credential_manager_messages*.h=tsepez@chromium.org
