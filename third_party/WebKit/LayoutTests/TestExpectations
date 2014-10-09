@@ -1330,7 +1330,6 @@ crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-playback-
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-in-foreign-domain-subframe.html [ Pass Timeout ]
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
-crbug.com/409713 [ Linux Win Release ] fast/dom/Window/window-early-properties-xhr.html [ Pass Timeout ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
 
