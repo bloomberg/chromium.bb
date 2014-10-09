@@ -83,6 +83,37 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   ASSERT_TRUE(subschema.GetItems().valid());
   EXPECT_EQ(base::Value::TYPE_STRING, subschema.GetItems().type());
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  subschema = schema.GetProperty(key::kExtensionSettings);
+  ASSERT_TRUE(subschema.valid());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  EXPECT_FALSE(subschema.GetAdditionalProperties().valid());
+  EXPECT_FALSE(subschema.GetProperty("no such extension id exists").valid());
+  EXPECT_TRUE(subschema.GetPatternProperties("*").empty());
+  EXPECT_TRUE(subschema.GetPatternProperties("no such extension id").empty());
+  EXPECT_TRUE(subschema.GetPatternProperties("^[a-p]{32}$").empty());
+  EXPECT_TRUE(subschema.GetPatternProperties(
+                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").empty());
+  EXPECT_TRUE(subschema.GetPatternProperties(
+                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").empty());
+  SchemaList schema_list =
+      subschema.GetPatternProperties("abcdefghijklmnopabcdefghijklmnop");
+  ASSERT_EQ(1u, schema_list.size());
+  subschema = schema_list[0];
+  ASSERT_TRUE(subschema.valid());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  subschema = subschema.GetProperty("installation_mode");
+  ASSERT_TRUE(subschema.valid());
+  ASSERT_EQ(base::Value::TYPE_STRING, subschema.type());
+
+  subschema = schema.GetProperty(key::kExtensionSettings).GetProperty("*");
+  ASSERT_TRUE(subschema.valid());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());
+  subschema = subschema.GetProperty("installation_mode");
+  ASSERT_TRUE(subschema.valid());
+  ASSERT_EQ(base::Value::TYPE_STRING, subschema.type());
+#endif
+
   subschema = schema.GetProperty(key::kProxySettings);
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, subschema.type());

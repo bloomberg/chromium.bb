@@ -12,6 +12,7 @@
 namespace policy {
 class PolicyMap;
 class PolicyErrorMap;
+class Schema;
 }  // namespace policy
 
 namespace extensions {
@@ -86,6 +87,22 @@ class ExtensionURLPatternListPolicyHandler
   const char* pref_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionURLPatternListPolicyHandler);
+};
+
+class ExtensionSettingsPolicyHandler
+    : public policy::SchemaValidatingPolicyHandler {
+ public:
+  explicit ExtensionSettingsPolicyHandler(const policy::Schema& chrome_schema);
+  virtual ~ExtensionSettingsPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
+                                   policy::PolicyErrorMap* errors) override;
+  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
+                                   PrefValueMap* prefs) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsPolicyHandler);
 };
 
 }  // namespace extensions

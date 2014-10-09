@@ -41467,6 +41467,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="276" label="Enable add person in the user manager"/>
   <int value="277"
       label="Import autofill form data from default browser on first run"/>
+  <int value="278" label="Extension Settings"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

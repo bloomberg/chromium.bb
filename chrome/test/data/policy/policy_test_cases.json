@@ -699,6 +699,29 @@
     ]
   },
 
+  "ExtensionSettings": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "ExtensionSettings": {
+        "abcdefghijklmnopabcdefghijklmnop" : {
+          "installation_mode": "allowed"
+        },
+        "bcdefghijklmnopabcdefghijklmnopa" : {
+          "installation_mode": "force_installed",
+          "update_url": "http://example.com/update_url"
+        },
+        "*": {
+          "installation_mode": "blocked",
+          "install_sources": ["http://company-intranet/chromeapps"],
+          "allowed_types": ["hosted_app"]
+        }
+      }
+    },
+    "pref_mappings": [
+      { "pref": "extensions.management" }
+    ]
+  },
+
   "ShowHomeButton": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

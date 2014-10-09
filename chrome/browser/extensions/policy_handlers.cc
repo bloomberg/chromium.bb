@@ -6,15 +6,18 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
+#include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/schema.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -243,6 +246,82 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->DeepCopy());
+}
+
+// ExtensionSettingsPolicyHandler implementation  ------------------------------
+
+ExtensionSettingsPolicyHandler::ExtensionSettingsPolicyHandler(
+    const policy::Schema& chrome_schema)
+    : policy::SchemaValidatingPolicyHandler(
+          policy::key::kExtensionSettings,
+          chrome_schema.GetKnownProperty(policy::key::kExtensionSettings),
+          policy::SCHEMA_ALLOW_UNKNOWN) {
+}
+
+ExtensionSettingsPolicyHandler::~ExtensionSettingsPolicyHandler() {
+}
+
+bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
+    const policy::PolicyMap& policies,
+    policy::PolicyErrorMap* errors) {
+  scoped_ptr<base::Value> policy_value;
+  if (!CheckAndGetValue(policies, errors, &policy_value))
+    return false;
+  if (!policy_value)
+    return true;
+
+  // |policy_value| is expected to conform to the defined schema. But it's
+  // not strictly valid since there are additional restrictions.
+  const base::DictionaryValue* dict_value = NULL;
+  DCHECK(policy_value->IsType(base::Value::TYPE_DICTIONARY));
+  policy_value->GetAsDictionary(&dict_value);
+
+  for (base::DictionaryValue::Iterator it(*dict_value); !it.IsAtEnd();
+       it.Advance()) {
+    DCHECK(it.key() == schema_constants::kWildcard ||
+           crx_file::id_util::IdIsValid(it.key()));
+    DCHECK(it.value().IsType(base::Value::TYPE_DICTIONARY));
+
+    // Extracts sub dictionary.
+    const base::DictionaryValue* sub_dict = NULL;
+    it.value().GetAsDictionary(&sub_dict);
+
+    std::string installation_mode;
+    if (sub_dict->GetString(schema_constants::kInstallationMode,
+                            &installation_mode)) {
+      if (installation_mode == schema_constants::kForceInstalled ||
+          installation_mode == schema_constants::kNormalInstalled) {
+        DCHECK(it.key() != schema_constants::kWildcard);
+        // Verifies that 'update_url' is specified for 'force_installed' and
+        // 'normal_installed' mode.
+        std::string update_url;
+        if (!sub_dict->GetString(schema_constants::kUpdateUrl, &update_url) ||
+            update_url.empty()) {
+          errors->AddError(policy_name(),
+                           it.key() + "." + schema_constants::kUpdateUrl,
+                           IDS_POLICY_NOT_SPECIFIED_ERROR);
+          return false;
+        }
+        // Verifies that update URL is valid.
+        if (!GURL(update_url).is_valid()) {
+          errors->AddError(
+              policy_name(), IDS_POLICY_INVALID_UPDATE_URL_ERROR, it.key());
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+void ExtensionSettingsPolicyHandler::ApplyPolicySettings(
+    const policy::PolicyMap& policies,
+    PrefValueMap* prefs) {
+  scoped_ptr<base::Value> policy_value;
+  if (!CheckAndGetValue(policies, NULL, &policy_value) || !policy_value)
+    return;
+  prefs->SetValue(pref_names::kExtensionManagement, policy_value.release());
 }
 
 }  // namespace extensions
