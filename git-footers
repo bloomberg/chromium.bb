@@ -3,6 +3,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# git_footers.py -- Extract the conventional footers associated with a commit.
-
 . $(type -P python_git_runner.sh)

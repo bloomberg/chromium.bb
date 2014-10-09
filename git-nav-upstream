@@ -3,6 +3,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# a git-command to navigate to the upstream branch.
-
 git checkout '@{u}'
