@@ -83,8 +83,10 @@
 #include "public/web/WebPermissionClient.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginParams.h"
+#include "public/web/WebPluginPlaceholder.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebViewClient.h"
+#include "web/PluginPlaceholderImpl.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentPrivate.h"
@@ -631,6 +633,32 @@ bool FrameLoaderClientImpl::canCreatePluginWithoutRenderer(const String& mimeTyp
         return false;
 
     return m_webFrame->client()->canCreatePluginWithoutRenderer(mimeType);
+}
+
+PassOwnPtrWillBeRawPtr<PluginPlaceholder> FrameLoaderClientImpl::createPluginPlaceholder(
+    Document& document,
+    const KURL& url,
+    const Vector<String>& paramNames,
+    const Vector<String>& paramValues,
+    const String& mimeType,
+    bool loadManually)
+{
+    if (!m_webFrame->client())
+        return nullptr;
+
+    WebPluginParams params;
+    params.url = url;
+    params.mimeType = mimeType;
+    params.attributeNames = paramNames;
+    params.attributeValues = paramValues;
+    params.loadManually = loadManually;
+
+    OwnPtr<WebPluginPlaceholder> webPluginPlaceholder = adoptPtr(
+        m_webFrame->client()->createPluginPlaceholder(m_webFrame, params));
+    if (!webPluginPlaceholder)
+        return nullptr;
+
+    return PluginPlaceholderImpl::create(webPluginPlaceholder.release(), document);
 }
 
 PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(

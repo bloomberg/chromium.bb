@@ -32,6 +32,7 @@ struct NPObject;
 namespace blink {
 
 class HTMLImageLoader;
+class PluginPlaceholder;
 class RenderEmbeddedObject;
 class RenderWidget;
 class Widget;
@@ -63,8 +64,9 @@ public:
     void requestPluginCreationWithoutRendererIfPossible();
     void createPluginWithoutRenderer();
 
-    bool usePlaceholderContent() const { return m_usePlaceholderContent; }
-    void setUsePlaceholderContent(bool);
+    // Public for Internals::forcePluginPlaceholder.
+    bool usePlaceholderContent() const { return m_placeholder; }
+    void setPlaceholder(PassOwnPtrWillBeRawPtr<PluginPlaceholder>);
 
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
@@ -136,7 +138,8 @@ private:
     bool m_isCapturingMouseEvents;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
-    bool m_usePlaceholderContent;
+
+    OwnPtrWillBeMember<PluginPlaceholder> m_placeholder;
 
     // Normally the Widget is stored in HTMLFrameOwnerElement::m_widget.
     // However, plugins can persist even when not rendered. In order to

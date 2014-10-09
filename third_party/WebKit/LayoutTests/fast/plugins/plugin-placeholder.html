@@ -9,13 +9,19 @@ applet, embed, object { display: block; margin: 10px; }
 <embed type="application/x-fake-plugin"></embed>
 <object type="application/x-fake-plugin"></object>
 
+<template id="placeholder-template">
+    <style>
+        :host { overflow: hidden }
+        div { margin: 0; padding: 0; width: 100%; height: 100%; background-color: green; }
+    </style>
+    <div></div>
+</template>
+
 <script>
 internals.settings.setJavaEnabled(true);
 
-var placeholderHTML =
-    '<style>:host { overflow: hidden }</style>' +
-    '<div style="margin: 0; padding: 0; width: 100%; height: 100%; background-color: green;"></div>';
+var templateContent = document.getElementById('placeholder-template').content;
 Array.prototype.forEach.call(document.querySelectorAll("applet, embed, object"), function(plugin) {
-    internals.forcePluginPlaceholder(plugin, placeholderHTML);
+    internals.forcePluginPlaceholder(plugin, templateContent);
 });
 </script>

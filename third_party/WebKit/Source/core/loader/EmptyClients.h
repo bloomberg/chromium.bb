@@ -228,6 +228,7 @@ public:
     virtual void didDispatchPingLoader(const KURL&) override { }
     virtual void selectorMatchChanged(const Vector<String>&, const Vector<String>&) override { }
     virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const AtomicString&, HTMLFrameOwnerElement*) override;
+    virtual PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(Document&, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually) override;
     virtual PassRefPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const override { return false; }
     virtual PassRefPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) override;

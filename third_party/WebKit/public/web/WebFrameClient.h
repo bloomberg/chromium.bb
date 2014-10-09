@@ -78,6 +78,7 @@ class WebServiceWorkerProviderClient;
 class WebSocketHandle;
 class WebNode;
 class WebPlugin;
+class WebPluginPlaceholder;
 class WebRTCPeerConnectionHandler;
 class WebScreenOrientationClient;
 class WebSharedWorker;
@@ -101,6 +102,9 @@ struct WebURLError;
 class WebFrameClient {
 public:
     // Factory methods -----------------------------------------------------
+
+    // May return null.
+    virtual WebPluginPlaceholder* createPluginPlaceholder(WebLocalFrame*, const WebPluginParams&) { return 0; }
 
     // May return null.
     virtual WebPlugin* createPlugin(WebLocalFrame*, const WebPluginParams&) { return 0; }

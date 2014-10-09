@@ -42,6 +42,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/plugins/PluginPlaceholder.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -68,7 +69,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     // the same codepath in this class.
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
-    , m_usePlaceholderContent(false)
 {
 }
 
@@ -86,6 +86,7 @@ HTMLPlugInElement::~HTMLPlugInElement()
 void HTMLPlugInElement::trace(Visitor* visitor)
 {
     visitor->trace(m_imageLoader);
+    visitor->trace(m_placeholder);
     HTMLFrameOwnerElement::trace(visitor);
 }
 
@@ -478,17 +479,27 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
+    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder;
     RefPtr<Widget> widget = m_persistedPluginWidget;
     if (!widget) {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
-        FrameLoaderClient::DetachedPluginPolicy policy = requireRenderer ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
-        widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+        placeholder = frame->loader().client()->createPluginPlaceholder(document(), url, paramNames, paramValues, mimeType, loadManually);
+        if (!placeholder) {
+            FrameLoaderClient::DetachedPluginPolicy policy = requireRenderer ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
+            widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+        }
     }
 
-    if (!widget) {
+    if (!placeholder && !widget) {
         if (renderer && !renderer->showsUnavailablePluginIndicator())
             renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
+        setPlaceholder(nullptr);
         return false;
+    }
+
+    if (placeholder) {
+        setPlaceholder(placeholder.release());
+        return true;
     }
 
     if (renderer) {
@@ -497,6 +508,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     } else if (widget != m_persistedPluginWidget) {
         m_persistedPluginWidget = widget;
     }
+    setPlaceholder(nullptr);
     document().setContainsPlugins();
     scheduleSVGFilterLayerUpdateHack();
     // Make sure any input event handlers introduced by the plugin are taken into account.
@@ -524,7 +536,22 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
     // it be handled as a plugin to show the broken plugin icon.
     useFallback = objectType == ObjectContentNone && hasFallback;
     return objectType == ObjectContentNone || objectType == ObjectContentNetscapePlugin || objectType == ObjectContentOtherPlugin;
+}
 
+void HTMLPlugInElement::setPlaceholder(PassOwnPtrWillBeRawPtr<PluginPlaceholder> placeholder)
+{
+    bool needsLazyReattach = (!placeholder) != (!m_placeholder);
+    if (placeholder) {
+        placeholder->loadIntoContainer(ensureUserAgentShadowRoot());
+        m_placeholder = placeholder;
+    } else {
+        ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
+        shadowRoot.removeChildren();
+        shadowRoot.appendChild(HTMLContentElement::create(document()));
+        m_placeholder.clear();
+    }
+    if (needsLazyReattach)
+        lazyReattachIfAttached();
 }
 
 void HTMLPlugInElement::dispatchErrorEvent()
@@ -583,14 +610,6 @@ bool HTMLPlugInElement::hasFallbackContent() const
 bool HTMLPlugInElement::useFallbackContent() const
 {
     return hasAuthorShadowRoot();
-}
-
-void HTMLPlugInElement::setUsePlaceholderContent(bool use)
-{
-    if (use != m_usePlaceholderContent) {
-        m_usePlaceholderContent = use;
-        lazyReattachIfAttached();
-    }
 }
 
 void HTMLPlugInElement::lazyReattachIfNeeded()

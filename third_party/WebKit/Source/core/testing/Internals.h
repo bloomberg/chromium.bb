@@ -50,6 +50,7 @@ class DOMStringList;
 class LocalDOMWindow;
 class DictionaryTest;
 class Document;
+class DocumentFragment;
 class DocumentMarker;
 class Element;
 class ExceptionState;
@@ -322,7 +323,7 @@ public:
 
     unsigned countHitRegions(CanvasRenderingContext2D*);
 
-    void forcePluginPlaceholder(HTMLElement* plugin, const String& htmlSource, ExceptionState&);
+    void forcePluginPlaceholder(HTMLElement* plugin, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
     void forcePluginPlaceholder(HTMLElement* plugin, const Dictionary& options, ExceptionState&);
 
     Iterator* iterator(ScriptState*, ExceptionState&);

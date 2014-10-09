@@ -33,6 +33,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/plugins/PluginPlaceholder.h"
 #include "core/rendering/RenderApplet.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/Widget.h"
@@ -182,17 +183,25 @@ void HTMLAppletElement::updateWidgetInternal()
         paramValues.append(param->value());
     }
 
+    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder;
     RefPtr<Widget> widget;
-    if (frame->loader().allowPlugins(AboutToInstantiatePlugin))
-        widget = frame->loader().client()->createJavaAppletWidget(this, baseURL, paramNames, paramValues);
+    if (frame->loader().allowPlugins(AboutToInstantiatePlugin)) {
+        placeholder = frame->loader().client()->createPluginPlaceholder(document(), KURL(), paramNames, paramValues, m_serviceType, false);
+        if (!placeholder)
+            widget = frame->loader().client()->createJavaAppletWidget(this, baseURL, paramNames, paramValues);
+    }
 
-    if (!widget) {
+    if (!placeholder && !widget) {
         if (!renderer->showsUnavailablePluginIndicator())
             renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
-        return;
+        setPlaceholder(nullptr);
+    } else if (placeholder) {
+        setPlaceholder(placeholder.release());
+    } else if (widget) {
+        document().setContainsPlugins();
+        setWidget(widget);
+        setPlaceholder(nullptr);
     }
-    document().setContainsPlugins();
-    setWidget(widget);
 }
 
 bool HTMLAppletElement::canEmbedJava() const
@@ -212,15 +221,13 @@ bool HTMLAppletElement::canEmbedJava() const
 
 bool HTMLAppletElement::canEmbedURL(const KURL& url) const
 {
-    DEFINE_STATIC_LOCAL(String, appletMimeType, ("application/x-java-applet"));
-
     if (!document().securityOrigin()->canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(document().frame(), url.string());
         return false;
     }
 
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
-        || !document().contentSecurityPolicy()->allowPluginType(appletMimeType, appletMimeType, url)) {
+        || !document().contentSecurityPolicy()->allowPluginType(m_serviceType, m_serviceType, url)) {
         renderEmbeddedObject()->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }

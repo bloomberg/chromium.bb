@@ -67,6 +67,7 @@
 #include "core/editing/SpellChecker.h"
 #include "core/editing/SurroundingText.h"
 #include "core/editing/TextIterator.h"
+#include "core/editing/markup.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -106,6 +107,8 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
+#include "core/plugins/testing/DictionaryPluginPlaceholder.h"
+#include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
@@ -2255,18 +2258,13 @@ void Internals::hideAllTransitionElements()
         frame()->document()->hideTransitionElements(AtomicString(iter->selector));
 }
 
-void Internals::forcePluginPlaceholder(HTMLElement* element, const String& htmlSource, ExceptionState& exceptionState)
+void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
 {
     if (!element->isPluginElement()) {
         exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
         return;
     }
-
-    element->ensureUserAgentShadowRoot().setInnerHTML(htmlSource, exceptionState);
-    if (exceptionState.hadException())
-        return;
-
-    toHTMLPlugInElement(element)->setUsePlaceholderContent(true);
+    toHTMLPlugInElement(element)->setPlaceholder(DocumentFragmentPluginPlaceholder::create(fragment));
 }
 
 void Internals::forcePluginPlaceholder(HTMLElement* element, const Dictionary& options, ExceptionState& exceptionState)
@@ -2275,19 +2273,7 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const Dictionary& o
         exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
         return;
     }
-
-    RefPtrWillBeRawPtr<PluginPlaceholderElement> placeholder = PluginPlaceholderElement::create(element->document());
-    String stringValue;
-    if (DictionaryHelper::get(options, "message", stringValue))
-        placeholder->setMessage(stringValue);
-
-    ShadowRoot& shadowRoot = element->ensureUserAgentShadowRoot();
-    shadowRoot.removeChildren();
-    shadowRoot.appendChild(placeholder.release(), exceptionState);
-    if (exceptionState.hadException())
-        return;
-
-    toHTMLPlugInElement(element)->setUsePlaceholderContent(true);
+    toHTMLPlugInElement(element)->setPlaceholder(DictionaryPluginPlaceholder::create(element->document(), options));
 }
 
 Iterator* Internals::iterator(ScriptState* scriptState, ExceptionState& exceptionState)

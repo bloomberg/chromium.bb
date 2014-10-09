@@ -69,6 +69,8 @@
       'PageScaleConstraintsSet.h',
       'PageWidgetDelegate.cpp',
       'PageWidgetDelegate.h',
+      'PluginPlaceholderImpl.cpp',
+      'PluginPlaceholderImpl.h',
       'PopupContainer.cpp',
       'PopupContainer.h',
       'PopupContainerClient.h',
@@ -261,6 +263,7 @@
     ],
     'web_unittest_files': [
       'ExternalPopupMenuTest.cpp',
+      'PluginPlaceholderImplTest.cpp',
       'PopupContainerTest.cpp',
       'PopupMenuTest.cpp',
       'WebNodeTest.cpp',
