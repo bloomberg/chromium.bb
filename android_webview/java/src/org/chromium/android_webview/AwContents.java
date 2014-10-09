@@ -472,7 +472,7 @@ public class AwContents {
 
         @Override
         public void invalidate() {
-            mContainerView.invalidate();
+            postInvalidateOnAnimation();
         }
     }
 
@@ -2154,7 +2154,7 @@ public class AwContents {
         mScrollOffsetManager.overScrollBy(deltaX, deltaY);
 
         if (mOverScrollGlow != null && mOverScrollGlow.isAnimating()) {
-            mContainerView.invalidate();
+            postInvalidateOnAnimation();
         }
     }
 
@@ -2274,7 +2274,7 @@ public class AwContents {
             if (mOverScrollGlow != null && mOverScrollGlow.drawEdgeGlows(canvas,
                     mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
                     mScrollOffsetManager.computeMaximumVerticalScrollOffset())) {
-                mContainerView.invalidate();
+                postInvalidateOnAnimation();
             }
         }
 
