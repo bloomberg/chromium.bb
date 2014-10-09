@@ -53,12 +53,14 @@ public class SigninManager {
      * pending check from eventually starting a 2nd sign-in.
      */
     private boolean mFirstRunCheckIsPending = true;
+    private final ObserverList<SignInStateObserver> mSignInStateObservers =
+            new ObserverList<SignInStateObserver>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
             new ObserverList<SignInAllowedObserver>();
 
     private Activity mSignInActivity;
     private Account mSignInAccount;
-    private Observer mSignInObserver;
+    private SignInFlowObserver mSignInFlowObserver;
     private boolean mPassive = false;
 
     private ProgressDialog mSignOutProgressDialog;
@@ -69,23 +71,38 @@ public class SigninManager {
     private boolean mSigninAllowedByPolicy;
 
     /**
-     * SignInAllowedObservers will be notified once signing-in becomes allowed or disallowed.
+     * A SignInStateObserver is notified when the user signs in to or out of Chrome.
      */
-    public static interface SignInAllowedObserver {
+    public interface SignInStateObserver {
         /**
-         * Invoked once all startup checks are done and signing-in becomes allowed, or disallowed.
+         * Invoked when the user has signed in to Chrome.
          */
-        public void onSignInAllowedChanged();
+        void onSignedIn();
+
+        /**
+         * Invoked when the user has signed out of Chrome.
+         */
+        void onSignedOut();
     }
 
     /**
-     * The Observer of startSignIn() will be notified when sign-in completes.
+     * SignInAllowedObservers will be notified once signing-in becomes allowed or disallowed.
      */
-    public static interface Observer {
+    public interface SignInAllowedObserver {
+        /**
+         * Invoked once all startup checks are done and signing-in becomes allowed, or disallowed.
+         */
+        void onSignInAllowedChanged();
+    }
+
+    /**
+     * Pass this observer to startSignIn() to be notified when sign-in completes or is canceled.
+     */
+    public interface SignInFlowObserver {
         /**
          * Invoked after sign-in completed successfully.
          */
-        public void onSigninComplete();
+        void onSigninComplete();
 
         /**
          * Invoked when the sign-in process was cancelled by the user.
@@ -93,7 +110,14 @@ public class SigninManager {
          * The user should have the option of going back and starting the process again,
          * if possible.
          */
-        public void onSigninCancelled();
+        void onSigninCancelled();
+    }
+
+    /**
+     * Same as SignInFlowObserver.
+     * TODO(newt): Remove this interface once all clients inherit from SignInFlowObserver.
+     */
+    public interface Observer extends SignInFlowObserver {
     }
 
     /**
@@ -149,6 +173,20 @@ public class SigninManager {
         return !mSigninAllowedByPolicy;
     }
 
+    /**
+     * Registers a SignInStateObserver to be notified when the user signs in or out of Chrome.
+     */
+    public void addSignInStateObserver(SignInStateObserver observer) {
+        mSignInStateObservers.addObserver(observer);
+    }
+
+    /**
+     * Unregisters a SignInStateObserver to be notified when the user signs in or out of Chrome.
+     */
+    public void removeSignInStateObserver(SignInStateObserver observer) {
+        mSignInStateObservers.removeObserver(observer);
+    }
+
     public void addSignInAllowedObserver(SignInAllowedObserver observer) {
         mSignInAllowedObservers.addObserver(observer);
     }
@@ -180,11 +218,11 @@ public class SigninManager {
      * @param passive If passive is true then this operation should not interact with the user.
      * @param observer The Observer to notify when the sign-in process is finished.
      */
-    public void startSignIn(
-            Activity activity, final Account account, boolean passive, final Observer observer) {
+    public void startSignIn(Activity activity, final Account account, boolean passive,
+            final SignInFlowObserver observer) {
         assert mSignInActivity == null;
         assert mSignInAccount == null;
-        assert mSignInObserver == null;
+        assert mSignInFlowObserver == null;
 
         if (mFirstRunCheckIsPending) {
             Log.w(TAG, "Ignoring sign-in request until the First Run check completes.");
@@ -193,7 +231,7 @@ public class SigninManager {
 
         mSignInActivity = activity;
         mSignInAccount = account;
-        mSignInObserver = observer;
+        mSignInFlowObserver = observer;
         mPassive = passive;
 
         notifySignInAllowedChanged();
@@ -302,15 +340,19 @@ public class SigninManager {
             profileSyncService.syncSignIn();
         }
 
-        if (mSignInObserver != null)
-            mSignInObserver.onSigninComplete();
+        if (mSignInFlowObserver != null)
+            mSignInFlowObserver.onSigninComplete();
 
         // All done, cleanup.
         Log.d(TAG, "Signin done");
         mSignInActivity = null;
         mSignInAccount = null;
-        mSignInObserver = null;
+        mSignInFlowObserver = null;
+
         notifySignInAllowedChanged();
+        for (SignInStateObserver observer : mSignInStateObservers) {
+            observer.onSignedIn();
+        }
     }
 
     /**
@@ -339,6 +381,10 @@ public class SigninManager {
         } else {
             onSignOutDone();
         }
+
+        for (SignInStateObserver observer : mSignInStateObservers) {
+            observer.onSignedOut();
+        }
     }
 
     /**
@@ -357,10 +403,10 @@ public class SigninManager {
     }
 
     private void cancelSignIn() {
-        if (mSignInObserver != null)
-            mSignInObserver.onSigninCancelled();
+        if (mSignInFlowObserver != null)
+            mSignInFlowObserver.onSigninCancelled();
         mSignInActivity = null;
-        mSignInObserver = null;
+        mSignInFlowObserver = null;
         mSignInAccount = null;
         notifySignInAllowedChanged();
     }

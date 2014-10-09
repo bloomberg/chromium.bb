@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -102,7 +103,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         SigninManager signinManager = SigninManager.get(mContext);
         signinManager.onFirstRunCheckDone();
         final boolean passive = false;
-        signinManager.startSignIn(activity, account, passive, new SigninManager.Observer() {
+        signinManager.startSignIn(activity, account, passive, new SignInFlowObserver() {
             @Override
             public void onSigninComplete() {
                 SigninManager.get(mContext).logInSignedInUser();
