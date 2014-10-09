@@ -48,7 +48,7 @@ class PRINTING_EXPORT PrintedDocument
   void SetPage(int page_number,
                scoped_ptr<MetafilePlayer> metafile,
 #if defined(OS_WIN)
-               double shrink,
+               float shrink,
 #endif  // OS_WIN
                const gfx::Size& paper_size,
                const gfx::Rect& page_rect);

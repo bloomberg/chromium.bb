@@ -49,7 +49,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     virtual void OnChildDied() {}
 
     virtual void OnRenderPDFPagesToMetafilePageDone(
-        double scale_factor,
+        float scale_factor,
         const printing::MetafilePlayer& emf) {}
 
     // Called when at all pages in the PDF has been rendered.
@@ -78,7 +78,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
     // Invoked when a metafile file is ready.
     // Returns true if metafile successfully loaded from |file|.
-    bool MetafileAvailable(double scale_factor, base::File file);
+    bool MetafileAvailable(float scale_factor, base::File file);
 
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
@@ -131,7 +131,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
   // Messages handlers:
   void OnRenderPDFPagesToMetafilesPageCount(int page_count);
-  void OnRenderPDFPagesToMetafilesPageDone(bool success, double scale_factor);
+  void OnRenderPDFPagesToMetafilesPageDone(bool success, float scale_factor);
   void OnGetPrinterCapsAndDefaultsSucceeded(
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& caps_and_defaults);

@@ -96,7 +96,7 @@ HRGN ConvertPathToHRGN(const gfx::Path& path) {
 }
 
 
-double CalculatePageScale(HDC dc, int page_width, int page_height) {
+float CalculatePageScale(HDC dc, int page_width, int page_height) {
   int dc_width = GetDeviceCaps(dc, HORZRES);
   int dc_height = GetDeviceCaps(dc, VERTRES);
 
@@ -104,15 +104,15 @@ double CalculatePageScale(HDC dc, int page_width, int page_height) {
   if (dc_width >= page_width && dc_height >= page_height)
     return 1.0;
 
-  double x_factor =
-      static_cast<double>(dc_width) / static_cast<double>(page_width);
-  double y_factor =
-      static_cast<double>(dc_height) / static_cast<double>(page_height);
+  float x_factor =
+      static_cast<float>(dc_width) / static_cast<float>(page_width);
+  float y_factor =
+      static_cast<float>(dc_height) / static_cast<float>(page_height);
   return std::min(x_factor, y_factor);
 }
 
 // Apply scaling to the DC.
-bool ScaleDC(HDC dc, double scale_factor) {
+bool ScaleDC(HDC dc, float scale_factor) {
   SetGraphicsMode(dc, GM_ADVANCED);
   XFORM xform = {0};
   xform.eM11 = xform.eM22 = scale_factor;

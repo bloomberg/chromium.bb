@@ -321,7 +321,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       return true;
     }
 
-    void PreparePageDCForPrinting(HDC, double scale_factor) {
+    void PreparePageDCForPrinting(HDC, float scale_factor) {
       SetGraphicsMode(printer_dc_.Get(), GM_ADVANCED);
       // Setup the matrix to translate and scale to the right place. Take in
       // account the scale factor.
@@ -332,13 +332,13 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       XFORM xform = {0};
       xform.eDx = static_cast<float>(-offset_x);
       xform.eDy = static_cast<float>(-offset_y);
-      xform.eM11 = xform.eM22 = 1.0 / scale_factor;
+      xform.eM11 = xform.eM22 = 1.0f / scale_factor;
       SetWorldTransform(printer_dc_.Get(), &xform);
     }
 
     // ServiceUtilityProcessHost::Client implementation.
     virtual void OnRenderPDFPagesToMetafilePageDone(
-        double scale_factor,
+        float scale_factor,
         const printing::MetafilePlayer& emf) override {
       PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
       ::StartPage(printer_dc_.Get());

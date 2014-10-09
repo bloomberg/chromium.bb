@@ -16,11 +16,11 @@ namespace {
 void SimpleModifyWorldTransform(HDC context,
                                 int offset_x,
                                 int offset_y,
-                                double shrink_factor) {
+                                float shrink_factor) {
   XFORM xform = { 0 };
   xform.eDx = static_cast<float>(offset_x);
   xform.eDy = static_cast<float>(offset_y);
-  xform.eM11 = xform.eM22 = static_cast<float>(1. / shrink_factor);
+  xform.eM11 = xform.eM22 = 1.f / shrink_factor;
   BOOL res = ModifyWorldTransform(context, &xform, MWT_LEFTMULTIPLY);
   DCHECK_NE(res, 0);
 }

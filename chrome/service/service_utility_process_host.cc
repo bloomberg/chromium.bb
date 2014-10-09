@@ -317,7 +317,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageCount(
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
     bool success,
-    double scale_factor) {
+    float scale_factor) {
   DCHECK(waiting_for_reply_);
   if (!pdf_to_emf_state_ || !success)
     return OnPDFToEmfFinished(false);
@@ -408,7 +408,7 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
                  printing::PrinterSemanticCapsAndDefaults()));
 }
 
-bool ServiceUtilityProcessHost::Client::MetafileAvailable(double scale_factor,
+bool ServiceUtilityProcessHost::Client::MetafileAvailable(float scale_factor,
                                                           base::File file) {
   file.Seek(base::File::FROM_BEGIN, 0);
   int64 size = file.GetLength();

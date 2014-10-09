@@ -25,10 +25,6 @@ class PRINTING_EXPORT MetafileSkiaWrapper : public SkRefCnt {
 
   static PdfMetafileSkia* GetMetafileFromCanvas(const SkCanvas& canvas);
 
-  // Methods to set and retrieve custom scale factor for metafile from canvas.
-  static void SetCustomScaleOnCanvas(const SkCanvas& canvas, double scale);
-  static bool GetCustomScaleOnCanvas(const SkCanvas& canvas, double* scale);
-
  private:
   explicit MetafileSkiaWrapper(PdfMetafileSkia* metafile);
 

@@ -123,7 +123,7 @@ class PrintJob : public PrintJobWorkerOwner,
 #if defined(OS_WIN)
   void OnPdfToEmfStarted(int page_count);
   void OnPdfToEmfPageConverted(int page_number,
-                               double scale_factor,
+                               float scale_factor,
                                scoped_ptr<MetafilePlayer> emf);
 #endif  // OS_WIN
 

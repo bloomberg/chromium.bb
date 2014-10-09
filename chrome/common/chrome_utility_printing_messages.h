@@ -149,5 +149,5 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount,
 // Reply when the utility process rendered the PDF page.
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,
                      bool /* success */,
-                     double /* scale_factor */)
+                     float /* scale_factor */)
 #endif  // ENABLE_PRINTING && OS_WIN

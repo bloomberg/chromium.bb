@@ -14,7 +14,6 @@ namespace printing {
 namespace {
 
 const char* kMetafileKey = "CrMetafile";
-const char* kCustomScaleKey = "CrCustomScale";
 
 }  // namespace
 
@@ -38,25 +37,6 @@ PdfMetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
     return NULL;
 
   return static_cast<MetafileSkiaWrapper*>(value)->metafile_;
-}
-
-// static
-void MetafileSkiaWrapper::SetCustomScaleOnCanvas(const SkCanvas& canvas,
-                                                 double scale) {
-  SkMetaData& meta = skia::getMetaData(canvas);
-  meta.setScalar(kCustomScaleKey, SkFloatToScalar(scale));
-}
-
-// static
-bool MetafileSkiaWrapper::GetCustomScaleOnCanvas(const SkCanvas& canvas,
-                                                 double* scale) {
-  SkMetaData& meta = skia::getMetaData(canvas);
-  SkScalar value;
-  if (!meta.findScalar(kCustomScaleKey, &value))
-    return false;
-
-  *scale = SkScalarToFloat(value);
-  return true;
 }
 
 MetafileSkiaWrapper::MetafileSkiaWrapper(PdfMetafileSkia* metafile)

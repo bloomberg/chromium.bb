@@ -295,7 +295,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafileGetPage(
     int page_number,
     IPC::PlatformFileForTransit output_file) {
   base::File emf_file = IPC::PlatformFileForTransitToFile(output_file);
-  double scale_factor = 1.0;
+  float scale_factor = 1.0f;
   bool success =
       RenderPdfPageToMetafile(page_number, emf_file.Pass(), &scale_factor);
   Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone(
@@ -331,9 +331,10 @@ int PrintingHandler::LoadPDF(base::File pdf_file) {
   if (!g_pdf_lib.Get().IsValid())
     return 0;
 
-  int64 length = pdf_file.GetLength();
-  if (length < 0)
+  int64 length64 = pdf_file.GetLength();
+  if (length64 <= 0 || length64 > std::numeric_limits<int>::max())
     return 0;
+  int length = static_cast<int>(length64);
 
   pdf_data_.resize(length);
   if (length != pdf_file.Read(0, pdf_data_.data(), pdf_data_.size()))
@@ -349,7 +350,7 @@ int PrintingHandler::LoadPDF(base::File pdf_file) {
 
 bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
                                               base::File output_file,
-                                              double* scale_factor) {
+                                              float* scale_factor) {
   printing::Emf metafile;
   metafile.Init();
 
@@ -405,16 +406,17 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     return false;
 
   base::File::Info info;
-  if (!pdf_file.GetInfo(&info) || info.size <= 0)
+  if (!pdf_file.GetInfo(&info) || info.size <= 0 ||
+      info.size > std::numeric_limits<int>::max())
     return false;
+  int data_size = static_cast<int>(info.size);
 
-  std::string data(info.size, 0);
-  int data_size = pdf_file.Read(0, &data[0], data.size());
-  if (data_size != static_cast<int>(data.size()))
+  std::string data(data_size, 0);
+  if (pdf_file.Read(0, &data[0], data_size) != data_size)
     return false;
 
   int total_page_count = 0;
-  if (!g_pdf_lib.Get().GetPDFDocInfo(data.data(), data.size(),
+  if (!g_pdf_lib.Get().GetPDFDocInfo(data.data(), data_size,
                                      &total_page_count, NULL)) {
     return false;
   }
@@ -437,7 +439,7 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     }
 
     if (!g_pdf_lib.Get().RenderPDFPageToBitmap(data.data(),
-                                               data.size(),
+                                               data_size,
                                                page_number,
                                                image.pixel_data(),
                                                image.size().width(),

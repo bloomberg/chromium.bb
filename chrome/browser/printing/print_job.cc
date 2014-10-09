@@ -294,7 +294,7 @@ void PrintJob::OnPdfToEmfStarted(int page_count) {
 }
 
 void PrintJob::OnPdfToEmfPageConverted(int page_number,
-                                       double scale_factor,
+                                       float scale_factor,
                                        scoped_ptr<MetafilePlayer> emf) {
   DCHECK(ptd_to_emf_state_);
   if (!document_.get() || !emf) {

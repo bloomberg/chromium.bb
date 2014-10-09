@@ -147,7 +147,7 @@ class PdfToEmfUtilityProcessHostClient
   // Message handlers.
   void OnProcessStarted();
   void OnPageCount(int page_count);
-  void OnPageDone(bool success, double scale_factor);
+  void OnPageDone(bool success, float scale_factor);
 
   void OnFailed();
   void OnTempPdfReady(ScopedTempFile pdf);
@@ -386,7 +386,7 @@ void PdfToEmfUtilityProcessHostClient::OnTempEmfReady(
 }
 
 void PdfToEmfUtilityProcessHostClient::OnPageDone(bool success,
-                                                  double scale_factor) {
+                                                  float scale_factor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (get_page_callbacks_.empty())
     return OnFailed();
@@ -450,7 +450,7 @@ void PdfToEmfUtilityProcessHostClient::OnFailed() {
   if (!start_callback_.is_null())
     OnPageCount(0);
   while (!get_page_callbacks_.empty())
-    OnPageDone(false, 0.0);
+    OnPageDone(false, 0.0f);
   utility_process_host_.reset();
 }
 

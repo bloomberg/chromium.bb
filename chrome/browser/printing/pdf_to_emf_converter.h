@@ -22,7 +22,7 @@ class PdfToEmfConverter {
  public:
   typedef base::Callback<void(int page_count)> StartCallback;
   typedef base::Callback<void(int page_number,
-                              double scale_factor,
+                              float scale_factor,
                               scoped_ptr<MetafilePlayer> emf)> GetPageCallback;
 
   virtual ~PdfToEmfConverter();

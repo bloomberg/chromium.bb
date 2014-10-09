@@ -33,10 +33,10 @@ class PRINTING_EXPORT PrintedPage
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& page_content_rect() const { return page_content_rect_; }
 #if defined(OS_WIN)
-  void set_shrink_factor(double shrink_factor) {
+  void set_shrink_factor(float shrink_factor) {
     shrink_factor_ = shrink_factor;
   }
-  double shrink_factor() const { return shrink_factor_; }
+  float shrink_factor() const { return shrink_factor_; }
 #endif  // OS_WIN
 
   // Get page content rect adjusted based on
@@ -57,7 +57,7 @@ class PRINTING_EXPORT PrintedPage
 
 #if defined(OS_WIN)
   // Shrink done in comparison to desired_dpi.
-  double shrink_factor_;
+  float shrink_factor_;
 #endif  // OS_WIN
 
   // The physical page size. To support multiple page formats inside on print
