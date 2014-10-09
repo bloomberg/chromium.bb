@@ -1373,6 +1373,9 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 
 crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Crash Timeout ]
 
+crbug.com/415031 [ Mac ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
+crbug.com/415031 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
+
 crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [ Pass Failure ]
 
 crbug.com/340522 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.html [ Pass ImageOnlyFailure ]
