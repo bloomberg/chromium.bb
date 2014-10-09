@@ -276,26 +276,8 @@ float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
 }
 
 void DisplayChangeObserver::OnInputDeviceConfigurationChanged() {
-  std::vector<DisplayInfo> display_infos;
-  DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
-  const std::vector<gfx::Display>& displays = display_manager->displays();
-  // Reuse the current state in DisplayManager and re-associate the displays
-  // with the touchscreens.
-  for (size_t i = 0; i < displays.size(); ++i) {
-    DisplayInfo display = display_manager->GetDisplayInfo(displays[i].id());
-    // Unset the touchscreen configuration since we'll be rematching them from
-    // scratch.
-    display.set_touch_device_id(ui::TouchscreenDevice::kInvalidId);
-    display.set_touch_support(gfx::Display::TOUCH_SUPPORT_UNKNOWN);
-
-    display_infos.push_back(display);
-  }
-
-  AssociateTouchscreens(
-      &display_infos,
-      ui::DeviceDataManager::GetInstance()->touchscreen_devices());
-  display_manager->OnNativeDisplaysChanged(display_infos);
+  OnDisplayModeChanged(
+      Shell::GetInstance()->display_configurator()->cached_displays());
 }
 
 }  // namespace ash
