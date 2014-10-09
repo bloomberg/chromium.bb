@@ -49,10 +49,6 @@ public:
 
     void end();
 
-    // This is only called by ScriptController::executeScriptIfJavaScriptURL
-    // and always contains the result of evaluating a javascript: url.
-    void replaceDocumentWhileExecutingJavaScriptURL(const String&, Document* ownerDocument);
-
     void addData(const char* bytes, size_t length);
 
     const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }

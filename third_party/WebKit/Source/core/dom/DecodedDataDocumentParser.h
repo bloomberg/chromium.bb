@@ -52,7 +52,7 @@ protected:
     virtual ~DecodedDataDocumentParser();
 
 private:
-    // append is used by DocumentWriter::replaceDocumentWhileExecutingJavaScriptURL.
+    // append is used by DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL.
     virtual void append(PassRefPtr<StringImpl>) = 0;
 
     void updateDocument(String& decodedData);

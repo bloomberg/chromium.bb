@@ -284,7 +284,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     if (!m_frame->document()->loader())
         return;
 
-    // DocumentWriter::replaceDocumentWhileExecutingJavaScriptURL can cause the DocumentLoader to get deref'ed and possible destroyed,
+    // DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL can cause the DocumentLoader to get deref'ed and possible destroyed,
     // so protect it with a RefPtr.
     RefPtr<DocumentLoader> documentLoader(m_frame->document()->loader());
 
