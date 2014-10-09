@@ -29,7 +29,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
-#include "platform/graphics/FirstPaintInvalidationTracking.h"
 
 namespace blink {
 
@@ -184,31 +183,29 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
     const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
     ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
-    InvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
     clearPaintInvalidationState(paintInvalidationState);
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    if (reason == InvalidationLocationChange)
+    if (reason == PaintInvalidationLocationChange)
         childTreeWalkState.setForceCheckForPaintInvalidation();
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
-void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, InvalidationReason invalidationReason) const
+void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
     ASSERT(compositingState() != NotComposited);
-
-    const char* reasonString = firstPaintInvalidationTrackingEnabled() ? invalidationReasonToString(invalidationReason) : "";
 
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
     if (layer()->groupedMapping()) {
         LayoutRect paintInvalidationRect = r;
         paintInvalidationRect.move(layer()->subpixelAccumulation());
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), reasonString);
+            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), invalidationReason);
     } else {
-        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, reasonString);
+        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
     }
 }
 

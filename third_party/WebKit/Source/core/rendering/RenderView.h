@@ -87,7 +87,7 @@ public:
     void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
     virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
-    void invalidatePaintForRectangle(const LayoutRect&, InvalidationReason) const;
+    void invalidatePaintForRectangle(const LayoutRect&, PaintInvalidationReason) const;
 
     void invalidatePaintForViewAndCompositedLayers();
 

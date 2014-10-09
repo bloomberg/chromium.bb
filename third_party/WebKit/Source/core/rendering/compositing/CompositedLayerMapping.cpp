@@ -2043,11 +2043,11 @@ struct SetContentsNeedsDisplayInRectFunctor {
     }
 
     IntRect r;
-    const char* invalidationReason;
+    PaintInvalidationReason invalidationReason;
 };
 
 // r is in the coordinate space of the layer's render object
-void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, const char* invalidationReason)
+void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason)
 {
     // FIXME: need to split out paint invalidations for the background.
     ASSERT(!paintsIntoCompositedAncestor());

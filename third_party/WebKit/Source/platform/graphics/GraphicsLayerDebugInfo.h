@@ -35,6 +35,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "platform/graphics/PaintInvalidationReason.h"
 #include "public/platform/WebGraphicsLayerDebugInfo.h"
 
 #include "wtf/Vector.h"
@@ -56,7 +57,7 @@ public:
     void setOwnerNodeId(int id) { m_ownerNodeId = id; }
     Vector<LayoutRect>& currentLayoutRects() { return m_currentLayoutRects; }
 
-    void appendAnnotatedInvalidateRect(const FloatRect&, const char*);
+    void appendAnnotatedInvalidateRect(const FloatRect&, PaintInvalidationReason);
     void clearAnnotatedInvalidateRects();
 
 private:
@@ -68,7 +69,7 @@ private:
 
     struct AnnotatedInvalidationRect {
         FloatRect rect;
-        const char* reason;
+        PaintInvalidationReason reason;
     };
 
     String m_debugName;

@@ -36,6 +36,7 @@
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
@@ -182,7 +183,7 @@ public:
 
     void setNeedsDisplay();
     // mark the given rect (in layer coords) as needing dispay. Never goes deep.
-    void setNeedsDisplayInRect(const FloatRect&, const char* invalidationReason);
+    void setNeedsDisplayInRect(const FloatRect&, PaintInvalidationReason);
 
     void setContentsNeedsDisplay();
 

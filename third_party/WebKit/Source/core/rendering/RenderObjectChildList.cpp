@@ -162,7 +162,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
     }
 
     newChild->setNeedsLayoutAndPrefWidthsRecalc();
-    newChild->setShouldDoFullPaintInvalidationWithReason(InvalidationRendererInsertion);
+    newChild->setShouldDoFullPaintInvalidationWithReason(PaintInvalidationRendererInsertion);
     if (!owner->normalChildNeedsLayout())
         owner->setChildNeedsLayout(); // We may supply the static position for an absolute positioned child.
 
@@ -183,7 +183,7 @@ void RenderObjectChildList::invalidatePaintOnRemoval(const RenderObject& oldChil
         return;
     }
     DisableCompositingQueryAsserts disabler;
-    oldChild.invalidatePaintUsingContainer(oldChild.containerForPaintInvalidation(), oldChild.previousPaintInvalidationRect(), InvalidationRendererRemoval);
+    oldChild.invalidatePaintUsingContainer(oldChild.containerForPaintInvalidation(), oldChild.previousPaintInvalidationRect(), PaintInvalidationRendererRemoval);
 }
 
 } // namespace blink

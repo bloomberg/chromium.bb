@@ -46,6 +46,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
@@ -103,24 +104,6 @@ enum MapCoordinatesMode {
     TraverseDocumentBoundaries = 1 << 3,
 };
 typedef unsigned MapCoordinatesFlags;
-
-enum InvalidationReason {
-    InvalidationNone,
-    InvalidationIncremental,
-    InvalidationFull,
-    InvalidationBorderBoxChange,
-    InvalidationBoundsChange,
-    InvalidationLocationChange,
-    InvalidationBecameVisible,
-    InvalidationBecameInvisible,
-    InvalidationScroll,
-    InvalidationSelection,
-    InvalidationLayer,
-    InvalidationRendererInsertion,
-    InvalidationRendererRemoval,
-    InvalidationPaintRectangle
-};
-const char* invalidationReasonToString(InvalidationReason);
 
 const int caretWidth = 1;
 
@@ -857,7 +840,7 @@ public:
     // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
     // If |paintInvalidationContainer| is 0, invalidate paints via the view.
     // FIXME: |paintInvalidationContainer| should never be 0. See crbug.com/363699.
-    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect&, InvalidationReason) const;
+    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason) const;
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
@@ -1015,10 +998,10 @@ public:
     const LayoutPoint& previousPositionFromPaintInvalidationBacking() const { return m_previousPositionFromPaintInvalidationBacking; }
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
 
-    bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != InvalidationNone; }
-    void setShouldDoFullPaintInvalidation() { setShouldDoFullPaintInvalidationWithReason(InvalidationFull); }
-    void setShouldDoFullPaintInvalidationWithReason(InvalidationReason);
-    void clearShouldDoFullPaintInvalidation() { m_bitfields.setFullPaintInvalidationReason(InvalidationNone); }
+    bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone; }
+    void setShouldDoFullPaintInvalidation() { setShouldDoFullPaintInvalidationWithReason(PaintInvalidationFull); }
+    void setShouldDoFullPaintInvalidationWithReason(PaintInvalidationReason);
+    void clearShouldDoFullPaintInvalidation() { m_bitfields.setFullPaintInvalidationReason(PaintInvalidationNone); }
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
@@ -1116,11 +1099,11 @@ protected:
     // of this renderer within the current layer that should be used for each result.
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
-    virtual InvalidationReason paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
+    virtual PaintInvalidationReason paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
         const LayoutRect& oldPaintInvalidationRect, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
         const LayoutRect& newPaintInvalidationRect, const LayoutPoint& newPositionFromPaintInvalidationBacking) const;
     virtual void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking);
-    void fullyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+    void fullyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
@@ -1130,7 +1113,7 @@ protected:
 #endif
 
     void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&);
-    virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
 
 private:
     void invalidatePaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
@@ -1234,7 +1217,7 @@ private:
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
             , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
-            , m_fullPaintInvalidationReason(InvalidationNone)
+            , m_fullPaintInvalidationReason(PaintInvalidationNone)
         {
         }
 
@@ -1286,7 +1269,7 @@ private:
         unsigned m_selectionState : 3; // SelectionState
         unsigned m_flowThreadState : 2; // FlowThreadState
         unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
-        unsigned m_fullPaintInvalidationReason : 4; // InvalidationReason
+        unsigned m_fullPaintInvalidationReason : 4; // PaintInvalidationReason
 
     public:
         bool isOutOfFlowPositioned() const { return m_positionedState == IsOutOfFlowPositioned; }
@@ -1309,8 +1292,8 @@ private:
         ALWAYS_INLINE BoxDecorationBackgroundState boxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
         ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) { m_boxDecorationBackgroundState = s; }
 
-        InvalidationReason fullPaintInvalidationReason() const { return static_cast<InvalidationReason>(m_fullPaintInvalidationReason); }
-        void setFullPaintInvalidationReason(InvalidationReason reason) { m_fullPaintInvalidationReason = reason; }
+        PaintInvalidationReason fullPaintInvalidationReason() const { return static_cast<PaintInvalidationReason>(m_fullPaintInvalidationReason); }
+        void setFullPaintInvalidationReason(PaintInvalidationReason reason) { m_fullPaintInvalidationReason = reason; }
     };
 
 #undef ADD_BOOLEAN_BITFIELD

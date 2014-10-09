@@ -1284,15 +1284,15 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     return false;
 }
 
-InvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
+PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
 {
-    InvalidationReason reason = RenderBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    PaintInvalidationReason reason = RenderBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (!view()->doingFullPaintInvalidation()) {
-        if (reason == InvalidationNone || reason == InvalidationIncremental)
+        if (!isFullPaintInvalidationReason(reason))
             invalidatePaintForOverflowIfNeeded();
 
         // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
@@ -3820,11 +3820,11 @@ bool RenderBox::avoidsFloats() const
     return isReplaced() || isReplacedElement(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
-InvalidationReason RenderBox::paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
+PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
 {
-    InvalidationReason invalidationReason = RenderBoxModelObject::paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
-    if (invalidationReason != InvalidationNone && invalidationReason != InvalidationIncremental)
+    PaintInvalidationReason invalidationReason = RenderBoxModelObject::paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
+    if (isFullPaintInvalidationReason(invalidationReason))
         return invalidationReason;
 
     if (!style()->hasBackground() && !style()->hasBoxDecorations())
@@ -3838,7 +3838,7 @@ InvalidationReason RenderBox::paintInvalidationReason(const RenderLayerModelObje
 
     // FIXME: Implement correct incremental invalidation for visual overflowing effects.
     if (style()->hasVisualOverflowingEffect() || style()->hasAppearance() || style()->hasFilter())
-        return InvalidationBorderBoxChange;
+        return PaintInvalidationBorderBoxChange;
 
     if (style()->hasBorderRadius()) {
         // If a border-radius exists and width/height is smaller than radius width/height,
@@ -3846,15 +3846,15 @@ InvalidationReason RenderBox::paintInvalidationReason(const RenderLayerModelObje
         RoundedRect oldRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), oldBorderBoxSize));
         RoundedRect newRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), newBorderBoxSize));
         if (oldRoundedRect.radii() != newRoundedRect.radii())
-            return InvalidationBorderBoxChange;
+            return PaintInvalidationBorderBoxChange;
     }
 
     if (oldBorderBoxSize.width() != newBorderBoxSize.width() && mustInvalidateBackgroundOrBorderPaintOnWidthChange())
-        return InvalidationBorderBoxChange;
+        return PaintInvalidationBorderBoxChange;
     if (oldBorderBoxSize.height() != newBorderBoxSize.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
-        return InvalidationBorderBoxChange;
+        return PaintInvalidationBorderBoxChange;
 
-    return InvalidationIncremental;
+    return PaintInvalidationIncremental;
 }
 
 void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
@@ -3918,14 +3918,14 @@ void RenderBox::invalidatePaintRectClippedByOldAndNewBounds(const RenderLayerMod
     LayoutRect rectClippedByNewBounds = intersection(rect, newBounds);
     // Invalidate only once if the clipped rects equal.
     if (rectClippedByOldBounds == rectClippedByNewBounds) {
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, InvalidationIncremental);
+        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
         return;
     }
     // Invalidate the bigger one if one contains another. Otherwise invalidate both.
     if (!rectClippedByNewBounds.contains(rectClippedByOldBounds))
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, InvalidationIncremental);
+        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
     if (!rectClippedByOldBounds.contains(rectClippedByNewBounds))
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByNewBounds, InvalidationIncremental);
+        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByNewBounds, PaintInvalidationIncremental);
 }
 
 void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)

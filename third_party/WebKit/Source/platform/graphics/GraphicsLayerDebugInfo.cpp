@@ -18,11 +18,10 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+
 #include "public/platform/WebGraphicsLayerDebugInfo.h"
 #include "public/platform/WebVector.h"
-
 #include "wtf/text/CString.h"
 
 namespace blink {
@@ -87,7 +86,7 @@ void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(JSONObject* jsonObje
         rectArray->pushNumber(rect.maxX());
         rectArray->pushNumber(rect.maxY());
         rectContainer->setArray("geometry_rect", rectArray);
-        rectContainer->setString("reason", annotatedRect.reason);
+        rectContainer->setString("reason", paintInvalidationReasonToString(annotatedRect.reason));
         jsonArray->pushObject(rectContainer);
     }
     jsonObject->setArray("annotated_invalidation_rects", jsonArray);
@@ -120,7 +119,7 @@ void GraphicsLayerDebugInfo::appendOwnerNodeId(JSONObject* jsonObject) const
     jsonObject->setNumber("owner_node", m_ownerNodeId);
 }
 
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, const char* invalidationReason)
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, PaintInvalidationReason invalidationReason)
 {
     AnnotatedInvalidationRect annotatedRect = {
         rect,

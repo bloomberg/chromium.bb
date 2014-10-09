@@ -331,12 +331,12 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
         const RenderLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
         mapRectToPaintInvalidationBacking(paintInvalidationContainer, dirtyRect, &paintInvalidationState);
-        invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, InvalidationFull);
+        invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
     }
     RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
-void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, InvalidationReason invalidationReason) const
+void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, PaintInvalidationReason invalidationReason) const
 {
     ASSERT(!paintInvalidationRect.isEmpty());
 

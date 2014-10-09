@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "platform/graphics/GraphicsLayer.h"
 
 #include "SkImageFilter.h"
@@ -899,7 +898,7 @@ void GraphicsLayer::setNeedsDisplay()
     }
 }
 
-void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect, const char* invalidationReason)
+void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect, PaintInvalidationReason invalidationReason)
 {
     if (drawsContent()) {
         m_layer->layer()->invalidateRect(rect);

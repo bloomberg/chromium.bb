@@ -187,12 +187,12 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
 
     if (scrollbar == m_vBar.get()) {
         if (GraphicsLayer* layer = layerForVerticalScrollbar()) {
-            layer->setNeedsDisplayInRect(rect, "vertical scrollbar");
+            layer->setNeedsDisplayInRect(rect, PaintInvalidationScroll);
             return;
         }
     } else {
         if (GraphicsLayer* layer = layerForHorizontalScrollbar()) {
-            layer->setNeedsDisplayInRect(rect, "horizontal scrollbar");
+            layer->setNeedsDisplayInRect(rect, PaintInvalidationScroll);
             return;
         }
     }
@@ -224,7 +224,7 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
 void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
 {
     if (GraphicsLayer* layer = layerForScrollCorner()) {
-        layer->setNeedsDisplayInRect(rect, "scrollbar corner");
+        layer->setNeedsDisplayInRect(rect, PaintInvalidationScroll);
         return;
     }
 

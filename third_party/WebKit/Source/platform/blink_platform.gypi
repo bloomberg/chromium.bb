@@ -613,6 +613,8 @@
       'graphics/LoggingCanvas.h',
       'graphics/ContentLayerDelegate.cpp',
       'graphics/ContentLayerDelegate.h',
+      'graphics/PaintInvalidationReason.cpp',
+      'graphics/PaintInvalidationReason.h',
       'graphics/Path.cpp',
       'graphics/Path.h',
       'graphics/PathTraversalState.cpp',

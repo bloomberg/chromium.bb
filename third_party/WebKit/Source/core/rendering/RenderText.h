@@ -178,10 +178,10 @@ private:
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
     // The parent invalidates for RenderText, so RenderText does nothing.
-    virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer) OVERRIDE FINAL
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer) OVERRIDE FINAL
     {
         invalidateSelectionIfNeeded(paintInvalidationContainer);
-        return InvalidationNone;
+        return PaintInvalidationNone;
     }
 
     void checkConsistency() const;

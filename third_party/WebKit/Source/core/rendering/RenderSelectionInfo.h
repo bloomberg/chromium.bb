@@ -72,7 +72,7 @@ public:
 
     void invalidatePaint()
     {
-        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(m_rect), InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(m_rect), PaintInvalidationSelection);
     }
 
     LayoutRect absoluteSelectionRect() const
@@ -117,7 +117,7 @@ public:
         // paintInvalidationContainer as the render object. Find out why it does that and fix.
         if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
             RenderLayer::mapRectToPaintBackingCoordinates(m_paintInvalidationContainer, paintInvalidationRect);
-        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(paintInvalidationRect), InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(paintInvalidationRect), PaintInvalidationSelection);
     }
 
     bool hasChangedFrom(const RenderBlockSelectionInfo& other) const

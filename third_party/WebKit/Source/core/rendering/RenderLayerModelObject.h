@@ -67,7 +67,7 @@ public:
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
     // Indicate that the contents of this renderer need to be repainted. Only has an effect if compositing is being used,
-    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, InvalidationReason) const; // r is in the coordinate space of this render object
+    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this render object
 
 protected:
     void createLayer(LayerType);
