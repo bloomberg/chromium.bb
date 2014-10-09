@@ -46,9 +46,7 @@ class SimpleMobileSitesPageSet(page_set_module.PageSet):
       'https://www.flickr.com/',
       'http://www.apple.com/mac/',
       'http://www.nyc.gov',
-      'http://m.nytimes.com/',
-      'https://www.yahoo.com/',
-      'http://m.us.wsj.com/',
+      'http://m.nytimes.com/'
     ]
 
     for url in scroll_page_list:

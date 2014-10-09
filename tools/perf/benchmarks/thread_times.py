@@ -45,7 +45,7 @@ class ThreadTimesFastPathMobileSites(benchmark.Benchmark):
   options = {'page_label_filter' : 'fastpath'}
 
 
-@benchmark.Disabled  # crbug.com/400922
+@benchmark.Enabled('android')
 class ThreadTimesSimpleMobileSites(benchmark.Benchmark):
   """Measures timeline metric using smoothness action on simple mobile sites
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""

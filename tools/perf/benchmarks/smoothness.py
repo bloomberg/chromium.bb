@@ -134,11 +134,9 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
 
-@benchmark.Disabled  # crbug.com/402885
+@benchmark.Enabled('android')
 class SmoothnessSimpleMobilePages(benchmark.Benchmark):
-  """Measures rendering statistics for pinch-zooming into the tough pinch zoom
-  cases
-  """
+  """Measures rendering statistics for simple mobile sites page set """
   test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesPageSet
 
