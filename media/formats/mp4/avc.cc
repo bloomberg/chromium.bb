@@ -41,6 +41,25 @@ static bool ConvertAVCToAnnexBInPlaceForLengthSize4(std::vector<uint8>* buf) {
 }
 
 // static
+int AVC::FindSubsampleIndex(const std::vector<uint8>& buffer,
+                            const std::vector<SubsampleEntry>* subsamples,
+                            const uint8* ptr) {
+  DCHECK(ptr >= &buffer[0]);
+  DCHECK(ptr <= &buffer[buffer.size()-1]);
+  if (!subsamples || subsamples->empty())
+    return 0;
+
+  const uint8* p = &buffer[0];
+  for (size_t i = 0; i < subsamples->size(); ++i) {
+    p += (*subsamples)[i].clear_bytes + (*subsamples)[i].cypher_bytes;
+    if (p > ptr)
+      return i;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// static
 bool AVC::ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer) {
   RCHECK(length_size == 1 || length_size == 2 || length_size == 4);
 
@@ -87,23 +106,10 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
     return false;
 
   std::vector<uint8>::iterator config_insert_point = buffer->begin();
-  std::vector<SubsampleEntry>::iterator subsamples_insert_point =
-      subsamples->begin();
 
   if (nalu.nal_unit_type == H264NALU::kAUD) {
     // Move insert point to just after the AUD.
     config_insert_point += (nalu.data + nalu.size) - start;
-
-    if (!subsamples->empty()) {
-      int64 first_subsample_size =
-          (*subsamples)[0].clear_bytes + (*subsamples)[0].cypher_bytes;
-
-      if (first_subsample_size != (config_insert_point - buffer->begin()))
-        return false;
-
-      subsamples_insert_point++;
-    }
-
   }
 
   // Clear |parser| and |start| since they aren't needed anymore and
@@ -112,15 +118,13 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
   start = NULL;
 
   std::vector<uint8> param_sets;
-  std::vector<SubsampleEntry> config_subsamples;
-  RCHECK(AVC::ConvertConfigToAnnexB(avc_config,
-                                    &param_sets,
-                                    &config_subsamples));
+  RCHECK(AVC::ConvertConfigToAnnexB(avc_config, &param_sets));
 
-  if (!subsamples->empty()) {
-    subsamples->insert(subsamples_insert_point,
-                       config_subsamples.begin(),
-                       config_subsamples.end());
+  if (subsamples && !subsamples->empty()) {
+    int subsample_index = FindSubsampleIndex(*buffer, subsamples,
+                                             &(*config_insert_point));
+    // Update the size of the subsample where SPS/PPS is to be inserted.
+    (*subsamples)[subsample_index].clear_bytes += param_sets.size();
   }
 
   buffer->insert(config_insert_point,
@@ -133,8 +137,7 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
 // static
 bool AVC::ConvertConfigToAnnexB(
     const AVCDecoderConfigurationRecord& avc_config,
-    std::vector<uint8>* buffer,
-    std::vector<SubsampleEntry>* subsamples) {
+    std::vector<uint8>* buffer) {
   DCHECK(buffer->empty());
   buffer->clear();
   int total_size = 0;
@@ -149,11 +152,6 @@ bool AVC::ConvertConfigToAnnexB(
                 kAnnexBStartCode + kAnnexBStartCodeSize);
     buffer->insert(buffer->end(), avc_config.sps_list[i].begin(),
                 avc_config.sps_list[i].end());
-
-    SubsampleEntry entry;
-    entry.clear_bytes = kAnnexBStartCodeSize + avc_config.sps_list[i].size();
-    entry.cypher_bytes = 0;
-    subsamples->push_back(entry);
   }
 
   for (size_t i = 0; i < avc_config.pps_list.size(); i++) {
@@ -161,11 +159,6 @@ bool AVC::ConvertConfigToAnnexB(
                    kAnnexBStartCode + kAnnexBStartCodeSize);
     buffer->insert(buffer->end(), avc_config.pps_list[i].begin(),
                    avc_config.pps_list[i].end());
-
-    SubsampleEntry entry;
-    entry.clear_bytes = kAnnexBStartCodeSize + avc_config.pps_list[i].size();
-    entry.cypher_bytes = 0;
-    subsamples->push_back(entry);
   }
   return true;
 }

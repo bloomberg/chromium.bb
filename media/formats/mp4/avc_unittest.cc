@@ -170,25 +170,6 @@ void StringToAnnexB(const std::string& str, std::vector<uint8>* buffer,
   }
 }
 
-int FindSubsampleIndex(const std::vector<uint8>& buffer,
-                       const std::vector<SubsampleEntry>* subsamples,
-                       const uint8* ptr) {
-  DCHECK(ptr >= &buffer[0]);
-  DCHECK(ptr <= &buffer[buffer.size()-1]);
-  if (!subsamples || subsamples->empty())
-    return 0;
-
-  const uint8* p = &buffer[0];
-  for (size_t i = 0; i < subsamples->size(); ++i) {
-    p += (*subsamples)[i].clear_bytes + (*subsamples)[i].cypher_bytes;
-    if (p > ptr) {
-      return i;
-    }
-  }
-  NOTREACHED();
-  return 0;
-}
-
 std::string AnnexBToString(const std::vector<uint8>& buffer,
                            const std::vector<SubsampleEntry>& subsamples) {
   std::stringstream ss;
@@ -200,7 +181,8 @@ std::string AnnexBToString(const std::vector<uint8>& buffer,
   bool first = true;
   size_t current_subsample_index = 0;
   while (parser.AdvanceToNextNALU(&nalu) == H264Parser::kOk) {
-    size_t subsample_index = FindSubsampleIndex(buffer, &subsamples, nalu.data);
+    size_t subsample_index = AVC::FindSubsampleIndex(buffer, &subsamples,
+                                                     nalu.data);
     if (!first) {
       ss << (subsample_index == current_subsample_index ? "," : " ");
     } else {
@@ -309,10 +291,10 @@ TEST_F(AVCConversionTest, ConvertConfigToAnnexB) {
 
   std::vector<uint8> buf;
   std::vector<SubsampleEntry> subsamples;
-  EXPECT_TRUE(AVC::ConvertConfigToAnnexB(avc_config, &buf, &subsamples));
+  EXPECT_TRUE(AVC::ConvertConfigToAnnexB(avc_config, &buf));
   EXPECT_EQ(0, memcmp(kExpectedParamSets, &buf[0],
                       sizeof(kExpectedParamSets)));
-  EXPECT_EQ("SPS SPS PPS", AnnexBToString(buf, subsamples));
+  EXPECT_EQ("SPS,SPS,PPS", AnnexBToString(buf, subsamples));
 }
 
 // Verify that we can round trip string -> Annex B -> string.
@@ -389,14 +371,18 @@ typedef struct {
 
 TEST_F(AVCConversionTest, InsertParamSetsAnnexB) {
   static const InsertTestCases test_cases[] = {
-    { "I", "SPS SPS PPS I" },
-    { "AUD I", "AUD SPS SPS PPS I" },
+    { "I", "SPS,SPS,PPS,I" },
+    { "AUD I", "AUD SPS,SPS,PPS,I" },
 
     // Cases where param sets in |avc_config| are placed before
     // the existing ones.
-    { "SPS PPS I", "SPS SPS PPS SPS PPS I" },
-    { "AUD SPS PPS I", "AUD SPS SPS PPS SPS PPS I" },  // Note: params placed
+    { "SPS,PPS,I", "SPS,SPS,PPS,SPS,PPS,I" },
+    { "AUD,SPS,PPS,I", "AUD,SPS,SPS,PPS,SPS,PPS,I" },  // Note: params placed
                                                        // after AUD.
+
+    // One or more NALUs might follow AUD in the first subsample, we need to
+    // handle this correctly. Params should be inserted right after AUD.
+    { "AUD,SEI I", "AUD,SPS,SPS,PPS,SEI I" },
   };
 
   AVCDecoderConfigurationRecord avc_config;
