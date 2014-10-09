@@ -30,6 +30,13 @@ class GeolocationDispatcherHost : public WebContentsObserver {
   // geolocation updates until it is resumed.
   void PauseOrResume(bool should_pause);
 
+  // Enables geolocation override. This method is used by DevTools to
+  // trigger possible location-specific behavior in particular web contents.
+  void SetOverride(scoped_ptr<Geoposition> geoposition);
+
+  // Disables geolocation override.
+  void ClearOverride();
+
  private:
   // WebContentsObserver
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -58,6 +65,7 @@ class GeolocationDispatcherHost : public WebContentsObserver {
   void RefreshGeolocationOptions();
 
   void OnLocationUpdate(const Geoposition& position);
+  void UpdateGeoposition(RenderFrameHost* frame, const Geoposition& position);
 
   void SendGeolocationPermissionResponse(int render_process_id,
                                          int render_frame_id,
@@ -87,6 +95,7 @@ class GeolocationDispatcherHost : public WebContentsObserver {
   std::vector<PendingPermission> pending_permissions_;
 
   scoped_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
+  scoped_ptr<Geoposition> geoposition_override_;
 
   base::WeakPtrFactory<GeolocationDispatcherHost> weak_factory_;
 

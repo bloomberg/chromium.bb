@@ -51,6 +51,13 @@ class PageHandler {
                                 std::vector<NavigationEntry>* entries);
 
   Response NavigateToHistoryEntry(int entry_id);
+
+  Response SetGeolocationOverride(double* latitude,
+                                  double* longitude,
+                                  double* accuracy);
+
+  Response ClearGeolocationOverride();
+
   Response SetTouchEmulationEnabled(bool enabled);
 
   scoped_refptr<DevToolsProtocol::Response> CaptureScreenshot(

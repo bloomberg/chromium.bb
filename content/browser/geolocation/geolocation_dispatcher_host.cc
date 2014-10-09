@@ -93,6 +93,18 @@ GeolocationDispatcherHost::GeolocationDispatcherHost(
 GeolocationDispatcherHost::~GeolocationDispatcherHost() {
 }
 
+void GeolocationDispatcherHost::SetOverride(
+    scoped_ptr<Geoposition> geoposition) {
+  geoposition_override_.swap(geoposition);
+  RefreshGeolocationOptions();
+  OnLocationUpdate(*geoposition_override_);
+}
+
+void GeolocationDispatcherHost::ClearOverride() {
+  geoposition_override_.reset();
+  RefreshGeolocationOptions();
+}
+
 void GeolocationDispatcherHost::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   OnStopUpdating(render_frame_host);
@@ -142,18 +154,24 @@ void GeolocationDispatcherHost::OnLocationUpdate(
 
   for (std::map<RenderFrameHost*, bool>::iterator i = updating_frames_.begin();
        i != updating_frames_.end(); ++i) {
-    RenderFrameHost* top_frame = i->first;
-    while (top_frame->GetParent()) {
-      top_frame = top_frame->GetParent();
-    }
-    GetContentClient()->browser()->DidUseGeolocationPermission(
-        web_contents(),
-        i->first->GetLastCommittedURL().GetOrigin(),
-        top_frame->GetLastCommittedURL().GetOrigin());
-
-    i->first->Send(new GeolocationMsg_PositionUpdated(
-        i->first->GetRoutingID(), geoposition));
+    UpdateGeoposition(i->first, geoposition);
   }
+}
+
+void GeolocationDispatcherHost::UpdateGeoposition(
+    RenderFrameHost* frame,
+    const Geoposition& geoposition) {
+  RenderFrameHost* top_frame = frame;
+  while (top_frame->GetParent()) {
+    top_frame = top_frame->GetParent();
+  }
+  GetContentClient()->browser()->DidUseGeolocationPermission(
+      web_contents(),
+      frame->GetLastCommittedURL().GetOrigin(),
+      top_frame->GetLastCommittedURL().GetOrigin());
+
+  frame->Send(new GeolocationMsg_PositionUpdated(
+      frame->GetRoutingID(), geoposition));
 }
 
 void GeolocationDispatcherHost::OnRequestPermission(
@@ -190,6 +208,8 @@ void GeolocationDispatcherHost::OnStartUpdating(
 
   updating_frames_[render_frame_host] = enable_high_accuracy;
   RefreshGeolocationOptions();
+  if (geoposition_override_.get())
+    UpdateGeoposition(render_frame_host, *geoposition_override_);
 }
 
 void GeolocationDispatcherHost::OnStopUpdating(
@@ -202,12 +222,14 @@ void GeolocationDispatcherHost::PauseOrResume(bool should_pause) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   paused_ = should_pause;
   RefreshGeolocationOptions();
+  if (geoposition_override_.get())
+    OnLocationUpdate(*geoposition_override_);
 }
 
 void GeolocationDispatcherHost::RefreshGeolocationOptions() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (updating_frames_.empty() || paused_) {
+  if (updating_frames_.empty() || paused_ || geoposition_override_.get()) {
     geolocation_subscription_.reset();
     return;
   }

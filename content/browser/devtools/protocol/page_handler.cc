@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/color_picker.h"
+#include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -202,6 +203,40 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
 
   return Response::InvalidParams("No entry with passed id");
 }
+
+Response PageHandler::SetGeolocationOverride(double* latitude,
+                                             double* longitude,
+                                             double* accuracy) {
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(host_));
+  if (!web_contents)
+    return Response::InternalError("No WebContents to override");
+  GeolocationDispatcherHost* geolocation_host =
+      web_contents->geolocation_dispatcher_host();
+  scoped_ptr<Geoposition> geoposition(new Geoposition());
+  if (latitude && longitude && accuracy) {
+    geoposition->latitude = *latitude;
+    geoposition->longitude = *longitude;
+    geoposition->accuracy = *accuracy;
+    geoposition->timestamp = base::Time::Now();
+  } else {
+    geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  }
+  geolocation_host->SetOverride(geoposition.Pass());
+  return Response::OK();
+}
+
+Response PageHandler::ClearGeolocationOverride() {
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(host_));
+  if (!web_contents)
+    return Response::InternalError("No WebContents to override");
+  GeolocationDispatcherHost* geolocation_host =
+      web_contents->geolocation_dispatcher_host();
+  geolocation_host->ClearOverride();
+  return Response::OK();
+}
+
 
 Response PageHandler::SetTouchEmulationEnabled(bool enabled) {
   touch_emulation_enabled_ = enabled;
