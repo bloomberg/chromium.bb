@@ -9,7 +9,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_restrictions.h"
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
 #include "device/hid/hid_service_linux.h"
@@ -46,12 +45,13 @@ class HidService::Destroyer : public base::MessageLoop::DestructionObserver {
 };
 
 HidService* HidService::GetInstance(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   if (g_service == NULL) {
 #if defined(OS_LINUX) && defined(USE_UDEV)
     g_service = new HidServiceLinux(ui_task_runner);
 #elif defined(OS_MACOSX)
-    g_service = new HidServiceMac(ui_task_runner);
+    g_service = new HidServiceMac(file_task_runner);
 #elif defined(OS_WIN)
     g_service = new HidServiceWin();
 #endif
@@ -88,7 +88,6 @@ bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
 }
 
 HidService::HidService() {
-  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -104,10 +103,6 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
   DeviceMap::iterator it = devices_.find(device_id);
   if (it != devices_.end())
     devices_.erase(it);
-}
-
-const HidService::DeviceMap& HidService::GetDevicesNoEnumerate() const {
-  return devices_;
 }
 
 }  // namespace device

@@ -21,6 +21,7 @@ class HidConnection;
 class HidService {
  public:
   static HidService* GetInstance(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Enumerates and returns a list of device identifiers.
@@ -43,7 +44,8 @@ class HidService {
 
   void AddDevice(const HidDeviceInfo& info);
   void RemoveDevice(const HidDeviceId& device_id);
-  const DeviceMap& GetDevicesNoEnumerate() const;
+
+  const DeviceMap& devices() const { return devices_; }
 
   base::ThreadChecker thread_checker_;
 

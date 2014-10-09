@@ -53,10 +53,13 @@ void AsyncApiFunction::AsyncWorkCompleted() {
 
 void AsyncApiFunction::WorkOnWorkThread() {
   DCHECK_CURRENTLY_ON(work_thread_id_);
-  DLOG_IF(ERROR, (work_thread_id_ == BrowserThread::UI))
-      << "You have specified that AsyncApiFunction::Work() should happen on "
-         "the UI thread. This nullifies the point of this class. Either "
-         "specify a different thread or derive from a different class.";
+  // TODO(reillyg): Commented out to aid in the transition of the HID API from
+  // the FILE thread to UI thread. Re-enable when it won't spam the logs.
+  //
+  // DLOG_IF(ERROR, (work_thread_id_ == BrowserThread::UI))
+  //    << "You have specified that AsyncApiFunction::Work() should happen on "
+  //       "the UI thread. This nullifies the point of this class. Either "
+  //       "specify a different thread or derive from a different class.";
   AsyncWorkStart();
 }
 

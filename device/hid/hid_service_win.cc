@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "device/hid/hid_connection_win.h"
 #include "device/hid/hid_device_info.h"
 #include "net/base/io_buffer.h"
@@ -35,6 +36,7 @@ const char kHIDClass[] = "HIDClass";
 }  // namespace
 
 HidServiceWin::HidServiceWin() {
+  base::ThreadRestrictions::AssertIOAllowed();
   Enumerate();
 }
 
@@ -133,10 +135,8 @@ void HidServiceWin::Enumerate() {
   }
 
   // Find disconnected devices.
-  const DeviceMap& devices = GetDevicesNoEnumerate();
   std::vector<std::string> disconnected_devices;
-  for (DeviceMap::const_iterator it = devices.begin();
-       it != devices.end();
+  for (DeviceMap::const_iterator it = devices().begin(); it != devices().end();
        ++it) {
     if (!ContainsKey(connected_devices, it->first)) {
       disconnected_devices.push_back(it->first);

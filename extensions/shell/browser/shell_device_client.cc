@@ -24,6 +24,8 @@ device::UsbService* ShellDeviceClient::GetUsbService() {
 device::HidService* ShellDeviceClient::GetHidService() {
   return device::HidService::GetInstance(
       content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE),
+      content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI));
 }
 

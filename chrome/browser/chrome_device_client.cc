@@ -22,5 +22,7 @@ device::UsbService* ChromeDeviceClient::GetUsbService() {
 device::HidService* ChromeDeviceClient::GetHidService() {
   return device::HidService::GetInstance(
       content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE),
+      content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI));
 }

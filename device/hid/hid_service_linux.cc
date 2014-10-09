@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/threading/thread_restrictions.h"
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_report_descriptor.h"
@@ -44,6 +45,7 @@ HidServiceLinux::HidServiceLinux(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : ui_task_runner_(ui_task_runner),
       weak_factory_(this) {
+  base::ThreadRestrictions::AssertIOAllowed();
   DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
   monitor->AddObserver(this);
   monitor->Enumerate(

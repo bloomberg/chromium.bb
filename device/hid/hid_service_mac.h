@@ -6,11 +6,12 @@
 #define DEVICE_HID_HID_SERVICE_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/hid/IOHIDManager.h>
+#include <IOKit/IOKitLib.h>
 
 #include <string>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_ioobject.h"
 #include "base/memory/ref_counted.h"
 #include "device/hid/hid_service.h"
 
@@ -32,32 +33,24 @@ class HidServiceMac : public HidService {
  private:
   virtual ~HidServiceMac();
 
-  void StartWatchingDevices();
-  void StopWatchingDevices();
+  // IOService matching callbacks.
+  static void FirstMatchCallback(void* context, io_iterator_t iterator);
+  static void TerminatedCallback(void* context, io_iterator_t iterator);
 
-  // Device changing callbacks.
-  static void AddDeviceCallback(void* context,
-                                IOReturn result,
-                                void* sender,
-                                IOHIDDeviceRef hid_device);
-  static void RemoveDeviceCallback(void* context,
-                                   IOReturn result,
-                                   void* sender,
-                                   IOHIDDeviceRef hid_device);
+  void AddDevices();
+  void RemoveDevices();
 
-  void Enumerate();
-
-  void PlatformAddDevice(IOHIDDeviceRef hid_device);
-  void PlatformRemoveDevice(IOHIDDeviceRef hid_device);
-
-  // Platform HID Manager
-  base::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_;
+  // Platform notification port.
+  IONotificationPortRef notify_port_;
+  base::mac::ScopedIOObject<io_iterator_t> devices_added_iterator_;
+  base::mac::ScopedIOObject<io_iterator_t> devices_removed_iterator_;
 
   // The task runner for the thread on which this service was created.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // The task runner for the UI thread of the application using this service.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  // The task runner for the FILE thread of the application using this service
+  // on which slow running I/O operations can be performed.
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceMac);
 };

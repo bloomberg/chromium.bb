@@ -27,8 +27,9 @@ namespace device {
 class HidConnectionMac : public HidConnection {
  public:
   explicit HidConnectionMac(
+      IOHIDDeviceRef device,
       HidDeviceInfo device_info,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
  private:
   virtual ~HidConnectionMac();
@@ -46,8 +47,6 @@ class HidConnectionMac : public HidConnection {
       size_t size,
       const WriteCallback& callback) override;
 
-  void StartInputReportCallbacks();
-  void StopInputReportCallbacks();
   static void InputReportCallback(void* context,
                                   IOReturn result,
                                   void* sender,
@@ -57,15 +56,16 @@ class HidConnectionMac : public HidConnection {
                                   CFIndex report_length);
   void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
   void ProcessReadQueue();
-
-  void WriteReport(IOHIDReportType report_type,
-                   scoped_refptr<net::IOBuffer> buffer,
-                   size_t size,
-                   const WriteCallback& callback);
+  void GetFeatureReportAsync(uint8_t report_id, const ReadCallback& callback);
+  void SetReportAsync(IOHIDReportType report_type,
+                      scoped_refptr<net::IOBuffer> buffer,
+                      size_t size,
+                      const WriteCallback& callback);
+  void ReturnAsyncResult(const base::Closure& callback);
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   std::vector<uint8_t> inbound_buffer_;
 
   std::queue<PendingHidReport> pending_reports_;

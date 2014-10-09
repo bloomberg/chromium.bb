@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "device/hid/hid_collection_info.h"
 
-#if defined(OS_MACOSX)
-#include <IOKit/hid/IOHIDDevice.h>
-#endif
-
 namespace device {
 
 enum HidBusType {
@@ -22,13 +18,8 @@ enum HidBusType {
   kHIDBusTypeBluetooth = 1,
 };
 
-#if defined(OS_MACOSX)
-typedef IOHIDDeviceRef HidDeviceId;
-const HidDeviceId kInvalidHidDeviceId = NULL;
-#else
 typedef std::string HidDeviceId;
 extern const char kInvalidHidDeviceId[];
-#endif
 
 struct HidDeviceInfo {
   HidDeviceInfo();

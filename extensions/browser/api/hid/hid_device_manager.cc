@@ -148,7 +148,13 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
 
 // static
 bool HidDeviceManager::IsCalledOnValidThread() {
+#if defined(OS_MACOSX)
+  // Migration from FILE thread to UI thread. OS X gets it first.
+  return content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
+#else
+  // TODO(reillyg): Migrate Linux/CrOS and Windows as well.
   return content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE);
+#endif
 }
 
 void HidDeviceManager::UpdateDevices() {
