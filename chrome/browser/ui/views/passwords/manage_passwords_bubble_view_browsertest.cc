@@ -212,7 +212,13 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
+// Fails on linux rel32, see crbug.com/421792
+#if defined(OS_LINUX)
+#define MAYBE_TwoTabsWithBubble DISABLED_TwoTabsWithBubble
+#else
+#define MAYBE_TwoTabsWithBubble TwoTabsWithBubble
+#endif
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, MAYBE_TwoTabsWithBubble) {
   // Set up the first tab with the bubble.
   SetupPendingPassword();
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
