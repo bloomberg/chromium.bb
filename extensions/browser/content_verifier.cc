@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_hash_reader.h"
@@ -107,6 +108,28 @@ void ContentVerifier::VerifyFailed(const std::string& extension_id,
   }
 }
 
+static base::FilePath MakeImagePathRelative(const base::FilePath& path) {
+  if (path.ReferencesParent())
+    return base::FilePath();
+
+  std::vector<base::FilePath::StringType> parts;
+  path.GetComponents(&parts);
+  if (parts.empty())
+    return base::FilePath();
+
+  // Remove the first component if it is '.' or '/' or '//'.
+  const base::FilePath::StringType separators(
+      base::FilePath::kSeparators, base::FilePath::kSeparatorsLength);
+  if (!parts[0].empty() &&
+      (parts[0] == base::FilePath::kCurrentDirectory ||
+       parts[0].find_first_not_of(separators) == std::string::npos))
+    parts.erase(parts.begin());
+
+  // Note that elsewhere we always normalize path separators to '/' so this
+  // should work for all platforms.
+  return base::FilePath(JoinString(parts, '/'));
+}
+
 void ContentVerifier::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
@@ -115,9 +138,21 @@ void ContentVerifier::OnExtensionLoaded(
 
   ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
   if (mode != ContentVerifierDelegate::NONE) {
+    // The browser image paths from the extension may not be relative (eg
+    // they might have leading '/' or './'), so we strip those to make
+    // comparing to actual relative paths work later on.
+    std::set<base::FilePath> original_image_paths =
+        delegate_->GetBrowserImagePaths(extension);
+
+    scoped_ptr<std::set<base::FilePath>> image_paths(
+        new std::set<base::FilePath>);
+    for (const auto& path : original_image_paths) {
+      image_paths->insert(MakeImagePathRelative(path));
+    }
+
     scoped_ptr<ContentVerifierIOData::ExtensionData> data(
         new ContentVerifierIOData::ExtensionData(
-            delegate_->GetBrowserImagePaths(extension),
+            image_paths.Pass(),
             extension->version() ? *extension->version() : base::Version()));
     content::BrowserThread::PostTask(content::BrowserThread::IO,
                                      FROM_HERE,
@@ -196,7 +231,7 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
   if (!data)
     return false;
 
-  const std::set<base::FilePath>& browser_images = data->browser_image_paths;
+  const std::set<base::FilePath>& browser_images = *(data->browser_image_paths);
 
   base::FilePath locales_dir = extension_root.Append(kLocaleFolder);
   scoped_ptr<std::set<std::string> > all_locales;

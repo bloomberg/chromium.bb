@@ -20,6 +20,7 @@ namespace extensions {
 namespace {
 
 ContentVerifyJob::TestDelegate* g_test_delegate = NULL;
+ContentVerifyJob::TestObserver* g_test_observer = NULL;
 
 class ScopedElapsedTimer {
  public:
@@ -60,6 +61,9 @@ ContentVerifyJob::~ContentVerifyJob() {
 
 void ContentVerifyJob::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (g_test_observer)
+    g_test_observer->JobStarted(hash_reader_->extension_id(),
+                                hash_reader_->relative_path());
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
@@ -130,6 +134,10 @@ void ContentVerifyJob::DoneReading() {
   done_reading_ = true;
   if (hashes_ready_ && !FinishBlock())
     DispatchFailureCallback(HASH_MISMATCH);
+
+  if (!failed_ && g_test_observer)
+    g_test_observer->JobFinished(
+        hash_reader_->extension_id(), hash_reader_->relative_path(), failed_);
 }
 
 bool ContentVerifyJob::FinishBlock() {
@@ -182,6 +190,11 @@ void ContentVerifyJob::SetDelegateForTests(TestDelegate* delegate) {
   g_test_delegate = delegate;
 }
 
+// static
+void ContentVerifyJob::SetObserverForTests(TestObserver* observer) {
+  g_test_observer = observer;
+}
+
 void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
   DCHECK(!failed_);
   failed_ = true;
@@ -192,6 +205,9 @@ void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
     failure_callback_.Run(reason);
     failure_callback_.Reset();
   }
+  if (g_test_observer)
+    g_test_observer->JobFinished(
+        hash_reader_->extension_id(), hash_reader_->relative_path(), failed_);
 }
 
 }  // namespace extensions

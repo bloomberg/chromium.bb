@@ -23,10 +23,10 @@ class ContentVerifierIOData
     : public base::RefCountedThreadSafe<ContentVerifierIOData> {
  public:
   struct ExtensionData {
-    std::set<base::FilePath> browser_image_paths;
+    scoped_ptr<std::set<base::FilePath>> browser_image_paths;
     base::Version version;
 
-    ExtensionData(const std::set<base::FilePath>& browser_image_paths,
+    ExtensionData(scoped_ptr<std::set<base::FilePath>> browser_image_paths,
                   const base::Version& version);
     ~ExtensionData();
   };

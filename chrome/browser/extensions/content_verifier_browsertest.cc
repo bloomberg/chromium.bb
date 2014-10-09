@@ -87,6 +87,82 @@ class JobDelegate : public ContentVerifyJob::TestDelegate {
   bool fail_next_done_;
 };
 
+class JobObserver : public ContentVerifyJob::TestObserver {
+ public:
+  JobObserver();
+  virtual ~JobObserver();
+
+  // Call this to add an expected job result.
+  void ExpectJobResult(const std::string& extension_id,
+                       const base::FilePath& relative_path,
+                       bool expected_to_fail);
+
+  // Wait to see expected jobs. Returns true if we saw all jobs finish as
+  // expected, or false if any job completed with non-expected success/failure
+  // status.
+  bool WaitForExpectedJobs();
+
+  // ContentVerifyJob::TestObserver interface
+  virtual void JobStarted(const std::string& extension_id,
+                          const base::FilePath& relative_path) OVERRIDE;
+
+  virtual void JobFinished(const std::string& extension_id,
+                           const base::FilePath& relative_path,
+                           bool failed) OVERRIDE;
+
+ private:
+  typedef std::pair<std::string, base::FilePath> ExtensionFile;
+  typedef std::map<ExtensionFile, bool> ExpectedJobs;
+  ExpectedJobs expected_jobs_;
+  scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  bool saw_expected_job_results_;
+};
+
+void JobObserver::ExpectJobResult(const std::string& extension_id,
+                                  const base::FilePath& relative_path,
+                                  bool expected_to_fail) {
+  expected_jobs_.insert(std::make_pair(
+      ExtensionFile(extension_id, relative_path), expected_to_fail));
+}
+
+JobObserver::JobObserver() : saw_expected_job_results_(false) {
+}
+
+JobObserver::~JobObserver() {
+}
+
+bool JobObserver::WaitForExpectedJobs() {
+  if (!expected_jobs_.empty()) {
+    loop_runner_ = new content::MessageLoopRunner();
+    loop_runner_->Run();
+  }
+  return saw_expected_job_results_;
+}
+
+void JobObserver::JobStarted(const std::string& extension_id,
+                             const base::FilePath& relative_path) {
+}
+
+void JobObserver::JobFinished(const std::string& extension_id,
+                              const base::FilePath& relative_path,
+                              bool failed) {
+  ExpectedJobs::iterator i = expected_jobs_.find(ExtensionFile(
+      extension_id, relative_path.NormalizePathSeparatorsTo('/')));
+  if (i != expected_jobs_.end()) {
+    if (failed != i->second) {
+      saw_expected_job_results_ = false;
+      if (loop_runner_.get())
+        loop_runner_->Quit();
+    }
+    expected_jobs_.erase(i);
+    if (expected_jobs_.empty()) {
+      saw_expected_job_results_ = true;
+      if (loop_runner_.get())
+        loop_runner_->Quit();
+    }
+  }
+}
+
 }  // namespace
 
 class ContentVerifierTest : public ExtensionBrowserTest {
@@ -104,6 +180,15 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   // Setup our unload observer and JobDelegate, and install a test extension.
   virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
+  }
+
+  virtual void TearDownOnMainThread() override {
+    ContentVerifyJob::SetDelegateForTests(NULL);
+    ContentVerifyJob::SetObserverForTests(NULL);
+    ExtensionBrowserTest::TearDownOnMainThread();
+  }
+
+  virtual void OpenPageAndWaitForUnload() {
     unload_observer_.reset(
         new UnloadObserver(ExtensionRegistry::Get(profile())));
     const Extension* extension = InstallExtensionFromWebstore(
@@ -113,14 +198,6 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     page_url_ = extension->GetResourceURL("page.html");
     delegate_.set_id(id_);
     ContentVerifyJob::SetDelegateForTests(&delegate_);
-  }
-
-  virtual void TearDownOnMainThread() override {
-    ContentVerifyJob::SetDelegateForTests(NULL);
-    ExtensionBrowserTest::TearDownOnMainThread();
-  }
-
-  virtual void OpenPageAndWaitForUnload() {
     AddTabAtIndex(1, page_url_, ui::PAGE_TRANSITION_LINK);
     unload_observer_->WaitForUnload(id_);
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
@@ -147,6 +224,35 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnRead) {
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnDone) {
   delegate_.fail_next_done();
   OpenPageAndWaitForUnload();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
+  JobObserver job_observer;
+  ContentVerifyJob::SetObserverForTests(&job_observer);
+  std::string id = "hoipipabpcoomfapcecilckodldhmpgl";
+
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("background.js")), false);
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("page.html")), false);
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("page.js")), false);
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("dir/page2.html")), false);
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("page2.js")), false);
+
+  // Install a test extension we copied from the webstore that has actual
+  // signatures, and contains image paths with leading "./".
+  const Extension* extension = InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("content_verifier/dot_slash_paths.crx"), 1);
+
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(extension->id(), id);
+
+  EXPECT_TRUE(job_observer.WaitForExpectedJobs());
+
+  ContentVerifyJob::SetObserverForTests(NULL);
 }
 
 }  // namespace extensions
