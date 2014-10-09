@@ -11,7 +11,7 @@ from google.appengine.api import users
 
 
 class InternalAlertsHandler(alerts.AlertsHandler):
-    MEMCACHE_INTERNAL_ALERTS_KEY = 'internal-alerts'
+    INTERNAL_ALERTS_TYPE = 'internal-alerts'
 
     # Has no 'request' member.
     # Has no 'response' member.
@@ -37,10 +37,10 @@ class InternalAlertsHandler(alerts.AlertsHandler):
             return
 
         super(InternalAlertsHandler, self).get_from_memcache(
-            InternalAlertsHandler.MEMCACHE_INTERNAL_ALERTS_KEY)
+            InternalAlertsHandler.INTERNAL_ALERTS_TYPE)
 
     def post(self):
-        self.update_alerts(InternalAlertsHandler.MEMCACHE_INTERNAL_ALERTS_KEY)
+        self.update_alerts(InternalAlertsHandler.INTERNAL_ALERTS_TYPE)
 
 
 app = webapp2.WSGIApplication([

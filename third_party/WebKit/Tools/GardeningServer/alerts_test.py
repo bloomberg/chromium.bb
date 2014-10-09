@@ -18,6 +18,7 @@ class AlertsTest(unittest.TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
         self.testbed.activate()
+        self.testbed.init_user_stub()
         self.testbed.init_memcache_stub()
         self.testbed.init_datastore_v3_stub()
         self.testapp = webtest.TestApp(alerts.app)
@@ -75,6 +76,8 @@ class AlertsTest(unittest.TestCase):
         alerts_query = alerts.AlertsJSON.query().order(alerts.AlertsJSON.date)
         stored_alerts = alerts_query.fetch(limit=3)
         self.assertEqual(2, len(stored_alerts))
+        self.assertEqual(stored_alerts[0].type, 'alerts')
+        self.assertEqual(stored_alerts[1].type, 'alerts')
         stored_alerts1 = json.loads(stored_alerts[0].json)
         stored_alerts2 = json.loads(stored_alerts[1].json)
         self.assertEqual(test_alerts1['alerts'], stored_alerts1['alerts'])
@@ -91,6 +94,67 @@ class AlertsTest(unittest.TestCase):
         self.testapp.post('/alerts', {'content': json.dumps(test_alerts)})
         stored_alerts = alerts.AlertsJSON.query().fetch(limit=2)
         self.assertEqual(1, len(stored_alerts))
+
+    def test_alerts_jsons_are_retrieved_from_history(self):
+        test_alert = {'alerts': ['hello', 'world', '1']}
+        alerts.AlertsJSON(json=json.dumps(test_alert), type='alerts').put()
+        response = self.testapp.get('/alerts-history')
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(len(response_json['history']), 1)
+        self.assertEqual(response_json['history'][0], test_alert)
+
+    def test_internal_alerts_in_history_visible_to_internal_users_only(self):
+        test_alert = {'alerts': ['hello', 'world', '1']}
+        alerts.AlertsJSON(json=json.dumps(test_alert),
+                          type='internal-alerts').put()
+
+        # No signed-in user.
+        response = self.testapp.get('/alerts-history')
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(len(response_json['history']), 0)
+
+        # Non-internal user.
+        self.testbed.setup_env(USER_EMAIL='test@example.com', USER_ID='1',
+                               USER_IS_ADMIN='1', overwrite=True)
+        response = self.testapp.get('/alerts-history')
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(len(response_json['history']), 0)
+
+        # Internal user.
+        self.testbed.setup_env(USER_EMAIL='test@google.com', USER_ID='2',
+                               USER_IS_ADMIN='1', overwrite=True)
+        response = self.testapp.get('/alerts-history')
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(len(response_json['history']), 1)
+        self.assertEqual(response_json['history'][0], test_alert)
+
+    def test_returned_alerts_from_history_are_paged(self):
+        for i in range(20):
+            test_alert = {'alerts': ['hello', 'world', i]}
+            alerts.AlertsJSON(json=json.dumps(test_alert), type='alerts').put()
+
+        response = self.testapp.get('/alerts-history?limit=15')
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(len(response_json['history']), 15)
+        self.assertEqual(response_json['has_more'], True)
+
+        url = '/alerts-history?limit=15&cursor=%s' % response_json['cursor']
+        response = self.testapp.get(url)
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(len(response_json['history']), 5)
+        self.assertEqual(response_json['has_more'], False)
 
     def test_large_number_of_alerts(self):
         # This generates ~2.5MB of JSON that compresses to ~750K. Real
