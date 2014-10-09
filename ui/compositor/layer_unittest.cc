@@ -237,7 +237,7 @@ class TestLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     SkISize size = canvas->sk_canvas()->getBaseLayerSize();
     paint_size_ = gfx::Size(size.width(), size.height());
-    canvas->FillRect(gfx::Rect(paint_size_), colors_[color_index_]);
+    canvas->DrawColor(colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
     const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();
     scale_x_ = matrix.getScaleX();
@@ -289,6 +289,7 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
+    canvas->DrawColor(SK_ColorTRANSPARENT);
   }
   virtual void OnDelegatedFrameDamage(
       const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
