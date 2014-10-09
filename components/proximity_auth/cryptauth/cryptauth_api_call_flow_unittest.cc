@@ -37,7 +37,7 @@ class ProximityAuthCryptAuthApiCallFlowTest
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
             new base::TestSimpleTaskRunner())) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // The TestURLFetcherFactory will override the global URLFetcherFactory for
     // the entire test.
     url_fetcher_factory_.reset(new net::TestURLFetcherFactory());
@@ -98,13 +98,13 @@ class ProximityAuthCryptAuthApiCallFlowTest
   }
 
   // net::TestURLFetcherDelegateForTests overrides.
-  virtual void OnRequestStart(int fetcher_id) OVERRIDE {
+  virtual void OnRequestStart(int fetcher_id) override {
     url_fetcher_ = url_fetcher_factory_->GetFetcherByID(fetcher_id);
   }
 
-  virtual void OnChunkUpload(int fetcher_id) OVERRIDE {}
+  virtual void OnChunkUpload(int fetcher_id) override {}
 
-  virtual void OnRequestEnd(int fetcher_id) OVERRIDE {}
+  virtual void OnRequestEnd(int fetcher_id) override {}
 
   net::TestURLFetcher* url_fetcher_;
   scoped_ptr<std::string> result_;
