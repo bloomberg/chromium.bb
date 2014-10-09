@@ -253,9 +253,9 @@ class WallpaperManager::CustomizedWallpaperRescaledFiles {
     return path_rescaled_large_;
   }
 
-  const bool downloaded_exists() const { return downloaded_exists_; }
-  const bool rescaled_small_exists() const { return rescaled_small_exists_; }
-  const bool rescaled_large_exists() const { return rescaled_large_exists_; }
+  bool downloaded_exists() const { return downloaded_exists_; }
+  bool rescaled_small_exists() const { return rescaled_small_exists_; }
+  bool rescaled_large_exists() const { return rescaled_large_exists_; }
 
  private:
   // Must be called on BlockingPool.
