@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -35,14 +37,21 @@ void SplitString(const std::string& str, std::vector<std::string>* argv) {
 }
 #endif
 
+bool is_empty(const std::string& s) {
+  return s.empty();
+}
+
 // The value of app_url_and_args is "<mojo_app_url> [<args>...]", where args
 // is a list of "configuration" arguments separated by spaces. If one or more
 // arguments are specified they will be available when the Mojo application
 // is initialized. See ApplicationImpl::args().
 GURL GetAppURLAndSetArgs(const base::CommandLine::StringType& app_url_and_args,
                          mojo::shell::Context* context) {
+  // SplitString() returns empty strings for extra delimeter characters (' ').
   std::vector<std::string> argv;
   SplitString(app_url_and_args, &argv);
+  argv.erase(std::remove_if(argv.begin(), argv.end(), is_empty), argv.end());
+
   if (argv.empty())
     return GURL::EmptyGURL();
   GURL app_url(argv[0]);

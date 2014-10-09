@@ -30,7 +30,6 @@ class JSApp {
   // This method causes Load() and then Run() to run on a new thread.
   bool Start();
 
-
   // Subclasses must return the JS source code for this app's main script and
   // the filename or URL that identifies the script's origin. This method will
   // be called from this app's thread.
