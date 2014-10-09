@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -109,8 +111,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   dbus::Bus* GetSystemBus();
 
-  // All returned objects are owned by DBusThreadManager.  Do not cache these
-  // pointers and use them after DBusThreadManager has been shut down.
+  // All returned objects are owned by DBusThreadManager.  Do not use these
+  // pointers after DBusThreadManager has been shut down.
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();

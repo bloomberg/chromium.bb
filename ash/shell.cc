@@ -138,6 +138,7 @@
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
 #endif  // defined(OS_CHROMEOS)
@@ -813,10 +814,11 @@ Shell::~Shell() {
   if (projecting_observer_)
     display_configurator_->RemoveObserver(projecting_observer_.get());
   display_change_observer_.reset();
-#endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
   PowerStatus::Shutdown();
+
+  // Ensure that DBusThreadManager outlives this Shell.
+  DCHECK(chromeos::DBusThreadManager::IsInitialized());
 #endif
 
   DCHECK(instance_ == this);
@@ -831,7 +833,11 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_animation_.reset(new DisplayConfiguratorAnimation());
   display_configurator_->AddObserver(display_configurator_animation_.get());
 
-  projecting_observer_.reset(new ProjectingObserver());
+  // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
+  chromeos::DBusThreadManager* dbus_thread_manager =
+      chromeos::DBusThreadManager::Get();
+  projecting_observer_.reset(
+      new ProjectingObserver(dbus_thread_manager->GetPowerManagerClient()));
   display_configurator_->AddObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
