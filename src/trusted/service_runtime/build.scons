@@ -777,21 +777,6 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-F'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
-# Test hello_world binary with obsolete, non-ragel based validator.
-if (not env.Bit('validator_ragel') and env.Bit('target_x86')
-    and env.Bit('nacl_static_link')):
-  node = env.CommandSelLdrTestNacl(
-      'dfa_hwd.out',
-      hello_world_nexe,
-      stdout_golden = env.File('testdata/hello_world.stdout'),
-      stderr_golden = env.File('testdata/non_dfa_validator_hello.stderr'),
-      filter_regex = '"^(Hello, World!)$' + '|' +
-        '^[[][^]]*[]] (USING OBSOLETE NON-DFA-BASED VALIDATOR!)$"',
-      filter_group_only = 'true',
-      )
-  env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
-                         'run_dfa_validator_hello_world_test')
-
 if env.Bit('target_mips32'):
   text_region_start = 0x00020000
   # Use arbitrary non-page-aligned addresses for data and rodata.

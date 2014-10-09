@@ -161,7 +161,6 @@
     'component%': '<(component)',
 
     'nacl_strict_warnings%': 1,
-    'nacl_validator_ragel%': 1,
 
     'linux2%': 0,
 

@@ -302,13 +302,6 @@ actually do not try all possible values for &lsquo;anybytes&rsquo;
 jump targets logic is not the goal of this test (we rely on
 manually written targeted tests for jumps instead).</span></p>
 <p class="c0 c2"></p>
-<p class="c0"><span>There is similar test in
-validator_ragel/verify_regular_instruction_old.py. Instead of
-comparing against text-based specification, it compares against old
-validator (and additionally objdump is used to check that
-instruction length is determined correctly). Hopefully we will be
-able to get rid of it soon.</span></p>
-<p class="c0 c2"></p>
 <p class="c0"><span>How to run:</span></p>
 <p class="c0"><span>&nbsp; ./scons dfacheckvalidator
 platform=x86-64</span></p>

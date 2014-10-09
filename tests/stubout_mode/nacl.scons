@@ -9,6 +9,8 @@ if 'TRUSTED_ENV' not in env:
   Return()
 
 # Even if stubout mode is not supported sel_ldr still must run valid .nexes.
+# TODO(shyamsundarr): consider removing support for stubout mode completely
+# from code, given that currently only MIPS supports it and it is untested.
 hello_world_nexe = env.File('${STAGING_DIR}/hello_world${PROGSUFFIX}')
 node = env.CommandSelLdrTestNacl(
     'hello_world_stub_out_run.out', hello_world_nexe,
@@ -35,25 +37,9 @@ if env.Bit('bitcode') and env.Bit('nacl_pic'):
 if env.Bit('build_arm'):
   Return()
 
-stubout_tool = env['TRUSTED_ENV'].File(
-    '${STAGING_DIR}/${PROGPREFIX}ncval_stubout${PROGSUFFIX}')
-
 partly_invalid_nexe = env.ComponentProgram('partly_invalid', 'partly_invalid.c',
                                            EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-
-# R-DFA does not support stubout mode but we need to create at least file
-# partly_invalid.nexe used in PPAPI tests thus we first create a rule for
-# this file and only then bail out.
-if env.Bit('validator_ragel'):
-  Return()
-
-partly_invalid_stubout_nexe = env.File('partly_invalid_stubout${PROGSUFFIX}')
-
-node = env.Command(
-    target=partly_invalid_stubout_nexe,
-    source=[stubout_tool, partly_invalid_nexe],
-    action=[Action('${SOURCES[0]} ${SOURCES[1]} -o $TARGET')])
 # This alias is to ensure this test works with built_elsewhere=1,
 # because with that option CommandSelLdrTestNacl() assumes all its
 # inputs have already been built (which is not necessarily a good
@@ -64,7 +50,8 @@ env.Alias('all_test_programs', node)
 # Valgrind+nacl-glibc tests, which breaks one test below.
 is_validation_disabled = env.IsRunningUnderValgrind() and env.Bit('nacl_glibc')
 
-test_suites = ['small_tests', 'nonpexe_tests']
+# TODO(shyamsundarr): investigate if we can run non_pexe tests.
+test_suites = ['small_tests']
 
 # Without any debug flags, the executable fails validation.
 if env.Bit('nacl_static_link'):
@@ -85,33 +72,3 @@ node = env.CommandSelLdrTestNacl(
     stdout_golden=env.File('without_stubout.stdout'),
     sel_ldr_flags=['-c'])
 env.AddNodeToTestSuite(node, test_suites, 'run_without_stubout_2_test')
-
-# With "-s", the executable runs part way but then faults.
-
-if env.Bit('target_mips32'):
-  partly_invalid_exit_status = 'sigtrap'
-else:
-  partly_invalid_exit_status = 'untrusted_sigsegv'
-
-# Valgrind and ASan interfere with the exit status
-testing_on_asan_or_valgrind = (env.Bit('running_on_valgrind') or
-                               env.Bit('asan'))
-node = env.CommandSelLdrTestNacl(
-    'partly_invalid_3.out', partly_invalid_nexe,
-    stdout_golden=env.File('with_stubout.stdout'),
-    sel_ldr_flags=['-s'],
-    exit_status=partly_invalid_exit_status)
-env.AddNodeToTestSuite(node, test_suites, 'run_stubout_mode_test',
-                       is_broken=testing_on_asan_or_valgrind)
-
-# Using the standalone ncval_stubout tool to rewrite the executable
-# offline should be equivalent to using sel_ldr's "-s" option.
-# This tool exists only for x86.
-node = env.CommandSelLdrTestNacl(
-    'partly_invalid_stubout.out',
-    partly_invalid_stubout_nexe,
-    stdout_golden=env.File('with_stubout.stdout'),
-    exit_status='untrusted_sigsegv')
-env.AddNodeToTestSuite(node, test_suites, 'run_offline_stubout_test',
-                       is_broken=(env.Bit('target_mips32') or
-                                  testing_on_asan_or_valgrind))

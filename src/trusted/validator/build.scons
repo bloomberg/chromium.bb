@@ -11,13 +11,9 @@ Import('env')
 
 env.ComponentLibrary(env.NaClTargetArchSuffix('ncfileutils'), ['ncfileutil.c'])
 
-val_lib_env = env.Clone()
-if env.Bit('validator_ragel'):
-  val_lib_env.Append(CPPDEFINES=[['NACL_VALIDATOR_RAGEL', '1']])
+env.ComponentLibrary('validation_cache', ['validation_cache.c'])
 
-val_lib_env.ComponentLibrary('validation_cache', ['validation_cache.c'])
-
-val_lib_env.ComponentLibrary('validators', ['validator_init.c'])
+env.ComponentLibrary('validators', ['validator_init.c'])
 
 if env.Bit('target_x86') or env.Bit('target_mips32'):
   # TODO(ncbray) support ARM.  This will require making validation caching safe

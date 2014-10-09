@@ -367,9 +367,6 @@ def SetUpArgumentBits(env):
     desc='Prevents GDB tests from running.  If GDB is not available, you can '
       'test everything else by specifying this flag.')
 
-  BitFromArgument(env, 'validator_ragel', default=True,
-    desc='Use the R-DFA validator instead of the original validators.')
-
   # TODO(shcherbina): add support for other golden-based tests, not only
   # run_x86_*_validator_testdata_tests.
   BitFromArgument(env, 'regenerate_golden', default=False,
@@ -1192,16 +1189,14 @@ def GetValidator(env, validator):
   if 'TRUSTED_ENV' not in env:
     return None
 
+  # TODO(shyamsundarr): rename ncval_new to ncval.
   if validator is None:
     if env.Bit('build_arm'):
       validator = 'arm-ncval-core'
     elif env.Bit('build_mips32'):
       validator = 'mips-ncval-core'
     else:
-      if env.Bit('validator_ragel'):
-        validator = 'ncval_new'
-      else:
-        validator = 'ncval'
+      validator = 'ncval_new'
 
   trusted_env = env['TRUSTED_ENV']
   return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
@@ -2227,7 +2222,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/shared/srpc/build.scons',
       'src/shared/utils/build.scons',
       'src/third_party/gtest/build.scons',
-      'src/tools/validator_tools/build.scons',
       'src/trusted/cpu_features/build.scons',
       'src/trusted/debug_stub/build.scons',
       'src/trusted/desc/build.scons',
@@ -2247,15 +2241,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/threading/build.scons',
       'src/trusted/validator/build.scons',
       'src/trusted/validator/driver/build.scons',
-      'src/trusted/validator/x86/32/build.scons',
-      'src/trusted/validator/x86/64/build.scons',
-      'src/trusted/validator/x86/build.scons',
-      'src/trusted/validator/x86/decoder/build.scons',
-      'src/trusted/validator/x86/decoder/generator/build.scons',
-      'src/trusted/validator/x86/ncval_reg_sfi/build.scons',
-      'src/trusted/validator/x86/ncval_seg_sfi/build.scons',
-      'src/trusted/validator/x86/ncval_seg_sfi/generator/build.scons',
-      'src/trusted/validator/x86/testing/enuminsts/build.scons',
       'src/trusted/validator_arm/build.scons',
       'src/trusted/validator_ragel/build.scons',
       'src/trusted/validator_x86/build.scons',

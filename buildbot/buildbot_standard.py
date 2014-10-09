@@ -192,11 +192,6 @@ def BuildScript(status, context):
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
-    with Step('build ncval-x86-32', status):
-      SCons(context, platform='x86-32', parallel=True, args=['ncval'])
-    with Step('build ncval-x86-64', status):
-      SCons(context, platform='x86-64', parallel=True, args=['ncval'])
-
     with Step('build ragel_validator-32', status):
       SCons(context, platform='x86-32', parallel=True, args=['ncval_new'])
     with Step('build ragel_validator-64', status):
@@ -207,15 +202,6 @@ def BuildScript(status, context):
           cmd=[sys.executable,
                'tests/abi_corpus/validator_regression_test.py',
                '--download-only'])
-
-    with Step('validator_regression_test current x86-32', status,
-        halt_on_fail=False):
-      ValidatorTest(
-          context, 'x86-32', 'scons-out/opt-linux-x86-32/staging/ncval')
-    with Step('validator_regression_test current x86-64', status,
-        halt_on_fail=False):
-      ValidatorTest(
-          context, 'x86-64', 'scons-out/opt-linux-x86-64/staging/ncval')
 
     with Step('validator_regression_test ragel x86-32', status,
         halt_on_fail=False):
@@ -228,10 +214,6 @@ def BuildScript(status, context):
           context, 'x86-64',
           'scons-out/opt-linux-x86-64/staging/ncval_new')
 
-    with Step('validator_diff32_tests', status, halt_on_fail=False):
-      SCons(context, platform='x86-32', args=['validator_diff_tests'])
-    with Step('validator_diff64_tests', status, halt_on_fail=False):
-      SCons(context, platform='x86-64', args=['validator_diff_tests'])
     return
 
   # Run checkdeps script to vet #includes.
@@ -307,23 +289,6 @@ def BuildScript(status, context):
     with Step('large_tests under GN', status, halt_on_fail=False):
       SCons(context, args=['large_tests', 'force_sel_ldr=' + gn_sel_ldr])
   ### END GN tests ###
-
-  # Build with ragel-based validator using scons.
-  with Step('scons_compile_noragel', status):
-    SCons(context, parallel=True, args=['validator_ragel=0'])
-
-  # Smoke tests for the R-DFA validator.
-  with Step('validator_noragel_tests', status):
-    args = ['validator_ragel=0',
-            'small_tests',
-            'medium_tests',
-            'large_tests',
-            ]
-    # Add nacl_irt_test mode to be able to run run_hello_world_test_irt that
-    # tests validation of the IRT.
-    SCons(context,
-          mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=args)
 
 
 def Main():

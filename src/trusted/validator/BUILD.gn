@@ -5,9 +5,6 @@
 #  Generated from GYP
 
 static_library("validators") {
-  defines = [
-    "NACL_VALIDATOR_RAGEL=1",
-  ]
   sources = [
     "validator_init.c",
   ]

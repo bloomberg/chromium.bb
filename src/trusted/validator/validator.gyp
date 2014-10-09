@@ -14,13 +14,6 @@
       'sources' : [
         'validator_init.c',
       ],
-      'conditions': [
-        ['nacl_validator_ragel!=0', {
-          'defines': [
-            'NACL_VALIDATOR_RAGEL=1',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'validation_cache',
@@ -45,13 +38,6 @@
           'variables': {
             'win_target': 'x64',
           },
-          'conditions': [
-            ['nacl_validator_ragel!=0', {
-              'defines': [
-                'NACL_VALIDATOR_RAGEL=1',
-              ],
-            }],
-          ],
         },
         {
           'target_name': 'validation_cache64',

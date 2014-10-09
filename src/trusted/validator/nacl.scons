@@ -19,8 +19,8 @@ else:
   Return()
 
 env.PrependENVPath('PATH', env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}'))
-dependencies = [env['TRUSTED_ENV'].File('${STAGING_DIR}/ncval${PROGSUFFIX}'),
-               ]
+dependencies = [
+    env['TRUSTED_ENV'].File('${STAGING_DIR}/ncval_new${PROGSUFFIX}'),]
 
 node = env.CommandTest(
     'ncval_annotate_test.out',

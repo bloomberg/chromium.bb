@@ -33,22 +33,12 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'conditions': [
-        ['nacl_validator_ragel==0 and target_arch=="ia32"', {
-          'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator/x86/32/validator_x86_32.gyp:ncvalidate_x86_32',
-          ],
-        }],
-        ['nacl_validator_ragel!=0 and target_arch=="ia32"', {
+        ['target_arch=="ia32"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_32.gyp:dfa_validate_x86_32',
           ],
         }],
-        ['nacl_validator_ragel==0 and target_arch=="x64"', {
-          'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
-          ],
-        }],
-        ['nacl_validator_ragel!=0 and target_arch=="x64"', {
+        ['target_arch=="x64"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
           ],
@@ -66,17 +56,8 @@
             'target_base': 'srt_x86_cmn',
             'win_target': 'x64',
           },
-          'conditions': [
-            ['nacl_validator_ragel==0', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
-              ],
-            }],
-            ['nacl_validator_ragel!=0', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
-              ],
-            }],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
           ],
         },
       ],

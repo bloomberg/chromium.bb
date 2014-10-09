@@ -20,6 +20,6 @@ for subtest in ('gs_segment_read_only_test',
   node = env.CommandSelLdrTestNacl('%s.out' % subtest,
       test_prog, [subtest], declares_exit_status=True,
       # R-DFA rejects unaligned access to %gs at validation stage
-      sel_ldr_flags=(['-c'] if env.Bit('validator_ragel') else None))
+      sel_ldr_flags=['-c'])
   env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                          'run_%s' % subtest)

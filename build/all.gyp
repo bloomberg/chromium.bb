@@ -42,8 +42,6 @@
           'dependencies': [
             '../src/trusted/validator/driver/ncval.gyp:*',
             '../src/trusted/validator_arm/ncval.gyp:*',
-            '../src/trusted/validator_x86/ncval.gyp:*',
-            '../src/trusted/validator_x86/validator_x86.gyp:*',
           ],
         }],
         ['target_arch=="mipsel"', {
