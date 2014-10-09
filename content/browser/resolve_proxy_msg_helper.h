@@ -38,7 +38,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   explicit ResolveProxyMsgHelper(net::ProxyService* proxy_service);
 
   // BrowserMessageFilter implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 

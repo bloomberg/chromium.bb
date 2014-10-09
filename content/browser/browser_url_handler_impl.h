@@ -25,10 +25,10 @@ class CONTENT_EXPORT BrowserURLHandlerImpl : public BrowserURLHandler {
   // BrowserURLHandler implementation:
   virtual void RewriteURLIfNecessary(GURL* url,
                                      BrowserContext* browser_context,
-                                     bool* reverse_on_redirect) OVERRIDE;
+                                     bool* reverse_on_redirect) override;
   // Add the specified handler pair to the list of URL handlers.
   virtual void AddHandlerPair(URLHandler handler,
-                              URLHandler reverse_handler) OVERRIDE;
+                              URLHandler reverse_handler) override;
 
   // Reverses the rewriting that was done for |original| using the new |url|.
   bool ReverseURLRewrite(GURL* url, const GURL& original,

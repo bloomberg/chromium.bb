@@ -46,7 +46,7 @@ class TestObserver : public storage::DatabaseTracker::Observer {
   virtual ~TestObserver() {}
   virtual void OnDatabaseSizeChanged(const std::string& origin_identifier,
                                      const base::string16& database_name,
-                                     int64 database_size) OVERRIDE {
+                                     int64 database_size) override {
     if (!observe_size_changes_)
       return;
     new_notification_received_ = true;
@@ -56,7 +56,7 @@ class TestObserver : public storage::DatabaseTracker::Observer {
   }
   virtual void OnDatabaseScheduledForDeletion(
       const std::string& origin_identifier,
-      const base::string16& database_name) OVERRIDE {
+      const base::string16& database_name) override {
     if (!observe_scheduled_deletions_)
       return;
     new_notification_received_ = true;
@@ -103,14 +103,14 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
         registered_client_(NULL) {
   }
 
-  virtual void RegisterClient(storage::QuotaClient* client) OVERRIDE {
+  virtual void RegisterClient(storage::QuotaClient* client) override {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }
 
   virtual void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                      const GURL& origin,
-                                     storage::StorageType type) OVERRIDE {
+                                     storage::StorageType type) override {
     EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
     EXPECT_EQ(storage::kStorageTypeTemporary, type);
     accesses_[origin] += 1;
@@ -119,7 +119,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   virtual void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                      const GURL& origin,
                                      storage::StorageType type,
-                                     int64 delta) OVERRIDE {
+                                     int64 delta) override {
     EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
     EXPECT_EQ(storage::kStorageTypeTemporary, type);
     modifications_[origin].first += 1;
@@ -127,17 +127,17 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   }
 
   // Not needed for our tests.
-  virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
-  virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
+  virtual void NotifyOriginInUse(const GURL& origin) override {}
+  virtual void NotifyOriginNoLongerInUse(const GURL& origin) override {}
   virtual void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                                     const GURL& origin,
                                     storage::StorageType type,
-                                    bool enabled) OVERRIDE {}
+                                    bool enabled) override {}
   virtual void GetUsageAndQuota(
       base::SequencedTaskRunner* original_task_runner,
       const GURL& origin,
       storage::StorageType type,
-      const GetUsageAndQuotaCallback& callback) OVERRIDE {}
+      const GetUsageAndQuotaCallback& callback) override {}
 
   void SimulateQuotaManagerDestroyed() {
     if (registered_client_) {

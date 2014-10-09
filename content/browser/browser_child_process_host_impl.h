@@ -45,25 +45,25 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   static void TerminateAll();
 
   // BrowserChildProcessHost implementation:
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
   virtual void Launch(
       SandboxedProcessLauncherDelegate* delegate,
-      base::CommandLine* cmd_line) OVERRIDE;
-  virtual const ChildProcessData& GetData() const OVERRIDE;
-  virtual ChildProcessHost* GetHost() const OVERRIDE;
+      base::CommandLine* cmd_line) override;
+  virtual const ChildProcessData& GetData() const override;
+  virtual ChildProcessHost* GetHost() const override;
   virtual base::TerminationStatus GetTerminationStatus(
-      bool known_dead, int* exit_code) OVERRIDE;
-  virtual void SetName(const base::string16& name) OVERRIDE;
-  virtual void SetHandle(base::ProcessHandle handle) OVERRIDE;
+      bool known_dead, int* exit_code) override;
+  virtual void SetName(const base::string16& name) override;
+  virtual void SetHandle(base::ProcessHandle handle) override;
 
   // ChildProcessHostDelegate implementation:
-  virtual bool CanShutdown() OVERRIDE;
-  virtual void OnChildDisconnected() OVERRIDE;
-  virtual base::ProcessHandle GetHandle() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
-  virtual void OnBadMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool CanShutdown() override;
+  virtual void OnChildDisconnected() override;
+  virtual base::ProcessHandle GetHandle() const override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
+  virtual void OnBadMessageReceived(const IPC::Message& message) override;
 
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
@@ -96,8 +96,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   static void RemoveObserver(BrowserChildProcessObserver* observer);
 
   // ChildProcessLauncher::Client implementation.
-  virtual void OnProcessLaunched() OVERRIDE;
-  virtual void OnProcessLaunchFailed() OVERRIDE;
+  virtual void OnProcessLaunched() override;
+  virtual void OnProcessLaunchFailed() override;
 
 #if defined(OS_WIN)
   void DeleteProcessWaitableEvent(base::WaitableEvent* event);

@@ -61,10 +61,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
                    ServiceWorkerProviderHost* provider_host);
 
   // ServiceWorkerRegisterJobBase implementation:
-  virtual void Start() OVERRIDE;
-  virtual void Abort() OVERRIDE;
-  virtual bool Equals(ServiceWorkerRegisterJobBase* job) OVERRIDE;
-  virtual RegistrationJobType GetType() OVERRIDE;
+  virtual void Start() override;
+  virtual void Abort() override;
+  virtual bool Equals(ServiceWorkerRegisterJobBase* job) override;
+  virtual RegistrationJobType GetType() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
@@ -134,12 +134,12 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
                       ServiceWorkerRegistration* registration);
 
   // EmbeddedWorkerInstance::Listener override of OnPausedAfterDownload.
-  virtual void OnPausedAfterDownload() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnPausedAfterDownload() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // ServiceWorkerRegistration::Listener overrides
   virtual void OnRegistrationFinishedUninstalling(
-      ServiceWorkerRegistration* registration) OVERRIDE;
+      ServiceWorkerRegistration* registration) override;
 
   void OnCompareScriptResourcesComplete(
       ServiceWorkerStatusCode status,

@@ -28,7 +28,7 @@ class CONTENT_EXPORT NotificationServiceImpl : public NotificationService {
   // NotificationService:
   virtual void Notify(int type,
                       const NotificationSource& source,
-                      const NotificationDetails& details) OVERRIDE;
+                      const NotificationDetails& details) override;
 
  private:
   friend class NotificationRegistrar;

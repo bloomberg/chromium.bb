@@ -68,13 +68,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   virtual void RegisterServiceWorker(
       const GURL& pattern,
       const GURL& script_url,
-      const ResultCallback& continuation) OVERRIDE;
+      const ResultCallback& continuation) override;
   virtual void UnregisterServiceWorker(const GURL& pattern,
                                        const ResultCallback& continuation)
-      OVERRIDE;
-  virtual void Terminate() OVERRIDE;
-  virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) OVERRIDE;
-  virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
+      override;
+  virtual void Terminate() override;
+  virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
+  virtual void DeleteForOrigin(const GURL& origin_url) override;
 
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);

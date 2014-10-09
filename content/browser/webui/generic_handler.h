@@ -21,7 +21,7 @@ class GenericHandler : public WebUIMessageHandler {
   virtual ~GenericHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() override;
 
  private:
   void HandleNavigateToUrl(const base::ListValue* args);

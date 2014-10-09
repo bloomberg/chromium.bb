@@ -26,7 +26,7 @@ class TimeZoneMonitorWin : public TimeZoneMonitor,
   virtual void OnWndProc(HWND hwnd,
                          UINT message,
                          WPARAM wparam,
-                         LPARAM lparam) OVERRIDE {
+                         LPARAM lparam) override {
     if (message != WM_TIMECHANGE) {
       return;
     }

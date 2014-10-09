@@ -24,9 +24,9 @@ class CONTENT_EXPORT PowerMonitorMessageBroadcaster
   virtual ~PowerMonitorMessageBroadcaster();
 
   // Implement PowerObserver.
-  virtual void OnPowerStateChange(bool on_battery_power) OVERRIDE;
-  virtual void OnSuspend() OVERRIDE;
-  virtual void OnResume() OVERRIDE;
+  virtual void OnPowerStateChange(bool on_battery_power) override;
+  virtual void OnSuspend() override;
+  virtual void OnResume() override;
 
   void Init();
 

@@ -24,11 +24,11 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
   EmbeddedWorkerInstanceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     helper_.reset();
   }
 

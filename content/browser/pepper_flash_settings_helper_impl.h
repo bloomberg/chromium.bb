@@ -21,15 +21,15 @@ class CONTENT_EXPORT PepperFlashSettingsHelperImpl
   // PepperFlashSettingsHelper implementation.
   virtual void OpenChannelToBroker(
       const base::FilePath& path,
-      const OpenChannelCallback& callback) OVERRIDE;
+      const OpenChannelCallback& callback) override;
 
   // PpapiPluginProcessHost::BrokerClient implementation.
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                                   int* renderer_id) OVERRIDE;
+                                   int* renderer_id) override;
   virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
                                     base::ProcessId plugin_pid,
-                                    int plugin_child_id) OVERRIDE;
-  virtual bool OffTheRecord() OVERRIDE;
+                                    int plugin_child_id) override;
+  virtual bool OffTheRecord() override;
 
  protected:
   virtual ~PepperFlashSettingsHelperImpl();

@@ -16,7 +16,7 @@ class StreamTest : public testing::Test {
  public:
   StreamTest() : producing_seed_key_(0) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     registry_.reset(new StreamRegistry());
   }
 
@@ -76,7 +76,7 @@ class TestStreamReader : public StreamReadObserver {
     }
   }
 
-  virtual void OnDataAvailable(Stream* stream) OVERRIDE {
+  virtual void OnDataAvailable(Stream* stream) override {
     Read(stream);
   }
 
@@ -102,10 +102,10 @@ class TestStreamWriter : public StreamWriteObserver {
     stream->AddData(buffer, buffer_size);
   }
 
-  virtual void OnSpaceAvailable(Stream* stream) OVERRIDE {
+  virtual void OnSpaceAvailable(Stream* stream) override {
   }
 
-  virtual void OnClose(Stream* stream) OVERRIDE {
+  virtual void OnClose(Stream* stream) override {
   }
 };
 

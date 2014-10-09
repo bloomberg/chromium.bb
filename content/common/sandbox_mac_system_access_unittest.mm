@@ -28,9 +28,9 @@ class MacSandboxedClipboardTestCase : public MacSandboxTestCase {
   MacSandboxedClipboardTestCase();
   virtual ~MacSandboxedClipboardTestCase();
 
-  virtual bool SandboxedTest() OVERRIDE;
+  virtual bool SandboxedTest() override;
 
-  virtual void SetTestData(const char* test_data) OVERRIDE;
+  virtual void SetTestData(const char* test_data) override;
  private:
   NSString* clipboard_name_;
 };
@@ -87,7 +87,7 @@ TEST_F(MacSandboxTest, ClipboardAccess) {
 // Test case for checking sandboxing of filesystem apis.
 class MacSandboxedFileAccessTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest() OVERRIDE;
+  virtual bool SandboxedTest() override;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedFileAccessTestCase);
@@ -105,7 +105,7 @@ TEST_F(MacSandboxTest, FileAccess) {
 // /dev/urandom is available to any sandboxed process.
 class MacSandboxedUrandomTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest() OVERRIDE;
+  virtual bool SandboxedTest() override;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedUrandomTestCase);
@@ -132,7 +132,7 @@ TEST_F(MacSandboxTest, UrandomAccess) {
 // Test case for checking sandboxing of OpenSSL initialization.
 class MacSandboxedOpenSSLTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest() OVERRIDE;
+  virtual bool SandboxedTest() override;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedOpenSSLTestCase);
@@ -155,7 +155,7 @@ TEST_F(MacSandboxTest, OpenSSLAccess) {
 // Test case for checking sandboxing of NSS initialization.
 class MacSandboxedNSSTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest() OVERRIDE;
+  virtual bool SandboxedTest() override;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedNSSTestCase);

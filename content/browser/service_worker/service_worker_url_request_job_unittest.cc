@@ -59,7 +59,7 @@ class MockHttpProtocolHandler
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     ServiceWorkerURLRequestJob* job =
         new ServiceWorkerURLRequestJob(request,
                                        network_delegate,
@@ -98,7 +98,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         blob_data_(new storage::BlobData("blob-id:myblob")) {}
   virtual ~ServiceWorkerURLRequestJobTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
     SetUpWithHelper(new EmbeddedWorkerTestHelper(kProcessID));
   }
@@ -141,7 +141,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     helper_->context()->AddProviderHost(provider_host.Pass());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     version_ = NULL;
     registration_ = NULL;
     helper_.reset();
@@ -201,7 +201,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
  protected:
   virtual void OnFetchEvent(int embedded_worker_id,
                             int request_id,
-                            const ServiceWorkerFetchRequest& request) OVERRIDE {
+                            const ServiceWorkerFetchRequest& request) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id,
         request_id,

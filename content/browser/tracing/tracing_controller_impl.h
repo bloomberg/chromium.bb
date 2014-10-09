@@ -28,31 +28,31 @@ class TracingControllerImpl : public TracingController {
 
   // TracingController implementation.
   virtual bool GetCategories(
-      const GetCategoriesDoneCallback& callback) OVERRIDE;
+      const GetCategoriesDoneCallback& callback) override;
   virtual bool EnableRecording(
       const base::debug::CategoryFilter& category_filter,
       const base::debug::TraceOptions& trace_options,
-      const EnableRecordingDoneCallback& callback) OVERRIDE;
+      const EnableRecordingDoneCallback& callback) override;
   virtual bool DisableRecording(
-      const scoped_refptr<TraceDataSink>& sink) OVERRIDE;
+      const scoped_refptr<TraceDataSink>& sink) override;
   virtual bool EnableMonitoring(
       const base::debug::CategoryFilter& category_filter,
       const base::debug::TraceOptions& trace_options,
-      const EnableMonitoringDoneCallback& callback) OVERRIDE;
+      const EnableMonitoringDoneCallback& callback) override;
   virtual bool DisableMonitoring(
-      const DisableMonitoringDoneCallback& callback) OVERRIDE;
+      const DisableMonitoringDoneCallback& callback) override;
   virtual void GetMonitoringStatus(
       bool* out_enabled,
       base::debug::CategoryFilter* out_category_filter,
-      base::debug::TraceOptions* out_trace_options) OVERRIDE;
+      base::debug::TraceOptions* out_trace_options) override;
   virtual bool CaptureMonitoringSnapshot(
-      const scoped_refptr<TraceDataSink>& sink) OVERRIDE;
+      const scoped_refptr<TraceDataSink>& sink) override;
   virtual bool GetTraceBufferPercentFull(
-      const GetTraceBufferPercentFullCallback& callback) OVERRIDE;
+      const GetTraceBufferPercentFullCallback& callback) override;
   virtual bool SetWatchEvent(const std::string& category_name,
                              const std::string& event_name,
-                             const WatchEventCallback& callback) OVERRIDE;
-  virtual bool CancelWatchEvent() OVERRIDE;
+                             const WatchEventCallback& callback) override;
+  virtual bool CancelWatchEvent() override;
 
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);

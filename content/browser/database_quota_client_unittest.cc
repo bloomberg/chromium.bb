@@ -38,7 +38,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   virtual bool GetOriginInfo(
       const std::string& origin_identifier,
-      OriginInfo* info) OVERRIDE {
+      OriginInfo* info) override {
     std::map<GURL, MockOriginInfo>::const_iterator found =
         mock_origin_infos_.find(
             storage::GetOriginFromIdentifier(origin_identifier));
@@ -49,7 +49,7 @@ class MockDatabaseTracker : public DatabaseTracker {
   }
 
   virtual bool GetAllOriginIdentifiers(
-      std::vector<std::string>* origins_identifiers) OVERRIDE {
+      std::vector<std::string>* origins_identifiers) override {
     std::map<GURL, MockOriginInfo>::const_iterator iter;
     for (iter = mock_origin_infos_.begin();
          iter != mock_origin_infos_.end();
@@ -60,7 +60,7 @@ class MockDatabaseTracker : public DatabaseTracker {
   }
 
   virtual bool GetAllOriginsInfo(
-      std::vector<OriginInfo>* origins_info) OVERRIDE {
+      std::vector<OriginInfo>* origins_info) override {
     std::map<GURL, MockOriginInfo>::const_iterator iter;
     for (iter = mock_origin_infos_.begin();
          iter != mock_origin_infos_.end();
@@ -72,7 +72,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   virtual int DeleteDataForOrigin(
       const std::string& origin_identifier,
-      const net::CompletionCallback& callback) OVERRIDE {
+      const net::CompletionCallback& callback) override {
     ++delete_called_count_;
     if (async_delete()) {
       base::MessageLoopProxy::current()->PostTask(

@@ -55,11 +55,11 @@ class CONTENT_EXPORT PluginLoaderPosix
   void GetPlugins(const PluginService::GetPluginsCallback& callback);
 
   // UtilityProcessHostClient:
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender:
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool Send(IPC::Message* msg) override;
 
  private:
   virtual ~PluginLoaderPosix();

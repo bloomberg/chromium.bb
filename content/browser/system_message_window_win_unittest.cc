@@ -21,7 +21,7 @@ class SystemMessageWindowWinTest : public testing::Test {
   virtual ~SystemMessageWindowWinTest() { }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     system_monitor_.AddDevicesChangedObserver(&observer_);
   }
 

@@ -38,8 +38,8 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
   virtual ~BrowserProcessSubThread();
 
  protected:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void CleanUp() override;
 
  private:
   // These methods encapsulate cleanup that needs to happen on the IO thread

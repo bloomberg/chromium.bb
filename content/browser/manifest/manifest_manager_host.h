@@ -43,8 +43,8 @@ class ManifestManagerHost : public WebContentsObserver {
 
   // WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message&,
-                                 RenderFrameHost*) OVERRIDE;
-  virtual void RenderFrameDeleted(RenderFrameHost*) OVERRIDE;
+                                 RenderFrameHost*) override;
+  virtual void RenderFrameDeleted(RenderFrameHost*) override;
 
  private:
   typedef IDMap<GetManifestCallback, IDMapOwnPointer> CallbackMap;

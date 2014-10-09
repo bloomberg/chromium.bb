@@ -121,7 +121,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       ChangedVersionAttributesMask* mask);
 
   // ServiceWorkerVersion::Listener override.
-  virtual void OnNoControllees(ServiceWorkerVersion* version) OVERRIDE;
+  virtual void OnNoControllees(ServiceWorkerVersion* version) override;
 
   // This method corresponds to the [[Activate]] algorithm.
   void ActivateWaitingVersion();

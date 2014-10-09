@@ -15,14 +15,14 @@ namespace content {
 class ContentWebUIControllerFactory : public WebUIControllerFactory {
  public:
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                                     const GURL& url) const OVERRIDE;
+                                     const GURL& url) const override;
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE;
+                              const GURL& url) const override;
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE;
+                                      const GURL& url) const override;
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui,
-      const GURL& url) const OVERRIDE;
+      const GURL& url) const override;
 
   static ContentWebUIControllerFactory* GetInstance();
 

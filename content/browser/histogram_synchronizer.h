@@ -97,14 +97,14 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // This is called on UI thread.
   virtual void OnPendingProcesses(int sequence_number,
                                   int pending_processes,
-                                  bool end) OVERRIDE;
+                                  bool end) override;
 
   // Send histogram_data back to caller and also record that we are waiting
   // for one less histogram data from child process for the given sequence
   // number. This method is accessible on UI thread.
   virtual void OnHistogramDataCollected(
       int sequence_number,
-      const std::vector<std::string>& pickled_histograms) OVERRIDE;
+      const std::vector<std::string>& pickled_histograms) override;
 
   // Set the callback_thread_ and callback_ members. If these members already
   // had values, then as a side effect, post the old callback_ to the old

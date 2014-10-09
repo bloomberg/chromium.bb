@@ -28,7 +28,7 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   virtual ~ServiceWorkerCacheListener();
 
   // From EmbeddedWorkerInstance::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // The message receiver functions for the CacheStorage API:

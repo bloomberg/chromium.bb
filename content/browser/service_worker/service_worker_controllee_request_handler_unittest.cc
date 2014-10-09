@@ -39,7 +39,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   ServiceWorkerControlleeRequestHandlerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kMockRenderProcessId));
 
     // A new unstored registration/version.
@@ -61,7 +61,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     version_ = NULL;
     registration_ = NULL;
     helper_.reset();

@@ -26,7 +26,7 @@ class TransitionBrowserTest : public ContentBrowserTest {
  public:
   TransitionBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
@@ -51,7 +51,7 @@ class TransitionBrowserTestObserver
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
       ResourceType resource_type,
-      ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
+      ScopedVector<ResourceThrottle>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(request,
                                                           resource_context,
@@ -73,7 +73,7 @@ class TransitionBrowserTestObserver
       net::URLRequest* request,
       ResourceContext* resource_context,
       ResourceResponse* response,
-      IPC::Sender* sender) OVERRIDE {
+      IPC::Sender* sender) override {
     ResourceRequestInfoImpl* info =
         ResourceRequestInfoImpl::ForRequest(request_);
 

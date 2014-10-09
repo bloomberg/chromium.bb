@@ -191,7 +191,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     context_.reset(
         new ServiceWorkerContextCore(GetUserDataDirectory(),
                                      base::ThreadTaskRunnerHandle::Get(),
@@ -203,7 +203,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     context_ptr_ = context_->AsWeakPtr();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     context_.reset();
   }
 
@@ -544,7 +544,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
 
 class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ServiceWorkerStorageTest::SetUp();
 
     storage()->LazyInitialize(base::Bind(&base::DoNothing));
@@ -612,12 +612,12 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
 class ServiceWorkerResourceStorageDiskTest
     : public ServiceWorkerResourceStorageTest {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
     ServiceWorkerResourceStorageTest::SetUp();
   }
 
-  virtual base::FilePath GetUserDataDirectory() OVERRIDE {
+  virtual base::FilePath GetUserDataDirectory() override {
     return user_data_directory_.path();
   }
 

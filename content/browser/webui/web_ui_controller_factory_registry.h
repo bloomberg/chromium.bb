@@ -20,13 +20,13 @@ class CONTENT_EXPORT WebUIControllerFactoryRegistry
   // WebUIControllerFactory implementation. Each method loops through the same
   // method on all the factories.
   virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE;
+      WebUI* web_ui, const GURL& url) const override;
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                                     const GURL& url) const OVERRIDE;
+                                     const GURL& url) const override;
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE;
+                              const GURL& url) const override;
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE;
+                                      const GURL& url) const override;
 
   // Returns true if the given URL can be loaded by Web UI system. This allows
   // URLs that UseWebUIForURL returns true for, and also URLs that can be loaded

@@ -38,7 +38,7 @@ class TrackingResourceDispatcherHostDelegate
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
       ResourceType resource_type,
-      ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
+      ScopedVector<ResourceThrottle>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(
         request, resource_context, appcache_service, resource_type, throttles);
@@ -97,7 +97,7 @@ class TrackingResourceDispatcherHostDelegate
     }
 
     // ResourceThrottle implementation:
-    virtual const char* GetNameForLogging() const OVERRIDE {
+    virtual const char* GetNameForLogging() const override {
       return "TrackingThrottle";
     }
 
@@ -145,7 +145,7 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
   NoTransferRequestDelegate() {}
 
   virtual WebContents* OpenURLFromTab(WebContents* source,
-                                      const OpenURLParams& params) OVERRIDE {
+                                      const OpenURLParams& params) override {
     bool is_transfer =
         (params.transferred_global_request_id != GlobalRequestID());
     if (is_transfer)
@@ -172,7 +172,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
   }
 
   // ContentBrowserTest implementation:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -180,7 +180,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
             base::Unretained(this)));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -205,7 +205,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
       load_observer.Wait();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Use --site-per-process to force process swaps for cross-site transfers.
     command_line->AppendSwitch(switches::kSitePerProcess);
   }

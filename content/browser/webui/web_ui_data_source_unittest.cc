@@ -26,7 +26,7 @@ class TestClient : public TestContentClient {
   TestClient() {}
   virtual ~TestClient() {}
 
-  virtual base::string16 GetLocalizedString(int message_id) const OVERRIDE {
+  virtual base::string16 GetLocalizedString(int message_id) const override {
     if (message_id == kDummyStringId)
       return base::UTF8ToUTF16(kDummyString);
     return base::string16();
@@ -34,7 +34,7 @@ class TestClient : public TestContentClient {
   }
 
   virtual base::RefCountedStaticMemory* GetDataResourceBytes(
-      int resource_id) const OVERRIDE {
+      int resource_id) const override {
     base::RefCountedStaticMemory* bytes = NULL;
     if (resource_id == kDummyDefaultResourceId) {
       bytes = new base::RefCountedStaticMemory(

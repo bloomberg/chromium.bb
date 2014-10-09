@@ -102,11 +102,11 @@ class ServiceWorkerJobTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         render_process_id_(kMockRenderProcessId) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(render_process_id_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     helper_.reset();
   }
 
@@ -408,7 +408,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
                              int64 service_worker_version_id,
                              const GURL& scope,
                              const GURL& script_url,
-                             bool pause_after_download) OVERRIDE {
+                             bool pause_after_download) override {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
     registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
   }
@@ -931,7 +931,7 @@ class UpdateJobTestHelper
                              int64 version_id,
                              const GURL& scope,
                              const GURL& script,
-                             bool pause_after_download) OVERRIDE {
+                             bool pause_after_download) override {
     const std::string kMockScriptBody = "mock_script";
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ASSERT_TRUE(version);
@@ -963,7 +963,7 @@ class UpdateJobTestHelper
   virtual void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
       ChangedVersionAttributesMask changed_mask,
-      const ServiceWorkerRegistrationInfo& info) OVERRIDE {
+      const ServiceWorkerRegistrationInfo& info) override {
     AttributeChangeLogEntry entry;
     entry.registration_id = registration->id();
     entry.mask = changed_mask;
@@ -972,23 +972,23 @@ class UpdateJobTestHelper
   }
 
   virtual void OnRegistrationFailed(
-      ServiceWorkerRegistration* registration) OVERRIDE {
+      ServiceWorkerRegistration* registration) override {
     NOTREACHED();
   }
 
   virtual void OnRegistrationFinishedUninstalling(
-      ServiceWorkerRegistration* registration) OVERRIDE {
+      ServiceWorkerRegistration* registration) override {
     NOTREACHED();
   }
 
   virtual void OnUpdateFound(
-      ServiceWorkerRegistration* registration) OVERRIDE {
+      ServiceWorkerRegistration* registration) override {
     ASSERT_FALSE(update_found_);
     update_found_ = true;
   }
 
   // ServiceWorkerVersion::Listener overrides
-  virtual void OnVersionStateChanged(ServiceWorkerVersion* version) OVERRIDE {
+  virtual void OnVersionStateChanged(ServiceWorkerVersion* version) override {
     StateChangeLogEntry entry;
     entry.version_id = version->version_id();
     entry.status = version->status();

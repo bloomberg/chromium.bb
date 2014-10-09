@@ -78,8 +78,8 @@ class UdevLinux : public base::MessagePumpLibevent::Watcher {
 
  private:
   // base::MessagePump:Libevent::Watcher implementation.
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // libudev-related items, the main context, and the monitoring context to be
   // notified about changes to device states.

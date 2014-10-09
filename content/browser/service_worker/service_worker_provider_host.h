@@ -133,7 +133,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // ServiceWorkerRegistration::Listener overrides.
   virtual void OnRegistrationFailed(
-      ServiceWorkerRegistration* registration) OVERRIDE;
+      ServiceWorkerRegistration* registration) override;
 
   // Sets the controller version field to |version| or if |version| is NULL,
   // clears the field.

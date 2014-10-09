@@ -29,7 +29,7 @@ class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver {
   // This object is deleted on the UI thread after the IO thread has been
   // destroyed. Need to know when IO thread is being destroyed so that
   // we can delete udev_.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  virtual void WillDestroyCurrentMessageLoop() override;
 
   void Initialize();
   void OnDevicesChanged(udev_device* device);

@@ -107,10 +107,10 @@ class InterstitialObserver : public content::WebContentsObserver {
   virtual ~InterstitialObserver() {}
 
   // WebContentsObserver methods:
-  virtual void DidAttachInterstitialPage() OVERRIDE {
+  virtual void DidAttachInterstitialPage() override {
     attach_callback_.Run();
   }
-  virtual void DidDetachInterstitialPage() OVERRIDE {
+  virtual void DidDetachInterstitialPage() override {
     detach_callback_.Run();
   }
 

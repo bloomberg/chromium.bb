@@ -19,14 +19,14 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
                                         public RenderProcessHostObserver {
  public:
   // SiteInstance interface overrides.
-  virtual int32 GetId() OVERRIDE;
-  virtual bool HasProcess() const OVERRIDE;
-  virtual RenderProcessHost* GetProcess() OVERRIDE;
-  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual const GURL& GetSiteURL() const OVERRIDE;
-  virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) OVERRIDE;
-  virtual bool IsRelatedSiteInstance(const SiteInstance* instance) OVERRIDE;
-  virtual size_t GetRelatedActiveContentsCount() OVERRIDE;
+  virtual int32 GetId() override;
+  virtual bool HasProcess() const override;
+  virtual RenderProcessHost* GetProcess() override;
+  virtual BrowserContext* GetBrowserContext() const override;
+  virtual const GURL& GetSiteURL() const override;
+  virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) override;
+  virtual bool IsRelatedSiteInstance(const SiteInstance* instance) override;
+  virtual size_t GetRelatedActiveContentsCount() override;
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -98,7 +98,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
  private:
   // RenderProcessHostObserver implementation.
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();

@@ -63,40 +63,40 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
 
   // URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE {
+  virtual std::string GetSource() const override {
     return parent_->GetSource();
   }
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+  virtual std::string GetMimeType(const std::string& path) const override {
     return parent_->GetMimeType(path);
   }
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const URLDataSource::GotDataCallback& callback) OVERRIDE {
+      const URLDataSource::GotDataCallback& callback) override {
     return parent_->StartDataRequest(path, render_process_id, render_frame_id,
                                      callback);
   }
-  virtual bool ShouldReplaceExistingSource() const OVERRIDE {
+  virtual bool ShouldReplaceExistingSource() const override {
     return parent_->replace_existing_source_;
   }
-  virtual bool AllowCaching() const OVERRIDE {
+  virtual bool AllowCaching() const override {
     return false;
   }
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+  virtual bool ShouldAddContentSecurityPolicy() const override {
     return parent_->add_csp_;
   }
-  virtual std::string GetContentSecurityPolicyObjectSrc() const OVERRIDE {
+  virtual std::string GetContentSecurityPolicyObjectSrc() const override {
     if (parent_->object_src_set_)
       return parent_->object_src_;
     return URLDataSource::GetContentSecurityPolicyObjectSrc();
   }
-  virtual std::string GetContentSecurityPolicyFrameSrc() const OVERRIDE {
+  virtual std::string GetContentSecurityPolicyFrameSrc() const override {
     if (parent_->frame_src_set_)
       return parent_->frame_src_;
     return URLDataSource::GetContentSecurityPolicyFrameSrc();
   }
-  virtual bool ShouldDenyXFrameOptions() const OVERRIDE {
+  virtual bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
 

@@ -38,7 +38,7 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE {
+      bool is_iframe_srcdoc) override {
     navigation_succeeded_ = false;
   }
 
@@ -46,7 +46,7 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) OVERRIDE {
+      const base::string16& error_description) override {
     navigation_url_ = validated_url;
     navigation_succeeded_ = false;
   }
@@ -54,7 +54,7 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) OVERRIDE {
+      ui::PageTransition transition_type) override {
     navigation_url_ = url;
     navigation_succeeded_ = true;
   }
@@ -99,7 +99,7 @@ class RedirectNotificationObserver : public NotificationObserver {
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
  private:
   bool seen_;

@@ -22,7 +22,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   ServiceWorkerRegistrationTest()
       : io_thread_(BrowserThread::IO, &message_loop_) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     context_.reset(
         new ServiceWorkerContextCore(base::FilePath(),
                                      base::ThreadTaskRunnerHandle::Get(),
@@ -34,7 +34,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     context_ptr_ = context_->AsWeakPtr();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     context_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -50,24 +50,24 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
         ChangedVersionAttributesMask changed_mask,
-        const ServiceWorkerRegistrationInfo& info) OVERRIDE {
+        const ServiceWorkerRegistrationInfo& info) override {
       observed_registration_ = registration;
       observed_changed_mask_ = changed_mask;
       observed_info_ = info;
     }
 
     virtual void OnRegistrationFailed(
-        ServiceWorkerRegistration* registration) OVERRIDE {
+        ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }
 
     virtual void OnRegistrationFinishedUninstalling(
-        ServiceWorkerRegistration* registration) OVERRIDE {
+        ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }
 
     virtual void OnUpdateFound(
-        ServiceWorkerRegistration* registration) OVERRIDE {
+        ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }
 

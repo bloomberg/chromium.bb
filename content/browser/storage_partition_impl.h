@@ -33,30 +33,30 @@ class StoragePartitionImpl : public StoragePartition {
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // StoragePartition interface.
-  virtual base::FilePath GetPath() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() OVERRIDE;
-  virtual storage::QuotaManager* GetQuotaManager() OVERRIDE;
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual storage::FileSystemContext* GetFileSystemContext() OVERRIDE;
-  virtual storage::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-  virtual DOMStorageContextWrapper* GetDOMStorageContext() OVERRIDE;
-  virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
-  virtual ServiceWorkerContextWrapper* GetServiceWorkerContext() OVERRIDE;
+  virtual base::FilePath GetPath() override;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() override;
+  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() override;
+  virtual storage::QuotaManager* GetQuotaManager() override;
+  virtual ChromeAppCacheService* GetAppCacheService() override;
+  virtual storage::FileSystemContext* GetFileSystemContext() override;
+  virtual storage::DatabaseTracker* GetDatabaseTracker() override;
+  virtual DOMStorageContextWrapper* GetDOMStorageContext() override;
+  virtual IndexedDBContextImpl* GetIndexedDBContext() override;
+  virtual ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
 
   virtual void ClearDataForOrigin(
       uint32 remove_mask,
       uint32 quota_storage_remove_mask,
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter,
-      const base::Closure& callback) OVERRIDE;
+      const base::Closure& callback) override;
   virtual void ClearData(uint32 remove_mask,
                          uint32 quota_storage_remove_mask,
                          const GURL& storage_origin,
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,
                          const base::Time end,
-                         const base::Closure& callback) OVERRIDE;
+                         const base::Closure& callback) override;
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
 

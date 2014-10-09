@@ -40,7 +40,7 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
 
   virtual bool OnMessageToWorker(int thread_id,
                                  int embedded_worker_id,
-                                 const IPC::Message& message) OVERRIDE {
+                                 const IPC::Message& message) override {
     if (EmbeddedWorkerTestHelper::OnMessageToWorker(
             thread_id, embedded_worker_id, message)) {
       return true;
@@ -89,9 +89,9 @@ class MessageReceiverFromWorker : public EmbeddedWorkerInstance::Listener {
     instance_->RemoveListener(this);
   }
 
-  virtual void OnStarted() OVERRIDE { NOTREACHED(); }
-  virtual void OnStopped() OVERRIDE { NOTREACHED(); }
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual void OnStarted() override { NOTREACHED(); }
+  virtual void OnStopped() override { NOTREACHED(); }
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MessageReceiverFromWorker, message)
       IPC_MESSAGE_HANDLER(TestMsg_MessageFromWorker, OnMessageFromWorker)
@@ -116,7 +116,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   ServiceWorkerVersionTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     helper_.reset(new MessageReceiver());
 
     pattern_ = GURL("http://www.example.com/");
@@ -136,7 +136,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         ->PatternHasProcessToRun(pattern_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     version_ = 0;
     registration_ = 0;
     helper_.reset();

@@ -22,7 +22,7 @@ class TracingControllerTest : public ContentBrowserTest {
  public:
   TracingControllerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     get_categories_done_callback_count_ = 0;
     enable_recording_done_callback_count_ = 0;
     disable_recording_done_callback_count_ = 0;
@@ -32,7 +32,7 @@ class TracingControllerTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ContentBrowserTest::TearDown();
   }
 

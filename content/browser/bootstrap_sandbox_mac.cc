@@ -30,9 +30,9 @@ class BootstrapSandboxPolicy : public BrowserChildProcessObserver {
 
   // BrowserChildProcessObserver:
   virtual void BrowserChildProcessHostDisconnected(
-      const ChildProcessData& data) OVERRIDE;
+      const ChildProcessData& data) override;
   virtual void BrowserChildProcessCrashed(
-      const ChildProcessData& data) OVERRIDE;
+      const ChildProcessData& data) override;
 
  private:
   friend struct DefaultSingletonTraits<BootstrapSandboxPolicy>;

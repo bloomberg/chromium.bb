@@ -37,19 +37,19 @@ const char kPrivilegedScheme[] = "privileged";
 class SiteInstanceTestWebUIControllerFactory : public WebUIControllerFactory {
  public:
   virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE {
+      WebUI* web_ui, const GURL& url) const override {
     return NULL;
   }
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE {
+      const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE {
+                              const GURL& url) const override {
     return HasWebUIScheme(url);
   }
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE {
+                                      const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 };
@@ -66,7 +66,7 @@ class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
   }
 
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
-                              const GURL& site_url) OVERRIDE {
+                              const GURL& site_url) override {
     return (privileged_process_id_ == process_host->GetID()) ==
         site_url.SchemeIs(kPrivilegedScheme);
   }

@@ -16,8 +16,8 @@ class MimeRegistryMessageFilter : public BrowserMessageFilter {
 
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      BrowserThread::ID* thread) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+      BrowserThread::ID* thread) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~MimeRegistryMessageFilter();

@@ -19,8 +19,8 @@ class VibrationProviderAndroid : public VibrationProvider {
  private:
   virtual ~VibrationProviderAndroid();
 
-  virtual void Vibrate(int64 milliseconds) OVERRIDE;
-  virtual void CancelVibration() OVERRIDE;
+  virtual void Vibrate(int64 milliseconds) override;
+  virtual void CancelVibration() override;
 
   base::android::ScopedJavaGlobalRef<jobject> j_vibration_provider_;
 };

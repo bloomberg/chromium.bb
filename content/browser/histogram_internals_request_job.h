@@ -20,7 +20,7 @@ class HistogramInternalsRequestJob : public net::URLRequestSimpleJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE;
+                      const net::CompletionCallback& callback) const override;
 
  private:
   virtual ~HistogramInternalsRequestJob() {}

@@ -51,11 +51,11 @@ class ServiceWorkerRegistrationHandle
   virtual void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
       ChangedVersionAttributesMask changed_mask,
-      const ServiceWorkerRegistrationInfo& info) OVERRIDE;
+      const ServiceWorkerRegistrationInfo& info) override;
   virtual void OnRegistrationFailed(
-      ServiceWorkerRegistration* registration) OVERRIDE;
+      ServiceWorkerRegistration* registration) override;
   virtual void OnUpdateFound(
-      ServiceWorkerRegistration* registration) OVERRIDE;
+      ServiceWorkerRegistration* registration) override;
 
   // Sets the corresponding version field to the given version or if the given
   // version is NULL, clears the field.

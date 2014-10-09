@@ -67,7 +67,7 @@ class BrowserTargetImpl : public mojo::InterfaceImpl<BrowserTarget> {
   virtual ~BrowserTargetImpl() {}
 
   // mojo::InterfaceImpl<BrowserTarget> overrides:
-  virtual void PingResponse() OVERRIDE {
+  virtual void PingResponse() override {
     NOTREACHED();
   }
 
@@ -86,12 +86,12 @@ class PingBrowserTargetImpl : public BrowserTargetImpl {
   virtual ~PingBrowserTargetImpl() {}
 
   // mojo::InterfaceImpl<BrowserTarget> overrides:
-  virtual void OnConnectionEstablished() OVERRIDE {
+  virtual void OnConnectionEstablished() override {
     client()->Ping();
   }
 
   // Quit the RunLoop when called.
-  virtual void PingResponse() OVERRIDE {
+  virtual void PingResponse() override {
     got_message = true;
     run_loop_->Quit();
   }
@@ -130,7 +130,7 @@ class PingTestWebUIController : public TestWebUIController {
    virtual ~PingTestWebUIController() {}
 
   // WebUIController overrides:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE {
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) override {
     render_view_host->GetMainFrame()->GetServiceRegistry()->
         AddService<BrowserTarget>(base::Bind(
             &PingTestWebUIController::CreateHandler, base::Unretained(this)));
@@ -153,21 +153,21 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
 
   virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE {
+      WebUI* web_ui, const GURL& url) const override {
     if (url.query() == "ping")
       return new PingTestWebUIController(web_ui, run_loop_);
     return NULL;
   }
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE {
+      const GURL& url) const override {
     return reinterpret_cast<WebUI::TypeID>(1);
   }
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const OVERRIDE {
+                              const GURL& url) const override {
     return true;
   }
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const OVERRIDE {
+                                      const GURL& url) const override {
     return true;
   }
 

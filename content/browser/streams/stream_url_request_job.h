@@ -24,19 +24,19 @@ class CONTENT_EXPORT StreamURLRequestJob
                       scoped_refptr<Stream> stream);
 
   // StreamObserver methods.
-  virtual void OnDataAvailable(Stream* stream) OVERRIDE;
+  virtual void OnDataAvailable(Stream* stream) override;
 
   // net::URLRequestJob methods.
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
+                           int* bytes_read) override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
+  virtual int GetResponseCode() const override;
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE;
+      const net::HttpRequestHeaders& headers) override;
 
  protected:
   virtual ~StreamURLRequestJob();

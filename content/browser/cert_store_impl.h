@@ -19,9 +19,9 @@ class CertStoreImpl : public CertStore {
 
   // CertStore implementation:
   virtual int StoreCert(net::X509Certificate* cert,
-                        int render_process_host_id) OVERRIDE;
+                        int render_process_host_id) override;
   virtual bool RetrieveCert(int cert_id,
-                            scoped_refptr<net::X509Certificate>* cert) OVERRIDE;
+                            scoped_refptr<net::X509Certificate>* cert) override;
 
  protected:
   CertStoreImpl();

@@ -46,7 +46,7 @@ class ServiceWorkerCacheTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         callback_error_(ServiceWorkerCache::ErrorTypeOK) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
         ChromeBlobStorageContext::GetFor(&browser_context_);
     // Wait for chrome_blob_storage_context to finish initializing.
@@ -77,7 +77,7 @@ class ServiceWorkerCacheTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     base::RunLoop().RunUntilIdle();
   }
 
@@ -283,7 +283,7 @@ class ServiceWorkerCacheTest : public testing::Test {
 
 class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
                                 public testing::WithParamInterface<bool> {
-  virtual bool MemoryOnly() OVERRIDE { return !GetParam(); }
+  virtual bool MemoryOnly() override { return !GetParam(); }
 };
 
 TEST_P(ServiceWorkerCacheTestP, PutNoBody) {

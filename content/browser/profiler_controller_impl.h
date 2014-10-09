@@ -42,9 +42,9 @@ class ProfilerControllerImpl : public ProfilerController {
       int process_type);
 
   // ProfilerController implementation:
-  virtual void Register(ProfilerSubscriber* subscriber) OVERRIDE;
-  virtual void Unregister(const ProfilerSubscriber* subscriber) OVERRIDE;
-  virtual void GetProfilerData(int sequence_number) OVERRIDE;
+  virtual void Register(ProfilerSubscriber* subscriber) override;
+  virtual void Unregister(const ProfilerSubscriber* subscriber) override;
+  virtual void GetProfilerData(int sequence_number) override;
 
  private:
   friend struct DefaultSingletonTraits<ProfilerControllerImpl>;

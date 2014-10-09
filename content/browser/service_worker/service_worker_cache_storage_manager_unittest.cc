@@ -29,7 +29,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         origin1_("http://example1.com"),
         origin2_("http://example2.com") {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context(
         ChromeBlobStorageContext::GetFor(&browser_context_));
     // Wait for ChromeBlobStorageContext to finish initializing.
@@ -50,7 +50,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         url_request_context, blob_storage_context->context()->AsWeakPtr());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     base::RunLoop().RunUntilIdle();
   }
 
@@ -241,13 +241,13 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
 
 class ServiceWorkerCacheStorageManagerMemoryOnlyTest
     : public ServiceWorkerCacheStorageManagerTest {
-  virtual bool MemoryOnly() OVERRIDE { return true; }
+  virtual bool MemoryOnly() override { return true; }
 };
 
 class ServiceWorkerCacheStorageManagerTestP
     : public ServiceWorkerCacheStorageManagerTest,
       public testing::WithParamInterface<bool> {
-  virtual bool MemoryOnly() OVERRIDE { return !GetParam(); }
+  virtual bool MemoryOnly() override { return !GetParam(); }
 };
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, TestsRunOnIOThread) {

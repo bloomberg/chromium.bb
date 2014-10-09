@@ -35,13 +35,13 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
     Init(context_wrapper);
   }
 
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     return helper_->Send(message);
   }
 
   IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
 
-  virtual void BadMessageReceived() OVERRIDE {
+  virtual void BadMessageReceived() override {
     ++bad_messages_received_count_;
   }
 

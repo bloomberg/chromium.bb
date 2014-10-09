@@ -56,7 +56,7 @@ class SystemHotkeyMapTest : public ::testing::Test {
     ++count_;
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     system_hotkey_dictionary_.reset([[NSMutableDictionary alloc] init]);
     system_hotkey_inner_dictionary_.reset([[NSMutableDictionary alloc] init]);
     [system_hotkey_dictionary_ setObject:system_hotkey_inner_dictionary_
@@ -64,7 +64,7 @@ class SystemHotkeyMapTest : public ::testing::Test {
     count_ = 100;
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     system_hotkey_dictionary_.reset();
     system_hotkey_inner_dictionary_.reset();
   }

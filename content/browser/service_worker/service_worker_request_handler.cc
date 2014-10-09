@@ -32,7 +32,7 @@ class ServiceWorkerRequestInterceptor
   virtual ~ServiceWorkerRequestInterceptor() {}
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     ServiceWorkerRequestHandler* handler =
         ServiceWorkerRequestHandler::GetHandler(request);
     if (!handler)

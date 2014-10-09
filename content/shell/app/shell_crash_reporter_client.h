@@ -22,29 +22,29 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
                                         base::string16* product_name,
                                         base::string16* version,
                                         base::string16* special_build,
-                                        base::string16* channel_name) OVERRIDE;
+                                        base::string16* channel_name) override;
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
   // Returns a textual description of the product type and version to include
   // in the crash report.
   virtual void GetProductNameAndVersion(const char** product_name,
-                                        const char** version) OVERRIDE;
+                                        const char** version) override;
 
-  virtual base::FilePath GetReporterLogFilename() OVERRIDE;
+  virtual base::FilePath GetReporterLogFilename() override;
 #endif
 
   // The location where minidump files should be written. Returns true if
   // |crash_dir| was set.
-  virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) OVERRIDE;
+  virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
 #if defined(OS_ANDROID)
   // Returns the descriptor key of the android minidump global descriptor.
-  virtual int GetAndroidMinidumpDescriptor() OVERRIDE;
+  virtual int GetAndroidMinidumpDescriptor() override;
 #endif
 
   virtual bool EnableBreakpadForProcess(
-      const std::string& process_type) OVERRIDE;
+      const std::string& process_type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellCrashReporterClient);

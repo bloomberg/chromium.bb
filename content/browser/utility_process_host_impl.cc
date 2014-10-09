@@ -50,22 +50,22 @@ class UtilitySandboxedProcessLauncherDelegate
   virtual ~UtilitySandboxedProcessLauncherDelegate() {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldLaunchElevated() OVERRIDE {
+  virtual bool ShouldLaunchElevated() override {
     return launch_elevated_;
   }
   virtual void PreSandbox(bool* disable_default_policy,
-                          base::FilePath* exposed_dir) OVERRIDE {
+                          base::FilePath* exposed_dir) override {
     *exposed_dir = exposed_dir_;
   }
 #elif defined(OS_POSIX)
 
-  virtual bool ShouldUseZygote() OVERRIDE {
+  virtual bool ShouldUseZygote() override {
     return !no_sandbox_ && exposed_dir_.empty();
   }
-  virtual base::EnvironmentMap GetEnvironment() OVERRIDE {
+  virtual base::EnvironmentMap GetEnvironment() override {
     return env_;
   }
-  virtual int GetIpcFd() OVERRIDE {
+  virtual int GetIpcFd() override {
     return ipc_fd_;
   }
 #endif  // OS_WIN

@@ -28,26 +28,26 @@ class CONTENT_EXPORT WebUIDataSourceImpl
  public:
   // WebUIDataSource implementation:
   virtual void AddString(const std::string& name,
-                         const base::string16& value) OVERRIDE;
+                         const base::string16& value) override;
   virtual void AddString(const std::string& name,
-                         const std::string& value) OVERRIDE;
-  virtual void AddLocalizedString(const std::string& name, int ids) OVERRIDE;
+                         const std::string& value) override;
+  virtual void AddLocalizedString(const std::string& name, int ids) override;
   virtual void AddLocalizedStrings(
-      const base::DictionaryValue& localized_strings) OVERRIDE;
-  virtual void AddBoolean(const std::string& name, bool value) OVERRIDE;
-  virtual void SetJsonPath(const std::string& path) OVERRIDE;
+      const base::DictionaryValue& localized_strings) override;
+  virtual void AddBoolean(const std::string& name, bool value) override;
+  virtual void SetJsonPath(const std::string& path) override;
   virtual void AddResourcePath(const std::string &path,
-                               int resource_id) OVERRIDE;
-  virtual void SetDefaultResource(int resource_id) OVERRIDE;
+                               int resource_id) override;
+  virtual void SetDefaultResource(int resource_id) override;
   virtual void SetRequestFilter(
-      const WebUIDataSource::HandleRequestCallback& callback) OVERRIDE;
-  virtual void DisableReplaceExistingSource() OVERRIDE;
-  virtual void DisableContentSecurityPolicy() OVERRIDE;
+      const WebUIDataSource::HandleRequestCallback& callback) override;
+  virtual void DisableReplaceExistingSource() override;
+  virtual void DisableContentSecurityPolicy() override;
   virtual void OverrideContentSecurityPolicyObjectSrc(
-      const std::string& data) OVERRIDE;
+      const std::string& data) override;
   virtual void OverrideContentSecurityPolicyFrameSrc(
-      const std::string& data) OVERRIDE;
-  virtual void DisableDenyXFrameOptions() OVERRIDE;
+      const std::string& data) override;
+  virtual void DisableDenyXFrameOptions() override;
 
  protected:
   virtual ~WebUIDataSourceImpl();

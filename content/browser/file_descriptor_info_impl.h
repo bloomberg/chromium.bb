@@ -17,14 +17,14 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
   CONTENT_EXPORT static scoped_ptr<FileDescriptorInfo> Create();
 
   virtual ~FileDescriptorInfoImpl();
-  virtual void Share(int id, base::PlatformFile fd) OVERRIDE;
-  virtual void Transfer(int id, base::ScopedFD fd) OVERRIDE;
-  virtual const base::FileHandleMappingVector& GetMapping() const OVERRIDE;
+  virtual void Share(int id, base::PlatformFile fd) override;
+  virtual void Transfer(int id, base::ScopedFD fd) override;
+  virtual const base::FileHandleMappingVector& GetMapping() const override;
   virtual base::FileHandleMappingVector GetMappingWithIDAdjustment(
-      int delta) const OVERRIDE;
-  virtual base::PlatformFile GetFDAt(size_t i) const OVERRIDE;
-  virtual int GetIDAt(size_t i) const OVERRIDE;
-  virtual size_t GetMappingSize() const OVERRIDE;
+      int delta) const override;
+  virtual base::PlatformFile GetFDAt(size_t i) const override;
+  virtual int GetIDAt(size_t i) const override;
+  virtual size_t GetMappingSize() const override;
 
  private:
   FileDescriptorInfoImpl();

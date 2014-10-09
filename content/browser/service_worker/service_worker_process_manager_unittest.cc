@@ -15,12 +15,12 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
  public:
   ServiceWorkerProcessManagerTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     process_manager_.reset(new ServiceWorkerProcessManager(NULL));
     pattern_ = GURL("http://www.example.com/");
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     process_manager_.reset();
   }
 

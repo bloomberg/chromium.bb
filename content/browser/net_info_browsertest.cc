@@ -14,14 +14,14 @@
 
 class NetInfoBrowserTest : public content::ContentBrowserTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(jkarlin): Once NetInfo is enabled on all platforms remove this
     // switch.
     command_line->AppendSwitch(switches::kEnableNetworkInformation);
   }
 
 #if defined(OS_CHROMEOS)
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // ChromeOS's NetworkChangeNotifier isn't known to content and therefore
     // doesn't get created in content_browsertests. Insert a mock
     // NetworkChangeNotifier.
@@ -30,7 +30,7 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
   }
 #endif
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
     base::RunLoop().RunUntilIdle();
   }

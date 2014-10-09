@@ -26,7 +26,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
   // Called via custom URLRequestJobFactory.
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) OVERRIDE;
+      net::NetworkDelegate* network_delegate) override;
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,
@@ -34,7 +34,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       GURL* original_url_via_service_worker,
       base::TimeTicks* fetch_start_time,
       base::TimeTicks* fetch_ready_time,
-      base::TimeTicks* fetch_end_time) const OVERRIDE;
+      base::TimeTicks* fetch_end_time) const override;
 
  private:
   bool ShouldAddToScriptCache(const GURL& url);

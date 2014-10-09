@@ -78,7 +78,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   virtual ~PluginProcessHost();
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   // Initialize the new plugin process, returning true on success. This must
   // be called before the object can be used.
@@ -87,9 +87,9 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   // Force the plugin process to shutdown (cleanly).
   void ForceShutdown();
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   // Tells the plugin process to create a new channel for communication with a
   // renderer.  When the plugin process responds with the channel name,
@@ -147,8 +147,8 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void OnPluginSetCursorVisibility(bool visible);
 #endif
 
-  virtual bool CanShutdown() OVERRIDE;
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual bool CanShutdown() override;
+  virtual void OnProcessCrashed(int exit_code) override;
 
   void CancelRequests();
 

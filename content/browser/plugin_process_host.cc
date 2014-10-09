@@ -107,12 +107,12 @@ class PluginSandboxedProcessLauncherDelegate
   virtual ~PluginSandboxedProcessLauncherDelegate() {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldSandbox() OVERRIDE {
+  virtual bool ShouldSandbox() override {
     return false;
   }
 
 #elif defined(OS_POSIX)
-  virtual int GetIpcFd() OVERRIDE {
+  virtual int GetIpcFd() override {
     return ipc_fd_;
   }
 #endif  // OS_WIN

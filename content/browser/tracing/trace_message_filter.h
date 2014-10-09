@@ -21,8 +21,8 @@ class TraceMessageFilter : public BrowserMessageFilter {
   TraceMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelClosing() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void SendBeginTracing(const base::debug::CategoryFilter& category_filter_str,
                         const base::debug::TraceOptions& options);

@@ -232,18 +232,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
   virtual ~ServiceWorkerVersion();
 
   // EmbeddedWorkerInstance::Listener overrides:
-  virtual void OnStarted() OVERRIDE;
-  virtual void OnStopped() OVERRIDE;
+  virtual void OnStarted() override;
+  virtual void OnStopped() override;
   virtual void OnReportException(const base::string16& error_message,
                                  int line_number,
                                  int column_number,
-                                 const GURL& source_url) OVERRIDE;
+                                 const GURL& source_url) override;
   virtual void OnReportConsoleMessage(int source_identifier,
                                       int message_level,
                                       const base::string16& message,
                                       int line_number,
-                                      const GURL& source_url) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+                                      const GURL& source_url) override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnStartMessageSent(ServiceWorkerStatusCode status);
 

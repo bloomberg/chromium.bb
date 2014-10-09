@@ -22,7 +22,7 @@ class DRTSurfaceOSMesa : public gfx::GLSurfaceOSMesa {
       : GLSurfaceOSMesa(gfx::OSMesaSurfaceFormatRGBA, gfx::Size(1, 1)) {}
 
   // Implement a subset of GLSurface.
-  virtual bool SwapBuffers() OVERRIDE;
+  virtual bool SwapBuffers() override;
 
  private:
   virtual ~DRTSurfaceOSMesa() {}

@@ -38,7 +38,7 @@ class ThemeHelperMac : public NotificationObserver {
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
 
   NotificationRegistrar registrar_;
 

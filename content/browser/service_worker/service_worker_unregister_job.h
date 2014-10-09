@@ -39,10 +39,10 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   void AddCallback(const UnregistrationCallback& callback);
 
   // ServiceWorkerRegisterJobBase implementation:
-  virtual void Start() OVERRIDE;
-  virtual void Abort() OVERRIDE;
-  virtual bool Equals(ServiceWorkerRegisterJobBase* job) OVERRIDE;
-  virtual RegistrationJobType GetType() OVERRIDE;
+  virtual void Start() override;
+  virtual void Abort() override;
+  virtual bool Equals(ServiceWorkerRegisterJobBase* job) override;
+  virtual RegistrationJobType GetType() override;
 
  private:
   void OnRegistrationFound(

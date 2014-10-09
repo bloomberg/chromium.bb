@@ -22,9 +22,9 @@ class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
   explicit MessagePortMessageFilter(const NextRoutingIDCallback& callback);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnDestruct() const OVERRIDE;
+  virtual void OnChannelClosing() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnDestruct() const override;
 
   int GetNextRoutingID();
 

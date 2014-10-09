@@ -29,11 +29,11 @@ class StreamHandleImpl : public StreamHandle {
 
  private:
   // StreamHandle overrides
-  virtual const GURL& GetURL() OVERRIDE;
-  virtual const GURL& GetOriginalURL() OVERRIDE;
-  virtual const std::string& GetMimeType() OVERRIDE;
-  virtual scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders() OVERRIDE;
-  virtual void AddCloseListener(const base::Closure& callback) OVERRIDE;
+  virtual const GURL& GetURL() override;
+  virtual const GURL& GetOriginalURL() override;
+  virtual const std::string& GetMimeType() override;
+  virtual scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders() override;
+  virtual void AddCloseListener(const base::Closure& callback) override;
 
   base::WeakPtr<Stream> stream_;
   GURL url_;

@@ -52,18 +52,18 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   virtual ~ServiceWorkerWriteToCacheJob();
 
   // net::URLRequestJob overrides
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
-  virtual net::LoadState GetLoadState() const OVERRIDE;
-  virtual bool GetCharset(std::string* charset) OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
+  virtual net::LoadState GetLoadState() const override;
+  virtual bool GetCharset(std::string* charset) override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
+  virtual int GetResponseCode() const override;
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE;
+      const net::HttpRequestHeaders& headers) override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE;
+                           int *bytes_read) override;
 
   const net::HttpResponseInfo* http_info() const;
 
@@ -84,24 +84,24 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   virtual void OnReceivedRedirect(
       net::URLRequest* request,
       const net::RedirectInfo& redirect_info,
-      bool* defer_redirect) OVERRIDE;
+      bool* defer_redirect) override;
   virtual void OnAuthRequired(
       net::URLRequest* request,
-      net::AuthChallengeInfo* auth_info) OVERRIDE;
+      net::AuthChallengeInfo* auth_info) override;
   virtual void OnCertificateRequested(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
+      net::SSLCertRequestInfo* cert_request_info) override;
   virtual void OnSSLCertificateError(
       net::URLRequest* request,
       const net::SSLInfo& ssl_info,
-      bool fatal) OVERRIDE;
+      bool fatal) override;
   virtual void OnBeforeNetworkStart(
       net::URLRequest* request,
-      bool* defer) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+      bool* defer) override;
+  virtual void OnResponseStarted(net::URLRequest* request) override;
   virtual void OnReadCompleted(
       net::URLRequest* request,
-      int bytes_read) OVERRIDE;
+      int bytes_read) override;
 
   void AsyncNotifyDoneHelper(const net::URLRequestStatus& status);
 

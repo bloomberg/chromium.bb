@@ -46,9 +46,9 @@ class TraceUploader : public net::URLFetcherDelegate {
   virtual ~TraceUploader();
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE;
+                                        int64 current, int64 total) override;
 
   // Compresses and uploads the given file contents.
   void DoUpload(const std::string& file_contents,

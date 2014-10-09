@@ -57,11 +57,11 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
 
   // Overridden from ByteStreamWriter.
   virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
-                     size_t byte_count) OVERRIDE;
-  virtual void Flush() OVERRIDE;
-  virtual void Close(int status) OVERRIDE;
-  virtual void RegisterCallback(const base::Closure& source_callback) OVERRIDE;
-  virtual size_t GetTotalBufferedBytes() const OVERRIDE;
+                     size_t byte_count) override;
+  virtual void Flush() override;
+  virtual void Close(int status) override;
+  virtual void RegisterCallback(const base::Closure& source_callback) override;
+  virtual size_t GetTotalBufferedBytes() const override;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
   static void UpdateWindow(scoped_refptr<LifetimeFlag> lifetime_flag,
@@ -117,9 +117,9 @@ class ByteStreamReaderImpl : public ByteStreamReader {
 
   // Overridden from ByteStreamReader.
   virtual StreamState Read(scoped_refptr<net::IOBuffer>* data,
-                           size_t* length) OVERRIDE;
-  virtual int GetStatus() const OVERRIDE;
-  virtual void RegisterCallback(const base::Closure& sink_callback) OVERRIDE;
+                           size_t* length) override;
+  virtual int GetStatus() const override;
+  virtual void RegisterCallback(const base::Closure& sink_callback) override;
 
   // PostTask target from |ByteStreamWriterImpl::Write| and
   // |ByteStreamWriterImpl::Close|.

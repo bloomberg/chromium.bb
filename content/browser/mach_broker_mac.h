@@ -64,18 +64,18 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   void AddPlaceholderForPid(base::ProcessHandle pid);
 
   // Implement |ProcessMetrics::PortProvider|.
-  virtual mach_port_t TaskForPid(base::ProcessHandle process) const OVERRIDE;
+  virtual mach_port_t TaskForPid(base::ProcessHandle process) const override;
 
   // Implement |BrowserChildProcessObserver|.
   virtual void BrowserChildProcessHostDisconnected(
-      const ChildProcessData& data) OVERRIDE;
+      const ChildProcessData& data) override;
   virtual void BrowserChildProcessCrashed(
-      const ChildProcessData& data) OVERRIDE;
+      const ChildProcessData& data) override;
 
   // Implement |NotificationObserver|.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details) override;
  private:
   friend class MachBrokerTest;
   friend class MachListenerThreadDelegate;

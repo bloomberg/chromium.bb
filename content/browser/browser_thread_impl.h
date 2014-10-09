@@ -28,9 +28,9 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   static void ShutdownThreadPool();
 
  protected:
-  virtual void Init() OVERRIDE;
-  virtual void Run(base::MessageLoop* message_loop) OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void Run(base::MessageLoop* message_loop) override;
+  virtual void CleanUp() override;
 
  private:
   // We implement all the functionality of the public BrowserThread

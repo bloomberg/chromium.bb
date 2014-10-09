@@ -35,18 +35,18 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
   virtual ~ServiceWorkerReadFromCacheJob();
 
   // net::URLRequestJob overrides
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
-  virtual net::LoadState GetLoadState() const OVERRIDE;
-  virtual bool GetCharset(std::string* charset) OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
+  virtual net::LoadState GetLoadState() const override;
+  virtual bool GetCharset(std::string* charset) override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
+  virtual int GetResponseCode() const override;
   virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) OVERRIDE;
+      const net::HttpRequestHeaders& headers) override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE;
+                           int *bytes_read) override;
 
   // Reader completion callbacks.
   void OnReadInfoComplete(int result);

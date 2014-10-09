@@ -79,7 +79,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
 
   virtual void OnInstallEvent(int embedded_worker_id,
                               int request_id,
-                              int active_version_id) OVERRIDE {
+                              int active_version_id) override {
     SimulateSend(
         new ServiceWorkerHostMsg_InstallEventFinished(
             embedded_worker_id, request_id,
@@ -93,7 +93,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
   virtual void OnActivateEvent(int embedded_worker_id,
-                               int request_id) OVERRIDE {
+                               int request_id) override {
     SimulateSend(
         new ServiceWorkerHostMsg_ActivateEventFinished(
             embedded_worker_id, request_id,
@@ -109,11 +109,11 @@ class ServiceWorkerContextTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         render_process_id_(99) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(render_process_id_));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     helper_.reset();
   }
 

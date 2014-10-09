@@ -28,7 +28,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   virtual ~PushMessagingMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnRegister(int render_frame_id,
                   int callbacks_id,

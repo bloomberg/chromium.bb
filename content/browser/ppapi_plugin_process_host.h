@@ -96,7 +96,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
                          std::vector<PpapiPluginProcessHost*>* hosts);
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
   // Opens a new channel to the plugin. The client will be notified when the
   // channel is ready or if there's an error.
@@ -126,12 +126,12 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   void RequestPluginChannel(Client* client);
 
-  virtual void OnProcessLaunched() OVERRIDE;
+  virtual void OnProcessLaunched() override;
 
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual void OnChannelConnected(int32 peer_pid) override;
+  virtual void OnChannelError() override;
 
   void CancelRequests();
 

@@ -138,7 +138,7 @@ class QTKitMonitorImpl : public DeviceMonitorMacImpl {
   explicit QTKitMonitorImpl(content::DeviceMonitorMac* monitor);
   virtual ~QTKitMonitorImpl();
 
-  virtual void OnDeviceChanged() OVERRIDE;
+  virtual void OnDeviceChanged() override;
  private:
   void CountDevices();
   void OnAttributeChanged(NSNotification* notification);
@@ -379,7 +379,7 @@ class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
       const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
   virtual ~AVFoundationMonitorImpl();
 
-  virtual void OnDeviceChanged() OVERRIDE;
+  virtual void OnDeviceChanged() override;
 
  private:
   // {Video,AudioInput}DeviceManager's "Device" thread task runner used for

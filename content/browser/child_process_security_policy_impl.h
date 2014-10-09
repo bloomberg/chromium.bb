@@ -40,47 +40,47 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   static ChildProcessSecurityPolicyImpl* GetInstance();
 
   // ChildProcessSecurityPolicy implementation.
-  virtual void RegisterWebSafeScheme(const std::string& scheme) OVERRIDE;
-  virtual bool IsWebSafeScheme(const std::string& scheme) OVERRIDE;
-  virtual void GrantReadFile(int child_id, const base::FilePath& file) OVERRIDE;
+  virtual void RegisterWebSafeScheme(const std::string& scheme) override;
+  virtual bool IsWebSafeScheme(const std::string& scheme) override;
+  virtual void GrantReadFile(int child_id, const base::FilePath& file) override;
   virtual void GrantCreateReadWriteFile(int child_id,
-                                        const base::FilePath& file) OVERRIDE;
-  virtual void GrantCopyInto(int child_id, const base::FilePath& dir) OVERRIDE;
+                                        const base::FilePath& file) override;
+  virtual void GrantCopyInto(int child_id, const base::FilePath& dir) override;
   virtual void GrantDeleteFrom(int child_id,
-                               const base::FilePath& dir) OVERRIDE;
+                               const base::FilePath& dir) override;
   virtual void GrantReadFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
+      const std::string& filesystem_id) override;
   virtual void GrantWriteFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
+      const std::string& filesystem_id) override;
   virtual void GrantCreateFileForFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
+      const std::string& filesystem_id) override;
   virtual void GrantCreateReadWriteFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
+      const std::string& filesystem_id) override;
   virtual void GrantCopyIntoFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
+      const std::string& filesystem_id) override;
   virtual void GrantDeleteFromFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
-  virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
-  virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
+      const std::string& filesystem_id) override;
+  virtual void GrantScheme(int child_id, const std::string& scheme) override;
+  virtual bool CanReadFile(int child_id, const base::FilePath& file) override;
   virtual bool CanCreateReadWriteFile(int child_id,
-                                      const base::FilePath& file) OVERRIDE;
+                                      const base::FilePath& file) override;
   virtual bool CanReadFileSystem(int child_id,
-                                 const std::string& filesystem_id) OVERRIDE;
+                                 const std::string& filesystem_id) override;
   virtual bool CanReadWriteFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
+      const std::string& filesystem_id) override;
   virtual bool CanCopyIntoFileSystem(int child_id,
-                                     const std::string& filesystem_id) OVERRIDE;
+                                     const std::string& filesystem_id) override;
   virtual bool CanDeleteFromFileSystem(
       int child_id,
-      const std::string& filesystem_id) OVERRIDE;
-  virtual bool HasWebUIBindings(int child_id) OVERRIDE;
+      const std::string& filesystem_id) override;
+  virtual bool HasWebUIBindings(int child_id) override;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking

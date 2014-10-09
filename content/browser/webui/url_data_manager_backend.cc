@@ -106,14 +106,14 @@ class URLRequestChromeJob : public net::URLRequestJob,
                       bool is_incognito);
 
   // net::URLRequestJob implementation.
-  virtual void Start() OVERRIDE;
-  virtual void Kill() OVERRIDE;
+  virtual void Start() override;
+  virtual void Kill() override;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int* bytes_read) OVERRIDE;
-  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+                           int* bytes_read) override;
+  virtual bool GetMimeType(std::string* mime_type) const override;
+  virtual int GetResponseCode() const override;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
 
   // Used to notify that the requested data's |mime_type| is ready.
   void MimeTypeAvailable(const std::string& mime_type);
@@ -436,7 +436,7 @@ class ChromeProtocolHandler
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
+      net::NetworkDelegate* network_delegate) const override {
     DCHECK(request);
 
     // Check for chrome://view-http-cache/*, which uses its own job type.
@@ -477,7 +477,7 @@ class ChromeProtocolHandler
         GetURLDataManagerForResourceContext(resource_context_), is_incognito_);
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -697,7 +697,7 @@ class DevToolsJobFactory
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+      net::NetworkDelegate* network_delegate) const override;
 
  private:
   // |resource_context_| and |network_delegate_| are owned by ProfileIOData,

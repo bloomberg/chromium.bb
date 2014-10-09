@@ -115,29 +115,29 @@ class BlobReader : public net::URLRequest::Delegate {
   // net::URLRequest::Delegate overrides for reading blobs.
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) OVERRIDE {
+                                  bool* defer_redirect) override {
     NOTREACHED();
   }
   virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) OVERRIDE {
+                              net::AuthChallengeInfo* auth_info) override {
     NOTREACHED();
   }
   virtual void OnCertificateRequested(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) OVERRIDE {
+      net::SSLCertRequestInfo* cert_request_info) override {
     NOTREACHED();
   }
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      const net::SSLInfo& ssl_info,
-                                     bool fatal) OVERRIDE {
+                                     bool fatal) override {
     NOTREACHED();
   }
   virtual void OnBeforeNetworkStart(net::URLRequest* request,
-                                    bool* defer) OVERRIDE {
+                                    bool* defer) override {
     NOTREACHED();
   }
 
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
+  virtual void OnResponseStarted(net::URLRequest* request) override {
     if (!request->status().is_success()) {
       callback_.Run(false);
       return;
@@ -154,7 +154,7 @@ class BlobReader : public net::URLRequest::Delegate {
   }
 
   virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE {
+                               int bytes_read) override {
     if (!request->status().is_success()) {
       callback_.Run(false);
       return;

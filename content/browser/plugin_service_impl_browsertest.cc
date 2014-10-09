@@ -48,15 +48,15 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   }
 
   // PluginProcessHost::Client implementation.
-  virtual int ID() OVERRIDE { return 42; }
-  virtual bool OffTheRecord() OVERRIDE { return false; }
-  virtual ResourceContext* GetResourceContext() OVERRIDE {
+  virtual int ID() override { return 42; }
+  virtual bool OffTheRecord() override { return false; }
+  virtual ResourceContext* GetResourceContext() override {
     return context_;
   }
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {}
-  virtual void OnSentPluginChannelRequest() OVERRIDE {}
+  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) override {}
+  virtual void OnSentPluginChannelRequest() override {}
 
-  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
+  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) override {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(set_plugin_info_called_);
     ASSERT_TRUE(!channel_);
@@ -64,34 +64,34 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     ASSERT_TRUE(channel_->Connect());
   }
 
-  virtual void SetPluginInfo(const WebPluginInfo& info) OVERRIDE {
+  virtual void SetPluginInfo(const WebPluginInfo& info) override {
     ASSERT_TRUE(info.mime_types.size());
     ASSERT_EQ(kNPAPITestPluginMimeType, info.mime_types[0].mime_type);
     set_plugin_info_called_ = true;
   }
 
-  virtual void OnError() OVERRIDE {
+  virtual void OnError() override {
     Fail();
   }
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     Fail();
     return false;
   }
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  virtual void OnChannelConnected(int32 peer_pid) override {
     if (expect_fail_)
       FAIL();
     QuitMessageLoop();
   }
-  virtual void OnChannelError() OVERRIDE {
+  virtual void OnChannelError() override {
     Fail();
   }
 #if defined(OS_POSIX)
-  virtual void OnChannelDenied() OVERRIDE {
+  virtual void OnChannelDenied() override {
     Fail();
   }
-  virtual void OnChannelListenError() OVERRIDE {
+  virtual void OnChannelListenError() override {
     Fail();
   }
 #endif
@@ -125,11 +125,11 @@ class MockPluginServiceFilter : public content::PluginServiceFilter {
       const void* context,
       const GURL& url,
       const GURL& policy_url,
-      WebPluginInfo* plugin) OVERRIDE { return true; }
+      WebPluginInfo* plugin) override { return true; }
 
   virtual bool CanLoadPlugin(
       int render_process_id,
-      const base::FilePath& path) OVERRIDE { return false; }
+      const base::FilePath& path) override { return false; }
 };
 
 class PluginServiceTest : public ContentBrowserTest {
@@ -140,7 +140,7 @@ class PluginServiceTest : public ContentBrowserTest {
     return shell()->web_contents()->GetBrowserContext()->GetResourceContext();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
 #if defined(OS_MACOSX)
     base::FilePath browser_directory;
     PathService::Get(base::DIR_MODULE, &browser_directory);
@@ -193,7 +193,7 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
 
   // Client implementation.
   MOCK_METHOD0(ID, int());
-  virtual ResourceContext* GetResourceContext() OVERRIDE {
+  virtual ResourceContext* GetResourceContext() override {
     get_resource_context_called_ = true;
     return context_;
   }
@@ -257,13 +257,13 @@ class MockCanceledBeforeSentPluginProcessHostClient
   virtual ~MockCanceledBeforeSentPluginProcessHostClient() {}
 
   // Client implementation.
-  virtual void SetPluginInfo(const WebPluginInfo& info) OVERRIDE {
+  virtual void SetPluginInfo(const WebPluginInfo& info) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(info.mime_types.size());
     ASSERT_EQ(kNPAPITestPluginMimeType, info.mime_types[0].mime_type);
     set_plugin_info_called_ = true;
   }
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {
+  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     set_on_found_plugin_process_host_called();
     set_host(host);
@@ -330,17 +330,17 @@ class MockCanceledAfterSentPluginProcessHostClient
 
   // Client implementation.
 
-  virtual int ID() OVERRIDE { return 42; }
-  virtual bool OffTheRecord() OVERRIDE { return false; }
+  virtual int ID() override { return 42; }
+  virtual bool OffTheRecord() override { return false; }
 
   // We override this guy again since we don't want to cancel yet.
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {
+  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     set_on_found_plugin_process_host_called();
     set_host(host);
   }
 
-  virtual void OnSentPluginChannelRequest() OVERRIDE {
+  virtual void OnSentPluginChannelRequest() override {
     on_sent_plugin_channel_request_called_ = true;
     host()->CancelSentRequest(this);
     BrowserThread::PostTask(

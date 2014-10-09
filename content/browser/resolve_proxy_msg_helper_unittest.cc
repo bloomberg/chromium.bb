@@ -18,10 +18,10 @@ namespace content {
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
 class MockProxyConfigService : public net::ProxyConfigService {
  public:
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual void AddObserver(Observer* observer) override {}
+  virtual void RemoveObserver(Observer* observer) override {}
   virtual ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* results) OVERRIDE {
+      net::ProxyConfig* results) override {
     *results = net::ProxyConfig::CreateFromCustomPacURL(GURL("http://pac"));
     return CONFIG_VALID;
   }
@@ -34,7 +34,7 @@ class TestResolveProxyMsgHelper : public ResolveProxyMsgHelper {
       IPC::Listener* listener)
       : ResolveProxyMsgHelper(proxy_service),
         listener_(listener) {}
-  virtual bool Send(IPC::Message* message) OVERRIDE {
+  virtual bool Send(IPC::Message* message) override {
     listener_->OnMessageReceived(*message);
     delete message;
     return true;
@@ -87,7 +87,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
   scoped_ptr<PendingResult> pending_result_;
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& msg) override {
     TupleTypes<ViewHostMsg_ResolveProxy::ReplyParam>::ValueTuple reply_data;
     EXPECT_TRUE(ViewHostMsg_ResolveProxy::ReadReplyParam(&msg, &reply_data));
     DCHECK(!pending_result_.get());

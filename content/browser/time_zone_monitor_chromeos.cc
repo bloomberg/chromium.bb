@@ -21,7 +21,7 @@ class TimeZoneMonitorChromeOS
   }
 
   // chromeos::system::TimezoneSettings::Observer implementation.
-  virtual void TimezoneChanged(const icu::TimeZone& time_zone) OVERRIDE {
+  virtual void TimezoneChanged(const icu::TimeZone& time_zone) override {
     NotifyRenderers();
   }
 

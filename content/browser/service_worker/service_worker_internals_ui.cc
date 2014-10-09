@@ -304,7 +304,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
   // ServiceWorkerContextObserver overrides:
   virtual void OnWorkerStarted(int64 version_id,
                                int process_id,
-                               int thread_id) OVERRIDE {
+                               int thread_id) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     web_ui_->CallJavascriptFunction(
         "serviceworker.onWorkerStarted",
@@ -315,7 +315,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
   }
   virtual void OnWorkerStopped(int64 version_id,
                                int process_id,
-                               int thread_id) OVERRIDE {
+                               int thread_id) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     web_ui_->CallJavascriptFunction(
         "serviceworker.onWorkerStopped",
@@ -324,7 +324,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
         FundamentalValue(process_id),
         FundamentalValue(thread_id));
   }
-  virtual void OnVersionStateChanged(int64 version_id) OVERRIDE {
+  virtual void OnVersionStateChanged(int64 version_id) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     web_ui_->CallJavascriptFunction(
         "serviceworker.onVersionStateChanged",
@@ -334,7 +334,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
   virtual void OnErrorReported(int64 version_id,
                                int process_id,
                                int thread_id,
-                               const ErrorInfo& info) OVERRIDE {
+                               const ErrorInfo& info) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ScopedVector<const Value> args;
     args.push_back(new FundamentalValue(partition_id_));
@@ -353,7 +353,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
   virtual void OnReportConsoleMessage(int64 version_id,
                                       int process_id,
                                       int thread_id,
-                                      const ConsoleMessage& message) OVERRIDE {
+                                      const ConsoleMessage& message) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ScopedVector<const Value> args;
     args.push_back(new FundamentalValue(partition_id_));
@@ -370,12 +370,12 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onConsoleMessageReported",
                                     args.get());
   }
-  virtual void OnRegistrationStored(const GURL& pattern) OVERRIDE {
+  virtual void OnRegistrationStored(const GURL& pattern) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
                                     StringValue(pattern.spec()));
   }
-  virtual void OnRegistrationDeleted(const GURL& pattern) OVERRIDE {
+  virtual void OnRegistrationDeleted(const GURL& pattern) override {
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationDeleted",
                                     StringValue(pattern.spec()));
   }
