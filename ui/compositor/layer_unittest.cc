@@ -129,7 +129,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   void DrawTree(Layer* root) {
     GetCompositor()->SetRootLayer(root);
     GetCompositor()->ScheduleDraw();
-    WaitForDraw();
+    WaitForSwap();
   }
 
   void ReadPixels(SkBitmap* bitmap) {
@@ -149,7 +149,7 @@ class LayerWithRealCompositorTest : public testing::Test {
     // be in the middle of a draw right now, and the commit with the
     // copy output request may not be done on the first draw.
     for (int i = 0; i < 2; i++) {
-      GetCompositor()->ScheduleDraw();
+      GetCompositor()->ScheduleFullRedraw();
       WaitForDraw();
     }
 
@@ -159,7 +159,13 @@ class LayerWithRealCompositorTest : public testing::Test {
     *bitmap = holder->result();
   }
 
-  void WaitForDraw() { ui::DrawWaiterForTest::Wait(GetCompositor()); }
+  void WaitForDraw() {
+    ui::DrawWaiterForTest::WaitForCompositingStarted(GetCompositor());
+  }
+
+  void WaitForSwap() {
+    DrawWaiterForTest::WaitForCompositingEnded(GetCompositor());
+  }
 
   void WaitForCommit() {
     ui::DrawWaiterForTest::WaitForCommit(GetCompositor());
@@ -450,7 +456,9 @@ class LayerWithDelegateTest : public testing::Test {
     WaitForDraw();
   }
 
-  void WaitForDraw() { DrawWaiterForTest::Wait(compositor()); }
+  void WaitForDraw() {
+    DrawWaiterForTest::WaitForCompositingStarted(compositor());
+  }
 
   void WaitForCommit() {
     DrawWaiterForTest::WaitForCommit(compositor());
@@ -1027,25 +1035,25 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   // Moving, but not resizing, a layer should alert the observers.
   observer.Reset();
   l2->SetBounds(gfx::Rect(0, 0, 350, 350));
-  WaitForDraw();
+  WaitForSwap();
   EXPECT_TRUE(observer.notified());
 
   // So should resizing a layer.
   observer.Reset();
   l2->SetBounds(gfx::Rect(0, 0, 400, 400));
-  WaitForDraw();
+  WaitForSwap();
   EXPECT_TRUE(observer.notified());
 
   // Opacity changes should alert the observers.
   observer.Reset();
   l2->SetOpacity(0.5f);
-  WaitForDraw();
+  WaitForSwap();
   EXPECT_TRUE(observer.notified());
 
   // So should setting the opacity back.
   observer.Reset();
   l2->SetOpacity(1.0f);
-  WaitForDraw();
+  WaitForSwap();
   EXPECT_TRUE(observer.notified());
 
   // Setting the transform of a layer should alert the observers.
@@ -1055,7 +1063,7 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   transform.Rotate(90.0);
   transform.Translate(-200.0, -200.0);
   l2->SetTransform(transform);
-  WaitForDraw();
+  WaitForSwap();
   EXPECT_TRUE(observer.notified());
 
   // A change resulting in an aborted swap buffer should alert the observer
@@ -1063,7 +1071,7 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   observer.Reset();
   l2->SetOpacity(0.1f);
   GetCompositor()->DidAbortSwapBuffers();
-  WaitForDraw();
+  WaitForSwap();
   EXPECT_TRUE(observer.notified());
   EXPECT_TRUE(observer.aborted());
 
@@ -1072,7 +1080,7 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   // Opacity changes should no longer alert the removed observer.
   observer.Reset();
   l2->SetOpacity(0.5f);
-  WaitForDraw();
+  WaitForSwap();
 
   EXPECT_FALSE(observer.notified());
 }
