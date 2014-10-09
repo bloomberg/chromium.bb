@@ -66,6 +66,9 @@ class EasyUnlockService : public KeyedService {
   // Removes the hardlock state for the given user.
   static void RemoveHardlockStateForUser(const std::string& user_id);
 
+  // Returns true if Easy sign-in is enabled.
+  static bool IsSignInEnabled();
+
   // Returns the EasyUnlockService type.
   virtual Type GetType() const = 0;
 

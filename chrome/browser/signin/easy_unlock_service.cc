@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #endif
@@ -72,6 +74,23 @@ EasyUnlockService* EasyUnlockService::GetForUser(
   return EasyUnlockService::Get(profile);
 #else
   return NULL;
+#endif
+}
+
+// static
+bool EasyUnlockService::IsSignInEnabled() {
+#if defined(OS_CHROMEOS)
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("EasySignIn");
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableEasySignin)) {
+    return false;
+  }
+
+  return group_name == "Enable";
+#else
+  return false;
 #endif
 }
 
