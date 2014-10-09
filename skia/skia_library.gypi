@@ -21,7 +21,6 @@
     '../third_party/skia/gyp/core.gypi',
     '../third_party/skia/gyp/effects.gypi',
     '../third_party/skia/gyp/pdf.gypi',
-    '../third_party/skia/gyp/record.gypi',
     '../third_party/skia/gyp/utils.gypi',
   ],
 
