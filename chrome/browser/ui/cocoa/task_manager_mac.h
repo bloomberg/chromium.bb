@@ -87,6 +87,9 @@ class TaskManagerMac : public TaskManagerModelObserver,
   // existing task manager window.
   static void Show();
 
+  // Hides the task manager if it is showing.
+  static void Hide();
+
   // Returns the TaskManager observed by |this|.
   TaskManager* task_manager() { return task_manager_; }
 

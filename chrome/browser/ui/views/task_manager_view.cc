@@ -144,7 +144,7 @@ void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
     observer_->OnItemsRemoved(start, length);
 }
 
-// The Task manager UI container.
+// The Task Manager UI container.
 class TaskManagerView : public views::ButtonListener,
                         public views::DialogDelegateView,
                         public views::TableViewObserver,
@@ -155,8 +155,11 @@ class TaskManagerView : public views::ButtonListener,
   explicit TaskManagerView(chrome::HostDesktopType desktop_type);
   virtual ~TaskManagerView();
 
-  // Shows the Task manager window, or re-activates an existing one.
+  // Shows the Task Manager window, or re-activates an existing one.
   static void Show(Browser* browser);
+
+  // Hides the Task Manager if it is showing.
+  static void Hide();
 
   // views::View:
   virtual void Layout() override;
@@ -509,6 +512,12 @@ void TaskManagerView::Show(Browser* browser) {
 #endif
 }
 
+// static
+void TaskManagerView::Hide() {
+  if (instance_)
+    instance_->GetWidget()->Close();
+}
+
 // ButtonListener implementation.
 void TaskManagerView::ButtonPressed(
     views::Button* sender,
@@ -660,6 +669,10 @@ namespace chrome {
 // Declared in browser_dialogs.h so others don't need to depend on our header.
 void ShowTaskManager(Browser* browser) {
   TaskManagerView::Show(browser);
+}
+
+void HideTaskManager() {
+  TaskManagerView::Hide();
 }
 
 }  // namespace chrome

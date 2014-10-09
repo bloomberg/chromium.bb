@@ -70,8 +70,9 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
 void ShowHungRendererDialog(content::WebContents* contents);
 void HideHungRendererDialog(content::WebContents* contents);
 
-// Shows the Task Manager. |browser| can be NULL when called from Ash.
+// Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
 void ShowTaskManager(Browser* browser);
+void HideTaskManager();
 
 #if !defined(OS_MACOSX)
 // Shows the create web app shortcut dialog box.

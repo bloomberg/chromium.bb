@@ -539,11 +539,21 @@ void TaskManagerMac::Show() {
   instance_->model_->StartUpdating();
 }
 
+// static
+void TaskManagerMac::Hide() {
+  if (instance_)
+    [instance_->window_controller_ close];
+}
+
 namespace chrome {
 
 // Declared in browser_dialogs.h.
 void ShowTaskManager(Browser* browser) {
   TaskManagerMac::Show();
+}
+
+void HideTaskManager() {
+  TaskManagerMac::Hide();
 }
 
 }  // namespace chrome

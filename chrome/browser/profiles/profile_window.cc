@@ -295,6 +295,7 @@ void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
 
   cache->SetProfileSigninRequiredAtIndex(
       cache->GetIndexOfProfileWithPath(profile_path), true);
+  chrome::HideTaskManager();
   UserManager::Show(profile_path,
                     profiles::USER_MANAGER_NO_TUTORIAL,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
