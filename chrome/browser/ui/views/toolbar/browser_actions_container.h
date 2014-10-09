@@ -250,10 +250,6 @@ class BrowserActionsContainer
   // Retrieve the current popup.  This should only be used by unit tests.
   ExtensionPopup* TestGetPopup();
 
-  // Set how many icons the container should show. This should only be used by
-  // unit tests.
-  void TestSetIconVisibilityCount(size_t icons);
-
   // Returns the width of an icon, optionally with its padding.
   static int IconWidth(bool include_padding);
 

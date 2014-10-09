@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DragBrowserActions) {
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Shrink the size of the container so we have an overflow menu.
-  model->SetVisibleIconCountForTest(2u);
+  model->SetVisibleIconCount(2u);
   EXPECT_EQ(2u, container->VisibleBrowserActions());
   ASSERT_TRUE(container->chevron());
   EXPECT_TRUE(container->chevron()->visible());
@@ -366,6 +366,63 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_TRUE(container->chevron()->visible());
+}
+
+// Test that changes performed in one container affect containers in other
+// windows so that it is consistent.
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MultipleWindows) {
+  LoadExtensions();
+  BrowserActionsContainer* first =
+      BrowserView::GetBrowserViewForBrowser(browser())->toolbar()->
+          browser_actions();
+
+  // Create a second browser.
+  Browser* second_browser = new Browser(
+      Browser::CreateParams(profile(), browser()->host_desktop_type()));
+  BrowserActionsContainer* second =
+      BrowserView::GetBrowserViewForBrowser(second_browser)->toolbar()->
+          browser_actions();
+
+  // Both containers should have the same order and visible actions, which
+  // is right now A B C.
+  EXPECT_EQ(3u, first->VisibleBrowserActions());
+  EXPECT_EQ(3u, second->VisibleBrowserActions());
+  EXPECT_EQ(extension_a(), first->GetBrowserActionViewAt(0u)->extension());
+  EXPECT_EQ(extension_a(), second->GetBrowserActionViewAt(0u)->extension());
+  EXPECT_EQ(extension_b(), first->GetBrowserActionViewAt(1u)->extension());
+  EXPECT_EQ(extension_b(), second->GetBrowserActionViewAt(1u)->extension());
+  EXPECT_EQ(extension_c(), first->GetBrowserActionViewAt(2u)->extension());
+  EXPECT_EQ(extension_c(), second->GetBrowserActionViewAt(2u)->extension());
+
+  // Simulate a drag and drop to the right.
+  ui::OSExchangeData drop_data;
+  // Drag extension A from index 0...
+  BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
+  browser_action_drag_data.Write(profile(), &drop_data);
+  BrowserActionView* view = first->GetViewForExtension(extension_b());
+  // ...to the right of extension B.
+  gfx::Point location(view->x() + view->width(), view->y());
+  ui::DropTargetEvent target_event(
+      drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
+
+  // Drag and drop.
+  first->OnDragUpdated(target_event);
+  first->OnPerformDrop(target_event);
+
+  // The new order, B A C, should be reflected in *both* containers, even
+  // though the drag only happened in the first one.
+  EXPECT_EQ(extension_b(), first->GetBrowserActionViewAt(0u)->extension());
+  EXPECT_EQ(extension_b(), second->GetBrowserActionViewAt(0u)->extension());
+  EXPECT_EQ(extension_a(), first->GetBrowserActionViewAt(1u)->extension());
+  EXPECT_EQ(extension_a(), second->GetBrowserActionViewAt(1u)->extension());
+  EXPECT_EQ(extension_c(), first->GetBrowserActionViewAt(2u)->extension());
+  EXPECT_EQ(extension_c(), second->GetBrowserActionViewAt(2u)->extension());
+
+  // Next, simulate a resize by shrinking the container.
+  first->OnResize(1, true);
+  // The first and second container should each have resized.
+  EXPECT_EQ(2u, first->VisibleBrowserActions());
+  EXPECT_EQ(2u, second->VisibleBrowserActions());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
@@ -551,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
 
   // Reduce the visible count to 2. Order should be unchanged (A B C), but
   // only A and B should be visible on the main bar.
-  model()->SetVisibleIconCountForTest(2u);
+  model()->SetVisibleIconCount(2u);
   overflow_bar()->Layout();  // Kick.
   EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(0)->extension());
   EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(1)->extension());
@@ -587,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   LoadExtensions();
 
   // Start with one extension in overflow.
-  model()->SetVisibleIconCountForTest(2u);
+  model()->SetVisibleIconCount(2u);
   overflow_bar()->Layout();
 
   // Verify starting state is A B [C].

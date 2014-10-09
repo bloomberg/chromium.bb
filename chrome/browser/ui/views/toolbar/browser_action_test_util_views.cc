@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_testing_views.h"
@@ -91,7 +92,8 @@ bool BrowserActionTestUtil::HidePopup() {
 }
 
 void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
-  GetContainer(browser_)->TestSetIconVisibilityCount(icons);
+  extensions::ExtensionToolbarModel::Get(browser_->profile())->
+      SetVisibleIconCount(icons);
 }
 
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {

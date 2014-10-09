@@ -161,17 +161,16 @@ void BrowserActionsContainer::Init() {
 
 BrowserActionView* BrowserActionsContainer::GetViewForExtension(
     const Extension* extension) {
-  for (BrowserActionViews::iterator view = browser_action_views_.begin();
-       view != browser_action_views_.end(); ++view) {
-    if ((*view)->extension() == extension)
-      return *view;
+  for (BrowserActionView* view : browser_action_views_) {
+    if (view->extension() == extension)
+      return view;
   }
   return NULL;
 }
 
 void BrowserActionsContainer::RefreshBrowserActionViews() {
-  for (size_t i = 0; i < browser_action_views_.size(); ++i)
-    browser_action_views_[i]->UpdateState();
+  for (BrowserActionView* view : browser_action_views_)
+    view->UpdateState();
 }
 
 void BrowserActionsContainer::CreateBrowserActionViews() {
@@ -182,11 +181,10 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   extensions::ExtensionActionManager* action_manager =
       extensions::ExtensionActionManager::Get(profile_);
   const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
-  for (extensions::ExtensionList::const_iterator i(toolbar_items.begin());
-       i != toolbar_items.end(); ++i) {
+  for (const scoped_refptr<const Extension>& extension : toolbar_items) {
     BrowserActionView* view =
-        new BrowserActionView(i->get(),
-                              action_manager->GetExtensionAction(**i),
+        new BrowserActionView(extension.get(),
+                              action_manager->GetExtensionAction(*extension),
                               browser_,
                               this);
     browser_action_views_.push_back(view);
@@ -201,8 +199,8 @@ void BrowserActionsContainer::DeleteBrowserActionViews() {
 
 size_t BrowserActionsContainer::VisibleBrowserActions() const {
   size_t visible_actions = 0;
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->visible())
+  for (const BrowserActionView* view : browser_action_views_) {
+    if (view->visible())
       ++visible_actions;
   }
   return visible_actions;
@@ -235,7 +233,6 @@ void BrowserActionsContainer::NotifyActionMovedToOverflow() {
   if (icon_count == -1)
     icon_count = browser_action_views_.size();
   model_->SetVisibleIconCount(icon_count - 1);
-  Animate(gfx::Tween::EASE_OUT, icon_count - 1);
 }
 
 bool BrowserActionsContainer::ShownInsideMenu() const {
@@ -519,17 +516,11 @@ int BrowserActionsContainer::OnPerformDrop(
       browser_action_views_[data.index()]->extension(), i);
 
   if (drag_between_containers) {
-    // Add one for the dropped icon.
-    size_t new_icon_count = VisibleBrowserActionsAfterAnimation() + 1;
-
     // Let the main container update the model.
     if (in_overflow_mode())
       main_container_->NotifyActionMovedToOverflow();
     else  // This is the main container.
       model_->SetVisibleIconCount(model_->GetVisibleIconCount() + 1);
-
-    // The size changed, so we need to animate.
-    Animate(gfx::Tween::EASE_OUT, new_icon_count);
   }
 
   OnDragExited();  // Perform clean up after dragging.
@@ -595,7 +586,6 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   // animating, the right value will be restored on next run.
   int visible_icons = WidthToIconCount(container_width_);
   model_->SetVisibleIconCount(visible_icons);
-  Animate(gfx::Tween::EASE_OUT, visible_icons);
 }
 
 void BrowserActionsContainer::AnimationProgressed(
@@ -634,10 +624,6 @@ extensions::ActiveTabPermissionGranter*
 
 ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
   return popup_owner_ ? popup_owner_->view_controller()->popup() : NULL;
-}
-
-void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
-  model_->SetVisibleIconCountForTest(icons);
 }
 
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
@@ -820,15 +806,13 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
   DCHECK(index >= 0 && index < static_cast<int>(browser_action_views_.size()));
 
   BrowserActionViews::iterator iter = browser_action_views_.begin();
-  int old_index = 0;
   while (iter != browser_action_views_.end() &&
          (*iter)->extension() != extension) {
     ++iter;
-    ++old_index;
   }
 
   DCHECK(iter != browser_action_views_.end());
-  if (old_index == index)
+  if (iter - browser_action_views_.begin() == index)
     return;  // Already in place.
 
   BrowserActionView* moved_view = *iter;

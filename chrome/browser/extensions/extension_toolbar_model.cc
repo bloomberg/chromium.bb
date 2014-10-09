@@ -139,6 +139,8 @@ void ExtensionToolbarModel::SetVisibleIconCount(int count) {
                    weak_ptr_factory_.GetWeakPtr()));
     prefs_->SetInteger(pref_names::kToolbarSize, visible_icon_count_);
   }
+
+  FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
 }
 
 void ExtensionToolbarModel::OnExtensionActionUpdated(
@@ -227,7 +229,6 @@ void ExtensionToolbarModel::Observe(
     }
     SetVisibleIconCount(new_size);
     MoveExtensionIcon(extension, new_index);
-    FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
   } else {  // Don't include all extensions.
     if (visible)
       AddExtension(extension);
@@ -588,12 +589,8 @@ void ExtensionToolbarModel::EnsureVisibility(
 
   // Otherwise, make sure we have enough room to show all the extensions
   // requested.
-  if (visible_icon_count_ < static_cast<int>(extension_ids.size())) {
+  if (visible_icon_count_ < static_cast<int>(extension_ids.size()))
     SetVisibleIconCount(extension_ids.size());
-
-    // Inform observers.
-    FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
-  }
 
   if (visible_icon_count_ == -1)
     return;  // May have been set to max by SetVisibleIconCount.
@@ -635,7 +632,6 @@ bool ExtensionToolbarModel::HighlightExtensions(
     if (visible_icon_count_ != -1 &&
         visible_icon_count_ < static_cast<int>(extension_ids.size())) {
       SetVisibleIconCount(extension_ids.size());
-      FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
     }
 
     FOR_EACH_OBSERVER(Observer, observers_, ToolbarHighlightModeChanged(true));
@@ -653,17 +649,10 @@ void ExtensionToolbarModel::StopHighlighting() {
   if (is_highlighting_) {
     highlighted_items_.clear();
     is_highlighting_ = false;
-    if (old_visible_icon_count_ != visible_icon_count_) {
+    if (old_visible_icon_count_ != visible_icon_count_)
       SetVisibleIconCount(old_visible_icon_count_);
-      FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
-    }
     FOR_EACH_OBSERVER(Observer, observers_, ToolbarHighlightModeChanged(false));
   }
-}
-
-void ExtensionToolbarModel::SetVisibleIconCountForTest(size_t visible_icons) {
-  SetVisibleIconCount(visible_icons);
-  FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
 }
 
 }  // namespace extensions
