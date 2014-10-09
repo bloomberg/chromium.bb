@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "nacl_io/log.h"
+#include "nacl_io/osinttypes.h"
 
 #include "sdk_util/macros.h"
 
@@ -72,7 +73,8 @@ Error GetDentsHelper::GetDents(size_t offs,
 
   // If the buffer is too small, fail
   if (size < sizeof(dirent)) {
-    LOG_TRACE("dirent buffer size is too small: %d < %d", size, sizeof(dirent));
+    LOG_TRACE("dirent buffer size is too small: %" PRIuS " < %" PRIuS "",
+        size, sizeof(dirent));
     return EINVAL;
   }
 

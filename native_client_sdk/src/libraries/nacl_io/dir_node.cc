@@ -92,7 +92,7 @@ Error DirNode::AddChild(const std::string& name, const ScopedNode& node) {
 
   NodeMap_t::iterator it = map_.find(name);
   if (it != map_.end()) {
-    LOG_TRACE("Can't add child \"%s\", it already exists.", name);
+    LOG_TRACE("Can't add child \"%s\", it already exists.", name.c_str());
     return EEXIST;
   }
 

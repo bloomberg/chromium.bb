@@ -29,6 +29,7 @@
 #include "nacl_io/log.h"
 #include "nacl_io/memfs/mem_fs.h"
 #include "nacl_io/node.h"
+#include "nacl_io/osinttypes.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/osstat.h"
@@ -84,40 +85,46 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   ScopedFilesystem root_fs;
   rtn = MountInternal("", "/", "passthroughfs", 0, NULL, false, &root_fs);
   if (rtn != 0)
-    assert(false);
+    return rtn;
 
   ScopedFilesystem fs;
   rtn = MountInternal("", "/dev", "dev", 0, NULL, false, &fs);
   if (rtn != 0)
-    assert(false);
+    return rtn;
   dev_fs_ = sdk_util::static_scoped_ref_cast<DevFs>(fs);
 
   // Create the filesystem nodes for / and /dev afterward. They can't be
   // created the normal way because the dev filesystem didn't exist yet.
   rtn = CreateFsNode(root_fs);
   if (rtn != 0)
-    assert(false);
+    return rtn;
 
   rtn = CreateFsNode(dev_fs_);
   if (rtn != 0)
-    assert(false);
+    return rtn;
 
   // Open the first three in order to get STDIN, STDOUT, STDERR
   int fd;
   fd = open("/dev/stdin", O_RDONLY, 0);
+  if (fd < 0) {
+    LOG_ERROR("failed to open /dev/stdin: %s", strerror(errno));
+    return errno;
+  }
   assert(fd == 0);
-  if (fd < 0)
-    rtn = errno;
 
   fd = open("/dev/stdout", O_WRONLY, 0);
+  if (fd < 0) {
+    LOG_ERROR("failed to open /dev/stdout: %s", strerror(errno));
+    return errno;
+  }
   assert(fd == 1);
-  if (fd < 0)
-    rtn = errno;
 
   fd = open("/dev/stderr", O_WRONLY, 0);
+  if (fd < 0) {
+    LOG_ERROR("failed to open /dev/sterr: %s", strerror(errno));
+    return errno;
+  }
   assert(fd == 2);
-  if (fd < 0)
-    rtn = errno;
 
 #ifdef PROVIDES_SOCKET_API
   host_resolver_.Init(ppapi_);
@@ -129,11 +136,11 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   stream_fs_.reset(new StreamFs());
   int result = stream_fs_->Init(args);
   if (result != 0) {
-    assert(false);
-    rtn = result;
+    LOG_ERROR("initializing streamfs failed: %s", strerror(result));
+    return result;
   }
 
-  return rtn;
+  return 0;
 }
 
 bool KernelProxy::RegisterFsType(const char* fs_type,
@@ -1151,7 +1158,7 @@ int KernelProxy::sigaction(int signum,
       if (action && action->sa_handler != SIG_DFL) {
         // Trying to set this action to anything other than SIG_DFL
         // is not yet supported.
-        LOG_TRACE("sigaction on signal %d != SIG_DFL not supported.", sig);
+        LOG_TRACE("sigaction on signal %d != SIG_DFL not supported.", signum);
         errno = EINVAL;
         return -1;
       }
@@ -1218,7 +1225,7 @@ int KernelProxy::select(int nfds,
     if ((timeout->tv_sec < 0) || (timeout->tv_sec >= (INT_MAX / 1000)) ||
         (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000000) || (ms < 0) ||
         (ms >= INT_MAX)) {
-      LOG_TRACE("Invalid timeout: tv_sec=%d tv_usec=%d.",
+      LOG_TRACE("Invalid timeout: tv_sec=%" PRIi64 " tv_usec=%ld.",
                 timeout->tv_sec,
                 timeout->tv_usec);
       errno = EINVAL;

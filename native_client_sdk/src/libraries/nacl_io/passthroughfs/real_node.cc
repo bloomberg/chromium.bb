@@ -5,9 +5,11 @@
 #include "nacl_io/passthroughfs/real_node.h"
 
 #include <errno.h>
+#include <string.h>
 
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
+#include "nacl_io/log.h"
 
 namespace nacl_io {
 RealNode::RealNode(Filesystem* filesystem, int real_fd, bool close_on_destroy)
@@ -28,17 +30,24 @@ Error RealNode::Read(const HandleAttr& attr,
                    void* buf,
                    size_t count,
                    int* out_bytes) {
+  int err;
   *out_bytes = 0;
 
-  int64_t new_offset;
-  int err = _real_lseek(real_fd_, attr.offs, 0, &new_offset);
-  if (err && err != ESPIPE)
-    return err;
+  if (IsaFile()) {
+    int64_t new_offset;
+    err = _real_lseek(real_fd_, attr.offs, SEEK_SET, &new_offset);
+    if (err) {
+      LOG_WARN("_real_lseek failed: %s\n", strerror(err));
+      return err;
+    }
+  }
 
   size_t nread;
   err = _real_read(real_fd_, buf, count, &nread);
-  if (err)
+  if (err) {
+    LOG_WARN("_real_read failed: %s\n", strerror(err));
     return err;
+  }
 
   *out_bytes = static_cast<int>(nread);
   return 0;
@@ -48,19 +57,24 @@ Error RealNode::Write(const HandleAttr& attr,
                       const void* buf,
                       size_t count,
                       int* out_bytes) {
-  //nacl_io_log("Real::Write\n");
   int err;
   *out_bytes = 0;
 
-  int64_t new_offset;
-  err = _real_lseek(real_fd_, attr.offs, 0, &new_offset);
-  if (err && err != ESPIPE)
-    return err;
+  if (IsaFile()) {
+    int64_t new_offset;
+    err = _real_lseek(real_fd_, attr.offs, SEEK_SET, &new_offset);
+    if (err) {
+      LOG_WARN("_real_lseek failed: %s\n", strerror(err));
+      return err;
+    }
+  }
 
   size_t nwrote;
   err = _real_write(real_fd_, buf, count, &nwrote);
-  if (err)
+  if (err) {
+    LOG_WARN("_real_write failed: %s\n", strerror(err));
     return err;
+  }
 
   *out_bytes = static_cast<int>(nwrote);
   return 0;
@@ -86,6 +100,12 @@ Error RealNode::GetStat(struct stat* stat) {
   int err = _real_fstat(real_fd_, stat);
   if (err)
     return err;
+  // On windows, fstat() of stdin/stdout/stderr returns all zeros
+  // for the permission bits. This can cause problems down the
+  // line.  For example, CanOpen() will fail.
+  // TODO(sbc): Fix this within sel_ldr instead.
+  if (S_ISCHR(stat->st_mode) && (stat->st_mode & S_IRWXU) == 0)
+    stat->st_mode |= S_IRWXU;
   return 0;
 }
 
