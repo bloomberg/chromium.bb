@@ -11,7 +11,7 @@ PASS movingdiv.scrollTop is 0
 PASS movingdiv.scrollLeft is 45
 PASS wheelEventsOccurred is 0
 second gesture
-PASS movingdiv.scrollTop is 47
+PASS movingdiv.scrollTop is 47.5
 PASS movingdiv.scrollLeft is 45
 PASS wheelEventsOccurred is 0
 scroll event 0+> [object HTMLDivElement]

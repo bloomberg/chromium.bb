@@ -409,7 +409,7 @@ void RenderBox::setScrollTop(LayoutUnit newTop)
         layer()->scrollableArea()->scrollToYOffset(newTop, ScrollOffsetClamped);
 }
 
-void RenderBox::scrollToOffset(const IntSize& offset)
+void RenderBox::scrollToOffset(const DoubleSize& offset)
 {
     ASSERT(hasOverflowClip());
 
@@ -465,13 +465,13 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                     LayoutRect viewRect = frameView->visibleContentRect();
                     LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
 
-                    int xOffset = roundToInt(exposeRect.x());
-                    int yOffset = roundToInt(exposeRect.y());
+                    double xOffset = exposeRect.x();
+                    double yOffset = exposeRect.y();
                     // Adjust offsets if they're outside of the allowable range.
-                    xOffset = std::max(0, std::min(frameView->contentsWidth(), xOffset));
-                    yOffset = std::max(0, std::min(frameView->contentsHeight(), yOffset));
+                    xOffset = std::max(0.0, std::min<double>(frameView->contentsWidth(), xOffset));
+                    yOffset = std::max(0.0, std::min<double>(frameView->contentsHeight(), yOffset));
 
-                    frameView->setScrollPosition(IntPoint(xOffset, yOffset));
+                    frameView->setScrollPosition(DoublePoint(xOffset, yOffset));
                     if (frameView->safeToPropagateScrollToParent()) {
                         parentBox = ownerElement->renderer()->enclosingBox();
                         // FIXME: This doesn't correctly convert the rect to
@@ -490,7 +490,7 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                 } else {
                     LayoutRect viewRect = frameView->visibleContentRect();
                     LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
-                    frameView->setScrollPosition(roundedIntPoint(r.location()));
+                    frameView->setScrollPosition(DoublePoint(r.location()));
                 }
             }
         }
@@ -805,11 +805,10 @@ void RenderBox::panScroll(const IntPoint& sourcePoint)
         delta.setWidth(0);
     if (abs(delta.height()) <= ScrollView::noPanScrollRadius)
         delta.setHeight(0);
-
     scrollByRecursively(adjustedScrollDelta(delta), ScrollOffsetClamped);
 }
 
-void RenderBox::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping clamp)
+void RenderBox::scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping clamp)
 {
     if (delta.isZero())
         return;
@@ -819,11 +818,11 @@ void RenderBox::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping c
         restrictedByLineClamp = !parent()->style()->lineClamp().isNone();
 
     if (hasOverflowClip() && !restrictedByLineClamp) {
-        IntSize newScrollOffset = layer()->scrollableArea()->adjustedScrollOffset() + delta;
+        DoubleSize newScrollOffset = layer()->scrollableArea()->adjustedScrollOffset() + delta;
         layer()->scrollableArea()->scrollToOffset(newScrollOffset, clamp);
 
         // If this layer can't do the scroll we ask the next layer up that can scroll to try
-        IntSize remainingScrollOffset = newScrollOffset - layer()->scrollableArea()->adjustedScrollOffset();
+        DoubleSize remainingScrollOffset = newScrollOffset - layer()->scrollableArea()->adjustedScrollOffset();
         if (!remainingScrollOffset.isZero() && parent()) {
             if (RenderBox* scrollableBox = enclosingScrollableBox())
                 scrollableBox->scrollByRecursively(remainingScrollOffset, clamp);
@@ -835,7 +834,8 @@ void RenderBox::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping c
     } else if (view()->frameView()) {
         // If we are here, we were called on a renderer that can be programmatically scrolled, but doesn't
         // have an overflow clip. Which means that it is a document node that can be scrolled.
-        view()->frameView()->scrollBy(delta);
+        // FIXME: Pass in DoubleSize. crbug.com/414283.
+        view()->frameView()->scrollBy(flooredIntSize(delta));
 
         // FIXME: If we didn't scroll the whole way, do we want to try looking at the frames ownerElement?
         // https://bugs.webkit.org/show_bug.cgi?id=28237
@@ -851,7 +851,8 @@ IntSize RenderBox::scrolledContentOffset() const
 {
     ASSERT(hasOverflowClip());
     ASSERT(hasLayer());
-    return layer()->scrollableArea()->scrollOffset();
+    // FIXME: Return DoubleSize here. crbug.com/414283.
+    return flooredIntSize(layer()->scrollableArea()->scrollOffset());
 }
 
 void RenderBox::applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const

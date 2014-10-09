@@ -125,8 +125,9 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
 
     if (!box().documentBeingDestroyed()) {
         Node* node = box().node();
+        // FIXME: Make setSavedLayerScrollOffset take DoubleSize. crbug.com/414283.
         if (node && node->isElementNode())
-            toElement(node)->setSavedLayerScrollOffset(m_scrollOffset);
+            toElement(node)->setSavedLayerScrollOffset(flooredIntSize(m_scrollOffset));
     }
 
     if (LocalFrame* frame = box().frame()) {
@@ -344,16 +345,21 @@ int RenderLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) cons
 
 void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 {
+    setScrollOffset(DoublePoint(newScrollOffset));
+}
+
+void RenderLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
+{
     if (!box().isMarquee()) {
         // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
         if (m_scrollDimensionsDirty)
             computeScrollDimensions();
     }
 
-    if (scrollOffset() == toIntSize(newScrollOffset))
+    if (scrollOffset() == toDoubleSize(newScrollOffset))
         return;
 
-    m_scrollOffset = toIntSize(newScrollOffset);
+    m_scrollOffset = toDoubleSize(newScrollOffset);
 
     LocalFrame* frame = box().frame();
     ASSERT(frame);
@@ -417,7 +423,12 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
 IntPoint RenderLayerScrollableArea::scrollPosition() const
 {
-    return IntPoint(m_scrollOffset);
+    return IntPoint(flooredIntSize(m_scrollOffset));
+}
+
+DoublePoint RenderLayerScrollableArea::scrollPositionDouble() const
+{
+    return DoublePoint(m_scrollOffset);
 }
 
 IntPoint RenderLayerScrollableArea::minimumScrollPosition() const
@@ -562,30 +573,35 @@ void RenderLayerScrollableArea::computeScrollDimensions()
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
-void RenderLayerScrollableArea::scrollToOffset(const IntSize& scrollOffset, ScrollOffsetClamping clamp)
+void RenderLayerScrollableArea::scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping clamp)
 {
-    IntSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
-    if (newScrollOffset != adjustedScrollOffset())
-        scrollToOffsetWithoutAnimation(-scrollOrigin() + newScrollOffset);
+    DoubleSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
+    if (newScrollOffset != adjustedScrollOffset()) {
+        DoublePoint origin(scrollOrigin());
+        // FIXME: Make scrollToOffsetWithoutAnimation take DoublePoint. crbug.com/414283.
+        scrollToOffsetWithoutAnimation(toFloatPoint(-origin + newScrollOffset));
+    }
 }
 
 void RenderLayerScrollableArea::updateAfterLayout()
 {
     m_scrollDimensionsDirty = true;
-    IntSize originalScrollOffset = adjustedScrollOffset();
+    DoubleSize originalScrollOffset = adjustedScrollOffset();
 
     computeScrollDimensions();
 
     if (!box().isMarquee()) {
         // Layout may cause us to be at an invalid scroll position. In this case we need
         // to pull our scroll offsets back to the max (or push them up to the min).
-        IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
+        DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
         if (clampedScrollOffset != adjustedScrollOffset())
             scrollToOffset(clampedScrollOffset);
     }
 
-    if (originalScrollOffset != adjustedScrollOffset())
-        scrollToOffsetWithoutAnimation(-scrollOrigin() + adjustedScrollOffset());
+    if (originalScrollOffset != adjustedScrollOffset()) {
+        DoublePoint origin(scrollOrigin());
+        scrollToOffsetWithoutAnimation(toFloatPoint(-origin + adjustedScrollOffset()));
+    }
 
     bool hasHorizontalOverflow = this->hasHorizontalOverflow();
     bool hasVerticalOverflow = this->hasVerticalOverflow();
@@ -780,14 +796,14 @@ void RenderLayerScrollableArea::updateAfterOverflowRecalc()
         box().setNeedsLayoutAndFullPaintInvalidation();
 }
 
-IntSize RenderLayerScrollableArea::clampScrollOffset(const IntSize& scrollOffset) const
+DoubleSize RenderLayerScrollableArea::clampScrollOffset(const DoubleSize& scrollOffset) const
 {
     int maxX = scrollWidth() - box().pixelSnappedClientWidth();
     int maxY = scrollHeight() - box().pixelSnappedClientHeight();
 
-    int x = std::max(std::min(scrollOffset.width(), maxX), 0);
-    int y = std::max(std::min(scrollOffset.height(), maxY), 0);
-    return IntSize(x, y);
+    double x = std::max(std::min(scrollOffset.width(), static_cast<double>(maxX)), 0.0);
+    double y = std::max(std::min(scrollOffset.height(), static_cast<double>(maxY)), 0.0);
+    return DoubleSize(x, y);
 }
 
 IntRect RenderLayerScrollableArea::rectForHorizontalScrollbar(const IntRect& borderBoxRect) const
@@ -1390,14 +1406,14 @@ LayoutRect RenderLayerScrollableArea::exposeRect(const LayoutRect& rect, const S
     LayoutRect layerBounds(0, 0, box().clientWidth(), box().clientHeight());
     LayoutRect r = ScrollAlignment::getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
 
-    IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
+    DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
     if (clampedScrollOffset == adjustedScrollOffset())
         return rect;
 
-    IntSize oldScrollOffset = adjustedScrollOffset();
+    DoubleSize oldScrollOffset = adjustedScrollOffset();
     scrollToOffset(clampedScrollOffset);
-    IntSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
-    localExposeRect.move(-scrollOffsetDifference);
+    DoubleSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
+    localExposeRect.move(-LayoutSize(scrollOffsetDifference));
     return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
 }
 

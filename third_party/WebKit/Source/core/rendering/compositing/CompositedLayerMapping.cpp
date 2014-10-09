@@ -892,8 +892,8 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     ASSERT(m_scrollingContentsLayer);
     RenderBox* renderBox = toRenderBox(renderer());
     IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
-
-    IntSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
+    // FIXME: Remove the flooredIntSize conversion. crbug.com/414283.
+    IntSize adjustedScrollOffset = flooredIntSize(m_owningLayer.scrollableArea()->adjustedScrollOffset());
     m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
     m_scrollingLayer->setSize(clientBox.size());
 
@@ -1149,8 +1149,8 @@ void CompositedLayerMapping::updateScrollingBlockSelection()
     m_scrollingBlockSelectionLayer->setDrawsContent(!paintsIntoCompositedAncestor() && shouldDrawContent);
     if (!shouldDrawContent)
         return;
-
-    const IntPoint position = blockSelectionGapsBounds.location() + m_owningLayer.scrollableArea()->adjustedScrollOffset();
+    // FIXME: Remove the flooredIntSize conversion. crbug.com/414283.
+    const IntPoint position = blockSelectionGapsBounds.location() + flooredIntSize(m_owningLayer.scrollableArea()->adjustedScrollOffset());
     if (m_scrollingBlockSelectionLayer->size() == blockSelectionGapsBounds.size() && m_scrollingBlockSelectionLayer->position() == position)
         return;
 

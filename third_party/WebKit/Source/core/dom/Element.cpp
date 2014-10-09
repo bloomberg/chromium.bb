@@ -680,7 +680,7 @@ void Element::setScrollLeft(double newLeft)
         if (!view)
             return;
 
-        view->setScrollPosition(IntPoint(roundf(newLeft * frame->pageZoomFactor()), view->scrollY()));
+        view->setScrollPosition(DoublePoint(newLeft * frame->pageZoomFactor(), view->scrollY()));
     }
 }
 
@@ -727,7 +727,7 @@ void Element::setScrollTop(double newTop)
         if (!view)
             return;
 
-        view->setScrollPosition(IntPoint(view->scrollX(), roundf(newTop * frame->pageZoomFactor())));
+        view->setScrollPosition(DoublePoint(view->scrollX(), newTop * frame->pageZoomFactor()));
     }
 }
 

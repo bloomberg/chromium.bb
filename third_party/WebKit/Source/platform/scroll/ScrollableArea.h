@@ -265,7 +265,8 @@ private:
     // call into the IntPoint version. If fractional scroll is needed, one
     // can override the DoublePoint version to take advantage of the double
     // precision scroll offset.
-    // FIXME: Remove the IntPoint version. crbug.com/414283.
+    // FIXME: Remove the IntPoint version. And change the function to
+    // take DoubleSize. crbug.com/414283.
     virtual void setScrollOffset(const IntPoint&) = 0;
     virtual void setScrollOffset(const DoublePoint& offset)
     {

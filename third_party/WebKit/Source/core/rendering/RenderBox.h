@@ -263,8 +263,8 @@ public:
     virtual void setScrollLeft(LayoutUnit);
     virtual void setScrollTop(LayoutUnit);
 
-    void scrollToOffset(const IntSize&);
-    void scrollByRecursively(const IntSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
+    void scrollToOffset(const DoubleSize&);
+    void scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
     void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     virtual LayoutUnit marginTop() const override { return m_marginBox.top(); }

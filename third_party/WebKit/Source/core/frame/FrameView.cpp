@@ -1412,7 +1412,7 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
         bounds.x() - centeringOffsetX - targetRect.x(),
         bounds.y() - centeringOffsetY - targetRect.y());
 
-    setScrollPosition(targetOffset);
+    setScrollPosition(DoublePoint(targetOffset));
 
     if (pinchVirtualViewportEnabled) {
         IntPoint remainder = IntPoint(targetOffset - scrollPosition());
@@ -1420,15 +1420,15 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
     }
 }
 
-void FrameView::setScrollPosition(const IntPoint& scrollPoint, ScrollBehavior scrollBehavior)
+void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)
 {
     cancelProgrammaticScrollAnimation();
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
     m_maintainScrollPositionAnchor = nullptr;
 
-    IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
+    DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
 
-    if (newScrollPosition == scrollPosition())
+    if (newScrollPosition == scrollPositionDouble())
         return;
 
     if (scrollBehavior == ScrollBehaviorAuto) {
@@ -2130,7 +2130,7 @@ void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
         return;
 
     m_visibleContentScaleFactor = visibleContentScaleFactor;
-    updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffsetDouble());
 }
 
 void FrameView::setInputEventsTransformForEmulation(const IntSize& offset, float contentScaleFactor)

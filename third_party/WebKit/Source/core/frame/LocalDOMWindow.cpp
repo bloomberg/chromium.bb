@@ -1360,7 +1360,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (!view)
         return;
 
-    IntSize scaledOffset(static_cast<int>(x * m_frame->pageZoomFactor()), static_cast<int>(y * m_frame->pageZoomFactor()));
+    DoubleSize scaledOffset(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
     view->scrollBy(scaledOffset, scrollBehavior);
 }
 
@@ -1383,7 +1383,7 @@ void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior)
     if (!view)
         return;
 
-    IntPoint layoutPos(static_cast<int>(x * m_frame->pageZoomFactor()), static_cast<int>(y * m_frame->pageZoomFactor()));
+    DoublePoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
     view->setScrollPosition(layoutPos, scrollBehavior);
 }
 

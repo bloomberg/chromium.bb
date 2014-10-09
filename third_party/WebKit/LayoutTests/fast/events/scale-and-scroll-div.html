@@ -23,12 +23,13 @@
     </style>
     <script>
 
+      var floatPrecision = 0.1;
       var scrollDistance = 10;
       var expectedScrollDistance;
       var scrollBox;
 
       function scroll(scaleFactor) {
-          expectedScrollDistance = Math.floor(scrollDistance/scaleFactor);
+          expectedScrollDistance = scrollDistance/scaleFactor;
 
           scrollBox.scrollTop = 0;
 
@@ -38,7 +39,7 @@
           }
           eventSender.gestureScrollEnd(0, 0);
 
-          shouldBe('scrollBox.scrollTop', 'expectedScrollDistance');
+          shouldBeCloseTo('scrollBox.scrollTop', expectedScrollDistance, floatPrecision);
 
           scrollBox.scrollTop = 20;
 
@@ -48,9 +49,9 @@
           }
           eventSender.gestureScrollEnd(0, 0);
 
-          expectedScrollDistance = Math.floor(20 - scrollDistance/scaleFactor);
+          expectedScrollDistance = 20 - scrollDistance/scaleFactor;
           
-          shouldBe('scrollBox.scrollTop', 'expectedScrollDistance');
+          shouldBeCloseTo('scrollBox.scrollTop', expectedScrollDistance, floatPrecision);
       }
 
       function scaleWithEventSender(scaleFactor) {

@@ -131,7 +131,7 @@ void ScrollView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode v
     if (!needsUpdate)
         return;
 
-    updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffsetDouble());
 
     if (!layerForScrolling())
         return;
@@ -209,7 +209,7 @@ void ScrollView::setContentsSize(const IntSize& newSize)
     if (contentsSize() == newSize)
         return;
     m_contentsSize = newSize;
-    updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffsetDouble());
     updateOverhangAreas();
 }
 
@@ -303,17 +303,19 @@ void ScrollView::scrollTo(const DoublePoint& newPosition)
         scrollContents(flooredIntSize(scrollDelta));
 }
 
-void ScrollView::setScrollPosition(const IntPoint& scrollPoint, ScrollBehavior scrollBehavior)
+void ScrollView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)
 {
-    IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
+    DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
 
-    if (newScrollPosition == scrollPosition())
+    if (newScrollPosition == scrollPositionDouble())
         return;
 
-    if (scrollBehavior == ScrollBehaviorInstant)
-        updateScrollbars(IntSize(newScrollPosition.x(), newScrollPosition.y()));
-    else
-        programmaticallyScrollSmoothlyToOffset(newScrollPosition);
+    if (scrollBehavior == ScrollBehaviorInstant) {
+        DoubleSize newOffset(newScrollPosition.x(), newScrollPosition.y());
+        updateScrollbars(newOffset);
+    } else {
+        programmaticallyScrollSmoothlyToOffset(toFloatPoint(newScrollPosition));
+    }
 }
 
 bool ScrollView::scroll(ScrollDirection direction, ScrollGranularity granularity)
@@ -347,7 +349,7 @@ IntSize ScrollView::overhangAmount() const
 
 void ScrollView::windowResizerRectChanged()
 {
-    updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffsetDouble());
 }
 
 static bool useOverlayScrollbars()
@@ -509,7 +511,7 @@ bool ScrollView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option
     return true;
 }
 
-void ScrollView::updateScrollbars(const IntSize& desiredOffset)
+void ScrollView::updateScrollbars(const DoubleSize& desiredOffset)
 {
     if (scrollbarsDisabled()) {
         setScrollOffsetFromUpdateScrollbars(desiredOffset);
@@ -553,15 +555,15 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     setScrollOffsetFromUpdateScrollbars(desiredOffset);
 }
 
-void ScrollView::setScrollOffsetFromUpdateScrollbars(const IntSize& offset)
+void ScrollView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
 {
-    IntPoint adjustedScrollPosition = IntPoint(offset);
+    DoublePoint adjustedScrollPosition = DoublePoint(offset);
 
     if (!isRubberBandInProgress())
         adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
 
-    if (adjustedScrollPosition != scrollPosition() || scrollOriginChanged()) {
-        ScrollableArea::scrollToOffsetWithoutAnimation(adjustedScrollPosition);
+    if (adjustedScrollPosition != scrollPositionDouble() || scrollOriginChanged()) {
+        ScrollableArea::scrollToOffsetWithoutAnimation(toFloatPoint(adjustedScrollPosition));
         resetScrollOriginChanged();
     }
 }
@@ -769,7 +771,7 @@ void ScrollView::setFrameRect(const IntRect& newRect)
 
     Widget::setFrameRect(newRect);
 
-    updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffsetDouble());
 
     frameRectsChanged();
 }
@@ -879,7 +881,7 @@ void ScrollView::scrollbarStyleChanged()
 {
     adjustScrollbarOpacity();
     contentsResized();
-    updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffsetDouble());
     positionScrollbarLayers();
 }
 
@@ -1175,7 +1177,7 @@ void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAl
 
     // Update if the scroll origin changes, since our position will be different if the content size did not change.
     if (updatePositionAtAll && updatePositionSynchronously)
-        updateScrollbars(scrollOffset());
+        updateScrollbars(scrollOffsetDouble());
 }
 
 } // namespace blink

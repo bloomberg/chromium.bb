@@ -136,14 +136,14 @@ void PinchViewport::scrollIntoView(const FloatRect& rect)
     float centeringOffsetX = (visibleRect().width() - rect.width()) / 2;
     float centeringOffsetY = (visibleRect().height() - rect.height()) / 2;
 
-    FloatPoint targetOffset(
+    DoublePoint targetOffset(
         rect.x() - centeringOffsetX - visibleRect().x(),
         rect.y() - centeringOffsetY - visibleRect().y());
 
-    view->setScrollPosition(flooredIntPoint(targetOffset));
+    view->setScrollPosition(targetOffset);
 
-    FloatPoint remainder = FloatPoint(targetOffset - view->scrollPosition());
-    move(remainder);
+    DoublePoint remainder = DoublePoint(targetOffset - view->scrollPositionDouble());
+    move(toFloatPoint(remainder));
 }
 
 void PinchViewport::setLocation(const FloatPoint& newLocation)

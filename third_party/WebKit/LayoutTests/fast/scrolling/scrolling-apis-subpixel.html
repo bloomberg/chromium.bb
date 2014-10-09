@@ -28,13 +28,16 @@ description("Verifies that scrolling APIs support fractional offsets.");
 // browser zoom.  When http://crbug.com/414283 is fixed, we should test
 // other cases like device scale.
 
+// FIXME: Make this smaller. crbug.com/414283.
+var floatPrecision = 0.01;
+
 function testScroll(scrollOffset) {
 
     debug('Scrolling DIV with scrollTop/scrollLeft');
     scroller.scrollTop = scrollOffset;
-    shouldBeEqualToNumber('scroller.scrollTop', scrollOffset);
+    shouldBeCloseTo('scroller.scrollTop', scrollOffset, floatPrecision);
     scroller.scrollLeft = scrollOffset;
-    shouldBeEqualToNumber('scroller.scrollLeft', scrollOffset);
+    shouldBeCloseTo('scroller.scrollLeft', scrollOffset, floatPrecision);
 
     // Note that the body element is a special case - we don't attempt to
     // test it here as it's semantics are in flux (http://goo.gl/BFHtMR).
@@ -43,20 +46,20 @@ function testScroll(scrollOffset) {
     window.scroll(0,0);
     scrollOffset++;
     window.scroll(scrollOffset, scrollOffset);
-    shouldBeEqualToNumber('window.scrollY', scrollOffset);
-    shouldBeEqualToNumber('window.scrollX', scrollOffset);
+    shouldBeCloseTo('window.scrollY', scrollOffset, floatPrecision);
+    shouldBeCloseTo('window.scrollX', scrollOffset, floatPrecision);
 
     debug('Scrolling the document with window.scrollTo');
     window.scroll(0,0);
     window.scrollTo(scrollOffset, scrollOffset);
-    shouldBeEqualToNumber('window.pageYOffset', scrollOffset);
-    shouldBeEqualToNumber('window.pageXOffset', scrollOffset);
+    shouldBeCloseTo('window.pageYOffset', scrollOffset, floatPrecision);
+    shouldBeCloseTo('window.pageXOffset', scrollOffset, floatPrecision);
 
     debug('Scrolling the document with window.scrollBy');
     window.scroll(1,1);
     window.scrollBy(scrollOffset - 1, scrollOffset - 1);
-    shouldBeEqualToNumber('window.scrollY', scrollOffset);
-    shouldBeEqualToNumber('window.scrollX', scrollOffset);
+    shouldBeCloseTo('window.scrollY', scrollOffset, floatPrecision);
+    shouldBeCloseTo('window.scrollX', scrollOffset, floatPrecision);
 
     debug('');
 }
@@ -68,5 +71,6 @@ function testPageZoom(zoom) {
     testScroll(4.5);
 }
 
+testScroll(4.2);
 testPageZoom(2);
 </script>

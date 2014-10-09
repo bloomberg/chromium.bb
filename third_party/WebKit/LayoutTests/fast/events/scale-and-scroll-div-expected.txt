@@ -7,15 +7,15 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Scrolling unscaled div
-PASS scrollBox.scrollTop is expectedScrollDistance
-PASS scrollBox.scrollTop is expectedScrollDistance
+PASS scrollBox.scrollTop is within 0.1 of 10
+PASS scrollBox.scrollTop is within 0.1 of 10
 Scrolling 1.5 scaled div
-PASS scrollBox.scrollTop is expectedScrollDistance
-PASS scrollBox.scrollTop is expectedScrollDistance
+PASS scrollBox.scrollTop is within 0.1 of 6.666666666666667
+PASS scrollBox.scrollTop is within 0.1 of 13.333333333333332
 Scrolling 1.63 scaled div
-PASS scrollBox.scrollTop is expectedScrollDistance
-PASS scrollBox.scrollTop is expectedScrollDistance
+PASS scrollBox.scrollTop is within 0.1 of 6.134969325153374
+PASS scrollBox.scrollTop is within 0.1 of 13.865030674846626
 Scrolling 2.0 scaled div
-PASS scrollBox.scrollTop is expectedScrollDistance
-PASS scrollBox.scrollTop is expectedScrollDistance
+PASS scrollBox.scrollTop is within 0.1 of 5
+PASS scrollBox.scrollTop is within 0.1 of 15
 

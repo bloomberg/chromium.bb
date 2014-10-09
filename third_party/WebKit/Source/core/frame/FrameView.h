@@ -157,7 +157,7 @@ public:
     virtual IntSize inputEventsOffsetForEmulation() const override;
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
-    virtual void setScrollPosition(const IntPoint&, ScrollBehavior = ScrollBehaviorInstant) override;
+    virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant) override;
     virtual bool isRubberBandInProgress() const override;
     void setScrollPositionNonProgrammatically(const IntPoint&);
 

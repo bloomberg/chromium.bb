@@ -15,6 +15,7 @@ class PLATFORM_EXPORT DoubleSize {
 public:
     DoubleSize() : m_width(0), m_height(0) { }
     DoubleSize(double width, double height) : m_width(width), m_height(height) { }
+    DoubleSize(const IntSize& p) : m_width(p.width()), m_height(p.height()) { }
 
     double width() const { return m_width; }
     double height() const { return m_height; }
@@ -37,6 +38,11 @@ inline DoubleSize& operator+=(DoubleSize& a, const DoubleSize& b)
     return a;
 }
 
+inline DoubleSize operator+(const DoubleSize& a, const DoubleSize& b)
+{
+    return DoubleSize(a.width() + b.width(), a.height() + b.height());
+}
+
 inline DoubleSize operator-(const DoubleSize& a, const DoubleSize& b)
 {
     return DoubleSize(a.width() - b.width(), a.height() - b.height());
@@ -45,6 +51,11 @@ inline DoubleSize operator-(const DoubleSize& a, const DoubleSize& b)
 inline bool operator==(const DoubleSize& a, const DoubleSize& b)
 {
     return a.width() == b.width() && a.height() == b.height();
+}
+
+inline bool operator!=(const DoubleSize& a, const DoubleSize& b)
+{
+    return a.width() != b.width() || a.height() != b.height();
 }
 
 inline IntSize flooredIntSize(const DoubleSize& p)

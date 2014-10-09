@@ -264,12 +264,12 @@ void ImageDocument::imageClicked(int x, int y)
 
         updateLayout();
 
-        float scale = this->scale();
+        double scale = this->scale();
 
-        int scrollX = static_cast<int>(x / scale - (float)frame()->view()->width() / 2);
-        int scrollY = static_cast<int>(y / scale - (float)frame()->view()->height() / 2);
+        double scrollX = x / scale - static_cast<double>(frame()->view()->width()) / 2;
+        double scrollY = y / scale - static_cast<double>(frame()->view()->height()) / 2;
 
-        frame()->view()->setScrollPosition(IntPoint(scrollX, scrollY));
+        frame()->view()->setScrollPosition(DoublePoint(scrollX, scrollY));
     }
 }
 

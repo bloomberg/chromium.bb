@@ -23,14 +23,19 @@ public:
         , m_y(y)
     {
     }
-    explicit DoublePoint(const IntPoint& p)
+    DoublePoint(const IntPoint& p)
         : m_x(p.x())
         , m_y(p.y())
     {
     }
-    explicit DoublePoint(const FloatPoint& p)
+    DoublePoint(const FloatPoint& p)
         : m_x(p.x())
         , m_y(p.y())
+    {
+    }
+
+    explicit DoublePoint(const DoubleSize& size)
+        : m_x(size.width()), m_y(size.height())
     {
     }
 
@@ -61,9 +66,19 @@ inline bool operator!=(const DoublePoint& a, const DoublePoint& b)
     return a.x() != b.x() || a.y() != b.y();
 }
 
+inline DoublePoint operator+(const DoublePoint& a, const DoubleSize& b)
+{
+    return DoublePoint(a.x() + b.width(), a.y() + b.height());
+}
+
 inline DoubleSize operator-(const DoublePoint& a, const DoublePoint& b)
 {
     return DoubleSize(a.x() - b.x(), a.y() - b.y());
+}
+
+inline DoublePoint operator-(const DoublePoint& a)
+{
+    return DoublePoint(-a.x(), -a.y());
 }
 
 inline IntPoint flooredIntPoint(const DoublePoint& p)

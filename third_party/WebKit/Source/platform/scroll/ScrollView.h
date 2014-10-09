@@ -134,7 +134,9 @@ public:
     // FIXME: Remove the IntPoint version. crbug.com/414283.
     virtual IntPoint scrollPosition() const override { return visibleContentRect().location(); }
     virtual DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
+    // FIXME: Remove scrollOffset(). crbug.com/414283.
     IntSize scrollOffset() const { return toIntSize(visibleContentRect().location()); } // Gets the scrolled position as an IntSize. Convenient for adding to other sizes.
+    DoubleSize scrollOffsetDouble() const { return DoubleSize(m_scrollPosition.x(), m_scrollPosition.y()); }
     DoubleSize pendingScrollDelta() const { return m_pendingScrollDelta; }
     virtual IntPoint maximumScrollPosition() const override; // The maximum position we can be scrolled to.
     virtual IntPoint minimumScrollPosition() const override; // The minimum position we can be scrolled to.
@@ -150,10 +152,10 @@ public:
     DoublePoint cachedScrollPosition() const { return m_cachedScrollPosition; }
 
     // Functions for scrolling the view.
-    virtual void setScrollPosition(const IntPoint&, ScrollBehavior = ScrollBehaviorInstant);
-    void scrollBy(const IntSize& s, ScrollBehavior behavior = ScrollBehaviorInstant)
+    virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant);
+    void scrollBy(const DoubleSize& s, ScrollBehavior behavior = ScrollBehaviorInstant)
     {
-        return setScrollPosition(scrollPosition() + s, behavior);
+        return setScrollPosition(scrollPositionDouble() + s, behavior);
     }
 
     bool scroll(ScrollDirection, ScrollGranularity);
@@ -290,7 +292,7 @@ protected:
     IntRect adjustScrollbarRectForResizer(const IntRect&, Scrollbar*);
 
     // Called to update the scrollbars to accurately reflect the state of the view.
-    void updateScrollbars(const IntSize& desiredOffset);
+    void updateScrollbars(const DoubleSize& desiredOffset);
 
     IntSize excludeScrollbars(const IntSize&) const;
 
@@ -311,7 +313,7 @@ private:
     // FIXME(bokan): setScrollOffset, setScrollPosition, scrollTo, scrollToOffsetWithoutAnimation,
     // notifyScrollPositionChanged...there's too many ways to scroll this class. This needs
     // some cleanup.
-    void setScrollOffsetFromUpdateScrollbars(const IntSize&);
+    void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
 
     RefPtr<Scrollbar> m_horizontalScrollbar;
     RefPtr<Scrollbar> m_verticalScrollbar;

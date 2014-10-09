@@ -91,7 +91,9 @@ public:
     virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
     virtual int scrollSize(ScrollbarOrientation) const override;
     virtual void setScrollOffset(const IntPoint&) override;
+    virtual void setScrollOffset(const DoublePoint&) override;
     virtual IntPoint scrollPosition() const override;
+    virtual DoublePoint scrollPositionDouble() const override;
     virtual IntPoint minimumScrollPosition() const override;
     virtual IntPoint maximumScrollPosition() const override;
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect) const override;
@@ -107,17 +109,17 @@ public:
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
     virtual int pageStep(ScrollbarOrientation) const override;
 
-    int scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }
-    int scrollYOffset() const { return m_scrollOffset.height() + scrollOrigin().y(); }
+    double scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }
+    double scrollYOffset() const { return m_scrollOffset.height() + scrollOrigin().y(); }
 
-    IntSize scrollOffset() const { return m_scrollOffset; }
+    DoubleSize scrollOffset() const { return m_scrollOffset; }
 
     // FIXME: We shouldn't allow access to m_overflowRect outside this class.
     LayoutRect overflowRect() const { return m_overflowRect; }
 
-    void scrollToOffset(const IntSize& scrollOffset, ScrollOffsetClamping = ScrollOffsetUnclamped);
-    void scrollToXOffset(int x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(x, scrollYOffset()), clamp); }
-    void scrollToYOffset(int y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(scrollXOffset(), y), clamp); }
+    void scrollToOffset(const DoubleSize& scrollOffset, ScrollOffsetClamping = ScrollOffsetUnclamped);
+    void scrollToXOffset(double x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(DoubleSize(x, scrollYOffset()), clamp); }
+    void scrollToYOffset(double y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(DoubleSize(scrollXOffset(), y), clamp); }
 
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
@@ -149,7 +151,7 @@ public:
     int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
-    IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
+    DoubleSize adjustedScrollOffset() const { return DoubleSize(scrollXOffset(), scrollYOffset()); }
 
     void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
     void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
@@ -190,7 +192,7 @@ private:
 
     void computeScrollDimensions();
 
-    IntSize clampScrollOffset(const IntSize&) const;
+    DoubleSize clampScrollOffset(const DoubleSize&) const;
 
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
@@ -240,7 +242,7 @@ private:
     LayoutRect m_overflowRect;
 
     // This is the (scroll) offset from scrollOrigin().
-    IntSize m_scrollOffset;
+    DoubleSize m_scrollOffset;
 
     IntPoint m_cachedOverlayScrollbarOffset;
 
