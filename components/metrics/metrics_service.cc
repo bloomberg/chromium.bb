@@ -254,6 +254,11 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
   }
 }
 
+bool NewInitialMetricsTimingEnabled() {
+  return base::FieldTrialList::FindFullName("UMAInitialMetricsTiming") ==
+      "Enabled";
+}
+
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
@@ -893,14 +898,30 @@ void MetricsService::StageNewLog() {
       return;
 
     case INIT_TASK_DONE:
-      if (has_initial_stability_log_) {
-        // There's an initial stability log, ready to send.
-        log_manager_.StageNextLogForUpload();
-        has_initial_stability_log_ = false;
-        state_ = SENDING_INITIAL_STABILITY_LOG;
-      } else {
+      if (NewInitialMetricsTimingEnabled()) {
         PrepareInitialMetricsLog();
-        state_ = SENDING_INITIAL_METRICS_LOG;
+        // Stage the first log, which could be a stability log (either one
+        // for created in this session or from a previous session) or the
+        // initial metrics log that was just created.
+        log_manager_.StageNextLogForUpload();
+        if (has_initial_stability_log_) {
+          // The initial stability log was just staged.
+          has_initial_stability_log_ = false;
+          state_ = SENDING_INITIAL_STABILITY_LOG;
+        } else {
+          state_ = SENDING_INITIAL_METRICS_LOG;
+        }
+      } else {
+        if (has_initial_stability_log_) {
+          // There's an initial stability log, ready to send.
+          log_manager_.StageNextLogForUpload();
+          has_initial_stability_log_ = false;
+          state_ = SENDING_INITIAL_STABILITY_LOG;
+        } else {
+          PrepareInitialMetricsLog();
+          log_manager_.StageNextLogForUpload();
+          state_ = SENDING_INITIAL_METRICS_LOG;
+        }
       }
       break;
 
@@ -994,9 +1015,6 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Store unsent logs, including the initial log that was just saved, so
   // that they're not lost in case of a crash before upload time.
   log_manager_.PersistUnsentLogs();
-
-  DCHECK(!log_manager_.has_staged_log());
-  log_manager_.StageNextLogForUpload();
 }
 
 void MetricsService::SendStagedLog() {
@@ -1065,9 +1083,15 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   if (!log_manager_.has_staged_log()) {
     switch (state_) {
       case SENDING_INITIAL_STABILITY_LOG:
-        PrepareInitialMetricsLog();
-        SendStagedLog();
-        state_ = SENDING_INITIAL_METRICS_LOG;
+        if (NewInitialMetricsTimingEnabled()) {
+          // The initial metrics log is already in the queue of unsent logs.
+          state_ = SENDING_OLD_LOGS;
+        } else {
+          PrepareInitialMetricsLog();
+          log_manager_.StageNextLogForUpload();
+          SendStagedLog();
+          state_ = SENDING_INITIAL_METRICS_LOG;
+        }
         break;
 
       case SENDING_INITIAL_METRICS_LOG:
