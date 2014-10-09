@@ -26,8 +26,8 @@ void DispatchPressedEvent(const ui::KeyEvent& key_event,
     return;
   ui::KeyEvent event(key_event);
   aura::Window* target = *(tracker->windows().begin());
-  ui::EventDispatchDetails result ALLOW_UNUSED =
-      target->GetHost()->event_processor()->OnEventFromSource(&event);
+  ignore_result(
+      target->GetHost()->event_processor()->OnEventFromSource(&event));
 }
 
 void PostPressedEvent(ui::KeyEvent* event) {

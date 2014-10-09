@@ -70,16 +70,15 @@ const char kNotificationPrefix[] = "app.background.crashed.";
 void CloseBalloon(const std::string& balloon_id, ProfileID profile_id) {
   NotificationUIManager* notification_ui_manager =
       g_browser_process->notification_ui_manager();
-  bool cancelled ALLOW_UNUSED =
-      notification_ui_manager->CancelById(balloon_id, profile_id);
-#if defined(ENABLE_NOTIFICATIONS)
+  bool cancelled = notification_ui_manager->CancelById(balloon_id, profile_id);
   if (cancelled) {
+#if defined(ENABLE_NOTIFICATIONS)
     // TODO(dewittj): Add this functionality to the notification UI manager's
     // API.
     g_browser_process->message_center()->SetVisibility(
         message_center::VISIBILITY_TRANSIENT);
-  }
 #endif
+  }
 }
 
 // Closes the crash notification balloon for the app/extension with this id.

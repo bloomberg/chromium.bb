@@ -53,11 +53,10 @@ class DummyPrerenderContents : public PrerenderContents {
   virtual ~DummyPrerenderContents();
 
   virtual void StartPrerendering(
-      int ALLOW_UNUSED creator_child_id,
-      const gfx::Size& ALLOW_UNUSED size,
-      content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
-      net::URLRequestContextGetter* ALLOW_UNUSED request_context)
-      override;
+      int creator_child_id,
+      const gfx::Size& size,
+      content::SessionStorageNamespace* session_storage_namespace,
+      net::URLRequestContextGetter* request_context) override;
 
   virtual bool GetChildId(int* child_id) const override {
     // Having a default child_id of -1 forces pending prerenders not to fail
@@ -304,10 +303,10 @@ DummyPrerenderContents::~DummyPrerenderContents() {
 }
 
 void DummyPrerenderContents::StartPrerendering(
-    int ALLOW_UNUSED creator_child_id,
-    const gfx::Size& ALLOW_UNUSED size,
-    content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
-    net::URLRequestContextGetter* ALLOW_UNUSED request_context) {
+    int creator_child_id,
+    const gfx::Size& size,
+    content::SessionStorageNamespace* session_storage_namespace,
+    net::URLRequestContextGetter* request_context) {
   // In the base PrerenderContents implementation, StartPrerendering will
   // be called even when the PrerenderManager is part of the control group,
   // but it will early exit before actually creating a new RenderView if

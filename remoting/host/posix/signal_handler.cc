@@ -67,7 +67,7 @@ int g_write_fd = 0;
 
 void GlobalSignalHandler(int signal) {
   char byte = signal;
-  int r ALLOW_UNUSED = write(g_write_fd, &byte, 1);
+  ignore_result(write(g_write_fd, &byte, 1));
 }
 
 }  // namespace

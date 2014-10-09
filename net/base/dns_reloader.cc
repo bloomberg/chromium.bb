@@ -110,7 +110,7 @@ base::LazyInstance<DnsReloader>::Leaky
 namespace net {
 
 void EnsureDnsReloaderInit() {
-  DnsReloader* t ALLOW_UNUSED = g_dns_reloader.Pointer();
+  g_dns_reloader.Pointer();
 }
 
 void DnsReloaderMaybeReload() {

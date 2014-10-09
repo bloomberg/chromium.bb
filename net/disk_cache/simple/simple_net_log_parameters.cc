@@ -17,7 +17,7 @@ namespace {
 
 base::Value* NetLogSimpleEntryConstructionCallback(
     const disk_cache::SimpleEntryImpl* entry,
-    net::NetLog::LogLevel log_level ALLOW_UNUSED) {
+    net::NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("entry_hash",
                   base::StringPrintf("%#016" PRIx64, entry->entry_hash()));

@@ -85,9 +85,6 @@ bool IsStrictlyValidCloseStatusCode(int code) {
   return ((upper - kInvalidRanges) % 2) == 0;
 }
 
-// This function avoids a bunch of boilerplate code.
-void AllowUnused(ChannelState ALLOW_UNUSED unused) {}
-
 // Sets |name| to the name of the frame type for the given |opcode|. Note that
 // for all of Text, Binary and Continuation opcode, this method returns
 // "Data frame".
@@ -240,7 +237,7 @@ void WebSocketChannel::HandshakeNotificationSender::Send(
   // Do nothing if |sender| is already destructed.
   if (sender) {
     WebSocketChannel* channel = sender->owner_;
-    AllowUnused(sender->SendImmediately(channel->event_interface_.get()));
+    sender->SendImmediately(channel->event_interface_.get());
   }
 }
 
@@ -374,7 +371,7 @@ void WebSocketChannel::SendFrame(bool fin,
   }
   if (data.size() > base::checked_cast<size_t>(current_send_quota_)) {
     // TODO(ricea): Kill renderer.
-    AllowUnused(
+    ignore_result(
         FailChannel("Send quota exceeded", kWebSocketErrorGoingAway, ""));
     // |this| has been deleted.
     return;
@@ -393,7 +390,7 @@ void WebSocketChannel::SendFrame(bool fin,
     if (state == StreamingUtf8Validator::INVALID ||
         (state == StreamingUtf8Validator::VALID_MIDPOINT && fin)) {
       // TODO(ricea): Kill renderer.
-      AllowUnused(
+      ignore_result(
           FailChannel("Browser sent a text frame containing invalid UTF-8",
                       kWebSocketErrorGoingAway,
                       ""));
@@ -410,7 +407,7 @@ void WebSocketChannel::SendFrame(bool fin,
   // server is not saturated.
   scoped_refptr<IOBuffer> buffer(new IOBuffer(data.size()));
   std::copy(data.begin(), data.end(), buffer->data());
-  AllowUnused(SendFrameFromIOBuffer(fin, op_code, buffer, data.size()));
+  ignore_result(SendFrameFromIOBuffer(fin, op_code, buffer, data.size()));
   // |this| may have been deleted.
 }
 
@@ -458,7 +455,7 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
       (state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
   current_receive_quota_ += base::checked_cast<int>(quota);
   if (start_read)
-    AllowUnused(ReadFrames());
+    ignore_result(ReadFrames());
   // |this| may have been deleted.
 }
 
@@ -475,7 +472,7 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     // Abort the in-progress handshake and drop the connection immediately.
     stream_request_.reset();
     SetState(CLOSED);
-    AllowUnused(DoDropChannel(false, kWebSocketErrorAbnormalClosure, ""));
+    DoDropChannel(false, kWebSocketErrorAbnormalClosure, "");
     return;
   }
   if (state_ != CONNECTED) {
@@ -529,7 +526,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
   if (!socket_url.SchemeIsWSOrWSS()) {
     // TODO(ricea): Kill the renderer (this error should have been caught by
     // Javascript).
-    AllowUnused(event_interface_->OnAddChannelResponse(true, "", ""));
+    ignore_result(event_interface_->OnAddChannelResponse(true, "", ""));
     // |this| is deleted here.
     return;
   }
@@ -568,7 +565,7 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
   // |stream_request_| is not used once the connection has succeeded.
   stream_request_.reset();
 
-  AllowUnused(ReadFrames());
+  ignore_result(ReadFrames());
   // |this| may have been deleted.
 }
 
@@ -586,7 +583,7 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
     // |this| has been deleted.
     return;
   }
-  AllowUnused(event_interface_->OnFailChannel(message_copy));
+  ignore_result(event_interface_->OnFailChannel(message_copy));
   // |this| has been deleted.
 }
 
@@ -594,7 +591,7 @@ void WebSocketChannel::OnSSLCertificateError(
     scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> ssl_error_callbacks,
     const SSLInfo& ssl_info,
     bool fatal) {
-  AllowUnused(event_interface_->OnSSLCertificateError(
+  ignore_result(event_interface_->OnSSLCertificateError(
       ssl_error_callbacks.Pass(), socket_url_, ssl_info, fatal));
 }
 
@@ -1109,7 +1106,7 @@ ChannelState WebSocketChannel::DoDropChannel(bool was_clean,
 void WebSocketChannel::CloseTimeout() {
   stream_->Close();
   SetState(CLOSED);
-  AllowUnused(DoDropChannel(false, kWebSocketErrorAbnormalClosure, ""));
+  DoDropChannel(false, kWebSocketErrorAbnormalClosure, "");
   // |this| has been deleted.
 }
 

@@ -335,7 +335,7 @@ void FileDeleter::OnDownloadUpdated(DownloadItem* item) {
 
 FileDeleter::~FileDeleter() {
   base::ScopedTempDir path;
-  bool will_delete ALLOW_UNUSED = path.Set(temp_dir_);
+  bool will_delete = path.Set(temp_dir_);
   DCHECK(will_delete);
 }
 

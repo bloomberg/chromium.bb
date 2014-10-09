@@ -768,8 +768,8 @@ void TouchExplorationController::OnPassthroughTimerFired() {
 }
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
-  ui::EventDispatchDetails result ALLOW_UNUSED =
-      root_window_->GetHost()->dispatcher()->OnEventFromSource(event);
+  ignore_result(
+      root_window_->GetHost()->dispatcher()->OnEventFromSource(event));
 }
 
 // This is an override for a function that is only called for timer-based events

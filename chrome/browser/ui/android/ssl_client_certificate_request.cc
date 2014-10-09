@@ -121,8 +121,7 @@ void StartClientCertificateRequest(
   ignore_result(guard.Release());
 
   // Ownership was transferred to Java.
-  chrome::SelectCertificateCallback* ALLOW_UNUSED dummy =
-      request.release();
+  ignore_result(request.release());
 }
 
 }  // namespace

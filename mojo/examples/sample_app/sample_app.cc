@@ -28,7 +28,7 @@ class SampleApp : public mojo::ApplicationDelegate,
 
   virtual ~SampleApp() {
     // TODO(darin): Fix shutdown so we don't need to leak this.
-    MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
+    mojo_ignore_result(gles2_client_.release());
   }
 
   virtual void Initialize(mojo::ApplicationImpl* app) override {

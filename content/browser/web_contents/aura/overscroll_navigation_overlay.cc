@@ -292,7 +292,7 @@ void OverscrollNavigationOverlay::OnWindowSliderDestroyed() {
   // (including recursively) for a single event.
   if (window_slider_.get()) {
     // The slider has just been destroyed. Release the ownership.
-    WindowSlider* slider ALLOW_UNUSED = window_slider_.release();
+    ignore_result(window_slider_.release());
     StopObservingIfDone();
   }
 }

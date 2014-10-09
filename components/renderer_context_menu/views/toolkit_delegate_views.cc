@@ -21,8 +21,8 @@ void ToolkitDelegateViews::RunMenuAt(views::Widget* parent,
        type == ui::MENU_SOURCE_TOUCH_EDIT_MENU)
       ? views::MENU_ANCHOR_BOTTOMCENTER
       : views::MENU_ANCHOR_TOPLEFT;
-  views::MenuRunner::RunResult result ALLOW_UNUSED = menu_runner_->RunMenuAt(
-      parent, NULL, gfx::Rect(point, gfx::Size()), anchor_position, type);
+  ignore_result(menu_runner_->RunMenuAt(
+      parent, NULL, gfx::Rect(point, gfx::Size()), anchor_position, type));
 }
 
 void ToolkitDelegateViews::Init(ui::SimpleMenuModel* menu_model) {

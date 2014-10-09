@@ -168,7 +168,7 @@ void RunValidationTests(const std::string& prefix,
 
     std::string result;
     mojo::internal::ValidationErrorObserverForTesting observer;
-    bool unused MOJO_ALLOW_UNUSED = test_message_receiver->Accept(&message);
+    mojo_ignore_result(test_message_receiver->Accept(&message));
     if (observer.last_error() == mojo::internal::VALIDATION_ERROR_NONE)
       result = "PASS";
     else

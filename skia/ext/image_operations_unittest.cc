@@ -535,7 +535,7 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
 
   // For each method, downscale by 16 in each dimension,
   // and check each tested pixel against the expected average color.
-  bool all_methods_ok ALLOW_UNUSED = true;
+  bool all_methods_ok = true;
 
   for (size_t method_index = 0;
        method_index < arraysize(tested_methods);
@@ -550,11 +550,11 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
     }
   }
 
-#if DEBUG_BITMAP_GENERATION
   if (!all_methods_ok) {
+#if DEBUG_BITMAP_GENERATION
     SaveBitmapToPNG(src, "/tmp/ResizeShouldAverageColors_src.png");
-  }
 #endif  // #if DEBUG_BITMAP_GENERATION
+  }
 }
 
 

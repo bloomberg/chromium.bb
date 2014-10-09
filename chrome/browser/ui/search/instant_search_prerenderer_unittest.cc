@@ -57,8 +57,8 @@ class DummyPrerenderContents : public PrerenderContents {
       const content::SessionStorageNamespaceMap& session_storage_namespace_map);
 
   virtual void StartPrerendering(
-      int ALLOW_UNUSED creator_child_id,
-      const gfx::Size& ALLOW_UNUSED size,
+      int creator_child_id,
+      const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace,
       net::URLRequestContextGetter* request_context) override;
   virtual bool GetChildId(int* child_id) const override;
@@ -114,8 +114,8 @@ DummyPrerenderContents::DummyPrerenderContents(
 }
 
 void DummyPrerenderContents::StartPrerendering(
-    int ALLOW_UNUSED creator_child_id,
-    const gfx::Size& ALLOW_UNUSED size,
+    int creator_child_id,
+    const gfx::Size& size,
     content::SessionStorageNamespace* session_storage_namespace,
     net::URLRequestContextGetter* request_context) {
   prerender_contents_.reset(content::WebContents::CreateWithSessionStorage(

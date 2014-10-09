@@ -49,8 +49,9 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
       located_event->UpdateForRootTransform(
           new_root->GetHost()->GetRootTransform());
     }
-    ui::EventDispatchDetails details ALLOW_UNUSED =
-        new_root->GetHost()->event_processor()->OnEventFromSource(event);
+    ignore_result(
+        new_root->GetHost()->event_processor()->OnEventFromSource(event));
+
     target = NULL;
   }
   return target;

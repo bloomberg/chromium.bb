@@ -471,8 +471,8 @@ void Program::Update() {
     // remove "[0]"
     std::string short_name;
     int element_index = 0;
-    bool good ALLOW_UNUSED = GetUniformNameSansElement(
-        data.queried_name, &element_index, &short_name);\
+    bool good = GetUniformNameSansElement(data.queried_name, &element_index,
+                                          &short_name);
     DCHECK(good);
     LocationMap::const_iterator it = bind_uniform_location_map_.find(
         short_name);
