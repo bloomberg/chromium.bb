@@ -11,8 +11,10 @@
 #include <ostream>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -20,10 +22,11 @@ namespace system {
 // ChannelEndpointId -----------------------------------------------------------
 
 class LocalChannelEndpointIdGenerator;
+FORWARD_DECLARE_TEST(LocalChannelEndpointIdGeneratorTest, WrapAround);
 
 // Represents an ID for an endpoint (i.e., one side of a message pipe) on a
 // |Channel|. This class must be POD.
-class ChannelEndpointId {
+class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointId {
  public:
   ChannelEndpointId() : value_(0) {}
   ChannelEndpointId(const ChannelEndpointId& other) : value_(other.value_) {}
@@ -52,6 +55,7 @@ class ChannelEndpointId {
 
  private:
   friend class LocalChannelEndpointIdGenerator;
+  FRIEND_TEST_ALL_PREFIXES(LocalChannelEndpointIdGeneratorTest, WrapAround);
 
   uint32_t value_;
 
@@ -74,21 +78,16 @@ inline std::ostream& operator<<(std::ostream& out,
 // A simple generator for "new" local |ChannelEndpointId|s. It does not track
 // used/existing IDs; that must be done separately. (This class is not
 // thread-safe.)
-class LocalChannelEndpointIdGenerator {
+class MOJO_SYSTEM_IMPL_EXPORT LocalChannelEndpointIdGenerator {
  public:
   LocalChannelEndpointIdGenerator()
       : next_channel_endpoint_id_(ChannelEndpointId::GetBootstrap()) {}
 
-  ChannelEndpointId GetNext() {
-    ChannelEndpointId rv = next_channel_endpoint_id_;
-    next_channel_endpoint_id_.value_++;
-    // Skip over the invalid value, in case we wrap.
-    if (!next_channel_endpoint_id_.is_valid())
-      next_channel_endpoint_id_.value_++;
-    return rv;
-  }
+  ChannelEndpointId GetNext();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LocalChannelEndpointIdGeneratorTest, WrapAround);
+
   ChannelEndpointId next_channel_endpoint_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalChannelEndpointIdGenerator);
