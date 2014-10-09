@@ -14,6 +14,29 @@ namespace egl {
 namespace native {
 namespace windowless {
 
+class Surface : public tcu::egl::WindowSurface {
+ public:
+  Surface(tcu::egl::Display& display,
+          EGLConfig config,
+          const EGLint* attribList,
+          int width,
+          int height)
+      : tcu::egl::WindowSurface(display,
+                                config,
+                                (EGLNativeWindowType)NULL,
+                                attribList),
+        width_(width),
+        height_(height) {}
+
+  int getWidth() const { return width_; }
+
+  int getHeight() const { return height_; }
+
+ private:
+  const int width_;
+  const int height_;
+};
+
 class Window : public tcu::NativeWindow {
  public:
   Window(tcu::egl::Display& display,
@@ -23,19 +46,19 @@ class Window : public tcu::NativeWindow {
          int height)
       : tcu::NativeWindow::NativeWindow(),
         eglDisplay_(display),
-        eglSurface_(display, config, (EGLNativeWindowType)NULL, attribList) {}
+        surface_(display, config, attribList, width, height) {}
 
   virtual ~Window() {}
 
   tcu::egl::Display& getEglDisplay() { return eglDisplay_; }
 
-  tcu::egl::WindowSurface& getEglSurface() { return eglSurface_; }
+  tcu::egl::WindowSurface& getEglSurface() { return surface_; }
 
   void processEvents() { return; }
 
  private:
   tcu::egl::Display& eglDisplay_;
-  tcu::egl::WindowSurface eglSurface_;
+  Surface surface_;
 };
 
 class Platform : public tcu::EglPlatform {
