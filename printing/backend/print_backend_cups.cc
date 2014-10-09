@@ -34,17 +34,17 @@ class PrintBackendCUPS : public PrintBackend {
                    http_encryption_t encryption, bool blocking);
 
   // PrintBackend implementation.
-  virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
-  virtual std::string GetDefaultPrinterName() OVERRIDE;
+  virtual bool EnumeratePrinters(PrinterList* printer_list) override;
+  virtual std::string GetDefaultPrinterName() override;
   virtual bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
-      PrinterSemanticCapsAndDefaults* printer_info) OVERRIDE;
+      PrinterSemanticCapsAndDefaults* printer_info) override;
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      PrinterCapsAndDefaults* printer_info) OVERRIDE;
+      PrinterCapsAndDefaults* printer_info) override;
   virtual std::string GetPrinterDriverInfo(
-      const std::string& printer_name) OVERRIDE;
-  virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
+      const std::string& printer_name) override;
+  virtual bool IsValidPrinter(const std::string& printer_name) override;
 
  protected:
   virtual ~PrintBackendCUPS() {}
