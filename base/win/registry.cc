@@ -487,10 +487,26 @@ LONG RegKey::RegDelRecurse(HKEY root_key,
 // RegistryValueIterator ------------------------------------------------------
 
 RegistryValueIterator::RegistryValueIterator(HKEY root_key,
+                                             const wchar_t* folder_key,
+                                             REGSAM wow64access)
+    : name_(MAX_PATH, L'\0'),
+      value_(MAX_PATH, L'\0') {
+  Initialize(root_key, folder_key, wow64access);
+}
+
+RegistryValueIterator::RegistryValueIterator(HKEY root_key,
                                              const wchar_t* folder_key)
     : name_(MAX_PATH, L'\0'),
       value_(MAX_PATH, L'\0') {
-  LONG result = RegOpenKeyEx(root_key, folder_key, 0, KEY_READ, &key_);
+  Initialize(root_key, folder_key, 0);
+}
+
+void RegistryValueIterator::Initialize(HKEY root_key,
+                                       const wchar_t* folder_key,
+                                       REGSAM wow64access) {
+  DCHECK_EQ(wow64access & ~kWow64AccessMask, static_cast<REGSAM>(0));
+  LONG result =
+      RegOpenKeyEx(root_key, folder_key, 0, KEY_READ | wow64access, &key_);
   if (result != ERROR_SUCCESS) {
     key_ = NULL;
   } else {
@@ -577,23 +593,13 @@ bool RegistryValueIterator::Read() {
 
 RegistryKeyIterator::RegistryKeyIterator(HKEY root_key,
                                          const wchar_t* folder_key) {
-  LONG result = RegOpenKeyEx(root_key, folder_key, 0, KEY_READ, &key_);
-  if (result != ERROR_SUCCESS) {
-    key_ = NULL;
-  } else {
-    DWORD count = 0;
-    LONG result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL,
-                                    NULL, NULL, NULL, NULL, NULL);
+  Initialize(root_key, folder_key, 0);
+}
 
-    if (result != ERROR_SUCCESS) {
-      ::RegCloseKey(key_);
-      key_ = NULL;
-    } else {
-      index_ = count - 1;
-    }
-  }
-
-  Read();
+RegistryKeyIterator::RegistryKeyIterator(HKEY root_key,
+                                         const wchar_t* folder_key,
+                                         REGSAM wow64access) {
+  Initialize(root_key, folder_key, wow64access);
 }
 
 RegistryKeyIterator::~RegistryKeyIterator() {
@@ -632,6 +638,30 @@ bool RegistryKeyIterator::Read() {
 
   name_[0] = '\0';
   return false;
+}
+
+void RegistryKeyIterator::Initialize(HKEY root_key,
+                                     const wchar_t* folder_key,
+                                     REGSAM wow64access) {
+  DCHECK_EQ(wow64access & ~kWow64AccessMask, static_cast<REGSAM>(0));
+  LONG result =
+      RegOpenKeyEx(root_key, folder_key, 0, KEY_READ | wow64access, &key_);
+  if (result != ERROR_SUCCESS) {
+    key_ = NULL;
+  } else {
+    DWORD count = 0;
+    LONG result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL,
+                                    NULL, NULL, NULL, NULL, NULL);
+
+    if (result != ERROR_SUCCESS) {
+      ::RegCloseKey(key_);
+      key_ = NULL;
+    } else {
+      index_ = count - 1;
+    }
+  }
+
+  Read();
 }
 
 }  // namespace win

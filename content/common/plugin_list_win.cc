@@ -93,17 +93,19 @@ bool GetInstalledPath(const base::char16* app, base::FilePath* out) {
 }
 
 // Search the registry at the given path and detect plugin directories.
-void GetPluginsInRegistryDirectory(
-    HKEY root_key,
-    const base::string16& registry_folder,
-    std::set<base::FilePath>* plugin_dirs) {
-  for (base::win::RegistryKeyIterator iter(root_key, registry_folder.c_str());
-       iter.Valid(); ++iter) {
+void GetPluginsInRegistryDirectory(HKEY root_key,
+                                   const base::string16& registry_folder,
+                                   REGSAM wow64_access,
+                                   std::set<base::FilePath>* plugin_dirs) {
+  for (base::win::RegistryKeyIterator iter(
+           root_key, registry_folder.c_str(), wow64_access);
+       iter.Valid();
+       ++iter) {
     // Use the registry to gather plugin across the file system.
     base::string16 reg_path = registry_folder;
     reg_path.append(L"\\");
     reg_path.append(iter.Name());
-    base::win::RegKey key(root_key, reg_path.c_str(), KEY_READ);
+    base::win::RegKey key(root_key, reg_path.c_str(), KEY_READ | wow64_access);
 
     base::string16 path;
     if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS)
@@ -115,7 +117,8 @@ void GetPluginsInRegistryDirectory(
 // FireFox 3 beta and version 2 can coexist. See bug: 1025003
 void GetFirefoxInstalledPaths(std::vector<base::FilePath>* out) {
   base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE,
-                                    kRegistryFirefoxInstalled);
+                                    kRegistryFirefoxInstalled,
+                                    KEY_WOW64_32KEY);
   for (; it.Valid(); ++it) {
     base::string16 full_path = base::string16(kRegistryFirefoxInstalled) +
         L"\\" + it.Name() + L"\\Main";
@@ -359,10 +362,18 @@ void PluginList::GetPluginPathsFromRegistry(
 
   std::set<base::FilePath> plugin_dirs;
 
-  GetPluginsInRegistryDirectory(
-      HKEY_CURRENT_USER, kRegistryMozillaPlugins, &plugin_dirs);
-  GetPluginsInRegistryDirectory(
-      HKEY_LOCAL_MACHINE, kRegistryMozillaPlugins, &plugin_dirs);
+  GetPluginsInRegistryDirectory(HKEY_CURRENT_USER,
+                                kRegistryMozillaPlugins,
+                                0,
+                                &plugin_dirs);
+  GetPluginsInRegistryDirectory(HKEY_LOCAL_MACHINE,
+                                kRegistryMozillaPlugins,
+                                KEY_WOW64_64KEY,
+                                &plugin_dirs);
+  GetPluginsInRegistryDirectory(HKEY_LOCAL_MACHINE,
+                                kRegistryMozillaPlugins,
+                                KEY_WOW64_32KEY,
+                                &plugin_dirs);
 
   for (std::set<base::FilePath>::iterator i = plugin_dirs.begin();
        i != plugin_dirs.end(); ++i) {

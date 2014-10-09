@@ -42,7 +42,7 @@ bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
 
   if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
                         kAccess) == ERROR_SUCCESS)
-    return commands->Initialize(commands_key);
+    return commands->Initialize(commands_key, KEY_WOW64_32KEY);
   return false;
 }
 

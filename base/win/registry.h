@@ -157,7 +157,17 @@ class BASE_EXPORT RegKey {
 // Iterates the entries found in a particular folder on the registry.
 class BASE_EXPORT RegistryValueIterator {
  public:
+  // Construct a Registry Value Iterator with default WOW64 access.
   RegistryValueIterator(HKEY root_key, const wchar_t* folder_key);
+
+  // Construct a Registry Key Iterator with specific WOW64 access, one of
+  // KEY_WOW64_32KEY or KEY_WOW64_64KEY, or 0.
+  // Note: |wow64access| should be the same access used to open |root_key|
+  // previously, or a predefined key (e.g. HKEY_LOCAL_MACHINE).
+  // See http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129.aspx.
+  RegistryValueIterator(HKEY root_key,
+                        const wchar_t* folder_key,
+                        REGSAM wow64access);
 
   ~RegistryValueIterator();
 
@@ -181,6 +191,8 @@ class BASE_EXPORT RegistryValueIterator {
   // Read in the current values.
   bool Read();
 
+  void Initialize(HKEY root_key, const wchar_t* folder_key, REGSAM wow64access);
+
   // The registry key being iterated.
   HKEY key_;
 
@@ -198,7 +210,17 @@ class BASE_EXPORT RegistryValueIterator {
 
 class BASE_EXPORT RegistryKeyIterator {
  public:
+  // Construct a Registry Key Iterator with default WOW64 access.
   RegistryKeyIterator(HKEY root_key, const wchar_t* folder_key);
+
+  // Construct a Registry Value Iterator with specific WOW64 access, one of
+  // KEY_WOW64_32KEY or KEY_WOW64_64KEY, or 0.
+  // Note: |wow64access| should be the same access used to open |root_key|
+  // previously, or a predefined key (e.g. HKEY_LOCAL_MACHINE).
+  // See http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129.aspx.
+  RegistryKeyIterator(HKEY root_key,
+                      const wchar_t* folder_key,
+                      REGSAM wow64access);
 
   ~RegistryKeyIterator();
 
@@ -217,6 +239,8 @@ class BASE_EXPORT RegistryKeyIterator {
  private:
   // Read in the current values.
   bool Read();
+
+  void Initialize(HKEY root_key, const wchar_t* folder_key, REGSAM wow64access);
 
   // The registry key being iterated.
   HKEY key_;

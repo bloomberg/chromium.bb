@@ -68,7 +68,9 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
   std::set<base::string16> keys;
   base::win::RegistryKeyIterator iterator_machine_key(
-      HKEY_LOCAL_MACHINE, base::ASCIIToWide(kRegistryExtensions).c_str());
+      HKEY_LOCAL_MACHINE,
+      base::ASCIIToWide(kRegistryExtensions).c_str(),
+      KEY_WOW64_32KEY);
   for (; iterator_machine_key.Valid(); ++iterator_machine_key)
     keys.insert(iterator_machine_key.Name());
   base::win::RegistryKeyIterator iterator_user_key(
@@ -86,13 +88,13 @@ void ExternalRegistryLoader::LoadOnFileThread() {
     key_path.append(L"\\");
     key_path.append(*it);
     if (key.Open(HKEY_LOCAL_MACHINE,
-                 key_path.c_str(), KEY_READ) != ERROR_SUCCESS) {
-      if (key.Open(HKEY_CURRENT_USER,
-                   key_path.c_str(), KEY_READ) != ERROR_SUCCESS) {
-        LOG(ERROR) << "Unable to read registry key at path (HKLM & HKCU): "
-                   << key_path << ".";
-        continue;
-      }
+                 key_path.c_str(),
+                 KEY_READ | KEY_WOW64_32KEY) != ERROR_SUCCESS &&
+        key.Open(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ) !=
+            ERROR_SUCCESS) {
+      LOG(ERROR) << "Unable to read registry key at path (HKLM & HKCU): "
+                 << key_path << ".";
+      continue;
     }
 
     std::string id = base::UTF16ToASCII(*it);

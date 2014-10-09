@@ -19,9 +19,15 @@ AppCommands::AppCommands() {
 AppCommands::~AppCommands() {
 }
 
-bool AppCommands::Initialize(const base::win::RegKey& key) {
+bool AppCommands::Initialize(const base::win::RegKey& key, REGSAM wow64access) {
   if (!key.Valid()) {
     LOG(DFATAL) << "Cannot initialize AppCommands from an invalid key.";
+    return false;
+  }
+
+  if (wow64access != 0 && wow64access != KEY_WOW64_32KEY &&
+      wow64access != KEY_WOW64_64KEY) {
+    LOG(DFATAL) << "Invalid wow64access supplied to AppCommands.";
     return false;
   }
 
@@ -33,8 +39,10 @@ bool AppCommands::Initialize(const base::win::RegKey& key) {
   RegKey cmd_key;
   LONG result;
   AppCommand command;
-  for (RegistryKeyIterator key_iterator(key.Handle(), kEmptyString);
-       key_iterator.Valid(); ++key_iterator) {
+  for (RegistryKeyIterator key_iterator(
+           key.Handle(), kEmptyString, wow64access);
+       key_iterator.Valid();
+       ++key_iterator) {
     const wchar_t* name = key_iterator.Name();
     result = cmd_key.Open(key.Handle(), name, KEY_QUERY_VALUE);
     if (result != ERROR_SUCCESS) {
