@@ -626,6 +626,8 @@
       'renderer/media/rtc_video_encoder_factory.h',
       'renderer/media/rtc_video_renderer.cc',
       'renderer/media/rtc_video_renderer.h',
+      'renderer/media/speech_recognition_audio_sink.cc',
+      'renderer/media/speech_recognition_audio_sink.h',
       'renderer/media/user_media_client_impl.cc',
       'renderer/media/video_source_handler.cc',
       'renderer/media/video_source_handler.h',

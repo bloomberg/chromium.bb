@@ -811,6 +811,7 @@
             'renderer/media/mock_media_constraint_factory.cc',
             'renderer/media/rtc_peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
+            'renderer/media/speech_recognition_audio_sink_unittest.cc',
             'renderer/media/user_media_client_impl_unittest.cc',
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc/media_stream_remote_video_source_unittest.cc',

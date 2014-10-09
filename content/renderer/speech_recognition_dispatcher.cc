@@ -15,6 +15,10 @@
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
+#if defined(ENABLE_WEBRTC)
+#include "content/renderer/media/speech_recognition_audio_sink.h"
+#endif
+
 using blink::WebVector;
 using blink::WebString;
 using blink::WebSpeechGrammar;
@@ -29,13 +33,12 @@ SpeechRecognitionDispatcher::SpeechRecognitionDispatcher(
     RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
       recognizer_client_(NULL),
-      next_id_(1) {
-}
+      next_id_(1) {}
 
-SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() {
-}
+SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() {}
 
 void SpeechRecognitionDispatcher::AbortAllRecognitions() {
+  ResetAudioSink();
   Send(new SpeechRecognitionHostMsg_AbortAllRequests(
       routing_id()));
 }
@@ -53,6 +56,8 @@ bool SpeechRecognitionDispatcher::OnMessageReceived(
     IPC_MESSAGE_HANDLER(SpeechRecognitionMsg_Ended, OnRecognitionEnded)
     IPC_MESSAGE_HANDLER(SpeechRecognitionMsg_ResultRetrieved,
                         OnResultsRetrieved)
+    IPC_MESSAGE_HANDLER(SpeechRecognitionMsg_AudioReceiverReady,
+                        OnAudioReceiverReady)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -64,6 +69,29 @@ void SpeechRecognitionDispatcher::start(
     WebSpeechRecognizerClient* recognizer_client) {
   DCHECK(!recognizer_client_ || recognizer_client_ == recognizer_client);
   recognizer_client_ = recognizer_client;
+
+#if defined(ENABLE_WEBRTC)
+  const blink::WebMediaStreamTrack track = params.audioTrack();
+  if (!track.isNull()) {
+    // Check if this type of track is allowed by implemented policy.
+    if (SpeechRecognitionAudioSink::IsSupportedTrack(track)) {
+      audio_track_.assign(track);
+    } else {
+      audio_track_.reset();
+      // Notify user that the track used is not supported.
+      recognizer_client_->didReceiveError(
+          handle,
+          WebString("Provided audioTrack is not supported."),
+          WebSpeechRecognizerClient::AudioCaptureError);
+
+      return;
+    }
+  }
+
+  // Destroy any previous instance to detach from the audio track.
+  // Each new session should reinstantiate the provider once the track is ready.
+  ResetAudioSink();
+#endif
 
   SpeechRecognitionHostMsg_StartRequest_Params msg_params;
   for (size_t i = 0; i < params.grammars().size(); ++i) {
@@ -78,6 +106,12 @@ void SpeechRecognitionDispatcher::start(
   msg_params.origin_url = params.origin().toString().utf8();
   msg_params.render_view_id = routing_id();
   msg_params.request_id = GetOrCreateIDForHandle(handle);
+#if defined(ENABLE_WEBRTC)
+  // Fall back to default input when the track is not allowed.
+  msg_params.using_audio_track = !audio_track_.isNull();
+#else
+  msg_params.using_audio_track = false;
+#endif
   // The handle mapping will be removed in |OnRecognitionEnd|.
   Send(new SpeechRecognitionHostMsg_StartRequest(msg_params));
 }
@@ -85,6 +119,7 @@ void SpeechRecognitionDispatcher::start(
 void SpeechRecognitionDispatcher::stop(
     const WebSpeechRecognitionHandle& handle,
     WebSpeechRecognizerClient* recognizer_client) {
+  ResetAudioSink();
   // Ignore a |stop| issued without a matching |start|.
   if (recognizer_client_ != recognizer_client || !HandleExists(handle))
     return;
@@ -95,6 +130,7 @@ void SpeechRecognitionDispatcher::stop(
 void SpeechRecognitionDispatcher::abort(
     const WebSpeechRecognitionHandle& handle,
     WebSpeechRecognizerClient* recognizer_client) {
+  ResetAudioSink();
   // Ignore an |abort| issued without a matching |start|.
   if (recognizer_client_ != recognizer_client || !HandleExists(handle))
     return;
@@ -154,6 +190,7 @@ void SpeechRecognitionDispatcher::OnErrorOccurred(
     recognizer_client_->didReceiveNoMatch(GetHandleFromID(request_id),
                                           WebSpeechRecognitionResult());
   } else {
+    ResetAudioSink();
     recognizer_client_->didReceiveError(
         GetHandleFromID(request_id),
         WebString(),  // TODO(primiano): message?
@@ -174,6 +211,7 @@ void SpeechRecognitionDispatcher::OnRecognitionEnded(int request_id) {
     // didEnd may call back synchronously to start a new recognition session,
     // and we don't want to delete the handle from the map after that happens.
     handle_map_.erase(request_id);
+    ResetAudioSink();
     recognizer_client_->didEnd(handle);
   }
 }
@@ -211,6 +249,29 @@ void SpeechRecognitionDispatcher::OnResultsRetrieved(
       GetHandleFromID(request_id), final, provisional);
 }
 
+void SpeechRecognitionDispatcher::OnAudioReceiverReady(
+    int request_id,
+    const media::AudioParameters& params,
+    const base::SharedMemoryHandle memory,
+    const base::SyncSocket::TransitDescriptor descriptor) {
+#if defined(ENABLE_WEBRTC)
+  DCHECK(!speech_audio_sink_.get());
+  if (audio_track_.isNull()) {
+    ResetAudioSink();
+    return;
+  }
+
+  // The instantiation and type of SyncSocket is up to the client since it
+  // is dependency injected to the SpeechRecognitionAudioSink.
+  scoped_ptr<base::SyncSocket> socket(new base::CancelableSyncSocket(
+      base::SyncSocket::UnwrapHandle(descriptor)));
+
+  speech_audio_sink_.reset(new SpeechRecognitionAudioSink(
+      audio_track_, params, memory, socket.Pass(),
+      base::Bind(&SpeechRecognitionDispatcher::ResetAudioSink,
+                 base::Unretained(this))));
+#endif
+}
 
 int SpeechRecognitionDispatcher::GetOrCreateIDForHandle(
     const WebSpeechRecognitionHandle& handle) {
@@ -237,6 +298,12 @@ bool SpeechRecognitionDispatcher::HandleExists(
       return true;
   }
   return false;
+}
+
+void SpeechRecognitionDispatcher::ResetAudioSink() {
+#if defined(ENABLE_WEBRTC)
+  speech_audio_sink_.reset();
+#endif
 }
 
 const WebSpeechRecognitionHandle& SpeechRecognitionDispatcher::GetHandleFromID(

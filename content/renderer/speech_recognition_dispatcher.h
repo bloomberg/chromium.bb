@@ -8,14 +8,25 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
+#include "base/sync_socket.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionHandle.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
 
+namespace media {
+class AudioParameters;
+}
+
 namespace content {
 class RenderViewImpl;
+#if defined(ENABLE_WEBRTC)
+class SpeechRecognitionAudioSink;
+#endif
 struct SpeechRecognitionError;
 struct SpeechRecognitionResult;
 
@@ -38,11 +49,11 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   // blink::WebSpeechRecognizer implementation.
   virtual void start(const blink::WebSpeechRecognitionHandle&,
                      const blink::WebSpeechRecognitionParams&,
-                     blink::WebSpeechRecognizerClient*) override;
+                     blink::WebSpeechRecognizerClient*);
   virtual void stop(const blink::WebSpeechRecognitionHandle&,
-                    blink::WebSpeechRecognizerClient*) override;
+                    blink::WebSpeechRecognizerClient*);
   virtual void abort(const blink::WebSpeechRecognitionHandle&,
-                     blink::WebSpeechRecognizerClient*) override;
+                     blink::WebSpeechRecognizerClient*);
 
   void OnRecognitionStarted(int request_id);
   void OnAudioStarted(int request_id);
@@ -53,6 +64,12 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   void OnRecognitionEnded(int request_id);
   void OnResultsRetrieved(int request_id,
                           const SpeechRecognitionResults& result);
+  void OnAudioReceiverReady(int session_id,
+                             const media::AudioParameters& params,
+                             const base::SharedMemoryHandle handle,
+                             const base::SyncSocket::TransitDescriptor socket);
+
+  void ResetAudioSink();
 
   int GetOrCreateIDForHandle(const blink::WebSpeechRecognitionHandle& handle);
   bool HandleExists(const blink::WebSpeechRecognitionHandle& handle);
@@ -60,6 +77,15 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
 
   // The WebKit client class that we use to send events back to the JS world.
   blink::WebSpeechRecognizerClient* recognizer_client_;
+
+#if defined(ENABLE_WEBRTC)
+  // Media stream audio track that the speech recognition connects to.
+  // Accessed on the render thread.
+  blink::WebMediaStreamTrack audio_track_;
+
+  // Audio sink used to provide audio from the track.
+  scoped_ptr<SpeechRecognitionAudioSink> speech_audio_sink_;
+#endif
 
   typedef std::map<int, blink::WebSpeechRecognitionHandle> HandleMap;
   HandleMap handle_map_;
