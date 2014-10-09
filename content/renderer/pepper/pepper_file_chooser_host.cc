@@ -94,11 +94,7 @@ void PepperFileChooserHost::StoreChosenFiles(
   std::vector<base::FilePath> file_paths;
   std::vector<std::string> display_names;
   for (size_t i = 0; i < files.size(); i++) {
-#if defined(OS_WIN)
-    base::FilePath file_path(base::UTF8ToWide(files[i].path));
-#else
-    base::FilePath file_path(files[i].path);
-#endif
+    base::FilePath file_path = base::FilePath::FromUTF8Unsafe(files[i].path);
     file_paths.push_back(file_path);
     create_msgs.push_back(PpapiHostMsg_FileRef_CreateForRawFS(file_path));
     display_names.push_back(files[i].display_name);
