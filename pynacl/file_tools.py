@@ -36,7 +36,7 @@ def AtomicWriteFile(data, filename):
       os.remove(filename)
     except OSError:
       pass
-  os.rename(temp_file, filename)
+  Retry(os.rename, temp_file, filename)
 
 
 def WriteFile(data, filename):
@@ -156,7 +156,7 @@ def CopyTree(src, dst):
     for f in files:
       dstfile = os.path.join(dstroot, f)
       if os.path.isfile(dstfile):
-        os.remove(dstfile)
+        Retry(os.remove, dstfile)
       shutil.copy2(os.path.join(root, f), dstfile)
 
 
@@ -189,7 +189,7 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
           MoveAndMergeDirTree(source_item, destination_item)
         elif os.path.isfile(destination_item) and os.path.isfile(source_item):
           # Overwrite the file if they are both files.
-          os.unlink(destination_item)
+          Retry(os.unlink, destination_item)
           Retry(os.rename, source_item, destination_item)
         else:
           raise OSError('Cannot move directory tree, mismatching types.'
@@ -199,7 +199,7 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
         Retry(os.rename, source_item, destination_item)
 
     # Remove the directory once all the contents have been moved
-    os.rmdir(src_dir)
+    Retry(os.rmdir, src_dir)
 
 
 def Retry(op, *args):
