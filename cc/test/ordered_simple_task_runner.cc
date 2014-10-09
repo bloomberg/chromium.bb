@@ -267,16 +267,21 @@ OrderedSimpleTaskRunner::AsValue() const {
 void OrderedSimpleTaskRunner::AsValueInto(
     base::debug::TracedValue* state) const {
   state->SetInteger("pending_tasks", pending_tasks_.size());
+
+  state->BeginArray("tasks");
   for (std::set<TestOrderablePendingTask>::const_iterator it =
            pending_tasks_.begin();
        it != pending_tasks_.end();
        ++it) {
-    state->BeginDictionary(
-        base::SizeTToString(std::distance(pending_tasks_.begin(), it)).c_str());
+    state->BeginDictionary();
     it->AsValueInto(state);
     state->EndDictionary();
   }
+  state->EndArray();
+
+  state->BeginDictionary("now_src");
   now_src_->AsValueInto(state);
+  state->EndDictionary();
 }
 
 base::Callback<bool(void)> OrderedSimpleTaskRunner::TaskRunCountBelow(
