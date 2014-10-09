@@ -33,37 +33,27 @@ import re
 
 _log = logging.getLogger(__name__)
 
+conversion_patterns = (
+    (re.compile("^diff --git \w/(.+) \w/(?P<FilePath>.+)"), lambda matched: "Index: " + matched.group('FilePath') + "\n"),
+    (re.compile("^new file.*"), lambda matched: "\n"),
+    (re.compile("^index (([0-9a-f]{7}\.\.[0-9a-f]{7})|([0-9a-f]{40}\.\.[0-9a-f]{40})) [0-9]{6}"), lambda matched: ("=" * 67) + "\n"),
+    (re.compile("^--- \w/(?P<FilePath>.+)"), lambda matched: "--- " + matched.group('FilePath') + "\n"),
+    (re.compile("^\+\+\+ \w/(?P<FilePath>.+)"), lambda matched: "+++ " + matched.group('FilePath') + "\n"),
+)
 
-# FIXME: This is broken. We should compile our regexps up-front
-# instead of using a custom cache.
-_regexp_compile_cache = {}
+index_pattern = re.compile(r"^Index: (?P<FilePath>.+)")
+lines_changed_pattern = re.compile(r"^@@ -(?P<OldStartLine>\d+)(,\d+)? \+(?P<NewStartLine>\d+)(,\d+)? @@")
+diff_git_pattern = re.compile(r"^diff --git \w/")
 
 
-# FIXME: This function should be removed.
-def match(pattern, string):
-    """Matches the string with the pattern, caching the compiled regexp."""
-    if not pattern in _regexp_compile_cache:
-        _regexp_compile_cache[pattern] = re.compile(pattern)
-    return _regexp_compile_cache[pattern].match(string)
-
-
-# FIXME: This belongs on DiffParser (e.g. as to_svn_diff()).
 def git_diff_to_svn_diff(line):
     """Converts a git formatted diff line to a svn formatted line.
 
     Args:
       line: A string representing a line of the diff.
     """
-    # FIXME: This list should be a class member on DiffParser.
-    # These regexp patterns should be compiled once instead of every time.
-    conversion_patterns = (("^diff --git \w/(.+) \w/(?P<FilePath>.+)", lambda matched: "Index: " + matched.group('FilePath') + "\n"),
-                           ("^new file.*", lambda matched: "\n"),
-                           ("^index (([0-9a-f]{7}\.\.[0-9a-f]{7})|([0-9a-f]{40}\.\.[0-9a-f]{40})) [0-9]{6}", lambda matched: "===================================================================\n"),
-                           ("^--- \w/(?P<FilePath>.+)", lambda matched: "--- " + matched.group('FilePath') + "\n"),
-                           ("^\+\+\+ \w/(?P<FilePath>.+)", lambda matched: "+++ " + matched.group('FilePath') + "\n"))
-
     for pattern, conversion in conversion_patterns:
-        matched = match(pattern, line)
+        matched = pattern.match(line)
         if matched:
             return conversion(matched)
     return line
@@ -74,7 +64,6 @@ def svn_diff_to_svn_diff(line):
     return line
 
 
-# FIXME: This method belongs on DiffParser
 def get_diff_converter(lines):
     """Gets a converter function of diff lines.
 
@@ -87,7 +76,7 @@ def get_diff_converter(lines):
         # Stop when we find the first patch
         if line[:3] == "+++" and lines[i + 1] == "---":
             break
-        if match(r"^diff --git \w/", line):
+        if diff_git_pattern.match(line):
             return git_diff_to_svn_diff
     return svn_diff_to_svn_diff
 
@@ -155,7 +144,7 @@ class DiffParser(object):
             line = line.rstrip("\n")
             line = transform_line(line)
 
-            file_declaration = match(r"^Index: (?P<FilePath>.+)", line)
+            file_declaration = index_pattern.match(line)
             if file_declaration:
                 filename = file_declaration.group('FilePath')
                 current_file = DiffFile(filename)
@@ -163,7 +152,7 @@ class DiffParser(object):
                 state = _DECLARED_FILE_PATH
                 continue
 
-            lines_changed = match(r"^@@ -(?P<OldStartLine>\d+)(,\d+)? \+(?P<NewStartLine>\d+)(,\d+)? @@", line)
+            lines_changed = lines_changed_pattern.match(line)
             if lines_changed:
                 if state != _DECLARED_FILE_PATH and state != _PROCESSING_CHUNK:
                     _log.error('Unexpected line change without file path '
