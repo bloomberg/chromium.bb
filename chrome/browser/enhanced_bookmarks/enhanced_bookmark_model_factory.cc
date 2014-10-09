@@ -45,7 +45,7 @@ KeyedService* EnhancedBookmarkModelFactory::BuildServiceInstanceFor(
 
   return new EnhancedBookmarkModel(
       BookmarkModelFactory::GetForProfile(profile),
-      kVersionPrefix + chrome::VersionInfo().CreateVersionString());
+      kVersionPrefix + chrome::VersionInfo().Version());
 }
 
 content::BrowserContext* EnhancedBookmarkModelFactory::GetBrowserContextToUse(

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/android/enhanced_bookmarks/enhanced_bookmarks_bridge.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.h"
+#include "chrome/browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -13,16 +16,24 @@
 #include "components/enhanced_bookmarks/metadata_accessor.h"
 #include "jni/EnhancedBookmarksBridge_jni.h"
 
+using base::android::AttachCurrentThread;
 using bookmarks::BookmarkType;
 
 namespace enhanced_bookmarks {
 namespace android {
 
 EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
-                                                 jobject obj,
-                                                 Profile* profile) {
+    jobject obj,
+    Profile* profile) : weak_java_ref_(env, obj) {
   profile_ = profile;
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
+  cluster_service_ =
+      ChromeBookmarkServerClusterServiceFactory::GetForBrowserContext(profile_);
+  cluster_service_->AddObserver(this);
+}
+
+EnhancedBookmarksBridge::~EnhancedBookmarksBridge() {
+  cluster_service_->RemoveObserver(this);
 }
 
 void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
@@ -57,6 +68,41 @@ void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
   enhanced_bookmarks::SetDescriptionForBookmark(
       bookmark_model_, node,
       base::android::ConvertJavaStringToUTF8(env, description));
+}
+
+void EnhancedBookmarksBridge::GetBookmarksForFilter(JNIEnv* env,
+                                                    jobject obj,
+                                                    jstring j_filter,
+                                                    jobject j_result_obj) {
+  DCHECK(bookmark_model_->loaded());
+  const std::string title =
+      base::android::ConvertJavaStringToUTF8(env, j_filter);
+  const std::vector<const BookmarkNode*> bookmarks =
+      cluster_service_->BookmarksForClusterNamed(title);
+  for (const BookmarkNode* node : bookmarks) {
+    Java_EnhancedBookmarksBridge_addToBookmarkIdList(
+        env, j_result_obj, node->id(), node->type());
+  }
+}
+
+ScopedJavaLocalRef<jobjectArray> EnhancedBookmarksBridge::GetFilters(
+    JNIEnv* env,
+    jobject obj) {
+  DCHECK(bookmark_model_->loaded());
+  const std::vector<std::string> filters =
+      cluster_service_->GetClusters();
+  return base::android::ToJavaArrayOfStrings(env, filters);
+}
+
+void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
+  DCHECK(bookmark_model_->loaded());
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_EnhancedBookmarksBridge_onFiltersChanged(env, obj.obj());
 }
 
 static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
