@@ -61,6 +61,27 @@ const int kMaxRetrySeedFetch = 5;
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64 kServerTimeResolutionMs = 1000;
 
+// Experimentally makes 50% of genuine Canary users Stable variation configs,
+// to determine impact on stability. The field trial is set up in the client
+// code because it has to run before server-side configs are processed and is
+// created the first time the function is called.
+variations::Study_Channel GetOverrideCanaryChannel() {
+  static variations::Study_Channel override_channel =
+      variations::Study_Channel_UNKNOWN;
+  if (override_channel == variations::Study_Channel_UNKNOWN) {
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "UMA-Variations-ChannelOverride", 100, "NoOverride", 2015, 1, 1,
+            base::FieldTrial::SESSION_RANDOMIZED, NULL));
+
+    static const char kStableOverrideGroup[] = "StableOverride";
+    trial->AppendGroup(kStableOverrideGroup, 50);
+    override_channel = (trial->group_name() == kStableOverrideGroup) ?
+        variations::Study_Channel_STABLE : variations::Study_Channel_CANARY;
+  }
+  return override_channel;
+}
+
 // Wrapper around channel checking, used to enable channel mocking for
 // testing. If the current browser channel is not UNKNOWN, this will return
 // that channel value. Otherwise, if the fake channel flag is provided, this
@@ -69,7 +90,7 @@ const int64 kServerTimeResolutionMs = 1000;
 variations::Study_Channel GetChannelForVariations() {
   switch (chrome::VersionInfo::GetChannel()) {
     case chrome::VersionInfo::CHANNEL_CANARY:
-      return variations::Study_Channel_CANARY;
+      return GetOverrideCanaryChannel();
     case chrome::VersionInfo::CHANNEL_DEV:
       return variations::Study_Channel_DEV;
     case chrome::VersionInfo::CHANNEL_BETA:
