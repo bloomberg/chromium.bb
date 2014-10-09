@@ -94,6 +94,8 @@
         'shell/browser/ipc_echo_message_filter.h',
         'shell/browser/layout_test/layout_test_javascript_dialog_manager.cc',
         'shell/browser/layout_test/layout_test_javascript_dialog_manager.h',
+        'shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.cc',
+        'shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h',
         'shell/browser/notify_done_forwarder.cc',
         'shell/browser/notify_done_forwarder.h',
         'shell/browser/shell_android.cc',

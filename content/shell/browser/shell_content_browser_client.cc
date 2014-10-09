@@ -17,6 +17,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/browser/ipc_echo_message_filter.h"
+#include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -284,7 +285,9 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
   resource_dispatcher_host_delegate_.reset(
-      new ShellResourceDispatcherHostDelegate());
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)
+          ? new LayoutTestResourceDispatcherHostDelegate
+          : new ShellResourceDispatcherHostDelegate);
   ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate_.get());
 }
