@@ -110,9 +110,10 @@ namespace blink {
 
         void didChangeVisibilityState();
 
-        // FIXME: This method is only used by EventHandler to get the highest level
-        // LocalFrame in this frame's in-process subtree. When user gesture tokens
-        // are synchronized across processes this method should be removed.
+        // This method is used to get the highest level LocalFrame in this
+        // frame's in-process subtree.
+        // FIXME: This is a temporary hack to support RemoteFrames, and callers
+        // should be updated to avoid storing things on the main frame.
         LocalFrame* localFrameRoot();
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========

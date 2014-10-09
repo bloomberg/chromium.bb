@@ -166,7 +166,8 @@ void FrameConsole::unmute()
 ConsoleMessageStorage* FrameConsole::messageStorage()
 {
     LocalFrame* curFrame = m_frame;
-    Frame* topFrame = curFrame->tree().top();
+    // FIXME: Move the console's messageStorage off the main frame.
+    Frame* topFrame = curFrame->localFrameRoot();
     ASSERT(topFrame->isLocalFrame());
     LocalFrame* localTopFrame = toLocalFrame(topFrame);
     if (localTopFrame != curFrame)
