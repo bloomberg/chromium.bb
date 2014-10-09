@@ -37,6 +37,7 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GradientGeneratedImage.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -114,12 +115,13 @@ struct GradientStop {
 PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const TextLinkColors& textLinkColors, Color currentColor)
 {
     bool derived = false;
-    for (unsigned i = 0; i < m_stops.size(); i++)
-        if (m_stops[i].m_color->colorIsDerivedFromElement()) {
-            m_stops[i].m_colorIsDerivedFromElement = true;
+    for (auto& stop : m_stops) {
+        if (!stop.isHint() && stop.m_color->colorIsDerivedFromElement()) {
+            stop.m_colorIsDerivedFromElement = true;
             derived = true;
             break;
         }
+    }
 
     RefPtrWillBeRawPtr<CSSGradientValue> result = nullptr;
     if (!derived)
@@ -133,10 +135,100 @@ PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesRes
         return nullptr;
     }
 
-    for (unsigned i = 0; i < result->m_stops.size(); i++)
-        result->m_stops[i].m_resolvedColor = textLinkColors.colorFromPrimitiveValue(result->m_stops[i].m_color.get(), currentColor);
+    for (auto& stop : result->m_stops) {
+        if (!stop.isHint())
+            stop.m_resolvedColor = textLinkColors.colorFromPrimitiveValue(stop.m_color.get(), currentColor);
+    }
 
     return result.release();
+}
+
+static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const Vector<CSSGradientColorStop, 2>& cssGradientStops)
+{
+    // This algorithm will replace each color interpolation hint with 9 regular
+    // color stops. The color values for the new color stops will be calculated
+    // using the color weighting formula defined in the spec. The new color
+    // stops will be positioned in such a way that all the pixels between the two
+    // user defined color stops have color values close to the interpolation curve.
+    // If the hint is closer to the left color stop, add 2 stops to the left and
+    // 6 to the right, else add 6 stops to the left and 2 to the right.
+    // The color stops on the side with more space start midway because
+    // the curve approximates a line in that region.
+    // Using this aproximation, it is possible to discern the color steps when
+    // the gradient is large. If this becomes an issue, we can consider improving
+    // the algorithm, or adding support for color interpolation hints to skia shaders.
+
+    int indexOffset = 0;
+
+    // The first and the last color stops cannot be color hints.
+    for (size_t i = 1; i < cssGradientStops.size() - 1; ++i) {
+        if (!cssGradientStops[i].isHint())
+            continue;
+
+        // The current index of the stops vector.
+        size_t x = i + indexOffset;
+        ASSERT(x >= 1);
+
+        // offsetLeft          offset                            offsetRight
+        //   |-------------------|---------------------------------|
+        //          leftDist                 rightDist
+
+        float offsetLeft = stops[x - 1].offset;
+        float offsetRight = stops[x + 1].offset;
+        float offset = stops[x].offset;
+        float leftDist = offset - offsetLeft;
+        float rightDist = offsetRight - offset;
+        float totalDist = offsetRight - offsetLeft;
+
+        Color leftColor = stops[x - 1].color;
+        Color rightColor = stops[x + 1].color;
+
+        ASSERT(offsetLeft <= offset && offset <= offsetRight);
+
+        if (WebCoreFloatNearlyEqual(leftDist, rightDist)) {
+            stops.remove(x);
+            --indexOffset;
+            continue;
+        }
+
+        if (WebCoreFloatNearlyEqual(leftDist, .0f)) {
+            stops[x].color = rightColor;
+            continue;
+        }
+
+        if (WebCoreFloatNearlyEqual(rightDist, .0f)) {
+            stops[x].color = leftColor;
+            continue;
+        }
+
+        GradientStop newStops[9];
+        // Position the new color stops.
+        if (leftDist > rightDist) {
+            for (size_t y = 0; y < 7; ++y)
+                newStops[y].offset = offsetLeft + leftDist * (7 + y) / 13;
+            newStops[7].offset = offset + rightDist / 3;
+            newStops[8].offset = offset + rightDist * 2 / 3;
+        } else {
+            newStops[0].offset = offsetLeft + leftDist / 3;
+            newStops[1].offset = offsetLeft + leftDist * 2 / 3;
+            for (size_t y = 0; y < 7; ++y)
+                newStops[y + 2].offset = offset + rightDist * y / 13;
+        }
+
+        // calculate colors for the new color hints.
+        // The color weighting for the new color stops will be pointRelativeOffset^(ln(0.5)/ln(hintRelativeOffset)).
+        float hintRelativeOffset = leftDist / totalDist;
+        for (size_t y = 0; y < 9; ++y) {
+            float pointRelativeOffset = (newStops[y].offset - offsetLeft) / totalDist;
+            float weighting = powf(pointRelativeOffset, logf(.5f) / logf(hintRelativeOffset));
+            newStops[y].color = blend(leftColor, rightColor, weighting);
+        }
+
+        // Replace the color hint with the new color stops.
+        stops.remove(x);
+        stops.insert(x, newStops, 9);
+        indexOffset += 8;
+    }
 }
 
 void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionData& conversionData, float maxLengthForRepeat)
@@ -166,6 +258,8 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
     float gradientLength = 0;
     bool computedGradientLength = false;
 
+    bool hasHints = false;
+
     FloatPoint gradientStart = gradient->p0();
     FloatPoint gradientEnd;
     if (isLinearGradientValue())
@@ -176,7 +270,10 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
     for (size_t i = 0; i < numStops; ++i) {
         const CSSGradientColorStop& stop = m_stops[i];
 
-        stops[i].color = stop.m_resolvedColor;
+        if (stop.isHint())
+            hasHints = true;
+        else
+            stops[i].color = stop.m_resolvedColor;
 
         if (stop.m_position) {
             if (stop.m_position->isPercentage())
@@ -252,6 +349,12 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
                 inUnspecifiedRun = false;
             }
         }
+    }
+
+    ASSERT(stops.size() == m_stops.size());
+    if (hasHints) {
+        replaceColorHintsWithColorStops(stops, m_stops);
+        numStops = stops.size();
     }
 
     // If the gradient is repeating, repeat the color stops.
@@ -469,8 +572,8 @@ bool CSSGradientValue::isCacheable() const
 
 bool CSSGradientValue::knownToBeOpaque(const RenderObject*) const
 {
-    for (size_t i = 0; i < m_stops.size(); ++i) {
-        if (m_stops[i].m_resolvedColor.hasAlpha())
+    for (auto& stop : m_stops) {
+        if (!stop.isHint() && stop.m_resolvedColor.hasAlpha())
             return false;
     }
     return true;
@@ -580,11 +683,12 @@ String CSSLinearGradientValue::customCSSText() const
             const CSSGradientColorStop& stop = m_stops[i];
             if (i)
                 result.appendLiteral(", ");
-            result.append(stop.m_color->cssText());
-            if (stop.m_position) {
+            if (stop.m_color)
+                result.append(stop.m_color->cssText());
+            if (stop.m_color && stop.m_position)
                 result.append(' ');
+            if (stop.m_position)
                 result.append(stop.m_position->cssText());
-            }
         }
 
     }
@@ -902,11 +1006,12 @@ String CSSRadialGradientValue::customCSSText() const
             const CSSGradientColorStop& stop = m_stops[i];
             if (i)
                 result.appendLiteral(", ");
-            result.append(stop.m_color->cssText());
-            if (stop.m_position) {
+            if (stop.m_color)
+                result.append(stop.m_color->cssText());
+            if (stop.m_color && stop.m_position)
                 result.append(' ');
+            if (stop.m_position)
                 result.append(stop.m_position->cssText());
-            }
         }
 
     }

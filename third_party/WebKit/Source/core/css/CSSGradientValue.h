@@ -65,6 +65,11 @@ public:
         return compareCSSValuePtr(m_color, other.m_color)
             && compareCSSValuePtr(m_position, other.m_position);
     }
+    bool isHint() const
+    {
+        ASSERT(m_color || m_position);
+        return !m_color;
+    }
 
     void trace(Visitor*);
 };

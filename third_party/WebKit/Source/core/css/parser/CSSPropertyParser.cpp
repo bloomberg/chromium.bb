@@ -6824,6 +6824,12 @@ bool CSSPropertyParser::parseGradientColorStops(CSSParserValueList* valueList, C
     CSSParserValue* a = valueList->current();
 
     // Now look for color stops.
+    // <color-stop-list> = [ <color-stop> , <color-hint>? ]# , <color-stop>
+    bool supportsColorHints = gradient->gradientType() == CSSLinearGradient
+        || gradient->gradientType() == CSSRadialGradient;
+
+    // The first color stop cannot be a color hint.
+    bool previousStopWasColorHint = true;
     while (a) {
         // Look for the comma before the next stop.
         if (expectComma) {
@@ -6836,12 +6842,18 @@ bool CSSPropertyParser::parseGradientColorStops(CSSParserValueList* valueList, C
         }
 
         // <color-stop> = <color> [ <percentage> | <length> ]?
+        // <color-hint> = <length> | <percentage>
         CSSGradientColorStop stop;
         stop.m_color = parseGradientColorOrKeyword(this, a);
-        if (!stop.m_color)
-            return false;
 
-        a = valueList->next();
+        // Two hints in a row are not allowed.
+        if (!stop.m_color && (!supportsColorHints || previousStopWasColorHint))
+            return false;
+        previousStopWasColorHint = !stop.m_color;
+
+        if (stop.m_color)
+            a = valueList->next();
+
         if (a) {
             if (validUnit(a, FLength | FPercent)) {
                 stop.m_position = createPrimitiveNumericValue(a);
@@ -6849,9 +6861,16 @@ bool CSSPropertyParser::parseGradientColorStops(CSSParserValueList* valueList, C
             }
         }
 
+        if (!stop.m_color && !stop.m_position)
+            return false;
+
         gradient->addStop(stop);
         expectComma = true;
     }
+
+    // The last color stop cannot be a color hint.
+    if (previousStopWasColorHint)
+        return false;
 
     // Must have 2 or more stops to be valid.
     return gradient->stopCount() >= 2;
