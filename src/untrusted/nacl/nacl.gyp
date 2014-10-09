@@ -8,6 +8,7 @@
   ],
   'variables': {
     'sources_for_standard_interfaces': [
+      'abort.c',
       'access.c',
       'chdir.c',
       'chmod.c',

@@ -9,6 +9,7 @@ if not env.Bit('bitcode') or not env.Bit('minsfi'):
 
 env.ComponentLibrary('minsfi_support', [
     '_exit.c',
+    'abort.c',
     'malloc.c',
     'sbrk.c',
     'sched_yield.c',
