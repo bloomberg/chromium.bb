@@ -32,6 +32,9 @@ const char kEnableExternalApplications[] = "enable-external-applications";
 // change it to "single-process") when it works.
 const char kEnableMultiprocess[] = "enable-multiprocess";
 
+// Print the usage message and exit.
+const char kHelp[] = "help";
+
 // Map mojo: URLs to a shared library of similar name at this origin. See
 // mojo_url_resolver.cc for details.
 const char kOrigin[] = "origin";

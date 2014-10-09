@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <iostream>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -66,11 +67,39 @@ void RunApps(mojo::shell::Context* context) {
     context->Run(GetAppURLAndSetArgs(arg, context));
 }
 
+void Usage() {
+  std::cerr << "Launch Mojo applications.\n";
+  std::cerr
+    << "Usage: mojo_shell"
+    << " [--" << switches::kArgsFor << "=<mojo-app>]"
+    << " [--" << switches::kContentHandlers << "=<handlers>]"
+    << " [--" << switches::kEnableExternalApplications << "]"
+    << " [--" << switches::kDisableCache << "]"
+    << " [--" << switches::kEnableMultiprocess << "]"
+    << " [--" << switches::kOrigin << "=<url-lib-path>]"
+    << " <mojo-app> ...\n\n"
+    << "A <mojo-app> is a Mojo URL or a Mojo URL and arguments within quotes.\n"
+    << "Example: mojo_shell \"mojo://mojo_js_standalone test.js\".\n"
+    << "<url-lib-path> is searched for shared libraries named by mojo URLs.\n"
+    << "The value of <handlers> is a comma separated list like:\n"
+    << "text/html,mojo://mojo_html_viewer,"
+    << "application/javascript,mojo://mojo_js_content_handler\n";
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
+
+  const base::CommandLine& command_line =
+    *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kHelp) ||
+      command_line.GetArgs().empty()){
+    Usage();
+    return 0;
+  }
+
 #if defined(OS_LINUX)
   // We use gfx::RenderText from multiple threads concurrently and the pango
   // backend (currently the default on linux) is not close to threadsafe. Force
@@ -96,8 +125,6 @@ int main(int argc, char** argv) {
       base::MessageLoop message_loop;
       shell_context.Init();
 
-      const base::CommandLine& command_line =
-          *base::CommandLine::ForCurrentProcess();
       if (command_line.HasSwitch(switches::kOrigin)) {
         shell_context.mojo_url_resolver()->SetBaseURL(
             GURL(command_line.GetSwitchValueASCII(switches::kOrigin)));
