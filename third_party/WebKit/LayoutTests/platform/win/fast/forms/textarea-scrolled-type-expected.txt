@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
           text run at (179,120) width 4: " "
         RenderBR {BR} at (183,134) size 0x0
       RenderBlock {DIV} at (0,138) size 784x0
-layer at (8,26) size 179x116 clip at (9,27) size 162x114 scrollY 224 scrollHeight 338
+layer at (8,26) size 179x116 clip at (9,27) size 162x114 scrollY 224.00 scrollHeight 338
   RenderTextControl {TEXTAREA} at (0,18) size 179x116 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 160x336
       RenderText {#text} at (0,0) size 8x16

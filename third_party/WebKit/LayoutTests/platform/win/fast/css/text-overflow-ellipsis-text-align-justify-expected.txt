@@ -66,7 +66,7 @@ layer at (8,445) size 310x31 clip at (9,446) size 308x29 scrollWidth 763
     RenderImage {IMG} at (278.70,1) size 25x25
     RenderText {#text} at (303,12) size 461x17
       text run at (303,12) width 461: "ipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,536) size 310x20 clip at (9,537) size 308x18 scrollX 429 scrollWidth 738
+layer at (8,536) size 310x20 clip at (9,537) size 308x18 scrollX 429.00 scrollWidth 738
   RenderBlock {DIV} at (0,528.31) size 310x20 [border: (1px solid #000000)]
     RenderText {#text} at (-428,1) size 738x17
       text run at (-428,1) width 737 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
@@ -84,14 +84,14 @@ layer at (8,617) size 310x74 clip at (9,618) size 308x72
     RenderText {#text} at (1,55) size 715x17
       text run at (1,55) width 715 RTL override: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     RenderBR {BR} at (0,0) size 0x0
-layer at (8,752) size 310x31 clip at (9,753) size 308x29 scrollX 458 scrollWidth 767
+layer at (8,752) size 310x31 clip at (9,753) size 308x29 scrollX 458.00 scrollWidth 767
   RenderBlock {DIV} at (0,743.75) size 310x31 [border: (1px solid #000000)]
     RenderText {#text} at (123,12) size 186x17
       text run at (123,12) width 186 RTL override: "Lorem ipsum dolor sit amet, "
     RenderImage {IMG} at (98.25,1) size 25x25
     RenderText {#text} at (-457,12) size 557x17
       text run at (-457,12) width 556 RTL override: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,843) size 310x31 clip at (9,844) size 308x29 scrollX 454 scrollWidth 763
+layer at (8,843) size 310x31 clip at (9,844) size 308x29 scrollX 454.00 scrollWidth 763
   RenderBlock {DIV} at (0,835.47) size 310x31 [border: (1px solid #000000)]
     RenderText {#text} at (31,12) size 278x17
       text run at (31,12) width 278 RTL override: "Lorem ipsum dolor sit amet, consectetur ad"

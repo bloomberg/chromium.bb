@@ -51,7 +51,7 @@ layer at (0,0) size 800x600
           RenderText at (8,2) size 124x13
             text run at (8,2) width 124: "this should be selected"
       RenderText {#text} at (0,0) size 0x0
-layer at (8,23) size 140x59 clip at (9,24) size 127x57 scrollY 100 scrollHeight 198
+layer at (8,23) size 140x59 clip at (9,24) size 127x57 scrollY 100.00 scrollHeight 198
   RenderListBox {SELECT} at (0,15.25) size 140.19x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 127.19x14.19
       RenderText {#text} at (2,0) size 18x13
@@ -95,7 +95,7 @@ layer at (8,23) size 140x59 clip at (9,24) size 127x57 scrollY 100 scrollHeight 
     RenderBlock {OPTION} at (1,185.44) size 127.19x14.19
       RenderText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-layer at (8,97) size 140x59 clip at (9,98) size 127x57 scrollY 100 scrollHeight 198
+layer at (8,97) size 140x59 clip at (9,98) size 127x57 scrollY 100.00 scrollHeight 198
   RenderListBox {SELECT} at (0,89.25) size 140.19x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 127.19x14.19
       RenderText {#text} at (2,0) size 18x13
@@ -139,7 +139,7 @@ layer at (8,97) size 140x59 clip at (9,98) size 127x57 scrollY 100 scrollHeight 
     RenderBlock {OPTION} at (1,185.44) size 127.19x14.19
       RenderText {#text} at (2,0) size 18x13
         text run at (2,0) width 18: "opt"
-layer at (8,171) size 140x59 clip at (9,172) size 127x57 scrollY 42 scrollHeight 113
+layer at (8,171) size 140x59 clip at (9,172) size 127x57 scrollY 42.00 scrollHeight 113
   RenderListBox {SELECT} at (0,163.25) size 140.19x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 127.19x14.19
       RenderText {#text} at (2,0) size 18x13

@@ -1,0 +1,77 @@
+layer at (0,0) size 1160x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (9.59,9.59) size 780.81x574.81
+      RenderBlock (anonymous) at (0,0) size 780.81x162
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,162) size 780.81x117.59
+        RenderBlock (anonymous) at (0,0) size 780.81x66
+          RenderText {#text} at (0,0) size 59x21
+            text run at (0,0) width 59: "Results:"
+          RenderBR {BR} at (59,16) size 0x0
+          RenderText {#text} at (0,22) size 105x21
+            text run at (0,22) width 105: "Test 1 Passed"
+          RenderBR {BR} at (105,38) size 0x0
+          RenderText {#text} at (0,44) size 97x21
+            text run at (0,44) width 97: "Test 2 Failed"
+          RenderBR {BR} at (97,60) size 0x0
+        RenderBlock {PRE} at (0,81.59) size 780.81x36
+          RenderText {#text} at (0,0) size 1150x18
+            text run at (0,0) width 1150: "     Expected: false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false"
+          RenderBR {BR} at (0,0) size 0x0
+          RenderText {#text} at (0,18) size 1130x18
+            text run at (0,18) width 1130: "     Actual: false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false"
+layer at (10,10) size 139x162 clip at (22,22) size 99x138 scrollY 8 scrollHeight 370
+  RenderListBox {SELECT} at (0,0) size 138.78x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
+    RenderBlock {OPTION} at (24,24) size 75.78x20.38
+      RenderText {#text} at (2,0) size 27x18
+        text run at (2,0) width 27: "one"
+    RenderBlock {OPTION} at (24,44.38) size 75.78x20.38
+      RenderText {#text} at (2,0) size 25x18
+        text run at (2,0) width 25: "two"
+    RenderBlock {OPTION} at (24,64.75) size 75.78x20.38
+      RenderText {#text} at (2,0) size 36x18
+        text run at (2,0) width 36: "three"
+    RenderBlock {OPTION} at (24,85.13) size 75.78x20.38
+      RenderText {#text} at (2,0) size 27x18
+        text run at (2,0) width 27: "four"
+    RenderBlock {OPTION} at (24,105.50) size 75.78x20.38
+      RenderText {#text} at (2,0) size 25x18
+        text run at (2,0) width 25: "five"
+    RenderBlock {OPTION} at (24,125.88) size 75.78x20.38 [color=#FFFFCC] [bgcolor=#0000FF]
+      RenderText {#text} at (2,0) size 20x18
+        text run at (2,0) width 20: "six"
+    RenderBlock {OPTION} at (24,146.25) size 75.78x20.38
+      RenderText {#text} at (2,0) size 42x18
+        text run at (2,0) width 42: "seven"
+    RenderBlock {OPTION} at (24,166.63) size 75.78x20.38
+      RenderText {#text} at (2,0) size 35x18
+        text run at (2,0) width 35: "eight"
+    RenderBlock {OPTION} at (24,187) size 75.78x20.38
+      RenderText {#text} at (2,0) size 30x18
+        text run at (2,0) width 30: "nine"
+    RenderBlock {OPTION} at (24,207.38) size 75.78x20.38
+      RenderText {#text} at (2,0) size 22x18
+        text run at (2,0) width 22: "ten"
+    RenderBlock {OPTION} at (24,227.75) size 75.78x20.38
+      RenderText {#text} at (2,0) size 46x18
+        text run at (2,0) width 46: "eleven"
+    RenderBlock {OPTION} at (24,248.13) size 75.78x20.38
+      RenderText {#text} at (2,0) size 44x18
+        text run at (2,0) width 44: "twelve"
+    RenderBlock {OPTION} at (24,268.50) size 75.78x20.38
+      RenderText {#text} at (2,0) size 52x18
+        text run at (2,0) width 52: "thirteen"
+    RenderBlock {OPTION} at (24,288.88) size 75.78x20.38
+      RenderText {#text} at (2,0) size 57x18
+        text run at (2,0) width 57: "fourteen"
+    RenderBlock {OPTION} at (24,309.25) size 75.78x20.38
+      RenderText {#text} at (2,0) size 43x18
+        text run at (2,0) width 43: "fifteen"
+    RenderBlock {OPTION} at (24,329.63) size 75.78x20.38
+      RenderText {#text} at (2,0) size 50x18
+        text run at (2,0) width 50: "sixteen"
+    RenderBlock {OPTION} at (24,350) size 75.78x20.38
+      RenderText {#text} at (2,0) size 72x18
+        text run at (2,0) width 72: "seventeen"

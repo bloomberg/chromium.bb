@@ -10,7 +10,7 @@ layer at (0,0) size 800x51
         RenderTextControl {INPUT} at (0,0) size 73x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (11,27) size 67x13 scrollX 37 scrollWidth 293
+layer at (11,27) size 67x13 scrollX 37.00 scrollWidth 293
   RenderBlock {DIV} at (3,3) size 67x13
     RenderText {#text} at (0,0) size 293x13
       text run at (0,0) width 293: "012345678901012345678901234567890123456789"

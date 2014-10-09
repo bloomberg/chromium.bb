@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 90x16
           text run at (0,0) width 90: "ScrollLeft: 40"
         RenderBR {BR} at (89,12) size 1x0
-layer at (11,75) size 117x13 scrollX 40 scrollWidth 157
+layer at (11,75) size 117x13 scrollX 40.00 scrollWidth 157
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 158x13
       text run at (0,0) width 158: "abcdefghijklmnopqrstuvwxyz"

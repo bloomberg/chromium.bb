@@ -125,7 +125,7 @@ layer at (12,241) size 200x25 clip at (13,242) size 187x23 scrollHeight 42
     RenderBlock {OPTION} at (1,29.38) size 187x14.19
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 3"
-layer at (12,274) size 200x25 clip at (13,275) size 187x23 scrollY 6 scrollHeight 42
+layer at (12,274) size 200x25 clip at (13,275) size 187x23 scrollY 6.00 scrollHeight 42
   RenderListBox {SELECT} at (4,266) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19
       RenderText {#text} at (2,0) size 35x13
@@ -136,7 +136,7 @@ layer at (12,274) size 200x25 clip at (13,275) size 187x23 scrollY 6 scrollHeigh
     RenderBlock {OPTION} at (1,29.38) size 187x14.19
       RenderText {#text} at (2,0) size 35x13
         text run at (2,0) width 35: "Item 3"
-layer at (12,307) size 200x25 clip at (13,308) size 187x23 scrollY 6 scrollHeight 42
+layer at (12,307) size 200x25 clip at (13,308) size 187x23 scrollY 6.00 scrollHeight 42
   RenderListBox {SELECT} at (4,299) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 187x14.19
       RenderText {#text} at (2,0) size 35x13

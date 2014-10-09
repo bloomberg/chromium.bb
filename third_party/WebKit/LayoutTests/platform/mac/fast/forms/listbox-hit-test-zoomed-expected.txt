@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (104,33) size 1x0
         RenderText {#text} at (0,38) size 105x19
           text run at (0,38) width 105: "Test 2 Passed"
-layer at (10,10) size 128x162 clip at (22,22) size 93x138 scrollY 6 scrollHeight 316
+layer at (10,10) size 128x162 clip at (22,22) size 93x138 scrollY 6.00 scrollHeight 316
   RenderListBox {SELECT} at (0,0) size 128.09x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
     RenderBlock {OPTION} at (24,24) size 69.09x17.19
       RenderText {#text} at (2,0) size 25x16

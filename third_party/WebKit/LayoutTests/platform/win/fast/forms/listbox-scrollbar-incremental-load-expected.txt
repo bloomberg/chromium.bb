@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
           text run at (154,18) width 89: "to reflect this."
       RenderBlock (anonymous) at (0,104) size 784x70
         RenderText {#text} at (0,0) size 0x0
-layer at (8,112) size 56x70 clip at (9,113) size 39x68 scrollY 51 scrollHeight 119
+layer at (8,112) size 56x70 clip at (9,113) size 39x68 scrollY 51.00 scrollHeight 119
   RenderListBox {SELECT} at (0,0) size 56x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 39x17
       RenderText {#text} at (2,0) size 24x16

@@ -51,7 +51,7 @@ layer at (15,291) size 115x43 clip at (25,291) size 100x28 scrollWidth 191 scrol
     RenderBlock {DIV} at (10,0) size 100x18 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,0) size 192x17
         text run at (0,0) width 192: "abcdefghijklmnopqrstuvwxyz"
-layer at (142,197) size 115x43 clip at (147,197) size 100x28 scrollX 91 scrollWidth 191 scrollHeight 27
+layer at (142,197) size 115x43 clip at (147,197) size 100x28 scrollX 91.00 scrollWidth 191 scrollHeight 27
   RenderBlock {DIV} at (5,5) size 115x42.94 [bgcolor=#FFFF00] [border: none (10px solid #FF0000) none (5px solid #008000)]
     RenderText {#text} at (-86,0) size 192x17
       text run at (-86,0) width 191: "zyxwvutsrqponmlkjihgfedcba"
@@ -60,7 +60,7 @@ layer at (142,244) size 115x43 clip at (147,244) size 100x43 scrollHeight 42
     RenderBlock {DIV} at (5,0) size 100x18 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,0) size 192x17
         text run at (0,0) width 192: "zyxwvutsrqponmlkjihgfedcba"
-layer at (142,291) size 115x43 clip at (147,291) size 100x28 scrollX 91 scrollWidth 191 scrollHeight 27
+layer at (142,291) size 115x43 clip at (147,291) size 100x28 scrollX 91.00 scrollWidth 191 scrollHeight 27
   RenderBlock {DIV} at (5,98.88) size 115x42.94 [bgcolor=#FFFF00] [border: none (10px solid #FF0000) none (5px solid #008000)]
     RenderBlock {DIV} at (5,0) size 100x18 [bgcolor=#D3D3D3]
       RenderText {#text} at (-91,0) size 192x17
@@ -83,7 +83,7 @@ layer at (193,358) size 8x4
   RenderBlock (positioned) {DIV} at (51,20) size 8x4 [bgcolor=#0000FF]
 layer at (227,338) size 70x20 backgroundClip at (147,338) size 100x43 clip at (147,338) size 100x43 outlineClip at (147,338) size 100x43
   RenderBlock (positioned) {DIV} at (85,0) size 70x20 [bgcolor=#808000]
-layer at (142,385) size 115x43 clip at (147,385) size 100x28 scrollX 50 scrollWidth 150 scrollHeight 27
+layer at (142,385) size 115x43 clip at (147,385) size 100x28 scrollX 50.00 scrollWidth 150 scrollHeight 27
   RenderBlock (relative positioned) {DIV} at (5,192.75) size 115x42.94 [bgcolor=#FFFF00] [border: none (10px solid #FF0000) none (5px solid #008000)]
 layer at (193,405) size 8x4
   RenderBlock (positioned) {DIV} at (51,20) size 8x4 [bgcolor=#0000FF]

@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
           text run at (698,16) width 88: "verifying that"
           text run at (0,32) width 323: "the correct caret position is reported to the editing "
           text run at (323,32) width 58: "delegate."
-layer at (0,0) size 210x31 clip at (0,0) size 210x16 scrollX 38 scrollWidth 249
+layer at (0,0) size 210x31 clip at (0,0) size 210x16 scrollX 38.00 scrollWidth 249
   RenderBlock {DIV} at (0,0) size 210x31
     RenderText {#text} at (0,0) size 249x16
       text run at (0,0) width 249: "Seals and caribou live in the arctic, too"

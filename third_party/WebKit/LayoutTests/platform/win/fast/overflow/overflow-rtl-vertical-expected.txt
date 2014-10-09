@@ -47,7 +47,7 @@ layer at (273,15) size 43x115 clip at (273,25) size 28x100 scrollHeight 191
     RenderBlock {DIV} at (0,10) size 18x100 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,0) size 17x192
         text run at (0,0) width 192: "abcdefghijklmnopqrstuvwxyz"
-layer at (179,142) size 43x115 clip at (179,147) size 28x100 scrollY 91 scrollHeight 191
+layer at (179,142) size 43x115 clip at (179,147) size 28x100 scrollY 91.00 scrollHeight 191
   RenderBlock {DIV} at (5,5) size 42.94x115 [bgcolor=#FFFF00] [border: (5px solid #008000) none (10px solid #FF0000) none]
     RenderText {#text} at (0,-86) size 17x192
       text run at (0,-86) width 192: "zyxwvutsrqponmlkjihgfedcba"
@@ -56,7 +56,7 @@ layer at (226,142) size 43x115 clip at (226,147) size 43x100
     RenderBlock {DIV} at (0,5) size 18x100 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,0) size 17x192
         text run at (0,0) width 192: "zyxwvutsrqponmlkjihgfedcba"
-layer at (273,142) size 43x115 clip at (273,147) size 28x100 scrollY 91 scrollHeight 191
+layer at (273,142) size 43x115 clip at (273,147) size 28x100 scrollY 91.00 scrollHeight 191
   RenderBlock {DIV} at (98.88,5) size 42.94x115 [bgcolor=#FFFF00] [border: (5px solid #008000) none (10px solid #FF0000) none]
     RenderBlock {DIV} at (0,5) size 18x100 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,-91) size 17x192

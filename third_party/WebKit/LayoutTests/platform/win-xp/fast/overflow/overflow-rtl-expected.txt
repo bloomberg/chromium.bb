@@ -51,7 +51,7 @@ layer at (15,303) size 115x42 clip at (25,303) size 100x27 scrollWidth 175
     RenderBlock {DIV} at (10,0) size 100x20 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,0) size 175x19
         text run at (0,0) width 175: "abcdefghijklmnopqrstuvwxyz"
-layer at (142,211) size 115x42 clip at (147,211) size 100x27 scrollX 75 scrollWidth 175
+layer at (142,211) size 115x42 clip at (147,211) size 100x27 scrollX 75.00 scrollWidth 175
   RenderBlock {DIV} at (5,5) size 115x42 [bgcolor=#FFFF00] [border: none (10px solid #FF0000) none (5px solid #008000)]
     RenderText {#text} at (-70,0) size 175x19
       text run at (-70,0) width 175: "zyxwvutsrqponmlkjihgfedcba"
@@ -60,7 +60,7 @@ layer at (142,257) size 115x42 clip at (147,257) size 100x42
     RenderBlock {DIV} at (5,0) size 100x20 [bgcolor=#D3D3D3]
       RenderText {#text} at (0,0) size 175x19
         text run at (0,0) width 175: "zyxwvutsrqponmlkjihgfedcba"
-layer at (142,303) size 115x42 clip at (147,303) size 100x27 scrollX 75 scrollWidth 175
+layer at (142,303) size 115x42 clip at (147,303) size 100x27 scrollX 75.00 scrollWidth 175
   RenderBlock {DIV} at (5,97) size 115x42 [bgcolor=#FFFF00] [border: none (10px solid #FF0000) none (5px solid #008000)]
     RenderBlock {DIV} at (5,0) size 100x20 [bgcolor=#D3D3D3]
       RenderText {#text} at (-75,0) size 175x19
@@ -83,7 +83,7 @@ layer at (193,369) size 8x4
   RenderBlock (positioned) {DIV} at (51,20) size 8x4 [bgcolor=#0000FF]
 layer at (227,349) size 70x20 backgroundClip at (147,349) size 100x42 clip at (147,349) size 100x42 outlineClip at (147,349) size 100x42
   RenderBlock (positioned) {DIV} at (85,0) size 70x20 [bgcolor=#808000]
-layer at (142,395) size 115x42 clip at (147,395) size 100x27 scrollX 50 scrollWidth 150
+layer at (142,395) size 115x42 clip at (147,395) size 100x27 scrollX 50.00 scrollWidth 150
   RenderBlock (relative positioned) {DIV} at (5,189) size 115x42 [bgcolor=#FFFF00] [border: none (10px solid #FF0000) none (5px solid #008000)]
 layer at (193,415) size 8x4
   RenderBlock (positioned) {DIV} at (51,20) size 8x4 [bgcolor=#0000FF]

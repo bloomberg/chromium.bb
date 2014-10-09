@@ -1,0 +1,246 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x380
+  RenderBlock {HTML} at (0,0) size 800x380
+    RenderBody {BODY} at (8,16) size 784x348
+      RenderBlock {P} at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 293x19
+          text run at (0,0) width 293: "This test is a basic check for using text-overflow."
+      RenderBlock {P} at (0,36) size 784x108
+        RenderText {#text} at (0,0) size 446x19
+          text run at (0,0) width 446: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
+        RenderBR {BR} at (446,0) size 0x19
+        RenderTextControl {INPUT} at (0,20) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (153,21) size 4x19
+          text run at (153,21) width 4: " "
+        RenderTextControl {INPUT} at (157,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (312,21) size 4x19
+          text run at (312,21) width 4: " "
+        RenderTextControl {INPUT} at (316,20) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (469,21) size 4x19
+          text run at (469,21) width 4: " "
+        RenderTextControl {INPUT} at (473,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (0,0) size 0x0
+        RenderTextControl {INPUT} at (0,42) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderBR {BR} at (153,43) size 0x19
+        RenderTextControl {INPUT} at (0,64) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (153,65) size 4x19
+          text run at (153,65) width 4: " "
+        RenderTextControl {INPUT} at (157,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (312,65) size 4x19
+          text run at (312,65) width 4: " "
+        RenderTextControl {INPUT} at (316,64) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (469,65) size 4x19
+          text run at (469,65) width 4: " "
+        RenderTextControl {INPUT} at (473,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (0,0) size 0x0
+        RenderTextControl {INPUT} at (0,86) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {P} at (0,160) size 784x108
+        RenderText {#text} at (0,0) size 494x19
+          text run at (0,0) width 494: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
+        RenderBR {BR} at (494,0) size 0x19
+        RenderTextControl {INPUT} at (0,20) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (153,21) size 4x19
+          text run at (153,21) width 4: " "
+        RenderTextControl {INPUT} at (157,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (312,21) size 4x19
+          text run at (312,21) width 4: " "
+        RenderTextControl {INPUT} at (316,20) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (469,21) size 4x19
+          text run at (469,21) width 4: " "
+        RenderTextControl {INPUT} at (473,20) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (0,0) size 0x0
+        RenderTextControl {INPUT} at (0,42) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderBR {BR} at (153,43) size 0x19
+        RenderTextControl {INPUT} at (0,64) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (153,65) size 4x19
+          text run at (153,65) width 4: " "
+        RenderTextControl {INPUT} at (157,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (312,65) size 4x19
+          text run at (312,65) width 4: " "
+        RenderTextControl {INPUT} at (316,64) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (469,65) size 4x19
+          text run at (469,65) width 4: " "
+        RenderTextControl {INPUT} at (473,64) size 155x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 149x16
+            RenderBlock {DIV} at (0,2.50) size 1x11
+            RenderBlock {DIV} at (1,0) size 135x16
+        RenderText {#text} at (0,0) size 0x0
+        RenderTextControl {INPUT} at (0,86) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {P} at (0,284) size 784x64
+        RenderText {#text} at (0,0) size 218x19
+          text run at (0,0) width 218: "Dynamic style change text-overflow:"
+        RenderBR {BR} at (218,0) size 0x19
+        RenderText {#text} at (0,21) size 223x19
+          text run at (0,21) width 223: "Clip to ellipsis (should show ellipsis): "
+        RenderTextControl {INPUT} at (223,20) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (376,21) size 4x19
+          text run at (376,21) width 4: " "
+        RenderTextControl {INPUT} at (380,20) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (533,21) size 4x19
+          text run at (533,21) width 4: " "
+        RenderBR {BR} at (0,0) size 0x0
+        RenderText {#text} at (0,43) size 244x19
+          text run at (0,43) width 244: "Ellipsis to clip (should not show ellipsis): "
+        RenderTextControl {INPUT} at (244,42) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (397,43) size 4x19
+          text run at (397,43) width 4: " "
+        RenderTextControl {INPUT} at (401,42) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (554,43) size 4x19
+          text run at (554,43) width 4: " "
+        RenderBR {BR} at (0,0) size 0x0
+layer at (10,75) size 149x16 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16 [color=#A9A9A9]
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,75) size 149x16
+  RenderBlock {DIV} at (2,3) size 149x16
+layer at (169,75) size 135x16 scrollWidth 317
+  RenderBlock {DIV} at (4,3) size 135x16 [color=#A9A9A9]
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (169,75) size 135x16
+  RenderBlock {DIV} at (0,0) size 135x16
+layer at (326,75) size 149x16 scrollWidth 318
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (485,75) size 135x16 scrollWidth 318
+  RenderBlock {DIV} at (0,0) size 135x16
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,97) size 149x16 scrollWidth 276
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (0,0) size 275x16
+      text run at (0,0) width 275: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
+layer at (10,119) size 149x16 scrollX 168 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16 [color=#A9A9A9]
+    RenderText {#text} at (-168,0) size 317x16
+      text run at (-168,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,119) size 149x16
+  RenderBlock {DIV} at (2,3) size 149x16
+layer at (169,119) size 135x16 scrollX 182 scrollWidth 317
+  RenderBlock {DIV} at (4,3) size 135x16 [color=#A9A9A9]
+    RenderText {#text} at (-182,0) size 317x16
+      text run at (-182,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (169,119) size 135x16
+  RenderBlock {DIV} at (0,0) size 135x16
+layer at (326,119) size 149x16 scrollX 168 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (-168,0) size 317x16
+      text run at (-168,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (485,119) size 135x16 scrollX 182 scrollWidth 317
+  RenderBlock {DIV} at (0,0) size 135x16
+    RenderText {#text} at (-182,0) size 317x16
+      text run at (-182,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,141) size 149x16 scrollX 126 scrollWidth 275
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (-126,0) size 275x16
+      text run at (-126,0) width 275 RTL: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
+layer at (10,199) size 149x16 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16 [color=#A9A9A9]
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,199) size 149x16
+  RenderBlock {DIV} at (2,3) size 149x16
+layer at (169,199) size 135x16 scrollWidth 317
+  RenderBlock {DIV} at (4,3) size 135x16 [color=#A9A9A9]
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (169,199) size 135x16
+  RenderBlock {DIV} at (0,0) size 135x16
+layer at (326,199) size 149x16 scrollWidth 318
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (485,199) size 135x16 scrollWidth 318
+  RenderBlock {DIV} at (0,0) size 135x16
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,221) size 149x16 scrollWidth 276
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (0,0) size 275x16
+      text run at (0,0) width 275: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
+layer at (10,243) size 149x16 scrollX 168 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16 [color=#A9A9A9]
+    RenderText {#text} at (-168,0) size 317x16
+      text run at (-168,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,243) size 149x16
+  RenderBlock {DIV} at (2,3) size 149x16
+layer at (169,243) size 135x16 scrollX 182 scrollWidth 317
+  RenderBlock {DIV} at (4,3) size 135x16 [color=#A9A9A9]
+    RenderText {#text} at (-182,0) size 317x16
+      text run at (-182,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (169,243) size 135x16
+  RenderBlock {DIV} at (0,0) size 135x16
+layer at (326,243) size 149x16 scrollX 168 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (-168,0) size 317x16
+      text run at (-168,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (485,243) size 135x16 scrollX 182 scrollWidth 317
+  RenderBlock {DIV} at (0,0) size 135x16
+    RenderText {#text} at (-182,0) size 317x16
+      text run at (-182,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (10,265) size 149x16 scrollX 126 scrollWidth 275
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (-126,0) size 275x16
+      text run at (-126,0) width 275 RTL: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
+layer at (233,323) size 149x16 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16 [color=#A9A9A9]
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (233,323) size 149x16
+  RenderBlock {DIV} at (2,3) size 149x16
+layer at (390,323) size 149x16 scrollWidth 318
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (254,345) size 149x16 scrollWidth 317
+  RenderBlock {DIV} at (2,3) size 149x16 [color=#A9A9A9]
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (254,345) size 149x16
+  RenderBlock {DIV} at (2,3) size 149x16
+layer at (411,345) size 149x16 scrollWidth 318
+  RenderBlock {DIV} at (2,3) size 149x16
+    RenderText {#text} at (0,0) size 317x16
+      text run at (0,0) width 317: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (305,79) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (621,79) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (305,123) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (621,123) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (305,203) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (621,203) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (305,247) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9
+layer at (621,247) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9

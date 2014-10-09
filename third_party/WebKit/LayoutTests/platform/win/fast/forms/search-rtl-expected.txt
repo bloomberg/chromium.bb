@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,116) size 784x18
         RenderText {#text} at (0,0) size 39x17
           text run at (0,0) width 39: "PASS"
-layer at (29,45) size 138x16 scrollX 5 scrollWidth 143
+layer at (29,45) size 138x16 scrollX 5.00 scrollWidth 143
   RenderBlock {DIV} at (0,0) size 138x16
     RenderText {#text} at (-5,0) size 143x16
       text run at (-5,0) width 23 RTL: " \x{5D5}\x{5D6}\x{5D4}\x{5D5}"

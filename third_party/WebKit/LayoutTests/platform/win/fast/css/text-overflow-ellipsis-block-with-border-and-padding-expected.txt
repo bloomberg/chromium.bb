@@ -7,7 +7,7 @@ layer at (8,8) size 343x28 clip at (13,13) size 333x18 scrollWidth 763
   RenderBlock {DIV} at (0,0) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (25,5) size 738x17
       text run at (25,5) width 738: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,56) size 343x28 clip at (13,61) size 333x18 scrollX 431 scrollWidth 764
+layer at (8,56) size 343x28 clip at (13,61) size 333x18 scrollX 431.00 scrollWidth 764
   RenderBlock {DIV} at (0,48) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (-406,5) size 739x17
       text run at (-406,5) width 738 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
@@ -15,7 +15,7 @@ layer at (8,104) size 343x28 clip at (13,109) size 333x18 scrollWidth 764
   RenderBlock {DIV} at (0,96) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (26,5) size 739x17
       text run at (26,5) width 739: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,152) size 343x28 clip at (13,157) size 333x18 scrollX 429 scrollWidth 763
+layer at (8,152) size 343x28 clip at (13,157) size 333x18 scrollX 429.00 scrollWidth 763
   RenderBlock {DIV} at (0,144) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (-404,5) size 738x17
       text run at (-404,5) width 737 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
@@ -23,7 +23,7 @@ layer at (8,200) size 343x28 clip at (13,205) size 333x18 scrollWidth 764
   RenderBlock {DIV} at (0,192) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (25,5) size 739x17
       text run at (25,5) width 739: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,248) size 343x28 clip at (13,253) size 333x18 scrollX 430 scrollWidth 764
+layer at (8,248) size 343x28 clip at (13,253) size 333x18 scrollX 430.00 scrollWidth 764
   RenderBlock {DIV} at (0,240) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (-405,5) size 739x17
       text run at (-405,5) width 738 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
@@ -31,7 +31,7 @@ layer at (8,296) size 343x28 clip at (13,301) size 333x18 scrollWidth 763
   RenderBlock {DIV} at (0,288) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (25,5) size 738x17
       text run at (25,5) width 738: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,344) size 343x28 clip at (13,349) size 333x18 scrollX 429 scrollWidth 763
+layer at (8,344) size 343x28 clip at (13,349) size 333x18 scrollX 429.00 scrollWidth 763
   RenderBlock {DIV} at (0,336) size 343x28 [border: (5px solid #008000)]
     RenderText {#text} at (-404,5) size 738x17
       text run at (-404,5) width 737 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."

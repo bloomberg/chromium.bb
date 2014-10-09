@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
           RenderBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,18) size 1130x18
             text run at (0,18) width 1130: "     Actual: false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false"
-layer at (10,10) size 142x162 clip at (22,22) size 102x138 scrollY 8 scrollHeight 370
+layer at (10,10) size 142x162 clip at (22,22) size 102x138 scrollY 8.00 scrollHeight 370
   RenderListBox {SELECT} at (0,0) size 141.63x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
     RenderBlock {OPTION} at (24,24) size 78.63x20.38
       RenderText {#text} at (2,0) size 28x17

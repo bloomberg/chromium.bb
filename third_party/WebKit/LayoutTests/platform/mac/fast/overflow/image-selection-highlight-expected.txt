@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
           text run at (420,0) width 343: "including the orange square, and no other highlighted"
           text run at (0,16) width 37: "areas."
       RenderBlock {HR} at (0,96) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,114) size 100x200 clip at (8,114) size 85x200 scrollY 40 scrollHeight 256
+layer at (8,114) size 100x200 clip at (8,114) size 85x200 scrollY 40.00 scrollHeight 256
   RenderBlock {DIV} at (0,106) size 100x200
     RenderText {#text} at (0,0) size 80x96
       text run at (0,0) width 43: "Lorem"
