@@ -52,10 +52,10 @@ class ConditionalTimeoutWaiter : public TimeoutWaiter {
   virtual ~ConditionalTimeoutWaiter();
 
   // Returns true if |callback_| returned true and false in case of timeout.
-  virtual bool Wait() OVERRIDE;
+  virtual bool Wait() override;
 
  protected:
-  virtual void CancelWait() OVERRIDE;
+  virtual void CancelWait() override;
 
  private:
   // Callback used to cancel the ConditionalTimeoutWaiter::Wait.

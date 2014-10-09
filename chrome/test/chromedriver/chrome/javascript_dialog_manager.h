@@ -32,10 +32,10 @@ class JavaScriptDialogManager : public DevToolsEventListener {
   Status HandleDialog(bool accept, const std::string* text);
 
   // Overridden from DevToolsEventListener:
-  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+  virtual Status OnConnected(DevToolsClient* client) override;
   virtual Status OnEvent(DevToolsClient* client,
                          const std::string& method,
-                         const base::DictionaryValue& params) OVERRIDE;
+                         const base::DictionaryValue& params) override;
 
  private:
   DevToolsClient* client_;

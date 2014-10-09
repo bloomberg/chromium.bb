@@ -30,14 +30,14 @@ class FakeDevToolsClient : public StubDevToolsClient {
 
   // Overridden from DevToolsClient:
   virtual Status SendCommand(const std::string& method,
-                             const base::DictionaryValue& params) OVERRIDE {
+                             const base::DictionaryValue& params) override {
     sent_command_queue_.push_back(method);
     return Status(kOk);
   }
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     return SendCommand(method, params);
   }
 

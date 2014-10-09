@@ -24,11 +24,11 @@ class StringTraceSink : public content::TracingController::TraceDataSink {
   StringTraceSink(std::string* result, const base::Closure& callback)
       : result_(result), completion_callback_(callback) {}
 
-  virtual void AddTraceChunk(const std::string& chunk) OVERRIDE {
+  virtual void AddTraceChunk(const std::string& chunk) override {
     *result_ += result_->empty() ? "[" : ",";
     *result_ += chunk;
   }
-  virtual void Close() OVERRIDE {
+  virtual void Close() override {
     if (!result_->empty())
       *result_ += "]";
     completion_callback_.Run();

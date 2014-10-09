@@ -43,7 +43,7 @@ const char kChromeTestChromeWebUIControllerFactory[] =
 // going to this handler.
 class TestChromeWebUIControllerFactoryTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         ChromeWebUIControllerFactory::GetInstance());
     test_factory_.reset(new TestChromeWebUIControllerFactory);
@@ -52,7 +52,7 @@ class TestChromeWebUIControllerFactoryTest : public InProcessBrowserTest {
         GURL(kChromeTestChromeWebUIControllerFactory).host(), &mock_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     test_factory_->RemoveFactoryOverride(
         GURL(kChromeTestChromeWebUIControllerFactory).host());
     content::WebUIControllerFactory::UnregisterFactoryForTesting(

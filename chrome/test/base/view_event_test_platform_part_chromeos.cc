@@ -26,7 +26,7 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
   virtual ~ViewEventTestPlatformPartChromeOS();
 
   // Overridden from ViewEventTestPlatformPart:
-  virtual gfx::NativeWindow GetContext() OVERRIDE {
+  virtual gfx::NativeWindow GetContext() override {
     return ash::Shell::GetPrimaryRootWindow();
   }
 

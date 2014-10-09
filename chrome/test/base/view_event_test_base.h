@@ -79,16 +79,16 @@ class ViewEventTestBase : public views::WidgetDelegate,
   static void SetUpTestCase();
 
   // Creates a window.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Destroys the window.
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // Overridden from views::WidgetDelegate:
-  virtual bool CanResize() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual bool CanResize() const override;
+  virtual views::View* GetContentsView() override;
+  virtual const views::Widget* GetWidget() const override;
+  virtual views::Widget* GetWidget() override;
 
   // Overridden to do nothing so that this class can be used in runnable tasks.
   void AddRef() {}

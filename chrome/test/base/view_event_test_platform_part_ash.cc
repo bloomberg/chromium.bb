@@ -19,7 +19,7 @@ class ViewEventTestPlatformPartAsh : public ViewEventTestPlatformPart {
   virtual ~ViewEventTestPlatformPartAsh();
 
   // Overridden from ViewEventTestPlatformPart:
-  virtual gfx::NativeWindow GetContext() OVERRIDE {
+  virtual gfx::NativeWindow GetContext() override {
     return NULL;  // No context, so that desktop tree hosts are used by default.
   }
 

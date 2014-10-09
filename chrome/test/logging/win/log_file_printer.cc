@@ -89,16 +89,16 @@ class EventPrinter : public logging_win::LogFileDelegate {
   explicit EventPrinter(std::ostream* out);
   virtual ~EventPrinter();
 
-  virtual void OnUnknownEvent(const EVENT_TRACE* event) OVERRIDE;
+  virtual void OnUnknownEvent(const EVENT_TRACE* event) override;
 
-  virtual void OnUnparsableEvent(const EVENT_TRACE* event) OVERRIDE;
+  virtual void OnUnparsableEvent(const EVENT_TRACE* event) override;
 
   virtual void OnFileHeader(const EVENT_TRACE* event,
-                            const TRACE_LOGFILE_HEADER* header) OVERRIDE;
+                            const TRACE_LOGFILE_HEADER* header) override;
 
   virtual void OnLogMessage(const EVENT_TRACE* event,
                             logging::LogSeverity severity,
-                            const base::StringPiece& message) OVERRIDE;
+                            const base::StringPiece& message) override;
 
   virtual void OnLogMessageFull(const EVENT_TRACE* event,
                                 logging::LogSeverity severity,
@@ -106,7 +106,7 @@ class EventPrinter : public logging_win::LogFileDelegate {
                                 const intptr_t* backtrace,
                                 int line,
                                 const base::StringPiece& file,
-                                const base::StringPiece& message) OVERRIDE;
+                                const base::StringPiece& message) override;
 
   virtual void OnTraceEvent(const EVENT_TRACE* event,
                             const base::StringPiece& name,
@@ -114,7 +114,7 @@ class EventPrinter : public logging_win::LogFileDelegate {
                             intptr_t id,
                             const base::StringPiece& extra,
                             DWORD stack_depth,
-                            const intptr_t* backtrace) OVERRIDE;
+                            const intptr_t* backtrace) override;
 
  private:
   void PrintTimeStamp(LARGE_INTEGER time_stamp);

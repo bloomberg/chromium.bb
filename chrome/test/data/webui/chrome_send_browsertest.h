@@ -25,7 +25,7 @@ class ChromeSendWebUITest : public WebUIBrowserTest {
     MOCK_METHOD1(HandleCheckSend, void(const base::ListValue*));
 
    private:
-    virtual void RegisterMessages() OVERRIDE;
+    virtual void RegisterMessages() override;
   };
 
 
@@ -34,7 +34,7 @@ class ChromeSendWebUITest : public WebUIBrowserTest {
   ::testing::StrictMock<ChromeSendWebUIMessageHandler> message_handler_;
 
  private:
-  virtual content::WebUIMessageHandler* GetMockMessageHandler() OVERRIDE;
+  virtual content::WebUIMessageHandler* GetMockMessageHandler() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSendWebUITest);
 };
@@ -47,7 +47,7 @@ class ChromeSendPassthroughWebUITest : public ChromeSendWebUITest {
   virtual ~ChromeSendPassthroughWebUITest();
 
  private:
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSendPassthroughWebUITest);
 };

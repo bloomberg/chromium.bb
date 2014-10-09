@@ -39,7 +39,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
   // We will at some point (before final update) be notified of the ordinal and

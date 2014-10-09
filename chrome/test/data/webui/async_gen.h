@@ -30,7 +30,7 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
     void HandleCallJS(const base::ListValue* list_value);
 
     // WebUIMessageHandler implementation.
-    virtual void RegisterMessages() OVERRIDE;
+    virtual void RegisterMessages() override;
   };
 
   // Handler for this test fixture.
@@ -38,11 +38,11 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
 
  private:
   // Provide this object's handler.
-  virtual content::WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
+  virtual content::WebUIMessageHandler* GetMockMessageHandler() override {
     return &message_handler_;
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
     EXPECT_CALL(message_handler_, HandleTearDown(::testing::_));
   }

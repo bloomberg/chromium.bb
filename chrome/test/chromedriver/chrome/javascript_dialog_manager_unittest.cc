@@ -33,7 +33,7 @@ class RecorderDevToolsClient : public StubDevToolsClient {
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     method_ = method;
     params_.Clear();
     params_.MergeDictionary(&params);
@@ -109,7 +109,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     while (closing_count_ > 0) {
       base::DictionaryValue empty;
       Status status =
@@ -120,7 +120,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
     }
     return Status(kOk);
   }
-  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {
+  virtual void AddListener(DevToolsEventListener* listener) override {
     listener_ = listener;
   }
 

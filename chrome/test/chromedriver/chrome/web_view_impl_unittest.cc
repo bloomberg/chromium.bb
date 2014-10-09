@@ -29,35 +29,35 @@ class FakeDevToolsClient : public DevToolsClient {
   }
 
   // Overridden from DevToolsClient:
-  virtual const std::string& GetId() OVERRIDE {
+  virtual const std::string& GetId() override {
     return id_;
   }
-  virtual bool WasCrashed() OVERRIDE {
+  virtual bool WasCrashed() override {
     return false;
   }
-  virtual Status ConnectIfNecessary() OVERRIDE {
+  virtual Status ConnectIfNecessary() override {
     return Status(kOk);
   }
   virtual Status SendCommand(const std::string& method,
-                             const base::DictionaryValue& params) OVERRIDE {
+                             const base::DictionaryValue& params) override {
     return SendCommandAndGetResult(method, params, NULL);
   }
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     if (status_.IsError())
       return status_;
     result->reset(result_.DeepCopy());
     return Status(kOk);
   }
-  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {}
+  virtual void AddListener(DevToolsEventListener* listener) override {}
   virtual Status HandleEventsUntil(
       const ConditionalFunc& conditional_func,
-      const base::TimeDelta& timeout) OVERRIDE {
+      const base::TimeDelta& timeout) override {
     return Status(kOk);
   }
-  virtual Status HandleReceivedEvents() OVERRIDE {
+  virtual Status HandleReceivedEvents() override {
     return Status(kOk);
   }
 

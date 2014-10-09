@@ -18,58 +18,58 @@ class StubWebView : public WebView {
   virtual ~StubWebView();
 
   // Overridden from WebView:
-  virtual std::string GetId() OVERRIDE;
-  virtual bool WasCrashed() OVERRIDE;
-  virtual Status ConnectIfNecessary() OVERRIDE;
-  virtual Status HandleReceivedEvents() OVERRIDE;
-  virtual Status Load(const std::string& url) OVERRIDE;
-  virtual Status Reload() OVERRIDE;
+  virtual std::string GetId() override;
+  virtual bool WasCrashed() override;
+  virtual Status ConnectIfNecessary() override;
+  virtual Status HandleReceivedEvents() override;
+  virtual Status Load(const std::string& url) override;
+  virtual Status Reload() override;
   virtual Status EvaluateScript(const std::string& frame,
                                 const std::string& function,
-                                scoped_ptr<base::Value>* result) OVERRIDE;
+                                scoped_ptr<base::Value>* result) override;
   virtual Status CallFunction(const std::string& frame,
                               const std::string& function,
                               const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) OVERRIDE;
+                              scoped_ptr<base::Value>* result) override;
   virtual Status CallAsyncFunction(const std::string& frame,
                                    const std::string& function,
                                    const base::ListValue& args,
                                    const base::TimeDelta& timeout,
-                                   scoped_ptr<base::Value>* result) OVERRIDE;
+                                   scoped_ptr<base::Value>* result) override;
   virtual Status CallUserAsyncFunction(
       const std::string& frame,
       const std::string& function,
       const base::ListValue& args,
       const base::TimeDelta& timeout,
-      scoped_ptr<base::Value>* result) OVERRIDE;
+      scoped_ptr<base::Value>* result) override;
   virtual Status GetFrameByFunction(const std::string& frame,
                                     const std::string& function,
                                     const base::ListValue& args,
-                                    std::string* out_frame) OVERRIDE;
+                                    std::string* out_frame) override;
   virtual Status DispatchMouseEvents(
-      const std::list<MouseEvent>& events, const std::string& frame) OVERRIDE;
-  virtual Status DispatchTouchEvent(const TouchEvent& event) OVERRIDE;
+      const std::list<MouseEvent>& events, const std::string& frame) override;
+  virtual Status DispatchTouchEvent(const TouchEvent& event) override;
   virtual Status DispatchTouchEvents(
-      const std::list<TouchEvent>& events) OVERRIDE;
-  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
-  virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) OVERRIDE;
+      const std::list<TouchEvent>& events) override;
+  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) override;
+  virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) override;
   virtual Status DeleteCookie(const std::string& name,
-                              const std::string& url) OVERRIDE;
+                              const std::string& url) override;
   virtual Status WaitForPendingNavigations(const std::string& frame_id,
                                            const base::TimeDelta& timeout,
-                                           bool stop_load_on_timeout) OVERRIDE;
+                                           bool stop_load_on_timeout) override;
   virtual Status IsPendingNavigation(
-      const std::string& frame_id, bool* is_pending) OVERRIDE;
-  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
-  virtual Status OverrideGeolocation(const Geoposition& geoposition) OVERRIDE;
-  virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;
+      const std::string& frame_id, bool* is_pending) override;
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  virtual Status OverrideGeolocation(const Geoposition& geoposition) override;
+  virtual Status CaptureScreenshot(std::string* screenshot) override;
   virtual Status SetFileInputFiles(
       const std::string& frame,
       const base::DictionaryValue& element,
-      const std::vector<base::FilePath>& files) OVERRIDE;
-  virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) OVERRIDE;
-  virtual Status StartProfile() OVERRIDE;
-  virtual Status EndProfile(scoped_ptr<base::Value>* profile_data) OVERRIDE;
+      const std::vector<base::FilePath>& files) override;
+  virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) override;
+  virtual Status StartProfile() override;
+  virtual Status EndProfile(scoped_ptr<base::Value>* profile_data) override;
 
  private:
   std::string id_;

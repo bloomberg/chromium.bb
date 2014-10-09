@@ -30,13 +30,13 @@ class MachPortsTest : public InProcessBrowserTest {
                 base::FilePath(FILE_PATH_LITERAL("data/mach_ports/moz"))) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     InProcessBrowserTest::SetUp();
 
     ASSERT_TRUE(server_.Start());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     std::string ports;
     for (std::vector<int>::iterator it = port_counts_.begin();
          it != port_counts_.end(); ++it) {

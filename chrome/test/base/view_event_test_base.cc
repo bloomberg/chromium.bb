@@ -28,13 +28,13 @@ class TestView : public views::View {
     PreferredSizeChanged();
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const override {
     if (!preferred_size_.IsEmpty())
       return preferred_size_;
     return View::GetPreferredSize();
   }
 
-  virtual void Layout() OVERRIDE {
+  virtual void Layout() override {
     View* child_view = child_at(0);
     child_view->SetBounds(0, 0, width(), height());
   }

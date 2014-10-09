@@ -49,7 +49,7 @@ class WebDriverLog : public Log {
   virtual void AddEntryTimestamped(const base::Time& timestamp,
                                    Level level,
                                    const std::string& source,
-                                   const std::string& message) OVERRIDE;
+                                   const std::string& message) override;
 
   const std::string& type() const;
   void set_min_level(Level min_level);

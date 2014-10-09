@@ -22,7 +22,7 @@ class HistoryIndexRestoreObserver
   bool succeeded() const { return succeeded_; }
 
   // RestoreCacheObserver implementation.
-  virtual void OnCacheRestoreFinished(bool success) OVERRIDE;
+  virtual void OnCacheRestoreFinished(bool success) override;
 
  private:
   base::Closure task_;

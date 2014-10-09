@@ -111,7 +111,7 @@ class NaClIntegrationMessageHandler : public StructuredMessageHandler {
 
   virtual MessageResponse HandleStructuredMessage(
       const std::string& type,
-      base::DictionaryValue* msg) OVERRIDE;
+      base::DictionaryValue* msg) override;
 
   bool test_passed() const {
     return test_passed_;

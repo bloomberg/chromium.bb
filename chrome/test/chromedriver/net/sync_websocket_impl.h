@@ -35,13 +35,13 @@ class SyncWebSocketImpl : public SyncWebSocket {
   virtual ~SyncWebSocketImpl();
 
   // Overridden from SyncWebSocket:
-  virtual bool IsConnected() OVERRIDE;
-  virtual bool Connect(const GURL& url) OVERRIDE;
-  virtual bool Send(const std::string& message) OVERRIDE;
+  virtual bool IsConnected() override;
+  virtual bool Connect(const GURL& url) override;
+  virtual bool Send(const std::string& message) override;
   virtual StatusCode ReceiveNextMessage(
       std::string* message,
-      const base::TimeDelta& timeout) OVERRIDE;
-  virtual bool HasNextMessage() OVERRIDE;
+      const base::TimeDelta& timeout) override;
+  virtual bool HasNextMessage() override;
 
  private:
   struct CoreTraits;
@@ -59,8 +59,8 @@ class SyncWebSocketImpl : public SyncWebSocket {
     bool HasNextMessage();
 
     // Overriden from WebSocketListener:
-    virtual void OnMessageReceived(const std::string& message) OVERRIDE;
-    virtual void OnClose() OVERRIDE;
+    virtual void OnMessageReceived(const std::string& message) override;
+    virtual void OnClose() override;
 
    private:
     friend class base::RefCountedThreadSafe<Core, CoreTraits>;

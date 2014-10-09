@@ -98,10 +98,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Restores state configured in SetUp.
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
  protected:
   // Returns the browser created by CreateBrowser.
@@ -123,7 +123,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT;
 
   // BrowserTestBase:
-  virtual void RunTestOnMainThreadLoop() OVERRIDE;
+  virtual void RunTestOnMainThreadLoop() override;
 
   // Creates a browser with a single tab (about:blank), waits for the tab to
   // finish loading and shows the browser.

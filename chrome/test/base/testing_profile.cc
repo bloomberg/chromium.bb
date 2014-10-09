@@ -112,10 +112,10 @@ class WaitTopSitesLoadedObserver : public history::TopSitesObserver {
  public:
   explicit WaitTopSitesLoadedObserver(content::MessageLoopRunner* runner)
       : runner_(runner) {}
-  virtual void TopSitesLoaded(history::TopSites* top_sites) OVERRIDE {
+  virtual void TopSitesLoaded(history::TopSites* top_sites) override {
     runner_->Quit();
   }
-  virtual void TopSitesChanged(history::TopSites* top_sites) OVERRIDE {}
+  virtual void TopSitesChanged(history::TopSites* top_sites) override {}
 
  private:
   // weak
@@ -130,11 +130,11 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
   QuittingHistoryDBTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     base::MessageLoop::current()->Quit();
   }
 
@@ -163,13 +163,13 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
 class TestExtensionURLRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContext* GetURLRequestContext() override {
     if (!context_.get())
       context_.reset(new TestExtensionURLRequestContext());
     return context_.get();
   }
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
+      GetNetworkTaskRunner() const override {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 

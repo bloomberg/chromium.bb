@@ -26,10 +26,10 @@ class ChromeAndroidImpl : public ChromeImpl {
   virtual ~ChromeAndroidImpl();
 
   // Overridden from Chrome:
-  virtual std::string GetOperatingSystemName() OVERRIDE;
+  virtual std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl:
-  virtual Status QuitImpl() OVERRIDE;
+  virtual Status QuitImpl() override;
 
  private:
   scoped_ptr<Device> device_;

@@ -295,7 +295,7 @@ class FindElementWebView : public StubWebView {
   virtual Status CallFunction(const std::string& frame,
                               const std::string& function,
                               const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) OVERRIDE {
+                              scoped_ptr<base::Value>* result) override {
     ++current_count_;
     if (scenario_ == kElementExistsTimeout ||
         (scenario_ == kElementExistsQueryTwice && current_count_ == 1)) {
@@ -507,7 +507,7 @@ class ErrorCallFunctionWebView : public StubWebView {
   virtual Status CallFunction(const std::string& frame,
                               const std::string& function,
                               const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) OVERRIDE {
+                              scoped_ptr<base::Value>* result) override {
     return Status(code_);
   }
 
@@ -555,7 +555,7 @@ class MockCommandListener : public CommandListener {
   MockCommandListener() : called_(false) {}
   virtual ~MockCommandListener() {}
 
-  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE {
+  virtual Status BeforeCommand(const std::string& command_name) override {
     called_ = true;
     EXPECT_STREQ("cmd", command_name.c_str());
     return Status(kOk);
@@ -662,7 +662,7 @@ class FailingCommandListener : public CommandListener {
   FailingCommandListener() {}
   virtual ~FailingCommandListener() {}
 
-  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE {
+  virtual Status BeforeCommand(const std::string& command_name) override {
     return Status(kUnknownError);
   }
 };

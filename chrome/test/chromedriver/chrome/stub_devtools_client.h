@@ -25,19 +25,19 @@ class StubDevToolsClient : public DevToolsClient {
   virtual ~StubDevToolsClient();
 
   // Overridden from DevToolsClient:
-  virtual const std::string& GetId() OVERRIDE;
-  virtual bool WasCrashed() OVERRIDE;
-  virtual Status ConnectIfNecessary() OVERRIDE;
+  virtual const std::string& GetId() override;
+  virtual bool WasCrashed() override;
+  virtual Status ConnectIfNecessary() override;
   virtual Status SendCommand(const std::string& method,
-                             const base::DictionaryValue& params) OVERRIDE;
+                             const base::DictionaryValue& params) override;
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE;
-  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE;
+      scoped_ptr<base::DictionaryValue>* result) override;
+  virtual void AddListener(DevToolsEventListener* listener) override;
   virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func,
-                                   const base::TimeDelta& timeout) OVERRIDE;
-  virtual Status HandleReceivedEvents() OVERRIDE;
+                                   const base::TimeDelta& timeout) override;
+  virtual Status HandleReceivedEvents() override;
 
  protected:
   const std::string id_;

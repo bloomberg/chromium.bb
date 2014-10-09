@@ -21,17 +21,17 @@ class StubChrome : public Chrome {
   virtual ~StubChrome();
 
   // Overridden from Chrome:
-  virtual ChromeDesktopImpl* GetAsDesktop() OVERRIDE;
-  virtual const BrowserInfo* GetBrowserInfo() OVERRIDE;
-  virtual bool HasCrashedWebView() OVERRIDE;
-  virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) OVERRIDE;
+  virtual ChromeDesktopImpl* GetAsDesktop() override;
+  virtual const BrowserInfo* GetBrowserInfo() override;
+  virtual bool HasCrashedWebView() override;
+  virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) override;
   virtual Status GetWebViewById(const std::string& id,
-                                WebView** web_view) OVERRIDE;
-  virtual Status CloseWebView(const std::string& id) OVERRIDE;
-  virtual Status ActivateWebView(const std::string& id) OVERRIDE;
-  virtual std::string GetOperatingSystemName() OVERRIDE;
-  virtual bool IsMobileEmulationEnabled() const OVERRIDE;
-  virtual Status Quit() OVERRIDE;
+                                WebView** web_view) override;
+  virtual Status CloseWebView(const std::string& id) override;
+  virtual Status ActivateWebView(const std::string& id) override;
+  virtual std::string GetOperatingSystemName() override;
+  virtual bool IsMobileEmulationEnabled() const override;
+  virtual Status Quit() override;
 
  private:
   BrowserInfo browser_info_;

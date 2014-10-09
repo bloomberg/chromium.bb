@@ -71,7 +71,7 @@ class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
         preload_test_fixture_(preload_test_fixture),
         preload_test_name_(preload_test_name) {}
 
-  virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE {
+  virtual void RenderViewCreated(content::RenderViewHost* rvh) override {
     browser_test_->PreLoadJavascriptLibraries(
         preload_test_fixture_, preload_test_name_, rvh);
   }
@@ -243,7 +243,7 @@ class PrintContentBrowserClient : public chrome::ChromeContentBrowserClient {
  private:
   // ChromeContentBrowserClient implementation:
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
-      content::WebContents* web_contents) OVERRIDE {
+      content::WebContents* web_contents) override {
     preview_dialog_ = web_contents;
     observer_.reset(new WebUIJsInjectionReadyObserver(preview_dialog_,
                                                       browser_test_,
@@ -319,20 +319,20 @@ class MockWebUIDataSource : public content::URLDataSource {
  private:
   virtual ~MockWebUIDataSource() {}
 
-  virtual std::string GetSource() const OVERRIDE { return "dummyurl"; }
+  virtual std::string GetSource() const override { return "dummyurl"; }
 
   virtual void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+      const content::URLDataSource::GotDataCallback& callback) override {
     std::string dummy_html = "<html><body>Dummy</body></html>";
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&dummy_html);
     callback.Run(response.get());
   }
 
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+  virtual std::string GetMimeType(const std::string& path) const override {
     return "text/html";
   }
 
@@ -348,7 +348,7 @@ class MockWebUIProvider
 
   // Returns a new WebUI
   virtual WebUIController* NewWebUI(content::WebUI* web_ui,
-                                    const GURL& url) OVERRIDE {
+                                    const GURL& url) override {
     WebUIController* controller = new content::WebUIController(web_ui);
     Profile* profile = Profile::FromWebUI(web_ui);
     content::URLDataSource::Add(profile, new MockWebUIDataSource());

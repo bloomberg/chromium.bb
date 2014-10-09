@@ -19,7 +19,7 @@ class CommandListenerProxy : public CommandListener {
   explicit CommandListenerProxy(CommandListener* command_listener);
 
   // Forwards commands to |command_listener_|.
-  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE;
+  virtual Status BeforeCommand(const std::string& command_name) override;
 
  private:
   CommandListener* const command_listener_;

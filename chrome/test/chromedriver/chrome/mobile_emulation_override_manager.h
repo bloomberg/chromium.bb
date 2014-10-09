@@ -31,10 +31,10 @@ class MobileEmulationOverrideManager : public DevToolsEventListener {
   virtual ~MobileEmulationOverrideManager();
 
   // Overridden from DevToolsEventListener:
-  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+  virtual Status OnConnected(DevToolsClient* client) override;
   virtual Status OnEvent(DevToolsClient* client,
                          const std::string& method,
-                         const base::DictionaryValue& params) OVERRIDE;
+                         const base::DictionaryValue& params) override;
 
  private:
   Status ApplyOverrideIfNeeded();

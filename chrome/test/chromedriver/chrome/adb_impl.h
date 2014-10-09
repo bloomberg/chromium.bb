@@ -26,28 +26,28 @@ class AdbImpl : public Adb {
   virtual ~AdbImpl();
 
   // Overridden from Adb:
-  virtual Status GetDevices(std::vector<std::string>* devices) OVERRIDE;
+  virtual Status GetDevices(std::vector<std::string>* devices) override;
   virtual Status ForwardPort(const std::string& device_serial,
                              int local_port,
-                             const std::string& remote_abstract) OVERRIDE;
+                             const std::string& remote_abstract) override;
   virtual Status SetCommandLineFile(const std::string& device_serial,
                                     const std::string& command_line_file,
                                     const std::string& exec_name,
-                                    const std::string& args) OVERRIDE;
+                                    const std::string& args) override;
   virtual Status CheckAppInstalled(const std::string& device_serial,
-                                   const std::string& package) OVERRIDE;
+                                   const std::string& package) override;
   virtual Status ClearAppData(const std::string& device_serial,
-                              const std::string& package) OVERRIDE;
+                              const std::string& package) override;
   virtual Status SetDebugApp(const std::string& device_serial,
-                             const std::string& package) OVERRIDE;
+                             const std::string& package) override;
   virtual Status Launch(const std::string& device_serial,
                         const std::string& package,
-                        const std::string& activity) OVERRIDE;
+                        const std::string& activity) override;
   virtual Status ForceStop(const std::string& device_serial,
-                           const std::string& package) OVERRIDE;
+                           const std::string& package) override;
   virtual Status GetPidByName(const std::string& device_serial,
                               const std::string& process_name,
-                              int* pid) OVERRIDE;
+                              int* pid) override;
 
  private:
   Status ExecuteCommand(const std::string& command,

@@ -44,7 +44,7 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
   ChromeUnitTestSuiteInitializer() {}
   virtual ~ChromeUnitTestSuiteInitializer() {}
 
-  virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
+  virtual void OnTestStart(const testing::TestInfo& test_info) override {
     content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
@@ -58,7 +58,7 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     TestingBrowserProcess::CreateInstance();
   }
 
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+  virtual void OnTestEnd(const testing::TestInfo& test_info) override {
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset();

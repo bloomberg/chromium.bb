@@ -58,74 +58,74 @@ class TestingBrowserProcess : public BrowserProcess {
   // Convenience method to get g_browser_process as a TestingBrowserProcess*.
   static TestingBrowserProcess* GetGlobal();
 
-  virtual void ResourceDispatcherHostCreated() OVERRIDE;
-  virtual void EndSession() OVERRIDE;
-  virtual MetricsServicesManager* GetMetricsServicesManager() OVERRIDE;
-  virtual metrics::MetricsService* metrics_service() OVERRIDE;
-  virtual rappor::RapporService* rappor_service() OVERRIDE;
-  virtual IOThread* io_thread() OVERRIDE;
-  virtual WatchDogThread* watchdog_thread() OVERRIDE;
-  virtual ProfileManager* profile_manager() OVERRIDE;
-  virtual PrefService* local_state() OVERRIDE;
-  virtual chrome_variations::VariationsService* variations_service() OVERRIDE;
-  virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
-  virtual policy::PolicyService* policy_service() OVERRIDE;
-  virtual IconManager* icon_manager() OVERRIDE;
-  virtual GLStringManager* gl_string_manager() OVERRIDE;
-  virtual GpuModeManager* gpu_mode_manager() OVERRIDE;
-  virtual BackgroundModeManager* background_mode_manager() OVERRIDE;
+  virtual void ResourceDispatcherHostCreated() override;
+  virtual void EndSession() override;
+  virtual MetricsServicesManager* GetMetricsServicesManager() override;
+  virtual metrics::MetricsService* metrics_service() override;
+  virtual rappor::RapporService* rappor_service() override;
+  virtual IOThread* io_thread() override;
+  virtual WatchDogThread* watchdog_thread() override;
+  virtual ProfileManager* profile_manager() override;
+  virtual PrefService* local_state() override;
+  virtual chrome_variations::VariationsService* variations_service() override;
+  virtual policy::BrowserPolicyConnector* browser_policy_connector() override;
+  virtual policy::PolicyService* policy_service() override;
+  virtual IconManager* icon_manager() override;
+  virtual GLStringManager* gl_string_manager() override;
+  virtual GpuModeManager* gpu_mode_manager() override;
+  virtual BackgroundModeManager* background_mode_manager() override;
   virtual void set_background_mode_manager_for_test(
-      scoped_ptr<BackgroundModeManager> manager) OVERRIDE;
-  virtual StatusTray* status_tray() OVERRIDE;
-  virtual SafeBrowsingService* safe_browsing_service() OVERRIDE;
+      scoped_ptr<BackgroundModeManager> manager) override;
+  virtual StatusTray* status_tray() override;
+  virtual SafeBrowsingService* safe_browsing_service() override;
   virtual safe_browsing::ClientSideDetectionService*
-      safe_browsing_detection_service() OVERRIDE;
-  virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
-  virtual BrowserProcessPlatformPart* platform_part() OVERRIDE;
+      safe_browsing_detection_service() override;
+  virtual net::URLRequestContextGetter* system_request_context() override;
+  virtual BrowserProcessPlatformPart* platform_part() override;
 
   virtual extensions::EventRouterForwarder*
-      extension_event_router_forwarder() OVERRIDE;
-  virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
-  virtual message_center::MessageCenter* message_center() OVERRIDE;
-  virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
+      extension_event_router_forwarder() override;
+  virtual NotificationUIManager* notification_ui_manager() override;
+  virtual message_center::MessageCenter* message_center() override;
+  virtual IntranetRedirectDetector* intranet_redirect_detector() override;
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
-      int port) OVERRIDE;
-  virtual unsigned int AddRefModule() OVERRIDE;
-  virtual unsigned int ReleaseModule() OVERRIDE;
-  virtual bool IsShuttingDown() OVERRIDE;
-  virtual printing::PrintJobManager* print_job_manager() OVERRIDE;
+      int port) override;
+  virtual unsigned int AddRefModule() override;
+  virtual unsigned int ReleaseModule() override;
+  virtual bool IsShuttingDown() override;
+  virtual printing::PrintJobManager* print_job_manager() override;
   virtual printing::PrintPreviewDialogController*
-      print_preview_dialog_controller() OVERRIDE;
+      print_preview_dialog_controller() override;
   virtual printing::BackgroundPrintingManager*
-      background_printing_manager() OVERRIDE;
-  virtual const std::string& GetApplicationLocale() OVERRIDE;
-  virtual void SetApplicationLocale(const std::string& app_locale) OVERRIDE;
-  virtual DownloadStatusUpdater* download_status_updater() OVERRIDE;
-  virtual DownloadRequestLimiter* download_request_limiter() OVERRIDE;
+      background_printing_manager() override;
+  virtual const std::string& GetApplicationLocale() override;
+  virtual void SetApplicationLocale(const std::string& app_locale) override;
+  virtual DownloadStatusUpdater* download_status_updater() override;
+  virtual DownloadRequestLimiter* download_request_limiter() override;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-  virtual void StartAutoupdateTimer() OVERRIDE {}
+  virtual void StartAutoupdateTimer() override {}
 #endif
 
-  virtual ChromeNetLog* net_log() OVERRIDE;
-  virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
+  virtual ChromeNetLog* net_log() override;
+  virtual prerender::PrerenderTracker* prerender_tracker() override;
   virtual component_updater::ComponentUpdateService*
-      component_updater() OVERRIDE;
-  virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
+      component_updater() override;
+  virtual CRLSetFetcher* crl_set_fetcher() override;
   virtual component_updater::PnaclComponentInstaller*
-      pnacl_component_installer() OVERRIDE;
-  virtual MediaFileSystemRegistry* media_file_system_registry() OVERRIDE;
-  virtual bool created_local_state() const OVERRIDE;
+      pnacl_component_installer() override;
+  virtual MediaFileSystemRegistry* media_file_system_registry() override;
+  virtual bool created_local_state() const override;
 
 #if defined(ENABLE_WEBRTC)
-  virtual WebRtcLogUploader* webrtc_log_uploader() OVERRIDE;
+  virtual WebRtcLogUploader* webrtc_log_uploader() override;
 #endif
 
-  virtual network_time::NetworkTimeTracker* network_time_tracker() OVERRIDE;
+  virtual network_time::NetworkTimeTracker* network_time_tracker() override;
 
-  virtual gcm::GCMDriver* gcm_driver() OVERRIDE;
+  virtual gcm::GCMDriver* gcm_driver() override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

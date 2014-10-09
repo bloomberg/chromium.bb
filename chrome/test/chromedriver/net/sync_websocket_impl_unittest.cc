@@ -27,7 +27,7 @@ class SyncWebSocketImplTest : public testing::Test {
         long_timeout_(base::TimeDelta::FromMinutes(1)) {}
   virtual ~SyncWebSocketImplTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(client_thread_.StartWithOptions(options));
     context_getter_ = new URLRequestContextGetter(
@@ -35,7 +35,7 @@ class SyncWebSocketImplTest : public testing::Test {
     ASSERT_TRUE(server_.Start());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     server_.Stop();
   }
 

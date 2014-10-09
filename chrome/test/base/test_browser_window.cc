@@ -28,7 +28,7 @@ class TestBrowserWindowOwner : public chrome::BrowserListObserver {
 
  private:
   // Overridden from BrowserListObserver:
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {
+  virtual void OnBrowserRemoved(Browser* browser) override {
     if (browser->window() == window_.get())
       delete this;
   }

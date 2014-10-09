@@ -56,25 +56,25 @@ class FakeDevToolsClient : public StubDevToolsClient {
   }
 
   // Overridden from DevToolsClient:
-  virtual Status ConnectIfNecessary() OVERRIDE {
+  virtual Status ConnectIfNecessary() override {
     return listener_->OnConnected(this);
   }
 
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     sent_commands_.push_back(new DevToolsCommand(method,
                                                  params.DeepCopy()));
     return Status(kOk);
   }
 
-  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {
+  virtual void AddListener(DevToolsEventListener* listener) override {
     CHECK(!listener_);
     listener_ = listener;
   }
 
-  virtual const std::string& GetId() OVERRIDE {
+  virtual const std::string& GetId() override {
     return id_;
   }
 
@@ -103,7 +103,7 @@ class FakeLog : public Log {
   virtual void AddEntryTimestamped(const base::Time& timestamp,
                         Level level,
                         const std::string& source,
-                        const std::string& message) OVERRIDE;
+                        const std::string& message) override;
 
   const ScopedVector<LogEntry>& GetEntries() {
     return entries_;
@@ -262,7 +262,7 @@ class FakeBrowserwideClient : public FakeDevToolsClient {
   // Overridden from DevToolsClient:
   virtual Status HandleEventsUntil(
       const ConditionalFunc& conditional_func,
-      const base::TimeDelta& timeout) OVERRIDE {
+      const base::TimeDelta& timeout) override {
     TriggerEvent("Tracing.tracingComplete");
     events_handled_ = true;
     return Status(kOk);

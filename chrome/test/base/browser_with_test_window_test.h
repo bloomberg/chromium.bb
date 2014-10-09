@@ -90,8 +90,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   virtual ~BrowserWithTestWindowTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   BrowserWindow* window() const { return window_.get(); }

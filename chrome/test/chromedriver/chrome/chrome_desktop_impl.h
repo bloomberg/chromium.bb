@@ -47,12 +47,12 @@ class ChromeDesktopImpl : public ChromeImpl {
   Status GetAutomationExtension(AutomationExtension** extension);
 
   // Overridden from Chrome:
-  virtual ChromeDesktopImpl* GetAsDesktop() OVERRIDE;
-  virtual std::string GetOperatingSystemName() OVERRIDE;
+  virtual ChromeDesktopImpl* GetAsDesktop() override;
+  virtual std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl:
-  virtual bool IsMobileEmulationEnabled() const OVERRIDE;
-  virtual Status QuitImpl() OVERRIDE;
+  virtual bool IsMobileEmulationEnabled() const override;
+  virtual Status QuitImpl() override;
 
   const base::CommandLine& command() const;
 

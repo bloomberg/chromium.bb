@@ -54,32 +54,32 @@ class TestLogCollector {
 
     // Sets up the log collector.
     virtual void OnTestProgramStart(
-        const testing::UnitTest& unit_test) OVERRIDE {
+        const testing::UnitTest& unit_test) override {
       test_log_collector_->SetUp();
       default_result_printer_->OnTestProgramStart(unit_test);
     }
 
     virtual void OnTestIterationStart(const testing::UnitTest& unit_test,
-                                      int iteration) OVERRIDE {
+                                      int iteration) override {
       default_result_printer_->OnTestIterationStart(unit_test, iteration);
     }
 
     virtual void OnEnvironmentsSetUpStart(
-        const testing::UnitTest& unit_test) OVERRIDE {
+        const testing::UnitTest& unit_test) override {
       default_result_printer_->OnEnvironmentsSetUpStart(unit_test);
     }
 
     virtual void OnEnvironmentsSetUpEnd(
-        const testing::UnitTest& unit_test) OVERRIDE {
+        const testing::UnitTest& unit_test) override {
       default_result_printer_->OnEnvironmentsSetUpEnd(unit_test);
     }
 
-    virtual void OnTestCaseStart(const testing::TestCase& test_case) OVERRIDE {
+    virtual void OnTestCaseStart(const testing::TestCase& test_case) override {
       default_result_printer_->OnTestCaseStart(test_case);
     }
 
     // Calls back to the collector to start collecting logs for this test.
-    virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
+    virtual void OnTestStart(const testing::TestInfo& test_info) override {
       default_result_printer_->OnTestStart(test_info);
       test_log_collector_->StartSessionForTest(test_info);
     }
@@ -87,39 +87,39 @@ class TestLogCollector {
     // Calls back to the collector with the partial result.  If the collector
     // does not handle it, it is given to the default result printer.
     virtual void OnTestPartResult(
-        const testing::TestPartResult& test_part_result) OVERRIDE {
+        const testing::TestPartResult& test_part_result) override {
       if (!test_log_collector_->LogTestPartResult(test_part_result))
         default_result_printer_->OnTestPartResult(test_part_result);
     }
 
     // Calls back to the collector to handle the collected log for the test that
     // has just ended.
-    virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+    virtual void OnTestEnd(const testing::TestInfo& test_info) override {
       test_log_collector_->ProcessSessionForTest(test_info);
       default_result_printer_->OnTestEnd(test_info);
     }
 
-    virtual void OnTestCaseEnd(const testing::TestCase& test_case) OVERRIDE {
+    virtual void OnTestCaseEnd(const testing::TestCase& test_case) override {
       default_result_printer_->OnTestCaseEnd(test_case);
     }
 
     virtual void OnEnvironmentsTearDownStart(
-        const testing::UnitTest& unit_test) OVERRIDE {
+        const testing::UnitTest& unit_test) override {
       default_result_printer_->OnEnvironmentsTearDownStart(unit_test);
     }
 
     virtual void OnEnvironmentsTearDownEnd(
-        const testing::UnitTest& unit_test) OVERRIDE {
+        const testing::UnitTest& unit_test) override {
       default_result_printer_->OnEnvironmentsTearDownEnd(unit_test);
     }
 
     virtual void OnTestIterationEnd(const testing::UnitTest& unit_test,
-                                    int iteration) OVERRIDE {
+                                    int iteration) override {
       default_result_printer_->OnTestIterationEnd(unit_test, iteration);
     }
 
     // Tears down the log collector.
-    virtual void OnTestProgramEnd(const testing::UnitTest& unit_test) OVERRIDE {
+    virtual void OnTestProgramEnd(const testing::UnitTest& unit_test) override {
       default_result_printer_->OnTestProgramEnd(unit_test);
       test_log_collector_->TearDown();
     }

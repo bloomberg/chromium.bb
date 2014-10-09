@@ -46,7 +46,7 @@ class RecorderDevToolsClient : public StubDevToolsClient {
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     commands_.push_back(Command(method, params));
     return Status(kOk);
   }

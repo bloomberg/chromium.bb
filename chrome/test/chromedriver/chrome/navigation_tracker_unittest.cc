@@ -264,7 +264,7 @@ class FailToEvalScriptDevToolsClient : public StubDevToolsClient {
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     if (!is_dom_getDocument_requested_ && method == "DOM.getDocument") {
       is_dom_getDocument_requested_ = true;
       base::DictionaryValue result_dict;
@@ -310,7 +310,7 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
+      scoped_ptr<base::DictionaryValue>* result) override {
     if (method == "DOM.getDocument") {
       base::DictionaryValue result_dict;
       if (has_empty_base_url_)

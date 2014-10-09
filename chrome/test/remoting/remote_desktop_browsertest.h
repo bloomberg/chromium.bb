@@ -54,15 +54,15 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   virtual ~RemoteDesktopBrowserTest();
 
   // InProcessBrowserTest Overrides
-  virtual void SetUp() OVERRIDE;
-  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void SetUpOnMainThread() override;
 
  protected:
   // InProcessBrowserTest Overrides
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpInProcessBrowserTestFixture() override;
 
   // InProcessBrowserTest Overrides
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+  virtual void TearDownInProcessBrowserTestFixture() override;
 
   // The following helpers each perform a simple task.
 

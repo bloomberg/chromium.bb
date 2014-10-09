@@ -29,7 +29,7 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
 
  protected:
   virtual Profile* CreateProfileHelper(
-      const base::FilePath& file_path) OVERRIDE {
+      const base::FilePath& file_path) override {
     return new TestingProfile(file_path);
   }
 };

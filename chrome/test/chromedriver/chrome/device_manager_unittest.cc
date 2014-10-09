@@ -19,7 +19,7 @@ class FakeAdb : public Adb {
   FakeAdb() {}
   virtual ~FakeAdb() {}
 
-  virtual Status GetDevices(std::vector<std::string>* devices) OVERRIDE {
+  virtual Status GetDevices(std::vector<std::string>* devices) override {
     devices->push_back("a");
     devices->push_back("b");
     return Status(kOk);
@@ -27,46 +27,46 @@ class FakeAdb : public Adb {
 
   virtual Status ForwardPort(const std::string& device_serial,
                              int local_port,
-                             const std::string& remote_abstract) OVERRIDE {
+                             const std::string& remote_abstract) override {
     return Status(kOk);
   }
 
   virtual Status SetCommandLineFile(const std::string& device_serial,
                                     const std::string& command_line_file,
                                     const std::string& exec_name,
-                                    const std::string& args) OVERRIDE {
+                                    const std::string& args) override {
     return Status(kOk);
   }
 
   virtual Status CheckAppInstalled(const std::string& device_serial,
-                                   const std::string& package) OVERRIDE {
+                                   const std::string& package) override {
     return Status(kOk);
   }
 
   virtual Status ClearAppData(const std::string& device_serial,
-                              const std::string& package) OVERRIDE {
+                              const std::string& package) override {
     return Status(kOk);
   }
 
   virtual Status SetDebugApp(const std::string& device_serial,
-                              const std::string& package) OVERRIDE {
+                              const std::string& package) override {
     return Status(kOk);
   }
 
   virtual Status Launch(const std::string& device_serial,
                         const std::string& package,
-                        const std::string& activity) OVERRIDE {
+                        const std::string& activity) override {
     return Status(kOk);
   }
 
   virtual Status ForceStop(const std::string& device_serial,
-                           const std::string& package) OVERRIDE {
+                           const std::string& package) override {
     return Status(kOk);
   }
 
   virtual Status GetPidByName(const std::string& device_serial,
                               const std::string& process_name,
-                              int* pid) OVERRIDE {
+                              int* pid) override {
     *pid = 0; // avoid uninit error crbug.com/393231
     return Status(kOk);
   }

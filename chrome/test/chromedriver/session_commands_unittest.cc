@@ -50,7 +50,7 @@ class DetachChrome : public StubChrome {
   virtual ~DetachChrome() {}
 
   // Overridden from Chrome:
-  virtual Status Quit() OVERRIDE {
+  virtual Status Quit() override {
     quit_called_ = true;
     return Status(kOk);
   }
@@ -98,7 +98,7 @@ class FailsToQuitChrome : public StubChrome {
   virtual ~FailsToQuitChrome() {}
 
   // Overridden from Chrome:
-  virtual Status Quit() OVERRIDE {
+  virtual Status Quit() override {
     return Status(kUnknownError);
   }
 };

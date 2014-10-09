@@ -28,10 +28,10 @@ class ChromeRenderViewHostTestHarness
 
  protected:
   // testing::Test
-  virtual void TearDown() OVERRIDE;
+  virtual void TearDown() override;
 
   // content::RenderViewHostTestHarness.
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE;
+  virtual content::BrowserContext* CreateBrowserContext() override;
 };
 
 #endif  // CHROME_TEST_BASE_CHROME_RENDER_VIEW_HOST_TEST_HARNESS_H_

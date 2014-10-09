@@ -88,7 +88,7 @@ class SingleDesktopTestObserver : public chrome::BrowserListObserver,
   virtual ~SingleDesktopTestObserver();
 
   // chrome::BrowserListObserver:
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override;
 
  private:
   chrome::HostDesktopType allowed_desktop_;

@@ -27,7 +27,7 @@ class DebuggerTracker : public DevToolsEventListener {
   // Overridden from DevToolsEventListener:
   virtual Status OnEvent(DevToolsClient* client,
                          const std::string& method,
-                         const base::DictionaryValue& params) OVERRIDE;
+                         const base::DictionaryValue& params) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DebuggerTracker);
