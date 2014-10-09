@@ -13,7 +13,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +50,9 @@ public class AccountManagerHelper {
 
     private Context mApplicationContext;
 
+    /**
+     * A simple callback for getAuthToken.
+     */
     public interface GetAuthTokenCallback {
         /**
          * Invoked on the UI thread once a token has been provided by the AccountManager.
@@ -162,7 +164,7 @@ public class AccountManagerHelper {
     @Deprecated
     public String getAuthTokenFromBackground(Account account, String authTokenType) {
         AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
-                authTokenType, false, null, null);
+                authTokenType, true, null, null);
         AtomicBoolean errorEncountered = new AtomicBoolean(false);
         return getAuthTokenInner(future, errorEncountered);
     }
@@ -219,16 +221,6 @@ public class AccountManagerHelper {
         try {
             Bundle result = future.getResult();
             if (result != null) {
-                if (result.containsKey(AccountManager.KEY_INTENT)) {
-                    Log.d(TAG, "Starting intent to get auth credentials");
-                    // Need to start intent to get credentials
-                    Intent intent = result.getParcelable(AccountManager.KEY_INTENT);
-                    int flags = intent.getFlags();
-                    flags |= Intent.FLAG_ACTIVITY_NEW_TASK;
-                    intent.setFlags(flags);
-                    mApplicationContext.startActivity(intent);
-                    return null;
-                }
                 return result.getString(AccountManager.KEY_AUTHTOKEN);
             } else {
                 Log.w(TAG, "Auth token - getAuthToken returned null");
@@ -254,7 +246,7 @@ public class AccountManagerHelper {
                     account, authTokenType, null, activity, null, null);
         } else {
             future = mAccountManager.getAuthToken(
-                    account, authTokenType, false, null, null);
+                    account, authTokenType, true, null, null);
         }
         final AccountManagerFuture<Bundle> finalFuture = future;
         errorEncountered.set(false);
