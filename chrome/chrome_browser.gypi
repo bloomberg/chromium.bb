@@ -78,8 +78,6 @@
       'browser/android/omnibox/autocomplete_controller_android.h',
       'browser/android/omnibox/omnibox_prerender.cc',
       'browser/android/omnibox/omnibox_prerender.h',
-      'browser/android/password_authentication_manager.cc',
-      'browser/android/password_authentication_manager.h',
       'browser/android/password_ui_view_android.cc',
       'browser/android/password_ui_view_android.h',
       'browser/android/profiles/profile_downloader_android.cc',
@@ -2764,7 +2762,6 @@
       'android/java/src/org/chromium/chrome/browser/infobar/DataReductionProxyInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
-      'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java'

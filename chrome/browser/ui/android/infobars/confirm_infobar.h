@@ -15,7 +15,7 @@ class ConfirmInfoBar : public InfoBarAndroid {
   explicit ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate);
   virtual ~ConfirmInfoBar();
 
- protected:
+ private:
   // InfoBarAndroid:
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
@@ -25,7 +25,6 @@ class ConfirmInfoBar : public InfoBarAndroid {
 
   base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
 
- private:
   ConfirmInfoBarDelegate* GetDelegate();
 
   base::android::ScopedJavaGlobalRef<jobject> java_confirm_delegate_;

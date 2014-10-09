@@ -27,7 +27,6 @@
 #include "chrome/browser/android/omnibox/answers_image_bridge.h"
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
-#include "chrome/browser/android/password_authentication_manager.h"
 #include "chrome/browser/android/password_ui_view_android.h"
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
@@ -64,7 +63,6 @@
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
-#include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
@@ -164,8 +162,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     NewTabPagePrefs::RegisterNewTabPagePrefs },
   { "OmniboxPrerender", RegisterOmniboxPrerender },
   { "OmniboxViewUtil", OmniboxViewUtil::RegisterOmniboxViewUtil },
-  { "PasswordAuthenticationManager",
-    PasswordAuthenticationManager::RegisterPasswordAuthenticationManager },
   { "PasswordUIViewAndroid",
     PasswordUIViewAndroid::RegisterPasswordUIViewAndroid },
   { "PersonalDataManagerAndroid",
@@ -174,7 +170,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ProfileDownloaderAndroid", ProfileDownloaderAndroid::Register },
   { "ProfileSyncService", ProfileSyncServiceAndroid::Register },
   { "RecentlyClosedBridge", RecentlyClosedTabsBridge::Register },
-  { "SavePasswordInfoBar", RegisterSavePasswordInfoBar },
   { "SigninManager", SigninManagerAndroid::Register },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
   { "SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid },

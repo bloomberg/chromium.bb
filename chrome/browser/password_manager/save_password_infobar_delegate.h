@@ -37,21 +37,12 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix);
 
-  virtual ~SavePasswordInfoBarDelegate();
-
-  // Specifies whether additional authentication (as defined by the OS) should
-  // be required before autofilling this password.
-  void SetUseAdditionalPasswordAuthentication(
-      bool use_additional_authentication);
-
  private:
   SavePasswordInfoBarDelegate(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix);
 
-  // Returns a save password infobar that owns |delegate|.
-  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<SavePasswordInfoBarDelegate> delegate);
+  virtual ~SavePasswordInfoBarDelegate();
 
   // InfoBarDelegate
   virtual bool ShouldExpire(const NavigationDetails& details) const override;

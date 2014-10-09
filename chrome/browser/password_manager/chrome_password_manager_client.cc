@@ -42,10 +42,6 @@
 #include "net/base/url_util.h"
 #include "third_party/re2/re2/re2.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/password_authentication_manager.h"
-#endif  // OS_ANDROID
-
 using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerInternalsServiceFactory;
 
@@ -203,17 +199,7 @@ void ChromePasswordManagerClient::PasswordAutofillWasBlocked(
 
 void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) {
-#if defined(OS_ANDROID)
-  PasswordAuthenticationManager::AuthenticatePasswordAutofill(
-      web_contents(),
-      base::Bind(&ChromePasswordManagerClient::CommitFillPasswordForm,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(fill_data.release())));
-#else
-  // Additional authentication is currently only available for Android, so all
-  // other plaftorms should just fill the password form directly.
   CommitFillPasswordForm(fill_data.get());
-#endif  // OS_ANDROID
 }
 
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
