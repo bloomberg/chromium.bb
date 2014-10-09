@@ -186,18 +186,6 @@ bool CrossSiteResourceHandler::OnNormalResponseStarted(
       GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
           info->GetContext(), request()->original_url(), request()->url());
 
-  // When the --site-per-process flag is passed, we transfer processes for
-  // cross-site navigations. This is skipped if a transfer is already required
-  // or for WebUI processes for now, since pages like the NTP host multiple
-  // cross-site WebUI iframes.
-  if (!should_transfer &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess) &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          info->GetChildID())) {
-    return DeferForNavigationPolicyCheck(info, response, defer);
-  }
-
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
   // request.
@@ -213,11 +201,26 @@ bool CrossSiteResourceHandler::OnNormalResponseStarted(
   //
   // TODO(davidben): Unify IsDownload() and is_stream(). Several places need to
   // check for both and remembering about streams is error-prone.
-  if (!should_transfer || info->IsDownload() || info->is_stream() ||
+  if (info->IsDownload() || info->is_stream() ||
       (response->head.headers.get() &&
        response->head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(response, defer);
   }
+
+  // When the --site-per-process flag is passed, we transfer processes for
+  // cross-site navigations. This is skipped if a transfer is already required
+  // or for WebUI processes for now, since pages like the NTP host multiple
+  // cross-site WebUI iframes.
+  if (!should_transfer &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess) &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+          info->GetChildID())) {
+    return DeferForNavigationPolicyCheck(info, response, defer);
+  }
+
+  if (!should_transfer)
+    return next_handler_->OnResponseStarted(response, defer);
 
   // Now that we know a transfer is needed and we have something to commit, we
   // pause to let the UI thread set up the transfer.

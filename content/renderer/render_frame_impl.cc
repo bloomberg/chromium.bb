@@ -3557,13 +3557,12 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
           navigation_state()->is_content_initiated();
 
   // Experimental:
-  // If --enable-strict-site-isolation or --site-per-process is enabled, send
-  // all top-level navigations to the browser to let it swap processes when
-  // crossing site boundaries.  This is currently expected to break some script
-  // calls and navigations, such as form submissions.
+  // If --enable-strict-site-isolation is enabled, send all top-level
+  // navigations to the browser to let it swap processes when crossing site
+  // boundaries.  This is currently expected to break some script calls and
+  // navigations, such as form submissions.
   bool force_swap_due_to_flag =
-      command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
-      command_line.HasSwitch(switches::kSitePerProcess);
+      command_line.HasSwitch(switches::kEnableStrictSiteIsolation);
   if (force_swap_due_to_flag &&
       !info.frame->parent() && (is_content_initiated || info.isRedirect)) {
     WebString origin_str = info.frame->document().securityOrigin().toString();
