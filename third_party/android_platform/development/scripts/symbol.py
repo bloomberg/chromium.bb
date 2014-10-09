@@ -21,6 +21,7 @@ The information can include symbol names, offsets, and source locations.
 
 import glob
 import itertools
+import logging
 import os
 import re
 import subprocess
@@ -208,6 +209,7 @@ def GetCandidates(dirs, filepart, candidate_fun):
   candidates = PathListJoin([out_dir], buildtype_list) + [CHROME_SYMBOLS_DIR]
   candidates = PathListJoin(candidates, dirs)
   candidates = PathListJoin(candidates, [filepart])
+  logging.debug('GetCandidates: prefiltered candidates = %s' % candidates)
   candidates = list(
       itertools.chain.from_iterable(map(candidate_fun, candidates)))
   candidates = sorted(candidates, key=os.path.getmtime, reverse=True)
@@ -282,7 +284,7 @@ def GetCandidateLibraries(library_name):
     A list of matching library filenames for library_name.
   """
   return GetCandidates(
-      ['lib', 'lib.target'], library_name,
+      ['lib', 'lib.target', '.'], library_name,
       lambda filename: filter(os.path.exists, [filename]))
 
 def TranslateLibPath(lib):
@@ -306,11 +308,15 @@ def TranslateLibPath(lib):
     if mapping:
       library_name = mapping
 
+  logging.debug('TranslateLibPath: lib=%s library_name=%s' % (lib, library_name))
+
   candidate_libraries = GetCandidateLibraries(library_name)
+  logging.debug('TranslateLibPath: candidate_libraries=%s' % candidate_libraries)
   if not candidate_libraries:
     return lib
 
   library_path = os.path.relpath(candidate_libraries[0], SYMBOLS_DIR)
+  logging.debug('TranslateLibPath: library_path=%s' % library_path)
   return '/' + library_path
 
 def SymbolInformation(lib, addr, get_detailed_info):
