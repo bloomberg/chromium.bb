@@ -44,7 +44,7 @@ using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using content::BrowserThread;
-using content::RenderViewHostTester;
+using content::RenderFrameHostTester;
 using content::ResourceType;
 using content::WebContents;
 
@@ -946,7 +946,8 @@ TEST_F(ClientSideDetectionHostTest,
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckXHTML) {
   // Check that XHTML is supported, in addition to the default HTML type.
   GURL url("http://host.com/xhtml");
-  rvh_tester()->SetContentsMimeType("application/xhtml+xml");
+  RenderFrameHostTester::For(web_contents()->GetMainFrame())->
+      SetContentsMimeType("application/xhtml+xml");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse, &kFalse, &kFalse);
   NavigateAndCommit(url);
@@ -985,7 +986,8 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMimeType) {
   // same domain as the previous URL, otherwise it will create a new
   // RenderViewHost that won't have the mime type set.
   GURL url("http://host2.com/image.jpg");
-  rvh_tester()->SetContentsMimeType("image/jpeg");
+  RenderFrameHostTester::For(web_contents()->GetMainFrame())->
+      SetContentsMimeType("image/jpeg");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse, &kFalse, &kFalse);
   NavigateAndCommit(url);

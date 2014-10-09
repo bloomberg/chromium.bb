@@ -281,11 +281,10 @@ class RenderFrameHostManagerTest
     // for us.
     controller().LoadURL(
         url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    TestRenderViewHost* old_rvh = test_rvh();
-    TestRenderFrameHost* old_rfh = main_test_rfh();
-    TestRenderFrameHost* active_rfh = pending_main_rfh() ?
-        static_cast<TestRenderFrameHost*>(pending_main_rfh()) :
-        old_rfh;
+    TestRenderFrameHost* old_rfh = contents()->GetMainFrame();
+    TestRenderFrameHost* active_rfh = contents()->GetPendingMainFrame()
+                                          ? contents()->GetPendingMainFrame()
+                                          : old_rfh;
 
     // Simulate the BeforeUnload_ACK that is received from the current renderer
     // for a cross-site navigation.
@@ -301,7 +300,7 @@ class RenderFrameHostManagerTest
     // Use an observer to avoid accessing a deleted renderer later on when the
     // state is being checked.
     RenderFrameHostDeletedObserver rfh_observer(old_rfh);
-    RenderViewHostDeletedObserver rvh_observer(old_rvh);
+    RenderViewHostDeletedObserver rvh_observer(old_rfh->GetRenderViewHost());
     active_rfh->SendNavigate(max_page_id + 1, url);
 
     // Make sure that we start to run the unload handler at the time of commit.
@@ -329,6 +328,8 @@ class RenderFrameHostManagerTest
                   old_rfh->rfh_state());
       }
     }
+    EXPECT_EQ(active_rfh, contents()->GetMainFrame());
+    EXPECT_EQ(NULL, contents()->GetPendingMainFrame());
   }
 
   bool ShouldSwapProcesses(RenderFrameHostManager* manager,

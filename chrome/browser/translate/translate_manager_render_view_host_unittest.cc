@@ -840,8 +840,8 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
   NavEntryCommittedObserver nav_observer(web_contents());
   web_contents()->GetController().LoadURL(
       url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  rvh_tester()->SendNavigateWithTransition(
-      0, url, ui::PAGE_TRANSITION_TYPED);
+  content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+      ->SendNavigateWithTransition(0, url, ui::PAGE_TRANSITION_TYPED);
 
   // Test that we are really getting a same page navigation, the test would be
   // useless if it was not the case.

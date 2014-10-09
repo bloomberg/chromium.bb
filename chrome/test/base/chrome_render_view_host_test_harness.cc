@@ -32,10 +32,6 @@ TestingProfile* ChromeRenderViewHostTestHarness::profile() {
   return static_cast<TestingProfile*>(browser_context());
 }
 
-RenderViewHostTester* ChromeRenderViewHostTestHarness::rvh_tester() {
-  return RenderViewHostTester::For(rvh());
-}
-
 static KeyedService* BuildSigninManagerFake(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
 #if defined (OS_CHROMEOS)

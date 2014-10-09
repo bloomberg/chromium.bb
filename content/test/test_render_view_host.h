@@ -211,31 +211,8 @@ class TestRenderViewHost
   // RenderViewHostTester implementation.  Note that CreateRenderView
   // is not specified since it is synonymous with the one from
   // RenderViewHostImpl, see below.
-  virtual void SetContentsMimeType(const std::string& mime_type) override;
   virtual void SimulateWasHidden() override;
   virtual void SimulateWasShown() override;
-
-  // NOTE: These methods are deprecated and the equivalents in
-  // TestRenderFrameHost should be used.
-  virtual void SendNavigate(int page_id, const GURL& url) override;
-  virtual void SendFailedNavigate(int page_id, const GURL& url) override;
-  virtual void SendNavigateWithTransition(
-      int page_id,
-      const GURL& url,
-      ui::PageTransition transition) override;
-
-  // Calls OnNavigate on the RenderViewHost with the given information,
-  // including a custom original request URL.  Sets the rest of the
-  // parameters in the message to the "typical" values.  This is a helper
-  // function for simulating the most common types of loads.
-  void SendNavigateWithOriginalRequestURL(
-      int page_id, const GURL& url, const GURL& original_request_url);
-
-  void SendNavigateWithFile(
-      int page_id, const GURL& url, const base::FilePath& file_path);
-
-  void SendNavigateWithParams(
-      FrameHostMsg_DidCommitProvisionalLoad_Params* params);
 
   void TestOnUpdateStateWithFile(
       int page_id, const base::FilePath& file_path);
@@ -254,27 +231,8 @@ class TestRenderViewHost
     render_view_created_ = created;
   }
 
-  // If set, navigations will appear to have loaded through a proxy
-  // (ViewHostMsg_FrameNavigte_Params::was_fetched_via_proxy).
-  // False by default.
-  void set_simulate_fetch_via_proxy(bool proxy);
-
-  // If set, navigations will appear to have cleared the history list in the
-  // RenderView
-  // (FrameHostMsg_DidCommitProvisionalLoad_Params::history_list_was_cleared).
-  // False by default.
-  void set_simulate_history_list_was_cleared(bool cleared);
-
   // The opener route id passed to CreateRenderView().
   int opener_route_id() const { return opener_route_id_; }
-
-  // TODO(creis): Remove the need for these methods.
-  TestRenderFrameHost* main_render_frame_host() const {
-    return main_render_frame_host_;
-  }
-  void set_main_render_frame_host(TestRenderFrameHost* rfh) {
-    main_render_frame_host_ = rfh;
-  }
 
   // RenderViewHost overrides --------------------------------------------------
 
@@ -312,19 +270,8 @@ class TestRenderViewHost
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;
 
-  // See set_simulate_fetch_via_proxy() above.
-  bool simulate_fetch_via_proxy_;
-
-  // See set_simulate_history_list_was_cleared() above.
-  bool simulate_history_list_was_cleared_;
-
-  // See SetContentsMimeType() above.
-  std::string contents_mime_type_;
-
   // See opener_route_id() above.
   int opener_route_id_;
-
-  TestRenderFrameHost* main_render_frame_host_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

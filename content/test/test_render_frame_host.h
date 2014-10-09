@@ -49,15 +49,16 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // RenderFrameHostTester implementation.
   virtual TestRenderFrameHost* AppendChild(
       const std::string& frame_name) override;
+  virtual void SendNavigate(int page_id, const GURL& url) override;
+  virtual void SendFailedNavigate(int page_id, const GURL& url) override;
   virtual void SendNavigateWithTransition(
       int page_id,
       const GURL& url,
       ui::PageTransition transition) override;
+  virtual void SetContentsMimeType(const std::string& mime_type) override;
   virtual void SendBeforeUnloadACK(bool proceed) override;
   virtual void SimulateSwapOutACK() override;
 
-  void SendNavigate(int page_id, const GURL& url);
-  void SendFailedNavigate(int page_id, const GURL& url);
   void SendNavigateWithTransitionAndResponseCode(
       int page_id,
       const GURL& url, ui::PageTransition transition,
@@ -88,10 +89,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   void DidDisownOpener();
 
-  void set_contents_mime_type(const std::string& mime_type) {
-    contents_mime_type_ = mime_type;
-  }
-
   // If set, navigations will appear to have cleared the history list in the
   // RenderFrame
   // (FrameHostMsg_DidCommitProvisionalLoad_Params::history_list_was_cleared).
@@ -99,9 +96,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void set_simulate_history_list_was_cleared(bool cleared) {
     simulate_history_list_was_cleared_ = cleared;
   }
-
-  // TODO(nick): As necessary for testing, override behavior of RenderFrameHost
-  // here.
 
  private:
   TestRenderFrameHostCreationObserver child_creation_observer_;

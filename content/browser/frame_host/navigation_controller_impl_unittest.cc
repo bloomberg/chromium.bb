@@ -826,7 +826,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   controller.LoadURL(
       kExistingURL1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   // Pretend it has bindings so we can tell if we incorrectly copy it.
-  test_rvh()->AllowBindings(2);
+  main_test_rfh()->GetRenderViewHost()->AllowBindings(2);
   main_test_rfh()->SendNavigate(0, kExistingURL1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2278,7 +2278,7 @@ TEST_F(NavigationControllerTest, PushStateWithoutPreviousEntry)
   params.url = url;
   params.page_state = PageState::CreateFromURL(url);
   params.was_within_same_page = true;
-  test_rvh()->SendNavigateWithParams(&params);
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
   // We pass if we don't crash.
 }
 
@@ -4246,7 +4246,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
 
 TEST_F(NavigationControllerTest, PushStateUpdatesTitleAndFavicon) {
   // Navigate.
-  test_rvh()->SendNavigate(1, GURL("http://foo"));
+  contents()->GetMainFrame()->SendNavigate(1, GURL("http://foo"));
 
   // Set title and favicon.
   base::string16 title(base::ASCIIToUTF16("Title"));
@@ -4263,7 +4263,7 @@ TEST_F(NavigationControllerTest, PushStateUpdatesTitleAndFavicon) {
   params.url = url;
   params.page_state = PageState::CreateFromURL(url);
   params.was_within_same_page = true;
-  test_rvh()->SendNavigateWithParams(&params);
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   // The title should immediately be visible on the new NavigationEntry.
   base::string16 new_title =
@@ -4308,8 +4308,8 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->should_clear_history_list());
 
-  // Assume that the RV correctly cleared its history and commit the navigation.
-  contents()->GetPendingMainFrame()->GetRenderViewHost()->
+  // Assume that the RF correctly cleared its history and commit the navigation.
+  contents()->GetPendingMainFrame()->
       set_simulate_history_list_was_cleared(true);
   contents()->CommitPendingNavigation();
 
@@ -4340,7 +4340,7 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   params.was_within_same_page = false;
   params.is_post = true;
   params.post_id = 2;
-  test_rvh()->SendNavigateWithParams(&params);
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   // history.replaceState() is called.
   GURL replace_url("http://foo#foo");
@@ -4352,7 +4352,7 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   params.was_within_same_page = true;
   params.is_post = false;
   params.post_id = -1;
-  test_rvh()->SendNavigateWithParams(&params);
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   // Now reload. replaceState overrides the POST, so we should not show a
   // repost warning dialog.

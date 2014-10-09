@@ -42,11 +42,6 @@ TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
       child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
       contents_mime_type_("text/html"),
       simulate_history_list_was_cleared_(false) {
-  // Allow TestRenderViewHosts to easily access their main frame RFH.
-  if (frame_tree_node == frame_tree->root()) {
-    static_cast<TestRenderViewHost*>(render_view_host)->
-        set_main_render_frame_host(this);
-  }
 }
 
 TestRenderFrameHost::~TestRenderFrameHost() {}
@@ -68,6 +63,10 @@ void TestRenderFrameHost::SendNavigateWithTransition(
     const GURL& url,
     ui::PageTransition transition) {
   SendNavigateWithTransitionAndResponseCode(page_id, url, transition, 200);
+}
+
+void TestRenderFrameHost::SetContentsMimeType(const std::string& mime_type) {
+  contents_mime_type_ = mime_type;
 }
 
 void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {

@@ -24,8 +24,6 @@ class ChromeRenderViewHostTestHarness
 
   TestingProfile* profile();
 
-  content::RenderViewHostTester* rvh_tester();
-
  protected:
   // testing::Test
   virtual void TearDown() override;

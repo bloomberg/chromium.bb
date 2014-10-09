@@ -208,11 +208,7 @@ TestRenderViewHost::TestRenderViewHost(
                          false /* hidden */),
       render_view_created_(false),
       delete_counter_(NULL),
-      simulate_fetch_via_proxy_(false),
-      simulate_history_list_was_cleared_(false),
-      contents_mime_type_("text/html"),
-      opener_route_id_(MSG_ROUTING_NONE),
-      main_render_frame_host_(NULL) {
+      opener_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
@@ -244,68 +240,6 @@ bool TestRenderViewHost::IsFullscreen() const {
   return RenderViewHostImpl::IsFullscreen();
 }
 
-void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
-  main_render_frame_host_->SendNavigate(page_id, url);
-}
-
-void TestRenderViewHost::SendFailedNavigate(int page_id, const GURL& url) {
-  main_render_frame_host_->SendFailedNavigate(page_id, url);
-}
-
-void TestRenderViewHost::SendNavigateWithTransition(
-    int page_id,
-    const GURL& url,
-    ui::PageTransition transition) {
-  main_render_frame_host_->SendNavigateWithTransition(page_id, url, transition);
-}
-
-void TestRenderViewHost::SendNavigateWithOriginalRequestURL(
-    int page_id,
-    const GURL& url,
-    const GURL& original_request_url) {
-  main_render_frame_host_->SendNavigateWithOriginalRequestURL(
-      page_id, url, original_request_url);
-}
-
-void TestRenderViewHost::SendNavigateWithFile(
-    int page_id,
-    const GURL& url,
-    const base::FilePath& file_path) {
-  main_render_frame_host_->SendNavigateWithFile(page_id, url, file_path);
-}
-
-void TestRenderViewHost::SendNavigateWithParams(
-    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  main_render_frame_host_->SendNavigateWithParams(params);
-}
-
-void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
-    int page_id,
-    const GURL& url,
-    ui::PageTransition transition,
-    int response_code) {
-  main_render_frame_host_->SendNavigateWithTransitionAndResponseCode(
-      page_id, url, transition, response_code);
-}
-
-void TestRenderViewHost::SendNavigateWithParameters(
-    int page_id,
-    const GURL& url,
-    ui::PageTransition transition,
-    const GURL& original_request_url,
-    int response_code,
-    const base::FilePath* file_path_for_history_item) {
-
-  main_render_frame_host_->SendNavigateWithParameters(
-      page_id, url, transition, original_request_url, response_code,
-      file_path_for_history_item, std::vector<GURL>());
-}
-
-void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {
-  contents_mime_type_ = mime_type;
-  main_render_frame_host_->set_contents_mime_type(mime_type);
-}
-
 void TestRenderViewHost::SimulateWasHidden() {
   WasHidden();
 }
@@ -330,15 +264,6 @@ void TestRenderViewHost::TestOnUpdateStateWithFile(
                                             false,
                                             "data",
                                             &file_path));
-}
-
-void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
-  simulate_fetch_via_proxy_ = proxy;
-}
-
-void TestRenderViewHost::set_simulate_history_list_was_cleared(bool cleared) {
-  simulate_history_list_was_cleared_ = cleared;
-  main_render_frame_host_->set_simulate_history_list_was_cleared(cleared);
 }
 
 RenderViewHostImplTestHarness::RenderViewHostImplTestHarness() {

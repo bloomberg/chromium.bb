@@ -36,8 +36,6 @@
 using content::NavigationController;
 using content::RenderFrameHost;
 using content::RenderFrameHostTester;
-using content::RenderViewHost;
-using content::RenderViewHostTester;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
@@ -135,24 +133,22 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   if (!controller->GetPendingEntry())
     return;  // Nothing to commit.
 
-  RenderViewHost* old_rvh =
-      controller->GetWebContents()->GetRenderViewHost();
-  RenderFrameHost* old_rfh = old_rvh->GetMainFrame();
+  RenderFrameHost* old_rfh = controller->GetWebContents()->GetMainFrame();
 
-  RenderViewHost* pending_rvh = RenderViewHostTester::GetPendingForController(
+  RenderFrameHost* pending_rfh = RenderFrameHostTester::GetPendingForController(
       controller);
-  if (pending_rvh) {
+  if (pending_rfh) {
     // Simulate the BeforeUnload_ACK that is received from the current renderer
     // for a cross-site navigation.
-    DCHECK_NE(old_rvh, pending_rvh);
+    DCHECK_NE(old_rfh, pending_rfh);
     RenderFrameHostTester::For(old_rfh)->SendBeforeUnloadACK(true);
   }
-  // Commit on the pending_rvh, if one exists.
-  RenderViewHost* test_rvh = pending_rvh ? pending_rvh : old_rvh;
-  RenderViewHostTester* test_rvh_tester = RenderViewHostTester::For(test_rvh);
+  // Commit on the pending_rfh, if one exists.
+  RenderFrameHost* test_rfh = pending_rfh ? pending_rfh : old_rfh;
+  RenderFrameHostTester* test_rfh_tester = RenderFrameHostTester::For(test_rfh);
 
   // Simulate a SwapOut_ACK before the navigation commits.
-  if (pending_rvh)
+  if (pending_rfh)
     RenderFrameHostTester::For(old_rfh)->SimulateSwapOutACK();
 
   // For new navigations, we need to send a larger page ID. For renavigations,
@@ -160,14 +156,14 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   // renavigations will have a pending_entry_index while new ones won't (they'll
   // just have a standalong pending_entry that isn't in the list already).
   if (controller->GetPendingEntryIndex() >= 0) {
-    test_rvh_tester->SendNavigateWithTransition(
+    test_rfh_tester->SendNavigateWithTransition(
         controller->GetPendingEntry()->GetPageID(),
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   } else {
-    test_rvh_tester->SendNavigateWithTransition(
-        controller->GetWebContents()->
-            GetMaxPageIDForSiteInstance(test_rvh->GetSiteInstance()) + 1,
+    test_rfh_tester->SendNavigateWithTransition(
+        controller->GetWebContents()->GetMaxPageIDForSiteInstance(
+            test_rfh->GetSiteInstance()) + 1,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   }
