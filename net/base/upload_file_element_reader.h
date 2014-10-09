@@ -51,7 +51,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
                    const CompletionCallback& callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(UploadDataStreamTest, FileSmallerThanLength);
+  FRIEND_TEST_ALL_PREFIXES(ElementsUploadDataStreamTest, FileSmallerThanLength);
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
                            UploadFileSmallerThanLength);
 

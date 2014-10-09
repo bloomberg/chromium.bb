@@ -76,15 +76,17 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStreamWithoutBlob) {
       request_body.get(), NULL, NULL, base::MessageLoopProxy::current().get()));
 
   EXPECT_EQ(kIdentifier, upload->identifier());
-  ASSERT_EQ(request_body->elements()->size(), upload->element_readers().size());
+  ASSERT_TRUE(upload->GetElementReaders());
+  ASSERT_EQ(request_body->elements()->size(),
+            upload->GetElementReaders()->size());
 
   const net::UploadBytesElementReader* r1 =
-      upload->element_readers()[0]->AsBytesReader();
+      (*upload->GetElementReaders())[0]->AsBytesReader();
   ASSERT_TRUE(r1);
   EXPECT_EQ(kData, std::string(r1->bytes(), r1->length()));
 
   const net::UploadFileElementReader* r2 =
-      upload->element_readers()[1]->AsFileReader();
+      (*upload->GetElementReaders())[1]->AsFileReader();
   ASSERT_TRUE(r2);
   EXPECT_EQ(kFilePath, r2->path().value());
   EXPECT_EQ(kFileOffset, r2->range_offset());
@@ -150,11 +152,12 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
             NULL,
             base::MessageLoopProxy::current().get()));
 
-    ASSERT_EQ(2U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(2U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[0], upload_element1));
+        *(*upload->GetElementReaders())[0], upload_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[1], upload_element2));
+        *(*upload->GetElementReaders())[1], upload_element2));
 
     // Test having only one blob reference that refers to empty blob data.
     request_body = new ResourceRequestBody();
@@ -165,7 +168,8 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         &blob_storage_context,
         NULL,
         base::MessageLoopProxy::current().get());
-    ASSERT_EQ(0U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(0U, upload->GetElementReaders()->size());
 
     // Test having only one blob reference.
     request_body = new ResourceRequestBody();
@@ -176,11 +180,12 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         &blob_storage_context,
         NULL,
         base::MessageLoopProxy::current().get());
-    ASSERT_EQ(2U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(2U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[0], blob_element1));
+        *(*upload->GetElementReaders())[0], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[1], blob_element2));
+        *(*upload->GetElementReaders())[1], blob_element2));
 
     // Test having one blob reference at the beginning.
     request_body = new ResourceRequestBody();
@@ -199,15 +204,16 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         &blob_storage_context,
         NULL,
         base::MessageLoopProxy::current().get());
-    ASSERT_EQ(4U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(4U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[0], blob_element1));
+        *(*upload->GetElementReaders())[0], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[1], blob_element2));
+        *(*upload->GetElementReaders())[1], blob_element2));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[2], upload_element1));
+        *(*upload->GetElementReaders())[2], upload_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[3], upload_element2));
+        *(*upload->GetElementReaders())[3], upload_element2));
 
     // Test having one blob reference at the end.
     request_body = new ResourceRequestBody();
@@ -226,15 +232,16 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                        &blob_storage_context,
                                        NULL,
                                        base::MessageLoopProxy::current().get());
-    ASSERT_EQ(4U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(4U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[0], upload_element1));
+        *(*upload->GetElementReaders())[0], upload_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[1], upload_element2));
+        *(*upload->GetElementReaders())[1], upload_element2));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[2], blob_element1));
+        *(*upload->GetElementReaders())[2], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-          *upload->element_readers()[3], blob_element2));
+        *(*upload->GetElementReaders())[3], blob_element2));
 
     // Test having one blob reference in the middle.
     request_body = new ResourceRequestBody();
@@ -253,15 +260,16 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         &blob_storage_context,
         NULL,
         base::MessageLoopProxy::current().get());
-    ASSERT_EQ(4U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(4U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[0], upload_element1));
+        *(*upload->GetElementReaders())[0], upload_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[1], blob_element1));
+        *(*upload->GetElementReaders())[1], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[2], blob_element2));
+        *(*upload->GetElementReaders())[2], blob_element2));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[3], upload_element2));
+        *(*upload->GetElementReaders())[3], upload_element2));
 
     // Test having multiple blob references.
     request_body = new ResourceRequestBody();
@@ -282,23 +290,24 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         &blob_storage_context,
         NULL,
         base::MessageLoopProxy::current().get());
-    ASSERT_EQ(8U, upload->element_readers().size());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(8U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[0], blob_element1));
+        *(*upload->GetElementReaders())[0], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[1], blob_element2));
+        *(*upload->GetElementReaders())[1], blob_element2));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[2], upload_element1));
+        *(*upload->GetElementReaders())[2], upload_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[3], blob_element1));
+        *(*upload->GetElementReaders())[3], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[4], blob_element2));
+        *(*upload->GetElementReaders())[4], blob_element2));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[5], blob_element1));
+        *(*upload->GetElementReaders())[5], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[6], blob_element2));
+        *(*upload->GetElementReaders())[6], blob_element2));
     EXPECT_TRUE(AreElementsEqual(
-        *upload->element_readers()[7], upload_element2));
+        *(*upload->GetElementReaders())[7], upload_element2));
   }
   // Clean up for ASAN.
   base::RunLoop().RunUntilIdle();

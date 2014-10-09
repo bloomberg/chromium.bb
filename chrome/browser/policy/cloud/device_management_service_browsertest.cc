@@ -68,11 +68,12 @@ net::URLRequestJob* ResponseJob(
     net::NetworkDelegate* network_delegate) {
   const net::UploadDataStream* upload = request->get_upload();
   if (upload != NULL &&
-      upload->element_readers().size() == 1 &&
-      upload->element_readers()[0]->AsBytesReader()) {
+      upload->GetElementReaders() &&
+      upload->GetElementReaders()->size() == 1 &&
+      (*upload->GetElementReaders())[0]->AsBytesReader()) {
     std::string response_data;
     const net::UploadBytesElementReader* bytes_reader =
-        upload->element_readers()[0]->AsBytesReader();
+        (*upload->GetElementReaders())[0]->AsBytesReader();
     ConstructResponse(bytes_reader->bytes(),
                       bytes_reader->length(),
                       &response_data);

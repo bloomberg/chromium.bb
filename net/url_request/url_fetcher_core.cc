@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -548,8 +549,8 @@ void URLFetcherCore::StartURLRequest() {
       if (!upload_content_.empty()) {
         scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
             upload_content_.data(), upload_content_.size()));
-        request_->set_upload(make_scoped_ptr(
-            UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+        request_->set_upload(
+            ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
       } else if (!upload_file_path_.empty()) {
         scoped_ptr<UploadElementReader> reader(
             new UploadFileElementReader(upload_file_task_runner_.get(),
@@ -557,8 +558,8 @@ void URLFetcherCore::StartURLRequest() {
                                         upload_range_offset_,
                                         upload_range_length_,
                                         base::Time()));
-        request_->set_upload(make_scoped_ptr(
-            UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+        request_->set_upload(
+            ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
       }
 
       current_upload_bytes_ = -1;

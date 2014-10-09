@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -189,7 +190,8 @@ class QuicEndToEndTest : public PlatformTest {
     element_readers.push_back(
         new UploadBytesElementReader(request_body_.data(),
                                      request_body_.length()));
-    upload_data_stream_.reset(new UploadDataStream(element_readers.Pass(), 0));
+    upload_data_stream_.reset(
+        new ElementsUploadDataStream(element_readers.Pass(), 0));
     request_.method = "POST";
     request_.url = GURL("http://www.google.com/");
     request_.upload_data_stream = upload_data_stream_.get();

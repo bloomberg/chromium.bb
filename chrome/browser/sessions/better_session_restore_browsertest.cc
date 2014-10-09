@@ -80,14 +80,16 @@ net::URLRequestJob* URLRequestFakerForPostRequests(
   const net::UploadDataStream* upload_data = request->get_upload();
   g_last_upload_bytes.Get().clear();
   if (upload_data) {
-    const ScopedVector<net::UploadElementReader>& readers =
-        upload_data->element_readers();
-    for (size_t i = 0; i < readers.size(); ++i) {
-      const net::UploadBytesElementReader* bytes_reader =
-          readers[i]->AsBytesReader();
-      if (bytes_reader) {
-        g_last_upload_bytes.Get() +=
-            std::string(bytes_reader->bytes(), bytes_reader->length());
+    const ScopedVector<net::UploadElementReader>* readers =
+        upload_data->GetElementReaders();
+    if (readers) {
+      for (size_t i = 0; i < readers->size(); ++i) {
+        const net::UploadBytesElementReader* bytes_reader =
+            (*readers)[i]->AsBytesReader();
+        if (bytes_reader) {
+          g_last_upload_bytes.Get() +=
+              std::string(bytes_reader->bytes(), bytes_reader->length());
+        }
       }
     }
   }

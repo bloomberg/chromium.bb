@@ -39,10 +39,10 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_context.h"
 
 namespace content {
@@ -63,8 +63,8 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
     const std::string& body = params->post_body();
     scoped_ptr<net::UploadElementReader> reader(
         net::UploadOwnedBytesElementReader::CreateWithString(body));
-    request->set_upload(make_scoped_ptr(
-        net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+    request->set_upload(
+        net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
   }
   if (params->post_id() >= 0) {
     // The POST in this case does not have an actual body, and only works
@@ -75,7 +75,8 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
     DCHECK_EQ("POST", params->method());
     ScopedVector<net::UploadElementReader> element_readers;
     request->set_upload(make_scoped_ptr(
-        new net::UploadDataStream(element_readers.Pass(), params->post_id())));
+        new net::ElementsUploadDataStream(element_readers.Pass(),
+                                          params->post_id())));
   }
 
   // If we're not at the beginning of the file, retrieve only the remaining

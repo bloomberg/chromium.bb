@@ -15,10 +15,11 @@
 #include "base/strings/string_piece.h"
 #include "base/test/test_file_util.h"
 #include "net/base/auth.h"
+#include "net/base/chunked_upload_data_stream.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_network_transaction.h"
@@ -120,7 +121,7 @@ class SpdyNetworkTransactionTest
   }
 
   virtual ~SpdyNetworkTransactionTest() {
-    // UploadDataStream posts deletion tasks back to the message loop on
+    // UploadDataStream may post a deletion tasks back to the message loop on
     // destruction.
     upload_data_stream_.reset();
     base::RunLoop().RunUntilIdle();
@@ -456,7 +457,7 @@ class SpdyNetworkTransactionTest
       element_readers.push_back(
           new UploadBytesElementReader(kUploadData, kUploadDataSize));
       upload_data_stream_.reset(
-          new UploadDataStream(element_readers.Pass(), 0));
+          new ElementsUploadDataStream(element_readers.Pass(), 0));
 
       google_post_request_.method = "POST";
       google_post_request_.url = GURL(kDefaultURL);
@@ -481,7 +482,7 @@ class SpdyNetworkTransactionTest
                                       kUploadDataSize,
                                       base::Time()));
       upload_data_stream_.reset(
-          new UploadDataStream(element_readers.Pass(), 0));
+          new ElementsUploadDataStream(element_readers.Pass(), 0));
 
       google_post_request_.method = "POST";
       google_post_request_.url = GURL(kDefaultURL);
@@ -509,7 +510,7 @@ class SpdyNetworkTransactionTest
                                     kUploadDataSize,
                                     base::Time()));
     upload_data_stream_.reset(
-        new UploadDataStream(element_readers.Pass(), 0));
+        new ElementsUploadDataStream(element_readers.Pass(), 0));
 
     google_post_request_.method = "POST";
     google_post_request_.url = GURL(kDefaultURL);
@@ -542,7 +543,7 @@ class SpdyNetworkTransactionTest
           kUploadData + kFileRangeOffset + kFileRangeLength,
           kUploadDataSize - (kFileRangeOffset + kFileRangeLength)));
       upload_data_stream_.reset(
-          new UploadDataStream(element_readers.Pass(), 0));
+          new ElementsUploadDataStream(element_readers.Pass(), 0));
 
       google_post_request_.method = "POST";
       google_post_request_.url = GURL(kDefaultURL);
@@ -554,12 +555,11 @@ class SpdyNetworkTransactionTest
 
   const HttpRequestInfo& CreateChunkedPostRequest() {
     if (!google_chunked_post_request_initialized_) {
-      upload_data_stream_.reset(
-          new UploadDataStream(UploadDataStream::CHUNKED, 0));
+      upload_chunked_data_stream_.reset(new ChunkedUploadDataStream(0));
       google_chunked_post_request_.method = "POST";
       google_chunked_post_request_.url = GURL(kDefaultURL);
       google_chunked_post_request_.upload_data_stream =
-          upload_data_stream_.get();
+          upload_chunked_data_stream_.get();
       google_chunked_post_request_initialized_ = true;
     }
     return google_chunked_post_request_;
@@ -688,9 +688,14 @@ class SpdyNetworkTransactionTest
     callback.WaitForResult();
   }
 
+  ChunkedUploadDataStream* upload_chunked_data_stream() const {
+    return upload_chunked_data_stream_.get();
+  }
+
   SpdyTestUtil spdy_util_;
 
  private:
+  scoped_ptr<ChunkedUploadDataStream> upload_chunked_data_stream_;
   scoped_ptr<UploadDataStream> upload_data_stream_;
   bool google_get_request_initialized_;
   bool google_post_request_initialized_;
@@ -774,7 +779,7 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
     // SpdyFramer::ConvertRequestPriorityToSpdyPriority to make
     // sure it's being done right.
     if (spdy_util_.spdy_version() < SPDY3) {
-      switch(p) {
+      switch (p) {
         case HIGHEST:
           EXPECT_EQ(0, spdy_prio);
           break;
@@ -1858,9 +1863,8 @@ TEST_P(SpdyNetworkTransactionTest, ChunkedPost) {
 
   // These chunks get merged into a single frame when being sent.
   const int kFirstChunkSize = kUploadDataSize/2;
-  helper.request().upload_data_stream->AppendChunk(
-      kUploadData, kFirstChunkSize, false);
-  helper.request().upload_data_stream->AppendChunk(
+  upload_chunked_data_stream()->AppendData(kUploadData, kFirstChunkSize, false);
+  upload_chunked_data_stream()->AppendData(
       kUploadData + kFirstChunkSize, kUploadDataSize - kFirstChunkSize, true);
 
   helper.RunToCompletion(&data);
@@ -1898,19 +1902,16 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
                                      DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
 
-  helper.request().upload_data_stream->AppendChunk(
-      kUploadData, kUploadDataSize, false);
+  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, false);
 
   helper.RunPreTestSetup();
   helper.AddData(&data);
   ASSERT_TRUE(helper.StartDefaultTest());
 
   base::RunLoop().RunUntilIdle();
-  helper.request().upload_data_stream->AppendChunk(
-      kUploadData, kUploadDataSize, false);
+  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, false);
   base::RunLoop().RunUntilIdle();
-  helper.request().upload_data_stream->AppendChunk(
-      kUploadData, kUploadDataSize, true);
+  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, true);
 
   helper.FinishDefaultTest();
   helper.VerifyDataConsumed();
@@ -1972,7 +1973,7 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
   // Create an empty UploadDataStream.
   ScopedVector<UploadElementReader> element_readers;
-  UploadDataStream stream(element_readers.Pass(), 0);
+  ElementsUploadDataStream stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -2046,8 +2047,7 @@ TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   // Finish sending the request body.
-  helper.request().upload_data_stream->AppendChunk(
-      kUploadData, kUploadDataSize, true);
+  upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, true);
   data.RunFor(2);
 
   std::string response_body;
@@ -4442,7 +4442,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   writes.push_back(CreateMockWrite(*initial_settings_frame));
   if (GetParam().protocol >= kProtoSPDY31) {
     writes.push_back(CreateMockWrite(*initial_window_update));
-  };
+  }
   writes.push_back(CreateMockWrite(*settings_frame));
   writes.push_back(CreateMockWrite(*req));
 
@@ -4608,7 +4608,7 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   };
 
   scoped_ptr<OrderedSocketData> data;
-  switch(GetParam().ssl_type) {
+  switch (GetParam().ssl_type) {
     case SPDYNOSSL:
       data.reset(new OrderedSocketData(reads_SPDYNOSSL,
                                        arraysize(reads_SPDYNOSSL),
@@ -4768,7 +4768,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   };
 
   scoped_ptr<OrderedSocketData> data_proxy;
-  switch(GetParam().ssl_type) {
+  switch (GetParam().ssl_type) {
     case SPDYNPN:
       data_proxy.reset(new OrderedSocketData(reads_SPDYNPN,
                                              arraysize(reads_SPDYNPN),
@@ -5888,7 +5888,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
     element_readers.push_back(
         new UploadBytesElementReader(content->c_str(), content->size()));
   }
-  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -6053,7 +6053,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
     element_readers.push_back(
         new UploadBytesElementReader(content->c_str(), content->size()));
   }
-  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -6169,7 +6169,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
-  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -6286,7 +6286,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
-  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -6413,7 +6413,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
-  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";

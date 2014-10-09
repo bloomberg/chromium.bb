@@ -13,11 +13,11 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "crypto/random.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -90,8 +90,8 @@ void TokenValidatorImpl::StartValidateRequest(const std::string& token) {
   scoped_ptr<net::UploadElementReader> reader(
       new net::UploadBytesElementReader(
           post_body_.data(), post_body_.size()));
-  request_->set_upload(make_scoped_ptr(
-      net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+  request_->set_upload(
+      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
   request_->Start();
 }
 

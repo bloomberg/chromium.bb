@@ -35,8 +35,8 @@ class NET_EXPORT UploadElementReader {
   // state.
   virtual int Init(const CompletionCallback& callback) = 0;
 
-  // Returns the byte-length of the element.  For files that do not exist, 0
-  // is returned.  This is done for consistency with Mozilla.
+  // Returns the byte-length of the element. For files that do not exist, 0
+  // is returned. This is done for consistency with Mozilla.
   virtual uint64 GetContentLength() const = 0;
 
   // Returns the number of bytes remaining to read.

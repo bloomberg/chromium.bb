@@ -14,10 +14,10 @@
 #include "crypto/ec_signature_creator.h"
 #include "crypto/signature_creator.h"
 #include "net/base/capturing_net_log.h"
+#include "net/base/chunked_upload_data_stream.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
-#include "net/base/upload_data_stream.h"
-#include "net/base/upload_element_reader.h"
+#include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -338,10 +338,10 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
               key);
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+  ChunkedUploadDataStream upload_stream(0);
   const int kFirstChunkSize = kUploadDataSize/2;
-  upload_stream.AppendChunk(kUploadData, kFirstChunkSize, false);
-  upload_stream.AppendChunk(kUploadData + kFirstChunkSize,
+  upload_stream.AppendData(kUploadData, kFirstChunkSize, false);
+  upload_stream.AppendData(kUploadData + kFirstChunkSize,
                             kUploadDataSize - kFirstChunkSize, true);
 
   HttpRequestInfo request;
@@ -349,7 +349,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
+  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -413,15 +413,15 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
                            writes, arraysize(writes),
                            key);
 
-  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+  ChunkedUploadDataStream upload_stream(0);
 
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, false);
+  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
   scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
@@ -443,8 +443,8 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   // Now append the final two chunks which will enqueue two more writes.
-  upload_stream.AppendChunk(kUploadData1, kUploadData1Size, false);
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
+  upload_stream.AppendData(kUploadData1, kUploadData1Size, false);
+  upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
   // Finish writing all the chunks.
   deterministic_data()->RunFor(2);
@@ -512,15 +512,15 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
                            writes, arraysize(writes),
                            key);
 
-  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+  ChunkedUploadDataStream upload_stream(0);
 
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, false);
+  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
   scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
@@ -542,7 +542,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   // Now end the stream with an empty data frame and the FIN set.
-  upload_stream.AppendChunk(NULL, 0, true);
+  upload_stream.AppendData(NULL, 0, true);
 
   // Finish writing the final frame.
   deterministic_data()->RunFor(1);
@@ -597,15 +597,15 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
                            writes, arraysize(writes),
                            key);
 
-  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+  ChunkedUploadDataStream upload_stream(0);
 
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
-  upload_stream.AppendChunk("", 0, true);
+  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  upload_stream.AppendData("", 0, true);
 
   BoundNetLog net_log;
   scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
@@ -727,15 +727,15 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
                            writes, arraysize(writes),
                            key);
 
-  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+  ChunkedUploadDataStream upload_stream(0);
 
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("http://www.google.com/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
+  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+  upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
   BoundNetLog net_log;
   scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));

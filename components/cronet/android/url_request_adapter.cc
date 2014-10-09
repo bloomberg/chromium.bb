@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/url_request_context_adapter.h"
 #include "components/cronet/android/wrapped_channel_upload_element_reader.h"
+#include "net/base/element_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_status_code.h"
@@ -56,15 +57,15 @@ void URLRequestAdapter::SetUploadContent(const char* bytes, int bytes_len) {
   std::vector<char> data(bytes, bytes + bytes_len);
   scoped_ptr<net::UploadElementReader> reader(
       new net::UploadOwnedBytesElementReader(&data));
-  upload_data_stream_.reset(
-      net::UploadDataStream::CreateWithReader(reader.Pass(), 0));
+  upload_data_stream_ =
+      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
 }
 
 void URLRequestAdapter::SetUploadChannel(JNIEnv* env, int64 content_length) {
   scoped_ptr<net::UploadElementReader> reader(
       new WrappedChannelElementReader(delegate_, content_length));
-  upload_data_stream_.reset(
-      net::UploadDataStream::CreateWithReader(reader.Pass(), 0));
+  upload_data_stream_ =
+      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
 }
 
 void URLRequestAdapter::EnableChunkedUpload() {

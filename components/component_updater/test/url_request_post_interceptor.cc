@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/component_updater/test/test_configurator.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -198,7 +199,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 
     const net::UploadDataStream* stream = request->get_upload();
     const net::UploadBytesElementReader* reader =
-        stream->element_readers()[0]->AsBytesReader();
+        (*stream->GetElementReaders())[0]->AsBytesReader();
     const int size = reader->length();
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(size));
     const std::string request_body(reader->bytes());

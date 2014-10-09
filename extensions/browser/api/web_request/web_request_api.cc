@@ -223,8 +223,8 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
       (request->method() != "POST" && request->method() != "PUT"))
     return;  // Need to exit without "out->Set(keys::kRequestBodyKey, ...);" .
 
-  base::DictionaryValue* requestBody = new base::DictionaryValue();
-  out->Set(keys::kRequestBodyKey, requestBody);
+  base::DictionaryValue* request_body = new base::DictionaryValue();
+  out->Set(keys::kRequestBodyKey, request_body);
 
   // Get the data presenters, ordered by how specific they are.
   extensions::ParsedDataPresenter parsed_data_presenter(*request);
@@ -239,20 +239,22 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
     keys::kRequestBodyRawKey
   };
 
-  const ScopedVector<net::UploadElementReader>& readers =
-      upload_data->element_readers();
+  const ScopedVector<net::UploadElementReader>* readers =
+      upload_data->GetElementReaders();
   bool some_succeeded = false;
-  for (size_t i = 0; !some_succeeded && i < arraysize(presenters); ++i) {
-    ScopedVector<net::UploadElementReader>::const_iterator reader;
-    for (reader = readers.begin(); reader != readers.end(); ++reader)
-      presenters[i]->FeedNext(**reader);
-    if (presenters[i]->Succeeded()) {
-      requestBody->Set(kKeys[i], presenters[i]->Result().release());
-      some_succeeded = true;
+  if (readers) {
+    for (size_t i = 0; !some_succeeded && i < arraysize(presenters); ++i) {
+      ScopedVector<net::UploadElementReader>::const_iterator reader;
+      for (reader = readers->begin(); reader != readers->end(); ++reader)
+        presenters[i]->FeedNext(**reader);
+      if (presenters[i]->Succeeded()) {
+        request_body->Set(kKeys[i], presenters[i]->Result().release());
+        some_succeeded = true;
+      }
     }
   }
   if (!some_succeeded)
-    requestBody->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
+    request_body->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
 }
 
 // Converts a HttpHeaders dictionary to a |name|, |value| pair. Returns

@@ -9,10 +9,10 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/network_context.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
@@ -192,8 +192,8 @@ void URLLoaderImpl::Start(URLRequestPtr request,
       element_readers.push_back(
           new UploadDataPipeElementReader(request->body[i].Pass()));
     }
-    url_request_->set_upload(make_scoped_ptr(
-        new net::UploadDataStream(element_readers.Pass(), 0)));
+    url_request_->set_upload(make_scoped_ptr<net::UploadDataStream>(
+        new net::ElementsUploadDataStream(element_readers.Pass(), 0)));
   }
   if (request->bypass_cache)
     url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE);

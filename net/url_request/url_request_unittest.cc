@@ -31,6 +31,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/capturing_net_log.h"
+#include "net/base/chunked_upload_data_stream.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -242,10 +244,10 @@ bool ContainsString(const std::string& haystack, const char* needle) {
   return it != haystack.end();
 }
 
-UploadDataStream* CreateSimpleUploadData(const char* data) {
+scoped_ptr<UploadDataStream> CreateSimpleUploadData(const char* data) {
   scoped_ptr<UploadElementReader> reader(
       new UploadBytesElementReader(data, strlen(data)));
-  return UploadDataStream::CreateWithReader(reader.Pass(), 0);
+  return ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
 }
 
 // Verify that the SSLInfo of a successful SSL connection has valid values.
@@ -2556,7 +2558,7 @@ class URLRequestTestHTTP : public URLRequestTest {
         redirect_url, DEFAULT_PRIORITY, &d, NULL));
     req->set_method(request_method);
     if (include_data) {
-      req->set_upload(make_scoped_ptr(CreateSimpleUploadData(kData)));
+      req->set_upload(CreateSimpleUploadData(kData));
       HttpRequestHeaders headers;
       headers.SetHeader(HttpRequestHeaders::kContentLength,
                         base::UintToString(arraysize(kData) - 1));
@@ -2602,7 +2604,7 @@ class URLRequestTestHTTP : public URLRequestTest {
           test_server_.GetURL("echo"), DEFAULT_PRIORITY, &d, NULL));
       r->set_method(method.c_str());
 
-      r->set_upload(make_scoped_ptr(CreateSimpleUploadData(uploadBytes)));
+      r->set_upload(CreateSimpleUploadData(uploadBytes));
 
       r->Start();
       EXPECT_TRUE(r->is_pending());
@@ -3015,7 +3017,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     scoped_ptr<URLRequest> r(context.CreateRequest(
         original_url, DEFAULT_PRIORITY, &d, NULL));
     r->set_method("POST");
-    r->set_upload(make_scoped_ptr(CreateSimpleUploadData(kData)));
+    r->set_upload(CreateSimpleUploadData(kData));
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kContentLength,
                       base::UintToString(arraysize(kData) - 1));
@@ -4828,8 +4830,8 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
                                     0,
                                     kuint64max,
                                     base::Time()));
-    r->set_upload(make_scoped_ptr(
-        new UploadDataStream(element_readers.Pass(), 0)));
+    r->set_upload(make_scoped_ptr<UploadDataStream>(
+        new ElementsUploadDataStream(element_readers.Pass(), 0)));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
@@ -4871,8 +4873,8 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
         0,
         kuint64max,
         base::Time()));
-    r->set_upload(make_scoped_ptr(
-        new UploadDataStream(element_readers.Pass(), 0)));
+    r->set_upload(make_scoped_ptr<UploadDataStream>(
+        new ElementsUploadDataStream(element_readers.Pass(), 0)));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
@@ -5949,7 +5951,7 @@ TEST_F(URLRequestTestHTTP, Post302RedirectGet) {
       test_server_.GetURL("files/redirect-to-echoall"), DEFAULT_PRIORITY, &d,
       NULL));
   req->set_method("POST");
-  req->set_upload(make_scoped_ptr(CreateSimpleUploadData(kData)));
+  req->set_upload(CreateSimpleUploadData(kData));
 
   // Set headers (some of which are specific to the POST).
   HttpRequestHeaders headers;
@@ -6136,7 +6138,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
   scoped_ptr<URLRequest> req(default_context_.CreateRequest(
       test_server_.GetURL("empty.html"), DEFAULT_PRIORITY, &d, NULL));
   req->set_method("POST");
-  req->set_upload(make_scoped_ptr(CreateSimpleUploadData(kData)));
+  req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
                     base::UintToString(arraysize(kData) - 1));
@@ -6161,7 +6163,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
   scoped_ptr<URLRequest> req(default_context_.CreateRequest(
       test_server_.GetURL("empty.html"), DEFAULT_PRIORITY, &d, NULL));
   req->set_method("POST");
-  req->set_upload(make_scoped_ptr(CreateSimpleUploadData(kData)));
+  req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
                     base::UintToString(arraysize(kData) - 1));
@@ -6720,7 +6722,7 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
                                   test_server.host_port_pair().port())),
       DEFAULT_PRIORITY, &d, NULL));
   req->set_method("POST");
-  req->set_upload(make_scoped_ptr(CreateSimpleUploadData(kData)));
+  req->set_upload(CreateSimpleUploadData(kData));
 
   req->Start();
   base::RunLoop().Run();
