@@ -163,21 +163,17 @@
 
   // Creates two MediaStream and renders them locally. When the video of both
   // streams are detected to be rolling, we stop the local video tracks one at
-  // the time.
+  // the time. In particular, we verify that stopping one track does not stop
+  // the other.
   function twoGetUserMediaAndStop(constraints) {
-    // TODO(phoglund): make gUM requests in parallel; this test is too slow
-    // and flakes on slow bots (http://crbug.com/417756). The current cycle of
-    // detect - gum - detect - gum - stop - detect - stop - detect contains too
-    // many detection phases. On bots with GPU emulation this looks to be really
-    // slow, so I was thinking we could at least get video up for both streams
-    // simultaneously and thereby run the first two detects in parallel.
     var stream1 = null;
     var stream2 = null;
     navigator.webkitGetUserMedia(
         constraints,
         function(stream) {
           stream1 = stream;
-          detectVideoInLocalView1(stream, requestSecondGetUserMedia);
+          attachMediaStream(stream, 'local-view-1');
+          requestSecondGetUserMedia();
         },
         failedCallback);
     var requestSecondGetUserMedia = function() {
@@ -186,26 +182,24 @@
           function(stream) {
             stream2 = stream;
             attachMediaStream(stream, 'local-view-2');
-            detectVideoPlaying('local-view-2', stopBothVideoTracksAndVerify);
+            stopBothVideoTracksAndVerify();
           },
           failedCallback);
     };
 
     var stopBothVideoTracksAndVerify = function() {
-      // Stop track 2, ensure that stops track 2 but not track 1, then stop
-      // track 1.
+      // Stop track 2, ensure track 2 stops but not track 1, then stop track 1.
       stream2.getVideoTracks()[0].stop();
-      waitForVideoToStop('local-view-1');
-      waitForVideoToStop('local-view-2');
-      detectVideoInLocalView1(stream1, function() {
-        stream1.getVideoTracks()[0].stop();
+      detectVideoStopped('local-view-2', function() {
+        detectVideoInLocalView1(stream1, function() {
+          stream1.getVideoTracks()[0].stop();
+          waitForVideoToStop('local-view-1');
+        });
       });
     };
   }
 
-  function twoGetUserMedia(constraints1,
-                           constraints2) {
-    // TODO(phoglund): see TODO on twoGetUserMediaAndStop.
+  function twoGetUserMedia(constraints1, constraints2) {
     var result="";
     navigator.webkitGetUserMedia(
         constraints1,
@@ -215,7 +209,7 @@
               function(aspectRatio) {
                 result = aspectRatio;
                 requestSecondGetUserMedia();
-               },
+              },
               'local-view-1');
         },
         failedCallback);
@@ -241,7 +235,6 @@
                                              constraints2,
                                              expected_frame_rate1,
                                              expected_frame_rate2) {
-    // TODO(phoglund): see TODO on twoGetUserMediaAndStop.
     addExpectedEvent();
     addExpectedEvent();
     var validateFrameRateCallback = function (success) {
@@ -255,10 +248,11 @@
         function(stream) {
           requestSecondGetUserMedia();
           attachMediaStream(stream, 'local-view-1');
-          detectVideoPlaying('local-view-1',
+          detectVideoPlaying(
+              'local-view-1',
               function() {
                 validateFrameRate('local-view-1', expected_frame_rate1,
-                    validateFrameRateCallback);
+                                  validateFrameRateCallback);
               });
         },
         failedCallback);
@@ -267,10 +261,11 @@
           constraints2,
           function(stream) {
             attachMediaStream(stream, 'local-view-2');
-            detectVideoPlaying('local-view-2',
+            detectVideoPlaying(
+                'local-view-2',
                 function() {
                   validateFrameRate('local-view-2', expected_frame_rate2,
-                      validateFrameRateCallback);
+                                    validateFrameRateCallback);
                 });
           },
           failedCallback);
@@ -393,6 +388,7 @@
     var maxLightGreenPixelsX = 0;
     var maxLightGreenPixelsY = 0;
 
+    // TODO(phoglund): don't iterate 10 times - too slow on Windows.
     var iterations = 0;
     var maxIterations = 10;
 
