@@ -126,6 +126,20 @@ void RenderSVGResourceGradient::postApplyResource(GraphicsContext* context)
     context->restore();
 }
 
+bool RenderSVGResourceGradient::isChildAllowed(RenderObject* child, RenderStyle*) const
+{
+    if (child->isSVGGradientStop())
+        return true;
+
+    if (!child->isSVGResourceContainer())
+        return false;
+
+    RenderSVGResourceContainer* resource = toRenderSVGResourceContainer(child);
+    return resource->resourceType() == PatternResourceType
+        || resource->resourceType() == LinearGradientResourceType
+        || resource->resourceType() == RadialGradientResourceType;
+}
+
 void RenderSVGResourceGradient::addStops(GradientData* gradientData, const Vector<Gradient::ColorStop>& stops) const
 {
     ASSERT(gradientData->gradient);

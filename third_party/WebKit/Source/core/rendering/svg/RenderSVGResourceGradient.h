@@ -51,6 +51,8 @@ public:
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) override final;
     virtual void postApplyResource(GraphicsContext*) override final;
 
+    virtual bool isChildAllowed(RenderObject* child, RenderStyle*) const override final;
+
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;
 
