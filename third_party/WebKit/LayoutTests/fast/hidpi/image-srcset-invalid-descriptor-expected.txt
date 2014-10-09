@@ -1,8 +1,9 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS document.getElementById("foo").clientWidth==100 is true
-PASS document.getElementById("foo2").clientWidth==100 is true
-This test passes if the image below is a 100px blue square when the deviceScaleFactor is 1.
-It tests that even though the 1x resource contains many invalid descriptors, only the invalid descriptors are ignored (according to the spec).
+PASS document.getElementById("foo").clientWidth==200 is true
+PASS document.getElementById("foo2").clientWidth==200 is true
+This test passes if the image below is a 200px green square when the deviceScaleFactor is 1.
+It tests that the 1x resource is ignored since it contains invalid descriptors.
+The 2x resource has an intrinsic width of 200px, since it's a 400px wide image at 2x DPR.
   

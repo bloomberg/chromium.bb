@@ -207,9 +207,11 @@ static bool parseDescriptors(const CharType* attribute, Vector<DescriptorToken>&
             if (!isValid || density < 0)
                 return false;
             result.setDensity(density);
+        } else {
+            return false;
         }
     }
-    return true;
+    return (!result.hasHeight() || result.hasWidth());
 }
 
 static bool parseDescriptors(const String& attribute, Vector<DescriptorToken>& descriptors, DescriptorParsingResult& result)
