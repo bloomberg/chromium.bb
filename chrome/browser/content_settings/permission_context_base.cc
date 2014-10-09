@@ -93,7 +93,8 @@ void PermissionContextBase::DecidePermission(
       break;
   }
 
-  PermissionContextUmaUtil::PermissionRequested(permission_type_);
+  PermissionContextUmaUtil::PermissionRequested(
+      permission_type_, requesting_origin);
 
   if (PermissionBubbleManager::Enabled()) {
     PermissionBubbleManager* bubble_manager =
@@ -152,11 +153,14 @@ void PermissionContextBase::PermissionDecided(
   if (PermissionBubbleManager::Enabled()) {
     if (persist) {
       if (allowed)
-        PermissionContextUmaUtil::PermissionGranted(permission_type_);
+        PermissionContextUmaUtil::PermissionGranted(permission_type_,
+                                                    requesting_origin);
       else
-        PermissionContextUmaUtil::PermissionDenied(permission_type_);
+        PermissionContextUmaUtil::PermissionDenied(permission_type_,
+                                                   requesting_origin);
     } else {
-      PermissionContextUmaUtil::PermissionDismissed(permission_type_);
+      PermissionContextUmaUtil::PermissionDismissed(permission_type_,
+                                                    requesting_origin);
     }
   }
 

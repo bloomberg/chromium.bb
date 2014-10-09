@@ -3081,9 +3081,43 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.PermissionActionsInsecureOrigin"
+    enum="PermissionAction">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Tracks whether a permission was granted, rejected, etc on an insecure
+    origin. The suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.PermissionActionsSecureOrigin"
+    enum="PermissionAction">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Tracks whether a permission was granted, rejected, etc on a secure origin.
+    The suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.PermissionRequested" enum="PermissionType">
   <owner>miguelg@chromium.org</owner>
   <summary>Number of times a given permission was requested.</summary>
+</histogram>
+
+<histogram name="ContentSettings.PermissionRequested_InsecureOrigin"
+    enum="PermissionType">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Number of times a given permission was requested from an insecure origin.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.PermissionRequested_SecureOrigin"
+    enum="PermissionType">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Number of times a given permission was requested from a secure origin.
+  </summary>
 </histogram>
 
 <histogram name="Cookie.BackingStoreUpdateResults" enum="BackingStoreResults">
@@ -55976,6 +56010,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Notifications" label="Notification permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
   <affected-histogram name="ContentSettings.PermissionActions"/>
+  <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
+  <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PpapiPluginName">

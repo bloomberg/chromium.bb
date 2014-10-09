@@ -12,7 +12,7 @@
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
   if (!action_taken_)
-    PermissionContextUmaUtil::PermissionIgnored(type_);
+    PermissionContextUmaUtil::PermissionIgnored(type_, requesting_origin_);
 }
 
 PermissionInfobarDelegate::PermissionInfobarDelegate(

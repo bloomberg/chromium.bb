@@ -31,7 +31,7 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
 PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
-    PermissionContextUmaUtil::PermissionIgnored(type_);
+    PermissionContextUmaUtil::PermissionIgnored(type_, request_origin_);
 }
 
 int PermissionBubbleRequestImpl::GetIconID() const {
