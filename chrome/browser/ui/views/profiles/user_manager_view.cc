@@ -106,6 +106,7 @@ void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
   AddChildView(web_view_);
   SetLayoutManager(new views::FillLayout);
   AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
+  AddAccelerator(ui::Accelerator(ui::VKEY_F4, ui::EF_ALT_DOWN));
 
   // If the user manager is being displayed from an existing profile, use
   // its last active browser to determine where the user manager should be
@@ -154,8 +155,10 @@ void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
 }
 
 bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
-  DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
+  int key = accelerator.key_code();
+  int modifier = accelerator.modifiers();
+  DCHECK((key == ui::VKEY_W && modifier == ui::EF_CONTROL_DOWN) ||
+         (key == ui::VKEY_F4 && modifier == ui::EF_ALT_DOWN));
   GetWidget()->Close();
   return true;
 }
