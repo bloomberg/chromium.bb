@@ -16,7 +16,7 @@
   top: 0;
 }
 
-.oobe-display #outer-container.down {
+.oobe-display #outer-container {
   -webkit-perspective: 600px;
 }
 
