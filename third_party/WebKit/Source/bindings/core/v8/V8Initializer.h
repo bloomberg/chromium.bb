@@ -34,6 +34,7 @@ class V8Initializer {
 public:
     static void initializeMainThreadIfNeeded();
     static void initializeWorker(v8::Isolate*);
+    static void reportRejectedPromises();
 };
 
 } // namespace blink
