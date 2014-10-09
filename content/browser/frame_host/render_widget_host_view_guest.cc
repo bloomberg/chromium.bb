@@ -190,7 +190,8 @@ base::string16 RenderWidgetHostViewGuest::GetSelectedText() const {
 
 void RenderWidgetHostViewGuest::SetTooltipText(
     const base::string16& tooltip_text) {
-  platform_view_->SetTooltipText(tooltip_text);
+  if (guest_)
+    guest_->SetTooltipText(tooltip_text);
 }
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(

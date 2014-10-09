@@ -128,6 +128,11 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh, bool focused) {
   }
 }
 
+void BrowserPluginGuest::SetTooltipText(const base::string16& tooltip_text) {
+  SendMessageToEmbedder(new BrowserPluginMsg_SetTooltipText(
+      browser_plugin_instance_id_, tooltip_text));
+}
+
 bool BrowserPluginGuest::LockMouse(bool allowed) {
   if (!attached() || (mouse_locked_ == allowed))
     return false;

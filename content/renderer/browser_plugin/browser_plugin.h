@@ -47,7 +47,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Update Browser Plugin's DOM Node attribute |attribute_name| with the value
   // |attribute_value|.
   void UpdateDOMAttribute(const std::string& attribute_name,
-                          const std::string& attribute_value);
+                          const base::string16& attribute_value);
 
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
@@ -181,6 +181,8 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnSetContentsOpaque(int instance_id, bool opaque);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);
+  void OnSetTooltipText(int browser_plugin_instance_id,
+                        const base::string16& tooltip_text);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
 
   // This indicates whether this BrowserPlugin has been attached to a

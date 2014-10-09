@@ -212,6 +212,11 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
                      int /* browser_plugin_instance_id */,
                      bool /* enable */)
 
+// Sends text to be displayed in tooltip.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetTooltipText,
+                     int /* browser_plugin_instance_id */,
+                     base::string16 /* tooltip_text */)
+
 // Acknowledge that we presented an ubercomp frame.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_CompositorFrameSwappedACK,
                     int /* browser_plugin_instance_id */,

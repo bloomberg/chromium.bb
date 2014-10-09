@@ -99,6 +99,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetContentsOpaque, OnSetContentsOpaque)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -107,15 +108,14 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 }
 
 void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
-                                       const std::string& attribute_value) {
+                                       const base::string16& attribute_value) {
   if (!container())
     return;
 
   blink::WebElement element = container()->element();
   blink::WebString web_attribute_name =
       blink::WebString::fromUTF8(attribute_name);
-  element.setAttribute(web_attribute_name,
-      blink::WebString::fromUTF8(attribute_value));
+  element.setAttribute(web_attribute_name, attribute_value);
 }
 
 void BrowserPlugin::Attach() {
@@ -246,6 +246,12 @@ void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
   }
 }
 
+void BrowserPlugin::OnSetTooltipText(int instance_id,
+                                     const base::string16& tooltip_text) {
+  // Show tooltip text by setting the BrowserPlugin's |title| attribute.
+  UpdateDOMAttribute("title", tooltip_text);
+}
+
 void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
                                               bool accept) {
   if (container()) {
@@ -316,8 +322,9 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   // available in render tree.
   // TODO(lazyboy): This should be done through the delegate instead. Perhaps
   // by firing an event from there.
-  UpdateDOMAttribute("internalinstanceid",
-                     base::IntToString(browser_plugin_instance_id_));
+  UpdateDOMAttribute(
+      "internalinstanceid",
+      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
 
   return true;
 }
@@ -418,6 +425,7 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_SetContentsOpaque::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:
+    case BrowserPluginMsg_SetTooltipText::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
       return true;
     default:
