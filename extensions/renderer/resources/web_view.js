@@ -181,13 +181,13 @@ WebViewInternal.prototype.setupFocusPropagation = function() {
 };
 
 // Navigates to the previous history entry.
-WebViewInternal.prototype.back = function() {
-  return this.go(-1);
+WebViewInternal.prototype.back = function(callback) {
+  return this.go(-1, callback);
 };
 
 // Navigates to the subsequent history entry.
-WebViewInternal.prototype.forward = function() {
-  return this.go(1);
+WebViewInternal.prototype.forward = function(callback) {
+  return this.go(1, callback);
 };
 
 // Returns whether there is a previous history entry to navigate to.
@@ -218,11 +218,11 @@ WebViewInternal.prototype.getProcessId = function() {
 
 // Navigates to a history entry using a history index relative to the current
 // navigation.
-WebViewInternal.prototype.go = function(relativeIndex) {
+WebViewInternal.prototype.go = function(relativeIndex, callback) {
   if (!this.guestInstanceId) {
     return;
   }
-  WebView.go(this.guestInstanceId, relativeIndex);
+  WebView.go(this.guestInstanceId, relativeIndex, callback);
 };
 
 // Prints the contents of the webview.

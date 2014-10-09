@@ -155,7 +155,19 @@ function testNavigation() {
       embedder.test.assertEq('step1', results[0]);
       embedder.test.assertFalse(webview.canGoBack());
       embedder.test.assertTrue(webview.canGoForward());
-      embedder.test.succeed();
+
+      // Test the callbacks of webview.go/webview.forward/webview.back.
+      webview.removeEventListener('loadstop', onLoadStop);
+      webview.go(3, function(success) {
+        embedder.test.assertFalse(success);
+        webview.back(function(success) {
+          embedder.test.assertFalse(success);
+          webview.forward(function(success) {
+            embedder.test.assertTrue(success);
+            embedder.test.succeed();
+          });
+        });
+      });
     });
   };
 

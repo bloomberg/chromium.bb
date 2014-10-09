@@ -448,6 +448,18 @@
             "type": "integer",
             "name": "relativeIndex",
             "description": "Relative history index to which the webview should be navigated. For example, a value of <code>2</code> will navigate forward 2 history entries if possible; a value of <code>-3</code> will navigate backward 3 entries."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean",
+                "description": "Indicates whether the navigation was successful."
+              }
+            ]
           }
         ]
       },

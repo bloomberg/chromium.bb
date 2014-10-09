@@ -336,7 +336,9 @@ bool WebViewInternalGoFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  guest->Go(params->relative_index);
+  bool successful = guest->Go(params->relative_index);
+  SetResult(new base::FundamentalValue(successful));
+  SendResponse(true);
   return true;
 }
 

@@ -338,6 +338,18 @@
           {
             "type": "integer",
             "name": "relativeIndex"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean",
+                "description": "Indicates whether the navigation was successful."
+              }
+            ]
           }
         ]
       },

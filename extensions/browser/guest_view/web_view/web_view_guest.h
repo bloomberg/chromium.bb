@@ -185,8 +185,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void StopFinding(content::StopFindAction);
 
   // If possible, navigate the guest to |relative_index| entries away from the
-  // current navigation entry.
-  void Go(int relative_index);
+  // current navigation entry. Returns true on success.
+  bool Go(int relative_index);
 
   // Reload the guest.
   void Reload();

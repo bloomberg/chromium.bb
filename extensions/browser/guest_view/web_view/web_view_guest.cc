@@ -600,8 +600,13 @@ void WebViewGuest::StopFinding(content::StopFindAction action) {
   web_contents()->StopFinding(action);
 }
 
-void WebViewGuest::Go(int relative_index) {
-  web_contents()->GetController().GoToOffset(relative_index);
+bool WebViewGuest::Go(int relative_index) {
+  content::NavigationController& controller = web_contents()->GetController();
+  if (!controller.CanGoToOffset(relative_index))
+    return false;
+
+  controller.GoToOffset(relative_index);
+  return true;
 }
 
 void WebViewGuest::Reload() {
