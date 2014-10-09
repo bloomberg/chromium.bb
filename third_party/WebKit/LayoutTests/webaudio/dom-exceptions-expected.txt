@@ -57,10 +57,10 @@ PASS node.oversample = '9x' did not throw exception.
 PASS Invalid oversample value did not change node.oversample
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
-PASS source.start(-1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: -1.
-PASS source.start(Infinity) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: Infinity.
-PASS source.start(-Infinity) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: -Infinity.
-PASS source.start(NaN) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: NaN.
+PASS source.start(-1) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: -1.
+PASS source.start(Infinity) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: Infinity.
+PASS source.start(-Infinity) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: -Infinity.
+PASS source.start(NaN) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: NaN.
 PASS source.start(1, Infinity) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Offset must be a finite non-negative number: Infinity.
 PASS source.start(1, -Infinity) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Offset must be a finite non-negative number: -Infinity.
 PASS source.start(1, NaN) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Offset must be a finite non-negative number: NaN.
@@ -70,10 +70,10 @@ PASS source.start(1, 1, -Infinity) threw exception InvalidStateError: Failed to 
 PASS source.start(1, 1, NaN) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Duration must be a finite non-negative number: NaN.
 PASS source.start(1, 1, -1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Duration must be a finite non-negative number: -1.
 PASS source.start() did not throw exception.
-PASS source.stop(-1) threw exception InvalidStateError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: -1.
-PASS source.stop(Infinity) threw exception InvalidStateError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: Infinity.
-PASS source.stop(-Infinity) threw exception InvalidStateError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: -Infinity.
-PASS source.stop(NaN) threw exception InvalidStateError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: NaN.
+PASS source.stop(-1) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: -1.
+PASS source.stop(Infinity) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: Infinity.
+PASS source.stop(-Infinity) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: -Infinity.
+PASS source.stop(NaN) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a finite non-negative number: NaN.
 PASS source.stop() did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.start() did not throw exception.
@@ -89,23 +89,23 @@ PASS source.buffer = buffer did not throw exception.
 PASS source.start() did not throw exception.
 PASS source.stop() did not throw exception.
 PASS source = context.createOscillator() did not throw exception.
-PASS source.start(-1) threw exception InvalidStateError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: -1.
-PASS source.start(Infinity) threw exception InvalidStateError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: Infinity.
-PASS source.start(-Infinity) threw exception InvalidStateError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: -Infinity.
-PASS source.start(NaN) threw exception InvalidStateError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: NaN.
+PASS source.start(-1) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: -1.
+PASS source.start(Infinity) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: Infinity.
+PASS source.start(-Infinity) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: -Infinity.
+PASS source.start(NaN) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: NaN.
 PASS source.start() did not throw exception.
-PASS source.stop(-1) threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: -1.
-PASS source.stop(Infinity) threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: Infinity.
-PASS source.stop(-Infinity) threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: -Infinity.
-PASS source.stop(NaN) threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: NaN.
+PASS source.stop(-1) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: -1.
+PASS source.stop(Infinity) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: Infinity.
+PASS source.stop(-Infinity) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: -Infinity.
+PASS source.stop(NaN) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a finite non-negative number: NaN.
 PASS source.stop() did not throw exception.
 PASS osc = context.createOscillator() did not throw exception.
 PASS osc.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': cannot call stop without calling start first..
 PASS osc1 = context.createOscillator() did not throw exception.
 PASS osc1.start() did not throw exception.
 PASS osc1.stop() did not throw exception.
-PASS node.gain.exponentialRampToValueAtTime(-1, 0.1) threw exception InvalidStateError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': Target value must be a finite positive number: -1.
-PASS node.gain.exponentialRampToValueAtTime(0, 0.1) threw exception InvalidStateError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': Target value must be a finite positive number: 0.
+PASS node.gain.exponentialRampToValueAtTime(-1, 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': Target value must be a finite positive number: -1.
+PASS node.gain.exponentialRampToValueAtTime(0, 0.1) threw exception InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': Target value must be a finite positive number: 0.
 PASS oc = new OfflineAudioContext(1, 44100, 44100) did not throw exception.
 PASS conv = oc.createConvolver() did not throw exception.
 PASS conv.buffer = oc.createBuffer(1, 100, 22050) threw exception NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer sample rate of 22050 does not match the context rate of 44100 Hz..

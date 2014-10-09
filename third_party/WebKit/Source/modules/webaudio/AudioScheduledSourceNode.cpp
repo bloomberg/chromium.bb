@@ -147,7 +147,7 @@ void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState
 
     if (!std::isfinite(when) || (when < 0)) {
         exceptionState.throwDOMException(
-            InvalidStateError,
+            InvalidAccessError,
             "Start time must be a finite non-negative number: " + String::number(when));
         return;
     }
@@ -169,7 +169,7 @@ void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
 
     if (!std::isfinite(when) || (when < 0)) {
         exceptionState.throwDOMException(
-            InvalidStateError,
+            InvalidAccessError,
             "Stop time must be a finite non-negative number: " + String::number(when));
         return;
     }

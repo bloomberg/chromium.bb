@@ -44,7 +44,7 @@ static bool isValidAudioParamValue(float value, ExceptionState& exceptionState)
         return true;
 
     exceptionState.throwDOMException(
-        InvalidStateError,
+        InvalidAccessError,
         "Target value must be a finite number: " + String::number(value));
     return false;
 }
@@ -55,7 +55,7 @@ static bool isPositiveAudioParamValue(float value, ExceptionState& exceptionStat
         return true;
 
     exceptionState.throwDOMException(
-        InvalidStateError,
+        InvalidAccessError,
         "Target value must be a finite positive number: " + String::number(value));
     return false;
 }
@@ -66,7 +66,7 @@ static bool isValidAudioParamTime(double time, ExceptionState& exceptionState, S
         return true;
 
     exceptionState.throwDOMException(
-        InvalidStateError,
+        InvalidAccessError,
         message + " must be a finite non-negative number: " + String::number(time));
     return false;
 }
@@ -77,7 +77,7 @@ static bool isPositiveAudioParamTime(double time, ExceptionState& exceptionState
         return true;
 
     exceptionState.throwDOMException(
-        InvalidStateError,
+        InvalidAccessError,
         message + " must be a finite positive number: " + String::number(time));
     return false;
 }
