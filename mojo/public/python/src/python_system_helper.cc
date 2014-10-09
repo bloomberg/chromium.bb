@@ -25,38 +25,55 @@ class ScopedGIL {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedGIL);
 };
 
-class PythonClosure : public mojo::Closure::Runnable {
+enum ScopedPyRefAcquire {
+  kAcquire,
+};
+
+class ScopedPyRef {
  public:
-  PythonClosure(PyObject* callable) : callable_(callable) {
-    MOJO_DCHECK(callable);
-    Py_XINCREF(callable);
+  ScopedPyRef(PyObject* object) : object_(object) {}
+  ScopedPyRef(PyObject* object, ScopedPyRefAcquire) : object_(object) {
+    Py_XINCREF(object_);
   }
 
-  virtual ~PythonClosure() {
-    ScopedGIL acquire_gil;
-    Py_DECREF(callable_);
+  ~ScopedPyRef() {
+    if (object_) {
+      ScopedGIL acquire_gil;
+      Py_DECREF(object_);
+    }
+  }
+
+  operator PyObject*() const { return object_; }
+
+ private:
+  PyObject* object_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedPyRef);
+};
+
+class PythonClosure : public mojo::Closure::Runnable {
+ public:
+  PythonClosure(PyObject* callable) : callable_(callable, kAcquire) {
+    MOJO_DCHECK(callable);
   }
 
   virtual void Run() const override {
     ScopedGIL acquire_gil;
-    PyObject* empty_tuple = PyTuple_New(0);
+    ScopedPyRef empty_tuple(PyTuple_New(0));
     if (!empty_tuple) {
       mojo::RunLoop::current()->Quit();
       return;
     }
 
-    PyObject* result = PyObject_CallObject(callable_, empty_tuple);
-    Py_DECREF(empty_tuple);
-    if (result) {
-      Py_DECREF(result);
-    } else {
+    ScopedPyRef result(PyObject_CallObject(callable_, empty_tuple));
+    if (!result) {
       mojo::RunLoop::current()->Quit();
       return;
     }
   }
 
  private:
-  PyObject* callable_;
+  ScopedPyRef callable_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(PythonClosure);
 };
@@ -77,15 +94,9 @@ class PythonAsyncWaiter::AsyncWaiterRunnable
     : public mojo::Callback<void(MojoResult)>::Runnable {
  public:
   AsyncWaiterRunnable(PyObject* callable, CallbackMap* callbacks)
-      : wait_id_(0), callable_(callable), callbacks_(callbacks) {
+      : wait_id_(0), callable_(callable, kAcquire), callbacks_(callbacks) {
     MOJO_DCHECK(callable);
     MOJO_DCHECK(callbacks_);
-    Py_XINCREF(callable);
-  }
-
-  virtual ~AsyncWaiterRunnable() {
-    ScopedGIL acquire_gil;
-    Py_DECREF(callable_);
   }
 
   void set_wait_id(int wait_id) { wait_id_ = wait_id; }
@@ -96,22 +107,19 @@ class PythonAsyncWaiter::AsyncWaiterRunnable
     // Remove to reference to this object from PythonAsyncWaiter and ensure this
     // object will be destroyed when this method exits.
     MOJO_DCHECK(callbacks_->find(wait_id_) != callbacks_->end());
-    internal::SharedPtr<mojo::Callback<void(MojoResult)> > self =
+    internal::SharedPtr<mojo::Callback<void(MojoResult)>> self =
         (*callbacks_)[wait_id_];
     callbacks_->erase(wait_id_);
 
     ScopedGIL acquire_gil;
-    PyObject* args_tuple = Py_BuildValue("(i)", mojo_result);
+    ScopedPyRef args_tuple(Py_BuildValue("(i)", mojo_result));
     if (!args_tuple) {
       mojo::RunLoop::current()->Quit();
       return;
     }
 
-    PyObject* result = PyObject_CallObject(callable_, args_tuple);
-    Py_DECREF(args_tuple);
-    if (result) {
-      Py_DECREF(result);
-    } else {
+    ScopedPyRef result(PyObject_CallObject(callable_, args_tuple));
+    if (!result) {
       mojo::RunLoop::current()->Quit();
       return;
     }
@@ -119,7 +127,7 @@ class PythonAsyncWaiter::AsyncWaiterRunnable
 
  private:
   MojoAsyncWaitID wait_id_;
-  PyObject* callable_;
+  ScopedPyRef callable_;
   CallbackMap* callbacks_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(AsyncWaiterRunnable);
@@ -150,7 +158,7 @@ MojoAsyncWaitID PythonAsyncWaiter::AsyncWait(MojoHandle handle,
                                              MojoDeadline deadline,
                                              PyObject* callable) {
   AsyncWaiterRunnable* runner = new AsyncWaiterRunnable(callable, &callbacks_);
-  internal::SharedPtr<mojo::Callback<void(MojoResult)> > callback(
+  internal::SharedPtr<mojo::Callback<void(MojoResult)>> callback(
       new mojo::Callback<void(MojoResult)>(
           static_cast<mojo::Callback<void(MojoResult)>::Runnable*>(runner)));
   MojoAsyncWaitID wait_id = async_waiter_->AsyncWait(
