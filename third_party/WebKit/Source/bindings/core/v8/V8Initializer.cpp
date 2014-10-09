@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptProfiler.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8ErrorEvent.h"
@@ -46,8 +45,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -158,66 +155,6 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     }
 }
 
-typedef WillBeHeapDeque<ScriptValue> PromiseRejectMessageQueue;
-
-static PromiseRejectMessageQueue& promiseRejectMessageQueue()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PromiseRejectMessageQueue>, queue, (adoptPtrWillBeNoop(new PromiseRejectMessageQueue())));
-    return *queue;
-}
-
-void V8Initializer::reportRejectedPromises()
-{
-    ASSERT(isMainThread());
-
-    PromiseRejectMessageQueue& queue = promiseRejectMessageQueue();
-    while (!queue.isEmpty()) {
-        ScriptValue promise = queue.takeFirst();
-        ScriptState* scriptState = promise.scriptState();
-        if (!scriptState->contextIsValid())
-            continue;
-        ScriptState::Scope scope(scriptState);
-
-        ASSERT(!promise.isEmpty());
-        v8::Handle<v8::Value> value = promise.v8Value();
-        ASSERT(!value.IsEmpty() && value->IsPromise());
-        if (v8::Handle<v8::Promise>::Cast(value)->HasHandler())
-            continue;
-
-        ExecutionContext* executionContext = scriptState->executionContext();
-        if (!executionContext)
-            continue;
-
-        const String errorMessage = "Unhandled promise rejection";
-        Vector<ScriptValue> args;
-        args.append(ScriptValue(scriptState, v8String(scriptState->isolate(), errorMessage)));
-        args.append(promise);
-        RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(scriptState, args);
-
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, "", 0);
-        consoleMessage->setScriptArguments(arguments);
-        executionContext->addConsoleMessage(consoleMessage.release());
-    }
-}
-
-static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage message)
-{
-    ASSERT(isMainThread());
-
-    if (message.GetEvent() != v8::kPromiseRejectWithNoHandler)
-        return;
-
-    // It's possible that promiseRejectHandlerInMainThread() is invoked while we're initializing a window.
-    // In that half-baked situation, we don't have a valid context nor a valid world,
-    // so just return immediately.
-    if (DOMWrapperWorld::windowIsBeingInitialized())
-        return;
-
-    v8::Handle<v8::Promise> promise = message.GetPromise();
-    ScriptState* scriptState = ScriptState::current(promise->GetIsolate());
-    promiseRejectMessageQueue().append(ScriptValue(scriptState, promise));
-}
-
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -281,7 +218,6 @@ void V8Initializer::initializeMainThreadIfNeeded()
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
 
     isolate->SetEventLogger(timerTraceProfilerInMainThread);
-    isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
 
     ScriptProfiler::initialize();
 }
