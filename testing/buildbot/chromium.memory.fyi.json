@@ -13,6 +13,7 @@
       "content_browsertests",
       "content_unittests",
       "crypto_unittests",
+      "dbus_unittests",
       "device_unittests",
       "display_unittests",
       "events_unittests",
