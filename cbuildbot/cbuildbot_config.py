@@ -1470,6 +1470,7 @@ _x86_release_boards = frozenset([
   'mccloud',
   'monroe',
   'panther',
+  'panther_moblab',
   'parrot',
   'parrot_ivb',
   'peppy',
@@ -2025,6 +2026,13 @@ internal_paladin.add_config('stumpy_moblab-paladin',
   paladin_builder_name='stumpy_moblab paladin',
 )
 
+internal_paladin.add_config('moblab_panther-paladin',
+  moblab,
+  boards=['panther_moblab'],
+  paladin_builder_name='panther_moblab paladin',
+  important=False,
+)
+
 ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
 ### itself.
 internal_notest_paladin = internal_paladin.derive(non_testable_builder)
@@ -2543,6 +2551,21 @@ _release.add_config('stumpy_moblab-release',
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
   important=True,
+  afdo_use=False,
+  hw_tests=[HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+                         warn_only=True, num=1),
+            HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                         warn_only=True, num=1)],
+)
+
+_release.add_config('panther_moblab-release',
+  moblab,
+  boards=['moblab_panther'],
+  images=['base', 'test'],
+  paygen_skip_delta_payloads=True,
+  # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
+  paygen_skip_testing=True,
+  important=False,
   afdo_use=False,
   hw_tests=[HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
                          warn_only=True, num=1),
