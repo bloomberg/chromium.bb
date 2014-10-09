@@ -101,7 +101,9 @@ void CSSGradientValue::sortStopsIfNeeded()
     }
 }
 
-struct GradientStop {
+class GradientStop {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     Color color;
     float offset;
     bool specified;
@@ -111,6 +113,22 @@ struct GradientStop {
         , specified(false)
     { }
 };
+
+} // namespace blink
+
+// Escape out and declare VectorTraits for GradientStop before it is used
+// in a HeapVector with an inline capacity.
+namespace WTF  {
+
+template<>
+struct VectorTraits<blink::GradientStop> : SimpleClassVectorTraits<blink::GradientStop> {
+    // IsPod<> doesn't handle embedded structs/enums (e.g., Color.)
+    static const bool needsDestruction = false;
+};
+
+} // namespace WTF
+
+namespace blink {
 
 PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const TextLinkColors& textLinkColors, Color currentColor)
 {
@@ -143,7 +161,7 @@ PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesRes
     return result.release();
 }
 
-static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const Vector<CSSGradientColorStop, 2>& cssGradientStops)
+static void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stops, const WillBeHeapVector<CSSGradientColorStop, 2>& cssGradientStops)
 {
     // This algorithm will replace each color interpolation hint with 9 regular
     // color stops. The color values for the new color stops will be calculated
@@ -253,7 +271,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
 
     size_t numStops = m_stops.size();
 
-    Vector<GradientStop> stops(numStops);
+    WillBeHeapVector<GradientStop> stops(numStops);
 
     float gradientLength = 0;
     bool computedGradientLength = false;
