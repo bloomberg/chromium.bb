@@ -37,7 +37,7 @@ class ModuleRegistryObserverImpl : public ModuleRegistryObserver {
 
   virtual void OnDidAddPendingModule(
       const std::string& id,
-      const std::vector<std::string>& dependencies) OVERRIDE {
+      const std::vector<std::string>& dependencies) override {
     did_add_count_++;
     id_ = id;
     dependencies_ = dependencies;

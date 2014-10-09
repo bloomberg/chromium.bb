@@ -45,7 +45,7 @@ class GinShellRunnerDelegate : public ModuleRunnerDelegate {
   }
 
   virtual void UnhandledException(ShellRunner* runner,
-                                  TryCatch& try_catch) OVERRIDE {
+                                  TryCatch& try_catch) override {
     ModuleRunnerDelegate::UnhandledException(runner, try_catch);
     LOG(ERROR) << try_catch.GetStackTrace();
   }

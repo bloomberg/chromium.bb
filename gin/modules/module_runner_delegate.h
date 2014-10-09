@@ -41,9 +41,9 @@ class GIN_EXPORT ModuleRunnerDelegate : public ShellRunnerDelegate {
   // From ShellRunnerDelegate:
   virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
       ShellRunner* runner,
-      v8::Isolate* isolate) OVERRIDE;
-  virtual void DidCreateContext(ShellRunner* runner) OVERRIDE;
-  virtual void DidRunScript(ShellRunner* runner) OVERRIDE;
+      v8::Isolate* isolate) override;
+  virtual void DidCreateContext(ShellRunner* runner) override;
+  virtual void DidRunScript(ShellRunner* runner) override;
 
   BuiltinModuleMap builtin_modules_;
   FileModuleProvider module_provider_;

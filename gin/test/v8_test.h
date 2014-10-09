@@ -22,8 +22,8 @@ class V8Test : public testing::Test {
   V8Test();
   virtual ~V8Test();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   scoped_ptr<IsolateHolder> instance_;
