@@ -43,15 +43,6 @@ class TwoClientPasswordsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPasswordsSyncTest);
 };
 
-class LegacyTwoClientPasswordsSyncTest : public SyncTest {
- public:
-  LegacyTwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
-  virtual ~LegacyTwoClientPasswordsSyncTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientPasswordsSyncTest);
-};
-
 // TCM ID - 3732277
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
