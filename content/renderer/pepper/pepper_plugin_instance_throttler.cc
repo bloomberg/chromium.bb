@@ -4,7 +4,6 @@
 
 #include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
 
-#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 

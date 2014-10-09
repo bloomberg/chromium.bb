@@ -396,9 +396,6 @@ const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
-// Enables the plugin power saver feature.
-const char kEnablePluginPowerSaver[]        = "enable-plugin-power-saver";
-
 // Make the values returned to window.performance.memory more granular and more
 // up to date in shared worker. Without this flag, the memory information is
 // still available, but it is bucketized and updated less frequently. This flag
@@ -963,6 +960,11 @@ const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 // the kernel. This is only supported on Windows 8 and beyond.
 const char kEnableWin32kRendererLockDown[]
     = "enable_win32k_renderer_lockdown";
+#endif
+
+#if defined(ENABLE_PLUGINS)
+// Enables the plugin power saver feature.
+const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
 #endif
 
 // Don't dump stuff here, follow the same order as the header.

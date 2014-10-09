@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_THROTTLER_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_THROTTLER_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 
 namespace content {
@@ -17,7 +17,7 @@ namespace content {
 class PepperPluginInstanceThrottler {
  public:
   // |throttle_closure| is called to engage throttling.
-  PepperPluginInstanceThrottler(const base::Closure& throttle_closure);
+  explicit PepperPluginInstanceThrottler(const base::Closure& throttle_closure);
 
   virtual ~PepperPluginInstanceThrottler();
 

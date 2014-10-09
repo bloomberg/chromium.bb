@@ -120,7 +120,6 @@ CONTENT_EXPORT extern const char kEnableOneCopy[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnablePinch[];
-CONTENT_EXPORT extern const char kEnablePluginPowerSaver[];
 CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
 CONTENT_EXPORT extern const char kEnableRendererMojoChannel[];
@@ -288,6 +287,10 @@ CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
 // This switch will be removed when we enable the win32K lockdown process
 // mitigation.
 CONTENT_EXPORT extern const char kEnableWin32kRendererLockDown[];
+#endif
+
+#if defined(ENABLE_PLUGINS)
+CONTENT_EXPORT extern const char kEnablePluginPowerSaver[];
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
