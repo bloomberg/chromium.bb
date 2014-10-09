@@ -360,7 +360,7 @@ bool GetScreenshotDirectory(base::FilePath* directory) {
 }
 
 #if defined(OS_CHROMEOS)
-const int GetScreenshotNotificationTitle(
+int GetScreenshotNotificationTitle(
     ScreenshotTakerObserver::Result screenshot_result) {
   switch (screenshot_result) {
     case ScreenshotTakerObserver::SCREENSHOTS_DISABLED:
@@ -372,7 +372,7 @@ const int GetScreenshotNotificationTitle(
   }
 }
 
-const int GetScreenshotNotificationText(
+int GetScreenshotNotificationText(
     ScreenshotTakerObserver::Result screenshot_result) {
   switch (screenshot_result) {
     case ScreenshotTakerObserver::SCREENSHOTS_DISABLED:
