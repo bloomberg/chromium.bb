@@ -606,6 +606,35 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                             'board': board,
                                             'status': status})
 
+  @minimum_schema(29)
+  def InsertFailure(self, build_stage_id, exception,
+                    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
+                    outer_failure_id=None,
+                    extra_info=None):
+    """Insert a failure description into database.
+
+    Args:
+      build_stage_id: primary key, in buildStageTable, of the stage where
+                      failure occured.
+      exception: Exception instance that occured.
+      exception_category: (Optional) one of
+                          constants.EXCEPTION_CATEGORY_ALL_CATEGORIES,
+                          Default: 'unknown'.
+      outer_failure_id: (Optional) primary key of outer failure which contains
+                        this failure. Used to store CompoundFailure
+                        relationship.
+      extra_info: (Optional) extra category-specific string description giving
+                  failure details. Used for programmatic triage.
+    """
+    values = {'build_stage_id': build_stage_id,
+              'exception_type': type(exception).__name__,
+              'exception_message': exception.message,
+              'exception_category': exception_category,
+              'outer_failure_id': outer_failure_id,
+              'extra_info': extra_info}
+
+    return self._Insert('failureTable', values)
+
   @minimum_schema(2)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.

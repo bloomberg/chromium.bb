@@ -382,12 +382,12 @@ class DataSeries0Test(CIDBIntegrationTest):
       logging.debug('Simulated master build %s', master_build_id)
 
 
-class BuildStagesTest(CIDBIntegrationTest):
+class BuildStagesAndFailureTest(CIDBIntegrationTest):
   """Test buildStageTable functionality."""
 
   def runTest(self):
-    """Test basic buildStageTable functionality at schema v28."""
-    self._PrepareFreshDatabase(28)
+    """Test basic buildStageTable and failureTable functionality."""
+    self._PrepareFreshDatabase(29)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -416,6 +416,10 @@ class BuildStagesTest(CIDBIntegrationTest):
     self.assertNotEqual(None, values['finish_time'])
     self.assertEqual(True, values['final'])
     self.assertEqual(constants.BUILDER_STATUS_PASSED, values['status'])
+
+    for category in constants.EXCEPTION_CATEGORY_ALL_CATEGORIES:
+      e = ValueError('The value was erroneous.')
+      bot_db.InsertFailure(build_stage_id, e, category)
 
 
 class DataSeries1Test(CIDBIntegrationTest):

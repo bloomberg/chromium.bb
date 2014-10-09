@@ -66,7 +66,7 @@ CREATE TABLE `buildStageTable` (
   KEY `build_id` (`build_id`),
   KEY `last_updated` (`last_updated`),
   CONSTRAINT `buildStageTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -103,7 +103,7 @@ CREATE TABLE `buildTable` (
   KEY `build_config_index` (`build_config`),
   KEY `last_updated_index` (`last_updated`),
   CONSTRAINT `buildTable_ibfk_1` FOREIGN KEY (`master_build_id`) REFERENCES `buildTable` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -143,6 +143,27 @@ CREATE TABLE `clActionTable` (
   KEY `timestamp_index` (`timestamp`),
   CONSTRAINT `clActionTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+DROP TABLE IF EXISTS `failureTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `failureTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `build_stage_id` int(11) NOT NULL,
+  `outer_failure_id` int(11) DEFAULT NULL,
+  `exception_type` varchar(240) DEFAULT NULL,
+  `exception_message` varchar(240) DEFAULT NULL,
+  `exception_category` enum('unknown','build','test','infra','lab') NOT NULL DEFAULT 'unknown',
+  `extra_info` varchar(240) DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `build_stage_id` (`build_stage_id`),
+  KEY `outer_failure_id` (`outer_failure_id`),
+  CONSTRAINT `failureTable_ibfk_1` FOREIGN KEY (`build_stage_id`) REFERENCES `buildStageTable` (`id`),
+  CONSTRAINT `failureTable_ibfk_2` FOREIGN KEY (`outer_failure_id`) REFERENCES `failureTable` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
