@@ -47,7 +47,11 @@ bool EsParserAdtsTest::Process(
 TEST_F(EsParserAdtsTest, NoInitialPts) {
   LoadStream("bear.adts");
   std::vector<Packet> pes_packets = GenerateFixedSizePesPacket(512);
-  EXPECT_FALSE(Process(pes_packets, false));
+  // Process should succeed even without timing info, we should just skip the
+  // audio frames without timing info, but still should be able to parse and
+  // play the stream after that.
+  EXPECT_TRUE(Process(pes_packets, false));
+  EXPECT_EQ(1u, config_count_);
   EXPECT_EQ(0u, buffer_count_);
 }
 

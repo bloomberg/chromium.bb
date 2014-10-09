@@ -68,5 +68,17 @@ TEST_F(EsParserMpeg1AudioTest, SinglePts) {
   EXPECT_EQ(12u, buffer_count_);
 }
 
+TEST_F(EsParserMpeg1AudioTest, NoTimingInfo) {
+  LoadStream("sfx.mp3");
+  std::vector<Packet> pes_packets = GenerateFixedSizePesPacket(512);
+
+  // Process should succeed even without timing info, we should just skip the
+  // audio frames without timing info, but still should be able to parse and
+  // play the stream after that.
+  EXPECT_TRUE(Process(pes_packets, false));
+  EXPECT_EQ(1u, config_count_);
+  EXPECT_EQ(0u, buffer_count_);
+}
+
 }  // namespace mp2t
 }  // namespace media
