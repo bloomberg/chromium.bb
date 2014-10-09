@@ -213,6 +213,11 @@ String Locale::validationMessageTooLongText(unsigned valueLength, int maxLength)
     return queryString(WebLocalizedString::ValidationTooLong, convertToLocalizedNumber(String::number(valueLength)), convertToLocalizedNumber(String::number(maxLength)));
 }
 
+String Locale::validationMessageTooShortText(unsigned valueLength, int minLength)
+{
+    return queryString(WebLocalizedString::ValidationTooShort, convertToLocalizedNumber(String::number(valueLength)), convertToLocalizedNumber(String::number(minLength)));
+}
+
 String Locale::weekFormatInLDML()
 {
     String templ = queryString(WebLocalizedString::WeekFormatTemplate);

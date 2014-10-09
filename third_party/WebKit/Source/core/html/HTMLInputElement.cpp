@@ -110,6 +110,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     : HTMLTextFormControlElement(inputTag, document, form)
     , m_size(defaultSize)
     , m_maxLength(maximumLength)
+    , m_minLength(0)
     , m_maxResults(-1)
     , m_isChecked(false)
     , m_reflectsCheckedAttribute(true)
@@ -210,6 +211,7 @@ bool HTMLInputElement::isValidValue(const String& value) const
         && !m_inputType->rangeUnderflow(value)
         && !m_inputType->rangeOverflow(value)
         && !tooLong(value, IgnoreDirtyFlag)
+        && !tooShort(value, IgnoreDirtyFlag)
         && !m_inputType->patternMismatch(value)
         && !m_inputType->valueMissing(value);
 }
@@ -217,6 +219,11 @@ bool HTMLInputElement::isValidValue(const String& value) const
 bool HTMLInputElement::tooLong() const
 {
     return willValidate() && tooLong(value(), CheckDirtyFlag);
+}
+
+bool HTMLInputElement::tooShort() const
+{
+    return willValidate() && tooShort(value(), CheckDirtyFlag);
 }
 
 bool HTMLInputElement::typeMismatch() const
@@ -242,6 +249,11 @@ bool HTMLInputElement::patternMismatch() const
 bool HTMLInputElement::tooLong(const String& value, NeedsToCheckDirtyFlag check) const
 {
     return m_inputType->tooLong(value, check);
+}
+
+bool HTMLInputElement::tooShort(const String& value, NeedsToCheckDirtyFlag check) const
+{
+    return m_inputType->tooShort(value, check);
 }
 
 bool HTMLInputElement::rangeUnderflow() const
@@ -671,9 +683,11 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             setChecked(!value.isNull());
             m_reflectsCheckedAttribute = true;
         }
-    } else if (name == maxlengthAttr)
+    } else if (name == maxlengthAttr) {
         parseMaxLengthAttribute(value);
-    else if (name == sizeAttr) {
+    } else if (name == minlengthAttr) {
+        parseMinLengthAttribute(value);
+    } else if (name == sizeAttr) {
         int oldSize = m_size;
         int valueAsInteger = value.toInt();
         m_size = valueAsInteger > 0 ? valueAsInteger : defaultSize;
@@ -1291,12 +1305,29 @@ int HTMLInputElement::maxLength() const
     return m_maxLength;
 }
 
+int HTMLInputElement::minLength() const
+{
+    return m_minLength;
+}
+
 void HTMLInputElement::setMaxLength(int maxLength, ExceptionState& exceptionState)
 {
     if (maxLength < 0)
         exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(maxLength) + ") is negative.");
+    else if (maxLength < m_minLength)
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMinimumBound("maxLength", maxLength, m_minLength));
     else
         setIntegralAttribute(maxlengthAttr, maxLength);
+}
+
+void HTMLInputElement::setMinLength(int minLength, ExceptionState& exceptionState)
+{
+    if (minLength < 0)
+        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(minLength) + ") is negative.");
+    else if (minLength > m_maxLength)
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("minLength", minLength, m_maxLength));
+    else
+        setIntegralAttribute(minlengthAttr, minLength);
 }
 
 bool HTMLInputElement::multiple() const
@@ -1594,6 +1625,18 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)
     if (oldMaxLength != maxLength)
         updateValueIfNeeded();
     setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(maxlengthAttr));
+    setNeedsValidityCheck();
+}
+
+void HTMLInputElement::parseMinLengthAttribute(const AtomicString& value)
+{
+    int minLength;
+    if (!parseHTMLInteger(value, minLength))
+        minLength = 0;
+    if (minLength < 0)
+        minLength = 0;
+    m_minLength = minLength;
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(minlengthAttr));
     setNeedsValidityCheck();
 }
 

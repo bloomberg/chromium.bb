@@ -37,6 +37,11 @@ int BaseTextInputType::maxLength() const
     return element().maxLength();
 }
 
+int BaseTextInputType::minLength() const
+{
+    return element().minLength();
+}
+
 bool BaseTextInputType::tooLong(const String& value, HTMLTextFormControlElement::NeedsToCheckDirtyFlag check) const
 {
     int max = element().maxLength();
@@ -49,6 +54,22 @@ bool BaseTextInputType::tooLong(const String& value, HTMLTextFormControlElement:
             return false;
     }
     return value.length() > static_cast<unsigned>(max);
+}
+
+bool BaseTextInputType::tooShort(const String& value, HTMLTextFormControlElement::NeedsToCheckDirtyFlag check) const
+{
+    int min = element().minLength();
+    if (min <= 0)
+        return false;
+    if (check == HTMLTextFormControlElement::CheckDirtyFlag) {
+        // Return false for the default value or a value set by a script even if
+        // it is shorter than minLength.
+        if (!element().hasDirtyValue() || !element().lastChangeWasUserEdit())
+            return false;
+    }
+    // An empty string is excluded from minlength check.
+    unsigned len = value.length();
+    return len > 0 && len < static_cast<unsigned>(min);
 }
 
 bool BaseTextInputType::patternMismatch(const String& value) const

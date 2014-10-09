@@ -109,6 +109,7 @@ public:
     virtual bool hasBadInput() const;
     virtual bool patternMismatch(const String&) const;
     virtual bool tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
+    virtual bool tooShort(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
     bool rangeUnderflow(const String&) const;
     bool rangeOverflow(const String&) const;
     bool isInRange(const String&) const;
@@ -166,6 +167,7 @@ public:
     virtual bool isSteppable() const;
     virtual bool shouldRespectHeightAndWidthAttributes();
     virtual int maxLength() const;
+    virtual int minLength() const;
     virtual bool supportsPlaceholder() const;
     virtual bool supportsReadOnly() const;
     virtual String defaultToolTip() const;

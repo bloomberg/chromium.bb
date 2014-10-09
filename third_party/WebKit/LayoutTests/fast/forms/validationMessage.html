@@ -128,6 +128,36 @@ document.execCommand("inserttext", false, "a\nbc");
 textarea.maxLength = 3;
 debug("textarea tooLong: " + textarea.validationMessage);
 
+debug("tooShort:");
+var inputWithMin = document.createElement("input");
+inputWithMin.minLength = 3;
+inputWithMin.value = "ab";
+document.body.appendChild(inputWithMin);
+inputWithMin.focus();
+document.execCommand("delete");
+debug("input tooShort: " + inputWithMin.validationMessage);
+// fancyX should be treated as 3 characters.
+// U+0305 COMBINING OVERLINE
+// U+0332 COMBINING LOW LINE
+var fancyX = "x\u0305\u0332";
+inputWithMin.minLength = 4;
+inputWithMin.value = fancyX + "X";
+inputWithMin.focus();
+inputWithMin.setSelectionRange(4, 4);
+document.execCommand("delete");
+debug("input tooShort: " + inputWithMin.validationMessage);
+// The following test might show English text + Arabic digits. It's expected and
+// it never happens in products.
+inputWithMin.lang = "ar-eg";
+debug("input tooShort: " + inputWithMin.validationMessage);
+
+var textarea = document.createElement("textarea");
+document.body.appendChild(textarea);
+textarea.focus();
+document.execCommand("inserttext", false, "a\n");
+textarea.minLength = 4;
+debug("textarea tooShort: " + textarea.validationMessage);
+
 // A button can't be valited and, thus, has a blank validationMessage
 var but = document.createElement("button");
 but.name = "button";

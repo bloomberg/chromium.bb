@@ -74,13 +74,14 @@ public:
     bool customError() const;
 
     // Override functions for patterMismatch, rangeOverflow, rangerUnderflow,
-    // stepMismatch, tooLong and valueMissing must call willValidate method.
+    // stepMismatch, tooLong, tooShort and valueMissing must call willValidate method.
     virtual bool hasBadInput() const;
     virtual bool patternMismatch() const;
     virtual bool rangeOverflow() const;
     virtual bool rangeUnderflow() const;
     virtual bool stepMismatch() const;
     virtual bool tooLong() const;
+    virtual bool tooShort() const;
     virtual bool typeMismatch() const;
     virtual bool valueMissing() const;
     virtual String validationMessage() const;

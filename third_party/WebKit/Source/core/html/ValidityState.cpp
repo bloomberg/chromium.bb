@@ -51,6 +51,11 @@ bool ValidityState::tooLong() const
     return m_control->tooLong();
 }
 
+bool ValidityState::tooShort() const
+{
+    return m_control->tooShort();
+}
+
 bool ValidityState::rangeUnderflow() const
 {
     return m_control->rangeUnderflow();

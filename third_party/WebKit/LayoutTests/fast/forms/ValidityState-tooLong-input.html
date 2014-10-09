@@ -48,11 +48,20 @@ input.value = 'abcde';
 shouldBeFalse('input.validity.tooLong');
 
 debug('');
-debug('Disabled');
-input.disabled = true;
-shouldBeFalse('input.validity.tooLong');
-input.disabled = false;
+debug('Disabling makes the control valid');
+input.focus();
+input.setSelectionRange(5, 5);  // Move the cursor at the end.
+document.execCommand('delete');
+shouldBeTrue('input.validity.tooLong');
+shouldBeFalse('input.disabled = true; input.validity.tooLong');
+shouldBeTrue('input.disabled = false; input.validity.tooLong');
 
+// FIXME: The grapheme test below doesn't do its job because initial value is
+// always valid. After making a modificaton to trigger validity check, one can
+// see that the test would fail, which possibly reveals a code issue.
+// https://code.google.com/p/chromium/issues/detail?id=421727
+// Once this is figured out, implement a similar test in
+// ValidityState-tooShort-input.html
 debug('');
 debug('Grapheme length is not greater than maxLength though character length is greater');
 // fancyX should be treated as 1 grapheme.
@@ -75,6 +84,46 @@ input.setSelectionRange(5, 5);
 document.execCommand('delete');
 shouldBeTrue('input.validity.tooLong');
 shouldBeFalse('input.type = "number"; input.validity.tooLong');
+input.type = "text";
+
+debug('');
+debug('minlength and maxlength together');
+input.maxLength = 3;
+input.minLength = 3;
+input.value = 'abcde';
+input.focus();
+input.setSelectionRange(5, 5);
+document.execCommand('delete');
+shouldBeTrue('input.validity.tooLong');
+shouldBeFalse('input.validity.tooShort');
+document.execCommand('delete');
+shouldBeFalse('input.validity.tooLong');
+shouldBeFalse('input.validity.tooShort');
+document.execCommand('delete');
+shouldBeFalse('input.validity.tooLong');
+shouldBeTrue('input.validity.tooShort');
+
+debug('');
+debug('minlength and maxlength clashing');
+input.setAttribute('maxlength', '2');
+input.setAttribute('minlength', '4');
+input.value = 'abcde';
+input.focus();
+input.setSelectionRange(5, 5);
+document.execCommand('delete');
+shouldBeTrue('input.validity.tooLong');
+shouldBeFalse('input.validity.tooShort');
+document.execCommand('delete');
+shouldBeTrue('input.validity.tooLong');
+shouldBeTrue('input.validity.tooShort');
+document.execCommand('delete');
+shouldBeFalse('input.validity.tooLong');
+shouldBeTrue('input.validity.tooShort');
+document.execCommand('delete');
+document.execCommand('delete');
+shouldBeFalse('input.validity.tooLong');
+shouldBeFalse('input.validity.tooShort');
+
 </script>
 </body>
 </html>

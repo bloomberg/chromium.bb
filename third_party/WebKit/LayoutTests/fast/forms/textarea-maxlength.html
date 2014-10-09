@@ -33,6 +33,11 @@ shouldBe('textArea.getAttribute("maxlength")', '"13"');
 
 shouldThrow('textArea.maxLength = -1', '"IndexSizeError: Failed to set the \'maxLength\' property on \'HTMLTextAreaElement\': The value provided (-1) is not positive or 0."');
 shouldBe('textArea.getAttribute("maxlength")', '"13"');  // Not changed
+textArea.minLength = 11;
+shouldThrow('textArea.maxLength = 10', '"IndexSizeError: Failed to set the \'maxLength\' property on \'HTMLTextAreaElement\': The maxLength provided (10) is less than the minimum bound (11)."');
+shouldBe('textArea.getAttribute("maxlength")', '"13"');  // Not changed
+shouldBe('textArea.maxLength = 11; textArea.getAttribute("maxlength")', '"11"');
+textArea.minLength = 0;  // Remove the minlength value to get it out of the way of subsequent tests
 
 textArea.maxLength = null;
 shouldBe('textArea.maxLength', '0');

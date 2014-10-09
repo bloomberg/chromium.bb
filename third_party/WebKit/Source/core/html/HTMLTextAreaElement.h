@@ -47,7 +47,9 @@ public:
     void setDefaultValue(const String&);
     int textLength() const { return value().length(); }
     int maxLength() const;
+    int minLength() const;
     void setMaxLength(int, ExceptionState&);
+    void setMinLength(int, ExceptionState&);
 
     String suggestedValue() const;
     void setSuggestedValue(const String&);
@@ -56,6 +58,7 @@ public:
     virtual String validationMessage() const override;
     virtual bool valueMissing() const override;
     virtual bool tooLong() const override;
+    virtual bool tooShort() const override;
     bool isValidValue(const String&) const;
 
     void setCols(int);
@@ -123,6 +126,7 @@ private:
     // If the String* argument is 0, apply this->value().
     bool valueMissing(const String*) const;
     bool tooLong(const String*, NeedsToCheckDirtyFlag) const;
+    bool tooShort(const String*, NeedsToCheckDirtyFlag) const;
 
     int m_rows;
     int m_cols;

@@ -62,6 +62,7 @@ public:
     virtual bool rangeOverflow() const override final;
     virtual bool stepMismatch() const override final;
     virtual bool tooLong() const override final;
+    virtual bool tooShort() const override final;
     virtual bool typeMismatch() const override final;
     virtual bool valueMissing() const override final;
     virtual String validationMessage() const override final;
@@ -169,7 +170,9 @@ public:
     KURL src() const;
 
     int maxLength() const;
+    int minLength() const;
     void setMaxLength(int, ExceptionState&);
+    void setMinLength(int, ExceptionState&);
 
     bool multiple() const;
 
@@ -316,6 +319,7 @@ private:
     virtual bool isOutOfRange() const override final;
 
     bool tooLong(const String&, NeedsToCheckDirtyFlag) const;
+    bool tooShort(const String&, NeedsToCheckDirtyFlag) const;
 
     virtual bool supportsPlaceholder() const override final;
     virtual void updatePlaceholderText() override final;
@@ -337,6 +341,7 @@ private:
     void setListAttributeTargetObserver(PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver>);
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
+    void parseMinLengthAttribute(const AtomicString&);
     void updateValueIfNeeded();
 
     // Returns null if this isn't associated with any radio button group.
@@ -354,6 +359,7 @@ private:
     String m_suggestedValue;
     int m_size;
     int m_maxLength;
+    int m_minLength;
     short m_maxResults;
     bool m_isChecked : 1;
     bool m_reflectsCheckedAttribute : 1;

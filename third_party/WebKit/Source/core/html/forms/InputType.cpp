@@ -239,6 +239,11 @@ bool InputType::tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckD
     return false;
 }
 
+bool InputType::tooShort(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const
+{
+    return false;
+}
+
 bool InputType::patternMismatch(const String&) const
 {
     return false;
@@ -369,6 +374,9 @@ String InputType::validationMessage() const
 
     if (element().tooLong())
         return locale().validationMessageTooLongText(value.length(), element().maxLength());
+
+    if (element().tooShort())
+        return locale().validationMessageTooShortText(value.length(), element().minLength());
 
     if (!isSteppable())
         return emptyString();
@@ -648,6 +656,11 @@ bool InputType::shouldRespectHeightAndWidthAttributes()
 int InputType::maxLength() const
 {
     return HTMLInputElement::maximumLength;
+}
+
+int InputType::minLength() const
+{
+    return 0;
 }
 
 bool InputType::supportsPlaceholder() const

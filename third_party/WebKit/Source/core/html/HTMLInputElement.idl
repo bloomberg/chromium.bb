@@ -46,6 +46,7 @@ interface HTMLInputElement : HTMLElement {
     readonly attribute HTMLElement list;
     [Reflect] attribute DOMString max;
     [RaisesException=Setter, CustomElementCallbacks] attribute long maxLength;
+    [RaisesException=Setter, CustomElementCallbacks] attribute long minLength;
     [Reflect] attribute DOMString min;
     [Reflect] attribute boolean multiple;
     [Reflect] attribute DOMString name;

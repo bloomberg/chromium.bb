@@ -50,11 +50,20 @@ textarea.value = 'abcde';
 shouldBeFalse('textarea.validity.tooLong');
 
 debug('');
-debug('Disabled');
-textarea.disabled = true;
-shouldBeFalse('textarea.validity.tooLong');
-textarea.disabled = false;
+debug('Disabling makes the control valid');
+textarea.focus();
+textarea.setSelectionRange(5, 5);  // Move the cursor at the end.
+document.execCommand('delete');
+shouldBeTrue('textarea.validity.tooLong');
+shouldBeFalse('textarea.disabled = true; textarea.validity.tooLong');
+shouldBeTrue('textarea.disabled = false; textarea.validity.tooLong');
 
+// FIXME: The grapheme test below doesn't do its job because initial value is
+// always valid. After making a modificaton to trigger validity check, one can
+// see that the test would fail, which possibly reveals a code issue.
+// https://code.google.com/p/chromium/issues/detail?id=421727
+// Once this is figured out, implement a similar test in
+// ValidityState-tooShort-textarea.html
 debug('');
 debug('Grapheme length is not greater than maxLength though character length is greater');
 // fancyX should be treated as 1 grapheme.
@@ -90,6 +99,45 @@ shouldBeFalse('textarea.validity.tooLong');
 parent.firstChild.innerHTML = 'abcdef';
 shouldBe('textarea.value', '"abcdef"');
 shouldBeFalse('textarea.validity.tooLong');
+
+debug('');
+debug('minlength and maxlength together');
+textarea.maxLength = 3;
+textarea.minLength = 3;
+textarea.value = 'abcde';
+textarea.focus();
+textarea.setSelectionRange(5, 5);
+document.execCommand('delete');
+shouldBeTrue('textarea.validity.tooLong');
+shouldBeFalse('textarea.validity.tooShort');
+document.execCommand('delete');
+shouldBeFalse('textarea.validity.tooLong');
+shouldBeFalse('textarea.validity.tooShort');
+document.execCommand('delete');
+shouldBeFalse('textarea.validity.tooLong');
+shouldBeTrue('textarea.validity.tooShort');
+
+debug('');
+debug('minlength and maxlength clashing');
+textarea.setAttribute('maxlength', '2');
+textarea.setAttribute('minlength', '4');
+textarea.value = 'abcde';
+textarea.focus();
+textarea.setSelectionRange(5, 5);
+document.execCommand('delete');
+shouldBeTrue('textarea.validity.tooLong');
+shouldBeFalse('textarea.validity.tooShort');
+document.execCommand('delete');
+shouldBeTrue('textarea.validity.tooLong');
+shouldBeTrue('textarea.validity.tooShort');
+document.execCommand('delete');
+shouldBeFalse('textarea.validity.tooLong');
+shouldBeTrue('textarea.validity.tooShort');
+document.execCommand('delete');
+document.execCommand('delete');
+shouldBeFalse('textarea.validity.tooLong');
+shouldBeFalse('textarea.validity.tooShort');
+
 </script>
 </body>
 </html>

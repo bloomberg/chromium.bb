@@ -31,7 +31,7 @@ for (var i = 0; i < controls.length; ++i) {
     var validity1, validity2;
     shouldBeTrue('validity1 = controls[i].validity; validity1 instanceof ValidityState');
     shouldBeTrue('validity2 = controls[i].validity; validity1 === validity2');
-    shouldBe('countAttr(controls[i].validity)', '10');
+    shouldBe('countAttr(controls[i].validity)', '11');
 }
 
 shouldThrow('new ValidityState()', '"TypeError: Illegal constructor"');

@@ -54,6 +54,7 @@ public:
     bool typeMismatch() const;
     bool patternMismatch() const;
     bool tooLong() const;
+    bool tooShort() const;
     bool rangeUnderflow() const;
     bool rangeOverflow() const;
     bool stepMismatch() const;

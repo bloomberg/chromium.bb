@@ -189,9 +189,11 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
         }
     } else if (name == accesskeyAttr) {
         // ignore for the moment
-    } else if (name == maxlengthAttr)
+    } else if (name == maxlengthAttr) {
         setNeedsValidityCheck();
-    else
+    } else if (name == minlengthAttr) {
+        setNeedsValidityCheck();
+    } else
         HTMLTextFormControlElement::parseAttribute(name, value);
 }
 
@@ -451,12 +453,33 @@ int HTMLTextAreaElement::maxLength() const
     return ok && value >= 0 ? value : -1;
 }
 
+int HTMLTextAreaElement::minLength() const
+{
+    bool ok;
+    int value = getAttribute(minlengthAttr).string().toInt(&ok);
+    return ok && value >= 0 ? value : -1;
+}
+
 void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionState& exceptionState)
 {
+    int min = minLength();
     if (newValue < 0)
         exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(newValue) + ") is not positive or 0.");
+    else if (min >= 0 && newValue < min)
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMinimumBound("maxLength", newValue, min));
     else
         setIntegralAttribute(maxlengthAttr, newValue);
+}
+
+void HTMLTextAreaElement::setMinLength(int newValue, ExceptionState& exceptionState)
+{
+    int max = maxLength();
+    if (newValue < 0)
+        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(newValue) + ") is not positive or 0.");
+    else if (max >= 0 && newValue > max)
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("minLength", newValue, max));
+    else
+        setIntegralAttribute(minlengthAttr, newValue);
 }
 
 String HTMLTextAreaElement::suggestedValue() const
@@ -490,6 +513,9 @@ String HTMLTextAreaElement::validationMessage() const
     if (tooLong())
         return locale().validationMessageTooLongText(computeLengthForSubmission(value()), maxLength());
 
+    if (tooShort())
+        return locale().validationMessageTooShortText(computeLengthForSubmission(value()), minLength());
+
     return String();
 }
 
@@ -510,6 +536,12 @@ bool HTMLTextAreaElement::tooLong() const
     return willValidate() && tooLong(0, CheckDirtyFlag);
 }
 
+bool HTMLTextAreaElement::tooShort() const
+{
+    // We should not call value() for performance.
+    return willValidate() && tooShort(0, CheckDirtyFlag);
+}
+
 bool HTMLTextAreaElement::tooLong(const String* value, NeedsToCheckDirtyFlag check) const
 {
     // Return false for the default value or value set by script even if it is
@@ -523,9 +555,24 @@ bool HTMLTextAreaElement::tooLong(const String* value, NeedsToCheckDirtyFlag che
     return computeLengthForSubmission(value ? *value : this->value()) > static_cast<unsigned>(max);
 }
 
+bool HTMLTextAreaElement::tooShort(const String* value, NeedsToCheckDirtyFlag check) const
+{
+    // Return false for the default value or value set by script even if it is
+    // shorter than minLength.
+    if (check == CheckDirtyFlag && !lastChangeWasUserEdit())
+        return false;
+
+    int min = minLength();
+    if (min <= 0)
+        return false;
+    // An empty string is excluded from minlength check.
+    unsigned len = computeLengthForSubmission(value ? *value : this->value());
+    return len > 0 && len < static_cast<unsigned>(min);
+}
+
 bool HTMLTextAreaElement::isValidValue(const String& candidate) const
 {
-    return !valueMissing(&candidate) && !tooLong(&candidate, IgnoreDirtyFlag);
+    return !valueMissing(&candidate) && !tooLong(&candidate, IgnoreDirtyFlag) && !tooShort(&candidate, IgnoreDirtyFlag);
 }
 
 void HTMLTextAreaElement::accessKeyAction(bool)

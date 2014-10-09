@@ -239,6 +239,11 @@ bool FormAssociatedElement::tooLong() const
     return false;
 }
 
+bool FormAssociatedElement::tooShort() const
+{
+    return false;
+}
+
 bool FormAssociatedElement::typeMismatch() const
 {
     return false;
@@ -247,7 +252,8 @@ bool FormAssociatedElement::typeMismatch() const
 bool FormAssociatedElement::valid() const
 {
     bool someError = typeMismatch() || stepMismatch() || rangeUnderflow() || rangeOverflow()
-        || tooLong() || patternMismatch() || valueMissing() || hasBadInput() || customError();
+        || tooLong() || tooShort() || patternMismatch() || valueMissing() || hasBadInput()
+        || customError();
     return !someError;
 }
 
