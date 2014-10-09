@@ -34,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -120,6 +121,8 @@ void ManageProfileHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "manageProfile", IDS_PROFILES_MANAGE_TITLE);
   RegisterTitle(localized_strings, "createProfile", IDS_PROFILES_CREATE_TITLE);
 
+  localized_strings->SetBoolean("newAvatarMenuEnabled",
+                                switches::IsNewAvatarMenu());
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
 
