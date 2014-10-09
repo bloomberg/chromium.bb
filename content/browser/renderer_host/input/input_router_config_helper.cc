@@ -32,8 +32,8 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
           ui::GestureConfiguration::fling_max_cancel_to_down_time_in_ms());
 
   config.touchscreen_tap_suppression_config.max_tap_gap_time =
-      base::TimeDelta::FromMilliseconds(static_cast<int>(
-          ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000));
+      base::TimeDelta::FromMilliseconds(
+          ui::GestureConfiguration::semi_long_press_time_in_ms());
 
   config.touchpad_tap_suppression_config.enabled = true;
   config.touchpad_tap_suppression_config.max_cancel_to_down_time =
@@ -41,8 +41,8 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
           ui::GestureConfiguration::fling_max_cancel_to_down_time_in_ms());
 
   config.touchpad_tap_suppression_config.max_tap_gap_time =
-      base::TimeDelta::FromMilliseconds(static_cast<int>(
-          ui::GestureConfiguration::fling_max_tap_gap_time_in_ms() * 1000));
+      base::TimeDelta::FromMilliseconds(
+          ui::GestureConfiguration::fling_max_tap_gap_time_in_ms());
 
   return config;
 }

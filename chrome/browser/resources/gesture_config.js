@@ -168,10 +168,9 @@ function GestureConfig() {
       units: 'milliseconds',
     },
     {
-      key: 'semi_long_press_time_in_seconds',
+      key: 'semi_long_press_time_in_ms',
       label: 'Semi Long Press Time',
-      units: 'seconds',
-      step: 0.1
+      units: 'milliseconds',
     },
     {
       key: 'max_separation_for_gesture_touches_in_pixels',

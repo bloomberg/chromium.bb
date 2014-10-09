@@ -760,8 +760,8 @@ extern const char kShowLogoutButtonInTray[];
 
 #if defined(USE_AURA)
 extern const char kMaxSeparationForGestureTouchesInPixels[];
-extern const char kSemiLongPressTimeInSeconds[];
-extern const char kTabScrubActivationDelayInMS[];
+extern const char kSemiLongPressTimeInMs[];
+extern const char kTabScrubActivationDelayInMs[];
 extern const char kFlingMaxCancelToDownTimeInMs[];
 extern const char kFlingMaxTapGapTimeInMs[];
 extern const char kOverscrollHorizontalThresholdComplete[];

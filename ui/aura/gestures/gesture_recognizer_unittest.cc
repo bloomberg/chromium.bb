@@ -498,8 +498,8 @@ class TimedEvents {
                         int time_step,
                         int num_steps,
                         GestureEventConsumeDelegate* delegate) {
-    int x = x_start;
-    int y = y_start;
+    float x = x_start;
+    float y = y_start;
 
     for (int i = 0; i < num_steps; i++) {
       x += dx;
@@ -636,7 +636,7 @@ class GestureRecognizerTest : public AuraTestBase,
   virtual void SetUp() override {
     AuraTestBase::SetUp();
     ui::GestureConfiguration::set_show_press_delay_in_ms(2);
-    ui::GestureConfiguration::set_long_press_time_in_seconds(0.003);
+    ui::GestureConfiguration::set_long_press_time_in_ms(3);
   }
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerTest);
@@ -939,7 +939,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   // that distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      sqrt(static_cast<double>(5 * 5 + 5 * 5)));
+      sqrt(5.f * 5 + 5 * 5));
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1010,7 +1010,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   // distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      sqrt(static_cast<double>(5 * 5 + 5 * 5)));
+      sqrt(5.f * 5 + 5 * 5));
 
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -1080,7 +1080,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
 // Check that the bounding box during a scroll event is correct.
 TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
   TimedEvents tes;
-  for (int radius = 1; radius <= 10; ++radius) {
+  for (float radius = 1; radius <= 10; ++radius) {
     ui::GestureConfiguration::set_default_radius(radius);
     scoped_ptr<GestureEventConsumeDelegate> delegate(
         new GestureEventConsumeDelegate());
@@ -1091,44 +1091,44 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
     scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
         delegate.get(), -1234, bounds, root_window()));
 
-    const int kPositionX = 101;
-    const int kPositionY = 201;
+    const float kPositionX = 101;
+    const float kPositionY = 201;
     delegate->Reset();
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                         gfx::Point(kPositionX, kPositionY),
+                         gfx::PointF(kPositionX, kPositionY),
                          kTouchId,
                          tes.Now());
     DispatchEventUsingWindowDispatcher(&press);
-    EXPECT_EQ(gfx::Rect(kPositionX - radius,
-                        kPositionY - radius,
-                        radius * 2,
-                        radius * 2).ToString(),
-              delegate->bounding_box().ToString());
+    EXPECT_EQ(gfx::RectF(kPositionX - radius,
+                         kPositionY - radius,
+                         radius * 2,
+                         radius * 2),
+              delegate->bounding_box());
 
     const int kScrollAmount = 50;
     tes.SendScrollEvents(event_processor(), kPositionX, kPositionY,
-        1, 1, kTouchId, 1, kScrollAmount, delegate.get());
+                         1, 1, kTouchId, 1, kScrollAmount, delegate.get());
     EXPECT_EQ(gfx::Point(1, 1).ToString(),
               delegate->scroll_begin_position().ToString());
-    EXPECT_EQ(gfx::Rect(kPositionX + kScrollAmount - radius,
-                        kPositionY + kScrollAmount - radius,
-                        radius * 2,
-                        radius * 2).ToString(),
-              delegate->bounding_box().ToString());
+    EXPECT_EQ(gfx::RectF(kPositionX + kScrollAmount - radius,
+                         kPositionY + kScrollAmount - radius,
+                         radius * 2,
+                         radius * 2),
+              delegate->bounding_box());
 
     // Release the touch. This should end the scroll.
     delegate->Reset();
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED,
-                               gfx::Point(kPositionX + kScrollAmount,
-                                          kPositionY + kScrollAmount),
+                               gfx::PointF(kPositionX + kScrollAmount,
+                                           kPositionY + kScrollAmount),
                                kTouchId, press.time_stamp() +
                                base::TimeDelta::FromMilliseconds(50));
     DispatchEventUsingWindowDispatcher(&release);
-    EXPECT_EQ(gfx::Rect(kPositionX + kScrollAmount - radius,
-                        kPositionY + kScrollAmount - radius,
-                        radius * 2,
-                        radius * 2).ToString(),
-              delegate->bounding_box().ToString());
+    EXPECT_EQ(gfx::RectF(kPositionX + kScrollAmount - radius,
+                         kPositionY + kScrollAmount - radius,
+                         radius * 2,
+                         radius * 2),
+              delegate->bounding_box());
   }
   ui::GestureConfiguration::set_default_radius(0);
 }
@@ -1366,8 +1366,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 
 // Check that appropriate touch events generate long tap events
 TEST_F(GestureRecognizerTest, GestureEventLongTap) {
-  ui::GestureConfiguration::set_max_touch_down_duration_in_seconds_for_click(
-      0.0025);
+  ui::GestureConfiguration::set_max_touch_down_duration_for_click_in_ms(3);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -1574,7 +1573,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   // distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      sqrt(static_cast<double>(5 * 5 + 5 * 5)));
+      sqrt(5.f * 5 + 5 * 5));
 
   // First, tap. Then, do a scroll using the same touch-id.
   scoped_ptr<GestureEventConsumeDelegate> delegate(
@@ -1831,9 +1830,13 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   // should generate both SCROLL_BEGIN and PINCH_BEGIN gestures.
   queued_delegate->Reset();
   delegate->Reset();
-  int x_move = ui::GestureConfiguration::max_touch_move_in_pixels_for_click();
   ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED, gfx::Point(203 + x_move, 303), kTouchId2, tes.Now());
+      ui::ET_TOUCH_MOVED,
+      gfx::PointF(
+          203 + ui::GestureConfiguration::max_touch_move_in_pixels_for_click(),
+          303),
+      kTouchId2,
+      tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());

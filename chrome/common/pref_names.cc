@@ -2204,14 +2204,12 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // Tuning settings for gestures.
 const char kMaxSeparationForGestureTouchesInPixels[] =
     "gesture.max_separation_for_gesture_touches_in_pixels";
-const char kSemiLongPressTimeInSeconds[] =
-    "gesture.semi_long_press_time_in_seconds";
-const char kTabScrubActivationDelayInMS[] =
+const char kSemiLongPressTimeInMs[] = "gesture.semi_long_press_time_in_ms";
+const char kTabScrubActivationDelayInMs[] =
     "gesture.tab_scrub_activation_delay_in_ms";
 const char kFlingMaxCancelToDownTimeInMs[] =
     "gesture.fling_max_cancel_to_down_time_in_ms";
-const char kFlingMaxTapGapTimeInMs[] =
-    "gesture.fling_max_tap_gap_time_in_ms";
+const char kFlingMaxTapGapTimeInMs[] = "gesture.fling_max_tap_gap_time_in_ms";
 const char kOverscrollHorizontalThresholdComplete[] =
     "overscroll.horizontal_threshold_complete";
 const char kOverscrollVerticalThresholdComplete[] =

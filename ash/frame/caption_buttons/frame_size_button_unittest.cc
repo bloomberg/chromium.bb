@@ -246,7 +246,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 
   // 3) Test with tap gestures.
-  const int touch_default_radius =
+  const float touch_default_radius =
       ui::GestureConfiguration::default_radius();
   ui::GestureConfiguration::set_default_radius(0);
   // Snap right.

@@ -18,11 +18,11 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
   GestureDetector::Config config;
 
   config.longpress_timeout = base::TimeDelta::FromMilliseconds(
-      GestureConfiguration::long_press_time_in_seconds() * 1000.);
+      GestureConfiguration::long_press_time_in_ms());
   config.showpress_timeout = base::TimeDelta::FromMilliseconds(
       GestureConfiguration::show_press_delay_in_ms());
   config.double_tap_timeout = base::TimeDelta::FromMilliseconds(
-      GestureConfiguration::semi_long_press_time_in_seconds() * 1000.);
+      GestureConfiguration::semi_long_press_time_in_ms());
   config.touch_slop =
       GestureConfiguration::max_touch_move_in_pixels_for_click();
   config.double_tap_slop =
@@ -38,25 +38,21 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
   config.two_finger_tap_max_separation =
       GestureConfiguration::max_distance_for_two_finger_tap_in_pixels();
   config.two_finger_tap_timeout = base::TimeDelta::FromMilliseconds(
-      GestureConfiguration::max_touch_down_duration_in_seconds_for_click() *
-      1000.);
+      GestureConfiguration::max_touch_down_duration_for_click_in_ms());
 
   return config;
 }
 
 ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
   ScaleGestureDetector::Config config;
-  double min_pinch_update_distance =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCompensateForUnstablePinchZoom)
-          ? GestureConfiguration::min_pinch_update_distance_in_pixels()
-          : 0;
-
   config.span_slop =
       GestureConfiguration::max_touch_move_in_pixels_for_click() * 2;
   config.min_scaling_touch_major = GestureConfiguration::default_radius() * 2;
   config.min_scaling_span = GestureConfiguration::min_scaling_span_in_pixels();
-  config.min_pinch_update_span_delta = min_pinch_update_distance;
+  config.min_pinch_update_span_delta =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCompensateForUnstablePinchZoom) ?
+      GestureConfiguration::min_pinch_update_distance_in_pixels() : 0;
   return config;
 }
 

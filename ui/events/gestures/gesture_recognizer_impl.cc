@@ -91,12 +91,12 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
     const gfx::PointF& location, int source_device_id) {
-  const int max_distance =
+  const float max_distance =
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels();
 
   gfx::PointF closest_point;
   int closest_touch_id = 0;
-  float closest_distance_squared = std::numeric_limits<float>::infinity();
+  double closest_distance_squared = std::numeric_limits<double>::infinity();
 
   std::map<GestureConsumer*, GestureProviderAura*>::iterator i;
   for (i = consumer_gesture_provider_.begin();
@@ -109,7 +109,7 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
       gfx::PointF point(pointer_state.GetX(j), pointer_state.GetY(j));
       // Relative distance is all we need here, so LengthSquared() is
       // appropriate, and cheaper than Length().
-      float distance_squared = (point - location).LengthSquared();
+      double distance_squared = (point - location).LengthSquared();
       if (distance_squared < closest_distance_squared) {
         closest_point = point;
         closest_touch_id = pointer_state.GetPointerId(j);

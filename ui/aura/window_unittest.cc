@@ -71,7 +71,7 @@ class WindowTest : public AuraTestBase {
   }
 
  private:
-  int max_separation_;
+  float max_separation_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTest);
 };

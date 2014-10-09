@@ -122,12 +122,11 @@ bool GestureProviderAura::IsConsideredDoubleTap(
     const GestureEventData& current_tap) const {
   if (current_tap.time - previous_tap.time >
       base::TimeDelta::FromMilliseconds(
-          ui::GestureConfiguration::max_seconds_between_double_click() *
-          1000)) {
+          ui::GestureConfiguration::max_time_between_double_click_in_ms())) {
     return false;
   }
 
-  double double_tap_slop_square =
+  float double_tap_slop_square =
       GestureConfiguration::max_distance_between_taps_for_double_tap();
   double_tap_slop_square *= double_tap_slop_square;
   const float delta_x = previous_tap.x - current_tap.x;

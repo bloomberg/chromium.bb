@@ -288,14 +288,14 @@ TEST_F(TouchEventQueueTest, Basic) {
 // Tests that touch-events with multiple points are queued properly.
 TEST_F(TouchEventQueueTest, BasicMultiTouch) {
   const size_t kPointerCount = 10;
-  for (size_t i = 0; i < kPointerCount; ++i)
+  for (float i = 0; i < kPointerCount; ++i)
     PressTouchPoint(i, i);
 
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(kPointerCount, queued_event_count());
 
-  for (size_t i = 0; i < kPointerCount; ++i)
+  for (int i = 0; i < static_cast<int>(kPointerCount); ++i)
     MoveTouchPoint(i, 1.f + i, 2.f + i);
 
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -303,7 +303,7 @@ TEST_F(TouchEventQueueTest, BasicMultiTouch) {
   // All moves should coalesce.
   EXPECT_EQ(kPointerCount + 1, queued_event_count());
 
-  for (size_t i = 0; i < kPointerCount; ++i)
+  for (int i = 0; i < static_cast<int>(kPointerCount); ++i)
     ReleaseTouchPoint(kPointerCount - 1 - i);
 
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -505,7 +505,7 @@ TEST_F(TouchEventQueueTest, Coalesce) {
 
   // Send a few touch-move events, followed by a touch-release event. All the
   // touch-move events should be coalesced into a single event.
-  for (int i = 5; i < 15; ++i)
+  for (float i = 5; i < 15; ++i)
     MoveTouchPoint(0, i, i);
 
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -545,7 +545,7 @@ TEST_F(TouchEventQueueTest, SentTouchEventDoesNotCoalesce) {
 
   // Send a few touch-move events, followed by a touch-release event. All the
   // touch-move events should be coalesced into a single event.
-  for (int i = 5; i < 15; ++i)
+  for (float i = 5; i < 15; ++i)
     MoveTouchPoint(0, i, i);
 
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1444,8 +1444,8 @@ TEST_F(TouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
 // Tests that TouchMove's are dropped if within the boundary-inclusive slop
 // suppression region for an unconsumed TouchStart.
 TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
-  const double kSlopLengthDips = 10.;
-  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  const float kSlopLengthDips = 10;
+  const float kHalfSlopLengthDips = kSlopLengthDips / 2;
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.
@@ -1487,10 +1487,10 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
 
   // As soon as a TouchMove exceeds the (Euclidean) distance, no more
   // TouchMove's should be suppressed.
-  const double kFortyFiveDegreeSlopLengthXY =
-      kSlopLengthDips * std::sqrt(2.) / 2.;
-  MoveTouchPoint(0, kFortyFiveDegreeSlopLengthXY + .2,
-                    kFortyFiveDegreeSlopLengthXY + .2);
+  const float kFortyFiveDegreeSlopLengthXY =
+      kSlopLengthDips * std::sqrt(2.f) / 2;
+  MoveTouchPoint(0, kFortyFiveDegreeSlopLengthXY + .2f,
+                    kFortyFiveDegreeSlopLengthXY + .2f);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
@@ -1515,7 +1515,7 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
   ASSERT_EQ(0U, queued_event_count());
 
   // The slop region is boundary-inclusive.
-  MoveTouchPoint(0, kSlopLengthDips - 1., 0);
+  MoveTouchPoint(0, kSlopLengthDips - 1, 0);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -1529,8 +1529,8 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
 // Tests that TouchMove's are not dropped within the slop suppression region if
 // the touchstart was consumed.
 TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
-  const double kSlopLengthDips = 10.;
-  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  const float kSlopLengthDips = 10;
+  const float kHalfSlopLengthDips = kSlopLengthDips / 2;
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.
@@ -1606,8 +1606,8 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
 // Tests that TouchMove's are not dropped if a secondary pointer is present
 // during any movement.
 TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
-  const double kSlopLengthDips = 10.;
-  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  const float kSlopLengthDips = 10;
+  const float kHalfSlopLengthDips = kSlopLengthDips / 2;
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.

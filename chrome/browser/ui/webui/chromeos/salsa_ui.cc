@@ -26,7 +26,7 @@ namespace {
 
 const char* kWhitelist[] = {
   prefs::kMaxSeparationForGestureTouchesInPixels,
-  prefs::kTabScrubActivationDelayInMS,
+  prefs::kTabScrubActivationDelayInMs,
   prefs::kOverscrollHorizontalThresholdComplete,
   prefs::kOverscrollVerticalThresholdComplete,
   prefs::kOverscrollMinimumThresholdStart,

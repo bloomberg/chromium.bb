@@ -37,21 +37,20 @@ void AuraTestBase::SetUp() {
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
   // testing.
-  ui::GestureConfiguration::set_long_press_time_in_seconds(1.0);
-  ui::GestureConfiguration::set_semi_long_press_time_in_seconds(0.4);
+  ui::GestureConfiguration::set_long_press_time_in_ms(1000);
+  ui::GestureConfiguration::set_semi_long_press_time_in_ms(400);
   ui::GestureConfiguration::set_show_press_delay_in_ms(5);
   ui::GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(300);
-  ui::GestureConfiguration::set_max_seconds_between_double_click(0.7);
+  ui::GestureConfiguration::set_max_time_between_double_click_in_ms(700);
   ui::GestureConfiguration::
       set_max_separation_for_gesture_touches_in_pixels(150);
-  ui::GestureConfiguration::
-      set_max_touch_down_duration_in_seconds_for_click(0.8);
+  ui::GestureConfiguration::set_max_touch_down_duration_for_click_in_ms(800);
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(5);
   ui::GestureConfiguration::set_max_distance_between_taps_for_double_tap(20);
   ui::GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(20);
   ui::GestureConfiguration::set_min_pinch_update_distance_in_pixels(5);
   ui::GestureConfiguration::set_default_radius(0);
-  ui::GestureConfiguration::set_fling_velocity_cap(15000.0f);
+  ui::GestureConfiguration::set_fling_velocity_cap(15000);
   ui::GestureConfiguration::set_min_swipe_speed(10);
 
   // The ContextFactory must exist before any Compositors are created.
