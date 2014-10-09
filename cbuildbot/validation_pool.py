@@ -1203,7 +1203,8 @@ class CalculateSuspects(object):
       # code-review=-2, these changes are the ONLY suspects of the
       # failed build.
       logging.warning('Detected that some changes have been blamed for '
-                      'the build failure. Only these CLs will be rejected')
+                      'the build failure. Only these CLs will be rejected: %s',
+                      GetChangesAsString(bad_changes))
       return set(bad_changes)
     elif lab_fail:
       logging.warning('Detected that the build failed purely due to HW '
@@ -1920,7 +1921,7 @@ class ValidationPool(object):
             'commit queue does not go into an infinite loop retrying '
             'patches.' % (e,)
         )
-        links = ', '.join('CL:%s' % x.gerrit_number_str for x in self.changes)
+        links = GetChangesAsString(self.changes)
         cros_build_lib.Error('%s\nAffected Patches are: %s', msg, links)
         errors = [InternalCQError(patch, msg) for patch in self.changes]
         self._HandleApplyFailure(errors)
@@ -2549,8 +2550,7 @@ class ValidationPool(object):
     max_suspects = 20
     other_suspects = suspects - set([change])
     if len(other_suspects) < max_suspects:
-      other_suspects_str = ', '.join(sorted(
-          'CL:%s' % x.gerrit_number_str for x in other_suspects))
+      other_suspects_str = GetChangesAsString(other_suspects)
     else:
       other_suspects_str = ('%d other changes. See the blamelist for more '
                             'details.' % (len(other_suspects),))
@@ -2908,3 +2908,12 @@ class PaladinMessage():
       logging.info('Would have sent %r to %s', body, path)
       return
     gob_util.FetchUrl(self.helper.host, path, reqtype='POST', body=body)
+
+
+def GetChangesAsString(changes):
+  """Gets a human readable string listing |changes| in CL:1234 form.
+
+  Args:
+    changes: A list of GerritPatch objects.
+  """
+  return ', '.join(sorted('CL:%s' % x.gerrit_number_str for x in changes))
