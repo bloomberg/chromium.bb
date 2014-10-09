@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.10",
+  "version": "9.11",
   "entries": [
     {
       "id": 1,
@@ -1147,6 +1147,23 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 103,
+      "description": "Intel GM965/GL960 crash often on Mac OS 10.6",
+      "cr_bugs": [421641],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "value": "10.6"
+        }
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x2a02"],
+      "features": [
+        "all"
       ]
     }
   ]
