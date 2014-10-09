@@ -46,14 +46,10 @@ void MidiDispatcher::cancelSysexPermissionRequest(
     const WebMIDIPermissionRequest& request) {
   for (Requests::iterator it(&requests_); !it.IsAtEnd(); it.Advance()) {
     WebMIDIPermissionRequest* value = it.GetCurrentValue();
-    if (value->equals(request)) {
-      base::string16 origin = request.securityOrigin().toString();
-      Send(new MidiHostMsg_CancelSysExPermissionRequest(
-          routing_id(), it.GetCurrentKey(), GURL(origin)));
-      // The request will be removed by OnSysExPermissionApproved once
-      // the blink MIDIAccessInitializer object is deleted.
-      break;
-    }
+    if (!value->equals(request))
+      continue;
+    requests_.Remove(it.GetCurrentKey());
+    break;
   }
 }
 

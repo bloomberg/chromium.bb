@@ -34,11 +34,6 @@ IPC_MESSAGE_ROUTED3(MidiHostMsg_RequestSysExPermission,
                     GURL /* origin */,
                     bool /* user_gesture */)
 
-// Renderer request to browser for canceling a previous permission request.
-IPC_MESSAGE_ROUTED2(MidiHostMsg_CancelSysExPermissionRequest,
-                     int /* bridge_id */,
-                     GURL /* GURL of the frame */)
-
 // Messages sent from the browser to the renderer.
 
 IPC_MESSAGE_ROUTED2(MidiMsg_SysExPermissionApproved,

@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -38,6 +39,21 @@ MidiDispatcherHost::MidiDispatcherHost(WebContents* web_contents)
 MidiDispatcherHost::~MidiDispatcherHost() {
 }
 
+void MidiDispatcherHost::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  CancelPermissionRequestsForFrame(render_frame_host);
+}
+
+void MidiDispatcherHost::DidNavigateAnyFrame(
+    RenderFrameHost* render_frame_host,
+    const LoadCommittedDetails& details,
+    const FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
+
+  CancelPermissionRequestsForFrame(render_frame_host);
+}
+
 bool MidiDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                            RenderFrameHost* render_frame_host) {
   bool handled = true;
@@ -45,8 +61,6 @@ bool MidiDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(MidiHostMsg_RequestSysExPermission,
                         OnRequestSysExPermission)
-    IPC_MESSAGE_HANDLER(MidiHostMsg_CancelSysExPermissionRequest,
-                        OnCancelSysExPermissionRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -75,17 +89,14 @@ void MidiDispatcherHost::OnRequestSysExPermission(
       &pending_permissions_.back().cancel);
 }
 
-void MidiDispatcherHost::OnCancelSysExPermissionRequest(
-    RenderFrameHost* render_frame_host,
-    int bridge_id,
-    const GURL& requesting_frame) {
+void MidiDispatcherHost::CancelPermissionRequestsForFrame(
+    RenderFrameHost* render_frame_host) {
   int render_process_id = render_frame_host->GetProcess()->GetID();
   int render_frame_id = render_frame_host->GetRoutingID();
 
   for (size_t i = 0; i < pending_permissions_.size(); ++i) {
     if (pending_permissions_[i].render_process_id == render_process_id &&
-        pending_permissions_[i].render_frame_id == render_frame_id &&
-        pending_permissions_[i].bridge_id == bridge_id) {
+        pending_permissions_[i].render_frame_id == render_frame_id) {
       if (!pending_permissions_[i].cancel.is_null())
         pending_permissions_[i].cancel.Run();
       pending_permissions_.erase(pending_permissions_.begin() + i);

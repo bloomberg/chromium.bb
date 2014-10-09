@@ -22,6 +22,10 @@ class MidiDispatcherHost : public WebContentsObserver {
   virtual ~MidiDispatcherHost();
 
   // WebContentsObserver implementation.
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  virtual void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                                   const LoadCommittedDetails& details,
+                                   const FrameNavigateParams& params) override;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host) override;
 
@@ -37,6 +41,7 @@ class MidiDispatcherHost : public WebContentsObserver {
                                  int render_frame_id,
                                  int bridge_id,
                                  bool is_allowed);
+  void CancelPermissionRequestsForFrame(RenderFrameHost* render_frame_host);
 
   struct PendingPermission {
     PendingPermission(int render_process_id,
