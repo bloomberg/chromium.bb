@@ -4003,9 +4003,6 @@
               # Else building libyuv gives clang's register allocator issues,
               # see llvm.org/PR15798 / crbug.com/233709
               '-momit-leaf-frame-pointer',
-              # Align the stack on 16-byte boundaries, http://crbug.com/418554.
-              '-mstack-alignment=16',
-              '-mstackrealign',
             ],
           }],
           ['clang==1 and "<(GENERATOR)"=="ninja"', {
