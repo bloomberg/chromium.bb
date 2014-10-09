@@ -295,6 +295,7 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
 
 // This list is mainly based on prefs/prefs_tab_helper.cc kFontDefaults.
 const wchar_t* kRestrictedFontSet[] = {
+  // These are the "Web Safe" fonts.
   L"times.ttf",     // IDS_STANDARD_FONT_FAMILY
   L"timesbd.ttf",   // IDS_STANDARD_FONT_FAMILY
   L"timesbi.ttf",   // IDS_STANDARD_FONT_FAMILY
@@ -325,6 +326,31 @@ const wchar_t* kRestrictedFontSet[] = {
   L"batang.ttc",    // IDS_SERIF_FONT_FAMILY_KOREAN
   L"simsun.ttc",    // IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN
   L"mingliu.ttc",   // IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN
+
+  // These are from the Blink fallback list.
+  L"david.ttf",     // USCRIPT_HEBREW
+  L"davidbd.ttf",   // USCRIPT_HEBREW
+  L"euphemia.ttf",  // USCRIPT_CANADIAN_ABORIGINAL
+  L"gautami.ttf",   // USCRIPT_TELUGU
+  L"gautamib.ttf",  // USCRIPT_TELUGU
+  L"latha.ttf",     // USCRIPT_TAMIL
+  L"lathab.ttf",    // USCRIPT_TAMIL
+  L"mangal.ttf",    // USCRIPT_DEVANAGARI
+  L"mangalb.ttf",   // USCRIPT_DEVANAGARI
+  L"monbaiti.ttf",  // USCRIPT_MONGOLIAN
+  L"mvboli.ttf",    // USCRIPT_THAANA
+  L"plantc.ttf",    // USCRIPT_CHEROKEE
+  L"raavi.ttf",     // USCRIPT_GURMUKHI
+  L"raavib.ttf",    // USCRIPT_GURMUKHI
+  L"shruti.ttf",    // USCRIPT_GUJARATI
+  L"shrutib.ttf",   // USCRIPT_GUJARATI
+  L"sylfaen.ttf",   // USCRIPT_GEORGIAN and USCRIPT_ARMENIAN
+  L"tahoma.ttf",    // USCRIPT_ARABIC,
+  L"tahomabd.ttf",  // USCRIPT_ARABIC,
+  L"tunga.ttf",     // USCRIPT_KANNADA
+  L"tungab.ttf",    // USCRIPT_KANNADA
+  L"vrinda.ttf",    // USCRIPT_BENGALI
+  L"vrindab.ttf",   // USCRIPT_BENGALI
 };
 
 bool FontCollectionLoader::LoadRestrictedFontList() {
