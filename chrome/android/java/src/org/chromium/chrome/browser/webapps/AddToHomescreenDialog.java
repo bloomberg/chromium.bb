@@ -47,7 +47,7 @@ public class AddToHomescreenDialog {
                     new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
+                    dialog.cancel();
                 }
             });
 
@@ -116,8 +116,8 @@ public class AddToHomescreenDialog {
                     public void run() {
                         shortcutHelper.addShortcut(input.getText().toString());
                         // No need to call tearDown() in that case,
-                        // |shortcutHelper| is expected to destroy itself after
-                        // that call.
+                        // |shortcutHelper| is expected to tear down itself
+                        // after that call.
                     }
                 }, 100);
                 // We are adding arbitrary delay here to try and yield for main activity to be
@@ -130,11 +130,13 @@ public class AddToHomescreenDialog {
                 // require complete redrawing including rendered page.
             }
         });
-        dialog.setButton(DialogInterface.BUTTON_NEGATIVE,
-                activity.getResources().getString(R.string.cancel),
-                new DialogInterface.OnClickListener() {
+
+        // The dialog is being cancel by clicking away or clicking the "cancel"
+        // button. |shortcutHelper| need to be tear down in that case to release
+        // all the objects, including the C++ ShortcutHelper.
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onCancel(DialogInterface dialog) {
                 shortcutHelper.tearDown();
             }
         });
