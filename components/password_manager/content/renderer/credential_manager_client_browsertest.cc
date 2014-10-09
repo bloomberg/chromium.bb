@@ -215,4 +215,22 @@ TEST_F(CredentialManagerClientTest, SendRequestCredential) {
   EXPECT_FALSE(callback_errored());
 }
 
+TEST_F(CredentialManagerClientTest, SendRequestCredentialEmpty) {
+  int request_id;
+  EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
+                                request_id));
+
+  scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
+  std::vector<GURL> federations;
+  client_->dispatchRequest(false, federations, callbacks.release());
+
+  EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
+                               request_id));
+
+  CredentialInfo info; // Send an empty credential in response.
+  client_->OnSendCredential(request_id, info);
+  EXPECT_TRUE(callback_succeeded());
+  EXPECT_FALSE(callback_errored());
+}
+
 }  // namespace password_manager

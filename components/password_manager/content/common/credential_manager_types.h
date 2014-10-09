@@ -27,7 +27,7 @@ namespace password_manager {
 const size_t kMaxFederations = 50u;
 
 enum CredentialType {
-  CREDENTIAL_TYPE_UNKNOWN = 0,
+  CREDENTIAL_TYPE_EMPTY = 0,
   CREDENTIAL_TYPE_LOCAL,
   CREDENTIAL_TYPE_FEDERATED,
   CREDENTIAL_TYPE_LAST = CREDENTIAL_TYPE_FEDERATED

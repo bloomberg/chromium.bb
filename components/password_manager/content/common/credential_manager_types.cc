@@ -12,7 +12,7 @@
 
 namespace password_manager {
 
-CredentialInfo::CredentialInfo() : type(CREDENTIAL_TYPE_UNKNOWN) {
+CredentialInfo::CredentialInfo() : type(CREDENTIAL_TYPE_EMPTY) {
 }
 
 CredentialInfo::CredentialInfo(const blink::WebCredential& credential)

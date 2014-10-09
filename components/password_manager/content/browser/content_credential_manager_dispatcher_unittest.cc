@@ -148,7 +148,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);

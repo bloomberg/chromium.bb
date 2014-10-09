@@ -111,22 +111,12 @@ void ContentCredentialManagerDispatcher::OnGetPasswordStoreResults(
   ScopedVector<autofill::PasswordForm> entries;
   entries.assign(results.begin(), results.end());
 
-  if (results.empty()) {
-    // TODO(mkwst): This should be a separate message from above in
-    // OnRequestCredential. Waiting on a Blink-side change to make that
-    // possible.
-    web_contents()->GetRenderViewHost()->Send(
-        new CredentialManagerMsg_RejectCredentialRequest(
-            web_contents()->GetRenderViewHost()->GetRoutingID(),
-            pending_request_id_));
-    return;
-  }
-
   // TODO(mkwst): This is a stub. We're just grabbing the first result and
   // piping it down into Blink. Really, we should be kicking off some sort
   // of UI full of magic moments and delight. Also, we should deal with
   // federated login types.
-  CredentialInfo info(*entries[0]);
+  CredentialInfo info = results.empty() ? CredentialInfo()
+                                        : CredentialInfo(*entries[0]);
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),
