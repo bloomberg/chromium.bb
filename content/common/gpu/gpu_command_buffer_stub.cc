@@ -1096,4 +1096,9 @@ uint64 GpuCommandBufferStub::GetMemoryUsage() const {
   return GetMemoryManager()->GetClientMemoryUsage(this);
 }
 
+void GpuCommandBufferStub::SwapBuffersCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, latency_info));
+}
+
 }  // namespace content

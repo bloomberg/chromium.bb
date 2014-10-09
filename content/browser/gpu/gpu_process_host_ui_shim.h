@@ -93,7 +93,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
   void OnVideoMemoryUsageStatsReceived(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
-  void OnFrameDrawn(const std::vector<ui::LatencyInfo>& latency_info);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

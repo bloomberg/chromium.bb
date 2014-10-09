@@ -47,6 +47,8 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetMemoryAllocation);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPointAck,
                         OnSignalSyncPointAck);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffersCompleted,
+                        OnSwapBuffersCompleted);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -190,6 +192,11 @@ void CommandBufferProxyImpl::SetLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
   for (size_t i = 0; i < latency_info.size(); i++)
     latency_info_.push_back(latency_info[i]);
+}
+
+void CommandBufferProxyImpl::SetSwapBuffersCompletionCallback(
+    const SwapBuffersCompletionCallback& callback) {
+  swap_buffers_completion_callback_ = callback;
 }
 
 void CommandBufferProxyImpl::WaitForTokenInRange(int32 start, int32 end) {
@@ -502,6 +509,18 @@ void CommandBufferProxyImpl::TryUpdateState() {
 gpu::CommandBufferSharedState* CommandBufferProxyImpl::shared_state() const {
   return reinterpret_cast<gpu::CommandBufferSharedState*>(
       shared_state_shm_->memory());
+}
+
+void CommandBufferProxyImpl::OnSwapBuffersCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  if (!swap_buffers_completion_callback_.is_null()) {
+    if (!ui::LatencyInfo::Verify(
+            latency_info, "CommandBufferProxyImpl::OnSwapBuffersCompleted")) {
+      swap_buffers_completion_callback_.Run(std::vector<ui::LatencyInfo>());
+      return;
+    }
+    swap_buffers_completion_callback_.Run(latency_info);
+  }
 }
 
 }  // namespace content

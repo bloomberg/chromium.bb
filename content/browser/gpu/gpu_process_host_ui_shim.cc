@@ -212,7 +212,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
                         OnVideoMemoryUsageStatsReceived);
-    IPC_MESSAGE_HANDLER(GpuHostMsg_FrameDrawn, OnFrameDrawn)
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -272,14 +271,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 #else
   NOTREACHED();
 #endif
-}
-
-void GpuProcessHostUIShim::OnFrameDrawn(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  if (!ui::LatencyInfo::Verify(latency_info,
-                               "GpuProcessHostUIShim::OnFrameDrawn"))
-    return;
-  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
 }
 
 void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(

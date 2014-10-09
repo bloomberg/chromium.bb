@@ -223,6 +223,8 @@ void OutputSurface::BindFramebuffer() {
 }
 
 void OutputSurface::SwapBuffers(CompositorFrame* frame) {
+  // TODO(sievers): Make OutputSurface::SwapBuffers() pure virtual.
+  // The implementation here is used for tests only.
   if (frame->software_frame_data) {
     PostSwapBuffersComplete();
     client_->DidSwapBuffers();

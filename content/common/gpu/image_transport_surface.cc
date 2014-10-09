@@ -120,9 +120,9 @@ void ImageTransportHelper::SendUpdateVSyncParameters(
                                                       interval));
 }
 
-void ImageTransportHelper::SendLatencyInfo(
+void ImageTransportHelper::SwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  manager_->Send(new GpuHostMsg_FrameDrawn(latency_info));
+  stub_->SwapBuffersCompleted(latency_info);
 }
 
 void ImageTransportHelper::SetScheduled(bool is_scheduled) {
@@ -245,7 +245,7 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   }
 
-  helper_->SendLatencyInfo(latency_info_);
+  helper_->SwapBuffersCompleted(latency_info_);
   latency_info_.clear();
   return result;
 }
@@ -259,7 +259,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   }
 
-  helper_->SendLatencyInfo(latency_info_);
+  helper_->SwapBuffersCompleted(latency_info_);
   latency_info_.clear();
   return result;
 }

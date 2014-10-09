@@ -127,7 +127,7 @@ class ImageTransportHelper
   void SendUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 
-  void SendLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
+  void SwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info);
 
   // Whether or not we should execute more commands.
   void SetScheduled(bool is_scheduled);
