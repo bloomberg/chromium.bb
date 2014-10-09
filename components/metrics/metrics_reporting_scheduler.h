@@ -51,6 +51,12 @@ class MetricsReportingScheduler {
   // where the server is having issues.
   void BackOffUploadInterval();
 
+  // Returns upload interval based on the system and experiment that the user is
+  // assigned to.
+  // TODO(gayane): Only for experimenting with upload interval for Android
+  // (bug: 17391128). Should be removed once the experiments are done.
+  base::TimeDelta GetStandardUploadInterval();
+
   // The MetricsService method to call when uploading should happen.
   const base::Closure upload_callback_;
 
