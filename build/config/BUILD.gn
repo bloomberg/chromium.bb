@@ -85,6 +85,9 @@ config("feature_flags") {
   if (use_aura) {
     defines += [ "USE_AURA=1" ]
   }
+  if (use_pango) {
+    defines += [ "USE_PANGO=1" ]
+  }
   if (use_cairo) {
     defines += [ "USE_CAIRO=1" ]
   }

@@ -853,7 +853,7 @@ source_set("test_support") {
       "chromeos/system/fake_input_device_settings.h",
     ]
     configs += [ "//build/config/linux:dbus" ]
-    #deps += [ "//chromeos:test_support" ]  TODO(GYP)
+    deps += [ "//chromeos:test_support" ]
   }
 
   if (enable_configuration_policy) {

@@ -892,10 +892,10 @@ test("ui_unittests") {
       "x/selection_requestor_unittest.cc",
     ]
     deps += [
+      "//chromeos",
       "//ui/aura:test_support",
       "//ui/events:gesture_detection",
       "//ui/chromeos:ui_chromeos",
-      #'../../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
     ]
   }
 }

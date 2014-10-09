@@ -35,8 +35,8 @@ static_library("nfc") {
 
   if (is_chromeos) {
     deps += [
+      "//chromeos",
       "//dbus",
-      #'../../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
     ]
   }
 }

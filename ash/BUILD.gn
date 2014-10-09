@@ -81,9 +81,8 @@ component("ash") {
       "//device/bluetooth",
       "//ui/display",
       "//ui/display/util",
-      #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
-      # Ash #includes power_supply_properties.pb.h directly.
-      #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
+      "//chromeos",
+      "//chromeos:power_manager_proto",
       "//ui/chromeos/resources",
       "//ui/chromeos/strings",
       "//ui/chromeos:ui_chromeos",
@@ -305,8 +304,8 @@ test("ash_unittests") {
       "//ui/display",
       "//ui/display:test_util",
       "//ui/display/types",
-      #'../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',  TODO(GYP)
-      #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
+      "//chromeos:power_manager_proto",
+      "//chromeos:test_support_without_gmock",
     ]
   } else {
     sources -= [

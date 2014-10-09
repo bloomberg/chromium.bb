@@ -322,8 +322,8 @@ static_library("content_shell_lib") {
 
   if (is_chromeos) {
     deps += [
+      "//chromeos",
       "//ui/wm:test_support",
-      #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
     ]
   }
 
