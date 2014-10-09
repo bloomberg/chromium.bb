@@ -17,6 +17,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   FakeOutputSurfaceClient()
       : output_surface_(NULL),
         begin_frame_count_(0),
+        swap_count_(0),
         deferred_initialize_called_(false),
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
@@ -24,6 +25,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   explicit FakeOutputSurfaceClient(OutputSurface* output_surface)
       : output_surface_(output_surface),
         begin_frame_count_(0),
+        swap_count_(0),
         deferred_initialize_called_(false),
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
@@ -34,7 +36,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
                                      base::TimeDelta interval) override {}
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
   virtual void BeginFrame(const BeginFrameArgs& args) override;
-  virtual void DidSwapBuffers() override {}
+  virtual void DidSwapBuffers() override;
   virtual void DidSwapBuffersComplete() override {}
   virtual void ReclaimResources(const CompositorFrameAck* ack) override {}
   virtual void DidLoseOutputSurface() override;
@@ -49,6 +51,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void SetTreeActivationCallback(const base::Closure&) override {}
 
   int begin_frame_count() { return begin_frame_count_; }
+  int swap_count() { return swap_count_; }
 
   bool deferred_initialize_called() {
     return deferred_initialize_called_;
@@ -63,6 +66,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
  private:
   OutputSurface* output_surface_;
   int begin_frame_count_;
+  int swap_count_;
   bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;
   ManagedMemoryPolicy memory_policy_;

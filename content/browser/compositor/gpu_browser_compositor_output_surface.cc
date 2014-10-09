@@ -48,4 +48,18 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
   OutputSurface::SwapBuffers(frame);
 }
 
+void GpuBrowserCompositorOutputSurface::OnSwapBuffersComplete() {
+  // On Mac, delay acknowledging the swap to the output surface client until
+  // it has been drawn.
+#if !defined(OS_MACOSX)
+  cc::OutputSurface::OnSwapBuffersComplete();
+#endif
+}
+
+#if defined(OS_MACOSX)
+void GpuBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
+  cc::OutputSurface::OnSwapBuffersComplete();
+}
+#endif
+
 }  // namespace content

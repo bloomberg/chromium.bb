@@ -36,6 +36,10 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
  private:
   virtual void SwapBuffers(cc::CompositorFrame* frame) override;
 
+#if defined(OS_MACOSX)
+  virtual void OnSurfaceDisplayed() override;
+#endif
+
   // On the software path we need to explicitly call the proxy to update the
   // VSync parameters.
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;

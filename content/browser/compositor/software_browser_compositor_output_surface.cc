@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/compositor/browser_compositor_output_surface_proxy.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -51,6 +52,15 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
                    output_surface_proxy_,
                    surface_id_));
   }
+  PostSwapBuffersComplete();
+  client_->DidSwapBuffers();
 }
+
+#if defined(OS_MACOSX)
+void SoftwareBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
+  // See GpuBrowserCompositorOutputSurface for when and how this is used.
+  NOTREACHED() << "Not expected for software surfaces.";
+}
+#endif
 
 }  // namespace content

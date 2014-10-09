@@ -20,6 +20,10 @@ void FakeOutputSurfaceClient::BeginFrame(const BeginFrameArgs& args) {
   begin_frame_count_++;
 }
 
+void FakeOutputSurfaceClient::DidSwapBuffers() {
+  swap_count_++;
+}
+
 void FakeOutputSurfaceClient::DidLoseOutputSurface() {
   did_lose_output_surface_called_ = true;
 }

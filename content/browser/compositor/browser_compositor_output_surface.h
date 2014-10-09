@@ -29,7 +29,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // cc::OutputSurface implementation.
   virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
-  virtual void OnSwapBuffersComplete() override;
 
   // ui::CompositorOutputSurface::Observer implementation.
   virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -41,7 +40,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   void SetReflector(ReflectorImpl* reflector);
 
 #if defined(OS_MACOSX)
-  void OnSurfaceDisplayed();
+  virtual void OnSurfaceDisplayed() = 0;
 #endif
 
  protected:
