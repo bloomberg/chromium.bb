@@ -89,7 +89,12 @@ void ContentCredentialManagerDispatcher::OnRequestCredential(
   if (pending_request_id_ || !store) {
     web_contents()->GetRenderViewHost()->Send(
         new CredentialManagerMsg_RejectCredentialRequest(
-            web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
+            web_contents()->GetRenderViewHost()->GetRoutingID(),
+            request_id,
+            pending_request_id_
+                ? blink::WebCredentialManagerError::ErrorTypePendingRequest
+                : blink::WebCredentialManagerError::
+                      ErrorTypePasswordStoreUnavailable));
     return;
   }
 

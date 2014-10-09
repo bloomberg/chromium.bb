@@ -152,6 +152,9 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
+  CredentialManagerMsg_SendCredential::Param param;
+  CredentialManagerMsg_SendCredential::Read(message, &param);
+  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, param.b.type);
   process()->sink().ClearMessages();
 }
 
@@ -184,6 +187,11 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
+  CredentialManagerMsg_RejectCredentialRequest::Param reject_param;
+  CredentialManagerMsg_RejectCredentialRequest::Read(message, &reject_param);
+  EXPECT_EQ(blink::WebCredentialManagerError::ErrorTypePendingRequest,
+            reject_param.b);
+
   process()->sink().ClearMessages();
 
   // Execute the PasswordStore asynchronousness.
@@ -193,6 +201,10 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   kMsgID = CredentialManagerMsg_SendCredential::ID;
   message = process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
+  CredentialManagerMsg_SendCredential::Param send_param;
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+  CredentialManagerMsg_SendCredential::Read(message, &send_param);
+  EXPECT_NE(CREDENTIAL_TYPE_EMPTY, send_param.b.type);
   process()->sink().ClearMessages();
 }
 

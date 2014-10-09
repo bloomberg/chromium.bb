@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
+#include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {
@@ -59,7 +60,9 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   virtual void OnAcknowledgeSignedOut(int request_id);
   virtual void OnSendCredential(int request_id,
                                 const CredentialInfo& credential_info);
-  virtual void OnRejectCredentialRequest(int request_id);
+  virtual void OnRejectCredentialRequest(
+      int request_id,
+      blink::WebCredentialManagerError::ErrorType error_type);
 
   // blink::WebCredentialManager:
   virtual void dispatchFailedSignIn(

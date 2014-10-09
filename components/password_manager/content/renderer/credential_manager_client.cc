@@ -98,12 +98,14 @@ void CredentialManagerClient::OnSendCredential(int request_id,
   request_callbacks_.Remove(request_id);
 }
 
-void CredentialManagerClient::OnRejectCredentialRequest(int request_id) {
+void CredentialManagerClient::OnRejectCredentialRequest(
+    int request_id,
+    blink::WebCredentialManagerError::ErrorType error_type) {
   RequestCallbacks* callbacks = request_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
-  // We don't expose an internal failure to the page directly; model it as
-  // though no credentials were available.
-  callbacks->onSuccess(nullptr);
+  scoped_ptr<blink::WebCredentialManagerError> error(
+      new blink::WebCredentialManagerError(error_type));
+  callbacks->onError(error.get());
   request_callbacks_.Remove(request_id);
 }
 
