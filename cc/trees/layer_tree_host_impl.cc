@@ -263,7 +263,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
       shared_bitmap_manager_(manager),
-      id_(id) {
+      id_(id),
+      requires_high_res_to_draw_(false) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
   animation_registrar_->set_supports_scroll_animations(
@@ -856,7 +857,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     if (append_quads_data.num_incomplete_tiles ||
         append_quads_data.num_missing_tiles) {
       frame->contains_incomplete_tile = true;
-      if (active_tree()->RequiresHighResToDraw())
+      if (RequiresHighResToDraw())
         draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
     }
 
@@ -1611,7 +1612,7 @@ void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
   // We have released tilings for both active and pending tree.
   // We would not have any content to draw until the pending tree is activated.
   // Prevent the active tree from drawing until activation.
-  active_tree_->SetRequiresHighResToDraw();
+  SetRequiresHighResToDraw();
 }
 
 const RendererCapabilitiesImpl&
@@ -1620,7 +1621,7 @@ LayerTreeHostImpl::GetRendererCapabilities() const {
 }
 
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
-  active_tree()->ResetRequiresHighResToDraw();
+  ResetRequiresHighResToDraw();
   if (frame.has_no_damage) {
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     return false;
@@ -1837,7 +1838,7 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   // If we just became visible, we have to ensure that we draw high res tiles,
   // to prevent checkerboard/low res flashes.
   if (visible_)
-    active_tree()->SetRequiresHighResToDraw();
+    SetRequiresHighResToDraw();
   else
     EvictAllUIResources();
 
@@ -2098,7 +2099,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // There will not be anything to draw here, so set high res
   // to avoid checkerboards, typically when we are recovering
   // from lost context.
-  active_tree_->SetRequiresHighResToDraw();
+  SetRequiresHighResToDraw();
 
   return true;
 }

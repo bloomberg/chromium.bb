@@ -1340,7 +1340,7 @@ void ThreadProxy::RenewTreePriority() {
     // Once we enter NEW_CONTENTS_TAKES_PRIORITY mode, visible tiles on active
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
     // high res tiles will be required to activate pending tree.
-    impl().layer_tree_host_impl->active_tree()->SetRequiresHighResToDraw();
+    impl().layer_tree_host_impl->SetRequiresHighResToDraw();
     priority = NEW_CONTENT_TAKES_PRIORITY;
   }
 

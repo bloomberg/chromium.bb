@@ -103,6 +103,7 @@ class CC_EXPORT LayerTreeImpl {
   bool use_gpu_rasterization() const;
   bool create_low_res_tiling() const;
   BlockingTaskRunner* BlockingMainThreadTaskRunner() const;
+  bool RequiresHighResToDraw() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
@@ -231,10 +232,6 @@ class CC_EXPORT LayerTreeImpl {
   bool ContentsTexturesPurged() const;
   void SetContentsTexturesPurged();
   void ResetContentsTexturesPurged();
-
-  void SetRequiresHighResToDraw();
-  void ResetRequiresHighResToDraw();
-  bool RequiresHighResToDraw() const;
 
   // Set on the active tree when the viewport size recently changed
   // and the active tree's size is now out of date.
@@ -371,7 +368,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplList render_surface_layer_list_;
 
   bool contents_textures_purged_;
-  bool requires_high_res_to_draw_;
   bool viewport_size_invalid_;
   bool needs_update_draw_properties_;
 

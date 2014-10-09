@@ -881,7 +881,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     // If this layer and its twin have different transforms, then don't compare
     // them and only allow activating to high res tiles, since tiles on each
     // layer will be in different places on screen.
-    if (twin_layer_->layer_tree_impl()->RequiresHighResToDraw() ||
+    if (layer_tree_impl()->RequiresHighResToDraw() ||
         bounds() != twin_layer_->bounds() ||
         draw_properties().screen_space_transform !=
             twin_layer_->draw_properties().screen_space_transform) {

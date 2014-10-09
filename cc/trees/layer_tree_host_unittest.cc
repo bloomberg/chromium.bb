@@ -4719,7 +4719,7 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     // mode. Active tree should require high-res to draw after entering this
     // mode to ensure that high-res tiles are also required for a pending tree
     // to be activated.
-    EXPECT_TRUE(host_impl->active_tree()->RequiresHighResToDraw());
+    EXPECT_TRUE(host_impl->RequiresHighResToDraw());
   }
 
   virtual void DidCommit() override {
@@ -5052,7 +5052,7 @@ class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
     if (!visible) {
       PostSetVisibleToMainThread(true);
     } else {
-      EXPECT_TRUE(host_impl->active_tree()->RequiresHighResToDraw());
+      EXPECT_TRUE(host_impl->RequiresHighResToDraw());
       EndTest();
     }
   }

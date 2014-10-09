@@ -481,6 +481,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetTopControlsLayoutHeight(float height);
 
+  void SetRequiresHighResToDraw() { requires_high_res_to_draw_ = true; }
+  void ResetRequiresHighResToDraw() { requires_high_res_to_draw_ = false; }
+  bool RequiresHighResToDraw() const { return requires_high_res_to_draw_; }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -702,6 +706,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::vector<PictureLayerImpl*> picture_layers_;
   std::vector<PictureLayerImpl::Pair> picture_layer_pairs_;
+
+  bool requires_high_res_to_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

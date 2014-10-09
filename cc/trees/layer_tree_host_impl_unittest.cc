@@ -2152,7 +2152,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenHighResRequired) {
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  host_impl_->active_tree()->SetRequiresHighResToDraw();
+  host_impl_->SetRequiresHighResToDraw();
   LayerTreeHostImpl::FrameData frame2;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
   host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
@@ -2182,7 +2182,7 @@ TEST_F(LayerTreeHostImplTest,
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  host_impl_->active_tree()->SetRequiresHighResToDraw();
+  host_impl_->SetRequiresHighResToDraw();
   LayerTreeHostImpl::FrameData frame2;
   EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
             host_impl_->PrepareToDraw(&frame2));
@@ -2213,7 +2213,7 @@ TEST_F(LayerTreeHostImplTest,
                                            had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
-  host_impl_->active_tree()->SetRequiresHighResToDraw();
+  host_impl_->SetRequiresHighResToDraw();
   LayerTreeHostImpl::FrameData frame2;
   EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
             host_impl_->PrepareToDraw(&frame2));
@@ -6040,22 +6040,22 @@ TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
   ASSERT_TRUE(host_impl_->active_tree());
 
   // RequiresHighResToDraw is set when new output surface is used.
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
-  host_impl_->active_tree()->ResetRequiresHighResToDraw();
+  host_impl_->ResetRequiresHighResToDraw();
 
   host_impl_->SetVisible(false);
-  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetVisible(true);
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetVisible(false);
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
-  host_impl_->active_tree()->ResetRequiresHighResToDraw();
+  host_impl_->ResetRequiresHighResToDraw();
 
-  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetVisible(true);
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 }
 
 TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
@@ -6063,22 +6063,22 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 
   // RequiresHighResToDraw is set when new output surface is used.
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
-  host_impl_->active_tree()->ResetRequiresHighResToDraw();
+  host_impl_->ResetRequiresHighResToDraw();
 
   host_impl_->SetUseGpuRasterization(false);
-  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetUseGpuRasterization(true);
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetUseGpuRasterization(false);
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
-  host_impl_->active_tree()->ResetRequiresHighResToDraw();
+  host_impl_->ResetRequiresHighResToDraw();
 
-  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetUseGpuRasterization(true);
-  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 }
 
 class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {

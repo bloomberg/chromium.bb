@@ -1753,7 +1753,7 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
 
   // When high res are required, even if the active tree is not ready,
   // the high res tiles must be ready.
-  host_impl_.active_tree()->SetRequiresHighResToDraw();
+  host_impl_.SetRequiresHighResToDraw();
   pending_layer_->MarkVisibleResourcesAsRequired();
   AssertAllTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
