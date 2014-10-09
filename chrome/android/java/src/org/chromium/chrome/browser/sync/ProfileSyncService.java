@@ -236,6 +236,14 @@ public class ProfileSyncService {
         return nativeHasExplicitPassphraseTime(mNativeProfileSyncServiceAndroid);
     }
 
+    /**
+     * Returns the current explicit passphrase time in milliseconds since epoch.
+     */
+    public long getExplicitPassphraseTime() {
+        assert isSyncInitialized();
+        return nativeGetExplicitPassphraseTime(mNativeProfileSyncServiceAndroid);
+    }
+
     public String getSyncEnterGooglePassphraseBodyWithDateText() {
         assert isSyncInitialized();
         return nativeGetSyncEnterGooglePassphraseBodyWithDateText(mNativeProfileSyncServiceAndroid);
@@ -585,6 +593,7 @@ public class ProfileSyncService {
     private native boolean nativeIsCryptographerReady(long nativeProfileSyncServiceAndroid);
     private native int nativeGetPassphraseType(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasExplicitPassphraseTime(long nativeProfileSyncServiceAndroid);
+    private native long nativeGetExplicitPassphraseTime(long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterGooglePassphraseBodyWithDateText(
             long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyWithDateText(

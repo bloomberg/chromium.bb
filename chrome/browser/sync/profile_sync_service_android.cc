@@ -257,6 +257,13 @@ jboolean ProfileSyncServiceAndroid::HasExplicitPassphraseTime(
   return !passphrase_time.is_null();
 }
 
+jlong ProfileSyncServiceAndroid::GetExplicitPassphraseTime(
+        JNIEnv* env, jobject) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
+  return passphrase_time.ToJavaTime();
+}
+
 ScopedJavaLocalRef<jstring>
     ProfileSyncServiceAndroid::GetSyncEnterGooglePassphraseBodyWithDateText(
         JNIEnv* env, jobject) {

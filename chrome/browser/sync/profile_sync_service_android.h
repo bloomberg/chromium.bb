@@ -112,6 +112,9 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Returns true if the current explicit passphrase time is defined.
   jboolean HasExplicitPassphraseTime(JNIEnv* env, jobject);
 
+  // Returns the current explicit passphrase time.
+  jlong GetExplicitPassphraseTime(JNIEnv* env, jobject);
+
   base::android::ScopedJavaLocalRef<jstring>
       GetSyncEnterGooglePassphraseBodyWithDateText(
           JNIEnv* env, jobject);
