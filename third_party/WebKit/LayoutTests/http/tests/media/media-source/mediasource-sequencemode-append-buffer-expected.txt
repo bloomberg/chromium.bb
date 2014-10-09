@@ -2,4 +2,9 @@
 PASS Test sequence AppendMode appendBuffer(first media segment) 
 PASS Test sequence AppendMode appendBuffer(second media segment) 
 PASS Test sequence AppendMode appendBuffer(second media segment, then first media segment) 
+PASS Test sequence AppendMode appendBuffer back-to-back(first media segment, then second media segment) 
+PASS Test sequence AppendMode appendBuffer after setting TSO > 0 
+PASS Test sequence AppendMode appendBuffer with large gap between segments. 
+PASS Test sequence AppendMode appendBuffer fully before the appendwindow. 
+PASS Test sequence AppendMode appendBuffer fully after the appendwindow. 
 
