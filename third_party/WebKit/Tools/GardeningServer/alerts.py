@@ -10,8 +10,6 @@ import webapp2
 import zlib
 
 from google.appengine.api import memcache
-from google.appengine.api import users
-from google.appengine.datastore import datastore_query
 from google.appengine.ext import ndb
 
 LOGGER = logging.getLogger(__name__)
@@ -26,13 +24,12 @@ class DateTimeEncoder(json.JSONEncoder):
 
 
 class AlertsJSON(ndb.Model):
-    type = ndb.StringProperty()
     json = ndb.BlobProperty(compressed=True)
     date = ndb.DateTimeProperty(auto_now_add=True)
 
 
 class AlertsHandler(webapp2.RequestHandler):
-    ALERTS_TYPE = 'alerts'
+    MEMCACHE_ALERTS_KEY = 'alerts'
 
     # Has no 'response' member.
     # pylint: disable=E1101
@@ -58,11 +55,10 @@ class AlertsHandler(webapp2.RequestHandler):
         self.send_json_data(uncompressed)
 
     def get(self):
-        self.get_from_memcache(AlertsHandler.ALERTS_TYPE)
+        self.get_from_memcache(AlertsHandler.MEMCACHE_ALERTS_KEY)
 
-    def post_to_history(self, alerts_type, alerts):
-        last_query = AlertsJSON.query().filter(AlertsJSON.type == alerts_type)
-        last_entry = last_query.order(-AlertsJSON.date).get()
+    def save_alerts_to_history(self, alerts):
+        last_entry = AlertsJSON.query().order(-AlertsJSON.date).get()
         last_alerts = json.loads(last_entry.json) if last_entry else {}
 
         # Only changes to the fields with 'alerts' in the name should cause a
@@ -75,9 +71,7 @@ class AlertsHandler(webapp2.RequestHandler):
             return filtered_json
 
         if alert_fields(last_alerts) != alert_fields(alerts):
-            new_entry = AlertsJSON(
-                json=self.generate_json_dump(alerts),
-                type=alerts_type)
+            new_entry = AlertsJSON(json=self.generate_json_dump(alerts))
             new_entry.put()
 
     # Has no 'response' member.
@@ -101,57 +95,16 @@ class AlertsHandler(webapp2.RequestHandler):
 
         return alerts
 
-    def update_alerts(self, alerts_type):
+    def update_alerts(self, memcache_key):
         alerts = self.parse_alerts(self.request.get('content'))
         if alerts:
-            self.post_to_memcache(alerts_type, alerts)
-            self.post_to_history(alerts_type, alerts)
+            self.post_to_memcache(memcache_key, alerts)
+            self.save_alerts_to_history(alerts)
 
     def post(self):
-        self.update_alerts(AlertsHandler.ALERTS_TYPE)
-
-
-class AlertsHistory(webapp2.RequestHandler):
-    MAX_LIMIT_PER_PAGE = 100
-
-    def get(self):
-        alerts_query = AlertsJSON.query().order(-AlertsJSON.date)
-        result_json = {}
-
-        user = users.get_current_user()
-        if not user:
-            result_json['redirect-url'] = users.create_login_url(
-                self.request.uri)
-
-        # Return only public alerts for non-internal users.
-        if not user or not user.email().endswith('@google.com'):
-            alerts_query = alerts_query.filter(
-                AlertsJSON.type == AlertsHandler.ALERTS_TYPE)
-
-        cursor = self.request.get('cursor')
-        if cursor:
-            cursor = datastore_query.Cursor(urlsafe=cursor)
-
-        limit = int(self.request.get('limit', self.MAX_LIMIT_PER_PAGE))
-        limit = min(self.MAX_LIMIT_PER_PAGE, limit)
-
-        if cursor:
-            alerts, next_cursor, has_more = alerts_query.fetch_page(
-                limit, start_cursor=cursor)
-        else:
-            alerts, next_cursor, has_more = alerts_query.fetch_page(limit)
-
-        result_json.update({
-            'has_more': has_more,
-            'cursor': next_cursor.urlsafe() if next_cursor else '',
-            'history': [json.loads(alert.json) for alert in alerts]
-        })
-
-        self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(json.dumps(result_json))
+        self.update_alerts(AlertsHandler.MEMCACHE_ALERTS_KEY)
 
 
 app = webapp2.WSGIApplication([
-    ('/alerts', AlertsHandler),
-    ('/alerts-history', AlertsHistory)
+    ('/alerts', AlertsHandler)
 ])
