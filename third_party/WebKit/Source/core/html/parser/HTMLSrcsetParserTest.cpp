@@ -57,7 +57,7 @@ TEST(HTMLSrcsetParserTest, Basic)
         {2.0, -1, "src.gif", "2x.gif 2px", "src.gif", 1.0, -1},
         {2.0, -1, "src.gif", "2x.gif 2ex", "src.gif", 1.0, -1},
         {2.0, -1, "src.gif", "2x.gif 2e1x", "2x.gif", 20.0, -1},
-        {2.0, -1, "src.gif", "2x.gif +2x", "2x.gif", 2.0, -1},
+        {2.0, -1, "src.gif", "2x.gif +2x", "src.gif", 1.0, -1},
         {1.5, -1, "src.gif", "2x.gif 2x", "2x.gif", 2.0, -1},
         {2.5, -1, "src.gif", "2x.gif 2x", "2x.gif", 2.0, -1},
         {2.5, -1, "src.gif", "2x.gif 2x, 3x.gif 3x", "3x.gif", 3.0, -1},
@@ -80,7 +80,7 @@ TEST(HTMLSrcsetParserTest, Basic)
         {1.0, 400, "", "400.gif 400w, 6000.gif 6000w", "400.gif", 1.0, 400},
         {1.0, 400, "", "400.gif 400pw, 6000.gif 6000w", "6000.gif", 15.0, 6000},
         {1.0, 400, "fallback.gif", "400.gif 400pw", "fallback.gif", 1.0, -1},
-        {1.0, 400, "fallback.gif", "400.gif +400w", "400.gif", 1.0, 400},
+        {1.0, 400, "fallback.gif", "400.gif +400w", "fallback.gif", 1.0, -1},
         {1.0, 400, "", "400.gif 400w 400h, 6000.gif 6000w", "400.gif", 1.0, 400},
         {2.0, 400, "", "400.gif 400w, 6000.gif 6000w", "6000.gif", 15.0, 6000},
         {1.0, 400, "src.gif", "800.gif 800w", "800.gif", 2.0, 800},
@@ -96,6 +96,11 @@ TEST(HTMLSrcsetParserTest, Basic)
         {1.0, -1, "", "inf.gif 0.00000000001x", "inf.gif", 1e-11, -1},
         {1.0, -1, "", ",1x.gif 1x future-descriptor(3x, 4h, whatever), 2x.gif 2x", "1x.gif", 1.0, -1},
         {2.0, -1, "", ",1x.gif 1x future-descriptor(3x, 4h, whatever), 2x.gif 2x", "2x.gif", 2.0, -1},
+        {1.0, -1, "", "data:,a 1 w", "", 1.0, -1},
+        {1.0, -1, "", "data:,a 1  w", "", 1.0, -1},
+        {1.0, -1, "", "data:,a +1x", "", 1.0, -1},
+        {1.0, -1, "", "data:,a   +1x", "", 1.0, -1},
+        {1.0, -1, "", "data:,a 1.0x", "data:,a", 1.0, -1},
         {0, 0, 0, 0, 0, 0} // Do not remove the terminator line.
     };
 

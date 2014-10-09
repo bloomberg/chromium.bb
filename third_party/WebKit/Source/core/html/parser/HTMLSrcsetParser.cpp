@@ -67,13 +67,31 @@ struct DescriptorToken {
     template<typename CharType>
     int toInt(const CharType* attribute, bool& isValid)
     {
-        return charactersToIntStrict(attribute + start, length - 1, &isValid);
+        unsigned position = 0;
+        // Make sure the integer is a valid non-negative integer
+        // https://html.spec.whatwg.org/multipage/infrastructure.html#valid-non-negative-integer
+        unsigned lengthExcludingDescriptor = length - 1;
+        while (position < lengthExcludingDescriptor) {
+            if (!isASCIIDigit(*(attribute + start + position))) {
+                isValid = false;
+                return 0;
+            }
+            ++position;
+        }
+        return charactersToIntStrict(attribute + start, lengthExcludingDescriptor, &isValid);
     }
 
     template<typename CharType>
     float toFloat(const CharType* attribute, bool& isValid)
     {
-        return charactersToFloat(attribute + start, length - 1, &isValid);
+        // Make sure the is a valid floating point number
+        // https://html.spec.whatwg.org/multipage/infrastructure.html#valid-floating-point-number
+        unsigned lengthExcludingDescriptor = length - 1;
+        if (lengthExcludingDescriptor > 0 && *(attribute + start) == '+') {
+            isValid = false;
+            return 0;
+        }
+        return charactersToFloat(attribute + start, lengthExcludingDescriptor, &isValid);
     }
 };
 
