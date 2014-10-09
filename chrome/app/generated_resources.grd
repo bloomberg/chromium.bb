@@ -4600,8 +4600,8 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED" desc="Error displayed during installation of an extension which tries to imports resources from an extension, but it is not whitelisted to do so.">
         Unable to install "<ph name="APP_NAME">$1<ex>Google Play Movies &amp; TV</ex></ph>" because it is not allowed by "<ph name="IMPORT_NAME">$2<ex>Google Cast API</ex></ph>"
       </message>
-      <message name="IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY" desc="Error displayed during installation of an app with 'kiosk_only' attribute but user is not in ChromeOS kiosk mode.">
-        App with 'kiosk_only' manifest attribute must be installed in ChromeOS kiosk mode.
+      <message name="IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY" desc="Error displayed during installation of an app with 'kiosk_only' attribute but user is not in Chrome OS kiosk mode.">
+        App with 'kiosk_only' manifest attribute must be installed in Chrome OS kiosk mode.
       </message>
       <message name="IDS_EXTENSION_INSTALL_DISALLOW_UNTRUSTED_EXTENSION" desc="Error displayed during installation of a side-loaded extension from an untrusted source.">
         Cannot install untrusted extension with ID "<ph name="IMPORT_ID">$1<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>."
@@ -4652,8 +4652,8 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PACKAGE_INSTALL_ERROR" desc="Error message in case package fails to install because of some problem with the filesystem.">
         Could not install package: '<ph name="ERROR_CODE">$1<ex>error</ex></ph>'
       </message>
-      <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install a utility process crashed.">
-        Could not install package because a utility process crashed. Try restarting chrome and trying again.
+      <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install because a utility process crashed.">
+        Could not install package because a utility process crashed. Try restarting Chrome and trying again.
       </message>
       <message name="IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR" desc="Message for when an error occurs while trying to create the temporary directory needed to unzip a packaged extension or app.">
         Could not create directory for unzipping: '<ph name="DIRECTORY_PATH">$1<ex>profile/Extensions/CRX_INSTALL</ex></ph>'
@@ -5194,7 +5194,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BUTTON" desc="Text of the button on the dialog shown when unsupported extensions have been disabled">
       OK, got it
       </message>
-      <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to chrome without the user's knowledge">
+      <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to Chrome without the user's knowledge">
         This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
       </message>
       <if expr="use_titlecase">
@@ -5527,7 +5527,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sorry, this experiment is not available on your platform.
       </message>
       <if expr="not chromeos">
-        <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that relaunches chrome when clicked. ">
+        <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that relaunches Chrome when clicked. ">
           Relaunch Now
         </message>
       </if>
@@ -6551,7 +6551,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Touch scrolling mode.
       </message>
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_DESCRIPTION" desc="Description for the flag to control touch scrolling mode.">
-        Change the touch event behavior while scrolling.  "touchcancel" is what chrome has historically used, and "async-touchmove" is the new preferred mode.
+        Change the touch event behavior while scrolling.  "touchcancel" is what Chrome has historically used, and "async-touchmove" is the new preferred mode.
       </message>
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_TOUCHCANCEL" desc="Name for the touchcancel scrolling mode">
         touchcancel
@@ -6956,7 +6956,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
-      <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
+      <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked Chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
         This page is trying to load scripts from unauthenticated sources.
       </message>
       <if expr="use_titlecase">
@@ -7782,7 +7782,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Reload
       </message>
 
-      <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
+      <!-- Mac and Chrome OS users do not close their browser. Mac users quit it and Chrome OS users log out. -->
       <if expr="not is_macosx and not chromeos">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
           Clear cookies and other site data when you close your browser
@@ -8778,7 +8778,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="ChromeOS instructions for disabling use of a proxy server.">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Chrome OS instructions for disabling use of a proxy server.">
           You can disable any proxies configured for a connection from the settings page.
         </message>
       </if>
@@ -10308,16 +10308,16 @@ Chrome ran out of memory.
         </message>
 
         <if expr="chromeos">
-          <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the chrome settings page">
+          <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the Chrome settings page">
             Powerwash
           </message>
           <message name="IDS_OPTIONS_FACTORY_RESET_HEADING" desc="Name of the 'Factory reset' window">
             Restart your device
           </message>
-          <message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the chrome settings page">
+          <message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the Chrome settings page">
             Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
           </message>
-          <message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the chrome settings page">
+          <message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the Chrome settings page">
             Powerwash
           </message>
           <message name="IDS_OPTIONS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
@@ -10398,7 +10398,7 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="Help link for a search that has no results.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> help
         </message>
-        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
+        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Chrome OS.">
           Search settings
         </message>
 
@@ -11801,7 +11801,7 @@ The following application will be launched if you accept this request:
       </message>
 
       <if expr="chromeos">
-        <message name="IDS_OPTIONS_DISABLE_GDATA" desc="The text in the options panel describes that we can disable webdrive on ChromeOS.">
+        <message name="IDS_OPTIONS_DISABLE_GDATA" desc="The text in the options panel describes that we can disable webdrive on Chrome OS.">
           Disable Google Drive on this device
         </message>
       </if>
@@ -11898,10 +11898,10 @@ Your profile could not be opened correctly.
 
 Some features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.
       </message>
-      <message name="IDS_REFUSE_TO_RUN_AS_ROOT" desc="Short error message in displayed in an error dialog on startup if the user tries to run chrome as root">
+      <message name="IDS_REFUSE_TO_RUN_AS_ROOT" desc="Short error message displayed in an error dialog on startup if the user tries to run Chrome as root">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can not be run as root.
       </message>
-      <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start chrome as root">
+      <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start Chrome as root">
         Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. To run as root, you must specify an alternate --user-data-dir for storage of profile information.
       </message>
       <if expr="is_win">
@@ -13575,7 +13575,7 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during supervised user import.">
         Oops! Looks like there's a problem with your credentials. Please make sure you're signed in properly and try again.
       </message>
-      <message name="IDS_SUPERVISED_USER_SELECT_AVATAR_TITLE" desc="Title for the dialog used to select an avatar for a supervised user being imported. The dialog is shown only when the supervised user being imported has no chrome synced avatar.">
+      <message name="IDS_SUPERVISED_USER_SELECT_AVATAR_TITLE" desc="Title for the dialog used to select an avatar for a supervised user being imported. The dialog is shown only when the supervised user being imported has no Chrome synced avatar.">
         Select an avatar for this supervised user
       </message>
       <message name="IDS_SUPERVISED_USER_SELECT_AVATAR_TEXT" desc="Text that instructs the user to choose an avatar for the supervised user being imported.">
@@ -13918,7 +13918,7 @@ Do you accept?
         Next
       </message>
       <message name="IDS_METRO_FLOW_LOGO_STRING_ALT"
-               desc="Alt text for the faded chrome logo image.">
+               desc="Alt text for the faded Chrome logo image.">
           Chrome logo
       </message>
       <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
@@ -13942,11 +13942,11 @@ Do you accept?
         Open Chrome on the desktop
       </message>
       <message name="IDS_WIN_DESKTOP_RESTART"
-               desc="Text for the menu item to restart chrome in desktop mode. Aplies to Windows 8 only">
+               desc="Text for the menu item to restart Chrome in desktop mode. Applies to Windows 8 only">
         Relaunch Chrome on the desktop
       </message>
       <message name="IDS_WIN8_METRO_RESTART"
-               desc="Text for the menu item to restart chrome in metro. Aplies to Windows 8 only">
+               desc="Text for the menu item to restart Chrome in metro. Applies to Windows 8 only">
         Relaunch Chrome in Windows 8 mode
       </message>
       <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
@@ -13954,11 +13954,11 @@ Do you accept?
         Relaunching in Windows 8 mode will close and relaunch your Chrome apps.
       </message>
       <message name="IDS_WIN_CHROMEOS_RESTART"
-               desc="Text for the menu item to restart chrome in chrome os. Aplies to Windows 7 only">
+               desc="Text for the menu item to restart Chrome in Chrome OS. Applies to Windows 7 only">
         Relaunch Chrome in Chrome OS mode
       </message>
       <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_CHROMEOS"
-               desc="Modal message box prompt shown to the user after requesting to relaunch in Windows chrome os mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+               desc="Modal message box prompt shown to the user after requesting to relaunch in Windows Chrome OS mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
         Relaunching in Chrome OS mode will close and relaunch your Chrome apps.
       </message>
       <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
