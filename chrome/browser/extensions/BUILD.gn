@@ -189,7 +189,13 @@ static_library("extensions") {
   if (is_win || is_mac) {
     deps += [ "//components/wifi" ]
     sources += rebase_path(
-        gypi_values.chrome_browser_extensions_networking_private_sources,
+        gypi_values.chrome_browser_extensions_networking_private_sources_winmac,
+        ".", "//chrome")
+  }
+
+  if (is_linux) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_networking_private_sources_linux,
         ".", "//chrome")
   }
 

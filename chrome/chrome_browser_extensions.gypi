@@ -844,7 +844,7 @@
       'browser/apps/drive/drive_service_bridge.cc',
       'browser/apps/drive/drive_service_bridge.h',
     ],
-    'chrome_browser_extensions_networking_private_sources': [
+    'chrome_browser_extensions_networking_private_sources_winmac': [
       'browser/extensions/api/networking_private/crypto_verify_impl.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.h',
       'browser/extensions/api/networking_private/networking_private_credentials_getter.h',
@@ -855,6 +855,14 @@
       'browser/extensions/api/networking_private/networking_private_service_client.h',
       'browser/extensions/api/networking_private/networking_private_service_client_factory.cc',
       'browser/extensions/api/networking_private/networking_private_service_client_factory.h',
+    ],
+    'chrome_browser_extensions_networking_private_sources_linux': [
+      'browser/extensions/api/networking_private/networking_private_factory_linux.cc',
+      'browser/extensions/api/networking_private/networking_private_factory_linux.h',
+      'browser/extensions/api/networking_private/networking_private_linux.cc',
+      'browser/extensions/api/networking_private/networking_private_linux.h',
+      'browser/extensions/api/networking_private/network_config_dbus_constants_linux.cc',
+      'browser/extensions/api/networking_private/network_config_dbus_constants_linux.h',
     ],
     'chrome_browser_extensions_brlapi_sources': [
       'browser/extensions/api/braille_display_private/braille_controller_brlapi.cc',
@@ -1039,7 +1047,12 @@
             '../components/components.gyp:wifi_component',
           ],
           'sources': [
-            '<@(chrome_browser_extensions_networking_private_sources)',
+            '<@(chrome_browser_extensions_networking_private_sources_winmac)',
+          ],
+        }],
+        ['OS=="linux"', {
+          'sources': [
+            '<@(chrome_browser_extensions_networking_private_sources_linux)',
           ],
         }],
         ['OS=="win"', {
