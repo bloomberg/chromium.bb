@@ -174,7 +174,9 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
     helper_.reset(new content::IOSurfaceLayerHelper(client, self));
 
     iosurface_ = content::IOSurfaceTexture::Create();
-    if (!iosurface_.get()) {
+    context_ = content::IOSurfaceContext::Get(
+        content::IOSurfaceContext::kCALayerContext);
+    if (!iosurface_.get() || !context_.get()) {
       LOG(ERROR) << "Failed create CompositingIOSurface or context";
       [self resetClient];
       [self release];
@@ -205,11 +207,11 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 }
 
 - (void)poisonContextAndSharegroup {
-  iosurface_->context()->PoisonContextAndSharegroup();
+  context_->PoisonContextAndSharegroup();
 }
 
 - (bool)hasBeenPoisoned {
-  return iosurface_->context()->HasBeenPoisoned();
+  return context_->HasBeenPoisoned();
 }
 
 - (float)scaleFactor {
@@ -220,7 +222,7 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 
 - (int)rendererID {
   GLint current_renderer_id = -1;
-  if (CGLGetParameter(iosurface_->context()->cgl_context(),
+  if (CGLGetParameter(context_->cgl_context(),
                       kCGLCPCurrentRendererID,
                       &current_renderer_id) == kCGLNoError) {
     return current_renderer_id & kCGLRendererIDMatchingMask;
@@ -255,12 +257,15 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
 // The remaining methods implement the CAOpenGLLayer interface.
 
 - (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask {
-  return CGLRetainPixelFormat(
-      CGLGetPixelFormat(iosurface_->context()->cgl_context()));
+  if (!context_.get())
+    return [super copyCGLPixelFormatForDisplayMask:mask];
+  return CGLRetainPixelFormat(CGLGetPixelFormat(context_->cgl_context()));
 }
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
-  return CGLRetainContext(iosurface_->context()->cgl_context());
+  if (!context_.get())
+    return [super copyCGLContextForPixelFormat:pixelFormat];
+  return CGLRetainContext(context_->cgl_context());
 }
 
 - (void)setNeedsDisplay {

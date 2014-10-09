@@ -18,16 +18,22 @@
 
 namespace content {
 
-// The CGL context used to update and draw an IOSurface-backed texture. If an
-// error occurs on this context, or if the current GPU changes, then the
-// context is poisoned, and a new one is created.
 class IOSurfaceContext
     : public base::RefCounted<IOSurfaceContext>,
       public content::GpuDataManagerObserver {
  public:
-  // Get or create a GL context. Share these GL contexts as much as possible
-  // because creating and destroying them can be expensive.
-  static scoped_refptr<IOSurfaceContext> Get();
+  enum Type {
+    // The number used to look up the context used for async readback and for
+    // initializing the IOSurface.
+    kOffscreenContext = -2,
+    // The number used to look up the context used by CAOpenGLLayers.
+    kCALayerContext = -3,
+  };
+
+  // Get or create a GL context of the specified type. Share these GL contexts
+  // as much as possible because creating and destroying them can be expensive.
+  // http://crbug.com/180463
+  static scoped_refptr<IOSurfaceContext> Get(Type type);
 
   // Mark that all the GL contexts in the same sharegroup as this context as
   // invalid, so they shouldn't be returned anymore by Get, but rather, new
@@ -44,14 +50,21 @@ class IOSurfaceContext
  private:
   friend class base::RefCounted<IOSurfaceContext>;
 
-  IOSurfaceContext(base::ScopedTypeRef<CGLContextObj> clg_context_strong);
+  IOSurfaceContext(
+      Type type,
+      base::ScopedTypeRef<CGLContextObj> clg_context_strong);
   virtual ~IOSurfaceContext();
 
+  Type type_;
   base::ScopedTypeRef<CGLContextObj> cgl_context_;
+
   bool poisoned_;
 
-  // The current non-poisoned context, shared by all layers.
-  static IOSurfaceContext* current_context_;
+  // The global map from window number and window ordering to
+  // context data.
+  typedef std::map<Type, IOSurfaceContext*> TypeMap;
+  static base::LazyInstance<TypeMap> type_map_;
+  static TypeMap* type_map();
 };
 
 }  // namespace content

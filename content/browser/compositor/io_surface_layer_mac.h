@@ -16,6 +16,7 @@
 
 namespace content {
 class IOSurfaceTexture;
+class IOSurfaceContext;
 
 // The interface through which the IOSurfaceLayer calls back into
 // the structrue that created it (RenderWidgetHostViewMac or
@@ -116,6 +117,8 @@ class IOSurfaceLayerHelper {
 @interface IOSurfaceLayer : CAOpenGLLayer {
  @private
   scoped_refptr<content::IOSurfaceTexture> iosurface_;
+  scoped_refptr<content::IOSurfaceContext> context_;
+
   scoped_ptr<content::IOSurfaceLayerHelper> helper_;
 }
 
