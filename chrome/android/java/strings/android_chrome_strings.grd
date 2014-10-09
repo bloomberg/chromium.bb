@@ -397,6 +397,17 @@ You are signing in with a managed account and giving its administrator control o
         Can’t beam current tab
       </message>
 
+      <!-- Add to Homescreen strings -->
+      <message name="IDS_ADD" desc="Title for Add button [CHAR-LIMIT=20]">
+        Add
+      </message>
+      <message name="IDS_ADD_TO_HOMESCREEN_TITLE" desc="Edit text title for Add to homescreen dialog [CHAR-LIMIT=30]">
+        Title
+      </message>
+      <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the homescreen. [CHAR-LIMIT=27]">
+        Add to homescreen
+      </message>
+
     </messages>
   </release>
 </grit>
