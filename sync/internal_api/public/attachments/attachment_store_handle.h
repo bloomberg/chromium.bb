@@ -42,11 +42,11 @@ class SYNC_EXPORT AttachmentStoreHandle : public AttachmentStore,
 
   // AttachmentStore implementation.
   virtual void Read(const AttachmentIdList& id,
-                    const ReadCallback& callback) OVERRIDE;
+                    const ReadCallback& callback) override;
   virtual void Write(const AttachmentList& attachments,
-                     const WriteCallback& callback) OVERRIDE;
+                     const WriteCallback& callback) override;
   virtual void Drop(const AttachmentIdList& id,
-                    const DropCallback& callback) OVERRIDE;
+                    const DropCallback& callback) override;
 
  private:
   virtual ~AttachmentStoreHandle();

@@ -35,17 +35,17 @@ class MockAttachmentStore : public AttachmentStoreBase {
   }
 
   virtual void Read(const AttachmentIdList& ids,
-                    const ReadCallback& callback) OVERRIDE {
+                    const ReadCallback& callback) override {
     read_called_.Run();
   }
 
   virtual void Write(const AttachmentList& attachments,
-                     const WriteCallback& callback) OVERRIDE {
+                     const WriteCallback& callback) override {
     write_called_.Run();
   }
 
   virtual void Drop(const AttachmentIdList& ids,
-                    const DropCallback& callback) OVERRIDE {
+                    const DropCallback& callback) override {
     drop_called_.Run();
   }
 
