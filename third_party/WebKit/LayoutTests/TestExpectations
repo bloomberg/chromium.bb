@@ -926,8 +926,6 @@ crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 # Temporary disabled for rebaeline of crbug.com/394619
 # crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
 
-crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
-
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
