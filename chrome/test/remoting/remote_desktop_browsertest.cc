@@ -474,6 +474,9 @@ void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
 }
 
 void RemoteDesktopBrowserTest::Auth() {
+  // For this test, we must be given the user-name and password.
+  ASSERT_TRUE(!username_.empty() && !password_.empty());
+
   Authorize();
   Authenticate();
   Approve();
@@ -572,8 +575,25 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
                                    override_user_data_dir);
   }
 
-  username_ = command_line->GetSwitchValueASCII(kUsername);
-  password_ = command_line->GetSwitchValueASCII(kkPassword);
+  CommandLine::StringType accounts_file =
+      command_line->GetSwitchValueNative(kAccountsFile);
+  std::string account_type = command_line->GetSwitchValueASCII(kAccountType);
+  if (!accounts_file.empty()) {
+    // We've been passed in a file containing accounts information.
+    // In this case, we'll obtain the user-name and password information from
+    // the specified file, even if user-name and password have been specified
+    // on the command-line.
+    base::FilePath accounts_file_path((base::FilePath(accounts_file)));
+    ASSERT_FALSE(account_type.empty());
+    ASSERT_TRUE(base::PathExists((base::FilePath(accounts_file))));
+    SetUserNameAndPassword((base::FilePath(accounts_file)), account_type);
+  } else {
+    // No file for accounts specified. Read user-name and password from command
+    // line.
+    username_ = command_line->GetSwitchValueASCII(kUserName);
+    password_ = command_line->GetSwitchValueASCII(kUserPassword);
+  }
+
   me2me_pin_ = command_line->GetSwitchValueASCII(kMe2MePin);
   remote_host_name_ = command_line->GetSwitchValueASCII(kRemoteHostName);
   extension_name_ = command_line->GetSwitchValueASCII(kExtensionName);
@@ -796,6 +816,27 @@ bool RemoteDesktopBrowserTest::IsPinFormVisible() {
 void RemoteDesktopBrowserTest::DismissHostVersionWarningIfVisible() {
   if (HtmlElementVisible("host-needs-update-connect-button"))
     ClickOnControl("host-needs-update-connect-button");
+}
+
+void RemoteDesktopBrowserTest::SetUserNameAndPassword(
+    const base::FilePath &accounts_file_path, const std::string& account_type) {
+
+  // Read contents of accounts file.
+  std::string accounts_info;
+  ASSERT_TRUE(base::ReadFileToString(accounts_file_path, &accounts_info));
+
+  // Get the root dictionary from the input json file contents.
+  scoped_ptr<base::Value> root(
+      base::JSONReader::Read(accounts_info, base::JSON_ALLOW_TRAILING_COMMAS));
+
+  const base::DictionaryValue* root_dict = NULL;
+  ASSERT_TRUE(root.get() && root->GetAsDictionary(&root_dict));
+
+  // Now get the dictionary for the specified account type.
+  const base::DictionaryValue* account_dict = NULL;
+  ASSERT_TRUE(root_dict->GetDictionary(account_type, &account_dict));
+  ASSERT_TRUE(account_dict->GetString(kUserName, &username_));
+  ASSERT_TRUE(account_dict->GetString(kUserPassword, &password_));
 }
 
 // static

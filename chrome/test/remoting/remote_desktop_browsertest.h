@@ -21,8 +21,10 @@ const char kNoCleanup[] = "no-cleanup";
 const char kNoInstall[] = "no-install";
 const char kWebAppCrx[] = "webapp-crx";
 const char kWebAppUnpacked[] = "webapp-unpacked";
-const char kUsername[] = "username";
-const char kkPassword[] = "password";
+const char kUserName[] = "username";
+const char kUserPassword[] = "password";
+const char kAccountsFile[] = "accounts-file";
+const char kAccountType[] = "account-type";
 const char kMe2MePin[] = "me2me-pin";
 const char kRemoteHostName[] = "remote-host-name";
 const char kExtensionName[] = "extension-name";
@@ -124,6 +126,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Helper to simulate a mouse click.
   void SimulateMouseClickAt(
       int modifiers, blink::WebMouseEvent::Button button, int x, int y);
+
+  void SetUserNameAndPassword(
+      const base::FilePath &accounts_file, const std::string& account_type);
 
   // The following helpers each perform a composite task.
 
