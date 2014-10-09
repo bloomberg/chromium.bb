@@ -15,7 +15,6 @@ namespace gfx {
 class FontList;
 class Point;
 class Rect;
-class RectF;
 }
 
 namespace autofill {
@@ -46,12 +45,6 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // Returns the bounds of the item at |index| in the popup, relative to
   // the top left of the popup.
   virtual gfx::Rect GetRowBounds(size_t index) = 0;
-
-  // The bounds of the form field element (screen coordinates).
-  virtual const gfx::RectF& element_bounds() const = 0;
-
-  // If the current popup should be displayed in RTL mode.
-  virtual bool IsRTL() const = 0;
 
   // TODO(csharp): The names, subtexts and icon getters can probably be adjusted
   // to take in the row index and return a single element, instead of the

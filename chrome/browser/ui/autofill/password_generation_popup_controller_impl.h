@@ -70,9 +70,6 @@ class PasswordGenerationPopupControllerImpl
   content::WebContents* web_contents() {
     return controller_common_.web_contents();
   }
-  const gfx::RectF& element_bounds() {
-    return controller_common_.element_bounds();
-  }
 
  protected:
   PasswordGenerationPopupControllerImpl(
@@ -94,10 +91,13 @@ class PasswordGenerationPopupControllerImpl
   virtual void SetSelectionAtPoint(const gfx::Point& point) override;
   virtual bool AcceptSelectedLine() override;
   virtual void SelectionCleared() override;
+  virtual void PasswordAccepted() override;
   virtual void OnSavedPasswordsLinkClicked() override;
   virtual int GetMinimumWidth() override;
   virtual gfx::NativeView container_view() override;
   virtual const gfx::Rect& popup_bounds() const override;
+  virtual const gfx::RectF& element_bounds() const override;
+  virtual bool IsRTL() const override;
   virtual bool display_password() const override;
   virtual bool password_selected() const override;
   virtual base::string16 password() const override;
@@ -111,10 +111,6 @@ class PasswordGenerationPopupControllerImpl
 
   // Set if the password is currently selected.
   void PasswordSelected(bool selected);
-
-  // Accept the password. Causes the controller to hide itself as the popup
-  // is no longer necessary.
-  void PasswordAccepted();
 
   // Accept password if it's selected.
   bool PossiblyAcceptPassword();

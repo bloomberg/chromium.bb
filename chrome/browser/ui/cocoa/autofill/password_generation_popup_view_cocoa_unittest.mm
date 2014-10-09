@@ -12,6 +12,7 @@
 #include "testing/platform_test.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/rect_f.h"
 
 using testing::AtLeast;
 using testing::Return;
@@ -24,6 +25,8 @@ class MockPasswordGenerationPopupController
   MockPasswordGenerationPopupController()
     : help_text_(base::ASCIIToUTF16("Help me if you can I'm feeling dooown")),
       popup_bounds_(gfx::Rect(0, 0, 200, 100)) {}
+
+  MOCK_METHOD0(PasswordAccepted, void());
 
   virtual void OnSavedPasswordsLinkClicked() override {}
 
@@ -53,6 +56,8 @@ class MockPasswordGenerationPopupController
     return popup_bounds_;
   }
   MOCK_METHOD0(container_view, gfx::NativeView());
+  MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
+  MOCK_CONST_METHOD0(IsRTL, bool());
 
  private:
   base::string16 help_text_;

@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -244,6 +245,15 @@ gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
 
 const gfx::Rect& PasswordGenerationPopupControllerImpl::popup_bounds() const {
   return popup_bounds_;
+}
+
+const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
+    const {
+  return controller_common_.element_bounds();
+}
+
+bool PasswordGenerationPopupControllerImpl::IsRTL() const {
+  return base::i18n::IsRTL();
 }
 
 bool PasswordGenerationPopupControllerImpl::display_password() const {

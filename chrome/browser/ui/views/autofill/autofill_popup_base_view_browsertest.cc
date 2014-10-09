@@ -32,6 +32,8 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   // TODO(jdduke): Mock this method upon resolution of crbug.com/352463.
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect&());
   MOCK_METHOD0(container_view, gfx::NativeView());
+  MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
+  MOCK_CONST_METHOD0(IsRTL, bool());
 };
 
 }  // namespace
