@@ -4,9 +4,10 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/gcm_driver/gcm_channel_status_request.h"
-#include "components/gcm_driver/proto/gcm_channel_status.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/protocol/experiment_status.pb.h"
+#include "sync/protocol/experiments_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -69,9 +70,13 @@ void GCMChannelStatusRequestTest::SetResponseStatusAndString(
 
 void GCMChannelStatusRequestTest::SetResponseProtoData(
     GCMStatus status, int poll_interval_seconds) {
-  gcm_proto::ExperimentStatusResponse response_proto;
-  if (status != NOT_SPECIFIED)
-    response_proto.mutable_gcm_channel()->set_enabled(status == GCM_ENABLED);
+  sync_pb::ExperimentStatusResponse response_proto;
+  if (status != NOT_SPECIFIED) {
+    sync_pb::ExperimentsSpecifics* experiment_specifics =
+        response_proto.add_experiment();
+    experiment_specifics->mutable_gcm_channel()->set_enabled(status ==
+                                                             GCM_ENABLED);
+  }
 
   // Zero |poll_interval_seconds| means the optional field is not set.
   if (poll_interval_seconds)

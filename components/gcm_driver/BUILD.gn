@@ -45,10 +45,10 @@ static_library("gcm_driver") {
 
   deps = [
     "//base",
-    "//components/gcm_driver/proto",
     "//components/os_crypt",
     "//google_apis/gcm",
     "//net",
+    "//sync/protocol",
   ]
 
   if (is_android) {

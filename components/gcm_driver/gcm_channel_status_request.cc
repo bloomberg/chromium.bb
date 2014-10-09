@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
-#include "components/gcm_driver/proto/gcm_channel_status.pb.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "sync/protocol/experiment_status.pb.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -55,7 +55,7 @@ void GCMChannelStatusRequest::Start() {
 
   GURL request_url(kGCMChannelStatusRequestURL);
 
-  gcm_proto::ExperimentStatusRequest proto_data;
+  sync_pb::ExperimentStatusRequest proto_data;
   proto_data.add_experiment_name(kGCMChannelTag);
   std::string upload_data;
   DCHECK(proto_data.SerializeToString(&upload_data));
@@ -96,16 +96,17 @@ bool GCMChannelStatusRequest::ParseResponse(const net::URLFetcher* source) {
     return false;
   }
 
-  gcm_proto::ExperimentStatusResponse response_proto;
+  sync_pb::ExperimentStatusResponse response_proto;
   if (!response_proto.ParseFromString(response_string)) {
     LOG(ERROR) << "GCM channel response failed to be parse as proto.";
     return false;
   }
 
   bool enabled = true;
-  if (response_proto.has_gcm_channel() &&
-      response_proto.gcm_channel().has_enabled()) {
-    enabled = response_proto.gcm_channel().enabled();
+  if (response_proto.experiment_size() == 1 &&
+      response_proto.experiment(0).has_gcm_channel() &&
+      response_proto.experiment(0).gcm_channel().has_enabled()) {
+    enabled = response_proto.experiment(0).gcm_channel().enabled();
   }
 
   int poll_interval_seconds;

@@ -20,6 +20,7 @@ proto_library("protocol") {
     "dictionary_specifics.proto",
     "encryption.proto",
     "enhanced_bookmark_specifics.proto",
+    "experiment_status.proto",
     "experiments_specifics.proto",
     "extension_setting_specifics.proto",
     "extension_specifics.proto",

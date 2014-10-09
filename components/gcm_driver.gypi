@@ -13,6 +13,7 @@
         '../base/base.gyp:base',
         '../google_apis/gcm/gcm.gyp:gcm',
         '../net/net.gyp:net',
+        '../sync/sync.gyp:sync_proto',
       ],
       'include_dirs': [
         '..',
@@ -53,7 +54,6 @@
         'gcm_driver/gcm_driver_desktop.h',
         'gcm_driver/gcm_stats_recorder_impl.cc',
         'gcm_driver/gcm_stats_recorder_impl.h',
-        'gcm_driver/proto/gcm_channel_status.proto',
         'gcm_driver/system_encryptor.cc',
         'gcm_driver/system_encryptor.h',
       ],

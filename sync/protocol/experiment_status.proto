@@ -6,12 +6,9 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package gcm_proto;
+package sync_pb;
 
-// Flags for enabling the GCM feature.
-message GcmChannelFlags {
-  optional bool enabled = 1;
-}
+import "experiments_specifics.proto";
 
 // This request allows an unauthenticated client to check the status of the
 // experiments which do not require user authentication.  The status of an
@@ -29,6 +26,11 @@ message ExperimentStatusResponse {
   // Minimal time to wait before issuing another request.
   optional int32 poll_interval_seconds = 1 [default = 3600];
 
-  // This flag is returned if and only if the client asks for gcm_channel.
-  optional GcmChannelFlags gcm_channel = 2;
+  // The experiments that the client has asked for, with each experiment
+  // containing exactly one experiment flag.  The client can inspect the
+  // embedded flag to obtain the experiment status.  Note that the number of
+  // experiments should be less than or equal to the number of experiment_name
+  // sent in the request since it is possible that there is no experiment
+  // matching an experiment_name.
+  repeated ExperimentsSpecifics experiment = 2;
 }
