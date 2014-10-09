@@ -1092,7 +1092,8 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
       image_id_(resource_provider->LockForWriteToGpuMemoryBuffer(resource_id)
                     ->image_id),
       gpu_memory_buffer_(
-          resource_provider->ContextGL()->MapImageCHROMIUM(image_id_)) {
+          resource_provider->ContextGL()->MapImageCHROMIUM(image_id_)),
+      stride_(-1) {
   resource_provider->ContextGL()->GetImageParameterivCHROMIUM(
       image_id_, GL_IMAGE_ROWBYTES_CHROMIUM, &stride_);
 }
