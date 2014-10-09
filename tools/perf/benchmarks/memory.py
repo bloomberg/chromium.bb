@@ -16,14 +16,14 @@ class MemoryMobile(benchmark.Benchmark):
 @benchmark.Disabled
 class MemoryTop25(benchmark.Benchmark):
   test = memory.Memory
-  page_set = page_sets.Top25PageSet
+  page_set = page_sets.Top7StressPageSet
 
 
 @benchmark.Disabled
 class Reload2012Q3(benchmark.Benchmark):
   tag = 'reload'
   test = memory.Memory
-  page_set = page_sets.Top2012Q3PageSet
+  page_set = page_sets.Top2012Q3StressPageSet
 
 
 @benchmark.Disabled  # crbug.com/371153

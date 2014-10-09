@@ -32,7 +32,7 @@ class GmailPage(MobileMemoryPage):
     action_runner.Wait(15)
     action_runner.ForceGarbageCollection()
 
-  def RunStressMemory(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     for _ in xrange(3):
       self.ReloadAndGc(action_runner)
 
@@ -46,7 +46,7 @@ class GoogleSearchPage(MobileMemoryPage):
         url='https://www.google.com/search?site=&tbm=isch&q=google',
         page_set=page_set)
 
-  def RunStressMemory(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -75,7 +75,7 @@ class ScrollPage(MobileMemoryPage):
   def __init__(self, url, page_set):
     super(ScrollPage, self).__init__(url=url, page_set=page_set)
 
-  def RunStressMemory(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

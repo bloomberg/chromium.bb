@@ -12,7 +12,7 @@ class ToughDomMemoryCasesPage(page_module.Page):
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/tough_dom_memory_cases.json'
 
-  def RunStressMemory(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
