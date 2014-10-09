@@ -8,6 +8,7 @@
 #include "athena/content/app_activity.h"
 #include "athena/content/web_activity.h"
 #include "base/logging.h"
+#include "ui/aura/window.h"
 
 namespace athena {
 
@@ -22,6 +23,7 @@ Activity* ContentActivityFactory::CreateWebActivity(
     const GURL& url) {
   Activity* activity = new WebActivity(browser_context, title, url);
   ActivityManager::Get()->AddActivity(activity);
+  activity->GetWindow()->SetName("WebActivity");
   return activity;
 }
 
@@ -37,6 +39,7 @@ Activity* ContentActivityFactory::CreateAppActivity(
     views::WebView* web_view) {
   Activity* activity = new AppActivity(app_id, web_view);
   ActivityManager::Get()->AddActivity(activity);
+  activity->GetWindow()->SetName("AppActivity");
   return activity;
 }
 
