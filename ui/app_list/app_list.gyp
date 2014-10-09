@@ -82,6 +82,8 @@
         'search_box_model.cc',
         'search_box_model.h',
         'search_box_model_observer.h',
+        'search_controller.cc',
+        'search_controller.h',
         'search_provider.cc',
         'search_provider.h',
         'search_result.cc',

@@ -1208,8 +1208,6 @@
       'browser/ui/app_list/search/people/people_result.h',
       'browser/ui/app_list/search/people/person.cc',
       'browser/ui/app_list/search/people/person.h',
-      'browser/ui/app_list/search/search_controller.cc',
-      'browser/ui/app_list/search/search_controller.h',
       'browser/ui/app_list/search/search_controller_factory.cc',
       'browser/ui/app_list/search/search_controller_factory.h',
       'browser/ui/app_list/search/search_resource_manager.cc',

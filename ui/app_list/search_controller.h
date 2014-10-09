@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_H_
+#ifndef UI_APP_LIST_SEARCH_CONTROLLER_H_
+#define UI_APP_LIST_SEARCH_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/timer/timer.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -23,7 +24,7 @@ class SearchResult;
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
 // results to the given SearchResults UI model.
-class SearchController {
+class APP_LIST_EXPORT SearchController {
  public:
   SearchController(SearchBoxModel* search_box,
                    AppListModel::SearchResults* results,
@@ -62,4 +63,4 @@ class SearchController {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_H_
+#endif  // UI_APP_LIST_SEARCH_CONTROLLER_H_
