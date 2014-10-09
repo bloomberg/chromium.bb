@@ -118,12 +118,14 @@ void PeopleProvider::RequestAccessToken() {
   if (access_token_request_ != NULL)
     return;
 
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile_);
-  access_token_request_ = token_service->StartRequest(
-      signin_manager->GetAuthenticatedAccountId(), oauth2_scope_, this);
+  if (signin_manager->IsAuthenticated()) {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+    access_token_request_ = token_service->StartRequest(
+        signin_manager->GetAuthenticatedAccountId(), oauth2_scope_, this);
+  }
 }
 
 GURL PeopleProvider::GetQueryUrl(const std::string& query) {

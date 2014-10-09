@@ -24,8 +24,10 @@ import org.chromium.net.NetworkChangeNotifier;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +39,12 @@ import javax.annotation.Nullable;
 public class AccountManagerHelper {
 
     private static final String TAG = "AccountManagerHelper";
+
+    private static final Pattern AT_SYMBOL = Pattern.compile("@");
+
+    private static final String GMAIL_COM = "gmail.com";
+
+    private static final String GOOGLEMAIL_COM = "googlemail.com";
 
     public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
@@ -124,13 +132,27 @@ public class AccountManagerHelper {
         return getGoogleAccounts().length > 0;
     }
 
+    private String canonicalizeName(String name) {
+        String[] parts = AT_SYMBOL.split(name);
+        if (parts.length != 2) return name;
+
+        if (GOOGLEMAIL_COM.equalsIgnoreCase(parts[1])) {
+            parts[1] = GMAIL_COM;
+        }
+        if (GMAIL_COM.equalsIgnoreCase(parts[1])) {
+            parts[0] = parts[0].replace(".", "");
+        }
+        return (parts[0] + "@" + parts[1]).toLowerCase(Locale.US);
+    }
+
     /**
      * Returns the account if it exists, null otherwise.
      */
     public Account getAccountFromName(String accountName) {
-        Account[] accounts = mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
+        String canonicalName = canonicalizeName(accountName);
+        Account[] accounts = getGoogleAccounts();
         for (Account account : accounts) {
-            if (account.name.equals(accountName)) {
+            if (canonicalizeName(account.name).equals(canonicalName)) {
                 return account;
             }
         }

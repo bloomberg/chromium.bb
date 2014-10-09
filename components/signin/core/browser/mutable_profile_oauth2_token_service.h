@@ -99,6 +99,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
                            PersistenceDBUpgrade);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            PersistenceLoadCredentials);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+                           CanonicalizeAccountId);
 
   // WebDataServiceConsumer implementation:
   virtual void OnWebDataServiceRequestDone(

@@ -25,12 +25,11 @@ SigninManagerBase* SupervisedUserSigninManagerWrapper::GetOriginal() {
 }
 
 std::string SupervisedUserSigninManagerWrapper::GetEffectiveUsername() const {
-  const std::string& auth_username = original_->GetAuthenticatedUsername();
 #if defined(ENABLE_MANAGED_USERS)
-  if (auth_username.empty() && profile_->IsSupervised())
+  if (!original_->IsAuthenticated() && profile_->IsSupervised())
     return supervised_users::kSupervisedUserPseudoEmail;
 #endif
-  return auth_username;
+  return original_->GetAuthenticatedUsername();
 }
 
 std::string SupervisedUserSigninManagerWrapper::GetAccountIdToUse() const {

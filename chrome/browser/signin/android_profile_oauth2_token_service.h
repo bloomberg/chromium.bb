@@ -111,6 +111,7 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // Called to notify observers when refresh tokans have been loaded.
   virtual void FireRefreshTokensLoaded() override;
 
+ private:
   // Return whether |signed_in_account| is valid and we have access
   // to all the tokens in |curr_account_ids|. If |force_notifications| is true,
   // TokenAvailable notifications will be sent anyway, even if the account was
@@ -122,7 +123,6 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
                         std::vector<std::string>& revoked_ids,
                         bool force_notifications);
 
- private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   static bool is_testing_profile_;

@@ -93,6 +93,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
 
+  // Validate that the account_id argument is valid.  This method DCHECKs
+  // when invalid.
+  void ValidateAccountId(const std::string& account_id) const;
+
  private:
   // The client with which this instance was initialized, or NULL.
   SigninClient* client_;

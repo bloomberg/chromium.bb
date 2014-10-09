@@ -41,16 +41,8 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
 
   std::string user =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-  if (!user.empty()) {
-#if defined(OS_IOS)
-    // Prior to M38, Chrome on iOS did not normalize the email before setting
-    // it in SigninManager. |AccountReconcilor| expects the authenticated email
-    // to be normalized as it used as an account identifier and is compared
-    // to the accounts available in the cookies.
-    user = gaia::CanonicalizeEmail(gaia::SanitizeEmail(user));
-#endif
+  if (!user.empty())
     SetAuthenticatedUsername(user);
-  }
 }
 
 bool SigninManagerBase::IsInitialized() const { return initialized_; }
@@ -64,7 +56,7 @@ const std::string& SigninManagerBase::GetAuthenticatedUsername() const {
 }
 
 const std::string& SigninManagerBase::GetAuthenticatedAccountId() const {
-  return GetAuthenticatedUsername();
+  return authenticated_account_id_;
 }
 
 void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
@@ -91,6 +83,11 @@ void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
   DCHECK(pref_username.empty() || gaia::AreEmailsSame(username, pref_username))
       << "username: " << username << "; pref_username: " << pref_username;
   authenticated_username_ = username;
+
+  // Some tests don't use a real email address for the username.  To support
+  // these cases, don't try to canonicalize these strings.
+  authenticated_account_id_ = (username.find('@') == std::string::npos) ?
+      username : gaia::CanonicalizeEmail(username);
   client_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
   NotifyDiagnosticsObservers(USERNAME, username);
 
@@ -100,12 +97,13 @@ void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername, username);
 }
 
-void SigninManagerBase::clear_authenticated_username() {
+void SigninManagerBase::ClearAuthenticatedUsername() {
   authenticated_username_.clear();
+  authenticated_account_id_.clear();
 }
 
 bool SigninManagerBase::IsAuthenticated() const {
-  return !GetAuthenticatedAccountId().empty();
+  return !authenticated_account_id_.empty();
 }
 
 bool SigninManagerBase::AuthInProgress() const {

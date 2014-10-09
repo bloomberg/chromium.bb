@@ -8,7 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request_context_getter.h"
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
@@ -43,6 +45,18 @@ void ProfileOAuth2TokenService::UpdateAuthError(
   NOTREACHED();
 }
 
+void ProfileOAuth2TokenService::ValidateAccountId(
+    const std::string& account_id) const {
+  DCHECK(!account_id.empty());
+
+  // If the account is given as an email, make sure its a canonical email.
+  // Note that some tests don't use email strings as account id, and after
+  // the gaia id migration it won't be an email.  So only check for
+  // canonicalization if the account_id is suspected to be an email.
+  if (account_id.find('@') != std::string::npos)
+    DCHECK_EQ(gaia::CanonicalizeEmail(account_id), account_id);
+}
+
 std::vector<std::string> ProfileOAuth2TokenService::GetAccounts() {
   NOTREACHED();
   return std::vector<std::string>();
@@ -62,4 +76,3 @@ void ProfileOAuth2TokenService::UpdateCredentials(
 void ProfileOAuth2TokenService::RevokeAllCredentials() {
   // Empty implementation by default.
 }
-

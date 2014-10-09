@@ -83,9 +83,8 @@ void SigninManager::RemoveMergeSessionObserver(
 SigninManager::~SigninManager() {}
 
 void SigninManager::InitTokenService() {
-  const std::string& account_id = GetAuthenticatedUsername();
-  if (token_service_ && !account_id.empty())
-    token_service_->LoadCredentials(account_id);
+  if (token_service_ && IsAuthenticated())
+    token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
 
 std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
@@ -207,7 +206,7 @@ void SigninManager::SignOut(
   const base::Time signin_time =
       base::Time::FromInternalValue(
           client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
-  clear_authenticated_username();
+  ClearAuthenticatedUsername();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
@@ -358,12 +357,12 @@ void SigninManager::CompletePendingSignin() {
 
   DCHECK(!temp_refresh_token_.empty());
   DCHECK(IsAuthenticated());
-  token_service_->UpdateCredentials(GetAuthenticatedUsername(),
-                                    temp_refresh_token_);
+  std::string account_id = GetAuthenticatedAccountId();
+  token_service_->UpdateCredentials(account_id, temp_refresh_token_);
   temp_refresh_token_.clear();
 
   if (client_->ShouldMergeSigninCredentialsIntoCookieJar())
-    merge_session_helper_->LogIn(GetAuthenticatedUsername());
+    merge_session_helper_->LogIn(account_id);
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {

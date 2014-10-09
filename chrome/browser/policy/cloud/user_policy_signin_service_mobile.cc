@@ -193,8 +193,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   // If the user signed-out while this task was waiting then Shutdown() would
   // have been called, which would have invalidated this task. Since we're here
   // then the user must still be signed-in.
-  const std::string& username = signin_manager()->GetAuthenticatedUsername();
-  DCHECK(!username.empty());
+  DCHECK(signin_manager()->IsAuthenticated());
   DCHECK(!policy_manager()->IsClientRegistered());
   DCHECK(policy_manager()->core()->client());
 
@@ -207,7 +206,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       GetRegistrationType()));
   registration_helper_->StartRegistration(
       oauth2_token_service_,
-      username,
+      signin_manager()->GetAuthenticatedUsername(),
       base::Bind(&UserPolicySigninService::OnRegistrationDone,
                  base::Unretained(this)));
 }

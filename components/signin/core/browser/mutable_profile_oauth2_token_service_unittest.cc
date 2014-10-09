@@ -368,3 +368,16 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, FetchTransientError) {
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             oauth2_service_.signin_error_controller()->auth_error());
 }
+
+TEST_F(MutableProfileOAuth2TokenServiceTest, CanonicalizeAccountId) {
+  std::map<std::string, std::string> tokens;
+  tokens["AccountId-user@gmail.com"] = "refresh_token";
+  tokens["AccountId-Foo.Bar@gmail.com"] = "refresh_token";
+  tokens["AccountId-12345"] = "refresh_token";
+
+  oauth2_service_.LoadAllCredentialsIntoMemory(tokens);
+
+  EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable("user@gmail.com"));
+  EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable("foobar@gmail.com"));
+  EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable("12345"));
+}

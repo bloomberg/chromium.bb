@@ -102,8 +102,6 @@ void GetStatusLabelsForAuthError(Profile* profile,
                                  const SigninManagerBase& signin_manager,
                                  base::string16* status_label,
                                  base::string16* link_label) {
-  base::string16 username =
-      base::UTF8ToUTF16(signin_manager.GetAuthenticatedUsername());
   base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   if (link_label)
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
@@ -118,7 +116,7 @@ void GetStatusLabelsForAuthError(Profile* profile,
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       // If the user name is empty then the first login failed, otherwise the
       // credentials are out-of-date.
-      if (username.empty()) {
+      if (!signin_manager.IsAuthenticated()) {
         if (status_label) {
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_INVALID_USER_CREDENTIALS));

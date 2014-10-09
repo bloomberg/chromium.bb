@@ -67,8 +67,7 @@ void BookmarkServerService::TriggerTokenRequest(bool cancel_previous) {
   if (token_request_ || url_fetcher_)
     return;  // Fetcher is already running.
 
-  const std::string username(signin_manager_->GetAuthenticatedUsername());
-  if (!username.length()) {
+  if (!signin_manager_->IsAuthenticated()) {
     // User is not signed in.
     CleanAfterFailure();
     Notify();
@@ -77,7 +76,8 @@ void BookmarkServerService::TriggerTokenRequest(bool cancel_previous) {
   // Find a token.
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  token_request_ = token_service_->StartRequest(username, scopes, this);
+  token_request_ = token_service_->StartRequest(
+      signin_manager_->GetAuthenticatedAccountId(), scopes, this);
 }
 
 //

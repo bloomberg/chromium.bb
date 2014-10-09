@@ -125,7 +125,7 @@ class SigninManagerBase : public KeyedService {
   // Used by subclass to clear authenticated_username_ instead of using
   // SetAuthenticatedUsername, which enforces special preconditions due
   // to the fact that it is part of the public API and called by clients.
-  void clear_authenticated_username();
+  void ClearAuthenticatedUsername();
 
   // List of observers to notify on signin events.
   // Makes sure list is empty on destruction.
@@ -146,8 +146,9 @@ class SigninManagerBase : public KeyedService {
   SigninClient* client_;
   bool initialized_;
 
-  // Actual username after successful authentication.
+  // Actual username and account_id after successful authentication.
   std::string authenticated_username_;
+  std::string authenticated_account_id_;
 
   // The list of SigninDiagnosticObservers.
   ObserverList<signin_internals_util::SigninDiagnosticsObserver, true>

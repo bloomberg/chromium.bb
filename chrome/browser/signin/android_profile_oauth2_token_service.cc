@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "jni/OAuth2TokenService_jni.h"
 
@@ -217,7 +218,7 @@ AndroidProfileOAuth2TokenService::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
-  DCHECK(!account_id.empty());
+  ValidateAccountId(account_id);
   return new AndroidAccessTokenFetcher(consumer, account_id);
 }
 
@@ -226,6 +227,7 @@ void AndroidProfileOAuth2TokenService::InvalidateOAuth2Token(
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
+  ValidateAccountId(account_id);
   OAuth2TokenService::InvalidateOAuth2Token(account_id,
                                             client_id,
                                             scopes,
@@ -246,6 +248,8 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(
     jboolean j_force_notifications) {
   VLOG(1) << "AndroidProfileOAuth2TokenService::ValidateAccounts from java";
   std::string signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
+  if (!signed_in_account.empty())
+    signed_in_account = gaia::CanonicalizeEmail(signed_in_account);
   ValidateAccounts(signed_in_account, j_force_notifications != JNI_FALSE);
 }
 
@@ -256,6 +260,12 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(
   std::vector<std::string> curr_ids = GetSystemAccounts();
   std::vector<std::string> refreshed_ids;
   std::vector<std::string> revoked_ids;
+
+  // Canonicalize system accounts.  |prev_ids| is already done.
+  for (size_t i = 0; i < curr_ids.size(); ++i)
+    curr_ids[i] = gaia::CanonicalizeEmail(curr_ids[i]);
+  for (size_t i = 0; i < prev_ids.size(); ++i)
+    ValidateAccountId(prev_ids[i]);
 
   VLOG(1) << "AndroidProfileOAuth2TokenService::ValidateAccounts:"
           << " sigined_in_account=" << signed_in_account

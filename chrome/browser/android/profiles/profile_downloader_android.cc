@@ -12,6 +12,9 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "jni/ProfileDownloader_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -23,11 +26,13 @@ namespace {
 // An account fetcher callback.
 class AccountInfoRetriever : public ProfileDownloaderDelegate {
  public:
-  explicit AccountInfoRetriever(Profile* profile,
-                                const std::string& account_id,
-                                const int desired_image_side_pixels)
+  AccountInfoRetriever(Profile* profile,
+                       const std::string& account_id,
+                       const std::string& email,
+                       const int desired_image_side_pixels)
       : profile_(profile),
         account_id_(account_id),
+        email_(email),
         desired_image_side_pixels_(desired_image_side_pixels) {}
 
   void Start() {
@@ -60,7 +65,7 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
   virtual void OnProfileDownloadSuccess(
       ProfileDownloader* downloader) OVERRIDE {
     ProfileDownloaderAndroid::OnProfileDownloadSuccess(
-        account_id_,
+        email_,
         downloader->GetProfileFullName(),
         downloader->GetProfilePicture());
     Shutdown();
@@ -79,8 +84,9 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
   // The browser profile associated with this download request.
   Profile* profile_;
 
-  // The account ID (email address) to be loaded.
+  // The account ID and email address of account to be loaded.
   const std::string account_id_;
+  const std::string email_;
 
   // Desired side length of the profile image (in pixels).
   const int desired_image_side_pixels_;
@@ -150,13 +156,20 @@ void StartFetchingAccountInfoFor(
     JNIEnv* env,
     jclass clazz,
     jobject jprofile,
-    jstring jaccount_id,
+    jstring jemail,
     jint image_side_pixels) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  const std::string account_id =
-      base::android::ConvertJavaStringToUTF8(env, jaccount_id);
+  const std::string email =
+      base::android::ConvertJavaStringToUTF8(env, jemail);
+  // TODO(rogerta): the java code will need to pass in the gaia-id
+  // of the account instead of the email when chrome uses gaia-id as key.
+  DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
+            AccountTrackerServiceFactory::GetForProfile(profile)->
+                GetMigrationState());
   AccountInfoRetriever* retriever =
-      new AccountInfoRetriever(profile, account_id, image_side_pixels);
+      new AccountInfoRetriever(
+          profile, gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)), email,
+          image_side_pixels);
   retriever->Start();
 }
 

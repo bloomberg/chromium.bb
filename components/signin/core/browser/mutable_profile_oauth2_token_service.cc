@@ -9,6 +9,7 @@
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
@@ -157,6 +158,7 @@ MutableProfileOAuth2TokenService::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
+  ValidateAccountId(account_id);
   std::string refresh_token = GetRefreshToken(account_id);
   DCHECK(!refresh_token.empty());
   return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
@@ -170,6 +172,7 @@ MutableProfileOAuth2TokenService::GetRequestContext() {
 void MutableProfileOAuth2TokenService::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK(!primary_account_id.empty());
+  ValidateAccountId(primary_account_id);
   DCHECK(loading_primary_account_id_.empty());
   DCHECK_EQ(0, web_data_service_request_);
 
@@ -243,10 +246,16 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
       } else {
         DCHECK(!refresh_token.empty());
         std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
+
+        // If the account_id is an email address, then canonicalize it.  This
+        // is to support legacy account_ids, and will not be needed after
+        // switching to gaia-ids.
+        if (account_id.find('@') != std::string::npos)
+          account_id = gaia::CanonicalizeEmail(account_id);
+
         refresh_tokens()[account_id].reset(
             new AccountInfo(this, account_id, refresh_token));
         FireRefreshTokenAvailable(account_id);
-        // TODO(fgorski): Notify diagnostic observers.
       }
     }
 
@@ -263,6 +272,8 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
 void MutableProfileOAuth2TokenService::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  ValidateAccountId(account_id);
+
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
   // subsequently get a transient network error.
@@ -295,6 +306,7 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
+  ValidateAccountId(account_id);
 
   signin_metrics::LogSigninAddAccount();
 
@@ -329,6 +341,7 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
 
 void MutableProfileOAuth2TokenService::RevokeCredentials(
     const std::string& account_id) {
+  ValidateAccountId(account_id);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (refresh_tokens_.count(account_id) > 0) {

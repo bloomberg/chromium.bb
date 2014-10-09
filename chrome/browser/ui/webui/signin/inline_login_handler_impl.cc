@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/about_signin_internals.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_oauth_helper.h"
@@ -131,8 +133,14 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
 
   if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
       source == signin::SOURCE_REAUTH) {
+    // TODO(rogerta): the javascript code will need to pass in the gaia-id
+    // of the account instead of the email when chrome uses gaia-id as key.
+    DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
+              AccountTrackerServiceFactory::GetForProfile(profile_)->
+                  GetMigrationState());
+    const std::string account_id = gaia::CanonicalizeEmail(email);
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-        UpdateCredentials(email, refresh_token);
+        UpdateCredentials(account_id, refresh_token);
 
     if (signin::IsAutoCloseEnabledInURL(current_url_)) {
       // Close the gaia sign in tab via a task to make sure we aren't in the
