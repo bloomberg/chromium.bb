@@ -1851,9 +1851,9 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
     if (ScreenOrientationController::from(*frame()))
         ScreenOrientationController::from(*frame())->notifyOrientationChanged();
 
-    // Legacy window.orientation API.
+    // Legacy window.orientation API
     if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
-        frame()->domWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
+        frame()->domWindow()->sendOrientationChangeEvent();
 }
 
 v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValueForTests(const WebScriptSource& source)

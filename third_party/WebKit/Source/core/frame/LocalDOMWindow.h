@@ -279,6 +279,10 @@ public:
     ApplicationCache* applicationCache() const;
     ApplicationCache* optionalApplicationCache() const { return m_applicationCache.get(); }
 
+    // Dispatch the (deprecated) orientationchange event to this DOMWindow and
+    // recurse on its child frames.
+    void sendOrientationChangeEvent();
+
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.

@@ -602,6 +602,26 @@ bool LocalDOMWindow::isCurrentlyDisplayedInFrame() const
     return m_frame && m_frame->domWindow() == this && m_frame->host();
 }
 
+void LocalDOMWindow::sendOrientationChangeEvent()
+{
+    ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
+
+    // Before dispatching the event, build a list of the child frames to
+    // also send the event to, to mitigate side effects from event handlers
+    // potentially interfering with others.
+    WillBeHeapVector<RefPtr<Frame> > childFrames;
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        childFrames.append(child);
+    }
+
+    dispatchEvent(Event::create(EventTypeNames::orientationchange));
+
+    for (size_t i = 0; i < childFrames.size(); ++i) {
+        if (childFrames[i]->domWindow())
+            childFrames[i]->domWindow()->sendOrientationChangeEvent();
+    }
+}
+
 int LocalDOMWindow::orientation() const
 {
     ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
