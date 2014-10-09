@@ -41,6 +41,13 @@
         ],
       },
     }],
+    ['OS=="linux" and target_arch=="arm"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
+        ],
+      },
+    }],
     ['OS=="win"', {
       'variables': {
         'files': [

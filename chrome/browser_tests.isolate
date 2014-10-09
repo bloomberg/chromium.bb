@@ -99,6 +99,14 @@
         ],
       },
     }],
+    ['OS=="linux" and target_arch=="arm"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_arm.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_arm.nexe',
+        ],
+      },
+    }],
     ['OS=="win" or ((OS=="linux" or OS=="mac") and target_arch=="x64")', {
       'variables': {
         'files': [
