@@ -1288,6 +1288,10 @@ const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 const char kDisableSystemFullscreenForTesting[] =
     "disable-system-fullscreen-for-testing";
 
+// Makes the browser window's contentView take up the full size of the
+// window in OSX Yosemite.
+const char kEnableFullSizeContentView[]     = "enable-full-size-content-view";
+
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";

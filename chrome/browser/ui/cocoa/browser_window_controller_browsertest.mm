@@ -230,13 +230,15 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   void VerifyTrafficLightZOrder() const {
     NSView* contentView = [[controller() window] contentView];
     NSView* rootView = [contentView superview];
-    EXPECT_EQ(contentView, [[rootView subviews] objectAtIndex:0]);
+    NSArray* subviews = [rootView subviews];
 
-    NSArray* contentViewSubviews = [contentView subviews];
-    EXPECT_TRUE([contentViewSubviews
-        containsObject:[controller() tabStripBackgroundView]]);
-    EXPECT_TRUE(
-        [contentViewSubviews containsObject:[controller() tabStripView]]);
+    EXPECT_EQ([controller() tabStripBackgroundView],
+              [subviews objectAtIndex:0]);
+    EXPECT_EQ(contentView, [subviews objectAtIndex:1]);
+
+    NSView* tabStripView = [controller() tabStripView];
+    if ([subviews containsObject:tabStripView])
+      EXPECT_EQ(tabStripView, [subviews objectAtIndex:2]);
   }
 
  private:
