@@ -41,8 +41,8 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
   // ThirdPartyAuthenticator implementation.
   virtual void ProcessTokenMessage(
       const buzz::XmlElement* message,
-      const base::Closure& resume_callback) OVERRIDE;
-  virtual void AddTokenElements(buzz::XmlElement* message) OVERRIDE;
+      const base::Closure& resume_callback) override;
+  virtual void AddTokenElements(buzz::XmlElement* message) override;
 
  private:
   void OnThirdPartyTokenValidated(const buzz::XmlElement* message,

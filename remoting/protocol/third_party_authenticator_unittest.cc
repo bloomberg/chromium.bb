@@ -43,7 +43,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
     virtual void FetchThirdPartyToken(
         const GURL& token_url,
         const std::string& scope,
-        const TokenFetchedCallback& token_fetched_callback) OVERRIDE {
+        const TokenFetchedCallback& token_fetched_callback) override {
      ASSERT_EQ(token_url.spec(), kTokenUrl);
      ASSERT_EQ(scope, kTokenScope);
      ASSERT_FALSE(token_fetched_callback.is_null());
@@ -72,7 +72,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
     virtual void ValidateThirdPartyToken(
         const std::string& token,
-        const TokenValidatedCallback& token_validated_callback) OVERRIDE {
+        const TokenValidatedCallback& token_validated_callback) override {
       ASSERT_FALSE(token_validated_callback.is_null());
       on_token_validated_ = token_validated_callback;
     }
@@ -84,11 +84,11 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
       on_token_validated.Run(shared_secret);
     }
 
-    virtual const GURL& token_url() const OVERRIDE {
+    virtual const GURL& token_url() const override {
       return token_url_;
     }
 
-    virtual const std::string& token_scope() const OVERRIDE {
+    virtual const std::string& token_scope() const override {
       return token_scope_;
     }
 
