@@ -31,7 +31,7 @@ class CALayerStorageProvider
   virtual void SwapBuffers(const gfx::Size& size, float scale_factor) override;
   virtual void WillWriteToBackbuffer() override;
   virtual void DiscardBackbuffer() override;
-  virtual void SwapBuffersAckedByBrowser() override;
+  virtual void SwapBuffersAckedByBrowser(bool disable_throttling) override;
 
   // Interface to ImageTransportLayer:
   CGLContextObj LayerShareGroupContext();
@@ -40,14 +40,21 @@ class CALayerStorageProvider
   void LayerResetStorageProvider();
 
  private:
-  void DrawWithVsyncDisabled();
-  void SendPendingSwapToBrowserAfterFrameDrawn();
+  void DrawImmediatelyAndUnblockBrowser();
+
+  // The browser will be blocked while there is a frame that was sent to it but
+  // hasn't drawn yet. This call will un-block the browser.
+  void UnblockBrowserIfNeeded();
 
   ImageTransportSurfaceFBO* transport_surface_;
 
   // Used to determine if we should use setNeedsDisplay or setAsynchronous to
   // animate.
   const bool gpu_vsync_disabled_;
+
+  // Used also to determine if we should wait for CoreAnimation to call our
+  // drawInCGLContext, or if we should force it with displayIfNeeded.
+  bool throttling_disabled_;
 
   // Set when a new swap occurs, and un-set when |layer_| draws that frame.
   bool has_pending_draw_;
@@ -68,7 +75,9 @@ class CALayerStorageProvider
   base::scoped_nsobject<CAContext> context_;
   base::scoped_nsobject<ImageTransportLayer> layer_;
 
-  base::WeakPtrFactory<CALayerStorageProvider> weak_factory_;
+  // Weak factory against which a timeout task for forcing a draw is created.
+  base::WeakPtrFactory<CALayerStorageProvider> pending_draw_weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(CALayerStorageProvider);
 };
 

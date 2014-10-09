@@ -164,7 +164,7 @@ void* ImageTransportSurfaceFBO::GetDisplay() {
 void ImageTransportSurfaceFBO::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   context_->share_group()->SetRendererID(params.renderer_id);
-  storage_provider_->SwapBuffersAckedByBrowser();
+  storage_provider_->SwapBuffersAckedByBrowser(params.disable_throttling);
 }
 
 void ImageTransportSurfaceFBO::OnResize(gfx::Size size,

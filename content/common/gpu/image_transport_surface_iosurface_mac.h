@@ -31,7 +31,7 @@ class IOSurfaceStorageProvider
   virtual void SwapBuffers(const gfx::Size& size, float scale_factor) override;
   virtual void WillWriteToBackbuffer() override;
   virtual void DiscardBackbuffer() override;
-  virtual void SwapBuffersAckedByBrowser() override;
+  virtual void SwapBuffersAckedByBrowser(bool disable_throttling) override;
 
  private:
   ImageTransportSurfaceFBO* transport_surface_;

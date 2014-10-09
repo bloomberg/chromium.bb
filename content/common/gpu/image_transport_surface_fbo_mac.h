@@ -53,8 +53,9 @@ class ImageTransportSurfaceFBO
     virtual void DiscardBackbuffer() = 0;
 
     // Called once for every SwapBuffers call when the IPC for the present has
-    // been processed by the browser.
-    virtual void SwapBuffersAckedByBrowser() = 0;
+    // been processed by the browser. |disable_throttling| is set if the
+    // browser suspects that GPU back-pressure should be disabled.
+    virtual void SwapBuffersAckedByBrowser(bool disable_throttling) = 0;
   };
 
   ImageTransportSurfaceFBO(GpuChannelManager* manager,

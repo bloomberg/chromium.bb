@@ -57,8 +57,10 @@ class ImageTransportSurface {
  public:
   ImageTransportSurface();
 
+#if defined(OS_MACOSX)
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) = 0;
+#endif
   virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) = 0;
@@ -149,8 +151,10 @@ class ImageTransportHelper
   gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.
+#if defined(OS_MACOSX)
   void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params);
+#endif
   void OnWakeUpGpu();
 
   // Backbuffer resize callback.
@@ -187,8 +191,10 @@ class PassThroughImageTransportSurface
   virtual bool OnMakeCurrent(gfx::GLContext* context) override;
 
   // ImageTransportSurface implementation.
+#if defined(OS_MACOSX)
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
+#endif
   virtual void OnResize(gfx::Size size, float scale_factor) override;
   virtual gfx::Size GetSize() override;
   virtual void SetLatencyInfo(

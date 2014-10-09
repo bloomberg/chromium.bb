@@ -91,8 +91,10 @@ bool ImageTransportHelper::Initialize() {
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
+#endif
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_WakeUpGpu, OnWakeUpGpu);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -177,10 +179,12 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
   return stub_->decoder();
 }
 
+#if defined(OS_MACOSX)
 void ImageTransportHelper::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   surface_->OnBufferPresented(params);
 }
+#endif
 
 void ImageTransportHelper::OnWakeUpGpu() {
   surface_->WakeUpGpu();
@@ -268,10 +272,12 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   return true;
 }
 
+#if defined(OS_MACOSX)
 void PassThroughImageTransportSurface::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& /* params */) {
   NOTREACHED();
 }
+#endif
 
 void PassThroughImageTransportSurface::OnResize(gfx::Size size,
                                                 float scale_factor) {

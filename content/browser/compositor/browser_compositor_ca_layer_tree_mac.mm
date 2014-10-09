@@ -116,6 +116,12 @@ int BrowserCompositorCALayerTreeMac::GetRendererID() const {
   return 0;
 }
 
+bool BrowserCompositorCALayerTreeMac::IsRendererThrottlingDisabled() const {
+  if (client_)
+    return client_->BrowserCompositorViewShouldAckImmediately();
+  return false;
+}
+
 void BrowserCompositorCALayerTreeMac::BeginPumpingFrames() {
   [io_surface_layer_ beginPumpingFrames];
 }

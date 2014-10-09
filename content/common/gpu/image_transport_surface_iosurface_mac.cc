@@ -124,7 +124,8 @@ void IOSurfaceStorageProvider::WillWriteToBackbuffer() {
 void IOSurfaceStorageProvider::DiscardBackbuffer() {
 }
 
-void IOSurfaceStorageProvider::SwapBuffersAckedByBrowser() {
+void IOSurfaceStorageProvider::SwapBuffersAckedByBrowser(
+    bool disable_throttling) {
   DCHECK(!pending_swapped_surfaces_.empty());
   pending_swapped_surfaces_.pop_front();
 }

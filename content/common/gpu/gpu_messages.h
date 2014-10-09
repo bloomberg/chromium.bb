@@ -81,9 +81,17 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
+#if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
+  // If the browser needs framerate throttling based on GPU back-pressure to be
+  // disabled (e.g, because the NSView isn't visible but tab capture is active),
+  // then this is set to true.
+  IPC_STRUCT_MEMBER(bool, disable_throttling)
+  // If the browser is drawing to the screen, this is the CGL renderer ID of
+  // the GL context that the brower is using.
   IPC_STRUCT_MEMBER(int32, renderer_id)
 IPC_STRUCT_END()
+#endif
 
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
   IPC_STRUCT_MEMBER(int32, id)
@@ -272,12 +280,12 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 // Tells the GPU process to report video_memory information for the task manager
 IPC_MESSAGE_CONTROL0(GpuMsg_GetVideoMemoryUsageStats)
 
+#if defined(OS_MACOSX)
 // Tells the GPU process that the browser process has handled the swap
-// buffers or post sub-buffer request. A non-zero sync point means
-// that we should wait for the sync point. The surface_handle identifies
-// that buffer that has finished presented, i.e. the buffer being returned.
+// buffers or post sub-buffer request.
 IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_BufferPresented,
                     AcceleratedSurfaceMsg_BufferPresented_Params)
+#endif
 
 // Tells the GPU process to wake up the GPU because we're about to draw.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_WakeUpGpu)

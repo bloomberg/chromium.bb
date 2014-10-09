@@ -82,15 +82,18 @@ void BrowserCompositorViewMac::GotAcceleratedFrame(
     int gpu_host_id, int gpu_route_id) {
   BrowserCompositorCALayerTreeMac* ca_layer_tree =
       BrowserCompositorCALayerTreeMac::FromAcceleratedWidget(widget);
+  bool disable_throttling = false;
   int renderer_id = 0;
   if (ca_layer_tree) {
     ca_layer_tree->GotAcceleratedFrame(
         surface_handle, surface_id, latency_info, pixel_size, scale_factor);
+    disable_throttling = ca_layer_tree->IsRendererThrottlingDisabled();
     renderer_id = ca_layer_tree->GetRendererID();
   }
 
   // Acknowledge the swap, now that it has been processed.
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.disable_throttling = disable_throttling;
   ack_params.renderer_id = renderer_id;
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
   if (ui_shim) {

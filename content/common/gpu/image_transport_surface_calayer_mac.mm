@@ -90,11 +90,12 @@ CALayerStorageProvider::CALayerStorageProvider(
         : transport_surface_(transport_surface),
           gpu_vsync_disabled_(CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableGpuVsync)),
+          throttling_disabled_(false),
           has_pending_draw_(false),
           can_draw_returned_false_count_(0),
           fbo_texture_(0),
           fbo_scale_factor_(1),
-          weak_factory_(this) {}
+          pending_draw_weak_factory_(this) {}
 
 CALayerStorageProvider::~CALayerStorageProvider() {
 }
@@ -141,20 +142,15 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
 }
 
 void CALayerStorageProvider::FreeColorBufferStorage() {
-  // We shouldn't be asked to free a texture when we still have yet to draw it.
-  DCHECK(!has_pending_draw_);
-  has_pending_draw_ = false;
-  can_draw_returned_false_count_ = 0;
-
   // Note that |context_| still holds a reference to |layer_|, and will until
   // a new frame is swapped in.
-  [layer_ displayIfNeeded];
   [layer_ resetStorageProvider];
   layer_.reset();
 
   share_group_context_.reset();
   fbo_texture_ = 0;
   fbo_pixel_size_ = gfx::Size();
+  can_draw_returned_false_count_ = 0;
 }
 
 void CALayerStorageProvider::SwapBuffers(
@@ -185,37 +181,41 @@ void CALayerStorageProvider::SwapBuffers(
     [context_ setLayer:layer_];
   }
 
-  // Tell CoreAnimation to draw our frame. We will send the IPC to the browser
-  // when CoreAnimation has drawn our frame.
-  if (gpu_vsync_disabled_) {
-    DrawWithVsyncDisabled();
+  // Tell CoreAnimation to draw our frame.
+  if (gpu_vsync_disabled_ || throttling_disabled_) {
+    DrawImmediatelyAndUnblockBrowser();
   } else {
     if (![layer_ isAsynchronous])
       [layer_ setAsynchronous:YES];
+
+    // If CoreAnimation doesn't end up drawing our frame, un-block the browser
+    // after a timeout of 1/6th of a second has passed.
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser,
+                   pending_draw_weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(1) / 6);
   }
 }
 
-void CALayerStorageProvider::DrawWithVsyncDisabled() {
-  DCHECK(has_pending_draw_);
+void CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser() {
+  CHECK(has_pending_draw_);
+  if ([layer_ isAsynchronous])
+    [layer_ setAsynchronous:NO];
   [layer_ setNeedsDisplay];
+  [layer_ displayIfNeeded];
 
-  // Sometimes, setNeedsDisplay calls are dropped on the floor. Make this not
-  // hang the renderer by re-issuing the call if the draw has not yet
-  // happened.
-  if (has_pending_draw_) {
-    // Delay sending another draw immediately to avoid starving the run loop.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CALayerStorageProvider::DrawWithVsyncDisabled,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(5));
-  }
+  // Sometimes, the setNeedsDisplay+displayIfNeeded pairs have no effect. This
+  // can happen if the NSView that this layer is attached to isn't in the
+  // window hierarchy (e.g, tab capture of a backgrounded tab). In this case,
+  // the frame will never be seen, so drop it.
+  UnblockBrowserIfNeeded();
 }
 
 void CALayerStorageProvider::WillWriteToBackbuffer() {
-  // TODO(ccameron): The browser may need to continue issuing swaps even when
-  // they do not draw. In these cases it is necessary to either double-buffer
-  // the resulting texture, or to drop frames.
+  // The browser will always throttle itself so that there is no pending draw
+  // when this output surface is written to.
+  DCHECK(!has_pending_draw_);
 }
 
 void CALayerStorageProvider::DiscardBackbuffer() {
@@ -228,7 +228,9 @@ void CALayerStorageProvider::DiscardBackbuffer() {
   context_.reset();
 }
 
-void CALayerStorageProvider::SwapBuffersAckedByBrowser() {
+void CALayerStorageProvider::SwapBuffersAckedByBrowser(
+    bool disable_throttling) {
+  throttling_disabled_ = disable_throttling;
 }
 
 CGLContextObj CALayerStorageProvider::LayerShareGroupContext() {
@@ -290,20 +292,19 @@ void CALayerStorageProvider::LayerDoDraw() {
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
 
   // Allow forward progress in the context now that the swap is complete.
-  DCHECK(has_pending_draw_);
-  SendPendingSwapToBrowserAfterFrameDrawn();
+  UnblockBrowserIfNeeded();
 }
 
 void CALayerStorageProvider::LayerResetStorageProvider() {
   // If we are providing back-pressure by waiting for a draw, that draw will
   // now never come, so release the pressure now.
-  SendPendingSwapToBrowserAfterFrameDrawn();
+  UnblockBrowserIfNeeded();
 }
 
-void CALayerStorageProvider::SendPendingSwapToBrowserAfterFrameDrawn() {
+void CALayerStorageProvider::UnblockBrowserIfNeeded() {
   if (!has_pending_draw_)
     return;
-  weak_factory_.InvalidateWeakPtrs();
+  pending_draw_weak_factory_.InvalidateWeakPtrs();
   has_pending_draw_ = false;
   transport_surface_->SendSwapBuffers(
       SurfaceHandleFromCAContextID([context_ contextId]),

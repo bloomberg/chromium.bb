@@ -37,6 +37,9 @@ class BrowserCompositorCALayerTreeMac
   // Return the CGL renderer ID for the surface, if one is available.
   int GetRendererID() const;
 
+  // Return true if the renderer should not be throttled by GPU back-pressure.
+  bool IsRendererThrottlingDisabled() const;
+
   // Mark a bracket in which new frames are being pumped in a restricted nested
   // run loop.
   void BeginPumpingFrames();
