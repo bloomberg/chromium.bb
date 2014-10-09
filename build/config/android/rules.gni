@@ -469,6 +469,50 @@ template("java_strings_grd") {
   }
 }
 
+# Declare a target that packages strings.xml generated from a grd file.
+#
+# If this target is included in the deps of an android resources/library/apk,
+# the strings.xml will be included with that target.
+#
+# Variables
+#  grit_output_dir: directory containing grit-generated files.
+#  generated_files: list of android resource files to package.
+#
+# Example
+#  java_strings_grd_prebuilt("foo_strings_grd") {
+#    grit_output_dir = "$root_gen_dir/foo/grit"
+#    generated_files = [
+#      "values/strings.xml"
+#    ]
+#  }
+template("java_strings_grd_prebuilt") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
+  base_path = "$target_gen_dir/$target_name"
+  resources_zip = base_path + ".resources.zip"
+  build_config = base_path + ".build_config"
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_resources"
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+  }
+
+  zip("${target_name}__zip") {
+    base_dir = invoker.grit_output_dir
+    inputs = rebase_path(invoker.generated_files, ".", base_dir)
+    output = resources_zip
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__build_config",
+      ":${target_name}__zip",
+    ]
+  }
+}
+
 
 # Declare an Android library target
 #
