@@ -3469,3 +3469,25 @@
    fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
    fun:_ZN5blink13RootInlineBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
 }
+{
+   bug_422083
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7content12_GLOBAL__N_137WebInputEventTraitsTest_ToString_Test8TestBodyEv
+}
+{
+   bug_422087a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN7content13PpFrameWriter19FrameWriterDelegate12DeliverFrameERK13scoped_*
+}
+{
+   bug_422087b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt4listI13scoped_refptrIN5media10VideoFrameEESaIS3_EE9push_backERKS3_
+   fun:_ZN5media14VideoFramePool8PoolImpl13FrameReleasedERK13scoped_refptrINS_10VideoFrameEE
+}
