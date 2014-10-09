@@ -1440,6 +1440,8 @@ crbug.com/420307 [ Win ] http/tests/serviceworker/fetch-frame-resource.html [ Pa
 
 crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Pass Timeout ]
 
+crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
+
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing [ Pass Failure ]
