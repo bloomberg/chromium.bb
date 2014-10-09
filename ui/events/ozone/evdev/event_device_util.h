@@ -12,7 +12,7 @@ namespace ui {
 #define EVDEV_LONG_BITS (CHAR_BIT * sizeof(long))
 #define EVDEV_BITS_TO_LONGS(x) (((x) + EVDEV_LONG_BITS - 1) / EVDEV_LONG_BITS)
 
-static inline int EvdevBitIsSet(const unsigned long* data, int bit) {
+static inline bool EvdevBitIsSet(const unsigned long* data, int bit) {
   return data[bit / EVDEV_LONG_BITS] & (1UL << (bit % EVDEV_LONG_BITS));
 }
 
