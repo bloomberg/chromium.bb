@@ -5591,6 +5591,21 @@
         ],
       },
     }],
+    # In the android webview build, force host targets to be compiled with clang
+    # as the hermetic host gcc is very old on some platforms. This is already
+    # the default on the current development version of AOSP but we force it
+    # here in case we need to compile against an older release version.
+    ['android_webview_build==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="host"', {
+            'aosp_build_settings': {
+              'LOCAL_CLANG': 'true',
+            },
+          }],
+        ],
+      },
+    }],
     # We need a special case to handle the android webview build on mac because
     # the host gcc there doesn't accept this flag, but the target gcc may
     # require it.
