@@ -1260,9 +1260,12 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
     }
 
     ShapeValue* shapeOutsideValue = style()->shapeOutside();
-    if (!frameView()->isInPerformLayout() && isFloating() && shapeOutsideValue && shapeOutsideValue->image() && shapeOutsideValue->image()->data() == image) {
-        ShapeOutsideInfo::ensureInfo(*this).markShapeAsDirty();
-        markShapeOutsideDependentsForLayout();
+    if (isFloating() && shapeOutsideValue && shapeOutsideValue->image() && shapeOutsideValue->image()->data() == image) {
+        ShapeOutsideInfo& info = ShapeOutsideInfo::ensureInfo(*this);
+        if (!info.isComputingShape()) {
+            info.markShapeAsDirty();
+            markShapeOutsideDependentsForLayout();
+        }
     }
 
     if (!paintInvalidationLayerRectsForImage(image, style()->backgroundLayers(), true))

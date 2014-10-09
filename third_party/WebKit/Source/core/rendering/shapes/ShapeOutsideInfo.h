@@ -111,6 +111,7 @@ public:
     void markShapeAsDirty() { m_shape.clear(); }
     bool isShapeDirty() { return !m_shape.get(); }
     LayoutSize shapeSize() const { return m_referenceBoxLogicalSize; }
+    bool isComputingShape() const { return m_isComputingShape; }
 
     LayoutRect computedShapePhysicalBoundingBox() const;
     FloatPoint shapeToRendererPoint(FloatPoint) const;
@@ -120,6 +121,7 @@ public:
 protected:
     ShapeOutsideInfo(const RenderBox& renderer)
         : m_renderer(renderer)
+        , m_isComputingShape(false)
     { }
 
 private:
@@ -139,6 +141,7 @@ private:
     mutable OwnPtr<Shape> m_shape;
     LayoutSize m_referenceBoxLogicalSize;
     ShapeOutsideDeltas m_shapeOutsideDeltas;
+    mutable bool m_isComputingShape;
 };
 
 }

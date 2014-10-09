@@ -391,7 +391,6 @@ Bug(gardener) [ Release Win7 ] fast/shapes/shape-outside-floats/shape-outside-fl
 Bug(gardener) [ Debug Win7 ] fast/shapes/shape-outside-floats/shape-outside-floats-stacked-000.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Mavericks ] fast/shapes/shape-outside-floats/shape-outside-floats-stacked-001.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Mavericks ] fast/shapes/shape-outside-floats/shape-outside-floats-stacked-002.html [ ImageOnlyFailure Pass ]
-Bug(gardener) [ Release Mavericks ] fast/shapes/shape-outside-floats/shape-outside-image-shape-margin.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Mavericks ] fast/shapes/shape-outside-floats/shape-outside-polygon-zero-vertex.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release SnowLeopard ] fast/sub-pixel/shadows-hidpi.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Win7 ] fast/table/css-table-max-height.html [ Failure Pass ]
