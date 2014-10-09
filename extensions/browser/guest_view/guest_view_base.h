@@ -27,7 +27,6 @@ namespace extensions {
 // WebContents. At that point, its lifetime is restricted in scope to the
 // lifetime of its embedder WebContents.
 class GuestViewBase : public content::BrowserPluginGuestDelegate,
-                      public content::RenderProcessHostObserver,
                       public content::WebContentsDelegate,
                       public content::WebContentsObserver {
  public:
@@ -171,10 +170,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
             const base::DictionaryValue& create_params,
             const WebContentsCreatedCallback& callback);
 
-  void InitWithWebContents(
-      const std::string& embedder_extension_id,
-      int embedder_render_process_id,
-      content::WebContents* guest_web_contents);
+  void InitWithWebContents(const std::string& embedder_extension_id,
+                           content::WebContents* embedder_web_contents,
+                           content::WebContents* guest_web_contents);
 
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
@@ -229,12 +227,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetAttachParams(const base::DictionaryValue& params);
   void SetOpener(GuestViewBase* opener);
 
-  // RenderProcessHostObserver implementation
-  virtual void RenderProcessExited(content::RenderProcessHost* host,
-                                   base::ProcessHandle handle,
-                                   base::TerminationStatus status,
-                                   int exit_code) override;
-
   // BrowserPluginGuestDelegate implementation.
   virtual void DidAttach(int guest_proxy_routing_id) override final;
   virtual void ElementSizeChanged(const gfx::Size& old_size,
@@ -257,12 +249,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   virtual ~GuestViewBase();
 
  private:
-  class EmbedderWebContentsObserver;
+  class EmbedderLifetimeObserver;
 
   void SendQueuedEvents();
 
   void CompleteInit(const std::string& embedder_extension_id,
-                    int embedder_render_process_id,
+                    content::WebContents* embedder_web_contents,
                     const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
 
@@ -320,7 +312,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // guests that are created from this guest.
   scoped_ptr<base::DictionaryValue> attach_params_;
 
-  scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
+  scoped_ptr<EmbedderLifetimeObserver> embedder_web_contents_observer_;
 
   // The size of the container element.
   gfx::Size element_size_;

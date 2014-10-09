@@ -136,7 +136,7 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
 content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
     const std::string& embedder_extension_id,
-    int embedder_render_process_id,
+    content::WebContents* embedder_web_contents,
     const content::WebContents::CreateParams& create_params) {
   int guest_instance_id = GetNextInstanceID();
   GuestViewBase* guest =
@@ -147,9 +147,8 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
   guest_create_params.guest_delegate = guest;
   content::WebContents* guest_web_contents =
       WebContents::Create(guest_create_params);
-  guest->InitWithWebContents(embedder_extension_id,
-                             embedder_render_process_id,
-                             guest_web_contents);
+  guest->InitWithWebContents(
+      embedder_extension_id, embedder_web_contents, guest_web_contents);
   return guest_web_contents;
 }
 
