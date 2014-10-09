@@ -933,16 +933,10 @@ function HistoryView(model) {
     self.setPage(self.pageIndex_ + 1);
   });
 
-  var handleRangeChange = function(e) {
-    // Update the results and save the last state.
+  $('timeframe-controls').onchange = function(e) {
     var value = parseInt(e.target.value, 10);
     self.setRangeInDays(/** @type {HistoryModel.Range.<number>} */(value));
   };
-
-  // Add handlers for the range options.
-  $('timeframe-filter-all').addEventListener('change', handleRangeChange);
-  $('timeframe-filter-week').addEventListener('change', handleRangeChange);
-  $('timeframe-filter-month').addEventListener('change', handleRangeChange);
 
   $('range-previous').addEventListener('click', function(e) {
     if (self.getRangeInDays() == HistoryModel.Range.ALL_TIME)

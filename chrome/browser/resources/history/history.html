@@ -83,36 +83,21 @@
                i18n-values="value:searchButton">
       </div>
       <div id="filter-controls" hidden>
-        <button id="range-today" i18n-content="rangeToday"
-                i18n-values="aria-label:rangeToday" disabled></button>
-        <button id="range-previous" i18n-values="aria-label:rangePrevious"
-                disabled></button>
-        <button id="range-next" i18n-values="aria-label:rangeNext" disabled>
-        </button>
-        <div id="display-filter-controls">
-          <div class="display-filter-button">
-            <label for="timeframe-filter-all">
-              <input id="timeframe-filter-all" type="radio"
-                  name="timeframe-filter" value="0" checked>
-              <span i18n-content="rangeAllTime" class="first-button-component">
-              </span>
-            </label>
-          </div>
-          <div class="display-filter-button">
-            <label for="timeframe-filter-week">
-              <input id="timeframe-filter-week" type="radio"
-                  name="timeframe-filter" value="1">
-              <span i18n-content="rangeWeek"></span>
-            </label>
-          </div>
-          <div class="display-filter-button">
-            <label for="timeframe-filter-month">
-              <input id="timeframe-filter-month" type="radio"
-                  name="timeframe-filter" value="2">
-              <span i18n-content="rangeMonth" class="last-button-component">
-              </span>
-            </label>
-          </div>
+        <div id="range-controls">
+          <button id="range-today" i18n-content="rangeToday"
+                  i18n-values="aria-label:rangeToday" disabled></button>
+          <button id="range-previous" i18n-values="aria-label:rangePrevious"
+                  disabled></button>
+          <button id="range-next" i18n-values="aria-label:rangeNext" disabled>
+          </button>
+        </div>
+        <div id="timeframe-controls">
+          <input type="radio" name="timeframe-filter" value="0" checked
+              i18n-values="aria-label:rangeAllTime">
+          <input type="radio" name="timeframe-filter" value="1"
+              i18n-values="aria-label:rangeWeek">
+          <input type="radio" name="timeframe-filter" value="2"
+              i18n-values="aria-label:rangeMonth">
         </div>
       </div>
     </header>

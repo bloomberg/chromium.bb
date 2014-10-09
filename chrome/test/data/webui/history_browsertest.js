@@ -671,7 +671,7 @@ RangeHistoryWebUITest.prototype = {
  */
 TEST_F('RangeHistoryWebUITest', 'DISABLED_allView', function() {
   // Check that we start off in the all time view.
-  expectTrue($('timeframe-filter-all').checked);
+  expectTrue($('timeframe-controls').querySelector('input').checked);
   // See if the correct number of days is shown.
   var dayHeaders = document.querySelectorAll('.day');
   assertEquals(Math.ceil(RESULTS_PER_PAGE / 4), dayHeaders.length);
@@ -1052,7 +1052,7 @@ HistoryWebUIWithSchemesTest.prototype = {
 
 TEST_F('HistoryWebUIWithSchemesTest', 'groupingWithSchemes', function() {
   // Switch to the week view.
-  $('timeframe-filter-week').click();
+  $('timeframe-controls').querySelectorAll('input')[1].click();
   waitForCallback('historyResult', function() {
     // Each URL should be organized under a different "domain".
     expectEquals(document.querySelectorAll('.entry').length, 4);
