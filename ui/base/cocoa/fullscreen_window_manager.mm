@@ -85,15 +85,18 @@ NSScreen* GetDockScreen() {
 }
 
 - (void)update {
+  // From OS X 10.10, NSApplicationDidChangeScreenParametersNotification is sent
+  // when displaying a fullscreen window, which should normally only be sent if
+  // the monitor resolution has changed or new display is detected.
   if (![[NSScreen screens] containsObject:desiredScreen_])
     desiredScreen_.reset([[window_ screen] retain]);
 
   base::mac::FullScreenMode newMode;
   if (!fullscreenActive_)
     newMode = base::mac::kFullScreenModeNormal;
-  else if (desiredScreen_ == GetMenuBarScreen())
+  else if ([desiredScreen_ isEqual:GetMenuBarScreen()])
     newMode = base::mac::kFullScreenModeHideAll;
-  else if (desiredScreen_ == GetDockScreen())
+  else if ([desiredScreen_ isEqual:GetDockScreen()])
     newMode = base::mac::kFullScreenModeHideDock;
   else
     newMode = base::mac::kFullScreenModeNormal;
