@@ -839,7 +839,7 @@ content::WebContents* WebViewGuest::CreateNewGuestWindow(
   return guest_manager->CreateGuestWithWebContentsParams(
       WebViewGuest::Type,
       embedder_extension_id(),
-      embedder_web_contents(),
+      embedder_web_contents()->GetRenderProcessHost()->GetID(),
       create_params);
 }
 
