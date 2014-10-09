@@ -249,6 +249,8 @@ class COMPOSITOR_EXPORT Compositor
   virtual void DidCompleteSwapBuffers() override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
+  virtual void ScheduleComposite() override;
+  virtual void ScheduleAnimation() override;
   virtual void DidPostSwapBuffers() override;
   virtual void DidAbortSwapBuffers() override;
 
