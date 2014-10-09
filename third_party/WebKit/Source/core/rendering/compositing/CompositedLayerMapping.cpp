@@ -2059,18 +2059,18 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, c
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, const Vector<GraphicsLayerPaintInfo>& layers)
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)
 {
-    for (size_t i = 0; i < layers.size(); ++i) {
+    for (size_t i = 0; i < layers.size() && i < maxSquashedLayerIndex; ++i) {
         if (renderObject->isDescendantOf(layers[i].renderLayer->renderer()))
             return &layers[i];
     }
     return 0;
 }
 
-const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject)
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, unsigned maxSquashedLayerIndex)
 {
-    return CompositedLayerMapping::containingSquashedLayer(renderObject, m_squashedLayers);
+    return CompositedLayerMapping::containingSquashedLayer(renderObject, m_squashedLayers, maxSquashedLayerIndex);
 }
 
 IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer& referenceLayer, const GraphicsLayerPaintInfo& paintInfo, const Vector<GraphicsLayerPaintInfo>& layers)
@@ -2081,7 +2081,7 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer&
 
     ASSERT(clippingContainer);
 
-    const GraphicsLayerPaintInfo* ancestorPaintInfo = containingSquashedLayer(clippingContainer, layers);
+    const GraphicsLayerPaintInfo* ancestorPaintInfo = containingSquashedLayer(clippingContainer, layers, layers.size());
     // Must be there, otherwise CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have disallowed squashing.
     ASSERT(ancestorPaintInfo);
 

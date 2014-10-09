@@ -202,12 +202,12 @@ public:
     }
 
     // If there is a squashed layer painting into this CLM that is an ancestor of the given RenderObject, return it. Otherwise return 0.
-    const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*);
+    const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*, unsigned maxSquashedLayerIndex);
 
     void updateScrollingBlockSelection();
 
 private:
-    static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers);
+    static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
 
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const RenderLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);

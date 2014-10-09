@@ -149,7 +149,7 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
         return CompositingReasonSquashingBlendingIsDisallowed;
 
     // FIXME: this is not efficient, since it walks up the tree. We should store these values on the CompositingInputsCache.
-    if (layer->clippingContainer() != squashingLayer.clippingContainer() && !squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->clippingContainer()))
+    if (layer->clippingContainer() != squashingLayer.clippingContainer() && !squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->clippingContainer(), squashingState.nextSquashedLayerIndex))
         return CompositingReasonSquashingClippingContainerMismatch;
 
     // Composited descendants need to be clipped by a child containment graphics layer, which would not be available if the layer is
