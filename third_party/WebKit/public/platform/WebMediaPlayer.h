@@ -120,6 +120,9 @@ public:
     virtual bool hasVideo() const = 0;
     virtual bool hasAudio() const = 0;
 
+    // True if the media is being played on a remote device.
+    virtual bool isRemote() const { return false; }
+
     // Dimension of the video.
     virtual WebSize naturalSize() const = 0;
 
