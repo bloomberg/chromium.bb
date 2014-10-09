@@ -167,7 +167,7 @@ class SystemTrayTest : public AshTestBase {
   SystemTrayTest() {}
   virtual ~SystemTrayTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     test::AshTestBase::SetUp();
