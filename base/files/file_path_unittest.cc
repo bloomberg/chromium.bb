@@ -765,6 +765,7 @@ TEST_F(FilePathTest, Extension2) {
     { FPL("/foo.tar.gz.gz"),         FPL(".gz.gz") },
     { FPL("/foo.1234.user.js"),      FPL(".user.js") },
     { FPL("foo.user.js"),            FPL(".user.js") },
+    { FPL("/foo.tar.bz"),            FPL(".tar.bz") },
   };
   for (unsigned int i = 0; i < arraysize(cases); ++i) {
     FilePath path(cases[i].input);
