@@ -192,6 +192,13 @@
     [self close];
 }
 
+- (void)animationDidStop:(NSAnimation*)animation {
+  // We can arrive here if animation was stopped in [self close] call.
+  boundsAnimation_.reset();
+
+  [popupCollection_ onPopupAnimationEnded:[self notificationID]];
+}
+
 - (void)showWithAnimation:(NSRect)newBounds {
   bounds_ = newBounds;
   NSRect startBounds = newBounds;
