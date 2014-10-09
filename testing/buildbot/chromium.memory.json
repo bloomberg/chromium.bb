@@ -104,7 +104,19 @@
   },
   "Mac ASan Tests (1)": {
     "gtest_tests": [
-      "base_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        }
+      },
       "cacheinvalidation_unittests",
       "cc_unittests",
       "chromedriver_unittests",
@@ -115,38 +127,63 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "content_unittests",
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "gcm_unit_tests",
       "gpu_unittests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
       "sql_unittests",
-      "url_unittests",
-      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+      "sync_unit_tests",
+      "ui_unittests",
+      "url_unittests"
     ]
   },
   "Mac ASan Tests (2)": {
     "gtest_tests": [
-      "net_unittests",
-      "sync_unit_tests",
-      "ui_unittests",
-      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
   "Mac ASan Tests (3)": {
     "gtest_tests": [
-      "interactive_ui_tests",
-      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
   "Mac ASan 64 Tests (1)": {
     "gtest_tests": [
       "base_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        }
+      },
       "cacheinvalidation_unittests",
       "cc_unittests",
       "chromedriver_unittests",
@@ -157,34 +194,51 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "content_unittests",
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "crypto_unittests",
       "gcm_unit_tests",
       "gpu_unittests",
+      {
+        "test": "interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
       "sql_unittests",
-      "unit_tests",
-      "url_unittests",
-      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+      "sync_unit_tests",
+      "ui_unittests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "url_unittests"
     ]
   },
   "Mac ASan 64 Tests (2)": {
     "gtest_tests": [
-      "net_unittests",
-      "sync_unit_tests",
-      "ui_unittests",
-      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
   "Mac ASan 64 Tests (3)": {
     "gtest_tests": [
-      "interactive_ui_tests",
-      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
   "Linux Chromium OS ASan LSan Tests (1)": {
