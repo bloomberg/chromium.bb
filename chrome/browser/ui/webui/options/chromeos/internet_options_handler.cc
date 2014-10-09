@@ -290,13 +290,6 @@ bool AddIntegerPropertyIfChanged(const std::string& key,
   return false;
 }
 
-void RequestReconnect(const std::string& service_path) {
-  NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-      service_path,
-      base::Bind(&ash::network_connect::ConnectToNetwork, service_path),
-      base::Bind(&ShillError, "RequestReconnect"));
-}
-
 }  // namespace
 
 InternetOptionsHandler::InternetOptionsHandler()
@@ -766,75 +759,76 @@ void InternetOptionsHandler::SetIPConfigProperties(
     NOTREACHED();
     return;
   }
-  NET_LOG_USER("SetIPConfigProperties", service_path);
+  NET_LOG_USER("SetIPConfigProperties: " + name_server_type, service_path);
 
-  bool request_reconnect = false;
   std::vector<std::string> properties_to_clear;
   base::DictionaryValue properties_to_set;
 
   if (dhcp_for_ip) {
-    request_reconnect |= AppendPropertyKeyIfPresent(
-        shill::kStaticIPAddressProperty,
-        shill_properties, &properties_to_clear);
-    request_reconnect |= AppendPropertyKeyIfPresent(
-        shill::kStaticIPPrefixlenProperty,
-        shill_properties, &properties_to_clear);
-    request_reconnect |= AppendPropertyKeyIfPresent(
-        shill::kStaticIPGatewayProperty,
-        shill_properties, &properties_to_clear);
+    AppendPropertyKeyIfPresent(shill::kStaticIPAddressProperty,
+                               shill_properties,
+                               &properties_to_clear);
+    AppendPropertyKeyIfPresent(shill::kStaticIPPrefixlenProperty,
+                               shill_properties,
+                               &properties_to_clear);
+    AppendPropertyKeyIfPresent(shill::kStaticIPGatewayProperty,
+                               shill_properties,
+                               &properties_to_clear);
   } else {
-    request_reconnect |= AddStringPropertyIfChanged(
-        shill::kStaticIPAddressProperty,
-        address, shill_properties, &properties_to_set);
+    AddStringPropertyIfChanged(shill::kStaticIPAddressProperty,
+                               address,
+                               shill_properties,
+                               &properties_to_set);
     int prefixlen = network_util::NetmaskToPrefixLength(netmask);
     if (prefixlen < 0) {
       LOG(ERROR) << "Invalid prefix length for: " << service_path
                  << " with netmask " << netmask;
       prefixlen = 0;
     }
-    request_reconnect |= AddIntegerPropertyIfChanged(
-        shill::kStaticIPPrefixlenProperty,
-        prefixlen, shill_properties, &properties_to_set);
-    request_reconnect |= AddStringPropertyIfChanged(
-        shill::kStaticIPGatewayProperty,
-        gateway, shill_properties, &properties_to_set);
+    AddIntegerPropertyIfChanged(shill::kStaticIPPrefixlenProperty,
+                                prefixlen,
+                                shill_properties,
+                                &properties_to_set);
+    AddStringPropertyIfChanged(shill::kStaticIPGatewayProperty,
+                               gateway,
+                               shill_properties,
+                               &properties_to_set);
   }
 
   if (name_server_type == kNameServerTypeAutomatic) {
     AppendPropertyKeyIfPresent(shill::kStaticIPNameServersProperty,
-                               shill_properties, &properties_to_clear);
+                               shill_properties,
+                               &properties_to_clear);
   } else {
     if (name_server_type == kNameServerTypeGoogle)
       name_servers = kGoogleNameServers;
-    AddStringPropertyIfChanged(
-        shill::kStaticIPNameServersProperty,
-        name_servers, shill_properties, &properties_to_set);
+    AddStringPropertyIfChanged(shill::kStaticIPNameServersProperty,
+                               name_servers,
+                               shill_properties,
+                               &properties_to_set);
   }
 
   if (!properties_to_clear.empty()) {
     NetworkHandler::Get()->network_configuration_handler()->ClearProperties(
-      service_path, properties_to_clear,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ShillError, "ClearIPConfigProperties"));
+        service_path,
+        properties_to_clear,
+        base::Bind(&base::DoNothing),
+        base::Bind(&ShillError, "ClearIPConfigProperties"));
   }
   if (!properties_to_set.empty()) {
     NetworkHandler::Get()->network_configuration_handler()->SetProperties(
-        service_path, properties_to_set,
+        service_path,
+        properties_to_set,
         base::Bind(&base::DoNothing),
         base::Bind(&ShillError, "SetIPConfigProperties"));
   }
   std::string device_path;
-  shill_properties.GetStringWithoutPathExpansion(
-      shill::kDeviceProperty, &device_path);
+  shill_properties.GetStringWithoutPathExpansion(shill::kDeviceProperty,
+                                                 &device_path);
   if (!device_path.empty()) {
-    base::Closure callback = base::Bind(&base::DoNothing);
-    // If auto config or a static IP property changed, we need to reconnect
-    // to the network.
-    if (request_reconnect)
-      callback = base::Bind(&RequestReconnect, service_path);
     NetworkHandler::Get()->network_device_handler()->RequestRefreshIPConfigs(
         device_path,
-        callback,
+        base::Bind(&base::DoNothing),
         base::Bind(&ShillError, "RequestRefreshIPConfigs"));
   }
 }

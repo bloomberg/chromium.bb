@@ -384,6 +384,36 @@ cr.define('options.internet', function() {
     },
 
     /**
+     * Sends the IP Config info to chrome.
+     * @param {string} nameServerType The selected name server type:
+     *   'automatic', 'google', or 'user'.
+     * @private
+     */
+    sendIpConfig_: function(nameServerType) {
+      var userNameServerString = '';
+      if (nameServerType == 'user') {
+        var userNameServers = [];
+        for (var i = 1; i <= 4; ++i) {
+          var nameServerField = $('ipconfig-dns' + i);
+          // Skip empty values.
+          if (nameServerField && nameServerField.model &&
+              nameServerField.model.value) {
+            userNameServers.push(nameServerField.model.value);
+          }
+        }
+        userNameServerString = userNameServers.sort().join(',');
+      }
+      chrome.send('setIPConfig',
+                  [this.servicePath_,
+                   Boolean($('ip-automatic-configuration-checkbox').checked),
+                   $('ip-address').model.value || '',
+                   $('ip-netmask').model.value || '',
+                   $('ip-gateway').model.value || '',
+                   nameServerType,
+                   userNameServerString]);
+    },
+
+    /**
      * Creates an indicator event for controlled properties using
      * the same dictionary format as CoreOptionsHandler::CreateValueForPref.
      * @param {string} name The name for the Event.
@@ -1104,26 +1134,8 @@ cr.define('options.internet', function() {
         break;
       }
     }
+    detailsPage.sendIpConfig_(nameServerType);
 
-    // Skip any empty values.
-    var userNameServers = [];
-    for (var i = 1; i <= 4; ++i) {
-      var nameServerField = $('ipconfig-dns' + i);
-      if (nameServerField && nameServerField.model &&
-          nameServerField.model.value) {
-        userNameServers.push(nameServerField.model.value);
-      }
-    }
-
-    userNameServers = userNameServers.sort();
-    chrome.send('setIPConfig',
-                [servicePath,
-                 Boolean($('ip-automatic-configuration-checkbox').checked),
-                 $('ip-address').model.value || '',
-                 $('ip-netmask').model.value || '',
-                 $('ip-gateway').model.value || '',
-                 nameServerType,
-                 userNameServers.join(',')]);
     PageManager.closeOverlay();
   };
 
@@ -1357,19 +1369,24 @@ cr.define('options.internet', function() {
 
     // Set Nameserver fields.
     var nameServerType = 'automatic';
-    if (staticNameServersString &&
-        staticNameServersString == inetNameServersString) {
-      nameServerType = 'user';
+    if (staticNameServersString) {
+      // If static nameservers are defined and match the google name servers,
+      // show that in the UI, otherwise show the custom static nameservers.
+      if (staticNameServersString == GoogleNameServersString)
+        nameServerType = 'google';
+      else if (staticNameServersString == inetNameServersString)
+        nameServerType = 'user';
     }
-    if (inetNameServersString == GoogleNameServersString)
-      nameServerType = 'google';
-
     $('automatic-dns-display').textContent = inetNameServersString;
     $('google-dns-display').textContent = GoogleNameServersString;
 
     var nameServersUser = [];
-    if (staticNameServers)
+    if (staticNameServers) {
       nameServersUser = staticNameServers;
+    } else if (savedNameServers) {
+      // Pre-populate with values provided by DHCP server.
+      nameServersUser = savedNameServers;
+    }
 
     var nameServerModels = [];
     for (var i = 0; i < 4; ++i)
