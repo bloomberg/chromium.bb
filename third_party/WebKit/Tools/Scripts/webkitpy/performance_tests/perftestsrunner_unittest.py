@@ -271,7 +271,7 @@ Finished: 0.1 s
 
 """
 
-    results = {'url': 'http://trac.webkit.org/browser/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
+    results = {'url': 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
         'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}}
 
 
@@ -524,7 +524,7 @@ class IntegrationTest(unittest.TestCase):
 
     _event_target_wrapper_and_inspector_results = {
         "Bindings":
-            {"url": "http://trac.webkit.org/browser/trunk/PerformanceTests/Bindings",
+            {"url": "https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings",
             "tests": {"event-target-wrapper": EventTargetWrapperTestData.results}}}
 
     def test_run_with_json_output(self):
@@ -720,10 +720,10 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(output['revisions'], {'blink': {'revision': '5678', 'timestamp': '2013-02-01 08:48:05 +0000'}})
         self.assertEqual(output['tests'].keys(), ['Bindings'])
         self.assertEqual(sorted(output['tests']['Bindings'].keys()), ['tests', 'url'])
-        self.assertEqual(output['tests']['Bindings']['url'], 'http://trac.webkit.org/browser/trunk/PerformanceTests/Bindings')
+        self.assertEqual(output['tests']['Bindings']['url'], 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings')
         self.assertEqual(output['tests']['Bindings']['tests'].keys(), ['event-target-wrapper'])
         self.assertEqual(output['tests']['Bindings']['tests']['event-target-wrapper'], {
-            'url': 'http://trac.webkit.org/browser/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
+            'url': 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
             'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}})
 
     def test_run_with_repeat(self):
