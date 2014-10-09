@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PlatformLocalCredential FINAL : public PlatformCredential {
+class PLATFORM_EXPORT PlatformLocalCredential final : public PlatformCredential {
     WTF_MAKE_NONCOPYABLE(PlatformLocalCredential);
 public:
     static PlatformLocalCredential* create(const String& id, const String& name, const KURL& avatarURL, const String& password);

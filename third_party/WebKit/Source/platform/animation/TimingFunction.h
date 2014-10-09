@@ -69,7 +69,7 @@ private:
     Type m_type;
 };
 
-class PLATFORM_EXPORT LinearTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
 public:
     static LinearTimingFunction* shared()
     {
@@ -91,7 +91,7 @@ private:
     }
 };
 
-class PLATFORM_EXPORT CubicBezierTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
 public:
     enum SubType {
         Ease,
@@ -168,7 +168,7 @@ private:
     mutable OwnPtr<UnitBezier> m_bezier;
 };
 
-class PLATFORM_EXPORT StepsTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 public:
     enum StepAtPosition {
         Start,

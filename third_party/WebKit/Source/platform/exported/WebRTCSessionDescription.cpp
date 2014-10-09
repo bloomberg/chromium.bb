@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class WebRTCSessionDescriptionPrivate FINAL : public RefCounted<WebRTCSessionDescriptionPrivate> {
+class WebRTCSessionDescriptionPrivate final : public RefCounted<WebRTCSessionDescriptionPrivate> {
 public:
     static PassRefPtr<WebRTCSessionDescriptionPrivate> create(const WebString& type, const WebString& sdp);
 

@@ -21,7 +21,7 @@ namespace blink {
 // thread allocates any objects managed by the Blink GC. The detach GC
 // method must be called on the WebThread during shutdown when the thread
 // no longer needs to access objects managed by the Blink GC.
-class PLATFORM_EXPORT WebThreadSupportingGC FINAL {
+class PLATFORM_EXPORT WebThreadSupportingGC final {
     WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 public:
     static PassOwnPtr<WebThreadSupportingGC> create(const char*);

@@ -38,7 +38,7 @@ public:
     float stdDeviationY() const;
     void setStdDeviationY(float);
 
-    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override FINAL;
+    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override final;
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
     static IntSize calculateKernelSize(Filter*, const FloatPoint& std);
     static IntSize calculateUnscaledKernelSize(const FloatPoint& std);

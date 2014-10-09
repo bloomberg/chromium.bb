@@ -40,7 +40,7 @@ public:
 
     virtual ~RefCountedSupplement() { }
 
-    class Wrapper FINAL : public Supplement<T> {
+    class Wrapper final : public Supplement<T> {
     public:
         explicit Wrapper(PassRefPtr<ThisType> wrapped) : m_wrapped(wrapped) { }
         virtual ~Wrapper() { }

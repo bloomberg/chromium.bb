@@ -145,7 +145,7 @@ namespace {
 
 // BufferSourceProvider is an AudioSourceProvider wrapping an in-memory buffer.
 
-class BufferSourceProvider FINAL : public AudioSourceProvider {
+class BufferSourceProvider final : public AudioSourceProvider {
 public:
     BufferSourceProvider(const float* source, size_t numberOfSourceFrames)
         : m_source(source)

@@ -213,7 +213,7 @@ protected:
 };
 
 template<typename T>
-class WrapperPersistent FINAL : public WrapperPersistentNode {
+class WrapperPersistent final : public WrapperPersistentNode {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     static WrapperPersistent<T>* create(T* raw);

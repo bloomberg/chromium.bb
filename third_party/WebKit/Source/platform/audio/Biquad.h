@@ -45,7 +45,7 @@ namespace blink {
 // It can be configured to a number of common and very useful filters:
 //    lowpass, highpass, shelving, parameteric, notch, allpass, ...
 
-class PLATFORM_EXPORT Biquad FINAL {
+class PLATFORM_EXPORT Biquad final {
 public:
     Biquad();
     ~Biquad();

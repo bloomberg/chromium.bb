@@ -44,7 +44,7 @@ namespace blink {
 class MediaStreamSource;
 class WebAudioSourceProvider;
 
-class PLATFORM_EXPORT MediaStreamComponent FINAL : public GarbageCollectedFinalized<MediaStreamComponent> {
+class PLATFORM_EXPORT MediaStreamComponent final : public GarbageCollectedFinalized<MediaStreamComponent> {
 public:
     class ExtraData {
     public:
@@ -80,7 +80,7 @@ private:
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
     // calls into chromium to get a rendered audio stream.
 
-    class PLATFORM_EXPORT AudioSourceProviderImpl FINAL: public AudioSourceProvider {
+    class PLATFORM_EXPORT AudioSourceProviderImpl final: public AudioSourceProvider {
     public:
         AudioSourceProviderImpl()
             : m_webAudioSourceProvider(0)

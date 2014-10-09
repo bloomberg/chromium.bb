@@ -39,7 +39,7 @@ class ArchiveResource;
 class KURL;
 class MHTMLArchive;
 
-class PLATFORM_EXPORT ArchiveResourceCollection FINAL : public NoBaseWillBeGarbageCollectedFinalized<ArchiveResourceCollection> {
+class PLATFORM_EXPORT ArchiveResourceCollection final : public NoBaseWillBeGarbageCollectedFinalized<ArchiveResourceCollection> {
     WTF_MAKE_NONCOPYABLE(ArchiveResourceCollection); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<ArchiveResourceCollection> create()

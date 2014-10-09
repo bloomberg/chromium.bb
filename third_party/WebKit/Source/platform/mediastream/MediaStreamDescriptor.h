@@ -50,7 +50,7 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-class PLATFORM_EXPORT MediaStreamDescriptor FINAL : public GarbageCollectedFinalized<MediaStreamDescriptor> {
+class PLATFORM_EXPORT MediaStreamDescriptor final : public GarbageCollectedFinalized<MediaStreamDescriptor> {
 public:
     class ExtraData {
     public:

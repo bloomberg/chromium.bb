@@ -52,7 +52,7 @@ class MediaStreamComponent;
 class MediaStreamDescriptor;
 class MediaStreamTrackSourcesRequest;
 
-class PLATFORM_EXPORT MediaStreamCenter FINAL : public blink::WebMediaStreamCenterClient {
+class PLATFORM_EXPORT MediaStreamCenter final : public blink::WebMediaStreamCenterClient {
     WTF_MAKE_NONCOPYABLE(MediaStreamCenter);
 public:
     virtual ~MediaStreamCenter();

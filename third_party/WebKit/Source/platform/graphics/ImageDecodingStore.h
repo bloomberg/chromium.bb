@@ -130,7 +130,7 @@ private:
         CacheEntry* m_next;
     };
 
-    class DecoderCacheEntry FINAL : public CacheEntry {
+    class DecoderCacheEntry final : public CacheEntry {
     public:
         static PassOwnPtr<DecoderCacheEntry> create(const ImageFrameGenerator* generator, PassOwnPtr<ImageDecoder> decoder)
         {

@@ -39,7 +39,7 @@ class SkImage;
 namespace blink {
 
 // This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted
-class Canvas2DImageBufferSurface FINAL : public ImageBufferSurface {
+class Canvas2DImageBufferSurface final : public ImageBufferSurface {
 public:
     Canvas2DImageBufferSurface(const IntSize& size, OpacityMode opacityMode = NonOpaque, int msaaSampleCount = 1)
         : ImageBufferSurface(size, opacityMode)

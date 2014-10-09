@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class RTCOfferOptions FINAL : public GarbageCollected<RTCOfferOptions> {
+class RTCOfferOptions final : public GarbageCollected<RTCOfferOptions> {
 public:
     static RTCOfferOptions* create(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
     {

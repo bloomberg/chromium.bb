@@ -53,7 +53,7 @@ public:
     virtual void setResultColorSpace(ColorSpace) override;
     virtual void transformResultColorSpace(FilterEffect*, const int) override;
 
-    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override FINAL;
+    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
 

@@ -1027,7 +1027,7 @@ void ThreadState::waitUntilSweepersDone()
 }
 
 
-class SweepNonFinalizedHeapTask FINAL : public WebThread::Task {
+class SweepNonFinalizedHeapTask final : public WebThread::Task {
 public:
     SweepNonFinalizedHeapTask(ThreadState* state, BaseHeap* heap, HeapStats* stats)
         : m_threadState(state)

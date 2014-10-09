@@ -46,7 +46,7 @@ class SharedBuffer;
 
 struct SerializedResource;
 
-class PLATFORM_EXPORT MHTMLArchive FINAL : public RefCountedWillBeGarbageCollectedFinalized<MHTMLArchive> {
+class PLATFORM_EXPORT MHTMLArchive final : public RefCountedWillBeGarbageCollectedFinalized<MHTMLArchive> {
 public:
     static PassRefPtrWillBeRawPtr<MHTMLArchive> create();
     static PassRefPtrWillBeRawPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);

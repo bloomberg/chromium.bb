@@ -49,7 +49,7 @@ public:
     float shadowOpacity() const { return m_shadowOpacity; }
     void setShadowOpacity(float shadowOpacity) { m_shadowOpacity = shadowOpacity; }
 
-    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override FINAL;
+    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override final;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;

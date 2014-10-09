@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class RTCIceServer FINAL : public GarbageCollectedFinalized<RTCIceServer> {
+class RTCIceServer final : public GarbageCollectedFinalized<RTCIceServer> {
 public:
     static RTCIceServer* create(const KURL& uri, const String& username, const String& credential)
     {
@@ -71,7 +71,7 @@ enum RTCIceTransports {
     RTCIceTransportsAll
 };
 
-class RTCConfiguration FINAL : public GarbageCollected<RTCConfiguration> {
+class RTCConfiguration final : public GarbageCollected<RTCConfiguration> {
 public:
     static RTCConfiguration* create() { return new RTCConfiguration(); }
 

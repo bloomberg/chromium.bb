@@ -40,7 +40,7 @@ public:
     ScrollbarThemeOverlayMock() : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)) { }
 
 private:
-    virtual bool isMockTheme() const override FINAL { return true; }
+    virtual bool isMockTheme() const override final { return true; }
 };
 
 } // namespace blink

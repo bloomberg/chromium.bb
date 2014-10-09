@@ -41,7 +41,7 @@ namespace {
 // ChannelProvider provides a single channel of audio data (one channel at a time) for each channel
 // of data provided to us in a multi-channel provider.
 
-class ChannelProvider FINAL : public AudioSourceProvider {
+class ChannelProvider final : public AudioSourceProvider {
 public:
     ChannelProvider(AudioSourceProvider* multiChannelProvider, unsigned numberOfChannels)
         : m_multiChannelProvider(multiChannelProvider)

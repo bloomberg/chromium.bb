@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class PluginListBuilder FINAL : public blink::WebPluginListBuilder {
+class PluginListBuilder final : public blink::WebPluginListBuilder {
 public:
     PluginListBuilder(Vector<blink::PluginInfo>* results) : m_results(results) { }
 

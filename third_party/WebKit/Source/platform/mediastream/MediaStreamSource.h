@@ -44,7 +44,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT MediaStreamSource FINAL : public GarbageCollectedFinalized<MediaStreamSource> {
+class PLATFORM_EXPORT MediaStreamSource final : public GarbageCollectedFinalized<MediaStreamSource> {
 public:
     class Observer : public GarbageCollectedMixin {
     public:

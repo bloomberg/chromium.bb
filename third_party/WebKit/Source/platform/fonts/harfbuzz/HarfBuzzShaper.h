@@ -49,7 +49,7 @@ class Font;
 class GlyphBufferWithOffsets;
 class SimpleFontData;
 
-class HarfBuzzShaper FINAL {
+class HarfBuzzShaper final {
 public:
     enum ForTextEmphasisOrNot {
         NotForTextEmphasis,

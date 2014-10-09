@@ -37,7 +37,7 @@ namespace blink {
 class PlatformSpeechSynthesizer;
 class PlatformSpeechSynthesizerClient;
 
-class WebSpeechSynthesizerClientImpl FINAL : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>, public WebSpeechSynthesizerClient {
+class WebSpeechSynthesizerClientImpl final : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>, public WebSpeechSynthesizerClient {
 public:
     WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*, PlatformSpeechSynthesizerClient*);
     virtual ~WebSpeechSynthesizerClientImpl();

@@ -40,7 +40,7 @@ protected:
     virtual ~PlatformSpeechSynthesisUtteranceClient() { }
 };
 
-class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance FINAL : public GarbageCollectedFinalized<PlatformSpeechSynthesisUtterance> {
+class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final : public GarbageCollectedFinalized<PlatformSpeechSynthesisUtterance> {
 public:
     static PlatformSpeechSynthesisUtterance* create(PlatformSpeechSynthesisUtteranceClient*);
 

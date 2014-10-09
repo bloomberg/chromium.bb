@@ -70,7 +70,7 @@ private:
 // supports efficient (O(lg n)) insertion, removal and querying of
 // intervals in the tree.
 template<class T, class UserData = void*>
-class PODIntervalTree FINAL : public PODRedBlackTree<PODInterval<T, UserData> > {
+class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData> > {
     WTF_MAKE_NONCOPYABLE(PODIntervalTree);
 public:
     // Typedef to reduce typing when declaring intervals to be stored in

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class WebStorageQuotaCallbacksPrivate FINAL : public RefCountedWillBeGarbageCollected<WebStorageQuotaCallbacksPrivate> {
+class WebStorageQuotaCallbacksPrivate final : public RefCountedWillBeGarbageCollected<WebStorageQuotaCallbacksPrivate> {
 public:
     static PassRefPtrWillBeRawPtr<WebStorageQuotaCallbacksPrivate> create(const PassOwnPtrWillBeRawPtr<StorageQuotaCallbacks>& callbacks)
     {

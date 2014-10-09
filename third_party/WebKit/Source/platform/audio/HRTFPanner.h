@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT HRTFPanner FINAL : public Panner {
+class PLATFORM_EXPORT HRTFPanner final : public Panner {
 public:
     HRTFPanner(float sampleRate, HRTFDatabaseLoader*);
     virtual ~HRTFPanner();

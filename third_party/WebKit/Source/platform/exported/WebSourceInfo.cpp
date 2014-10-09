@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class WebSourceInfoPrivate FINAL : public RefCounted<WebSourceInfoPrivate> {
+class WebSourceInfoPrivate final : public RefCounted<WebSourceInfoPrivate> {
 public:
     static PassRefPtr<WebSourceInfoPrivate> create(const WebString& id, WebSourceInfo::SourceKind, const WebString& label, WebSourceInfo::VideoFacingMode);
 

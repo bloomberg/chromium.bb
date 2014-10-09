@@ -48,7 +48,7 @@ protected:
     virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
 private:
-    virtual bool isMockTheme() const override FINAL { return true; }
+    virtual bool isMockTheme() const override final { return true; }
 };
 
 }

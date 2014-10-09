@@ -248,7 +248,7 @@ public:
     void calculateAndPaintOverhangAreas(GraphicsContext*, const IntRect& dirtyRect);
     void calculateAndPaintOverhangBackground(GraphicsContext*, const IntRect& dirtyRect);
 
-    virtual bool isScrollView() const override FINAL { return true; }
+    virtual bool isScrollView() const override final { return true; }
 
 protected:
     ScrollView();

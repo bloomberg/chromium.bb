@@ -34,7 +34,7 @@ public:
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
-    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override FINAL;
+    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
 
     virtual FilterEffectType filterEffectType() const override { return FilterEffectTypeTile; }
 

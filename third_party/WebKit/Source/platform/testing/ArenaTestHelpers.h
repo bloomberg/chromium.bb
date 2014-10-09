@@ -37,7 +37,7 @@ namespace ArenaTestHelpers {
 
 // An allocator for the PODArena which tracks the regions which have
 // been allocated.
-class TrackedAllocator FINAL : public PODArena::FastMallocAllocator {
+class TrackedAllocator final : public PODArena::FastMallocAllocator {
 public:
     static PassRefPtr<TrackedAllocator> create()
     {

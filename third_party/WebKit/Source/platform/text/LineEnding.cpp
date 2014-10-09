@@ -44,7 +44,7 @@ public:
     virtual ~OutputBuffer() { }
 };
 
-class CStringBuffer FINAL : public OutputBuffer {
+class CStringBuffer final : public OutputBuffer {
 public:
     CStringBuffer(CString& buffer)
         : m_buffer(buffer)
@@ -70,7 +70,7 @@ private:
     CString m_buffer;
 };
 
-class VectorCharAppendBuffer FINAL : public OutputBuffer {
+class VectorCharAppendBuffer final : public OutputBuffer {
 public:
     VectorCharAppendBuffer(Vector<char>& buffer)
         : m_buffer(buffer)

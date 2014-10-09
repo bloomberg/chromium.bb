@@ -83,7 +83,7 @@ protected:
         int yEnd;
     };
 
-    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override FINAL;
+    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
     virtual bool affectsTransparentPixels() override { return true; }
 
     static void platformApplyGenericWorker(PlatformApplyGenericParameters*);

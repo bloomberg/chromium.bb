@@ -42,7 +42,7 @@ class ImageFrameGenerator;
 //
 // This class does not own an ImageDecode. It does not own encoded data. It serves
 // as and adapter to ImageFrameGenerator which actually performs decoding.
-class DecodingImageGenerator FINAL : public SkImageGenerator {
+class DecodingImageGenerator final : public SkImageGenerator {
 public:
     DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>, const SkImageInfo&, size_t index);
     virtual ~DecodingImageGenerator();

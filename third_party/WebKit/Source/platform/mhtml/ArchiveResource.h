@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT ArchiveResource FINAL : public RefCountedWillBeGarbageCollectedFinalized<ArchiveResource> {
+class PLATFORM_EXPORT ArchiveResource final : public RefCountedWillBeGarbageCollectedFinalized<ArchiveResource> {
 public:
     static PassRefPtrWillBeRawPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&, const ResourceResponse&);
     static PassRefPtrWillBeRawPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&,

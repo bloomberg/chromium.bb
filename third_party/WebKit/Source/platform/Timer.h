@@ -114,7 +114,7 @@ private:
 };
 
 template <typename TimerFiredClass>
-class Timer FINAL : public TimerBase {
+class Timer final : public TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(Timer*);
 
@@ -139,7 +139,7 @@ inline bool TimerBase::isActive() const
 }
 
 template <typename TimerFiredClass>
-class DeferrableOneShotTimer FINAL : private TimerBase {
+class DeferrableOneShotTimer final : private TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(DeferrableOneShotTimer*);
 

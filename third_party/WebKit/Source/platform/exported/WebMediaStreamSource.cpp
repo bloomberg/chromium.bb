@@ -161,7 +161,7 @@ bool WebMediaStreamSource::requiresAudioConsumer() const
     return m_private->requiresAudioConsumer();
 }
 
-class ConsumerWrapper FINAL : public AudioDestinationConsumer {
+class ConsumerWrapper final : public AudioDestinationConsumer {
 public:
     static ConsumerWrapper* create(WebAudioDestinationConsumer* consumer)
     {
