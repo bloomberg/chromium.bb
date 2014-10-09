@@ -83,6 +83,8 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_MENU_BAR, NSAccessibilityMenuBarRole},
       {ui::AX_ROLE_MENU_BUTTON, NSAccessibilityButtonRole},
       {ui::AX_ROLE_MENU_ITEM, NSAccessibilityMenuItemRole},
+      {ui::AX_ROLE_MENU_ITEM_CHECK_BOX, NSAccessibilityMenuItemRole},
+      {ui::AX_ROLE_MENU_ITEM_RADIO, NSAccessibilityMenuItemRole},
       {ui::AX_ROLE_MENU_LIST_OPTION, NSAccessibilityMenuItemRole},
       {ui::AX_ROLE_MENU_LIST_POPUP, NSAccessibilityUnknownRole},
       {ui::AX_ROLE_NAVIGATION, NSAccessibilityGroupRole},

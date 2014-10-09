@@ -214,6 +214,10 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_MENU_BUTTON;
     case blink::WebAXRoleMenuItem:
       return ui::AX_ROLE_MENU_ITEM;
+    case blink::WebAXRoleMenuItemCheckBox:
+      return ui::AX_ROLE_MENU_ITEM_CHECK_BOX;
+    case blink::WebAXRoleMenuItemRadio:
+      return ui::AX_ROLE_MENU_ITEM_RADIO;
     case blink::WebAXRoleMenuListOption:
       return ui::AX_ROLE_MENU_LIST_OPTION;
     case blink::WebAXRoleMenuListPopup:

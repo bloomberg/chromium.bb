@@ -148,6 +148,10 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("MenuButton");
     case blink::WebAXRoleMenuItem:
       return result.append("MenuItem");
+    case blink::WebAXRoleMenuItemCheckBox:
+      return result.append("MenuItemCheckBox");
+    case blink::WebAXRoleMenuItemRadio:
+      return result.append("MenuItemRadio");
     case blink::WebAXRoleMenuListOption:
       return result.append("MenuListOption");
     case blink::WebAXRoleMenuListPopup:

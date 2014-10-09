@@ -2928,6 +2928,8 @@ void BrowserAccessibilityWin::OnDataChanged() {
 
   if (ia_role_ == ROLE_SYSTEM_CHECKBUTTON ||
       ia_role_ == ROLE_SYSTEM_RADIOBUTTON ||
+      ia2_role_ == IA2_ROLE_CHECK_MENU_ITEM ||
+      ia2_role_ == IA2_ROLE_RADIO_MENU_ITEM ||
       ia2_role_ == IA2_ROLE_TOGGLE_BUTTON) {
     ia2_attributes_.push_back(L"checkable:true");
   }
@@ -3614,6 +3616,14 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_MENU_ITEM:
       ia_role_ = ROLE_SYSTEM_MENUITEM;
+      break;
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+      ia_role_ = ROLE_SYSTEM_MENUITEM;
+      ia2_role_ = IA2_ROLE_CHECK_MENU_ITEM;
+      break;
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+      ia_role_ = ROLE_SYSTEM_MENUITEM;
+      ia2_role_ = IA2_ROLE_RADIO_MENU_ITEM;
       break;
     case ui::AX_ROLE_MENU_LIST_POPUP:
       ia_role_ = ROLE_SYSTEM_CLIENT;

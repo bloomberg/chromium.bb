@@ -120,6 +120,8 @@
     menuBar,
     menuButton,
     menuItem,
+    menuItemCheckBox,
+    menuItemRadio,
     menuListOption,
     menuListPopup,
     menu,

@@ -129,6 +129,8 @@
     menu_bar,
     menu_button,
     menu_item,
+    menu_item_check_box,
+    menu_item_radio,
     menu_list_option,
     menu_list_popup,
     menu,

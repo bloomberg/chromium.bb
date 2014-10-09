@@ -411,6 +411,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaMenuitemcheckbox) {
+  RunTest(FILE_PATH_LITERAL("aria-menuitemcheckbox.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaMenuitemradio) {
   RunTest(FILE_PATH_LITERAL("aria-menuitemradio.html"));
 }

@@ -97,6 +97,8 @@ bool BrowserAccessibilityAndroid::IsCheckable() const {
   GetAriaTristate("aria-pressed", &is_aria_pressed_defined, &is_mixed);
   if (GetRole() == ui::AX_ROLE_CHECK_BOX ||
       GetRole() == ui::AX_ROLE_RADIO_BUTTON ||
+      GetRole() == ui::AX_ROLE_MENU_ITEM_CHECK_BOX ||
+      GetRole() == ui::AX_ROLE_MENU_ITEM_RADIO ||
       is_aria_pressed_defined) {
     checkable = true;
   }
