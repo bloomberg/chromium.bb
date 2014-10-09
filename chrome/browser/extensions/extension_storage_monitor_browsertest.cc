@@ -169,7 +169,7 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     storage_monitor_->initial_ephemeral_threshold_ = kInitialUsageThreshold;
 
     // To ensure storage events are dispatched from QuotaManager immediately.
-    storage_monitor_->observer_rate_ = 0;
+    storage_monitor_->observer_rate_ = base::TimeDelta();
   }
 
   // Write a number of bytes to persistent storage.

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,10 +46,6 @@ namespace {
 // The rate at which we would like to observe storage events.
 const int kStorageEventRateSec = 30;
 
-// The storage type to monitor.
-const storage::StorageType kMonitorStorageType =
-    storage::kStorageTypePersistent;
-
 // Set the thresholds for the first notification. Ephemeral apps have a lower
 // threshold than installed extensions and apps. Once a threshold is exceeded,
 // it will be doubled to throttle notifications.
@@ -77,10 +74,29 @@ bool ShouldMonitorStorageFor(const Extension* extension) {
          extension->location() != Manifest::COMPONENT;
 }
 
+bool ShouldGatherMetricsFor(const Extension* extension) {
+  // We want to know the usage of hosted apps' storage.
+  return ShouldMonitorStorageFor(extension) && extension->is_hosted_app();
+}
+
 const Extension* GetExtensionById(content::BrowserContext* context,
                                   const std::string& extension_id) {
   return ExtensionRegistry::Get(context)->GetExtensionById(
       extension_id, ExtensionRegistry::EVERYTHING);
+}
+
+void LogTemporaryStorageUsage(int64 usage,
+                              storage::QuotaStatusCode status,
+                              int64 global_quota) {
+  if (status == storage::kQuotaStatusOk) {
+    int64 per_app_quota =
+        global_quota / storage::QuotaManager::kPerHostTemporaryPortion;
+    // Note we use COUNTS_100 (instead of PERCENT) because this can potentially
+    // exceed 100%.
+    UMA_HISTOGRAM_COUNTS_100(
+        "Extensions.HostedAppUnlimitedStorageTemporaryStorageUsage",
+        100.0 * usage / per_app_quota);
+  }
 }
 
 }  // namespace
@@ -104,7 +120,8 @@ class StorageEventObserver
       const std::string& extension_id,
       const GURL& site_url,
       int64 next_threshold,
-      int rate) {
+      const base::TimeDelta& rate,
+      bool should_uma) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DCHECK(quota_manager.get());
 
@@ -113,10 +130,18 @@ class StorageEventObserver
     state.quota_manager = quota_manager;
     state.extension_id = extension_id;
     state.next_threshold = next_threshold;
+    state.should_uma = should_uma;
 
+    // We always observe persistent storage usage.
     storage::StorageObserver::MonitorParams params(
-        kMonitorStorageType, origin, base::TimeDelta::FromSeconds(rate), false);
+        storage::kStorageTypePersistent, origin, rate, false);
     quota_manager->AddStorageObserver(this, params);
+    if (should_uma) {
+      // And if this is for uma, we also observe temporary storage usage.
+      MonitorParams temporary_params(
+          storage::kStorageTypeTemporary, origin, rate, false);
+      quota_manager->AddStorageObserver(this, temporary_params);
+    }
   }
 
   // Updates the threshold for an extension already being monitored.
@@ -141,8 +166,17 @@ class StorageEventObserver
     for (OriginStorageStateMap::iterator it = origin_state_map_.begin();
          it != origin_state_map_.end(); ) {
       if (it->second.extension_id == extension_id) {
-        storage::StorageObserver::Filter filter(kMonitorStorageType, it->first);
+        storage::StorageObserver::Filter filter(
+            storage::kStorageTypePersistent, it->first);
         it->second.quota_manager->RemoveStorageObserverForFilter(this, filter);
+        // We also need to unregister temporary storage observation, if this was
+        // being tracked for uma.
+        if (it->second.should_uma) {
+          storage::StorageObserver::Filter temporary_filter(
+              storage::kStorageTypeTemporary, it->first);
+          it->second.quota_manager->RemoveStorageObserverForFilter(this,
+                                                                   filter);
+        }
         origin_state_map_.erase(it++);
       } else {
         ++it;
@@ -168,10 +202,16 @@ class StorageEventObserver
 
   struct StorageState {
     scoped_refptr<storage::QuotaManager> quota_manager;
+
     std::string extension_id;
+
+    // If |next_threshold| is -1, it signifies that we should not enforce (and
+    // only track) storage for this extension.
     int64 next_threshold;
 
-    StorageState() : next_threshold(0) {}
+    bool should_uma;
+
+    StorageState() : next_threshold(-1), should_uma(false) {}
   };
   typedef std::map<GURL, StorageState> OriginStorageStateMap;
 
@@ -182,22 +222,41 @@ class StorageEventObserver
 
   // storage::StorageObserver implementation.
   virtual void OnStorageEvent(const Event& event) override {
-    OriginStorageStateMap::iterator state =
+    OriginStorageStateMap::iterator iter =
         origin_state_map_.find(event.filter.origin);
-    if (state == origin_state_map_.end())
+    if (iter == origin_state_map_.end())
       return;
+    StorageState& state = iter->second;
 
-    if (event.usage >= state->second.next_threshold) {
-      while (event.usage >= state->second.next_threshold)
-        state->second.next_threshold *= 2;
+    if (state.should_uma) {
+      if (event.filter.storage_type == storage::kStorageTypePersistent) {
+        UMA_HISTOGRAM_MEMORY_KB(
+            "Extensions.HostedAppUnlimitedStoragePersistentStorageUsage",
+            event.usage);
+      } else {
+        // We can't use the quota in the event because it assumes unlimited
+        // storage.
+        BrowserThread::PostTask(
+            BrowserThread::IO,
+            FROM_HERE,
+            base::Bind(&storage::QuotaManager::GetTemporaryGlobalQuota,
+                       state.quota_manager,
+                       base::Bind(&LogTemporaryStorageUsage, event.usage)));
+      }
+    }
+
+    if (state.next_threshold != -1 &&
+        event.usage >= state.next_threshold) {
+      while (event.usage >= state.next_threshold)
+        state.next_threshold *= 2;
 
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
           base::Bind(&ExtensionStorageMonitor::OnStorageThresholdExceeded,
                      storage_monitor_,
-                     state->second.extension_id,
-                     state->second.next_threshold,
+                     state.extension_id,
+                     state.next_threshold,
                      event.usage));
     }
   }
@@ -219,7 +278,7 @@ ExtensionStorageMonitor::ExtensionStorageMonitor(
     : enable_for_all_extensions_(false),
       initial_extension_threshold_(kExtensionInitialThreshold),
       initial_ephemeral_threshold_(kEphemeralAppInitialThreshold),
-      observer_rate_(kStorageEventRateSec),
+      observer_rate_(base::TimeDelta::FromSeconds(kStorageEventRateSec)),
       context_(context),
       extension_prefs_(ExtensionPrefs::Get(context)),
       extension_registry_observer_(this),
@@ -434,7 +493,11 @@ void ExtensionStorageMonitor::OnNotificationButtonClick(
 
 void ExtensionStorageMonitor::DisableStorageMonitoring(
     const std::string& extension_id) {
-  StopMonitoringStorage(extension_id);
+  scoped_refptr<const Extension> extension =
+      ExtensionRegistry::Get(context_)->enabled_extensions().GetByID(
+          extension_id);
+  if (!extension.get() || !ShouldGatherMetricsFor(extension.get()))
+    StopMonitoringStorage(extension_id);
 
   SetStorageNotificationEnabled(extension_id, false);
 
@@ -449,13 +512,15 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
 
   // First apply this feature only to experimental ephemeral apps. If it works
   // well, roll it out to all extensions and apps.
-  if (!enable_for_all_extensions_ &&
-      !extension_prefs_->IsEphemeralApp(extension->id())) {
-    return;
-  }
+  bool should_enforce =
+      (enable_for_all_extensions_ ||
+       extension_prefs_->IsEphemeralApp(extension->id())) &&
+      IsStorageNotificationEnabled(extension->id());
 
-  if (!IsStorageNotificationEnabled(extension->id()))
-    return;
+  bool for_metrics = ShouldGatherMetricsFor(extension);
+
+  if (!should_enforce && !for_metrics)
+    return;  // Don't track this extension.
 
   // Lazily create the storage monitor proxy on the IO thread.
   if (!storage_observer_.get()) {
@@ -463,8 +528,7 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
         new StorageEventObserver(weak_ptr_factory_.GetWeakPtr());
   }
 
-  GURL site_url =
-      extensions::util::GetSiteForExtensionId(extension->id(), context_);
+  GURL site_url = util::GetSiteForExtensionId(extension->id(), context_);
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(context_, site_url);
   DCHECK(storage_partition);
@@ -475,6 +539,10 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
   if (extension->is_hosted_app())
     storage_origin = AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin();
 
+  // Don't give a threshold if we're not enforcing.
+  int next_threshold =
+      should_enforce ? GetNextStorageThreshold(extension->id()) : -1;
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -483,8 +551,9 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
                  quota_manager,
                  extension->id(),
                  storage_origin,
-                 GetNextStorageThreshold(extension->id()),
-                 observer_rate_));
+                 next_threshold,
+                 observer_rate_,
+                 for_metrics));
 }
 
 void ExtensionStorageMonitor::StopMonitoringStorage(

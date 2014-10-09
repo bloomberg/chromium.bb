@@ -126,9 +126,9 @@ class ExtensionStorageMonitor : public KeyedService,
   int64 initial_extension_threshold_;
   int64 initial_ephemeral_threshold_;
 
-  // The rate (in seconds) at which we would like to receive storage updates
+  // The rate at which we would like to receive storage updates
   // from QuotaManager. Overridden in tests.
-  int observer_rate_;
+  base::TimeDelta observer_rate_;
 
   // IDs of extensions that notifications were shown for.
   std::set<std::string> notified_extension_ids_;
