@@ -2099,7 +2099,7 @@ class ValidationPool(object):
        tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
                               timeout=self.MAX_TIMEOUT,
                               throttled_ok=throttled_ok)):
-      raise TreeIsClosedException(close_or_throttled=not throttled_ok)
+      raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
 
     # Filter out changes that were modified during the CQ run.
     unmodified_changes, errors = self.FilterModifiedChanges(changes)
