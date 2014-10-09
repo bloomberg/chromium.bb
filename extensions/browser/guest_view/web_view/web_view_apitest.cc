@@ -4,6 +4,7 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_apitest.h"
 
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +29,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/gfx/switches.h"
 
 namespace {
 
@@ -165,6 +167,13 @@ TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
           ShellContentBrowserClient::Get()->GetBrowserContext()));
 }
 
+void WebViewDPIAPITest::SetUp() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
+                                  base::StringPrintf("%f", scale()));
+  WebViewAPITest::SetUp();
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAllowTransparencyAttribute) {
   RunTest("testAllowTransparencyAttribute", "web_view/apitest");
 }
@@ -185,11 +194,23 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeBeforeNavigation) {
   RunTest("testAutosizeBeforeNavigation", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewDPIAPITest, TestAutosizeBeforeNavigation) {
+  RunTest("testAutosizeBeforeNavigation", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeHeight) {
   RunTest("testAutosizeHeight", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewDPIAPITest, TestAutosizeHeight) {
+  RunTest("testAutosizeHeight", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeRemoveAttributes) {
+  RunTest("testAutosizeRemoveAttributes", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewDPIAPITest, TestAutosizeRemoveAttributes) {
   RunTest("testAutosizeRemoveAttributes", "web_view/apitest");
 }
 
@@ -451,15 +472,11 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPI) {
 // Tests the existence of WebRequest API event objects on the request
 // object, on the webview element, and hanging directly off webview.
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIExistence) {
-  StartTestServer();
   RunTest("testWebRequestAPIExistence", "web_view/apitest");
-  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIGoogleProperty) {
-  StartTestServer();
   RunTest("testWebRequestAPIGoogleProperty", "web_view/apitest");
-  StopTestServer();
 }
 
 }  // namespace extensions

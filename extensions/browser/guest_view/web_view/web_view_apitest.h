@@ -5,6 +5,7 @@
 #include "base/values.h"
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/shell/test/shell_test.h"
+#include "ui/gfx/switches.h"
 
 namespace content {
 class WebContents;
@@ -41,6 +42,12 @@ class WebViewAPITest : public AppShellTest {
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
   base::DictionaryValue test_config_;
+};
+
+class WebViewDPIAPITest : public WebViewAPITest {
+ protected:
+  virtual void SetUp() override;
+  static float scale() { return 2.0f; }
 };
 
 }  // namespace extensions
