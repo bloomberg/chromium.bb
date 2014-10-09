@@ -41,7 +41,7 @@ int WrappedChannelElementReader::Read(net::IOBuffer* buf,
                                       int buf_length,
                                       const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(delegate_);
+  DCHECK(delegate_.get());
   // TODO(mef): Post the read to file thread.
   int bytes_read = delegate_->ReadFromUploadChannel(buf, buf_length);
   if (bytes_read < 0)

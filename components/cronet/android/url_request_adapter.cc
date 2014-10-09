@@ -211,8 +211,9 @@ void URLRequestAdapter::Read() {
     }
 
     int bytes_read;
-    if (url_request_->Read(
-            read_buffer_, read_buffer_->RemainingCapacity(), &bytes_read)) {
+    if (url_request_->Read(read_buffer_.get(),
+                           read_buffer_->RemainingCapacity(),
+                           &bytes_read)) {
       if (bytes_read == 0) {
         OnRequestSucceeded();
         break;
