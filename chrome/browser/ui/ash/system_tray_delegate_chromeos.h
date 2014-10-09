@@ -25,11 +25,16 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+
+namespace user_manager {
+class User;
+}
 
 namespace chromeos {
 
@@ -45,7 +50,8 @@ class SystemTrayDelegateChromeOS
       public policy::CloudPolicyStore::Observer,
       public ash::SessionStateObserver,
       public chrome::BrowserListObserver,
-      public extensions::AppWindowRegistry::Observer {
+      public extensions::AppWindowRegistry::Observer,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -126,6 +132,13 @@ class SystemTrayDelegateChromeOS
   virtual bool IsSearchKeyMappedToCapsLock() override;
   virtual ash::tray::UserAccountsDelegate* GetUserAccountsDelegate(
       const std::string& user_id) override;
+
+  // Overridden from user_manager::UserManager::UserSessionStateObserver:
+  virtual void UserAddedToSession(const user_manager::User* active_user)
+      override;
+
+  virtual void UserChangedSupervisedStatus(
+      user_manager::User* user) override;
 
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;
@@ -247,6 +260,7 @@ class SystemTrayDelegateChromeOS
   base::TimeDelta session_length_limit_;
   std::string enterprise_domain_;
   bool should_run_bluetooth_discovery_;
+  bool session_started_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   scoped_ptr<device::BluetoothDiscoverySession> bluetooth_discovery_session_;

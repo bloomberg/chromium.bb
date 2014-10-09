@@ -193,6 +193,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       have_session_start_time_(false),
       have_session_length_limit_(false),
       should_run_bluetooth_discovery_(false),
+      session_started_(false),
       volume_control_delegate_(new VolumeController()),
       device_settings_observer_(CrosSettings::Get()->AddSettingsObserver(
           kSystemUse24HourClock,
@@ -225,6 +226,8 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   accessibility_subscription_ = accessibility_manager->RegisterCallback(
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged,
                  base::Unretained(this)));
+
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
@@ -316,6 +319,8 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
       connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->RemoveObserver(this);
+
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
 // Overridden from ash::SystemTrayDelegate:
@@ -859,6 +864,21 @@ SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
   return accounts_delegates_.get(user_id);
 }
 
+void SystemTrayDelegateChromeOS::UserAddedToSession(
+    const user_manager::User* active_user) {
+}
+
+void SystemTrayDelegateChromeOS::UserChangedSupervisedStatus(
+    user_manager::User* user) {
+  Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
+  DCHECK(user_profile);
+
+  if (session_started_ && user_profile_ == user_profile) {
+    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
+        GetUserLoginStatus());
+  }
+}
+
 ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
   return ash::Shell::GetInstance()->GetPrimarySystemTray();
 }
@@ -1118,6 +1138,7 @@ void SystemTrayDelegateChromeOS::Observe(
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
+      session_started_ = true;
       ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
           GetUserLoginStatus());
       SetProfile(ProfileManager::GetActiveUserProfile());

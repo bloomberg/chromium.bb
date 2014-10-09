@@ -103,7 +103,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void RemoveSessionStateObserver(
       UserManager::UserSessionStateObserver* obs) override;
   virtual void NotifyLocalStateChanged() override;
-  virtual void ForceUpdateState() override;
+  virtual void ChangeUserSupervisedStatus(User* user, bool is_supervised)
+      override;
 
   // Helper function that copies users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are

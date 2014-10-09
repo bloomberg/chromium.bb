@@ -51,6 +51,9 @@ class USER_MANAGER_EXPORT UserManager {
     // on user_id hash would be accessing up-to-date value.
     virtual void ActiveUserHashChanged(const std::string& hash);
 
+    // Called when supervised status has changed.
+    virtual void UserChangedSupervisedStatus(User* user);
+
    protected:
     virtual ~UserSessionStateObserver();
   };
@@ -290,11 +293,12 @@ class USER_MANAGER_EXPORT UserManager {
 
   virtual void NotifyLocalStateChanged() = 0;
 
+  // Makes the supervised status change and notifies observers.
+  virtual void ChangeUserSupervisedStatus(User* user, bool is_supervised) = 0;
+
+
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;
-
-  // Force update login state.
-  virtual void ForceUpdateState() {}
 
  protected:
   // Sets UserManager instance.

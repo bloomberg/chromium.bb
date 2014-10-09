@@ -657,10 +657,6 @@ void UserManagerBase::NotifyLocalStateChanged() {
       UserManager::Observer, observer_list_, LocalStateChanged(this));
 }
 
-void UserManagerBase::ForceUpdateState() {
-  UpdateLoginState();
-}
-
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular and supervised users are allowed to be manually removed.
   if (!user || (user->GetType() != USER_TYPE_REGULAR &&
@@ -956,6 +952,15 @@ void UserManagerBase::NotifyActiveUserHashChanged(const std::string& hash) {
   FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
                     session_state_observer_list_,
                     ActiveUserHashChanged(hash));
+}
+
+void UserManagerBase::ChangeUserSupervisedStatus(User* user,
+                                                 bool is_supervised) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  user->SetIsSupervised(is_supervised);
+  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
+                    session_state_observer_list_,
+                    UserChangedSupervisedStatus(user));
 }
 
 void UserManagerBase::UpdateLoginState() {
