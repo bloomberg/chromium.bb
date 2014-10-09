@@ -10,6 +10,7 @@
           '<(PRODUCT_DIR)',
           '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
           '--lsan=<(lsan)',
         ],
         'files': [
@@ -69,6 +70,8 @@
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
       },
     }],

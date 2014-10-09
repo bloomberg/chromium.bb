@@ -40,6 +40,7 @@
           '<(PRODUCT_DIR)',
           '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
           '--lsan=<(lsan)',
         ],
         'files': [
@@ -89,6 +90,8 @@
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
       },
     }],

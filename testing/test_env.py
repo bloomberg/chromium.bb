@@ -77,11 +77,37 @@ def run_executable(cmd, env):
   # logic is used.
   env.pop('CR_SOURCE_ROOT', None)
   enable_sandbox_if_required(cmd, env)
+
+  # Copy logic from  tools/build/scripts/slave/runtest.py.
+  asan = '--asan=1' in cmd
+  lsan = '--lsan=1' in cmd
+  if lsan and sys.platform == 'linux2':
+    # Use the debug version of libstdc++ under LSan. If we don't, there will
+    # be a lot of incomplete stack traces in the reports.
+    env['LD_LIBRARY_PATH'] += '/usr/lib/x86_64-linux-gnu/debug:'
+
+  if asan and sys.platform == 'darwin':
+    isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
+    # This is needed because the test binary has @executable_path embedded in it
+    # that the OS tries to resolve to the cache directory and not the mapped
+    # directory.
+    env['DYLD_LIBRARY_PATH'] = str(isolate_output_dir)
+
   # Ensure paths are correctly separated on windows.
   cmd[0] = cmd[0].replace('/', os.path.sep)
   cmd = fix_python_path(cmd)
   try:
-    return subprocess.call(cmd, env=env)
+    if asan:
+      # Need to pipe to the symbolizer script.
+      p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
+                            stderr=sys.stdout)
+      p2 = subprocess.Popen(["../tools/valgrind/asan/asan_symbolize.py"],
+                            stdin=p1.stdout)
+      p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+      p2.wait()
+      return p2.returncode
+    else:
+      return subprocess.call(cmd, env=env)
   except OSError:
     print >> sys.stderr, 'Failed to start %s' % cmd
     raise

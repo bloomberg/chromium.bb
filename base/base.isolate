@@ -23,6 +23,14 @@
         ],
       },
     }],
+    ['asan==1', {
+      'variables': {
+        'files': [
+          '../tools/valgrind/asan/',
+          '../third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer',
+        ],
+      },
+    }],
     ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
       'variables': {
         'files': [

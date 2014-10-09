@@ -17,6 +17,8 @@
           '<(PRODUCT_DIR)/net_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
         'files': [
           '../testing/test_env.py',

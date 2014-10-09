@@ -41,6 +41,8 @@
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
         'files': [
           '../testing/xvfb.py',
@@ -63,6 +65,8 @@
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
         'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
@@ -77,6 +81,8 @@
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
         'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',

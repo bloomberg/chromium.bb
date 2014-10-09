@@ -43,6 +43,8 @@
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
         'files': [
           '../testing/xvfb.py',
@@ -95,6 +97,8 @@
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
       },
     }],
