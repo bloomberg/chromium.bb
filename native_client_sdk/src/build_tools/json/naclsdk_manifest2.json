@@ -19,6 +19,21 @@
       "version": 1
     },
     {
+       "archives": [
+         {
+          "host_os": "win",
+          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/sdk/${revision}/vs_addin.tgz"
+        }
+      ],
+      "description": "Visual Studio Add-In for building and debugging NaCl applications",
+      "name": "vs_addin",
+      "recommended": "no",
+      "repath": "vs_addin",
+      "revision": 1578,
+      "stability": "dev",
+      "version": 0
+    },
+    {
       "archives": [
         {
           "checksum": {
