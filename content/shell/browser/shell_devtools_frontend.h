@@ -15,9 +15,6 @@
 
 namespace content {
 
-GURL GetDevToolsPathAsURL(const std::string& settings,
-                          const std::string& frontend_url);
-
 class RenderViewHost;
 class Shell;
 class WebContents;
@@ -27,9 +24,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
                               public DevToolsAgentHostClient {
  public:
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
-  static ShellDevToolsFrontend* Show(WebContents* inspected_contents,
-                                     const std::string& settings,
-                                     const std::string& frontend_url);
+
   void Activate();
   void Focus();
   void InspectElementAt(int x, int y);
@@ -37,10 +32,11 @@ class ShellDevToolsFrontend : public WebContentsObserver,
 
   Shell* frontend_shell() const { return frontend_shell_; }
 
- private:
+ protected:
   ShellDevToolsFrontend(Shell* frontend_shell, DevToolsAgentHost* agent_host);
   virtual ~ShellDevToolsFrontend();
 
+ private:
   // WebContentsObserver overrides
   virtual void RenderViewCreated(RenderViewHost* render_view_host) override;
   virtual void DocumentOnLoadCompletedInMainFrame() override;

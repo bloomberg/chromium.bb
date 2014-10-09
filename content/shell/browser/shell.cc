@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
 #include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
 #include "content/shell/browser/notify_done_forwarder.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -385,8 +386,13 @@ void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
 void Shell::InnerShowDevTools(const std::string& settings,
                               const std::string& frontend_url) {
   if (!devtools_frontend_) {
-    devtools_frontend_ = ShellDevToolsFrontend::Show(
-        web_contents(), settings, frontend_url);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDumpRenderTree)) {
+      devtools_frontend_ = LayoutTestDevToolsFrontend::Show(
+          web_contents(), settings, frontend_url);
+    } else {
+      devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
+    }
     devtools_observer_.reset(new DevToolsWebContentsObserver(
         this, devtools_frontend_->frontend_shell()->web_contents()));
   }

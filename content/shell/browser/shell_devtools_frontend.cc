@@ -26,44 +26,9 @@
 
 namespace content {
 
-// DevTools frontend path for inspector LayoutTests.
-GURL GetDevToolsPathAsURL(const std::string& settings,
-                          const std::string& frontend_url) {
-  if (!frontend_url.empty())
-    return GURL(frontend_url);
-  base::FilePath dir_exe;
-  if (!PathService::Get(base::DIR_EXE, &dir_exe)) {
-    NOTREACHED();
-    return GURL();
-  }
-#if defined(OS_MACOSX)
-  // On Mac, the executable is in
-  // out/Release/Content Shell.app/Contents/MacOS/Content Shell.
-  // We need to go up 3 directories to get to out/Release.
-  dir_exe = dir_exe.AppendASCII("../../..");
-#endif
-  base::FilePath dev_tools_path = dir_exe.AppendASCII(
-      "resources/inspector/devtools.html");
-
-  GURL result = net::FilePathToFileURL(dev_tools_path);
-  if (!settings.empty())
-      result = GURL(base::StringPrintf("%s?settings=%s&experiments=true",
-                                       result.spec().c_str(),
-                                       settings.c_str()));
-  return result;
-}
-
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     WebContents* inspected_contents) {
-  return ShellDevToolsFrontend::Show(inspected_contents, "", "");
-}
-
-// static
-ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
-    WebContents* inspected_contents,
-    const std::string& settings,
-    const std::string& frontend_url) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_contents));
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
@@ -75,12 +40,10 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
       shell,
       agent.get());
 
-  ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()->
-      shell_browser_main_parts()->devtools_delegate();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    shell->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
-  else
-    shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL());
+  ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()
+                                        ->shell_browser_main_parts()
+                                        ->devtools_delegate();
+  shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL());
 
   return devtools_frontend;
 }
