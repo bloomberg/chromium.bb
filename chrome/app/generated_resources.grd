@@ -13957,12 +13957,12 @@ Do you accept?
         Relaunching in Windows 8 mode will close and relaunch your Chrome apps.
       </message>
       <message name="IDS_WIN_CHROMEOS_RESTART"
-               desc="Text for the menu item to restart Chrome in Chrome OS. Applies to Windows 7 only">
-        Relaunch Chrome in Chrome OS mode
+               desc="Text for the menu item to restart chrome in chrome os. Aplies to Windows 7 only">
+        Relaunch in Chrome immersive mode
       </message>
       <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_CHROMEOS"
                desc="Modal message box prompt shown to the user after requesting to relaunch in Windows Chrome OS mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
-        Relaunching in Chrome OS mode will close and relaunch your Chrome apps.
+        Relaunching in Chrome immersive mode will close and relaunch your Chrome apps.
       </message>
       <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
                desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
