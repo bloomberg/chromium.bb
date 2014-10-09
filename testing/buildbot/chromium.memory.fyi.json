@@ -48,6 +48,7 @@
       "ui_unittests",
       "unit_tests",
       "url_unittests",
+      "views_unittests",
       "wm_unittests"
     ]
   },
