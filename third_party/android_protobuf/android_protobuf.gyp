@@ -113,13 +113,9 @@
             'src/android',
             'src/src',
           ],
-          'conditions': [
-            ['clang==1', {
-              'cflags': [
-                '-Wno-null-conversion',
-                '-Wno-tautological-undefined-compare',
-              ],
-            }],
+          'cflags': [
+            '-Wno-null-conversion',
+            '-Wno-tautological-undefined-compare',
           ],
           'defines': [
             # This macro must be defined to suppress the use
