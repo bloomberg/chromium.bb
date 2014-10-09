@@ -147,6 +147,8 @@ const char GaiaAuthFetcher::kAccountTypeGoogle[] =
 
 // static
 const char GaiaAuthFetcher::kSecondFactor[] = "Info=InvalidSecondFactor";
+// static
+const char GaiaAuthFetcher::kWebLoginRequired[] = "Info=WebLoginRequired";
 
 // static
 const char GaiaAuthFetcher::kAuthHeaderFormat[] =
@@ -737,6 +739,9 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   if (IsSecondFactorSuccess(data))
     return GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
 
+  if (IsWebLoginRequiredSuccess(data))
+    return GoogleServiceAuthError(GoogleServiceAuthError::WEB_LOGIN_REQUIRED);
+
   std::string error;
   std::string url;
   std::string captcha_url;
@@ -980,5 +985,12 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 bool GaiaAuthFetcher::IsSecondFactorSuccess(
     const std::string& alleged_error) {
   return alleged_error.find(kSecondFactor) !=
+      std::string::npos;
+}
+
+// static
+bool GaiaAuthFetcher::IsWebLoginRequiredSuccess(
+    const std::string& alleged_error) {
+  return alleged_error.find(kWebLoginRequired) !=
       std::string::npos;
 }

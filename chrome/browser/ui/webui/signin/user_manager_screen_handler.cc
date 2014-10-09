@@ -481,7 +481,8 @@ void UserManagerScreenHandler::OnClientLoginFailure(
                   state == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
                   state == GoogleServiceAuthError::TWO_FACTOR ||
                   state == GoogleServiceAuthError::ACCOUNT_DELETED ||
-                  state == GoogleServiceAuthError::ACCOUNT_DISABLED);
+                  state == GoogleServiceAuthError::ACCOUNT_DISABLED ||
+                  state == GoogleServiceAuthError::WEB_LOGIN_REQUIRED);
   bool offline = (state == GoogleServiceAuthError::CONNECTION_FAILED ||
                   state == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
                   state == GoogleServiceAuthError::REQUEST_CANCELED);

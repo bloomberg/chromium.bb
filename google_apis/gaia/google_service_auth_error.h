@@ -86,8 +86,11 @@ class GoogleServiceAuthError {
     // application error.
     SERVICE_ERROR = 12,
 
+    // The password is valid but web login is required to get a token.
+    WEB_LOGIN_REQUIRED = 13,
+
     // The number of known error states.
-    NUM_STATES = 13,
+    NUM_STATES = 14,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.

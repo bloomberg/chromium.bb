@@ -175,6 +175,7 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
     case GoogleServiceAuthError::REQUEST_CANCELED:
     case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
     case GoogleServiceAuthError::SERVICE_ERROR:
+    case GoogleServiceAuthError::WEB_LOGIN_REQUIRED:
       UMAFailure(policy::kMetricEnrollmentLoginFailed);
       LOG(ERROR) << "Auth error " << error.state();
       break;

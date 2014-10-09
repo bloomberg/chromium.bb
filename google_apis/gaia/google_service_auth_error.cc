@@ -166,6 +166,7 @@ base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
     STATE_CASE(HOSTED_NOT_ALLOWED);
     STATE_CASE(UNEXPECTED_SERVICE_RESPONSE);
     STATE_CASE(SERVICE_ERROR);
+    STATE_CASE(WEB_LOGIN_REQUIRED);
 #undef STATE_CASE
     default:
       NOTREACHED();
@@ -229,6 +230,10 @@ std::string GoogleServiceAuthError::ToString() const {
     case SERVICE_ERROR:
       return base::StringPrintf("Service responded with error: '%s'",
                                 error_message_.c_str());
+    case WEB_LOGIN_REQUIRED:
+      return "Less secure apps may not authenticate with this account. "
+             "Please visit: "
+             "https://www.google.com/settings/security/lesssecureapps";
     default:
       NOTREACHED();
       return std::string();
