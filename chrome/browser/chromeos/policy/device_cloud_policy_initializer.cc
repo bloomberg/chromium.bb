@@ -231,14 +231,15 @@ void DeviceCloudPolicyInitializer::TryToCreateClient() {
       !device_store_->policy()->request_token().empty() &&
       !state_keys_broker_->pending() &&
       !enrollment_handler_) {
-    DeviceManagementService* service;
+    DeviceManagementService* service = NULL;
     if (device_store_->policy()->management_mode() ==
         em::PolicyData::CONSUMER_MANAGED) {
       service = consumer_service_;
     } else {
       service = enterprise_service_;
     }
-    StartConnection(CreateClient(service));
+    if (service)
+      StartConnection(CreateClient(service));
   }
 }
 

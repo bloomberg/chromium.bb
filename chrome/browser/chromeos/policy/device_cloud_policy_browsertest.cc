@@ -21,6 +21,7 @@ class DeviceCloudPolicyManagedBrowserTest : public DevicePolicyCrosBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+
     InstallOwnerKey();
     MarkAsEnterpriseOwned();
     RefreshDevicePolicy();

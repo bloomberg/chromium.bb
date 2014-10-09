@@ -10,18 +10,12 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 
 class PrefRegistrySimple;
-class Profile;
 
 namespace chromeos {
 class CryptohomeClient;
@@ -33,29 +27,27 @@ class BaseReply;
 
 namespace policy {
 
-class EnrollmentStatus;
-
 // The consumer management service handles several things:
 //
-// 1. The consumer enrollment state: The consumer enrollment state is an enum
+// 1. The consumer management status: The consumer management status is an enum
+//    indicating if the device is consumer-managed and if enrollment or un-
+//    enrollment is in progress. The service can be observed and the observers
+//    will be notified when the status is changed. Note that the observers may
+//    be notified even when the status is NOT changed. The observers need to
+//    check the status upon receiving the notification.
+//
+// 2. The consumer enrollment stage: The consumer enrollment stage is an enum
 //    value stored in local state to pass the information across reboots and
 //    between components, including settings page, sign-in screen, and user
 //    notification.
 //
-// 2. Boot lockbox owner ID: Unlike the owner ID in CrosSettings, the owner ID
+// 3. Boot lockbox owner ID: Unlike the owner ID in CrosSettings, the owner ID
 //    stored in the boot lockbox can only be modified after reboot and before
 //    the first session starts. It is guaranteed that if the device is consumer
 //    managed, the owner ID in the boot lockbox will be available, but not the
 //    other way.
-//
-// 3. Consumer management enrollment process: The service kicks off the last
-//    part of the consumer management enrollment process after the owner ID is
-//    stored in the boot lockbox and the owner signs in.
 class ConsumerManagementService
-    : public chromeos::DeviceSettingsService::Observer,
-      public content::NotificationObserver,
-      public OAuth2TokenService::Consumer,
-      public OAuth2TokenService::Observer {
+    : public chromeos::DeviceSettingsService::Observer {
  public:
   // The status indicates if the device is enrolled, or if enrollment or
   // unenrollment is in progress. If you want to add a value here, please also
@@ -131,6 +123,10 @@ class ConsumerManagementService
   // Returns the string value of the status.
   std::string GetStatusString() const;
 
+  // Returns true if there's an enrollment desktop notification that is not
+  // sent yet.
+  bool HasPendingEnrollmentNotification() const;
+
   // Returns the enrollment stage.
   EnrollmentStage GetEnrollmentStage() const;
 
@@ -147,27 +143,6 @@ class ConsumerManagementService
   // chromeos::DeviceSettingsService::Observer:
   virtual void OwnershipStatusChanged() override;
   virtual void DeviceSettingsUpdated() override;
-
-  // content::NotificationObserver implmentation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
-
-  // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-
-  // OAuth2TokenService::Consumer:
-  virtual void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const std::string& access_token,
-      const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(
-      const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) override;
-
-  OAuth2TokenService::Request* GetTokenRequestForTesting() {
-    return token_request_.get();
-  }
 
  private:
   void OnGetBootAttributeDone(
@@ -187,45 +162,11 @@ class ConsumerManagementService
       bool dbus_success,
       const cryptohome::BaseReply& reply);
 
-  // Called when the owner signs in.
-  void OnOwnerSignin(Profile* profile);
-
-  // Continues the enrollment process after the owner ID is stored into the boot
-  // lockbox and the owner signs in.
-  void ContinueEnrollmentProcess(Profile* profile);
-
-  // Called when the owner's refresh token is available.
-  void OnOwnerRefreshTokenAvailable();
-
-  // Called when the owner's access token for device management is available.
-  void OnOwnerAccessTokenAvailable(const std::string& access_token);
-
-  // Called upon the completion of the enrollment process.
-  void OnEnrollmentCompleted(EnrollmentStatus status);
-
-  // Ends the enrollment process and shows a desktop notification if the
-  // current user is the owner.
-  void EndEnrollment(EnrollmentStage stage);
-
-  // Shows a desktop notification and resets the enrollment stage.
-  void ShowDesktopNotificationAndResetStage(
-      EnrollmentStage stage,
-      Profile* profile);
-
-  // Opens the settings page.
-  void OpenSettingsPage(Profile* profile) const;
-
-  // Opens the enrollment confirmation dialog in the settings page.
-  void TryEnrollmentAgain(Profile* profile) const;
-
   void NotifyStatusChanged();
 
   chromeos::CryptohomeClient* client_;
   chromeos::DeviceSettingsService* device_settings_service_;
 
-  Profile* enrolling_profile_;
-  scoped_ptr<OAuth2TokenService::Request> token_request_;
-  content::NotificationRegistrar registrar_;
   ObserverList<Observer, true> observers_;
   base::WeakPtrFactory<ConsumerManagementService> weak_ptr_factory_;
 

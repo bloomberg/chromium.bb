@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
+#include "chrome/browser/chromeos/policy/consumer_enrollment_handler.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
@@ -117,6 +118,15 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
                            &install_attrs_file));
     install_attributes_->ReadCacheFile(install_attrs_file);
 
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(
+            chromeos::switches::kEnableConsumerManagement)) {
+      consumer_management_service_.reset(
+          new ConsumerManagementService(
+              cryptohome_client,
+              chromeos::DeviceSettingsService::Get()));
+    }
+
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
         new DeviceCloudPolicyStoreChromeOS(
             chromeos::DeviceSettingsService::Get(),
@@ -142,21 +152,24 @@ void BrowserPolicyConnectorChromeOS::Init(
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   ChromeBrowserPolicyConnector::Init(local_state, request_context);
 
-  scoped_ptr<DeviceManagementService::Configuration> configuration(
-      new DeviceManagementServiceConfiguration(
-          GetDeviceManagementServerUrlForConsumer()));
-  consumer_device_management_service_.reset(
-      new DeviceManagementService(configuration.Pass()));
-  consumer_device_management_service_->ScheduleInitialization(
-      kServiceInitializationStartupDelay);
-
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kEnableConsumerManagement)) {
-    chromeos::CryptohomeClient* cryptohome_client =
-        chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
-    consumer_management_service_.reset(
-        new ConsumerManagementService(cryptohome_client,
-                                      chromeos::DeviceSettingsService::Get()));
+    scoped_ptr<DeviceManagementService::Configuration> configuration(
+        new DeviceManagementServiceConfiguration(
+            GetDeviceManagementServerUrlForConsumer()));
+    consumer_device_management_service_.reset(
+        new DeviceManagementService(configuration.Pass()));
+    consumer_device_management_service_->ScheduleInitialization(
+        kServiceInitializationStartupDelay);
+
+    if (consumer_management_service_->GetStatus() ==
+        ConsumerManagementService::STATUS_ENROLLING ||
+        consumer_management_service_->HasPendingEnrollmentNotification()) {
+      consumer_enrollment_handler_.reset(
+          new ConsumerEnrollmentHandler(
+              consumer_management_service_.get(),
+              consumer_device_management_service_.get()));
+    }
   }
 
   if (device_cloud_policy_manager_) {
@@ -171,7 +184,7 @@ void BrowserPolicyConnectorChromeOS::Init(
         new DeviceCloudPolicyInitializer(
             local_state,
             device_management_service(),
-            GetDeviceManagementServiceForConsumer(),
+            consumer_device_management_service_.get(),
             GetBackgroundTaskRunner(),
             install_attributes_.get(),
             state_keys_broker_.get(),
@@ -222,16 +235,16 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
   // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
   device_cloud_policy_invalidator_.reset();
 
-  // The |consumer_management_service_| may be observing a
+  // The |consumer_enrollment_handler_| may be observing a
   // ProfileOAuth2TokenService and needs to be destroyed before the token
   // service.
-  consumer_management_service_.reset();
+  consumer_enrollment_handler_.reset();
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
   // Verify that PreShutdown() has been called first.
   DCHECK(!device_cloud_policy_invalidator_);
-  DCHECK(!consumer_management_service_);
+  DCHECK(!consumer_enrollment_handler_);
 
   // The AppPackUpdater may be observing the |device_cloud_policy_manager_|.
   // Delete it first.

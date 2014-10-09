@@ -24,6 +24,7 @@ class URLRequestContextGetter;
 namespace policy {
 
 class AppPackUpdater;
+class ConsumerEnrollmentHandler;
 class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyInvalidator;
@@ -104,11 +105,6 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   // delegate, if there is one.
   void SetUserPolicyDelegate(ConfigurationPolicyProvider* user_policy_provider);
 
-  // Returns the device management service for consumer management.
-  DeviceManagementService* GetDeviceManagementServiceForConsumer() const {
-    return consumer_device_management_service_.get();
-  }
-
   ConsumerManagementService* GetConsumerManagementService() const {
     return consumer_management_service_.get();
   }
@@ -136,7 +132,10 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   // Components of the device cloud policy implementation.
   scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
+  scoped_ptr<ConsumerManagementService> consumer_management_service_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
+  scoped_ptr<DeviceManagementService> consumer_device_management_service_;
+  scoped_ptr<ConsumerEnrollmentHandler> consumer_enrollment_handler_;
   scoped_ptr<DeviceCloudPolicyInitializer> device_cloud_policy_initializer_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
@@ -152,9 +151,6 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
 
   scoped_ptr<AppPackUpdater> app_pack_updater_;
   scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
-
-  scoped_ptr<DeviceManagementService> consumer_device_management_service_;
-  scoped_ptr<ConsumerManagementService> consumer_management_service_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
 
