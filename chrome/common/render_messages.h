@@ -82,8 +82,9 @@ struct ParamTraits<ContentSettingsPattern> {
 
 IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status::Value,
                           ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized)
-IPC_ENUM_TRAITS(OmniboxFocusChangeReason)
-IPC_ENUM_TRAITS(OmniboxFocusState)
+IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
+                          OMNIBOX_FOCUS_CHANGE_REASON_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusState, OMNIBOX_FOCUS_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(search_provider::OSDDType,
                           search_provider::OSDD_TYPE_LAST)
 IPC_ENUM_TRAITS(search_provider::InstallState)

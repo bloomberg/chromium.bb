@@ -18,6 +18,8 @@ enum OmniboxFocusState {
   // Omnibox will not look focused visibly but any user key strokes will go to
   // the omnibox.
   OMNIBOX_FOCUS_INVISIBLE,
+
+  OMNIBOX_FOCUS_STATE_LAST = OMNIBOX_FOCUS_INVISIBLE
 };
 
 // Reasons why the Omnibox focus state could change.
@@ -33,6 +35,8 @@ enum OmniboxFocusChangeReason {
   // Focus changed because user started typing. This only happens when focus
   // state is INVISIBLE (and this results in a change to VISIBLE).
   OMNIBOX_FOCUS_CHANGE_TYPING,
+
+  OMNIBOX_FOCUS_CHANGE_REASON_LAST = OMNIBOX_FOCUS_CHANGE_TYPING
 };
 
 #endif  // CHROME_COMMON_OMNIBOX_FOCUS_STATE_H_
