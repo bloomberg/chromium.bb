@@ -101,6 +101,23 @@ class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(BeforeUnloadFiredWebContentsDelegate);
 };
 
+class CloseWebContentsDelegate : public WebContentsDelegate {
+ public:
+  CloseWebContentsDelegate() : close_called_(false) {}
+  virtual ~CloseWebContentsDelegate() {}
+
+  virtual void CloseContents(WebContents* web_contents) override {
+    close_called_ = true;
+  }
+
+  bool is_closed() { return close_called_; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CloseWebContentsDelegate);
+
+  bool close_called_;
+};
+
 // This observer keeps track of the last deleted RenderViewHost to avoid
 // accessing it and causing use-after-free condition.
 class RenderViewHostDeletedObserver : public WebContentsObserver {
@@ -1513,6 +1530,31 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
       notifications.Check1AndReset(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED));
   EXPECT_FALSE(manager->pending_frame_host());
   EXPECT_EQ(host, manager->current_frame_host());
+}
+
+TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  CloseWebContentsDelegate close_delegate;
+  contents()->SetDelegate(&close_delegate);
+
+  // Navigate to the first page.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
+
+  // Start to close the tab, but assume it's unresponsive.
+  rfh1->render_view_host()->ClosePage();
+  EXPECT_TRUE(rfh1->render_view_host()->is_waiting_for_close_ack());
+
+  // Start a navigation to a new site.
+  controller().LoadURL(
+      kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+
+  // Simulate the unresponsiveness timer.  The tab should close.
+  contents()->RendererUnresponsive(rfh1->render_view_host());
+  EXPECT_TRUE(close_delegate.is_closed());
 }
 
 // Tests that the RenderFrameHost is properly deleted when the SwapOutACK is

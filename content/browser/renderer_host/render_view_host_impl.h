@@ -221,6 +221,9 @@ class CONTENT_EXPORT RenderViewHostImpl
     is_swapped_out_ = is_swapped_out;
   }
 
+  // TODO(creis): Remove as part of http://crbug.com/418265.
+  bool is_waiting_for_close_ack() const { return is_waiting_for_close_ack_; }
+
   // Tells the renderer that this RenderView will soon be swapped out, and thus
   // not to create any new modal dialogs until it happens.  This must be done
   // separately so that the PageGroupLoadDeferrers of any current dialogs are no

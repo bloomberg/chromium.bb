@@ -239,7 +239,13 @@ void RenderFrameHostManager::SetIsLoading(bool is_loading) {
 }
 
 bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
-  if (!cross_navigation_pending_)
+  // If we're waiting for a close ACK, then the tab should close whether there's
+  // a navigation in progress or not.  Unfortunately, we also need to check for
+  // cases that we arrive here with no navigation in progress, since there are
+  // some tab closure paths that don't set is_waiting_for_close_ack to true.
+  // TODO(creis): Clean this up in http://crbug.com/418266.
+  if (!cross_navigation_pending_ ||
+      render_frame_host_->render_view_host()->is_waiting_for_close_ack())
     return true;
 
   // We should always have a pending RFH when there's a cross-process navigation
