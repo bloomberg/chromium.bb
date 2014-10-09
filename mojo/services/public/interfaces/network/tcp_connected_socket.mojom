@@ -4,12 +4,12 @@
 
 module mojo {
 
-// Represents a TCP socket connected to a report system.
+// Represents a TCP socket connected to a remote system.
 //
 // Reading and writing over the connection are done via the data pipe supplied
 // by the caller when creating the socket.
-interface TCPClientSocket {
-  // TODO(brettw) here we put options and whatnot for controlling the
+interface TCPConnectedSocket {
+  // TODO(brettw) here we put options and what not for controlling the
   // connection.
 };
 

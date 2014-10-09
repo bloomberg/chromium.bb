@@ -159,7 +159,7 @@
         'interfaces/network/network_error.mojom',
         'interfaces/network/network_service.mojom',
         'interfaces/network/tcp_bound_socket.mojom',
-        'interfaces/network/tcp_client_socket.mojom',
+        'interfaces/network/tcp_connected_socket.mojom',
         'interfaces/network/tcp_server_socket.mojom',
         'interfaces/network/udp_socket.mojom',
         'interfaces/network/url_loader.mojom',

@@ -7,6 +7,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/network_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -49,13 +50,6 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
   response->charset = charset;
 
   return response.Pass();
-}
-
-NetworkErrorPtr MakeNetworkError(int error_code) {
-  NetworkErrorPtr error = NetworkError::New();
-  error->code = error_code;
-  error->description = net::ErrorToString(error_code);
-  return error.Pass();
 }
 
 // Reads the request body upload data from a DataPipe.

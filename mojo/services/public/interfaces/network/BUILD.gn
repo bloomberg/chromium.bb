@@ -12,7 +12,7 @@ mojom("network") {
     "network_error.mojom",
     "network_service.mojom",
     "tcp_bound_socket.mojom",
-    "tcp_client_socket.mojom",
+    "tcp_connected_socket.mojom",
     "tcp_server_socket.mojom",
     "udp_socket.mojom",
     "url_loader.mojom",

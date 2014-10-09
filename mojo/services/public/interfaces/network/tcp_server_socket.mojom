@@ -4,31 +4,21 @@
 
 import "mojo/services/public/interfaces/network/net_address.mojom"
 import "mojo/services/public/interfaces/network/network_error.mojom"
-import "mojo/services/public/interfaces/network/tcp_client_socket.mojom"
+import "mojo/services/public/interfaces/network/tcp_connected_socket.mojom"
 
 module mojo {
 
 // Represents a TCP server socket listening for incoming requests.
-[Client=TCPServerSocketClient]
 interface TCPServerSocket {
-  // Accepts an incoming connection request and hooks up a TCPClientSocket for
-  // connecting with the remote host. This function is called in reponse to
-  // OnConnectionAvailable().
+  // Waits for an incoming connection request and hooks up a TCPConnectedSocket
+  // for connecting with the remote host. Only one Accept call can be pending
+  // at a time.
   //
   // On success, the address of the remote host will be provided.
-  AcceptConnection(handle<data_pipe_consumer> send_stream,
-                   handle<data_pipe_producer> receive_stream,
-                   TCPClientSocket& client_socket)
+  Accept(handle<data_pipe_consumer> send_stream,
+         handle<data_pipe_producer> receive_stream,
+         TCPConnectedSocket& client_socket)
       => (NetworkError result, NetAddress? remote_address);
-};
-
-interface TCPServerSocketClient {
-  // Notifies the client that an incoming connection is available.
-  //
-  // The client should call AcceptConnection() to accept the request.
-  OnConnectionAvailable();
-
-  // TODO(brettw) probably need some error reporting function here.
 };
 
 }

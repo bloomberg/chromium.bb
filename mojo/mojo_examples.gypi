@@ -190,6 +190,22 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      # GN version: //mojo/examples/http_server
+      'target_name': 'mojo_http_server',
+      'type': 'loadable_module',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'public/mojo_public.gyp:mojo_application_standalone',
+        'public/mojo_public.gyp:mojo_cpp_bindings',
+        'public/mojo_public.gyp:mojo_utility',
+        'services/public/mojo_services_public.gyp:mojo_network_bindings',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'examples/http_server/http_server.cc',
+      ],
+    },
+    {
       # GN version: //mojo/examples/wget
       'target_name': 'mojo_wget',
       'type': 'loadable_module',

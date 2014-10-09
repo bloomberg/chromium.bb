@@ -28,11 +28,11 @@ class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
       NetAddressPtr local_address,
       InterfaceRequest<TCPBoundSocket> bound_socket,
       const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
-  virtual void CreateTCPClientSocket(
+  virtual void CreateTCPConnectedSocket(
       NetAddressPtr remote_address,
       ScopedDataPipeConsumerHandle send_stream,
       ScopedDataPipeProducerHandle receive_stream,
-      InterfaceRequest<TCPClientSocket> client_socket,
+      InterfaceRequest<TCPConnectedSocket> client_socket,
       const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
 
  private:

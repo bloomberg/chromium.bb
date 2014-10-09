@@ -12,6 +12,7 @@ group("examples") {
     "//mojo/examples/compositor_app",
     "//mojo/examples/content_handler_demo",
     "//mojo/examples/echo",
+    "//mojo/examples/http_server",
     "//mojo/examples/pepper_container_app",
     "//mojo/examples/png_viewer",
     "//mojo/examples/sample_app",
