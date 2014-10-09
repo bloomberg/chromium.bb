@@ -274,6 +274,7 @@ void EnhancedBookmarkModel::BookmarkModelChanged() {
 void EnhancedBookmarkModel::BookmarkModelLoaded(BookmarkModel* model,
                                                 bool ids_reassigned) {
   InitializeIdMap();
+  loaded_ = true;
   FOR_EACH_OBSERVER(
       EnhancedBookmarkModelObserver, observers_, EnhancedBookmarkModelLoaded());
 }
