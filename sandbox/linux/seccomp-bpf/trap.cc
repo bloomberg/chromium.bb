@@ -380,13 +380,6 @@ bool Trap::EnableUnsafeTrapsInSigSysHandler() {
   return trap->has_unsafe_traps_;
 }
 
-bool Trap::IsSafeTrapId(uint16_t id) {
-  if (global_trap_ && id > 0 && id <= global_trap_->trap_array_size_) {
-    return global_trap_->trap_array_[id - 1].safe;
-  }
-  return false;
-}
-
 Trap* Trap::global_trap_;
 
 }  // namespace sandbox

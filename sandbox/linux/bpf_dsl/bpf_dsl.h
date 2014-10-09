@@ -112,6 +112,7 @@ class SANDBOX_EXPORT SandboxBPFDSLPolicy : public SandboxBPFPolicy {
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sb,
                                     int sysno) const override final;
   virtual ErrorCode InvalidSyscall(SandboxBPF* sb) const override final;
+  virtual bool HasUnsafeTraps() const override final;
 
   // Helper method so policies can just write Trap(func, aux).
   static ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
@@ -325,6 +326,7 @@ class SANDBOX_EXPORT ResultExprImpl : public base::RefCounted<ResultExprImpl> {
  public:
   ResultExprImpl() {}
   virtual ErrorCode Compile(SandboxBPF* sb) const = 0;
+  virtual bool HasUnsafeTraps() const;
 
  protected:
   virtual ~ResultExprImpl() {}

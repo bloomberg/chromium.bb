@@ -64,10 +64,6 @@ class SANDBOX_EXPORT Trap {
   // Returns "true", if unsafe traps were turned on.
   static bool EnableUnsafeTrapsInSigSysHandler();
 
-  // Returns true if a safe trap handler is associated with a
-  // particular trap ID.
-  static bool IsSafeTrapId(uint16_t id);
-
  private:
   struct TrapKey {
     TrapKey() : fnc(NULL), aux(NULL), safe(false) {}

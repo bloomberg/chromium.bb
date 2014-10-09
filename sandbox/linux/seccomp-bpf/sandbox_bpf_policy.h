@@ -32,6 +32,9 @@ class SANDBOX_EXPORT SandboxBPFPolicy {
   // system calls.  The default implementation is to return ENOSYS.
   virtual ErrorCode InvalidSyscall(SandboxBPF* sandbox_compiler) const;
 
+  // HasUnsafeTraps returns true if the policy includes any unsafe traps.
+  virtual bool HasUnsafeTraps() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFPolicy);
 };

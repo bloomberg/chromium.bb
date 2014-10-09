@@ -91,6 +91,10 @@ class SANDBOX_EXPORT SandboxBPF {
   // to the sandbox object.
   void SetSandboxPolicy(SandboxBPFPolicy* policy);
 
+  // Error returns an ErrorCode to indicate the system call should fail with
+  // the specified error number.
+  ErrorCode Error(int err);
+
   // We can use ErrorCode to request calling of a trap handler. This method
   // performs the required wrapping of the callback function into an
   // ErrorCode object.
@@ -228,23 +232,17 @@ class SANDBOX_EXPORT SandboxBPF {
   void InstallFilter(bool must_sync_threads);
 
   // Compile the configured policy into a complete instruction sequence.
-  // (See MaybeAddEscapeHatch for |has_unsafe_traps|.)
-  Instruction* CompilePolicy(CodeGen* gen, bool* has_unsafe_traps);
+  Instruction* CompilePolicy(CodeGen* gen);
 
   // Return an instruction sequence that checks the
   // arch_seccomp_data's "arch" field is valid, and then passes
   // control to |passed| if so.
   Instruction* CheckArch(CodeGen* gen, Instruction* passed);
 
-  // If the |rest| instruction sequence contains any unsafe traps,
-  // then sets |*has_unsafe_traps| to true and returns an instruction
-  // sequence that allows all system calls from Syscall::Call(), and
-  // otherwise passes control to |rest|.
-  //
-  // If |rest| contains no unsafe traps, then |rest| is returned
-  // directly and |*has_unsafe_traps| is set to false.
+  // If |has_unsafe_traps_| is true, returns an instruction sequence
+  // that allows all system calls from Syscall::Call(), and otherwise
+  // passes control to |rest|. Otherwise, simply returns |rest|.
   Instruction* MaybeAddEscapeHatch(CodeGen* gen,
-                                   bool* has_unsafe_traps,
                                    Instruction* rest);
 
   // Return an instruction sequence that loads and checks the system
@@ -261,7 +259,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // Verify the correctness of a compiled program by comparing it against the
   // current policy. This function should only ever be called by unit tests and
   // by the sandbox internals. It should not be used by production code.
-  void VerifyProgram(const Program& program, bool has_unsafe_traps);
+  void VerifyProgram(const Program& program);
 
   // Finds all the ranges of system calls that need to be handled. Ranges are
   // sorted in ascending order of system call numbers. There are no gaps in the
@@ -303,6 +301,7 @@ class SANDBOX_EXPORT SandboxBPF {
   scoped_ptr<const SandboxBPFPolicy> policy_;
   Conds* conds_;
   bool sandbox_has_started_;
+  bool has_unsafe_traps_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxBPF);
 };

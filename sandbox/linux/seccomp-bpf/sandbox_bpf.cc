@@ -176,21 +176,6 @@ bool IsDenied(const ErrorCode& code) {
           code.err() <= (SECCOMP_RET_ERRNO + ErrorCode::ERR_MAX_ERRNO));
 }
 
-// Function that can be passed as a callback function to CodeGen::Traverse().
-// Checks whether the "insn" returns an UnsafeTrap() ErrorCode. If so, it
-// sets the "bool" variable pointed to by "aux".
-void CheckForUnsafeErrorCodes(Instruction* insn, void* aux) {
-  bool* is_unsafe = static_cast<bool*>(aux);
-  if (!*is_unsafe) {
-    if (BPF_CLASS(insn->code) == BPF_RET && insn->k > SECCOMP_RET_TRAP &&
-        insn->k - SECCOMP_RET_TRAP <= SECCOMP_RET_DATA) {
-      if (!Trap::IsSafeTrapId(insn->k & SECCOMP_RET_DATA)) {
-        *is_unsafe = true;
-      }
-    }
-  }
-}
-
 // A Trap() handler that returns an "errno" value. The value is encoded
 // in the "aux" parameter.
 intptr_t ReturnErrno(const struct arch_seccomp_data&, void* aux) {
@@ -202,85 +187,6 @@ intptr_t ReturnErrno(const struct arch_seccomp_data&, void* aux) {
   return -err;
 }
 
-// Function that can be passed as a callback function to CodeGen::Traverse().
-// Checks whether the "insn" returns an errno value from a BPF filter. If so,
-// it rewrites the instruction to instead call a Trap() handler that does
-// the same thing. "aux" is ignored.
-void RedirectToUserspace(Instruction* insn, void* aux) {
-  // When inside an UnsafeTrap() callback, we want to allow all system calls.
-  // This means, we must conditionally disable the sandbox -- and that's not
-  // something that kernel-side BPF filters can do, as they cannot inspect
-  // any state other than the syscall arguments.
-  // But if we redirect all error handlers to user-space, then we can easily
-  // make this decision.
-  // The performance penalty for this extra round-trip to user-space is not
-  // actually that bad, as we only ever pay it for denied system calls; and a
-  // typical program has very few of these.
-  SandboxBPF* sandbox = static_cast<SandboxBPF*>(aux);
-  if (BPF_CLASS(insn->code) == BPF_RET &&
-      (insn->k & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-    insn->k = sandbox->Trap(ReturnErrno,
-        reinterpret_cast<void*>(insn->k & SECCOMP_RET_DATA)).err();
-  }
-}
-
-// This wraps an existing policy and changes its behavior to match the changes
-// made by RedirectToUserspace(). This is part of the framework that allows BPF
-// evaluation in userland.
-// TODO(markus): document the code inside better.
-class RedirectToUserSpacePolicyWrapper : public SandboxBPFPolicy {
- public:
-  explicit RedirectToUserSpacePolicyWrapper(
-      const SandboxBPFPolicy* wrapped_policy)
-      : wrapped_policy_(wrapped_policy) {
-    DCHECK(wrapped_policy_);
-  }
-
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const override {
-    ErrorCode err =
-        wrapped_policy_->EvaluateSyscall(sandbox_compiler, system_call_number);
-    ChangeErrnoToTraps(&err, sandbox_compiler);
-    return err;
-  }
-
-  virtual ErrorCode InvalidSyscall(
-      SandboxBPF* sandbox_compiler) const override {
-    return ReturnErrnoViaTrap(sandbox_compiler, ENOSYS);
-  }
-
- private:
-  ErrorCode ReturnErrnoViaTrap(SandboxBPF* sandbox_compiler, int err) const {
-    return sandbox_compiler->Trap(ReturnErrno, reinterpret_cast<void*>(err));
-  }
-
-  // ChangeErrnoToTraps recursivly iterates through the ErrorCode
-  // converting any ERRNO to a userspace trap
-  void ChangeErrnoToTraps(ErrorCode* err, SandboxBPF* sandbox_compiler) const {
-    if (err->error_type() == ErrorCode::ET_SIMPLE &&
-        (err->err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-      // Have an errno, need to change this to a trap
-      *err =
-          ReturnErrnoViaTrap(sandbox_compiler, err->err() & SECCOMP_RET_DATA);
-      return;
-    } else if (err->error_type() == ErrorCode::ET_COND) {
-      // Need to explore both paths
-      ChangeErrnoToTraps((ErrorCode*)err->passed(), sandbox_compiler);
-      ChangeErrnoToTraps((ErrorCode*)err->failed(), sandbox_compiler);
-      return;
-    } else if (err->error_type() == ErrorCode::ET_TRAP) {
-      return;
-    } else if (err->error_type() == ErrorCode::ET_SIMPLE &&
-               (err->err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ALLOW) {
-      return;
-    }
-    NOTREACHED();
-  }
-
-  const SandboxBPFPolicy* wrapped_policy_;
-  DISALLOW_COPY_AND_ASSIGN(RedirectToUserSpacePolicyWrapper);
-};
-
 intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
   SANDBOX_DIE(static_cast<char*>(aux));
 }
@@ -291,7 +197,9 @@ SandboxBPF::SandboxBPF()
     : quiet_(false),
       proc_fd_(-1),
       conds_(new Conds),
-      sandbox_has_started_(false) {}
+      sandbox_has_started_(false),
+      has_unsafe_traps_(false) {
+}
 
 SandboxBPF::~SandboxBPF() {
   // It is generally unsafe to call any memory allocator operations or to even
@@ -656,14 +564,44 @@ SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
   // Verify that the user pushed a policy.
   DCHECK(policy_);
 
+  // If our BPF program has unsafe traps, enable support for them.
+  has_unsafe_traps_ = policy_->HasUnsafeTraps();
+  if (has_unsafe_traps_) {
+    // As support for unsafe jumps essentially defeats all the security
+    // measures that the sandbox provides, we print a big warning message --
+    // and of course, we make sure to only ever enable this feature if it
+    // is actually requested by the sandbox policy.
+    if (Syscall::Call(-1) == -1 && errno == ENOSYS) {
+      SANDBOX_DIE(
+          "Support for UnsafeTrap() has not yet been ported to this "
+          "architecture");
+    }
+
+    for (size_t i = 0; i < arraysize(kSyscallsRequiredForUnsafeTraps); ++i) {
+      if (!policy_->EvaluateSyscall(this, kSyscallsRequiredForUnsafeTraps[i])
+               .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))) {
+        SANDBOX_DIE(
+            "Policies that use UnsafeTrap() must unconditionally allow all "
+            "required system calls");
+      }
+    }
+
+    if (!Trap::EnableUnsafeTrapsInSigSysHandler()) {
+      // We should never be able to get here, as UnsafeTrap() should never
+      // actually return a valid ErrorCode object unless the user set the
+      // CHROME_SANDBOX_DEBUGGING environment variable; and therefore,
+      // "has_unsafe_traps" would always be false. But better double-check
+      // than enabling dangerous code.
+      SANDBOX_DIE("We'd rather die than enable unsafe traps");
+    }
+  }
+
   // Assemble the BPF filter program.
   CodeGen* gen = new CodeGen();
   if (!gen) {
     SANDBOX_DIE("Out of memory");
   }
-
-  bool has_unsafe_traps;
-  Instruction* head = CompilePolicy(gen, &has_unsafe_traps);
+  Instruction* head = CompilePolicy(gen);
 
   // Turn the DAG into a vector of instructions.
   Program* program = new Program();
@@ -677,21 +615,20 @@ SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
     // Verification is expensive. We only perform this step, if we are
     // compiled in debug mode, or if the caller explicitly requested
     // verification.
-    VerifyProgram(*program, has_unsafe_traps);
+    VerifyProgram(*program);
   }
 
   return program;
 }
 
-Instruction* SandboxBPF::CompilePolicy(CodeGen* gen, bool* has_unsafe_traps) {
+Instruction* SandboxBPF::CompilePolicy(CodeGen* gen) {
   // A compiled policy consists of three logical parts:
   //   1. Check that the "arch" field matches the expected architecture.
   //   2. If the policy involves unsafe traps, check if the syscall was
   //      invoked by Syscall::Call, and then allow it unconditionally.
   //   3. Check the system call number and jump to the appropriate compiled
   //      system call policy number.
-  return CheckArch(
-      gen, MaybeAddEscapeHatch(gen, has_unsafe_traps, DispatchSyscall(gen)));
+  return CheckArch(gen, MaybeAddEscapeHatch(gen, DispatchSyscall(gen)));
 }
 
 Instruction* SandboxBPF::CheckArch(CodeGen* gen, Instruction* passed) {
@@ -709,51 +646,11 @@ Instruction* SandboxBPF::CheckArch(CodeGen* gen, Instruction* passed) {
 }
 
 Instruction* SandboxBPF::MaybeAddEscapeHatch(CodeGen* gen,
-                                             bool* has_unsafe_traps,
                                              Instruction* rest) {
-  // If there is at least one UnsafeTrap() in our program, the entire sandbox
-  // is unsafe. We need to modify the program so that all non-
-  // SECCOMP_RET_ALLOW ErrorCodes are handled in user-space. This will then
-  // allow us to temporarily disable sandboxing rules inside of callbacks to
-  // UnsafeTrap().
-  *has_unsafe_traps = false;
-  gen->Traverse(rest, CheckForUnsafeErrorCodes, has_unsafe_traps);
-  if (!*has_unsafe_traps) {
-    // If no unsafe traps, then simply return |rest|.
+  // If no unsafe traps, then simply return |rest|.
+  if (!has_unsafe_traps_) {
     return rest;
   }
-
-  // If our BPF program has unsafe jumps, enable support for them. This
-  // test happens very early in the BPF filter program. Even before we
-  // consider looking at system call numbers.
-  // As support for unsafe jumps essentially defeats all the security
-  // measures that the sandbox provides, we print a big warning message --
-  // and of course, we make sure to only ever enable this feature if it
-  // is actually requested by the sandbox policy.
-  if (Syscall::Call(-1) == -1 && errno == ENOSYS) {
-    SANDBOX_DIE(
-        "Support for UnsafeTrap() has not yet been ported to this "
-        "architecture");
-  }
-
-  for (size_t i = 0; i < arraysize(kSyscallsRequiredForUnsafeTraps); ++i) {
-    if (!policy_->EvaluateSyscall(this, kSyscallsRequiredForUnsafeTraps[i])
-             .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))) {
-      SANDBOX_DIE(
-          "Policies that use UnsafeTrap() must unconditionally allow all "
-          "required system calls");
-    }
-  }
-
-  if (!Trap::EnableUnsafeTrapsInSigSysHandler()) {
-    // We should never be able to get here, as UnsafeTrap() should never
-    // actually return a valid ErrorCode object unless the user set the
-    // CHROME_SANDBOX_DEBUGGING environment variable; and therefore,
-    // "has_unsafe_traps" would always be false. But better double-check
-    // than enabling dangerous code.
-    SANDBOX_DIE("We'd rather die than enable unsafe traps");
-  }
-  gen->Traverse(rest, RedirectToUserspace, this);
 
   // Allow system calls, if they originate from our magic return address
   // (which we can query by calling Syscall::Call(-1)).
@@ -823,19 +720,9 @@ Instruction* SandboxBPF::CheckSyscallNumber(CodeGen* gen, Instruction* passed) {
   return passed;
 }
 
-void SandboxBPF::VerifyProgram(const Program& program, bool has_unsafe_traps) {
-  // If we previously rewrote the BPF program so that it calls user-space
-  // whenever we return an "errno" value from the filter, then we have to
-  // wrap our system call evaluator to perform the same operation. Otherwise,
-  // the verifier would also report a mismatch in return codes.
-  scoped_ptr<const RedirectToUserSpacePolicyWrapper> redirected_policy(
-      new RedirectToUserSpacePolicyWrapper(policy_.get()));
-
+void SandboxBPF::VerifyProgram(const Program& program) {
   const char* err = NULL;
-  if (!Verifier::VerifyBPF(this,
-                           program,
-                           has_unsafe_traps ? *redirected_policy : *policy_,
-                           &err)) {
+  if (!Verifier::VerifyBPF(this, program, *policy_, &err)) {
     CodeGen::PrintProgram(program);
     SANDBOX_DIE(err);
   }
@@ -1059,6 +946,23 @@ Instruction* SandboxBPF::CondExpressionHalf(CodeGen* gen,
 
 ErrorCode SandboxBPF::Unexpected64bitArgument() {
   return Kill("Unexpected 64bit argument detected");
+}
+
+ErrorCode SandboxBPF::Error(int err) {
+  if (has_unsafe_traps_) {
+    // When inside an UnsafeTrap() callback, we want to allow all system calls.
+    // This means, we must conditionally disable the sandbox -- and that's not
+    // something that kernel-side BPF filters can do, as they cannot inspect
+    // any state other than the syscall arguments.
+    // But if we redirect all error handlers to user-space, then we can easily
+    // make this decision.
+    // The performance penalty for this extra round-trip to user-space is not
+    // actually that bad, as we only ever pay it for denied system calls; and a
+    // typical program has very few of these.
+    return Trap(ReturnErrno, reinterpret_cast<void*>(err));
+  }
+
+  return ErrorCode(err);
 }
 
 ErrorCode SandboxBPF::Trap(Trap::TrapFnc fnc, const void* aux) {

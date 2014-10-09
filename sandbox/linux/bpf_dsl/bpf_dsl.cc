@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
 namespace sandbox {
 namespace bpf_dsl {
@@ -38,7 +39,7 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
   }
 
   virtual ErrorCode Compile(SandboxBPF* sb) const override {
-    return ErrorCode(err_);
+    return sb->Error(err_);
   }
 
  private:
@@ -112,6 +113,8 @@ class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
     return sb->UnsafeTrap(func_, arg_);
   }
 
+  virtual bool HasUnsafeTraps() const override { return true; }
+
  private:
   virtual ~UnsafeTrapResultExprImpl() {}
 
@@ -131,6 +134,10 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
   virtual ErrorCode Compile(SandboxBPF* sb) const override {
     return cond_->Compile(
         sb, then_result_->Compile(sb), else_result_->Compile(sb));
+  }
+
+  virtual bool HasUnsafeTraps() const override {
+    return then_result_->HasUnsafeTraps() || else_result_->HasUnsafeTraps();
   }
 
  private:
@@ -248,6 +255,10 @@ class OrBoolExprImpl : public internal::BoolExprImpl {
 }  // namespace
 
 namespace internal {
+
+bool ResultExprImpl::HasUnsafeTraps() const {
+  return false;
+}
 
 uint64_t DefaultMask(size_t size) {
   switch (size) {
@@ -374,6 +385,17 @@ ErrorCode SandboxBPFDSLPolicy::EvaluateSyscall(SandboxBPF* sb,
 
 ErrorCode SandboxBPFDSLPolicy::InvalidSyscall(SandboxBPF* sb) const {
   return InvalidSyscall()->Compile(sb);
+}
+
+bool SandboxBPFDSLPolicy::HasUnsafeTraps() const {
+  for (SyscallIterator iter(false); !iter.Done();) {
+    uint32_t sysnum = iter.Next();
+    if (SyscallIterator::IsValid(sysnum) &&
+        EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
+      return true;
+    }
+  }
+  return InvalidSyscall()->HasUnsafeTraps();
 }
 
 ResultExpr SandboxBPFDSLPolicy::Trap(Trap::TrapFnc trap_func, const void* aux) {
