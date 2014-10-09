@@ -40971,38 +40971,40 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     components/policy/core/common/cloud/enterprise_metrics.h.
   </summary>
   <int value="0" label="Cancelled">
-    The enrollment screen was closed without completing the enrollment process.
+    User pressed 'Cancel' during the enrollment process.
   </int>
-  <int value="1" label="Started">
-    The user submitted credentials and started the enrollment process.
+  <int value="1" label="Started with valid credentials">
+    The user submitted valid GAIA credentials to start the enrollment process.
   </int>
-  <int value="2" label="Network Failed">
-    Enrollment failed due to a network error.
+  <int value="2" label="OAuth fetch: network failed">
+    OAuth token fetch failed: network error.
   </int>
   <int value="3" label="Login Failed">
-    Enrollment failed because logging in to Gaia failed.
+    OAuth token fetch failed: login error.
   </int>
   <int value="4" label="Not Supported">
-    Enrollment failed because it is not supported for the account used.
+    Registration / policy fetch failed: DM server reports management not
+    supported.
   </int>
-  <int value="5" label="Policy Failed">
-    Enrollment failed because it failed to apply device policy.
+  <int value="5" label="Policy Failed (deprecated)">
+    DEPRECATED: Enrollment failed because it failed to apply device policy.
   </int>
-  <int value="6" label="Other Failed">
-    Enrollment failed due to an unexpected error. This currently happens when
-    the Gaia auth token is not issued for the DM service, the device cloud
-    policy subsystem isn't initialized, or when fetching Gaia tokens fails for
-    an unknown reason.
+  <int value="6" label="Other Failed (deprecated)">
+    DEPRECATED: Enrollment failed due to an unexpected error. This currently
+    happens when the GAIA auth token is not issued for the DM service, the
+    device cloud policy subsystem isn't initialized, or when fetching GAIA
+    tokens fails for an unknown reason.
   </int>
   <int value="7" label="OK">Enrollment was successful.</int>
-  <int value="8" label="Invalid Serial">
-    Serial number doesn't belong to account domain.
+  <int value="8" label="Registration/fetch: invalid Serial">
+    Registration / policy fetch failed: DM server reports that the serial number
+    we try to register is not assigned to the domain used.
   </int>
   <int value="9" label="Auto-enrollment Started">
     Auto-enrollment started automatically after sign-in.
   </int>
   <int value="10" label="Auto-enrollment Failed">Auto-enrollment failed.</int>
-  <int value="11" label="Auto-enrollment Retried">
+  <int value="11" label="Auto-enrollment Restarted">
     Auto-enrollment started again after a failure.
   </int>
   <int value="12" label="Auto-enrollment Cancelled">
@@ -41010,56 +41012,104 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </int>
   <int value="13" label="Auto-enrollment OK">Auto-enrollment OK.</int>
   <int value="14" label="Invalid enrollment mode">
-    The enrollment mode has not been sent down or is unknown to the client.
+    Registration failed: DM server returns unknown/disallowed enrollment mode.
   </int>
   <int value="15" label="Auto-enrollment not supported">
-    The enrollment mode can not be set through auto-enrollment.
+    Auto-enrollment is not supported for the mode supplied by the server.  This
+    presently means trying to auto-enroll in kiosk mode.
   </int>
   <int value="16" label="Install attributes timeout">
-    Install attributes failed to initialize in time.
+    Enrollment failed: lockbox initialization took too long to complete.
   </int>
-  <int value="17" label="Wrong user name">
-    Re-enrollment attempted with an account from a different domain.
+  <int value="17" label="Re-enrollment: lock domain mismatch">
+    Re-enrollment device lock failed: domain does not match install attributes.
   </int>
-  <int value="18" label="Missing licenses">
-    No licenses left for that domain.
+  <int value="18" label="Registration/fetch: missing licenses">
+    Registration / policy fetch failed: DM server reports licenses expired or
+    exhausted.
   </int>
   <int value="19" label="Robot auth code fetch failed">
-    Enrollment failed due to an error fetching the device robot authorization
-    code from the DM Server.
+    Failed to fetch device robot authorization code from DM Server.
   </int>
   <int value="20" label="Robot refresh token fetch failed">
-    Enrollment failed due to an error fetching the device robot refresh token
-    from Gaia.
+    Failed to fetch device robot refresh token from GAIA.
   </int>
   <int value="21" label="Robot refresh token store failed">
-    Enrollment failed due to an error persisting the device robot refresh token
-    on the device.
+    Failed to persist robot account refresh token on device.
   </int>
-  <int value="22" label="Deprovisioned device">
-    Enrollment failed because the administrator has deprovisioned the device.
+  <int value="22" label="Registration/fetch: deprovisioned device">
+    Registration / policy fetch failed: DM server reports administrator
+    deprovisioned the device.
   </int>
-  <int value="23" label="Domain mismatch">
-    Enrollment failed because the device belongs to a different domain.
+  <int value="23" label="Registration/fetch: domain mismatch">
+    Registration / policy fetch failed: DM server reports domain mismatch.
   </int>
   <int value="24" label="Triggered">
-    Enrollment has been triggered, the credential screen has been shown.
+    Enrollment has been triggered, the webui login screen has been shown.
   </int>
-  <int value="25" label="Retried">The user retried to submit credentials.</int>
+  <int value="25" label="Restarted with valid credentials">
+    The user submitted valid GAIA credentials to start the enrollment process
+    for the second (or further) time.
+  </int>
   <int value="26" label="Store token and ID failed">
-    Enrollment failed because DM token and device ID couldn't be stored.
+    Failed to store DM token and device ID.
   </int>
   <int value="27" label="Error getting FRE state keys">
-    Enrollment failed because FRE state keys couldn't be obtained.
+    Failed to obtain FRE state keys.
   </int>
   <int value="28" label="Error validating policy">
-    Enrollment failed because policy couldn't be validated.
+    Failed to validate policy.
   </int>
   <int value="29" label="Error in CloudPolicyStore">
-    Enrollment failed because of error in CloudPolicyStore.
+    Failed due to error in CloudPolicyStore.
   </int>
-  <int value="30" label="Error locking device">
-    Enrollment failed because device couldn't be locked.
+  <int value="30" label="Error locking device">Failed to lock device.</int>
+  <int value="31" label="Registration/fetch: request payload invalid">
+    Registration / policy fetch failed: DM server reports invalid request
+    payload.
+  </int>
+  <int value="32" label="Registration/fetch: device not found">
+    Registration / policy fetch failed: DM server reports device not found.
+  </int>
+  <int value="33" label="Registration/fetch: DM token invalid">
+    Registration / policy fetch failed: DM server reports DM token invalid.
+  </int>
+  <int value="34" label="Registration/fetch: activation pending">
+    Registration / policy fetch failed: DM server reports activation pending.
+  </int>
+  <int value="35" label="Registration/fetch: device ID conflict">
+    Registration / policy fetch failed: DM server reports device ID conflict.
+  </int>
+  <int value="36" label="Registration/fetch: policy not found">
+    Registration / policy fetch failed: DM server can't find policy.
+  </int>
+  <int value="37" label="Registration/fetch: HTTP request failed">
+    Registration / policy fetch failed: HTTP request failed.
+  </int>
+  <int value="38" label="Registration/fetch: temporary unavailable">
+    Registration / policy fetch failed: DM server reports temporary problem.
+  </int>
+  <int value="39" label="Registration/fetch: HTTP error response">
+    Registration / policy fetch failed: DM server returns non-success HTTP
+    status code.
+  </int>
+  <int value="40" label="Registration/fetch: invalid response">
+    Registration / policy fetch failed: can't decode DM server response.
+  </int>
+  <int value="41" label="OAuth fetch: account not signed up">
+    OAuth token fetch failed: account not signed up.
+  </int>
+  <int value="42" label="OAuth fetch: account deleted">
+    OAuth token fetch failed: account deleted.
+  </int>
+  <int value="43" label="OAuth fetch: account disabled">
+    OAuth token fetch failed: account disabled.
+  </int>
+  <int value="44" label="Re-enrollment: pre-check domain mismatch">
+    Re-enrollment pre-check failed: domain does not match install attributes.
+  </int>
+  <int value="45" label="Re-enrollment: lock domain mismatch">
+    Re-enrollment device lock failed: domain does not match install attributes.
   </int>
 </enum>
 

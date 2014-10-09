@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -154,9 +155,9 @@ void EnrollmentScreen::OnLoginDone(const std::string& user) {
   user_ = gaia::CanonicalizeEmail(user);
 
   if (is_auto_enrollment())
-    UMA(policy::kMetricEnrollmentAutoRetried);
+    UMA(policy::kMetricEnrollmentAutoRestarted);
   else if (enrollment_failed_once_)
-    UMA(policy::kMetricEnrollmentRetried);
+    UMA(policy::kMetricEnrollmentRestarted);
   else
     UMA(policy::kMetricEnrollmentStarted);
 
@@ -178,10 +179,16 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
       LOG(ERROR) << "Auth error " << error.state();
       break;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
+      UMAFailure(policy::kMetricEnrollmentAccountNotSignedUp);
+      LOG(ERROR) << "Account not signed up " << error.state();
+      break;
     case GoogleServiceAuthError::ACCOUNT_DELETED:
+      UMAFailure(policy::kMetricEnrollmentAccountDeleted);
+      LOG(ERROR) << "Account deleted " << error.state();
+      break;
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      UMAFailure(policy::kMetricEnrollmentNotSupported);
-      LOG(ERROR) << "Account error " << error.state();
+      UMAFailure(policy::kMetricEnrollmentAccountDisabled);
+      LOG(ERROR) << "Account disabled " << error.state();
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
@@ -219,6 +226,8 @@ void EnrollmentScreen::OnRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
+  UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoCancelled
+                           : policy::kMetricEnrollmentCancelled);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Cancel", elapsed_timer_);
   if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED ||
@@ -232,8 +241,6 @@ void EnrollmentScreen::OnCancel() {
 
   if (is_auto_enrollment())
     policy::AutoEnrollmentClient::CancelAutoEnrollment();
-  UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoCancelled
-                           : policy::kMetricEnrollmentCancelled);
   actor_->ResetAuth(
       base::Bind(&ScreenObserver::OnExit,
                  base::Unretained(get_screen_observer()),
@@ -272,7 +279,7 @@ void EnrollmentScreen::RegisterForDevicePolicy(const std::string& token) {
       connector->GetEnterpriseDomain() != gaia::ExtractDomainName(user_)) {
     LOG(ERROR) << "Trying to re-enroll to a different domain than "
                << connector->GetEnterpriseDomain();
-    UMAFailure(policy::kMetricEnrollmentWrongUserError);
+    UMAFailure(policy::kMetricEnrollmentPrecheckDomainMismatch);
     actor_->ShowUIError(
         EnrollmentScreenActor::UI_ERROR_DOMAIN_MISMATCH);
     return;
@@ -325,34 +332,52 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
       switch (status.client_status()) {
         case policy::DM_STATUS_SUCCESS:
+          NOTREACHED();
+          break;
         case policy::DM_STATUS_REQUEST_INVALID:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyPayloadInvalid);
+          break;
         case policy::DM_STATUS_SERVICE_DEVICE_NOT_FOUND:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyDeviceNotFound);
+          break;
         case policy::DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyDMTokenInvalid);
+          break;
         case policy::DM_STATUS_SERVICE_ACTIVATION_PENDING:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyActivationPending);
+          break;
         case policy::DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyDeviceIdConflict);
+          break;
         case policy::DM_STATUS_SERVICE_POLICY_NOT_FOUND:
-          UMAFailure(policy::kMetricEnrollmentOtherFailed);
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyNotFound);
           break;
         case policy::DM_STATUS_REQUEST_FAILED:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyRequestFailed);
+          break;
         case policy::DM_STATUS_TEMPORARY_UNAVAILABLE:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyTempUnavailable);
+          break;
         case policy::DM_STATUS_HTTP_STATUS_ERROR:
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyHttpError);
+          break;
         case policy::DM_STATUS_RESPONSE_DECODING_ERROR:
-          UMAFailure(policy::kMetricEnrollmentNetworkFailed);
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyResponseInvalid);
           break;
         case policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
           UMAFailure(policy::kMetricEnrollmentNotSupported);
           break;
         case policy::DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
-          UMAFailure(policy::kMetricEnrollmentInvalidSerialNumber);
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyInvalidSerial);
           break;
         case policy::DM_STATUS_SERVICE_MISSING_LICENSES:
-          UMAFailure(policy::kMetricMissingLicensesError);
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyMissingLicenses);
           break;
         case policy::DM_STATUS_SERVICE_DEPROVISIONED:
-          UMAFailure(policy::kMetricEnrollmentDeprovisioned);
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyDeprovisioned);
           break;
         case policy::DM_STATUS_SERVICE_DOMAIN_MISMATCH:
-          UMAFailure(policy::kMetricEnrollmentDomainMismatch);
+          UMAFailure(policy::kMetricEnrollmentRegisterPolicyDomainMismatch);
           break;
       }
       break;
@@ -360,10 +385,10 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
       UMAFailure(policy::kMetricEnrollmentInvalidEnrollmentMode);
       break;
     case policy::EnrollmentStatus::STATUS_LOCK_TIMEOUT:
-      UMAFailure(policy::kMetricLockboxTimeoutError);
+      UMAFailure(policy::kMetricEnrollmentLockboxTimeoutError);
       break;
     case policy::EnrollmentStatus::STATUS_LOCK_WRONG_USER:
-      UMAFailure(policy::kMetricEnrollmentWrongUserError);
+      UMAFailure(policy::kMetricEnrollmentLockDomainMismatch);
       break;
     case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
       UMAFailure(policy::kMetricEnrollmentNoStateKeys);
@@ -406,16 +431,13 @@ void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
   switch (enrollment_mode_) {
     case EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL:
     case EnrollmentScreenActor::ENROLLMENT_MODE_AUTO:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.Enrollment", sample,
-                                policy::kMetricEnrollmentSize);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.Enrollment", sample);
       break;
     case EnrollmentScreenActor::ENROLLMENT_MODE_FORCED:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.EnrollmentForced", sample,
-                                policy::kMetricEnrollmentSize);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.EnrollmentForced", sample);
       break;
     case EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.EnrollmentRecovery", sample,
-                                policy::kMetricEnrollmentSize);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.EnrollmentRecovery", sample);
       break;
     case EnrollmentScreenActor::ENROLLMENT_MODE_COUNT:
       NOTREACHED();

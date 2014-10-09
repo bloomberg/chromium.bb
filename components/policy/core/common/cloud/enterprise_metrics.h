@@ -118,83 +118,102 @@ enum MetricPolicy {
 //   (a) existing enumerated constants should never be deleted or reordered, and
 //   (b) new constants should only be appended at the end of the enumeration.
 enum MetricEnrollment {
-  // The enrollment screen was closed without completing the enrollment
-  // process.
+  // User pressed 'Cancel' during the enrollment process.
   kMetricEnrollmentCancelled = 0,
-  // The user submitted credentials and started the enrollment process.
+  // User started enrollment process by submitting valid GAIA credentials.
   kMetricEnrollmentStarted = 1,
-  // Enrollment failed due to a network error.
+  // OAuth token fetch failed: network error.
   kMetricEnrollmentNetworkFailed = 2,
-  // Enrollment failed because logging in to Gaia failed.
+  // OAuth token fetch failed: login error.
   kMetricEnrollmentLoginFailed = 3,
-  // Enrollment failed because it is not supported for the account used.
+  // Registration / policy fetch failed: DM server reports management not
+  // supported.
   kMetricEnrollmentNotSupported = 4,
-  // Enrollment failed because it failed to apply device policy.
-  kMetricEnrollmentPolicyFailed = 5,
-  // Enrollment failed due to an unexpected error. This currently happens when
-  // the Gaia auth token is not issued for the DM service, the device cloud
-  // policy subsystem isn't initialized, or when fetching Gaia tokens fails
-  // for an unknown reason.
-  kMetricEnrollmentOtherFailed = 6,
+  /* kMetricEnrollmentPolicyFailed = 5 REMOVED */
+  /* kMetricEnrollmentOtherFailed = 6 REMOVED */
   // Enrollment was successful.
   kMetricEnrollmentOK = 7,
-  // Enrollment failed because the serial number we try to register is not
-  // assigned to the domain used.
-  kMetricEnrollmentInvalidSerialNumber = 8,
+  // Registration / policy fetch failed: DM server reports that the serial
+  // number we try to register is not assigned to the domain used.
+  kMetricEnrollmentRegisterPolicyInvalidSerial = 8,
   // Auto-enrollment started automatically after the user signed in.
   kMetricEnrollmentAutoStarted = 9,
   // Auto-enrollment failed.
   kMetricEnrollmentAutoFailed = 10,
   // Auto-enrollment was retried after having failed before.
-  kMetricEnrollmentAutoRetried = 11,
+  kMetricEnrollmentAutoRestarted = 11,
   // Auto-enrollment was canceled through the opt-out dialog.
   kMetricEnrollmentAutoCancelled = 12,
   // Auto-enrollment succeeded.
   kMetricEnrollmentAutoOK = 13,
-  // Enrollment failed because the enrollment mode was not supplied by the
-  // DMServer or the mode is not known to the client.
+  // Registration failed: DM server returns unknown/disallowed enrollment mode.
   kMetricEnrollmentInvalidEnrollmentMode = 14,
-  // Auto-enrollment is not supported for the mode supplied by the server.
-  // This presently means trying to auto-enroll in kiosk mode.
+  // Auto-enrollment is not supported for the mode supplied by the server.  This
+  // presently means trying to auto-enroll in kiosk mode.
   kMetricEnrollmentAutoEnrollmentNotSupported = 15,
-  // The lockbox initialization has taken too long to complete and the
-  // enrollment has been canceled because of that.
-  kMetricLockboxTimeoutError = 16,
-  // The username used to re-enroll the device does not belong to the domain
-  // that the device was initially enrolled to.
-  kMetricEnrollmentWrongUserError = 17,
-  // DM server reported that the licenses for the domain has expired or been
+  // Enrollment failed: lockbox initialization took too long to complete.
+  kMetricEnrollmentLockboxTimeoutError = 16,
+  // Re-enrollment device lock failed: domain does not match install attributes.
+  kMetricEnrollmentLockDomainMismatch = 17,
+  // Registration / policy fetch failed: DM server reports licenses expired or
   // exhausted.
-  kMetricMissingLicensesError = 18,
-  // Enrollment failed because the robot account auth code couldn't be
-  // fetched from the DM Server.
+  kMetricEnrollmentRegisterPolicyMissingLicenses = 18,
+  // Failed to fetch device robot authorization code from DM Server.
   kMetricEnrollmentRobotAuthCodeFetchFailed = 19,
-  // Enrollment failed because the robot account auth code couldn't be
-  // exchanged for a refresh token.
+  // Failed to fetch device robot refresh token from GAIA.
   kMetricEnrollmentRobotRefreshTokenFetchFailed = 20,
-  // Enrollment failed because the robot account refresh token couldn't be
-  // persisted on the device.
+  // Failed to persist robot account refresh token on device.
   kMetricEnrollmentRobotRefreshTokenStoreFailed = 21,
-  // Enrollment failed because the administrator has deprovisioned the device.
-  kMetricEnrollmentDeprovisioned = 22,
-  // Enrollment failed because the device doesn't belong to the domain.
-  kMetricEnrollmentDomainMismatch = 23,
-  // Enrollment has been triggered, the credential screen has been shown.
+  // Registration / policy fetch failed: DM server reports administrator
+  // deprovisioned the device.
+  kMetricEnrollmentRegisterPolicyDeprovisioned = 22,
+  // Registration / policy fetch failed: DM server reports domain mismatch.
+  kMetricEnrollmentRegisterPolicyDomainMismatch = 23,
+  // Enrollment has been triggered, the webui login screen has been shown.
   kMetricEnrollmentTriggered = 24,
-  // The user retried to submitted credentials.
-  kMetricEnrollmentRetried = 25,
-  // Enrollment failed because DM token and device ID couldn't be stored.
+  // The user submitted valid GAIA credentials to start the enrollment process
+  // for the second (or further) time.
+  kMetricEnrollmentRestarted = 25,
+  // Failed to store DM token and device ID.
   kMetricEnrollmentStoreTokenAndIdFailed = 26,
-  // Enrollment failed because FRE state keys couldn't be obtained.
+  // Failed to obtain FRE state keys.
   kMetricEnrollmentNoStateKeys = 27,
-  // Enrollment failed because policy couldn't be validated.
+  // Failed to validate policy.
   kMetricEnrollmentPolicyValidationFailed = 28,
-  // Enrollment failed because of error in CloudPolicyStore.
+  // Failed due to error in CloudPolicyStore.
   kMetricEnrollmentCloudPolicyStoreError = 29,
-  // Enrollment failed because device couldn't be locked.
+  // Failed to lock device.
   kMetricEnrollmentLockBackendError = 30,
-
-  kMetricEnrollmentSize  // Must be the last.
+  // Registration / policy fetch failed: DM server reports invalid request
+  // payload.
+  kMetricEnrollmentRegisterPolicyPayloadInvalid = 31,
+  // Registration / policy fetch failed: DM server reports device not found.
+  kMetricEnrollmentRegisterPolicyDeviceNotFound = 32,
+  // Registration / policy fetch failed: DM server reports DM token invalid.
+  kMetricEnrollmentRegisterPolicyDMTokenInvalid = 33,
+  // Registration / policy fetch failed: DM server reports activation pending.
+  kMetricEnrollmentRegisterPolicyActivationPending = 34,
+  // Registration / policy fetch failed: DM server reports device ID conflict.
+  kMetricEnrollmentRegisterPolicyDeviceIdConflict = 35,
+  // Registration / policy fetch failed: DM server can't find policy.
+  kMetricEnrollmentRegisterPolicyNotFound = 36,
+  // Registration / policy fetch failed: HTTP request failed.
+  kMetricEnrollmentRegisterPolicyRequestFailed = 37,
+  // Registration / policy fetch failed: DM server reports temporary problem.
+  kMetricEnrollmentRegisterPolicyTempUnavailable = 38,
+  // Registration / policy fetch failed: DM server returns non-success HTTP
+  // status code.
+  kMetricEnrollmentRegisterPolicyHttpError = 39,
+  // Registration / policy fetch failed: can't decode DM server response.
+  kMetricEnrollmentRegisterPolicyResponseInvalid = 40,
+  // OAuth token fetch failed: account not signed up.
+  kMetricEnrollmentAccountNotSignedUp = 41,
+  // OAuth token fetch failed: account deleted.
+  kMetricEnrollmentAccountDeleted = 42,
+  // OAuth token fetch failed: account disabled.
+  kMetricEnrollmentAccountDisabled = 43,
+  // Re-enrollment pre-check failed: domain does not match install attributes.
+  kMetricEnrollmentPrecheckDomainMismatch = 44
 };
 
 // Events related to policy refresh.
