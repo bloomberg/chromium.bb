@@ -647,13 +647,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
       // Hide the textfield until the user clicks on the button.
       [profileNameTextField_ setHidden:YES];
+
+      [[self cell] accessibilitySetOverrideValue:l10n_util::GetNSStringF(
+          IDS_PROFILES_NEW_AVATAR_MENU_EDIT_NAME_ACCESSIBLE_NAME,
+          base::SysNSStringToUTF16(profileName))
+                                    forAttribute:NSAccessibilityTitleAttribute];
     }
 
     [[self cell] accessibilitySetOverrideValue:NSAccessibilityButtonRole
-                           forAttribute:NSAccessibilityRoleAttribute];
-    [[self cell] accessibilitySetOverrideValue:
-        NSAccessibilityRoleDescription(NSAccessibilityButtonRole, nil)
-          forAttribute:NSAccessibilityRoleDescriptionAttribute];
+                                  forAttribute:NSAccessibilityRoleAttribute];
+    [[self cell]
+        accessibilitySetOverrideValue:NSAccessibilityRoleDescription(
+                                          NSAccessibilityButtonRole, nil)
+                         forAttribute:NSAccessibilityRoleDescriptionAttribute];
 
     [self setBordered:NO];
     [self setFont:[NSFont labelFontOfSize:kTitleFontSize]];
