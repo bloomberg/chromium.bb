@@ -7,6 +7,9 @@ package org.chromium.sync.internal_api.pub;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This enum describes the type of passphrase required, if any, to decrypt synced data.
  *
@@ -49,6 +52,50 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
 
     private SyncDecryptionPassphraseType(int nativeValue) {
         mNativeValue = nativeValue;
+    }
+
+
+    public Set<SyncDecryptionPassphraseType> getVisibleTypes() {
+        Set<SyncDecryptionPassphraseType> visibleTypes = new HashSet<>();
+        switch (this) {
+            case NONE:  // Intentional fall through.
+            case IMPLICIT_PASSPHRASE:  // Intentional fall through.
+            case KEYSTORE_PASSPHRASE:
+                visibleTypes.add(this);
+                visibleTypes.add(CUSTOM_PASSPHRASE);
+                break;
+            case FROZEN_IMPLICIT_PASSPHRASE:
+                visibleTypes.add(KEYSTORE_PASSPHRASE);
+                visibleTypes.add(FROZEN_IMPLICIT_PASSPHRASE);
+                break;
+            case CUSTOM_PASSPHRASE:
+                visibleTypes.add(KEYSTORE_PASSPHRASE);
+                visibleTypes.add(CUSTOM_PASSPHRASE);
+                break;
+            case INVALID:  // Intentional fall through.
+            default:
+                visibleTypes.add(this);
+                break;
+        }
+        return visibleTypes;
+    }
+
+    public Set<SyncDecryptionPassphraseType> getAllowedTypes() {
+        Set<SyncDecryptionPassphraseType> allowedTypes = new HashSet<>();
+        switch (this) {
+            case NONE:  // Intentional fall through.
+            case IMPLICIT_PASSPHRASE:  // Intentional fall through.
+            case KEYSTORE_PASSPHRASE:
+                allowedTypes.add(this);
+                allowedTypes.add(CUSTOM_PASSPHRASE);
+                break;
+            case FROZEN_IMPLICIT_PASSPHRASE:  // Intentional fall through.
+            case CUSTOM_PASSPHRASE:  // Intentional fall through.
+            case INVALID:  // Intentional fall through.
+            default:
+                break;
+        }
+        return allowedTypes;
     }
 
     public int internalValue() {
