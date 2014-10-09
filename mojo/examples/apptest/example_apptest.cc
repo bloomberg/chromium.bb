@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits.h>
+
 #include "mojo/examples/apptest/example_client_application.h"
 #include "mojo/examples/apptest/example_client_impl.h"
 #include "mojo/examples/apptest/example_service.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,10 +94,19 @@ MojoResult MojoMain(MojoHandle shell_handle) {
   g_application_impl_hack = &app;
   MOJO_CHECK(app.WaitForInitialize());
 
-  // TODO(msw): Plumb commandline arguments through app->args().
-  int argc = 0;
-  char** argv = NULL;
-  testing::InitGoogleTest(&argc, argv);
+  {
+    // InitGoogleTest expects (argc + 1) elements, including a terminating NULL.
+    // It also removes GTEST arguments from |argv| and updates the |argc| count.
+    const mojo::Array<mojo::String>& args = app.args();
+    MOJO_CHECK(args.size() < INT_MAX);
+    int argc = static_cast<int>(args.size());
+    std::vector<char*> argv(argc + 1);
+    for (int i = 0; i < argc; ++i)
+      argv[i] = const_cast<char*>(args[i].data());
+    argv[argc] = NULL;
+    testing::InitGoogleTest(&argc, &argv[0]);
+  }
+
   mojo_ignore_result(RUN_ALL_TESTS());
 
   delete delegate;
