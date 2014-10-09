@@ -87,11 +87,11 @@ private:
 
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<DataReductionProxyStatisticsPrefs> weak_factory_;
   const base::TimeDelta delay_;
   bool delayed_task_posted_;
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
+  base::WeakPtrFactory<DataReductionProxyStatisticsPrefs> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyStatisticsPrefs);
 };

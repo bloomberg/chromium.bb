@@ -81,8 +81,8 @@ EnhancedBookmarkModel::EnhancedBookmarkModel(BookmarkModel* bookmark_model,
                                              const std::string& version)
     : bookmark_model_(bookmark_model),
       loaded_(false),
-      weak_ptr_factory_(this),
-      version_(version) {
+      version_(version),
+      weak_ptr_factory_(this) {
   bookmark_model_->AddObserver(this);
   if (bookmark_model_->loaded()) {
     InitializeIdMap();

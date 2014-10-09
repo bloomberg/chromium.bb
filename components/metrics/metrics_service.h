@@ -244,6 +244,8 @@ class MetricsService : public base::HistogramFlattener {
     NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
   };
 
+  friend class ::MetricsServiceAccessor;
+
   typedef std::vector<SyntheticTrialGroup> SyntheticTrialGroups;
 
   // Calls into the client to start metrics gathering.
@@ -433,14 +435,6 @@ class MetricsService : public base::HistogramFlattener {
   // A number that identifies the how many times the app has been launched.
   int session_id_;
 
-  // Weak pointers factory used to post task on different threads. All weak
-  // pointers managed by this factory have the same lifetime as MetricsService.
-  base::WeakPtrFactory<MetricsService> self_ptr_factory_;
-
-  // Weak pointers factory used for saving state. All weak pointers managed by
-  // this factory are invalidated in ScheduleNextStateSave.
-  base::WeakPtrFactory<MetricsService> state_saver_factory_;
-
   // The scheduler for determining when uploads should happen.
   scoped_ptr<MetricsReportingScheduler> scheduler_;
 
@@ -460,12 +454,18 @@ class MetricsService : public base::HistogramFlattener {
   // exited-cleanly bit in the prefs.
   static ShutdownCleanliness clean_shutdown_status_;
 
-  friend class ::MetricsServiceAccessor;
-
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            PermutedEntropyCacheClearedWhenLowEntropyReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
+
+  // Weak pointers factory used to post task on different threads. All weak
+  // pointers managed by this factory have the same lifetime as MetricsService.
+  base::WeakPtrFactory<MetricsService> self_ptr_factory_;
+
+  // Weak pointers factory used for saving state. All weak pointers managed by
+  // this factory are invalidated in ScheduleNextStateSave.
+  base::WeakPtrFactory<MetricsService> state_saver_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };

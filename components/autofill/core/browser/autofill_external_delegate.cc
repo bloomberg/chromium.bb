@@ -50,8 +50,8 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       display_warning_if_disabled_(false),
       has_suggestion_(false),
       has_shown_popup_for_current_edit_(false),
-      weak_ptr_factory_(this),
-      has_shown_address_book_prompt(false) {
+      has_shown_address_book_prompt(false),
+      weak_ptr_factory_(this) {
   DCHECK(manager);
 }
 

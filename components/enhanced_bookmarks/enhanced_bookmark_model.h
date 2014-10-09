@@ -187,8 +187,6 @@ class EnhancedBookmarkModel : public KeyedService,
 
   ObserverList<EnhancedBookmarkModelObserver> observers_;
 
-  base::WeakPtrFactory<EnhancedBookmarkModel> weak_ptr_factory_;
-
   IdToNodeMap id_map_;
   NodeToIdMap nodes_to_reset_;
 
@@ -197,6 +195,8 @@ class EnhancedBookmarkModel : public KeyedService,
 
   std::string version_;
   std::string version_suffix_;
+
+  base::WeakPtrFactory<EnhancedBookmarkModel> weak_ptr_factory_;
 };
 
 }  // namespace enhanced_bookmarks

@@ -22,9 +22,9 @@ DataReductionProxyStatisticsPrefs::DataReductionProxyStatisticsPrefs(
     const base::TimeDelta& delay)
     : pref_service_(prefs),
       task_runner_(task_runner),
-      weak_factory_(this),
       delay_(delay),
-      delayed_task_posted_(false) {
+      delayed_task_posted_(false),
+      weak_factory_(this) {
   DCHECK(prefs);
   DCHECK_GE(delay.InMilliseconds(), 0);
   Init();

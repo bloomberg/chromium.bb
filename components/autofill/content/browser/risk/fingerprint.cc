@@ -247,16 +247,16 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // if not all asynchronous data has been loaded.
   base::OneShotTimer<FingerprintDataLoader> timeout_timer_;
 
-  // For invalidating asynchronous callbacks that might arrive after |this|
-  // instance is destroyed.
-  base::WeakPtrFactory<FingerprintDataLoader> weak_ptr_factory_;
-
   // The callback that will be called once all the data is available.
   base::Callback<void(scoped_ptr<Fingerprint>)> callback_;
 
   // The callback used as an "observer" of the GeolocationProvider.
   scoped_ptr<content::GeolocationProvider::Subscription>
       geolocation_subscription_;
+
+  // For invalidating asynchronous callbacks that might arrive after |this|
+  // instance is destroyed.
+  base::WeakPtrFactory<FingerprintDataLoader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintDataLoader);
 };
@@ -287,8 +287,8 @@ FingerprintDataLoader::FingerprintDataLoader(
       user_agent_(user_agent),
       install_time_(install_time),
       waiting_on_plugins_(true),
-      weak_ptr_factory_(this),
-      callback_(callback) {
+      callback_(callback),
+      weak_ptr_factory_(this) {
   DCHECK(!install_time_.is_null());
 
   timeout_timer_.Start(FROM_HERE, timeout,
