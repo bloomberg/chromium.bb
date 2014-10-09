@@ -907,27 +907,26 @@ void RemoveDynamicEntry(ELF::Sword tag,
   CHECK(dynamics->at(dynamics->size() - 1).d_tag == DT_NULL);
 }
 
-template <typename Rel>
-void PadRelocations(size_t count, std::vector<Rel>* relocations);
-
-template <>
-void PadRelocations<ELF::Rel>(size_t count,
-                              std::vector<ELF::Rel>* relocations) {
-  ELF::Rel null_relocation;
-  null_relocation.r_offset = 0;
-  null_relocation.r_info = ELF_R_INFO(0, ELF::kNoRelocationCode);
-  std::vector<ELF::Rel> padding(count, null_relocation);
-  relocations->insert(relocations->end(), padding.begin(), padding.end());
+// Construct a null relocation without addend.
+void NullRelocation(ELF::Rel* relocation) {
+  relocation->r_offset = 0;
+  relocation->r_info = ELF_R_INFO(0, ELF::kNoRelocationCode);
 }
 
-template <>
-void PadRelocations<ELF::Rela>(size_t count,
-                               std::vector<ELF::Rela>* relocations) {
-  ELF::Rela null_relocation;
-  null_relocation.r_offset = 0;
-  null_relocation.r_info = ELF_R_INFO(0, ELF::kNoRelocationCode);
-  null_relocation.r_addend = 0;
-  std::vector<ELF::Rela> padding(count, null_relocation);
+// Construct a null relocation with addend.
+void NullRelocation(ELF::Rela* relocation) {
+  relocation->r_offset = 0;
+  relocation->r_info = ELF_R_INFO(0, ELF::kNoRelocationCode);
+  relocation->r_addend = 0;
+}
+
+// Pad relocations with the given number of null entries.  Generates its
+// null entry with the appropriate NullRelocation() invocation.
+template <typename Rel>
+void PadRelocations(size_t count, std::vector<Rel>* relocations) {
+  Rel null_relocation;
+  NullRelocation(&null_relocation);
+  std::vector<Rel> padding(count, null_relocation);
   relocations->insert(relocations->end(), padding.begin(), padding.end());
 }
 
@@ -1214,12 +1213,10 @@ bool ElfFile::UnpackTypedRelocations(const std::vector<uint8_t>& packed,
   // this is a padded file.
   const bool is_padded = padding == relative_relocations.size();
 
-  // Unless padded, pre-apply relative relocations to account for the
-  // hole, and pre-adjust all relocation offsets accordingly.
+  // Unless padded, report by how much we expand the file.
   if (!is_padded) {
-    // Pre-calculate the size of the hole we will open up when we rewrite
-    // dynamic relocations.  We have to adjust relocation addresses to
-    // account for this.
+    // Calculate the size of the hole we will open up when we rewrite
+    // dynamic relocations.
     ELF::Shdr* section_header = ELF::getshdr(relocations_section_);
     const ELF::Off hole_start = section_header->sh_offset;
     ssize_t hole_size =

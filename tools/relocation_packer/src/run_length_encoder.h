@@ -5,7 +5,7 @@
 // Run-length encode and decode relative relocations.
 //
 // Relative relocations are the bulk of dynamic relocations (the
-// .rel.dyn or .rela.dyn sections) in libchrome<version>.so, and the ELF
+// .rel.dyn or .rela.dyn sections) in libchrome.<version>.so, and the ELF
 // standard representation of them is wasteful.  .rel.dyn contains
 // relocations without addends, .rela.dyn relocations with addends.
 //

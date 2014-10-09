@@ -81,10 +81,10 @@ class Logger {
 
 // Make logging severities visible globally.
 typedef relocation_packer::Logger::Severity LogSeverity;
-const LogSeverity INFO = relocation_packer::Logger::INFO;
-const LogSeverity WARNING = relocation_packer::Logger::WARNING;
-const LogSeverity ERROR = relocation_packer::Logger::ERROR;
-const LogSeverity FATAL = relocation_packer::Logger::FATAL;
+using LogSeverity::INFO;
+using LogSeverity::WARNING;
+using LogSeverity::ERROR;
+using LogSeverity::FATAL;
 
 // LOG(severity) prints a message with the given severity, and aborts if
 // severity is FATAL.  LOG_IF(severity, predicate) does the same but only if

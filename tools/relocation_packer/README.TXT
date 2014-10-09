@@ -70,7 +70,7 @@ The streaming unpacking algorithm for 32 bit ARM is:
       addr += delta
       emit R_ARM_RELATIVE relocation with r_offset = addr
       count--
-    pairs--;
+    pairs--
 
 The streaming unpacking algorithm for 64 bit ARM is:
 
@@ -81,7 +81,7 @@ The streaming unpacking algorithm for 64 bit ARM is:
     addr += next signed leb128 value
     addend += next signed leb128 value
     emit R_AARCH64_RELATIVE relocation with r_offset = addr, r_addend = addend
-    pairs--;
+    pairs--
 
 
 Usage instructions:
