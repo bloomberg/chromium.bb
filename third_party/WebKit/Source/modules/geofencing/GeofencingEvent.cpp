@@ -22,6 +22,12 @@ GeofencingEvent::~GeofencingEvent()
 {
 }
 
+void GeofencingEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_region);
+    Event::trace(visitor);
+}
+
 const AtomicString& GeofencingEvent::interfaceName() const
 {
     return EventNames::GeofencingEvent;

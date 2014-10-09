@@ -16,19 +16,21 @@ namespace blink {
 class GeofencingRegion;
 
 // FIXME: This should derive from ExtendableEvent.
-class GeofencingEvent FINAL : public Event {
+class GeofencingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<GeofencingEvent> create()
     {
         return adoptRefWillBeNoop(new GeofencingEvent);
     }
+
     static PassRefPtrWillBeRawPtr<GeofencingEvent> create(const AtomicString& type, const String& id, GeofencingRegion* region)
     {
         return adoptRefWillBeNoop(new GeofencingEvent(type, id, region));
     }
 
     virtual ~GeofencingEvent();
+    virtual void trace(Visitor*) override;
 
     virtual const AtomicString& interfaceName() const override;
 
