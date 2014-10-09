@@ -33,7 +33,7 @@ class AdaptiveCongestionControl : public CongestionControl {
 
   virtual void UpdateRtt(base::TimeDelta rtt) override;
 
-  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) OVERRIDE;
+  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) override;
 
   // Called when an encoded frame is sent to the transport.
   virtual void SendFrameToTransport(uint32 frame_id,
@@ -101,7 +101,7 @@ class FixedCongestionControl : public CongestionControl {
   virtual void UpdateRtt(base::TimeDelta rtt) override {
   }
 
-  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) OVERRIDE {
+  virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) override {
   }
 
   // Called when an encoded frame is sent to the transport.
