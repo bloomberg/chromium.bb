@@ -1769,19 +1769,6 @@ name=drm_i#1546
 *!content::BrowserPluginTest_ResizeFlowControl_Test::TestBody
 
 UNINITIALIZED READ
-name=bug_374105a
-...
-gpu.dll!gpu::gles2::ShaderTranslatorCache::GetTranslator
-gpu.dll!gpu::gles2::GLES2DecoderImpl::InitializeShaderTranslator
-gpu.dll!gpu::gles2::GLES2DecoderImpl::Initialize
-
-UNINITIALIZED READ
-name=bug_374105b
-...
-gpu.dll!gpu::gles2::ShaderTranslator::GetStringForOptionsThatWouldAffectCompilation
-*!gpu::gles2::ShaderTranslatorTest_OptionsString_Test::TestBody
-
-UNINITIALIZED READ
 name=bug_374410
 *!ui::NativeThemeWin::PaintScrollbarTrack
 *!ui::NativeThemeWin::PaintDirect
