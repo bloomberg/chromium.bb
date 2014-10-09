@@ -66,10 +66,12 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
       'file://tough_animation_cases/keyframed_animations.html',
       # Why: Tests various transitions.
       'file://tough_animation_cases/transform_transitions.html',
-      # Why: Login page is slow because of ineffecient transform operations.
-      'http://ie.microsoft.com/testdrive/performance/robohornetpro/',
       # Why: JS execution blocks CSS transition unless initial transform is set.
       'file://tough_animation_cases/transform_transition_js_block.html'
+
+      # Disabled: crbug.com/350692
+      # Why: Login page is slow because of ineffecient transform operations.
+      # 'http://ie.microsoft.com/testdrive/performance/robohornetpro/',
     ]
 
     for url in urls_list_two:
