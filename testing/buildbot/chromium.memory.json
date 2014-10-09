@@ -109,7 +109,12 @@
       "cc_unittests",
       "chromedriver_unittests",
       "components_unittests",
-      "content_browsertests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "content_unittests",
       "crypto_unittests",
       "gcm_unit_tests",
@@ -146,7 +151,12 @@
       "cc_unittests",
       "chromedriver_unittests",
       "components_unittests",
-      "content_browsertests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       "content_unittests",
       "crypto_unittests",
       "gcm_unit_tests",
