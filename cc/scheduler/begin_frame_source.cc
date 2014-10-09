@@ -458,14 +458,15 @@ void BeginFrameSourceMultiplexer::AsValueInto(
     dict->SetString("active_source", "NULL");
   }
 
+  dict->BeginArray("sources");
   for (std::set<BeginFrameSource*>::const_iterator it = source_list_.begin();
        it != source_list_.end();
        ++it) {
-    dict->BeginDictionary(
-        base::SizeTToString(std::distance(source_list_.begin(), it)).c_str());
+    dict->BeginDictionary();
     (*it)->AsValueInto(dict);
     dict->EndDictionary();
   }
+  dict->EndArray();
 }
 
 // protected methods
