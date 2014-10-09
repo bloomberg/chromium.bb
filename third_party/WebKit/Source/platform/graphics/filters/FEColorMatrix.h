@@ -23,7 +23,6 @@
 #ifndef FEColorMatrix_h
 #define FEColorMatrix_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
 
@@ -56,8 +55,6 @@ public:
 
 private:
     FEColorMatrix(Filter*, ColorMatrixType, const Vector<float>&);
-
-    virtual void applySoftware() override;
 
     virtual bool affectsTransparentPixels() override;
 

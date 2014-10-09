@@ -22,14 +22,12 @@
 #include "platform/graphics/filters/SourceAlpha.h"
 
 #include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
-#include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -51,27 +49,6 @@ FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect
     srcRect.intersect(requestedRect);
     addAbsolutePaintRect(srcRect);
     return srcRect;
-}
-
-void SourceAlpha::applySoftware()
-{
-    ImageBuffer* resultImage = createImageBufferResult();
-    Filter* filter = this->filter();
-    if (!resultImage || !filter->sourceImage())
-        return;
-
-    setIsAlphaImage(true);
-
-    FloatRect imageRect(FloatPoint(), absolutePaintRect().size());
-    GraphicsContext* filterContext = resultImage->context();
-    filterContext->fillRect(imageRect, Color::black);
-
-    IntRect srcRect = filter->sourceImageRect();
-    if (ImageBuffer* sourceImageBuffer = filter->sourceImage()) {
-        filterContext->drawImageBuffer(sourceImageBuffer,
-            FloatRect(IntPoint(srcRect.location() - absolutePaintRect().location()), sourceImageBuffer->size()),
-            0, CompositeDestinationIn);
-    }
 }
 
 PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder* builder)

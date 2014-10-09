@@ -24,7 +24,6 @@
 #define FEFlood_h
 
 #include "platform/graphics/Color.h"
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -50,8 +49,6 @@ public:
 
 private:
     FEFlood(Filter*, const Color&, float);
-
-    virtual void applySoftware() override;
 
     Color m_floodColor;
     float m_floodOpacity;

@@ -23,7 +23,6 @@
 #ifndef FEComponentTransfer_h
 #define FEComponentTransfer_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
 
@@ -84,8 +83,6 @@ public:
 private:
     FEComponentTransfer(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
-
-    virtual void applySoftware() override;
 
     virtual bool affectsTransparentPixels() override;
 

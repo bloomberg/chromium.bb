@@ -25,8 +25,9 @@
 #ifndef FETurbulence_h
 #define FETurbulence_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
+
+class SkShader;
 
 namespace blink {
 
@@ -63,66 +64,10 @@ public:
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
-    static const int s_blockSize = 256;
-    static const int s_blockMask = s_blockSize - 1;
-
-    static const int s_minimalRectDimension = (100 * 100); // Empirical data limit for parallel jobs.
-
-    struct PaintingData {
-        PaintingData(long paintingSeed, const IntSize& paintingSize)
-            : seed(paintingSeed)
-            , filterSize(paintingSize)
-        {
-        }
-
-        long seed;
-        int latticeSelector[2 * s_blockSize + 2];
-        float gradient[4][2 * s_blockSize + 2][2];
-        IntSize filterSize;
-
-        inline long random();
-    };
-
-    struct StitchData {
-        StitchData()
-            : width(0)
-            , wrapX(0)
-            , height(0)
-            , wrapY(0)
-        {
-        }
-
-        int width; // How much to subtract to wrap for stitching.
-        int wrapX; // Minimum value to wrap.
-        int height;
-        int wrapY;
-    };
-
-    template<typename Type>
-    friend class ParallelJobs;
-
-    struct FillRegionParameters {
-        FETurbulence* filter;
-        Uint8ClampedArray* pixelArray;
-        PaintingData* paintingData;
-        int startY;
-        int endY;
-        float baseFrequencyX;
-        float baseFrequencyY;
-    };
-
-    static void fillRegionWorker(FillRegionParameters*);
-
     FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
-    virtual void applySoftware() override;
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
     SkShader* createShader();
-
-    inline void initPaint(PaintingData&);
-    float noise2D(int channel, PaintingData&, StitchData&, const FloatPoint&);
-    unsigned char calculateTurbulenceValueForPoint(int channel, PaintingData&, StitchData&, const FloatPoint&, float, float);
-    inline void fillRegion(Uint8ClampedArray*, PaintingData&, int, int, float, float);
 
     TurbulenceType m_type;
     float m_baseFrequencyX;

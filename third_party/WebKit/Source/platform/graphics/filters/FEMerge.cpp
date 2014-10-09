@@ -24,7 +24,6 @@
 #include "platform/graphics/filters/FEMerge.h"
 
 #include "SkMergeImageFilter.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/OwnPtr.h"
@@ -39,22 +38,6 @@ FEMerge::FEMerge(Filter* filter)
 PassRefPtr<FEMerge> FEMerge::create(Filter* filter)
 {
     return adoptRef(new FEMerge(filter));
-}
-
-void FEMerge::applySoftware()
-{
-    unsigned size = numberOfEffectInputs();
-    ASSERT(size > 0);
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    GraphicsContext* filterContext = resultImage->context();
-    for (unsigned i = 0; i < size; ++i) {
-        FilterEffect* in = inputEffect(i);
-        filterContext->drawImageBuffer(in->asImageBuffer(), drawingRegionOfInputImage(in->absolutePaintRect()));
-    }
 }
 
 PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder* builder)

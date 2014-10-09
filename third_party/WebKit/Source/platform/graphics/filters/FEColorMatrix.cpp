@@ -26,12 +26,8 @@
 
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/TextStream.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Uint8ClampedArray.h"
 
 namespace blink {
 
@@ -147,36 +143,6 @@ static SkColorFilter* createColorFilter(ColorMatrixType type, const float* value
         break;
     }
     return SkColorMatrixFilter::Create(matrix);
-}
-
-void FEColorMatrix::applySoftware()
-{
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    FilterEffect* in = inputEffect(0);
-
-    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
-
-    SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
-
-    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
-    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
-    if (!nativeImage)
-        return;
-
-    SkPaint paint;
-    paint.setColorFilter(filter);
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->drawBitmap(nativeImage->bitmap(), drawingRegion.x(), drawingRegion.y(), &paint);
-
-    if (affectsTransparentPixels()) {
-        IntRect fullRect = IntRect(IntPoint(), absolutePaintRect().size());
-        resultImage->context()->clipOut(drawingRegion);
-        resultImage->context()->fillRect(fullRect, Color(m_values[4], m_values[9], m_values[14], m_values[19]));
-    }
-    return;
 }
 
 bool FEColorMatrix::affectsTransparentPixels()

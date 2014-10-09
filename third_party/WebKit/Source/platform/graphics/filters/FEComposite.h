@@ -23,7 +23,7 @@
 #ifndef FEComposite_h
 #define FEComposite_h
 
-#include "platform/graphics/filters/Filter.h"
+#include "SkXfermode.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/text/WTFString.h"
 
@@ -58,8 +58,6 @@ public:
     float k4() const;
     bool setK4(float);
 
-    virtual void correctFilterResultIfNeeded() override;
-
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
@@ -73,7 +71,6 @@ protected:
 private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
 
-    virtual void applySoftware() override;
     PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder*, bool requiresPMColorValidation);
 
     inline void platformArithmeticSoftware(Uint8ClampedArray* source, Uint8ClampedArray* destination,

@@ -26,10 +26,9 @@
 #include "platform/graphics/filters/FEOffset.h"
 
 #include "SkOffsetImageFilter.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "third_party/skia/include/core/SkDevice.h"
 
 namespace blink {
 
@@ -73,22 +72,6 @@ FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward)
     else
         result.move(-filter()->applyHorizontalScale(m_dx), -filter()->applyVerticalScale(m_dy));
     return result;
-}
-
-void FEOffset::applySoftware()
-{
-    FilterEffect* in = inputEffect(0);
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    setIsAlphaImage(in->isAlphaImage());
-
-    FloatRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
-    Filter* filter = this->filter();
-    drawingRegion.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
-    resultImage->context()->drawImageBuffer(in->asImageBuffer(), drawingRegion);
 }
 
 PassRefPtr<SkImageFilter> FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)

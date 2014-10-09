@@ -22,7 +22,6 @@
 #define FEDropShadow_h
 
 #include "platform/graphics/Color.h"
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -56,8 +55,6 @@ public:
 
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);
-
-    virtual void applySoftware() override;
 
     float m_stdX;
     float m_stdY;

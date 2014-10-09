@@ -23,7 +23,6 @@
 #define SourceGraphic_h
 
 #include "platform/graphics/DisplayList.h"
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -51,7 +50,6 @@ private:
         setOperatingColorSpace(ColorSpaceDeviceRGB);
     }
 
-    virtual void applySoftware() override;
     RefPtr<DisplayList> m_displayList;
 };
 

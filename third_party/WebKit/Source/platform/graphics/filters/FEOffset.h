@@ -23,7 +23,6 @@
 #ifndef FEOffset_h
 #define FEOffset_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -46,8 +45,6 @@ public:
 
 private:
     FEOffset(Filter*, float dx, float dy);
-
-    virtual void applySoftware() override;
 
     float m_dx;
     float m_dy;

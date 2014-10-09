@@ -128,51 +128,6 @@ RenderObject* FEImage::referencedRenderer() const
     return hrefElement->renderer();
 }
 
-void FEImage::applySoftware()
-{
-    RenderObject* renderer = referencedRenderer();
-    if (!m_image && !renderer)
-        return;
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-    IntPoint paintLocation = absolutePaintRect().location();
-    resultImage->context()->translate(-paintLocation.x(), -paintLocation.y());
-
-    // FEImage results are always in ColorSpaceDeviceRGB
-    setResultColorSpace(ColorSpaceDeviceRGB);
-
-    FloatRect destRect = filter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
-    FloatRect srcRect;
-
-    if (!renderer) {
-        srcRect = FloatRect(FloatPoint(), m_image->size());
-        m_preserveAspectRatio->transformRect(destRect, srcRect);
-
-        resultImage->context()->drawImage(m_image.get(), destRect, srcRect);
-        return;
-    }
-
-    SVGElement* contextNode = toSVGElement(renderer->node());
-    if (contextNode->hasRelativeLengths()) {
-        // FIXME: This fixes relative lengths but breaks non-relative ones (see crbug/260709).
-        SVGLengthContext lengthContext(contextNode);
-        FloatSize viewportSize;
-
-        // If we're referencing an element with percentage units, eg. <rect with="30%"> those values were resolved against the viewport.
-        // Build up a transformation that maps from the viewport space to the filter primitive subregion.
-        if (lengthContext.determineViewport(viewportSize))
-            resultImage->context()->concatCTM(makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect));
-    } else {
-        resultImage->context()->translate(destRect.x(), destRect.y());
-        resultImage->context()->concatCTM(filter()->absoluteTransform());
-    }
-
-    AffineTransform contentTransformation;
-    SVGRenderingContext::renderSubtree(resultImage->context(), renderer, contentTransformation);
-}
-
 TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
 {
     IntSize imageSize;

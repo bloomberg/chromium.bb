@@ -23,8 +23,8 @@
 #ifndef FEBlend_h
 #define FEBlend_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
+#include "public/platform/WebBlendMode.h"
 
 namespace blink {
 
@@ -35,19 +35,12 @@ public:
     WebBlendMode blendMode() const;
     bool setBlendMode(WebBlendMode);
 
-    void platformApplyGeneric(unsigned char* srcPixelArrayA, unsigned char* srcPixelArrayB, unsigned char* dstPixelArray,
-                           unsigned colorArrayLength);
-    void platformApplyNEON(unsigned char* srcPixelArrayA, unsigned char* srcPixelArrayB, unsigned char* dstPixelArray,
-                           unsigned colorArrayLength);
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEBlend(Filter*, WebBlendMode);
-
-    virtual void applySoftware() override;
-    bool applySoftwareNEON();
 
     WebBlendMode m_mode;
 };

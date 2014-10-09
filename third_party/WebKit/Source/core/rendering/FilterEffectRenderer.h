@@ -48,25 +48,19 @@ class RenderObject;
 class FilterEffectRendererHelper {
 public:
     FilterEffectRendererHelper(bool haveFilterEffect)
-        : m_savedGraphicsContext(0)
-        , m_renderLayer(0)
+        : m_renderLayer(0)
         , m_haveFilterEffect(haveFilterEffect)
     {
     }
 
     bool haveFilterEffect() const { return m_haveFilterEffect; }
-    bool hasStartedFilterEffect() const { return m_savedGraphicsContext; }
 
     bool prepareFilterEffect(RenderLayer*, const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect);
-    GraphicsContext* beginFilterEffect(GraphicsContext* oldContext);
-    GraphicsContext* applyFilterEffect();
-
-    const LayoutRect& paintInvalidationRect() const { return m_paintInvalidationRect; }
+    void beginFilterEffect(GraphicsContext*);
+    void endFilterEffect(GraphicsContext*);
 private:
-    GraphicsContext* m_savedGraphicsContext;
     RenderLayer* m_renderLayer;
 
-    LayoutRect m_paintInvalidationRect;
     FloatRect m_filterBoxRect;
     bool m_haveFilterEffect;
 };
@@ -83,22 +77,13 @@ public:
     void setSourceImageRect(const IntRect& sourceImageRect)
     {
         m_sourceDrawingRegion = sourceImageRect;
-        m_graphicsBufferAttached = false;
     }
     virtual IntRect sourceImageRect() const override { return m_sourceDrawingRegion; }
 
-    GraphicsContext* inputContext();
-    ImageBuffer* output() const { return lastEffect()->asImageBuffer(); }
-
     bool build(RenderObject* renderer, const FilterOperations&);
-    bool updateBackingStoreRect(const FloatRect& filterRect);
-    void allocateBackingStoreIfNeeded();
+    void updateBackingStoreRect(const FloatRect& filterRect);
     void clearIntermediateResults();
-    void apply();
 
-    IntRect outputRect() const { return lastEffect()->hasResult() ? lastEffect()->absolutePaintRect() : IntRect(); }
-
-    bool hasFilterThatMovesPixels() const { return m_hasFilterThatMovesPixels; }
     LayoutRect computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect);
 
     PassRefPtr<FilterEffect> lastEffect() const
@@ -114,9 +99,6 @@ private:
 
     RefPtr<SourceGraphic> m_sourceGraphic;
     RefPtr<FilterEffect> m_lastEffect;
-
-    bool m_graphicsBufferAttached;
-    bool m_hasFilterThatMovesPixels;
 };
 
 } // namespace blink

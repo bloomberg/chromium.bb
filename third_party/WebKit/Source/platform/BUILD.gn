@@ -19,10 +19,6 @@ heap_gypi = exec_script(
 
 blink_platform_neon_files = [
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
-  "graphics/cpu/arm/filters/FEBlendNEON.h",
-  "graphics/cpu/arm/filters/FECompositeArithmeticNEON.h",
-  "graphics/cpu/arm/filters/FEGaussianBlurNEON.h",
-  "graphics/cpu/arm/filters/NEONHelpers.h",
 ]
 
 # blink_common in blink_platform.gyp

@@ -27,13 +27,9 @@
 
 #include "platform/graphics/filters/FEGaussianBlur.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/cpu/arm/filters/FEGaussianBlurNEON.h"
-#include "platform/graphics/filters/ParallelJobs.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Uint8ClampedArray.h"
 
 #include "SkBlurImageFilter.h"
 
@@ -134,34 +130,6 @@ FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRe
         inputRect.intersect(maxEffectRect());
     addAbsolutePaintRect(inputRect);
     return outputRect;
-}
-
-void FEGaussianBlur::applySoftware()
-{
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    FilterEffect* in = inputEffect(0);
-
-    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
-
-    setIsAlphaImage(in->isAlphaImage());
-
-    float stdX = filter()->applyHorizontalScale(m_stdX);
-    float stdY = filter()->applyVerticalScale(m_stdY);
-
-    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
-
-    SkPaint paint;
-    GraphicsContext* dstContext = resultImage->context();
-    paint.setImageFilter(SkBlurImageFilter::Create(stdX, stdY))->unref();
-
-    SkRect bounds = SkRect::MakeWH(absolutePaintRect().width(), absolutePaintRect().height());
-    dstContext->saveLayer(&bounds, &paint);
-    paint.setColor(0xFFFFFFFF);
-    dstContext->drawImage(image.get(), drawingRegion.location(), CompositeCopy);
-    dstContext->restoreLayer();
 }
 
 PassRefPtr<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder* builder)

@@ -23,7 +23,6 @@
 #ifndef FEDisplacementMap_h
 #define FEDisplacementMap_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/text/WTFString.h"
 
@@ -51,7 +50,6 @@ public:
     bool setScale(float);
 
     virtual void setResultColorSpace(ColorSpace) override;
-    virtual void transformResultColorSpace(FilterEffect*, const int) override;
 
     virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
 
@@ -61,8 +59,6 @@ public:
 
 private:
     FEDisplacementMap(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
-
-    virtual void applySoftware() override;
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 

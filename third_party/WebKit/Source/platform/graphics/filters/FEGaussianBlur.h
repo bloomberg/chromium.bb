@@ -23,7 +23,6 @@
 #ifndef FEGaussianBlur_h
 #define FEGaussianBlur_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -46,24 +45,7 @@ public:
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
-    static const int s_minimalRectDimension = 100 * 100; // Empirical data limit for parallel jobs
-
-    template<typename Type>
-    friend class ParallelJobs;
-
-    struct PlatformApplyParameters {
-        FEGaussianBlur* filter;
-        RefPtr<Uint8ClampedArray> srcPixelArray;
-        RefPtr<Uint8ClampedArray> dstPixelArray;
-        int width;
-        int height;
-        unsigned kernelSizeX;
-        unsigned kernelSizeY;
-    };
-
     FEGaussianBlur(Filter*, float, float);
-
-    virtual void applySoftware() override;
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 

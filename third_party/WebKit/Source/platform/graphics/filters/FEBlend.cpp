@@ -25,17 +25,10 @@
 #include "config.h"
 #include "platform/graphics/filters/FEBlend.h"
 
-#include "SkBitmapSource.h"
 #include "SkXfermodeImageFilter.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/cpu/arm/filters/FEBlendNEON.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/TextStream.h"
-#include "wtf/Uint8ClampedArray.h"
-
-typedef unsigned char (*BlendType)(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB);
 
 namespace blink {
 
@@ -61,73 +54,6 @@ bool FEBlend::setBlendMode(WebBlendMode mode)
         return false;
     m_mode = mode;
     return true;
-}
-
-#if HAVE(ARM_NEON_INTRINSICS)
-bool FEBlend::applySoftwareNEON()
-{
-    if (m_mode != WebBlendModeNormal
-        && m_mode != WebBlendModeMultiply
-        && m_mode != WebBlendModeScreen
-        && m_mode != WebBlendModeDarken
-        && m_mode != WebBlendModeLighten)
-        return false;
-
-    Uint8ClampedArray* dstPixelArray = createPremultipliedImageResult();
-    if (!dstPixelArray)
-        return true;
-
-    FilterEffect* in = inputEffect(0);
-    FilterEffect* in2 = inputEffect(1);
-
-    IntRect effectADrawingRect = requestedRegionOfInputImageData(in->absolutePaintRect());
-    RefPtr<Uint8ClampedArray> srcPixelArrayA = in->asPremultipliedImage(effectADrawingRect);
-
-    IntRect effectBDrawingRect = requestedRegionOfInputImageData(in2->absolutePaintRect());
-    RefPtr<Uint8ClampedArray> srcPixelArrayB = in2->asPremultipliedImage(effectBDrawingRect);
-
-    unsigned pixelArrayLength = srcPixelArrayA->length();
-    ASSERT(pixelArrayLength == srcPixelArrayB->length());
-
-    if (pixelArrayLength >= 8) {
-        platformApplyNEON(srcPixelArrayA->data(), srcPixelArrayB->data(), dstPixelArray->data(), pixelArrayLength);
-    } else {
-        // If there is just one pixel we expand it to two.
-        ASSERT(pixelArrayLength > 0);
-        uint32_t sourceA[2] = {0, 0};
-        uint32_t sourceBAndDest[2] = {0, 0};
-
-        sourceA[0] = reinterpret_cast<uint32_t*>(srcPixelArrayA->data())[0];
-        sourceBAndDest[0] = reinterpret_cast<uint32_t*>(srcPixelArrayB->data())[0];
-        platformApplyNEON(reinterpret_cast<uint8_t*>(sourceA), reinterpret_cast<uint8_t*>(sourceBAndDest), reinterpret_cast<uint8_t*>(sourceBAndDest), 8);
-        reinterpret_cast<uint32_t*>(dstPixelArray->data())[0] = sourceBAndDest[0];
-    }
-    return true;
-}
-#endif
-
-void FEBlend::applySoftware()
-{
-#if HAVE(ARM_NEON_INTRINSICS)
-    if (applySoftwareNEON())
-        return;
-#endif
-
-    FilterEffect* in = inputEffect(0);
-    FilterEffect* in2 = inputEffect(1);
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-    GraphicsContext* filterContext = resultImage->context();
-
-    ImageBuffer* imageBuffer = in->asImageBuffer();
-    ImageBuffer* imageBuffer2 = in2->asImageBuffer();
-    ASSERT(imageBuffer);
-    ASSERT(imageBuffer2);
-
-    filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-    filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeSourceOver, m_mode);
 }
 
 PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)

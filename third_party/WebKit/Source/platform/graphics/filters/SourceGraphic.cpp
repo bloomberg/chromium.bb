@@ -22,11 +22,9 @@
 
 #include "platform/graphics/filters/SourceGraphic.h"
 
-#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -47,20 +45,6 @@ FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRe
     srcRect.intersect(requestedRect);
     addAbsolutePaintRect(srcRect);
     return srcRect;
-}
-
-void SourceGraphic::applySoftware()
-{
-    ImageBuffer* resultImage = createImageBufferResult();
-    Filter* filter = this->filter();
-    if (!resultImage || !filter->sourceImage())
-        return;
-
-    IntRect srcRect = filter->sourceImageRect();
-    if (ImageBuffer* sourceImageBuffer = filter->sourceImage()) {
-        resultImage->context()->drawImageBuffer(sourceImageBuffer,
-            FloatRect(IntPoint(srcRect.location() - absolutePaintRect().location()), sourceImageBuffer->size()));
-    }
 }
 
 void SourceGraphic::setDisplayList(PassRefPtr<DisplayList> displayList)

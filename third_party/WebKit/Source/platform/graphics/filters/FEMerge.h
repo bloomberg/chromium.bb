@@ -23,7 +23,6 @@
 #ifndef FEMerge_h
 #define FEMerge_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -38,8 +37,6 @@ public:
 
 private:
     FEMerge(Filter*);
-
-    virtual void applySoftware() override;
 };
 
 } // namespace blink

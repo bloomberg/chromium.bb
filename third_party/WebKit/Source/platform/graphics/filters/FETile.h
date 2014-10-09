@@ -23,7 +23,6 @@
 #ifndef FETile_h
 #define FETile_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -42,8 +41,6 @@ public:
 
 private:
     FETile(Filter*);
-
-    virtual void applySoftware() override;
 };
 
 } // namespace blink

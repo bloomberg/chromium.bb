@@ -23,7 +23,6 @@
 #ifndef FEMorphology_h
 #define FEMorphology_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -52,28 +51,8 @@ public:
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-    struct PaintingData {
-        Uint8ClampedArray* srcPixelArray;
-        Uint8ClampedArray* dstPixelArray;
-        int width;
-        int height;
-        int radiusX;
-        int radiusY;
-    };
-
-    static const int s_minimalArea = (300 * 300); // Empirical data limit for parallel jobs
-
-    struct PlatformApplyParameters {
-        FEMorphology* filter;
-        int startY;
-        int endY;
-        PaintingData* paintingData;
-    };
-
 private:
     FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
-
-    virtual void applySoftware() override;
 
     MorphologyOperatorType m_type;
     float m_radiusX;

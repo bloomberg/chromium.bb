@@ -554,7 +554,6 @@ private:
     void setLastChild(RenderLayer* last) { m_last = last; }
 
     void updateHasSelfPaintingLayerDescendant() const;
-
     RenderLayer* hitTestLayer(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
                               const LayoutRect& hitTestRect, const HitTestLocation&, bool appliedTransform,
                               const HitTestingTransformState* transformState = 0, double* zOffset = 0);

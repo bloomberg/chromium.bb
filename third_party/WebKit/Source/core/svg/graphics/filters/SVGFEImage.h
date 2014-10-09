@@ -51,7 +51,6 @@ private:
     FEImage(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
     RenderObject* referencedRenderer() const;
 
-    virtual void applySoftware() override;
     PassRefPtr<SkImageFilter> createImageFilterForRenderer(RenderObject* rendererer, SkiaImageFilterBuilder*);
 
     RefPtr<Image> m_image;

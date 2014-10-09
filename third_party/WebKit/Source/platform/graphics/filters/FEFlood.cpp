@@ -26,10 +26,8 @@
 
 #include "SkColorFilter.h"
 #include "SkColorFilterImageFilter.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "third_party/skia/include/core/SkDevice.h"
 
 namespace blink {
 
@@ -70,17 +68,6 @@ bool FEFlood::setFloodOpacity(float floodOpacity)
         return false;
     m_floodOpacity = floodOpacity;
     return true;
-}
-
-void FEFlood::applySoftware()
-{
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    Color color = floodColor().combineWithAlpha(floodOpacity());
-    resultImage->context()->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), color);
-    FilterEffect::setResultColorSpace(ColorSpaceDeviceRGB);
 }
 
 PassRefPtr<SkImageFilter> FEFlood::createImageFilter(SkiaImageFilterBuilder* builder)

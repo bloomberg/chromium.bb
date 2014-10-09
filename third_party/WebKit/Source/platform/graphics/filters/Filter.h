@@ -23,8 +23,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageBuffer.h" // FIXME: remove this, but be prepared to keeping pulling that string a while...
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -40,9 +39,6 @@ public:
         ASSERT(!absoluteTransform.b() && !absoluteTransform.c());
     }
     virtual ~Filter() { }
-
-    void setSourceImage(PassOwnPtr<ImageBuffer> sourceImage) { m_sourceImage = sourceImage; }
-    ImageBuffer* sourceImage() { return m_sourceImage.get(); }
 
     const AffineTransform& absoluteTransform() const { return m_absoluteTransform; }
 
@@ -81,7 +77,6 @@ public:
     }
 
 private:
-    OwnPtr<ImageBuffer> m_sourceImage;
     AffineTransform m_absoluteTransform;
     AffineTransform m_inverseTransform;
     FloatRect m_absoluteFilterRegion;

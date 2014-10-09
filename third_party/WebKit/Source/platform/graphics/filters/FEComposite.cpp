@@ -29,13 +29,8 @@
 #include "SkArithmeticMode.h"
 #include "SkXfermodeImageFilter.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/cpu/arm/filters/FECompositeArithmeticNEON.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "third_party/skia/include/core/SkDevice.h"
-
-#include "wtf/Uint8ClampedArray.h"
 
 namespace blink {
 
@@ -119,118 +114,6 @@ bool FEComposite::setK4(float k4)
     return true;
 }
 
-void FEComposite::correctFilterResultIfNeeded()
-{
-    if (m_type != FECOMPOSITE_OPERATOR_ARITHMETIC)
-        return;
-
-    forceValidPreMultipliedPixels();
-}
-
-template <int b1, int b4>
-static inline void computeArithmeticPixels(unsigned char* source, unsigned char* destination, int pixelArrayLength,
-                                    float k1, float k2, float k3, float k4)
-{
-    float scaledK1;
-    float scaledK4;
-    if (b1)
-        scaledK1 = k1 / 255.0f;
-    if (b4)
-        scaledK4 = k4 * 255.0f;
-
-    while (--pixelArrayLength >= 0) {
-        unsigned char i1 = *source;
-        unsigned char i2 = *destination;
-        float result = k2 * i1 + k3 * i2;
-        if (b1)
-            result += scaledK1 * i1 * i2;
-        if (b4)
-            result += scaledK4;
-
-        if (result <= 0)
-            *destination = 0;
-        else if (result >= 255)
-            *destination = 255;
-        else
-            *destination = result;
-        ++source;
-        ++destination;
-    }
-}
-
-// computeArithmeticPixelsUnclamped is a faster version of computeArithmeticPixels for the common case where clamping
-// is not necessary. This enables aggresive compiler optimizations such as auto-vectorization.
-template <int b1, int b4>
-static inline void computeArithmeticPixelsUnclamped(unsigned char* source, unsigned char* destination, int pixelArrayLength, float k1, float k2, float k3, float k4)
-{
-    float scaledK1;
-    float scaledK4;
-    if (b1)
-        scaledK1 = k1 / 255.0f;
-    if (b4)
-        scaledK4 = k4 * 255.0f;
-
-    while (--pixelArrayLength >= 0) {
-        unsigned char i1 = *source;
-        unsigned char i2 = *destination;
-        float result = k2 * i1 + k3 * i2;
-        if (b1)
-            result += scaledK1 * i1 * i2;
-        if (b4)
-            result += scaledK4;
-
-        *destination = result;
-        ++source;
-        ++destination;
-    }
-}
-
-static inline void arithmeticSoftware(unsigned char* source, unsigned char* destination, int pixelArrayLength, float k1, float k2, float k3, float k4)
-{
-    float upperLimit = std::max(0.0f, k1) + std::max(0.0f, k2) + std::max(0.0f, k3) + k4;
-    float lowerLimit = std::min(0.0f, k1) + std::min(0.0f, k2) + std::min(0.0f, k3) + k4;
-    if ((k4 >= 0.0f && k4 <= 1.0f) && (upperLimit >= 0.0f && upperLimit <= 1.0f) && (lowerLimit >= 0.0f && lowerLimit <= 1.0f)) {
-        if (k4) {
-            if (k1)
-                computeArithmeticPixelsUnclamped<1, 1>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-            else
-                computeArithmeticPixelsUnclamped<0, 1>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-        } else {
-            if (k1)
-                computeArithmeticPixelsUnclamped<1, 0>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-            else
-                computeArithmeticPixelsUnclamped<0, 0>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-        }
-        return;
-    }
-
-    if (k4) {
-        if (k1)
-            computeArithmeticPixels<1, 1>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-        else
-            computeArithmeticPixels<0, 1>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-    } else {
-        if (k1)
-            computeArithmeticPixels<1, 0>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-        else
-            computeArithmeticPixels<0, 0>(source, destination, pixelArrayLength, k1, k2, k3, k4);
-    }
-}
-
-inline void FEComposite::platformArithmeticSoftware(Uint8ClampedArray* source, Uint8ClampedArray* destination,
-    float k1, float k2, float k3, float k4)
-{
-    int length = source->length();
-    ASSERT(length == static_cast<int>(destination->length()));
-    // The selection here eventually should happen dynamically.
-#if HAVE(ARM_NEON_INTRINSICS)
-    ASSERT(!(length & 0x3));
-    platformArithmeticNeon(source->data(), destination->data(), length, k1, k2, k3, k4);
-#else
-    arithmeticSoftware(source->data(), destination->data(), length, k1, k2, k3, k4);
-#endif
-}
-
 FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
 {
     FloatRect requestedRect = originalRequestedRect;
@@ -286,74 +169,6 @@ FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalReque
     affectedRect.intersect(requestedRect);
     addAbsolutePaintRect(affectedRect);
     return affectedRect;
-}
-
-void FEComposite::applySoftware()
-{
-    FilterEffect* in = inputEffect(0);
-    FilterEffect* in2 = inputEffect(1);
-
-    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC) {
-        Uint8ClampedArray* dstPixelArray = createPremultipliedImageResult();
-        if (!dstPixelArray)
-            return;
-
-        IntRect effectADrawingRect = requestedRegionOfInputImageData(in->absolutePaintRect());
-        RefPtr<Uint8ClampedArray> srcPixelArray = in->asPremultipliedImage(effectADrawingRect);
-
-        IntRect effectBDrawingRect = requestedRegionOfInputImageData(in2->absolutePaintRect());
-        in2->copyPremultipliedImage(dstPixelArray, effectBDrawingRect);
-
-        platformArithmeticSoftware(srcPixelArray.get(), dstPixelArray, m_k1, m_k2, m_k3, m_k4);
-        return;
-    }
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-    GraphicsContext* filterContext = resultImage->context();
-
-    ImageBuffer* imageBuffer = in->asImageBuffer();
-    ImageBuffer* imageBuffer2 = in2->asImageBuffer();
-    ASSERT(imageBuffer);
-    ASSERT(imageBuffer2);
-
-    switch (m_type) {
-    case FECOMPOSITE_OPERATOR_OVER:
-        filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()));
-        break;
-    case FECOMPOSITE_OPERATOR_IN: {
-        // Applies only to the intersected region.
-        IntRect destinationRect = in->absolutePaintRect();
-        destinationRect.intersect(in2->absolutePaintRect());
-        destinationRect.intersect(absolutePaintRect());
-        if (destinationRect.isEmpty())
-            break;
-        FloatRect sourceRect(IntPoint(destinationRect.x() - in->absolutePaintRect().x(),
-                                    destinationRect.y() - in->absolutePaintRect().y()), destinationRect.size());
-        FloatRect source2Rect(IntPoint(destinationRect.x() - in2->absolutePaintRect().x(),
-                                     destinationRect.y() - in2->absolutePaintRect().y()), destinationRect.size());
-        destinationRect.move(-absolutePaintRect().x(), -absolutePaintRect().y());
-        filterContext->drawImageBuffer(imageBuffer2, destinationRect, &source2Rect);
-        filterContext->drawImageBuffer(imageBuffer, destinationRect, &sourceRect, CompositeSourceIn);
-        break;
-    }
-    case FECOMPOSITE_OPERATOR_OUT:
-        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()), 0, CompositeDestinationOut);
-        break;
-    case FECOMPOSITE_OPERATOR_ATOP:
-        filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeSourceAtop);
-        break;
-    case FECOMPOSITE_OPERATOR_XOR:
-        filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeXOR);
-        break;
-    default:
-        break;
-    }
 }
 
 SkXfermode::Mode toXfermode(CompositeOperationType mode)

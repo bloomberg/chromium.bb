@@ -68,8 +68,6 @@ static inline void lastMatrixRow(Vector<float>& parameters)
 
 FilterEffectRenderer::FilterEffectRenderer()
     : Filter(AffineTransform())
-    , m_graphicsBufferAttached(false)
-    , m_hasFilterThatMovesPixels(false)
 {
     m_sourceGraphic = SourceGraphic::create(this);
 }
@@ -78,15 +76,8 @@ FilterEffectRenderer::~FilterEffectRenderer()
 {
 }
 
-GraphicsContext* FilterEffectRenderer::inputContext()
-{
-    return sourceImage() ? sourceImage()->context() : 0;
-}
-
 bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations& operations)
 {
-    m_hasFilterThatMovesPixels = operations.hasFilterThatMovesPixels();
-
     // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
     const RenderStyle* style = renderer->style();
     float invZoom = style ? 1.0f / style->effectiveZoom() : 1.0f;
@@ -251,31 +242,11 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
     return true;
 }
 
-bool FilterEffectRenderer::updateBackingStoreRect(const FloatRect& floatFilterRect)
+void FilterEffectRenderer::updateBackingStoreRect(const FloatRect& floatFilterRect)
 {
     IntRect filterRect = enclosingIntRect(floatFilterRect);
     if (!filterRect.isEmpty() && FilterEffect::isFilterSizeValid(filterRect)) {
-        FloatRect currentSourceRect = sourceImageRect();
-        if (filterRect != currentSourceRect) {
-            setSourceImageRect(filterRect);
-            return true;
-        }
-    }
-    return false;
-}
-
-void FilterEffectRenderer::allocateBackingStoreIfNeeded()
-{
-    // At this point the effect chain has been built, and the
-    // source image sizes set. We just need to attach the graphic
-    // buffer if we have not yet done so.
-    if (!m_graphicsBufferAttached) {
-        IntSize logicalSize(m_sourceDrawingRegion.width(), m_sourceDrawingRegion.height());
-        if (!sourceImage() || sourceImage()->size() != logicalSize) {
-            OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(logicalSize));
-            setSourceImage(ImageBuffer::create(surface.release()));
-        }
-        m_graphicsBufferAttached = true;
+        setSourceImageRect(filterRect);
     }
 }
 
@@ -283,13 +254,6 @@ void FilterEffectRenderer::clearIntermediateResults()
 {
     if (m_lastEffect.get())
         m_lastEffect->clearResultsRecursive();
-}
-
-void FilterEffectRenderer::apply()
-{
-    RefPtr<FilterEffect> effect = lastEffect();
-    effect->apply();
-    effect->transformResultColorSpace(ColorSpaceDeviceRGB);
 }
 
 LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
@@ -307,7 +271,6 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
 {
     ASSERT(m_haveFilterEffect && renderLayer->filterRenderer());
     m_renderLayer = renderLayer;
-    m_paintInvalidationRect = dirtyRect;
 
     // Get the zoom factor to scale the filterSourceRect input
     const RenderLayerModelObject* renderer = renderLayer->renderer();
@@ -336,82 +299,35 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     filter->setFilterRegion(filter->mapAbsoluteRectToLocalRect(filterSourceRect));
     filter->lastEffect()->determineFilterPrimitiveSubregion(MapRectForward);
 
-    bool hasUpdatedBackingStore = filter->updateBackingStoreRect(filterSourceRect);
-    if (filter->hasFilterThatMovesPixels()) {
-        if (hasUpdatedBackingStore)
-            m_paintInvalidationRect = filterSourceRect;
-        else
-            m_paintInvalidationRect.intersect(filterSourceRect);
-    }
+    filter->updateBackingStoreRect(filterSourceRect);
     return true;
 }
 
-GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* context)
+void FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* context)
 {
     ASSERT(m_renderLayer);
 
     FilterEffectRenderer* filter = m_renderLayer->filterRenderer();
-    if (m_renderLayer->renderer()->document().settings()->deferredFiltersEnabled()) {
-        SkiaImageFilterBuilder builder(context);
-        RefPtr<ImageFilter> imageFilter = builder.build(filter->lastEffect().get(), ColorSpaceDeviceRGB);
-        if (!imageFilter) {
-            m_haveFilterEffect = false;
-            return context;
-        }
-        m_savedGraphicsContext = context;
-        context->save();
-        FloatRect boundaries = mapImageFilterRect(imageFilter.get(), m_filterBoxRect);
-        context->translate(m_filterBoxRect.x(), m_filterBoxRect.y());
-        boundaries.move(-m_filterBoxRect.x(), -m_filterBoxRect.y());
-        context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
-        context->translate(-m_filterBoxRect.x(), -m_filterBoxRect.y());
-        return context;
-    }
-    filter->allocateBackingStoreIfNeeded();
-    // Paint into the context that represents the SourceGraphic of the filter.
-    GraphicsContext* sourceGraphicsContext = filter->inputContext();
-    if (!sourceGraphicsContext || !FilterEffect::isFilterSizeValid(filter->absoluteFilterRegion())) {
-        // Disable the filters and continue.
+    SkiaImageFilterBuilder builder(context);
+    RefPtr<ImageFilter> imageFilter = builder.build(filter->lastEffect().get(), ColorSpaceDeviceRGB);
+    if (!imageFilter) {
         m_haveFilterEffect = false;
-        return context;
+        return;
     }
-
-    m_savedGraphicsContext = context;
-
-    // Translate the context so that the contents of the layer is captuterd in the offscreen memory buffer.
-    sourceGraphicsContext->save();
-    // FIXME: can we just use sourceImageRect for everything, and get rid of
-    // m_paintInvalidationRect?
-    FloatPoint offset = filter->sourceImageRect().location();
-    sourceGraphicsContext->translate(-offset.x(), -offset.y());
-    sourceGraphicsContext->clearRect(m_paintInvalidationRect);
-    sourceGraphicsContext->clip(m_paintInvalidationRect);
-
-    return sourceGraphicsContext;
+    context->save();
+    FloatRect boundaries = mapImageFilterRect(imageFilter.get(), m_filterBoxRect);
+    context->translate(m_filterBoxRect.x(), m_filterBoxRect.y());
+    boundaries.move(-m_filterBoxRect.x(), -m_filterBoxRect.y());
+    context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
+    context->translate(-m_filterBoxRect.x(), -m_filterBoxRect.y());
 }
 
-GraphicsContext* FilterEffectRendererHelper::applyFilterEffect()
+void FilterEffectRendererHelper::endFilterEffect(GraphicsContext* context)
 {
     ASSERT(m_haveFilterEffect && m_renderLayer->filterRenderer());
-    FilterEffectRenderer* filter = m_renderLayer->filterRenderer();
 
-    if (m_renderLayer->renderer()->document().settings()->deferredFiltersEnabled()) {
-        GraphicsContext* context = m_savedGraphicsContext;
-        context->endLayer();
-        context->restore();
-        return context;
-    }
-
-    filter->inputContext()->restore();
-
-    filter->apply();
-
-    // Get the filtered output and draw it in place.
-    m_savedGraphicsContext->drawImageBuffer(filter->output(), filter->outputRect());
-
-    filter->clearIntermediateResults();
-
-    return m_savedGraphicsContext;
+    context->endLayer();
+    context->restore();
 }
 
 } // namespace blink

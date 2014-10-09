@@ -21,7 +21,6 @@
 #ifndef SourceAlpha_h
 #define SourceAlpha_h
 
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -44,8 +43,6 @@ private:
         : FilterEffect(filter)
     {
     }
-
-    virtual void applySoftware() override;
 };
 
 } // namespace blink

@@ -21,12 +21,10 @@
 #include "config.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
 namespace blink {
@@ -66,40 +64,6 @@ FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)
     result.inflateX(3 * kernelSize.width() * 0.5f);
     result.inflateY(3 * kernelSize.height() * 0.5f);
     return result;
-}
-
-void FEDropShadow::applySoftware()
-{
-    FilterEffect* in = inputEffect(0);
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    Filter* filter = this->filter();
-    FloatSize blurRadius(filter->applyHorizontalScale(m_stdX), filter->applyVerticalScale(m_stdY));
-    FloatSize offset(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
-
-    FloatRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
-    GraphicsContext* resultContext = resultImage->context();
-    ASSERT(resultContext);
-
-    Color color = adaptColorToOperatingColorSpace(m_shadowColor.combineWithAlpha(m_shadowOpacity));
-    SkAutoTUnref<SkImageFilter> blurFilter(SkBlurImageFilter::Create(blurRadius.width(), blurRadius.height()));
-    SkAutoTUnref<SkColorFilter> colorFilter(SkColorFilter::CreateModeFilter(color.rgb(), SkXfermode::kSrcIn_Mode));
-    SkPaint paint;
-    paint.setImageFilter(blurFilter.get());
-    paint.setColorFilter(colorFilter.get());
-    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
-
-    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
-
-    if (!nativeImage)
-        return;
-
-    resultContext->drawBitmap(nativeImage->bitmap(), drawingRegion.x() + offset.width(), drawingRegion.y() + offset.height(), &paint);
-    resultContext->drawBitmap(nativeImage->bitmap(), drawingRegion.x(), drawingRegion.y());
 }
 
 PassRefPtr<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder* builder)

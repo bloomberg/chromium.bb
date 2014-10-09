@@ -183,8 +183,6 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     float deviceScaleFactor = blink::deviceScaleFactor(m_renderLayer.renderer()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
-    GraphicsContext* transparencyLayerContext = context;
-
     if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_renderLayer.renderer()->isRenderView() && !m_renderLayer.renderer()->isDocumentElement())
         return;
 
@@ -255,7 +253,6 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
-    bool deferredFiltersEnabled = m_renderLayer.renderer()->document().settings()->deferredFiltersEnabled();
     FilterEffectRendererHelper filterPainter(m_renderLayer.filterRenderer() && m_renderLayer.paintsWithFilters());
 
     LayerFragments layerFragments;
@@ -276,49 +273,27 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
 
         if (filterPainter.prepareFilterEffect(&m_renderLayer, rootRelativeBounds, paintingInfo.paintDirtyRect)) {
 
-            // Rewire the old context to a memory buffer, so that we can capture the contents of the layer.
-            // NOTE: We saved the old context in the "transparencyLayerContext" local variable, to be able to start a transparency layer
-            // on the original context and avoid duplicating "beginFilterEffect" after each transparency layer call. Also, note that
-            // beginTransparencyLayers will only create a single lazy transparency layer, even though it is called twice in this method.
-            // With deferred filters, we don't need a separate context, but we do need to do transparency and clipping before starting
-            // filter processing.
-            // FIXME: when the legacy path is removed, remove the transparencyLayerContext as well.
-            ClipRect backgroundRect;
-            if (deferredFiltersEnabled) {
-                if (haveTransparency) {
-                    // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
-                    beginTransparencyLayers(context, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
-                }
-                // We'll handle clipping to the dirty rect before filter rasterization.
-                // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
-                // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
-                backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
-                clipToRect(localPaintingInfo, context, backgroundRect, paintFlags);
-                // Subsequent code should not clip to the dirty rect, since we've already
-                // done it above, and doing it later will defeat the outsets.
-                localPaintingInfo.clipToDirtyRect = false;
+            // Do transparency and clipping before starting filter processing.
+            if (haveTransparency) {
+                // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
+                beginTransparencyLayers(context, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
             }
-            context = filterPainter.beginFilterEffect(context);
+            // We'll handle clipping to the dirty rect before filter rasterization.
+            // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
+            // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
+            ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
+            clipToRect(localPaintingInfo, context, backgroundRect, paintFlags);
+            // Subsequent code should not clip to the dirty rect, since we've already
+            // done it above, and doing it later will defeat the outsets.
+            localPaintingInfo.clipToDirtyRect = false;
+            filterPainter.beginFilterEffect(context);
 
-            if (!filterPainter.hasStartedFilterEffect() && deferredFiltersEnabled) {
+            if (!filterPainter.haveFilterEffect()) {
                 // If the the filter failed to start, undo the clip immediately
                 restoreClip(context, localPaintingInfo.paintDirtyRect, backgroundRect);
             }
 
-            // Check that we didn't fail to allocate the graphics context for the offscreen buffer.
-            if (filterPainter.hasStartedFilterEffect() && !deferredFiltersEnabled) {
-                localPaintingInfo.paintDirtyRect = filterPainter.paintInvalidationRect();
-                // If the filter needs the full source image, we need to avoid using the clip rectangles.
-                // Otherwise, if for example this layer has overflow:hidden, a drop shadow will not compute correctly.
-                // Note that we will still apply the clipping on the final rendering of the filter.
-                localPaintingInfo.clipToDirtyRect = !m_renderLayer.filterRenderer()->hasFilterThatMovesPixels();
-            }
         }
-    }
-
-    if (filterPainter.hasStartedFilterEffect() && haveTransparency && !deferredFiltersEnabled) {
-        // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one with the wrong context.
-        beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
     }
 
     // If this layer's renderer is a child of the paintingRoot, we render unconditionally, which
@@ -347,7 +322,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         paintBehavior |= PaintBehaviorRootBackgroundOnly;
 
     if (shouldPaintBackground) {
-        paintBackgroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
+        paintBackgroundForFragments(layerFragments, context, paintingInfo.paintDirtyRect, haveTransparency,
             localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags);
     }
 
@@ -355,7 +330,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         paintChildren(NegativeZOrderChildren, context, paintingInfo, paintFlags);
 
     if (shouldPaintOwnContents) {
-        paintForegroundForFragments(layerFragments, context, transparencyLayerContext, paintingInfo.paintDirtyRect, haveTransparency,
+        paintForegroundForFragments(layerFragments, context, paintingInfo.paintDirtyRect, haveTransparency,
             localPaintingInfo, paintBehavior, paintingRootForRenderer, selectionOnly, paintFlags);
     }
 
@@ -368,19 +343,13 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     if (shouldPaintOverlayScrollbars)
         paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo, paintFlags);
 
-    if (filterPainter.hasStartedFilterEffect()) {
+    if (filterPainter.haveFilterEffect()) {
         // Apply the correct clipping (ie. overflow: hidden).
         // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
         ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
-        if (!deferredFiltersEnabled)
-            clipToRect(localPaintingInfo, transparencyLayerContext, backgroundRect, paintFlags);
-
-        context = filterPainter.applyFilterEffect();
-        restoreClip(transparencyLayerContext, localPaintingInfo.paintDirtyRect, backgroundRect);
+        filterPainter.endFilterEffect(context);
+        restoreClip(context, localPaintingInfo.paintDirtyRect, backgroundRect);
     }
-
-    // Make sure that we now use the original transparency context.
-    ASSERT(transparencyLayerContext == context);
 
     if (shouldPaintMask)
         paintMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForRenderer, paintFlags);
@@ -696,7 +665,7 @@ void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsC
     }
 }
 
-void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragments, GraphicsContext* context, GraphicsContext* transparencyLayerContext,
+void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragments, GraphicsContext* context,
     const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo& localPaintingInfo, PaintBehavior paintBehavior,
     RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
@@ -707,7 +676,7 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
 
         // Begin transparency layers lazily now that we know we have to paint something.
         if (haveTransparency || m_renderLayer.paintsWithBlendMode())
-            beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
+            beginTransparencyLayers(context, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
 
         if (localPaintingInfo.clipToDirtyRect) {
             // Paint our background first, before painting any child layers.
@@ -725,7 +694,7 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
     }
 }
 
-void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragments, GraphicsContext* context, GraphicsContext* transparencyLayerContext,
+void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragments, GraphicsContext* context,
     const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo& localPaintingInfo, PaintBehavior paintBehavior,
     RenderObject* paintingRootForRenderer, bool selectionOnly, PaintLayerFlags paintFlags)
 {
@@ -734,7 +703,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
         for (size_t i = 0; i < layerFragments.size(); ++i) {
             const LayerFragment& fragment = layerFragments.at(i);
             if (fragment.shouldPaintContent && !fragment.foregroundRect.isEmpty()) {
-                beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
+                beginTransparencyLayers(context, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
                 break;
             }
         }
