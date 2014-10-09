@@ -56,20 +56,34 @@ extern "C" void* __libc_stack_end;  // NOLINT
 #include <sanitizer/msan_interface.h>
 #endif
 
+#if OS(FREEBSD)
+#include <pthread_np.h>
+#endif
+
 namespace blink {
 
 static void* getStackStart()
 {
-#if defined(__GLIBC__) || OS(ANDROID)
+#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
     pthread_attr_t attr;
-    if (!pthread_getattr_np(pthread_self(), &attr)) {
+    int error;
+#if OS(FREEBSD)
+    pthread_attr_init(&attr);
+    error = pthread_attr_get_np(pthread_self(), &attr);
+#else
+    error = pthread_getattr_np(pthread_self(), &attr);
+#endif
+    if (!error) {
         void* base;
         size_t size;
-        int error = pthread_attr_getstack(&attr, &base, &size);
+        error = pthread_attr_getstack(&attr, &base, &size);
         RELEASE_ASSERT(!error);
         pthread_attr_destroy(&attr);
         return reinterpret_cast<Address>(base) + size;
     }
+#if OS(FREEBSD)
+    pthread_attr_destroy(&attr);
+#endif
 #if defined(__GLIBC__)
     // pthread_getattr_np can fail for the main thread. In this case
     // just like NaCl we rely on the __libc_stack_end to give us
