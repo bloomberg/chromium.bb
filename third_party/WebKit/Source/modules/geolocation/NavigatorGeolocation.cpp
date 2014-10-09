@@ -57,7 +57,7 @@ Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator)
     return NavigatorGeolocation::from(navigator).geolocation();
 }
 
-Geolocation* NavigatorGeolocation::geolocation() const
+Geolocation* NavigatorGeolocation::geolocation()
 {
     if (!m_geolocation && frame())
         m_geolocation = Geolocation::create(frame()->document());

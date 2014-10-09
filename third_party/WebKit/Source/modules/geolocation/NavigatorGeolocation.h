@@ -37,7 +37,7 @@ public:
     static NavigatorGeolocation& from(Navigator&);
 
     static Geolocation* geolocation(Navigator&);
-    Geolocation* geolocation() const;
+    Geolocation* geolocation();
 
     void trace(Visitor*);
 
@@ -45,7 +45,7 @@ private:
     NavigatorGeolocation(LocalFrame*);
     static const char* supplementName();
 
-    mutable PersistentWillBeMember<Geolocation> m_geolocation;
+    PersistentWillBeMember<Geolocation> m_geolocation;
 };
 
 } // namespace blink
