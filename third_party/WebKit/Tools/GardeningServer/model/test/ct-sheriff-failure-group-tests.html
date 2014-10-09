@@ -18,9 +18,9 @@ describe('ct-sheriff-failure-group', function() {
   });
 
   var key = 0;
-  function newFailureWithAnnotation(annotation) {
+  function newFailureWithAnnotation(annotation, isTreeCloser) {
     return new CTStepFailure('step', 'reason', [
-      {key: String(key++), annotation: annotation}
+      {key: String(key++), annotation: annotation, isTreeCloser: isTreeCloser}
     ]);
   }
 
@@ -61,6 +61,21 @@ describe('ct-sheriff-failure-group', function() {
       var group = new CTFailureGroup('', new CTStepFailureGroupData(
           [failure]));
       assert.equal(group.category, 'default');
+    });
+
+    it('treeCloser should win over failedOnce', function() {
+      var failure = newFailureWithAnnotation();
+      failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1, isTreeCloser: true}}
+      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+          [failure]));
+      assert.equal(group.category, 'treeCloser');
+    });
+
+    it('snoozed should win over treeCloser', function() {
+      var failure = newFailureWithAnnotation({snoozeTime: Date.now() + 1000 * 1000}, true);
+      var group = new CTFailureGroup('', new CTStepFailureGroupData(
+          [failure]));
+      assert.equal(group.category, 'snoozed');
     });
   });
 

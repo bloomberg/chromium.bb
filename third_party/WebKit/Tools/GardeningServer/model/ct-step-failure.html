@@ -15,6 +15,15 @@ function CTStepFailure(step, reason, resultsByBuilder) {
   this.resultNodesByBuilder = resultsByBuilder;
 }
 
+CTStepFailure.prototype.isTreeCloser = function() {
+  for (var builder in this.resultNodesByBuilder) {
+    var result = this.resultNodesByBuilder[builder];
+    if (result.isTreeCloser)
+      return true;
+  }
+  return false;
+};
+
 CTStepFailure.prototype.flakinessDashboardURL = function() {
   var testType = this.step;
 

@@ -30,6 +30,12 @@ CTStepFailureGroupData.prototype.failureKeys = function() {
   }).flatten();
 };
 
+CTStepFailureGroupData.prototype.isTreeCloser = function() {
+  return this.failures.any(function(failure) {
+    return failure.isTreeCloser();
+  });
+};
+
 CTStepFailureGroupData.prototype.failedOnce = function() {
   if (!this.failures.length)
     return false;

@@ -29,16 +29,29 @@ describe('ct-failure model', function() {
       expectedKey: 'compile::undefined',
     }
   ];
+
   it('group name', function() {
     tests.forEach(function(test) {
       assert.equal(test.failure.reasonGroupName(), test.expectedGroupName);
     });
   });
+
   it('has key', function() {
     tests.forEach(function(test) {
       assert.propertyVal(test.failure, 'key', test.expectedKey);
     });
   });
+
+  it('no tree closers', function() {
+    var failure = new CTStepFailure('browser_tests', 'FooTest.Bar', {}, 123, 123);
+    assert.notOk(failure.isTreeCloser());
+  });
+
+  it('tree closer', function() {
+    var failure = new CTStepFailure('browser_tests', 'FooTest.Bar', {'builder': {isTreeCloser: true}}, 123, 123);
+    assert.ok(failure.isTreeCloser());
+  });
+
 });
 
 })();

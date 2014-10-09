@@ -187,6 +187,7 @@ CTFailures.prototype._groupFailuresByTreeAndReason = function(failures, annotati
       masterUrl: failure.master_url,
       failingBuildCount: (1 + failure.last_failing_build - failure.failing_build),
       annotation: annotations[failureKey],
+      isTreeCloser: failure.would_close_tree,
     };
   });
   return failuresByTree
