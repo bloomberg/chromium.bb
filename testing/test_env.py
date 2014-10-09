@@ -85,7 +85,7 @@ def run_executable(cmd, env):
   if lsan and sys.platform == 'linux2':
     # Use the debug version of libstdc++ under LSan. If we don't, there will
     # be a lot of incomplete stack traces in the reports.
-    env['LD_LIBRARY_PATH'] += '/usr/lib/x86_64-linux-gnu/debug:'
+    env['LD_LIBRARY_PATH'] = '/usr/lib/x86_64-linux-gnu/debug:'
 
   if asan and sys.platform == 'darwin':
     isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
