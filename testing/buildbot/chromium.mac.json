@@ -105,7 +105,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 5
         }
       },
       "cacheinvalidation_unittests",
@@ -289,7 +289,7 @@
         "test": "browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 20
+          "shards": 10
         }
       },
       "cacheinvalidation_unittests",
