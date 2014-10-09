@@ -143,4 +143,6 @@ grit("platform_locale_settings") {
     "platform_locale_settings_zh-CN.pak",
     "platform_locale_settings_zh-TW.pak",
   ]
+
+  output_dir = "$root_gen_dir/chrome"
 }

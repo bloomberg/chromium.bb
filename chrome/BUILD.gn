@@ -325,15 +325,15 @@ repack("packed_extra_resources") {
   visibility = [ ":*" ]
   sources = [
     "$root_gen_dir/chrome/browser_resources.pak",
-    "$root_gen_dir/chrome/app/theme/chrome_unscaled_resources.pak",
+    "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/invalidations_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/memory_internals_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/net_internals_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/password_manager_internals_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/signin_internals_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/sync_internals_resources.pak",
-    "$root_gen_dir/chrome/browser/resources/translate_internals_resources.pak",
+    "$root_gen_dir/chrome/invalidations_resources.pak",
+    "$root_gen_dir/chrome/memory_internals_resources.pak",
+    "$root_gen_dir/chrome/net_internals_resources.pak",
+    "$root_gen_dir/chrome/password_manager_internals_resources.pak",
+    "$root_gen_dir/chrome/signin_internals_resources.pak",
+    "$root_gen_dir/chrome/sync_internals_resources.pak",
+    "$root_gen_dir/chrome/translate_internals_resources.pak",
     "$root_gen_dir/components/resources/components_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
@@ -358,10 +358,10 @@ repack("packed_extra_resources") {
     # New paks should be added here by default.
     sources += [
       "$root_gen_dir/webkit/devtools_resources.pak",
-      "$root_gen_dir/chrome/browser/resources/component_extension_resources.pak",
-      "$root_gen_dir/chrome/browser/resources/options_resources.pak",
-      "$root_gen_dir/chrome/browser/resources/quota_internals_resources.pak",
-      "$root_gen_dir/chrome/browser/resources/sync_file_system_internals_resources.pak",
+      "$root_gen_dir/chrome/component_extension_resources.pak",
+      "$root_gen_dir/chrome/options_resources.pak",
+      "$root_gen_dir/chrome/quota_internals_resources.pak",
+      "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
     ]
     deps += [
       "//content/browser/devtools:devtools_resources",
@@ -454,7 +454,7 @@ template("chrome_repack_percent") {
       "$root_gen_dir/components/resources/components_resources_${percent}_percent.pak",
       "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/renderer_resources_${percent}_percent.pak",
-      "$root_gen_dir/chrome/app/theme/theme_resources_${percent}_percent.pak",
+      "$root_gen_dir/chrome/theme_resources_${percent}_percent.pak",
     ]
 
     deps = [

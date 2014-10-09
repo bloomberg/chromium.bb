@@ -10,6 +10,7 @@ grit("memory_internals_resources") {
     "grit/memory_internals_resources.h",
     "memory_internals_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 grit("net_internals_resources") {
@@ -18,6 +19,7 @@ grit("net_internals_resources") {
     "grit/net_internals_resources.h",
     "net_internals_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 grit("invalidations_resources") {
@@ -26,6 +28,7 @@ grit("invalidations_resources") {
     "grit/invalidations_resources.h",
     "invalidations_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 grit("password_manager_internals_resources") {
@@ -34,6 +37,7 @@ grit("password_manager_internals_resources") {
     "grit/password_manager_internals_resources.h",
     "password_manager_internals_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 grit("signin_internals_resources") {
@@ -42,6 +46,7 @@ grit("signin_internals_resources") {
     "grit/signin_internals_resources.h",
     "signin_internals_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 grit("sync_internals_resources") {
@@ -50,6 +55,7 @@ grit("sync_internals_resources") {
     "grit/sync_internals_resources.h",
     "sync_internals_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 grit("translate_internals_resources") {
@@ -58,6 +64,7 @@ grit("translate_internals_resources") {
     "grit/translate_internals_resources.h",
     "translate_internals_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chrome"
 }
 
 # GYP version: copy command of chrome_extra_resources
@@ -75,6 +82,7 @@ if (!is_ios) {
       "grit/component_extension_resources_map.h",
       "component_extension_resources.pak",
     ]
+    output_dir = "$root_gen_dir/chrome"
   }
 
   grit("options_resources") {
@@ -83,6 +91,7 @@ if (!is_ios) {
       "grit/options_resources.h",
       "options_resources.pak",
     ]
+    output_dir = "$root_gen_dir/chrome"
   }
 
   grit("quota_internals_resources") {
@@ -91,6 +100,7 @@ if (!is_ios) {
       "grit/quota_internals_resources.h",
       "quota_internals_resources.pak",
     ]
+    output_dir = "$root_gen_dir/chrome"
   }
 
   grit("sync_file_system_internals_resources") {
@@ -99,5 +109,6 @@ if (!is_ios) {
       "grit/sync_file_system_internals_resources.h",
       "sync_file_system_internals_resources.pak",
     ]
+    output_dir = "$root_gen_dir/chrome"
   }
 }
