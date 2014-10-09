@@ -569,9 +569,6 @@ public:
 
     // ServiceWorker -------------------------------------------------------
 
-    // Whether the frame is controlled by the ServiceWorker
-    // FIXME: Remove isControlledByServiceWorker().
-    virtual bool isControlledByServiceWorker() { return false; }
     // Whether the document associated with WebDataSource is controlled by the
     // ServiceWorker.
     virtual bool isControlledByServiceWorker(WebDataSource&) { return false; }
