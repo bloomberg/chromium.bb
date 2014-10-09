@@ -1536,6 +1536,8 @@
             'paint/RootInlineBoxPainter.h',
             'paint/ScrollbarPainter.cpp',
             'paint/ScrollbarPainter.h',
+            'paint/SVGContainerPainter.cpp',
+            'paint/SVGContainerPainter.h',
             'paint/SVGForeignObjectPainter.cpp',
             'paint/SVGForeignObjectPainter.h',
             'paint/SVGImagePainter.cpp',

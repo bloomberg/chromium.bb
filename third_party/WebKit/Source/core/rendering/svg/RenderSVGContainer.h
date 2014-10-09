@@ -39,11 +39,16 @@ public:
     void slowFirstChild() const WTF_DELETED_FUNCTION;
     void slowLastChild() const WTF_DELETED_FUNCTION;
 
+    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
     virtual void setNeedsBoundariesUpdate() override final { m_needsBoundariesUpdate = true; }
     virtual bool didTransformToRootUpdate() { return false; }
     bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
+
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final { return m_paintInvalidationBoundingBox; }
+    bool selfWillPaint();
 
 protected:
     virtual RenderObjectChildList* virtualChildren() override final { return children(); }
@@ -60,27 +65,21 @@ protected:
 
     virtual FloatRect objectBoundingBox() const override final { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final { return m_paintInvalidationBoundingBox; }
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
-    // Allow RenderSVGTransformableContainer to hook in at the right time in layout()
+    // Allow RenderSVGTransformableContainer to hook in at the right time in layout().
     virtual bool calculateLocalTransform() { return false; }
 
-    // Allow RenderSVGViewportContainer to hook in at the right times in layout(), paint() and nodeAtFloatPoint()
+    // Allow RenderSVGViewportContainer to hook in at the right times in layout() and nodeAtFloatPoint().
     virtual void calcViewport() { }
-    virtual void applyViewportClip(PaintInfo&) { }
     virtual bool pointIsInsideViewportClip(const FloatPoint& /*pointInParent*/) { return true; }
 
     virtual void determineIfLayoutSizeChanged() { }
 
-    bool selfWillPaint();
     void updateCachedBoundaries();
 
 private:
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
-
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 

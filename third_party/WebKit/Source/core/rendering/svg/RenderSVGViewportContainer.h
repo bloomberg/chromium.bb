@@ -52,7 +52,6 @@ private:
     virtual void calcViewport() override;
     virtual bool calculateLocalTransform() override;
 
-    virtual void applyViewportClip(PaintInfo&) override;
     virtual bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
 
     FloatRect m_viewport;

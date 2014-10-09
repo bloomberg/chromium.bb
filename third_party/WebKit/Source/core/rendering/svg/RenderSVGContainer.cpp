@@ -25,15 +25,11 @@
 
 #include "core/rendering/svg/RenderSVGContainer.h"
 
-#include "core/frame/Settings.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/paint/SVGContainerPainter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "platform/graphics/GraphicsContextCullSaver.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -96,7 +92,6 @@ void RenderSVGContainer::removeChild(RenderObject* child)
     RenderSVGModelObject::removeChild(child);
 }
 
-
 bool RenderSVGContainer::selfWillPaint()
 {
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
@@ -105,52 +100,7 @@ bool RenderSVGContainer::selfWillPaint()
 
 void RenderSVGContainer::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    // Spec: groups w/o children still may render filter content.
-    if (!firstChild() && !selfWillPaint())
-        return;
-
-    FloatRect paintInvalidationRect = paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(paintInvalidationRect, localToParentTransform(), paintInfo))
-        return;
-
-    PaintInfo childPaintInfo(paintInfo);
-    {
-        GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-
-        // Let the RenderSVGViewportContainer subclass clip if necessary
-        applyViewportClip(childPaintInfo);
-
-        childPaintInfo.applyTransform(localToParentTransform());
-
-        SVGRenderingContext renderingContext;
-        GraphicsContextCullSaver cullSaver(*childPaintInfo.context);
-        bool continueRendering = true;
-        if (childPaintInfo.phase == PaintPhaseForeground) {
-            renderingContext.prepareToRenderSVGContent(this, childPaintInfo);
-            continueRendering = renderingContext.isRenderingPrepared();
-
-            if (continueRendering && document().settings()->containerCullingEnabled())
-                cullSaver.cull(paintInvalidationRectInLocalCoordinates());
-        }
-
-        if (continueRendering) {
-            childPaintInfo.updatePaintingRootForChildren(this);
-            for (RenderObject* child = firstChild(); child; child = child->nextSibling())
-                child->paint(childPaintInfo, IntPoint());
-        }
-    }
-
-    // FIXME: This really should be drawn from local coordinates, but currently we hack it
-    // to avoid our clip killing our outline rect. Thus we translate our
-    // outline rect into parent coords before drawing.
-    // FIXME: This means our focus ring won't share our rotation like it should.
-    // We should instead disable our clip during PaintPhaseOutline
-    if (paintInfo.phase == PaintPhaseForeground && style()->outlineWidth() && style()->visibility() == VISIBLE) {
-        IntRect paintRectInParent = enclosingIntRect(localToParentTransform().mapRect(paintInvalidationRect));
-        paintOutline(paintInfo, paintRectInParent);
-    }
+    SVGContainerPainter(*this).paint(paintInfo);
 }
 
 // addFocusRingRects is called from paintOutline and needs to be in the same coordinates as the paintOuline call

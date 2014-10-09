@@ -23,6 +23,7 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 
+#include "core/paint/SVGContainerPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGSVGElement.h"
@@ -46,12 +47,6 @@ void RenderSVGViewportContainer::determineIfLayoutSizeChanged()
         return;
 
     m_isLayoutSizeChanged = toSVGSVGElement(element())->hasRelativeLengths() && selfNeedsLayout();
-}
-
-void RenderSVGViewportContainer::applyViewportClip(PaintInfo& paintInfo)
-{
-    if (SVGRenderSupport::isOverflowHidden(this))
-        paintInfo.context->clip(m_viewport);
 }
 
 void RenderSVGViewportContainer::calcViewport()
@@ -105,12 +100,7 @@ bool RenderSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& poi
 
 void RenderSVGViewportContainer::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(element());
-    // An empty viewBox disables rendering.
-    if (isSVGSVGElement(*element()) && toSVGSVGElement(*element()).hasEmptyViewBox())
-        return;
-
-    RenderSVGContainer::paint(paintInfo, paintOffset);
+    SVGContainerPainter(*this).paint(paintInfo);
 }
 
 }

@@ -70,12 +70,6 @@ void RenderSVGResourceMarker::removeClientFromCache(RenderObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-void RenderSVGResourceMarker::applyViewportClip(PaintInfo& paintInfo)
-{
-    if (SVGRenderSupport::isOverflowHidden(this))
-        paintInfo.context->clip(m_viewport);
-}
-
 FloatRect RenderSVGResourceMarker::markerBoundaries(const AffineTransform& markerTransformation) const
 {
     FloatRect coordinates = RenderSVGContainer::paintInvalidationRectInLocalCoordinates();
@@ -143,6 +137,12 @@ void RenderSVGResourceMarker::draw(PaintInfo& paintInfo, const AffineTransform& 
     PaintInfo info(paintInfo);
     GraphicsContextStateSaver stateSaver(*info.context, false);
     info.applyTransform(transform, &stateSaver);
+
+    if (SVGRenderSupport::isOverflowHidden(this)) {
+        stateSaver.saveIfNeeded();
+        info.context->clip(m_viewport);
+    }
+
     RenderSVGContainer::paint(info, IntPoint());
 }
 

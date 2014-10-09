@@ -45,7 +45,6 @@ public:
     // Calculates marker boundaries, mapped to the target element's coordinate space
     FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
 
-    virtual void applyViewportClip(PaintInfo&) override;
     virtual void layout() override;
     virtual void calcViewport() override;
 
