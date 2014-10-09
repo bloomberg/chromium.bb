@@ -117,9 +117,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // Focuses the location bar.
     virtual void SetFocusToLocationBar(bool select_all) = 0;
 
-    // Creates a view and sets the size for the specified RVH.
-    virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) = 0;
-
     // Returns true if views created for this delegate should be created in a
     // hidden state.
     virtual bool IsHidden() = 0;

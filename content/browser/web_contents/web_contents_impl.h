@@ -580,7 +580,6 @@ class CONTENT_EXPORT WebContentsImpl
       GetLastCommittedNavigationEntryForRenderManager() override;
   virtual bool FocusLocationBarByDefault() override;
   virtual void SetFocusToLocationBar(bool select_all) override;
-  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) override;
   virtual bool IsHidden() override;
 
   // NotificationObserver ------------------------------------------------------
