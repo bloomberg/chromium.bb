@@ -485,11 +485,24 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   } else {
     xkeyevent.xkey = xev->xkey;
   }
+  KeyboardCode keycode = VKEY_UNKNOWN;
   XKeyEvent* xkey = &xkeyevent.xkey;
-  xkey->state &= (~0xFF | Mod2Mask);  // Clears the xkey's state except numlock.
   // XLookupKeysym does not take into consideration the state of the lock/shift
   // etc. keys. So it is necessary to use XLookupString instead.
   XLookupString(xkey, NULL, 0, &keysym, NULL);
+  if (IsKeypadKey(keysym) || IsPrivateKeypadKey(keysym) ||
+      IsCursorKey(keysym) || IsPFKey(keysym) || IsFunctionKey(keysym) ||
+      IsModifierKey(keysym)) {
+    return KeyboardCodeFromXKeysym(keysym);
+  }
+
+  // If |xkey| has modifiers set, other than NumLock, then determine the
+  // un-modified KeySym and use that to map, so that e.g. Ctrl+D correctly
+  // generates VKEY_D.
+  if (xkey->state & 0xFF & ~Mod2Mask) {
+    xkey->state &= (~0xFF | Mod2Mask);
+    XLookupString(xkey, NULL, 0, &keysym, NULL);
+  }
 
   // [a-z] cases.
   if (keysym >= XK_a && keysym <= XK_z)
@@ -498,8 +511,6 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   // [0-9] cases.
   if (keysym >= XK_0 && keysym <= XK_9)
     return static_cast<KeyboardCode>(VKEY_0 + keysym - XK_0);
-
-  KeyboardCode keycode = VKEY_UNKNOWN;
 
   if (!IsKeypadKey(keysym) && !IsPrivateKeypadKey(keysym) &&
       !IsCursorKey(keysym) && !IsPFKey(keysym) && !IsFunctionKey(keysym) &&
@@ -535,7 +546,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     // On Linux some keys has AltGr char but not on Windows.
     // So if cannot find VKEY with (ch0+sc+ch1+ch2) in map3, tries to fallback
     // to just find VKEY with (ch0+sc+ch1). This is the best we could do.
-    MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0xFFFF,
+    MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0,
                  0};
     const MAP3* p =
         std::lower_bound(map3, map3 + arraysize(map3), key4, MAP3());
