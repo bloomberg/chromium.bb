@@ -29,6 +29,7 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
   overlay.SetModifierKeyState(ui::EF_SHIFT_DOWN, STICKY_KEY_STATE_DISABLED);
   overlay.SetModifierKeyState(ui::EF_ALT_DOWN, STICKY_KEY_STATE_LOCKED);
   overlay.SetModifierKeyState(ui::EF_CONTROL_DOWN, STICKY_KEY_STATE_ENABLED);
+  overlay.SetModifierKeyState(ui::EF_COMMAND_DOWN, STICKY_KEY_STATE_LOCKED);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED,
             overlay.GetModifierKeyState(ui::EF_SHIFT_DOWN));
@@ -36,6 +37,8 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
             overlay.GetModifierKeyState(ui::EF_ALT_DOWN));
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED,
             overlay.GetModifierKeyState(ui::EF_CONTROL_DOWN));
+  EXPECT_EQ(STICKY_KEY_STATE_LOCKED,
+            overlay.GetModifierKeyState(ui::EF_COMMAND_DOWN));
 }
 
 // Additional sticky key overlay tests that depend on chromeos::EventRewriter

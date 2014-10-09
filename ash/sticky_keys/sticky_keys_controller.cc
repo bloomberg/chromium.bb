@@ -72,7 +72,7 @@ void StickyKeysController::Enable(bool enabled) {
       overlay_->SetModifierVisible(ui::EF_ALTGR_DOWN, altgr_enabled_);
       overlay_->SetModifierVisible(ui::EF_MOD3_DOWN, mod3_enabled_);
     } else if (overlay_) {
-      overlay_->Show(false);
+      overlay_.reset();
     }
   }
 }
@@ -197,6 +197,8 @@ void StickyKeysController::UpdateOverlay() {
   overlay_->SetModifierKeyState(
       ui::EF_ALT_DOWN, alt_sticky_key_->current_state());
   overlay_->SetModifierKeyState(
+      ui::EF_COMMAND_DOWN, search_sticky_key_->current_state());
+  overlay_->SetModifierKeyState(
       ui::EF_ALTGR_DOWN, altgr_sticky_key_->current_state());
   overlay_->SetModifierKeyState(
       ui::EF_MOD3_DOWN, mod3_sticky_key_->current_state());
@@ -206,6 +208,7 @@ void StickyKeysController::UpdateOverlay() {
       alt_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       altgr_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       ctrl_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
+      search_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       mod3_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED;
 
   overlay_->Show(enabled_ && key_in_use);

@@ -148,6 +148,8 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
               l10n_util::GetStringUTF8(IDS_ASH_ALT_KEY));
   AddKeyLabel(ui::EF_SHIFT_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_SHIFT_KEY));
+  AddKeyLabel(ui::EF_COMMAND_DOWN,
+              l10n_util::GetStringUTF8(IDS_ASH_SEARCH_KEY));
   AddKeyLabel(ui::EF_ALTGR_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_ALTGR_KEY));
   AddKeyLabel(ui::EF_MOD3_DOWN,

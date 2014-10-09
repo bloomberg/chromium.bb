@@ -396,6 +396,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_ALT_KEY" desc="Name of [Alt] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         alt
       </message>
+      <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. This name should be lower case.">
+        search
+      </message>
       <message name="IDS_ASH_ALTGR_KEY" desc="Name of [AltGr] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         altgr
       </message>
