@@ -10,6 +10,7 @@
       "cast_unittests",
       "cc_unittests",
       "chromedriver_unittests",
+      "components_unittests",
       "content_browsertests",
       "content_unittests",
       "crypto_unittests",
