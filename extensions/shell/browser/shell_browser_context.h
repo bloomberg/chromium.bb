@@ -54,12 +54,9 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual void ProfileFunctionCallOnNonProfileBrowserContext15();
 
  private:
-  void Init();
-  void InitializationOnIOThread();
+  void InitURLRequestContextOnIOThread();
   net::NetLog* net_log_;
-  bool ignore_certificate_errors_;
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

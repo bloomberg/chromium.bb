@@ -12,11 +12,9 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
-#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/common/shell_switches.h"
 
 #if defined(OS_WIN)
@@ -29,38 +27,32 @@
 
 namespace content {
 
-class ShellBrowserContext::ShellResourceContext : public ResourceContext {
- public:
-  ShellResourceContext() : getter_(NULL) {}
-  virtual ~ShellResourceContext() {}
+ShellBrowserContext::ShellResourceContext::ShellResourceContext()
+    : getter_(NULL) {
+}
 
-  // ResourceContext implementation:
-  virtual net::HostResolver* GetHostResolver() override {
-    CHECK(getter_);
-    return getter_->host_resolver();
-  }
-  virtual net::URLRequestContext* GetRequestContext() override {
-    CHECK(getter_);
-    return getter_->GetURLRequestContext();
-  }
+ShellBrowserContext::ShellResourceContext::~ShellResourceContext() {
+}
 
-  void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
-    getter_ = getter;
-  }
+net::HostResolver*
+ShellBrowserContext::ShellResourceContext::GetHostResolver() {
+  CHECK(getter_);
+  return getter_->host_resolver();
+}
 
- private:
-  ShellURLRequestContextGetter* getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
-};
+net::URLRequestContext*
+ShellBrowserContext::ShellResourceContext::GetRequestContext() {
+  CHECK(getter_);
+  return getter_->GetURLRequestContext();
+}
 
 ShellBrowserContext::ShellBrowserContext(bool off_the_record,
                                          net::NetLog* net_log)
-    : off_the_record_(off_the_record),
+    : resource_context_(new ShellResourceContext),
+      off_the_record_(off_the_record),
       net_log_(net_log),
       ignore_certificate_errors_(false),
-      guest_manager_(NULL),
-      resource_context_(new ShellResourceContext) {
+      guest_manager_(NULL) {
   InitWhileIOAllowed();
 }
 

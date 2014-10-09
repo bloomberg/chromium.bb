@@ -11,6 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/resource_context.h"
+#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
@@ -20,9 +22,7 @@ class NetLog;
 namespace content {
 
 class DownloadManagerDelegate;
-class ResourceContext;
 class ShellDownloadManagerDelegate;
-class ShellURLRequestContextGetter;
 
 class ShellBrowserContext : public BrowserContext {
  public:
@@ -63,8 +63,40 @@ class ShellBrowserContext : public BrowserContext {
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors);
 
+ protected:
+  // Contains URLRequestContextGetter required for resource loading.
+  class ShellResourceContext : public ResourceContext {
+   public:
+    ShellResourceContext();
+    virtual ~ShellResourceContext();
+
+    // ResourceContext implementation:
+    virtual net::HostResolver* GetHostResolver() override;
+    virtual net::URLRequestContext* GetRequestContext() override;
+
+    void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
+      getter_ = getter;
+    }
+
+  private:
+    ShellURLRequestContextGetter* getter_;
+
+    DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
+  };
+
+  ShellURLRequestContextGetter* url_request_context_getter() {
+    return url_request_getter_.get();
+  }
+
+  // Used by ShellBrowserContext to initiate and set different types of
+  // URLRequestContextGetter.
+  void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
+    url_request_getter_ = getter;
+  }
+
+  scoped_ptr<ShellResourceContext> resource_context_;
+
  private:
-  class ShellResourceContext;
 
   // Performs initialization of the ShellBrowserContext while IO is still
   // allowed on the current thread.
@@ -75,7 +107,6 @@ class ShellBrowserContext : public BrowserContext {
   bool ignore_certificate_errors_;
   base::FilePath path_;
   BrowserPluginGuestManager* guest_manager_;
-  scoped_ptr<ShellResourceContext> resource_context_;
   scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;
 

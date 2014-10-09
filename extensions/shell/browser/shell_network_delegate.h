@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_EXTENSION_NETNETWORK_DELEGATE_H_
-#define EXTENSIONS_BROWSER_EXTENSION_NETNETWORK_DELEGATE_H_
+#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_NETNETWORK_DELEGATE_H_
+#define EXTENSIONS_SHELL_BROWSER_SHELL_NETNETWORK_DELEGATE_H_
 
 #include "extensions/browser/info_map.h"
 #include "net/base/network_delegate.h"
@@ -12,11 +12,10 @@ namespace extensions {
 
 class InfoMap;
 
-class ExtensionNetworkDelegate : public net::NetworkDelegate {
+class ShellNetworkDelegate : public net::NetworkDelegate {
  public:
-  explicit ExtensionNetworkDelegate(
-      void* browser_context, InfoMap* extension_info_map);
-  virtual ~ExtensionNetworkDelegate();
+  ShellNetworkDelegate(void* browser_context, InfoMap* extension_info_map);
+  virtual ~ShellNetworkDelegate();
 
   static void SetAcceptAllCookies(bool accept);
 
@@ -52,9 +51,9 @@ class ExtensionNetworkDelegate : public net::NetworkDelegate {
   void* browser_context_;
   scoped_refptr<extensions::InfoMap> extension_info_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionNetworkDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_EXTENSION_NETNETWORK_DELEGATE_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_NETNETWORK_DELEGATE_H_

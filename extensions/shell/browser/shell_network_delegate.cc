@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/extension_network_delegate.h"
+#include "extensions/shell/browser/shell_network_delegate.h"
 
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
@@ -18,19 +18,19 @@ namespace {
 bool g_accept_all_cookies = true;
 }
 
-ExtensionNetworkDelegate::ExtensionNetworkDelegate(
+ShellNetworkDelegate::ShellNetworkDelegate(
       void* browser_context, InfoMap* extension_info_map) {
   browser_context_ = browser_context;
   extension_info_map_ = extension_info_map;
 }
 
-ExtensionNetworkDelegate::~ExtensionNetworkDelegate() {}
+ShellNetworkDelegate::~ShellNetworkDelegate() {}
 
-void ExtensionNetworkDelegate::SetAcceptAllCookies(bool accept) {
+void ShellNetworkDelegate::SetAcceptAllCookies(bool accept) {
   g_accept_all_cookies = accept;
 }
 
-int ExtensionNetworkDelegate::OnBeforeURLRequest(
+int ShellNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
@@ -38,7 +38,7 @@ int ExtensionNetworkDelegate::OnBeforeURLRequest(
       browser_context_, extension_info_map_.get(), request, callback, new_url);
 }
 
-int ExtensionNetworkDelegate::OnBeforeSendHeaders(
+int ShellNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
@@ -46,14 +46,14 @@ int ExtensionNetworkDelegate::OnBeforeSendHeaders(
       browser_context_, extension_info_map_.get(), request, callback, headers);
 }
 
-void ExtensionNetworkDelegate::OnSendHeaders(
+void ShellNetworkDelegate::OnSendHeaders(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
       browser_context_, extension_info_map_.get(), request, headers);
 }
 
-int ExtensionNetworkDelegate::OnHeadersReceived(
+int ShellNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     const net::HttpResponseHeaders* original_response_headers,
@@ -69,7 +69,7 @@ int ExtensionNetworkDelegate::OnHeadersReceived(
       allowed_unsafe_redirect_url);
 }
 
-void ExtensionNetworkDelegate::OnBeforeRedirect(
+void ShellNetworkDelegate::OnBeforeRedirect(
     net::URLRequest* request,
     const GURL& new_location) {
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
@@ -77,13 +77,13 @@ void ExtensionNetworkDelegate::OnBeforeRedirect(
 }
 
 
-void ExtensionNetworkDelegate::OnResponseStarted(
+void ShellNetworkDelegate::OnResponseStarted(
     net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       browser_context_, extension_info_map_.get(), request);
 }
 
-void ExtensionNetworkDelegate::OnCompleted(
+void ShellNetworkDelegate::OnCompleted(
     net::URLRequest* request,
     bool started) {
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
@@ -107,19 +107,19 @@ void ExtensionNetworkDelegate::OnCompleted(
   NOTREACHED();
 }
 
-void ExtensionNetworkDelegate::OnURLRequestDestroyed(
+void ShellNetworkDelegate::OnURLRequestDestroyed(
     net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestDestroyed(
       browser_context_, request);
 }
 
-void ExtensionNetworkDelegate::OnPACScriptError(
+void ShellNetworkDelegate::OnPACScriptError(
     int line_number,
     const base::string16& error) {
 }
 
 net::NetworkDelegate::AuthRequiredResponse
-ExtensionNetworkDelegate::OnAuthRequired(
+ShellNetworkDelegate::OnAuthRequired(
     net::URLRequest* request,
     const net::AuthChallengeInfo& auth_info,
     const AuthCallback& callback,

@@ -44,6 +44,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override;
 
+  // Used by subclasses to create their own implementation of NetworkDelegate.
+  virtual net::NetworkDelegate* CreateNetworkDelegate();
+
   net::HostResolver* host_resolver();
 
  protected:

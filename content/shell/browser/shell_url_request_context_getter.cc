@@ -91,6 +91,10 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 }
 
+net::NetworkDelegate* ShellURLRequestContextGetter::CreateNetworkDelegate() {
+  return new ShellNetworkDelegate;
+}
+
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -99,7 +103,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_);
-    network_delegate_.reset(new ShellNetworkDelegate);
+    network_delegate_.reset(CreateNetworkDelegate());
     if (command_line.HasSwitch(switches::kDumpRenderTree))
       ShellNetworkDelegate::SetAcceptAllCookies(false);
     url_request_context_->set_network_delegate(network_delegate_.get());
