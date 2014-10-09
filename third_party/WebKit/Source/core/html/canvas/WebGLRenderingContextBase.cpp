@@ -3543,7 +3543,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
             WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
             ScopedTexture2DRestorer restorer(gl);
             if (gl && gl->drawingBuffer()->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
-                level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+                level, m_unpackPremultiplyAlpha, !m_unpackFlipY)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
                 return;
             }
