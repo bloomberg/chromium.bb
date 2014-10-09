@@ -24,11 +24,6 @@ class TilePriorityForNowBin : public TilePriority {
   TilePriorityForNowBin();
 };
 
-class TilePriorityRequiredForActivation : public TilePriority {
- public:
-  TilePriorityRequiredForActivation();
-};
-
 class TilePriorityLowRes : public TilePriority {
  public:
   TilePriorityLowRes();

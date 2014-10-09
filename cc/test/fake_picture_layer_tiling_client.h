@@ -29,6 +29,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   virtual size_t GetMaxTilesForInterestArea() const override;
   virtual float GetSkewportTargetTimeInSeconds() const override;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const override;
+  virtual bool RequiresHighResToDraw() const override;
 
   void SetTileSize(const gfx::Size& tile_size);
   gfx::Size TileSize() const { return tile_size_; }

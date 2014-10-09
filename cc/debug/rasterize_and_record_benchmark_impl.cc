@@ -137,6 +137,10 @@ class FixedInvalidationPictureLayerTilingClient
 
   virtual WhichTree GetTree() const override { return base_client_->GetTree(); }
 
+  virtual bool RequiresHighResToDraw() const override {
+    return base_client_->RequiresHighResToDraw();
+  }
+
  private:
   PictureLayerTilingClient* base_client_;
   Region invalidation_;

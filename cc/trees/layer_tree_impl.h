@@ -104,6 +104,7 @@ class CC_EXPORT LayerTreeImpl {
   bool create_low_res_tiling() const;
   BlockingTaskRunner* BlockingMainThreadTaskRunner() const;
   bool RequiresHighResToDraw() const;
+  bool SmoothnessTakesPriority() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

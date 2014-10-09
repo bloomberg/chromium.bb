@@ -33,6 +33,9 @@ Tile::Tile(TileManager* tile_manager,
       source_frame_number_(source_frame_number),
       flags_(flags),
       is_shared_(false),
+      tiling_i_index_(-1),
+      tiling_j_index_(-1),
+      required_for_activation_(false),
       id_(s_next_id_++) {
   set_picture_pile(picture_pile);
   for (int i = 0; i < NUM_TREES; i++)
@@ -43,22 +46,6 @@ Tile::~Tile() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       "cc::Tile", this);
-}
-
-void Tile::SetPriority(WhichTree tree, const TilePriority& priority) {
-  if (priority == priority_[tree])
-    return;
-
-  priority_[tree] = priority;
-  tile_manager_->DidChangeTilePriority(this);
-}
-
-void Tile::MarkRequiredForActivation() {
-  if (priority_[PENDING_TREE].required_for_activation)
-    return;
-
-  priority_[PENDING_TREE].required_for_activation = true;
-  tile_manager_->DidChangeTilePriority(this);
 }
 
 void Tile::AsValueInto(base::debug::TracedValue* res) const {

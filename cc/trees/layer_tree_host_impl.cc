@@ -3120,6 +3120,10 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
   DidModifyTilePriorities();
 }
 
+TreePriority LayerTreeHostImpl::GetTreePriority() const {
+  return global_tile_state_.tree_priority;
+}
+
 void LayerTreeHostImpl::UpdateCurrentBeginFrameArgs(
     const BeginFrameArgs& args) {
   DCHECK(!current_begin_frame_args_.IsValid());

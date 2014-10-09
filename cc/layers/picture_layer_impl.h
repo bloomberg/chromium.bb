@@ -133,6 +133,7 @@ class CC_EXPORT PictureLayerImpl
   virtual float GetSkewportTargetTimeInSeconds() const override;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const override;
   virtual WhichTree GetTree() const override;
+  virtual bool RequiresHighResToDraw() const override;
 
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
@@ -168,12 +169,6 @@ class CC_EXPORT PictureLayerImpl
   float MinimumContentsScale() const;
   float SnappedContentsScale(float new_contents_scale);
   void ResetRasterScale();
-  void MarkVisibleResourcesAsRequired() const;
-  bool MarkVisibleTilesAsRequired(
-      PictureLayerTiling* tiling,
-      const PictureLayerTiling* optional_twin_tiling,
-      const gfx::Rect& rect,
-      const Region& missing_region) const;
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer();
 
@@ -221,6 +216,7 @@ class CC_EXPORT PictureLayerImpl
   // A sanity state check to make sure UpdateTilePriorities only gets called
   // after a CalculateContentsScale/ManageTilings.
   bool should_update_tile_priorities_;
+  bool only_used_low_res_last_append_quads_;
 
   // Any draw properties derived from |transform|, |viewport|, and |clip|
   // parameters in LayerTreeHostImpl::SetExternalDrawConstraints are not valid

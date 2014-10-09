@@ -80,7 +80,6 @@
       'resources/picture_pile_unittest.cc',
       'resources/picture_unittest.cc',
       'resources/prioritized_resource_unittest.cc',
-      'resources/prioritized_tile_set_unittest.cc',
       'resources/raster_worker_pool_unittest.cc',
       'resources/resource_provider_unittest.cc',
       'resources/resource_update_controller_unittest.cc',

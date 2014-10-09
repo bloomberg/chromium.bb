@@ -91,4 +91,8 @@ WhichTree FakePictureLayerTilingClient::GetTree() const {
   return tree_;
 }
 
+bool FakePictureLayerTilingClient::RequiresHighResToDraw() const {
+  return false;
+}
+
 }  // namespace cc

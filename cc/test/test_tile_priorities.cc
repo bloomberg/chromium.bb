@@ -15,11 +15,6 @@ TilePriorityForEventualBin::TilePriorityForEventualBin()
 TilePriorityForNowBin::TilePriorityForNowBin()
     : TilePriority(HIGH_RESOLUTION, NOW, 0) {}
 
-TilePriorityRequiredForActivation::TilePriorityRequiredForActivation()
-    : TilePriority(HIGH_RESOLUTION, NOW, 0) {
-  required_for_activation = true;
-}
-
 TilePriorityLowRes::TilePriorityLowRes()
     : TilePriority(LOW_RESOLUTION, NOW, 0) {}
 

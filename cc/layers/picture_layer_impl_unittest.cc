@@ -1390,27 +1390,6 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
             render_pass->quad_list.front()->material);
 }
 
-TEST_F(PictureLayerImplTest, MarkRequiredNullTiles) {
-  gfx::Size tile_size(100, 100);
-  gfx::Size layer_bounds(1000, 1000);
-
-  scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
-  // Layers with entirely empty piles can't get tilings.
-  pending_pile->AddRecordingAt(0, 0);
-
-  SetupPendingTree(pending_pile);
-
-  ASSERT_TRUE(pending_layer_->CanHaveTilings());
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
-
-  // It should be safe to call this (and MarkVisibleResourcesAsRequired)
-  // on a layer with no recordings.
-  host_impl_.pending_tree()->UpdateDrawProperties();
-  pending_layer_->MarkVisibleResourcesAsRequired();
-}
-
 TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -1434,43 +1413,22 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   ASSERT_TRUE(pending_layer_->CanHaveTilings());
   PictureLayerTiling* tiling = pending_layer_->AddTiling(1.f);
   host_impl_.pending_tree()->UpdateDrawProperties();
-  EXPECT_EQ(tiling->resolution(), HIGH_RESOLUTION);
   EXPECT_EQ(viewport, pending_layer_->visible_rect_for_tile_priority());
 
-  // Fake set priorities.
-  for (PictureLayerTiling::CoverageIterator iter(
-           tiling, pending_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
-       iter;
-       ++iter) {
-    if (!*iter)
-      continue;
-    Tile* tile = *iter;
-    TilePriority priority;
-    priority.resolution = HIGH_RESOLUTION;
-    gfx::Rect tile_bounds = iter.geometry_rect();
-    if (pending_layer_->visible_rect_for_tile_priority().Intersects(
-            tile_bounds)) {
-      priority.priority_bin = TilePriority::NOW;
-      priority.distance_to_visible = 0.f;
-    } else {
-      priority.priority_bin = TilePriority::SOON;
-      priority.distance_to_visible = 1.f;
-    }
-    tile->SetPriority(PENDING_TREE, priority);
-  }
-
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+  pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
+  EXPECT_EQ(HIGH_RESOLUTION, tiling->resolution());
 
   int num_visible = 0;
   int num_offscreen = 0;
 
-  for (PictureLayerTiling::CoverageIterator iter(
-           tiling, pending_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
-       iter;
+  for (PictureLayerTiling::TilingRasterTileIterator iter(tiling); iter;
        ++iter) {
-    if (!*iter)
-      continue;
     const Tile* tile = *iter;
+    DCHECK(tile);
     if (tile->priority(PENDING_TREE).distance_to_visible == 0.f) {
       EXPECT_TRUE(tile->required_for_activation());
       num_visible++;
@@ -1527,8 +1485,6 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
       CreateBeginFrameArgsForTesting(time_ticks));
   pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
 
-  pending_layer_->MarkVisibleResourcesAsRequired();
-
   // Intersect the two rects. Any tile outside should not be required for
   // activation.
   gfx::Rect viewport_for_tile_priority =
@@ -1572,6 +1528,7 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
   // All tiles in activation rect is ready to draw.
   EXPECT_EQ(0u, data.num_missing_tiles);
   EXPECT_EQ(0u, data.num_incomplete_tiles);
+  EXPECT_FALSE(active_layer_->only_used_low_res_last_append_quads());
 }
 
 TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
@@ -1607,6 +1564,72 @@ TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
   EXPECT_EQ(9u, render_pass->quad_list.size());
   EXPECT_EQ(0u, data.num_missing_tiles);
   EXPECT_EQ(0u, data.num_incomplete_tiles);
+  EXPECT_FALSE(active_layer_->only_used_low_res_last_append_quads());
+}
+
+TEST_F(PictureLayerImplTest, HighResTileIsIncomplete) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pending_pile);
+  ActivateTree();
+
+  active_layer_->set_fixed_tile_size(tile_size);
+  host_impl_.active_tree()->UpdateDrawProperties();
+
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->DidDraw(NULL);
+
+  EXPECT_EQ(1u, render_pass->quad_list.size());
+  EXPECT_EQ(1u, data.num_missing_tiles);
+  EXPECT_EQ(0u, data.num_incomplete_tiles);
+  EXPECT_TRUE(active_layer_->only_used_low_res_last_append_quads());
+}
+
+TEST_F(PictureLayerImplTest, HighResTileIsIncompleteLowResComplete) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pending_pile);
+  ActivateTree();
+
+  active_layer_->set_fixed_tile_size(tile_size);
+  host_impl_.active_tree()->UpdateDrawProperties();
+  std::vector<Tile*> low_tiles =
+      active_layer_->tilings()->tiling_at(1)->AllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(low_tiles);
+
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->DidDraw(NULL);
+
+  EXPECT_EQ(1u, render_pass->quad_list.size());
+  EXPECT_EQ(0u, data.num_missing_tiles);
+  EXPECT_EQ(1u, data.num_incomplete_tiles);
+  EXPECT_TRUE(active_layer_->only_used_low_res_last_append_quads());
 }
 
 TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
@@ -1648,6 +1671,7 @@ TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
   EXPECT_EQ(9u, render_pass->quad_list.size());
   EXPECT_EQ(0u, data.num_missing_tiles);
   EXPECT_EQ(1u, data.num_incomplete_tiles);
+  EXPECT_FALSE(active_layer_->only_used_low_res_last_append_quads());
 }
 
 TEST_F(PictureLayerImplTest,
@@ -1717,6 +1741,7 @@ TEST_F(PictureLayerImplTest,
   // Neither the high res nor the ideal tiles were considered as incomplete.
   EXPECT_EQ(0u, data.num_missing_tiles);
   EXPECT_EQ(0u, data.num_incomplete_tiles);
+  EXPECT_FALSE(active_layer_->only_used_low_res_last_append_quads());
 }
 
 TEST_F(PictureLayerImplTest, HighResRequiredWhenUnsharedActiveAllReady) {
@@ -1733,7 +1758,9 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenUnsharedActiveAllReady) {
 
   // No shared tiles and all active tiles ready, so pending can only
   // activate with all high res tiles.
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertAllTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
@@ -1754,12 +1781,15 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
   // When high res are required, even if the active tree is not ready,
   // the high res tiles must be ready.
   host_impl_.SetRequiresHighResToDraw();
-  pending_layer_->MarkVisibleResourcesAsRequired();
+
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertAllTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
-TEST_F(PictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
+TEST_F(PictureLayerImplTest, AllHighResRequiredEvenIfShared) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
@@ -1771,8 +1801,32 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
   EXPECT_FALSE(some_active_tile->IsReadyToDraw());
 
   // All tiles shared (no invalidation), so even though the active tree's
-  // tiles aren't ready, there is nothing required.
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  // tiles aren't ready, the high res tiles are required for activation.
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  AssertAllTilesRequired(pending_layer_->HighResTiling());
+  AssertNoTilesRequired(pending_layer_->LowResTiling());
+}
+
+TEST_F(PictureLayerImplTest, DisallowRequiredForActivation) {
+  gfx::Size layer_bounds(400, 400);
+  gfx::Size tile_size(100, 100);
+  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
+
+  CreateHighLowResAndSetAllTilesVisible();
+
+  Tile* some_active_tile =
+      active_layer_->HighResTiling()->AllTilesForTesting()[0];
+  EXPECT_FALSE(some_active_tile->IsReadyToDraw());
+
+  pending_layer_->HighResTiling()->set_can_require_tiles_for_activation(false);
+  pending_layer_->LowResTiling()->set_can_require_tiles_for_activation(false);
+
+  // If we disallow required for activation, no tiles can be required.
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertNoTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
@@ -1802,7 +1856,9 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
 
   // Since the active layer has no tiles at all, the pending layer doesn't
   // need content in order to activate.
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertNoTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
@@ -1827,7 +1883,9 @@ TEST_F(PictureLayerImplTest, HighResRequiredIfActiveCantHaveTiles) {
   // to the case where there is no active layer, to avoid flashing content.
   // This can happen if a layer exists for a while and switches from
   // not being able to have content to having content.
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertAllTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
@@ -1841,12 +1899,19 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveHasDifferentBounds) {
   pending_layer_->SetBounds(pending_layer_bounds);
 
   CreateHighLowResAndSetAllTilesVisible();
+  // TODO(vmpstr): This is confusing. Rework the test to create different bounds
+  // on different trees instead of fudging tilings.
+  pending_layer_->HighResTiling()->ComputeTilePriorityRects(
+      PENDING_TREE, gfx::Rect(pending_layer_bounds), 1.f, 1.f, Occlusion());
 
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
   active_layer_->SetAllTilesReady();
 
   // Since the active layer has different bounds, the pending layer needs all
   // high res tiles in order to activate.
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertAllTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
@@ -2695,7 +2760,7 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
          ++iter) {
       if (mark_required) {
         number_of_marked_tiles++;
-        iter->MarkRequiredForActivation();
+        iter->set_required_for_activation(true);
       } else {
         number_of_unmarked_tiles++;
       }
@@ -2907,7 +2972,6 @@ TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
 
   CreateHighLowResAndSetAllTilesVisible();
   active_layer_->SetAllTilesReady();
-  pending_layer_->MarkVisibleResourcesAsRequired();
 
   // All pending layer tiles required are not ready.
   EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
@@ -2935,7 +2999,6 @@ TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
 
   CreateHighLowResAndSetAllTilesVisible();
   active_layer_->SetAllTilesReady();
-  pending_layer_->MarkVisibleResourcesAsRequired();
 
   // All pending layer tiles required are not ready.
   EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
@@ -2964,8 +3027,6 @@ TEST_F(PictureLayerImplTest,
   // And all the low-res tiles in the pending layer.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
 
-  pending_layer_->MarkVisibleResourcesAsRequired();
-
   // The unshared high-res tiles are not ready, so we cannot activate.
   EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
 
@@ -2987,8 +3048,6 @@ TEST_F(PictureLayerImplTest, SharedActiveHighResReadyNotEnoughToActivate) {
 
   // Initialize all high-res tiles in the active layer.
   active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
-
-  pending_layer_->MarkVisibleResourcesAsRequired();
 
   // The unshared high-res tiles are not ready, so we cannot activate.
   EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
@@ -3064,28 +3123,7 @@ TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
 }
 
-TEST_F(NoLowResPictureLayerImplTest, MarkRequiredNullTiles) {
-  gfx::Size tile_size(100, 100);
-  gfx::Size layer_bounds(1000, 1000);
-
-  scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
-  // Layers with entirely empty piles can't get tilings.
-  pending_pile->AddRecordingAt(0, 0);
-
-  SetupPendingTree(pending_pile);
-
-  ASSERT_TRUE(pending_layer_->CanHaveTilings());
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
-
-  // It should be safe to call this (and MarkVisibleResourcesAsRequired)
-  // on a layer with no recordings.
-  host_impl_.pending_tree()->UpdateDrawProperties();
-  pending_layer_->MarkVisibleResourcesAsRequired();
-}
-
-TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
+TEST_F(NoLowResPictureLayerImplTest, AllHighResRequiredEvenIfShared) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
@@ -3098,11 +3136,13 @@ TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
 
   // All tiles shared (no invalidation), so even though the active tree's
   // tiles aren't ready, there is nothing required.
-  pending_layer_->MarkVisibleResourcesAsRequired();
-  AssertNoTilesRequired(pending_layer_->HighResTiling());
-  if (host_impl_.settings().create_low_res_tiling) {
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  if (host_impl_.settings().create_low_res_tiling)
+    pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  AssertAllTilesRequired(pending_layer_->HighResTiling());
+  if (host_impl_.settings().create_low_res_tiling)
     AssertNoTilesRequired(pending_layer_->LowResTiling());
-  }
 }
 
 TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
@@ -3131,7 +3171,10 @@ TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
 
   // Since the active layer has no tiles at all, the pending layer doesn't
   // need content in order to activate.
-  pending_layer_->MarkVisibleResourcesAsRequired();
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  if (host_impl_.settings().create_low_res_tiling)
+    pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
   AssertNoTilesRequired(pending_layer_->HighResTiling());
   if (host_impl_.settings().create_low_res_tiling)
     AssertNoTilesRequired(pending_layer_->LowResTiling());
@@ -3715,7 +3758,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     if (tile_is_visible)
       unoccluded_tile_count++;
   }
-  EXPECT_EQ(unoccluded_tile_count, 20 + 2);
+  EXPECT_EQ(20 + 2, unoccluded_tile_count);
 
   // Full occlusion.
   layer1->SetPosition(gfx::Point(0, 0));
@@ -3803,6 +3846,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     occluded_tile_count = 0;
     for (PictureLayerTiling::CoverageIterator iter(
@@ -3842,6 +3886,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     occluded_tile_count = 0;
     for (PictureLayerTiling::CoverageIterator iter(
@@ -3861,10 +3906,10 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     }
     switch (i) {
       case 0:
-        EXPECT_EQ(occluded_tile_count, 25);
+        EXPECT_EQ(25, occluded_tile_count);
         break;
       case 1:
-        EXPECT_EQ(occluded_tile_count, 4);
+        EXPECT_EQ(4, occluded_tile_count);
         break;
       default:
         NOTREACHED();
@@ -3911,6 +3956,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
            tilings.begin();
        tiling_iterator != tilings.end();
        ++tiling_iterator) {
+    (*tiling_iterator)->UpdateAllTilePrioritiesForTesting();
     std::vector<Tile*> tiles = (*tiling_iterator)->AllTilesForTesting();
 
     occluded_tile_count = 0;
@@ -3978,6 +4024,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     for (PictureLayerTiling::CoverageIterator iter(
              tiling,
@@ -4122,6 +4169,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
     tiling->CreateAllTilesForTesting();
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     size_t occluded_tile_count_on_pending = 0u;
     size_t occluded_tile_count_on_active = 0u;
@@ -4156,6 +4204,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
     tiling->CreateAllTilesForTesting();
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     size_t occluded_tile_count_on_pending = 0u;
     size_t occluded_tile_count_on_active = 0u;

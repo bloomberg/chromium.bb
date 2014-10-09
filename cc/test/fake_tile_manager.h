@@ -25,7 +25,6 @@ class FakeTileManager : public TileManager {
   virtual void Release(Tile* tile) override;
 
   std::vector<Tile*> tiles_for_raster;
-  PrioritizedTileSet all_tiles;
 };
 
 }  // namespace cc

@@ -417,6 +417,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool pinch_gesture_active() const { return pinch_gesture_active_; }
 
   void SetTreePriority(TreePriority priority);
+  TreePriority GetTreePriority() const;
 
   void UpdateCurrentBeginFrameArgs(const BeginFrameArgs& args);
   void ResetCurrentBeginFrameArgsForNextFrame();

@@ -44,7 +44,6 @@ struct CC_EXPORT TilePriority {
 
   TilePriority()
       : resolution(NON_IDEAL_RESOLUTION),
-        required_for_activation(false),
         priority_bin(EVENTUALLY),
         distance_to_visible(std::numeric_limits<float>::infinity()) {}
 
@@ -52,7 +51,6 @@ struct CC_EXPORT TilePriority {
                PriorityBin bin,
                float distance_to_visible)
       : resolution(resolution),
-        required_for_activation(false),
         priority_bin(bin),
         distance_to_visible(distance_to_visible) {}
 
@@ -65,9 +63,6 @@ struct CC_EXPORT TilePriority {
       resolution = LOW_RESOLUTION;
     else
       resolution = NON_IDEAL_RESOLUTION;
-
-    required_for_activation =
-        active.required_for_activation || pending.required_for_activation;
 
     if (active.priority_bin < pending.priority_bin) {
       priority_bin = active.priority_bin;
@@ -87,8 +82,7 @@ struct CC_EXPORT TilePriority {
   bool operator ==(const TilePriority& other) const {
     return resolution == other.resolution &&
            priority_bin == other.priority_bin &&
-           distance_to_visible == other.distance_to_visible &&
-           required_for_activation == other.required_for_activation;
+           distance_to_visible == other.distance_to_visible;
   }
 
   bool operator !=(const TilePriority& other) const {
@@ -102,7 +96,6 @@ struct CC_EXPORT TilePriority {
   }
 
   TileResolution resolution;
-  bool required_for_activation;
   PriorityBin priority_bin;
   float distance_to_visible;
 };
@@ -120,11 +113,7 @@ enum TileMemoryLimitPolicy {
   ALLOW_PREPAINT_ONLY = 2,  // Grande.
 
   // You're the only thing in town. Go crazy.
-  ALLOW_ANYTHING = 3,  // Venti.
-  NUM_TILE_MEMORY_LIMIT_POLICIES = 4,
-
-  // NOTE: Be sure to update TreePriorityAsValue and kBinPolicyMap when adding
-  // or reordering fields.
+  ALLOW_ANYTHING = 3  // Venti.
 };
 std::string TileMemoryLimitPolicyToString(TileMemoryLimitPolicy policy);
 

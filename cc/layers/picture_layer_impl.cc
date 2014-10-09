@@ -75,7 +75,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_source_scale_is_fixed_(false),
       was_screen_space_transform_animating_(false),
       needs_post_commit_initialization_(true),
-      should_update_tile_priorities_(false) {
+      should_update_tile_priorities_(false),
+      only_used_low_res_last_append_quads_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
@@ -97,15 +98,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // a descendant of an opacity 0 layer).
   DoPostCommitInitializationIfNeeded();
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-
-  // We have already synced the important bits from the the active layer, and
-  // we will soon swap out its tilings and use them for recycling. However,
-  // there are now tiles in this layer's tilings that were unref'd and replaced
-  // with new tiles (due to invalidation). This resets all active priorities on
-  // the to-be-recycled tiling to ensure replaced tiles don't linger and take
-  // memory (due to a stale 'active' priority).
-  if (layer_impl->tilings_)
-    layer_impl->tilings_->DidBecomeRecycled();
 
   LayerImpl::PushPropertiesTo(base_layer);
 
@@ -251,10 +243,10 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         } else if (mode == ManagedTileState::DrawInfo::PICTURE_PILE_MODE) {
           color = DebugColors::PictureTileBorderColor();
           width = DebugColors::PictureTileBorderWidth(layer_tree_impl());
-        } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
+        } else if (iter.resolution() == HIGH_RESOLUTION) {
           color = DebugColors::HighResTileBorderColor();
           width = DebugColors::HighResTileBorderWidth(layer_tree_impl());
-        } else if (iter->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION) {
+        } else if (iter.resolution() == LOW_RESOLUTION) {
           color = DebugColors::LowResTileBorderColor();
           width = DebugColors::LowResTileBorderWidth(layer_tree_impl());
         } else if (iter->contents_scale() > max_contents_scale) {
@@ -293,6 +285,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
   size_t missing_tile_count = 0u;
   size_t on_demand_missing_tile_count = 0u;
+  only_used_low_res_last_append_quads_ = true;
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
                                                     max_contents_scale,
                                                     scaled_visible_content_rect,
@@ -411,10 +404,15 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       continue;
     }
 
-    if (iter->priority(ACTIVE_TREE).resolution != HIGH_RESOLUTION) {
+    if (iter.resolution() != HIGH_RESOLUTION) {
       append_quads_data->approximated_visible_content_area +=
           visible_geometry_rect.width() * visible_geometry_rect.height();
     }
+
+    // If we have a draw quad, but it's not low resolution, then
+    // mark that we've used something other than low res to draw.
+    if (iter.resolution() != LOW_RESOLUTION)
+      only_used_low_res_last_append_quads_ = false;
 
     if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());
@@ -479,9 +477,6 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
   should_update_tile_priorities_ = true;
 
   UpdateTilePriorities(occlusion_in_content_space);
-
-  if (layer_tree_impl()->IsPendingTree())
-    MarkVisibleResourcesAsRequired();
 }
 
 void PictureLayerImpl::UpdateTilePriorities(
@@ -509,17 +504,26 @@ void PictureLayerImpl::UpdateTilePriorities(
       GetViewportForTilePriorityInContentSpace();
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+  bool can_require_tiles_for_activation =
+      !only_used_low_res_last_append_quads_ || RequiresHighResToDraw() ||
+      !layer_tree_impl()->SmoothnessTakesPriority();
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+
+    tiling->set_can_require_tiles_for_activation(
+        can_require_tiles_for_activation);
+
     // Pass |occlusion_in_content_space| for |occlusion_in_layer_space| since
-    // they are the same space in picture lbayer, as contents scale is always 1.
-    tilings_->tiling_at(i)->UpdateTilePriorities(tree,
-                                                 viewport_rect_in_layer_space,
-                                                 ideal_contents_scale_,
-                                                 current_frame_time_in_seconds,
-                                                 occlusion_in_content_space);
+    // they are the same space in picture layer, as contents scale is always 1.
+    tiling->ComputeTilePriorityRects(tree,
+                                     viewport_rect_in_layer_space,
+                                     ideal_contents_scale_,
+                                     current_frame_time_in_seconds,
+                                     occlusion_in_content_space);
   }
 
   // Tile priorities were modified.
+  // TODO(vmpstr): See if this can be removed in favour of calling it from LTHI
   layer_tree_impl()->DidModifyTilePriorities();
 }
 
@@ -561,7 +565,7 @@ void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
 
 void PictureLayerImpl::DidBecomeActive() {
   LayerImpl::DidBecomeActive();
-  tilings_->DidBecomeActive();
+  // TODO(vmpstr): See if this can be removed in favour of calling it from LTHI
   layer_tree_impl()->DidModifyTilePriorities();
 }
 
@@ -653,6 +657,10 @@ int PictureLayerImpl::GetSkewportExtrapolationLimitInContentPixels() const {
   return layer_tree_impl()
       ->settings()
       .skewport_extrapolation_limit_in_content_pixels;
+}
+
+bool PictureLayerImpl::RequiresHighResToDraw() const {
+  return layer_tree_impl()->RequiresHighResToDraw();
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
@@ -790,159 +798,6 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
     return 0;
 
   return draw_info.get_resource_id();
-}
-
-void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
-  DCHECK(layer_tree_impl()->IsPendingTree());
-  DCHECK(ideal_contents_scale_);
-  DCHECK_GT(tilings_->num_tilings(), 0u);
-
-  // The goal of this function is to find the minimum set of tiles that need to
-  // be ready to draw in order to activate without flashing content from a
-  // higher res on the active tree to a lower res on the pending tree.
-
-  // First, early out for layers with no visible content.
-  if (visible_rect_for_tile_priority_.IsEmpty())
-    return;
-
-  // Only mark tiles inside the viewport for tile priority as required for
-  // activation. This viewport is normally the same as the draw viewport but
-  // can be independently overridden by embedders like Android WebView with
-  // SetExternalDrawConstraints.
-  gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
-  rect.Intersect(visible_rect_for_tile_priority_);
-
-  float min_acceptable_scale =
-      std::min(raster_contents_scale_, ideal_contents_scale_);
-
-  if (PictureLayerImpl* twin = twin_layer_) {
-    float twin_min_acceptable_scale =
-        std::min(twin->ideal_contents_scale_, twin->raster_contents_scale_);
-    // Ignore 0 scale in case CalculateContentsScale() has never been
-    // called for active twin.
-    if (twin_min_acceptable_scale != 0.0f) {
-      min_acceptable_scale =
-          std::min(min_acceptable_scale, twin_min_acceptable_scale);
-    }
-  }
-
-  PictureLayerTiling* high_res = NULL;
-  PictureLayerTiling* low_res = NULL;
-
-  // First pass: ready to draw tiles in acceptable but non-ideal tilings are
-  // marked as required for activation so that their textures are not thrown
-  // away; any non-ready tiles are not marked as required.
-  Region missing_region = rect;
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = tilings_->tiling_at(i);
-    DCHECK(tiling->has_ever_been_updated());
-
-    if (tiling->resolution() == LOW_RESOLUTION) {
-      DCHECK(!low_res) << "There can only be one low res tiling";
-      low_res = tiling;
-    }
-    if (tiling->contents_scale() < min_acceptable_scale)
-      continue;
-    if (tiling->resolution() == HIGH_RESOLUTION) {
-      DCHECK(!high_res) << "There can only be one high res tiling";
-      high_res = tiling;
-      continue;
-    }
-    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
-         ++iter) {
-      if (!*iter || !iter->IsReadyToDraw())
-        continue;
-
-      missing_region.Subtract(iter.geometry_rect());
-      iter->MarkRequiredForActivation();
-    }
-  }
-  DCHECK(high_res) << "There must be one high res tiling";
-
-  // If these pointers are null (because no twin, no matching tiling, or the
-  // simpification just below), then high res tiles will be required to fill any
-  // holes left by the first pass above.  If the pointers are valid, then this
-  // layer is allowed to skip any tiles that are not ready on its twin.
-  const PictureLayerTiling* twin_high_res = NULL;
-  const PictureLayerTiling* twin_low_res = NULL;
-
-  if (twin_layer_) {
-    // As a simplification, only allow activating to skip twin tiles that the
-    // active layer is also missing when both this layer and its twin have
-    // "simple" sets of tilings: only 2 tilings (high and low) or only 1 high
-    // res tiling. This avoids having to iterate/track coverage of non-ideal
-    // tilings during the last draw call on the active layer.
-    if (tilings_->num_tilings() <= 2 &&
-        twin_layer_->tilings_->num_tilings() <= tilings_->num_tilings()) {
-      twin_low_res = low_res ? GetTwinTiling(low_res) : NULL;
-      twin_high_res = high_res ? GetTwinTiling(high_res) : NULL;
-    }
-
-    // If this layer and its twin have different transforms, then don't compare
-    // them and only allow activating to high res tiles, since tiles on each
-    // layer will be in different places on screen.
-    if (layer_tree_impl()->RequiresHighResToDraw() ||
-        bounds() != twin_layer_->bounds() ||
-        draw_properties().screen_space_transform !=
-            twin_layer_->draw_properties().screen_space_transform) {
-      twin_high_res = NULL;
-      twin_low_res = NULL;
-    }
-  }
-
-  // As a second pass, mark as required any visible high res tiles not filled in
-  // by acceptable non-ideal tiles from the first pass.
-  if (MarkVisibleTilesAsRequired(
-          high_res, twin_high_res, rect, missing_region)) {
-    // As an optional third pass, if a high res tile was skipped because its
-    // twin was also missing, then fall back to mark low res tiles as required
-    // in case the active twin is substituting those for missing high res
-    // content. Only suitable, when low res is enabled.
-    if (low_res) {
-      MarkVisibleTilesAsRequired(low_res, twin_low_res, rect, missing_region);
-    }
-  }
-}
-
-bool PictureLayerImpl::MarkVisibleTilesAsRequired(
-    PictureLayerTiling* tiling,
-    const PictureLayerTiling* optional_twin_tiling,
-    const gfx::Rect& rect,
-    const Region& missing_region) const {
-  bool twin_had_missing_tile = false;
-  for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
-       ++iter) {
-    Tile* tile = *iter;
-    // A null tile (i.e. missing recording) can just be skipped.
-    if (!tile)
-      continue;
-
-    // If the tile is occluded, don't mark it as required for activation.
-    if (tile->is_occluded(PENDING_TREE))
-      continue;
-
-    // If the missing region doesn't cover it, this tile is fully
-    // covered by acceptable tiles at other scales.
-    if (!missing_region.Intersects(iter.geometry_rect()))
-      continue;
-
-    // If the twin tile doesn't exist (i.e. missing recording or so far away
-    // that it is outside the visible tile rect) or this tile is shared between
-    // with the twin, then this tile isn't required to prevent flashing.
-    if (optional_twin_tiling) {
-      Tile* twin_tile = optional_twin_tiling->TileAt(iter.i(), iter.j());
-      if (!twin_tile || twin_tile == tile) {
-        // However if the shared tile is being used on the active tree, then
-        // there's no missing content in this place, and low res is not needed.
-        if (!twin_tile || !twin_tile->IsReadyToDraw())
-          twin_had_missing_tile = true;
-        continue;
-      }
-    }
-
-    tile->MarkRequiredForActivation();
-  }
-  return twin_had_missing_tile;
 }
 
 void PictureLayerImpl::DoPostCommitInitialization() {
@@ -1342,8 +1197,7 @@ void PictureLayerImpl::SanityCheckTilingState() const {
   if (tilings_->num_tilings() == 0)
     return;
 
-  // MarkVisibleResourcesAsRequired depends on having exactly 1 high res
-  // tiling to mark its tiles as being required for activation.
+  // We should only have one high res tiling.
   DCHECK_EQ(1, tilings_->NumHighResTilings());
 #endif
 }
@@ -1504,10 +1358,16 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
          ++iter) {
       const Tile* tile = *iter;
       // A null tile (i.e. missing recording) can just be skipped.
+      // TODO(vmpstr): Verify this is true if we create tiles in raster
+      // iterators.
       if (!tile)
         continue;
 
-      if (tile->required_for_activation() && !tile->IsReadyToDraw())
+      // We can't check tile->required_for_activation, because that value might
+      // be out of date. It is updated in the raster/eviction iterators.
+      // TODO(vmpstr): Remove the comment once you can't access this information
+      // from the tile.
+      if (tiling->IsTileRequiredForActivation(tile) && !tile->IsReadyToDraw())
         return false;
     }
   }
@@ -1538,19 +1398,17 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
     return;
   }
 
-  WhichTree tree = layer_->GetTree();
-
   // Find high and low res tilings and initialize the iterators.
   for (size_t i = 0; i < layer_->tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = layer_->tilings_->tiling_at(i);
     if (tiling->resolution() == HIGH_RESOLUTION) {
       iterators_[HIGH_RES] =
-          PictureLayerTiling::TilingRasterTileIterator(tiling, tree);
+          PictureLayerTiling::TilingRasterTileIterator(tiling);
     }
 
     if (tiling->resolution() == LOW_RESOLUTION) {
       iterators_[LOW_RES] =
-          PictureLayerTiling::TilingRasterTileIterator(tiling, tree);
+          PictureLayerTiling::TilingRasterTileIterator(tiling);
     }
   }
 

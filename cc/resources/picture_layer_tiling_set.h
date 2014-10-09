@@ -74,9 +74,6 @@ class CC_EXPORT PictureLayerTilingSet {
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
 
-  void DidBecomeActive();
-  void DidBecomeRecycled();
-
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate
   // through null tiles with valid geometry_rect() until the rect is full.
@@ -104,7 +101,8 @@ class CC_EXPORT PictureLayerTilingSet {
     CoverageIterator& operator++();
     operator bool() const;
 
-    PictureLayerTiling* CurrentTiling();
+    TileResolution resolution() const;
+    PictureLayerTiling* CurrentTiling() const;
 
    private:
     int NextTiling() const;

@@ -391,8 +391,6 @@
         'resources/prioritized_resource.h',
         'resources/prioritized_resource_manager.cc',
         'resources/prioritized_resource_manager.h',
-        'resources/prioritized_tile_set.cc',
-        'resources/prioritized_tile_set.h',
         'resources/priority_calculator.cc',
         'resources/priority_calculator.h',
         'resources/raster_buffer.cc',

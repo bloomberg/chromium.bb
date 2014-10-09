@@ -58,8 +58,11 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
                         priority_[PENDING_TREE]);
   }
 
-  void SetPriority(WhichTree tree, const TilePriority& priority);
+  void SetPriority(WhichTree tree, const TilePriority& priority) {
+    priority_[tree] = priority;
+  }
 
+  // TODO(vmpstr): Move this to the iterators.
   void set_is_occluded(WhichTree tree, bool is_occluded) {
     is_occluded_[tree] = is_occluded;
   }
@@ -83,10 +86,10 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     }
   }
 
-  void MarkRequiredForActivation();
-
-  bool required_for_activation() const {
-    return priority_[PENDING_TREE].required_for_activation;
+  // TODO(vmpstr): Move this to the iterators.
+  bool required_for_activation() const { return required_for_activation_; }
+  void set_required_for_activation(bool is_required) {
+    required_for_activation_ = is_required;
   }
 
   bool use_picture_analysis() const {
@@ -94,6 +97,11 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   }
 
   bool HasResources() const { return managed_state_.draw_info.has_resource(); }
+  bool NeedsRaster() const {
+    return managed_state_.draw_info.mode() ==
+               ManagedTileState::DrawInfo::PICTURE_PILE_MODE ||
+           !managed_state_.draw_info.IsReadyToDraw();
+  }
 
   void AsValueInto(base::debug::TracedValue* dict) const;
 
@@ -125,6 +133,13 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   size_t GPUMemoryUsageInBytes() const;
 
   gfx::Size size() const { return size_; }
+
+  void set_tiling_index(int i, int j) {
+    tiling_i_index_ = i;
+    tiling_j_index_ = j;
+  }
+  int tiling_i_index() const { return tiling_i_index_; }
+  int tiling_j_index() const { return tiling_j_index_; }
 
  private:
   friend class TileManager;
@@ -162,6 +177,9 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   int source_frame_number_;
   int flags_;
   bool is_shared_;
+  int tiling_i_index_;
+  int tiling_j_index_;
+  bool required_for_activation_;
 
   Id id_;
   static Id s_next_id_;

@@ -218,7 +218,14 @@ Tile* PictureLayerTilingSet::CoverageIterator::operator*() const {
   return *tiling_iter_;
 }
 
-PictureLayerTiling* PictureLayerTilingSet::CoverageIterator::CurrentTiling() {
+TileResolution PictureLayerTilingSet::CoverageIterator::resolution() const {
+  const PictureLayerTiling* tiling = CurrentTiling();
+  DCHECK(tiling);
+  return tiling->resolution();
+}
+
+PictureLayerTiling* PictureLayerTilingSet::CoverageIterator::CurrentTiling()
+    const {
   if (current_tiling_ < 0)
     return NULL;
   if (static_cast<size_t>(current_tiling_) >= set_->tilings_.size())
@@ -305,16 +312,6 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
 PictureLayerTilingSet::CoverageIterator::operator bool() const {
   return current_tiling_ < static_cast<int>(set_->tilings_.size()) ||
       region_iter_.has_rect();
-}
-
-void PictureLayerTilingSet::DidBecomeActive() {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->DidBecomeActive();
-}
-
-void PictureLayerTilingSet::DidBecomeRecycled() {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->DidBecomeRecycled();
 }
 
 void PictureLayerTilingSet::AsValueInto(base::debug::TracedValue* state) const {

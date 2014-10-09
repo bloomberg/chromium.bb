@@ -50,6 +50,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual float GetSkewportTargetTimeInSeconds() const = 0;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const = 0;
   virtual WhichTree GetTree() const = 0;
+  virtual bool RequiresHighResToDraw() const = 0;
 
  protected:
   virtual ~PictureLayerTilingClient() {}
@@ -69,7 +70,7 @@ class CC_EXPORT PictureLayerTiling {
   class CC_EXPORT TilingRasterTileIterator {
    public:
     TilingRasterTileIterator();
-    TilingRasterTileIterator(PictureLayerTiling* tiling, WhichTree tree);
+    explicit TilingRasterTileIterator(PictureLayerTiling* tiling);
     ~TilingRasterTileIterator();
 
     operator bool() const { return !!current_tile_; }
@@ -101,13 +102,12 @@ class CC_EXPORT PictureLayerTiling {
 
     void AdvancePhase();
     bool TileNeedsRaster(Tile* tile) const {
-      return !tile->is_occluded(tree_) && !tile->IsReadyToDraw();
+      return tile->NeedsRaster() && !tiling_->IsTileOccluded(tile);
     }
 
     PictureLayerTiling* tiling_;
 
     Phase phase_;
-    WhichTree tree_;
 
     Tile* current_tile_;
     TilingData::Iterator visible_iterator_;
@@ -148,6 +148,9 @@ class CC_EXPORT PictureLayerTiling {
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }
   TileResolution resolution() const { return resolution_; }
+  void set_can_require_tiles_for_activation(bool can_require_tiles) {
+    can_require_tiles_for_activation_ = can_require_tiles;
+  }
 
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
@@ -167,10 +170,14 @@ class CC_EXPORT PictureLayerTiling {
 
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> all_tiles;
-    for (TileMap::const_iterator it = tiles_.begin();
-         it != tiles_.end(); ++it)
+    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
       all_tiles.push_back(it->second.get());
     return all_tiles;
+  }
+
+  void UpdateAllTilePrioritiesForTesting() {
+    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+      UpdateTileAndTwinPriority(it->second.get());
   }
 
   std::vector<scoped_refptr<Tile> > AllRefTilesForTesting() const {
@@ -180,9 +187,21 @@ class CC_EXPORT PictureLayerTiling {
     return all_tiles;
   }
 
+  void SetAllTilesOccludedForTesting() {
+    gfx::Rect viewport_in_layer_space =
+        ScaleToEnclosingRect(current_visible_rect_, 1.0f / contents_scale_);
+    current_occlusion_in_layer_space_ =
+        Occlusion(gfx::Transform(),
+                  SimpleEnclosedRegion(viewport_in_layer_space),
+                  SimpleEnclosedRegion(viewport_in_layer_space));
+  }
+
   const gfx::Rect& GetCurrentVisibleRectForTesting() const {
     return current_visible_rect_;
   }
+
+  bool IsTileOccluded(const Tile* tile) const;
+  bool IsTileRequiredForActivation(const Tile* tile) const;
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
@@ -235,23 +254,11 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset();
 
-  void UpdateTilePriorities(WhichTree tree,
-                            const gfx::Rect& viewport_in_layer_space,
-                            float ideal_contents_scale,
-                            double current_frame_time_in_seconds,
-                            const Occlusion& occlusion_in_layer_space);
-
-  // Copies the src_tree priority into the dst_tree priority for all tiles.
-  // The src_tree priority is reset to the lowest priority possible.  This
-  // also updates the pile on each tile to be the current client's pile.
-  void DidBecomeActive();
-
-  // Resets the active priority for all tiles in a tiling, when an active
-  // tiling is becoming recycled. This may include some tiles which are
-  // not in the the pending tiling (due to invalidations). This must
-  // be called before DidBecomeActive, as it resets the active priority
-  // while DidBecomeActive promotes pending priority on a similar set of tiles.
-  void DidBecomeRecycled();
+  void ComputeTilePriorityRects(WhichTree tree,
+                                const gfx::Rect& viewport_in_layer_space,
+                                float ideal_contents_scale,
+                                double current_frame_time_in_seconds,
+                                const Occlusion& occlusion_in_layer_space);
 
   bool NeedsUpdateForFrameAtTime(double frame_time_in_seconds) {
     return frame_time_in_seconds != last_impl_frame_time_in_seconds_;
@@ -315,6 +322,9 @@ class CC_EXPORT PictureLayerTiling {
   void DoInvalidate(const Region& layer_region,
                     bool recreate_invalidated_tiles);
 
+  void UpdateTileAndTwinPriority(Tile* tile) const;
+  void UpdateTilePriority(Tile* tile) const;
+
   // Given properties.
   float contents_scale_;
   gfx::Size layer_bounds_;
@@ -329,6 +339,9 @@ class CC_EXPORT PictureLayerTiling {
   // State saved for computing velocities based upon finite differences.
   double last_impl_frame_time_in_seconds_;
   gfx::Rect last_visible_rect_in_content_space_;
+  float content_to_screen_scale_;
+
+  bool can_require_tiles_for_activation_;
 
   // Iteration rects in content space
   gfx::Rect current_visible_rect_;
@@ -340,6 +353,8 @@ class CC_EXPORT PictureLayerTiling {
   bool has_skewport_rect_tiles_;
   bool has_soon_border_rect_tiles_;
   bool has_eventually_rect_tiles_;
+
+  Occlusion current_occlusion_in_layer_space_;
 
   // TODO(reveman): Remove this in favour of an array of eviction_tiles_ when we
   // change all enums to have a consistent way of getting the count/last

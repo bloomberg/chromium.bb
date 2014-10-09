@@ -68,18 +68,19 @@ class PictureLayerTilingPerfTest : public testing::Test {
         "invalidation", "", test_name, timer_.LapsPerSecond(), "runs/s", true);
   }
 
-  void RunUpdateTilePrioritiesStationaryTest(const std::string& test_name,
-                                             const gfx::Transform& transform) {
+  void RunComputeTilePriorityRectsStationaryTest(
+      const std::string& test_name,
+      const gfx::Transform& transform) {
     gfx::Rect viewport_rect(0, 0, 1024, 768);
 
     timer_.Reset();
     do {
-      picture_layer_tiling_->UpdateTilePriorities(
+      picture_layer_tiling_->ComputeTilePriorityRects(
           PENDING_TREE, viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("update_tile_priorities_stationary",
+    perf_test::PrintResult("compute_tile_priority_rects_stationary",
                            "",
                            test_name,
                            timer_.LapsPerSecond(),
@@ -87,8 +88,9 @@ class PictureLayerTilingPerfTest : public testing::Test {
                            true);
   }
 
-  void RunUpdateTilePrioritiesScrollingTest(const std::string& test_name,
-                                            const gfx::Transform& transform) {
+  void RunComputeTilePriorityRectsScrollingTest(
+      const std::string& test_name,
+      const gfx::Transform& transform) {
     gfx::Size viewport_size(1024, 768);
     gfx::Rect viewport_rect(viewport_size);
     int xoffsets[] = {10, 0, -10, 0};
@@ -99,7 +101,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      picture_layer_tiling_->UpdateTilePriorities(
+      picture_layer_tiling_->ComputeTilePriorityRects(
           PENDING_TREE, viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
 
       viewport_rect = gfx::Rect(viewport_rect.x() + xoffsets[offsetIndex],
@@ -114,7 +116,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("update_tile_priorities_scrolling",
+    perf_test::PrintResult("compute_tile_priority_rects_scrolling",
                            "",
                            test_name,
                            timer_.LapsPerSecond(),
@@ -128,13 +130,13 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->UpdateTilePriorities(
+    picture_layer_tiling_->ComputeTilePriorityRects(
         ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
 
     timer_.Reset();
     do {
       PictureLayerTiling::TilingRasterTileIterator it(
-          picture_layer_tiling_.get(), ACTIVE_TREE);
+          picture_layer_tiling_.get());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -153,14 +155,14 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->UpdateTilePriorities(
+    picture_layer_tiling_->ComputeTilePriorityRects(
         ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
 
     timer_.Reset();
     do {
       int count = num_tiles;
       PictureLayerTiling::TilingRasterTileIterator it(
-          picture_layer_tiling_.get(), ACTIVE_TREE);
+          picture_layer_tiling_.get());
       while (count--) {
         ASSERT_TRUE(it) << "count: " << count;
         ASSERT_TRUE(*it != NULL) << "count: " << count;
@@ -183,7 +185,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->UpdateTilePriorities(
+    picture_layer_tiling_->ComputeTilePriorityRects(
         ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
 
     timer_.Reset();
@@ -215,7 +217,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->UpdateTilePriorities(
+    picture_layer_tiling_->ComputeTilePriorityRects(
         ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
 
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
@@ -295,22 +297,22 @@ TEST_F(PictureLayerTilingPerfTest, Invalidate) {
 
 #if defined(OS_ANDROID)
 // TODO(vmpstr): Investigate why this is noisy (crbug.com/310220).
-TEST_F(PictureLayerTilingPerfTest, DISABLED_UpdateTilePriorities) {
+TEST_F(PictureLayerTilingPerfTest, DISABLED_ComputeTilePriorityRects) {
 #else
-TEST_F(PictureLayerTilingPerfTest, UpdateTilePriorities) {
+TEST_F(PictureLayerTilingPerfTest, ComputeTilePriorityRects) {
 #endif  // defined(OS_ANDROID)
   gfx::Transform transform;
 
-  RunUpdateTilePrioritiesStationaryTest("no_transform", transform);
-  RunUpdateTilePrioritiesScrollingTest("no_transform", transform);
+  RunComputeTilePriorityRectsStationaryTest("no_transform", transform);
+  RunComputeTilePriorityRectsScrollingTest("no_transform", transform);
 
   transform.Rotate(10);
-  RunUpdateTilePrioritiesStationaryTest("rotation", transform);
-  RunUpdateTilePrioritiesScrollingTest("rotation", transform);
+  RunComputeTilePriorityRectsStationaryTest("rotation", transform);
+  RunComputeTilePriorityRectsScrollingTest("rotation", transform);
 
   transform.ApplyPerspectiveDepth(10);
-  RunUpdateTilePrioritiesStationaryTest("perspective", transform);
-  RunUpdateTilePrioritiesScrollingTest("perspective", transform);
+  RunComputeTilePriorityRectsStationaryTest("perspective", transform);
+  RunComputeTilePriorityRectsScrollingTest("perspective", transform);
 }
 
 TEST_F(PictureLayerTilingPerfTest, TilingRasterTileIteratorConstruct) {

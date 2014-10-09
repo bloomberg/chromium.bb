@@ -55,7 +55,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;
-  using PictureLayerImpl::MarkVisibleResourcesAsRequired;
   using PictureLayerImpl::DoPostCommitInitializationIfNeeded;
   using PictureLayerImpl::MinimumContentsScale;
   using PictureLayerImpl::GetViewportForTilePriorityInContentSpace;
@@ -110,6 +109,10 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void reset_release_resources_count() { release_resources_count_ = 0; }
 
   virtual void ReleaseResources() override;
+
+  bool only_used_low_res_last_append_quads() const {
+    return only_used_low_res_last_append_quads_;
+  }
 
  protected:
   FakePictureLayerImpl(
