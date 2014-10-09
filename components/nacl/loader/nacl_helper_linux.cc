@@ -6,6 +6,13 @@
 
 #include "components/nacl/loader/nacl_helper_linux.h"
 
+// Exclude most of code in this file for nacl_helper_nonsfi temporarily.
+// TODO(hidehiko): Enable this code path as dependencies become ready.
+// Note that the code path is still used for nacl_helper in Non-SFI mode
+// until switching (crbug.com/358465), since __native_client_nonsfi__ is
+// the macro defined only in PNaCl toolchain for Non-SFI bias.
+#if !defined(__native_client_nonsfi__)
+
 #include <errno.h>
 #include <fcntl.h>
 #include <link.h>
@@ -394,8 +401,11 @@ const char* __asan_default_options() {
   return kAsanDefaultOptionsNaCl;
 }
 #endif
+#endif  // !defined(__native_client_nonsfi__)
 
 int main(int argc, char* argv[]) {
+  // Now do nothing in main for nacl_helper_nonsfi.
+#if !defined(__native_client_nonsfi__)
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
@@ -449,4 +459,5 @@ int main(int argc, char* argv[]) {
     DCHECK(request_handled);
   }
   NOTREACHED();
+#endif  // !defined(__native_client_nonsfi__)
 }

@@ -468,7 +468,8 @@
               'dependencies': [
                 '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
                 '../components/nacl.gyp:nacl_helper',
-                ],
+                '../components/nacl_nonsfi.gyp:nacl_helper_nonsfi',
+              ],
             }],
           ],
           'dependencies': [
