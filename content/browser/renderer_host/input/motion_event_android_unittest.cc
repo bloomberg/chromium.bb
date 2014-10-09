@@ -45,7 +45,7 @@ TEST(MotionEventAndroidTest, Constructor) {
   float touch_minor0 = 1.2f;
   float touch_minor1 = 2.1f;
   float orientation0 = 0.1f;
-  float orientation1 = std::numeric_limits<float>::quiet_NaN();
+  float orientation1 = -0.1f;
   int p0 = 1;
   int p1 = 2;
   int pointer_count = 2;
@@ -98,7 +98,7 @@ TEST(MotionEventAndroidTest, Constructor) {
   EXPECT_EQ(touch_minor0 * kPixToDip, event.GetTouchMinor(0));
   EXPECT_EQ(touch_minor1 * kPixToDip, event.GetTouchMinor(1));
   EXPECT_EQ(orientation0, event.GetOrientation(0));
-  EXPECT_EQ(0.f, event.GetOrientation(1));
+  EXPECT_EQ(orientation1, event.GetOrientation(1));
   EXPECT_EQ(p0, event.GetPointerId(0));
   EXPECT_EQ(p1, event.GetPointerId(1));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
@@ -204,6 +204,47 @@ TEST(MotionEventAndroidTest, Cancel) {
   EXPECT_EQ(static_cast<size_t>(pointer_count),
             cancel_event->GetPointerCount());
   EXPECT_EQ(0U, cancel_event->GetHistorySize());
+}
+
+TEST(MotionEventAndroidTest, InvalidOrientationsSanitized) {
+  base::TimeTicks event_time;
+  int pointer_count = 2;
+  float orientation0 = 1e10f;
+  float orientation1 = std::numeric_limits<float>::quiet_NaN();
+  base::android::ScopedJavaLocalRef<jobject> base_event_obj =
+      MotionEventAndroid::Obtain(
+          event_time, event_time, MotionEvent::ACTION_DOWN, 0, 0);
+  ASSERT_TRUE(base_event_obj.obj());
+
+  MotionEventAndroid event(kPixToDip,
+                           base::android::AttachCurrentThread(),
+                           base_event_obj.obj(),
+                           0,
+                           kAndroidActionDown,
+                           pointer_count,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           orientation0,
+                           orientation1,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+
+  EXPECT_EQ(0.f, event.GetOrientation(0));
+  EXPECT_EQ(0.f, event.GetOrientation(1));
 }
 
 }  // namespace content

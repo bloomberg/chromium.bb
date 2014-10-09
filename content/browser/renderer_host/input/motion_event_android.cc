@@ -116,7 +116,16 @@ base::TimeTicks FromAndroidTime(int64 time_ms) {
 }
 
 float ToValidFloat(float x) {
-  return base::IsNaN(x) ? 0.f : x;
+  if (base::IsNaN(x))
+    return 0.f;
+
+  // Wildly large orientation values have been observed in the wild after device
+  // rotation. There's not much we can do in that case other than simply
+  // sanitize results beyond an absurd and arbitrary threshold.
+  if (std::abs(x) > 1e5f)
+    return 0.f;
+
+  return x;
 }
 
 }  // namespace

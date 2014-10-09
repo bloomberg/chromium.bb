@@ -210,11 +210,12 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
   float major_radius = event.GetTouchMajor(pointer_index) / 2.f;
   float minor_radius = event.GetTouchMinor(pointer_index) / 2.f;
   float orientation_deg = event.GetOrientation(pointer_index) * 180.f / M_PI;
-  DCHECK_GE(major_radius, 0) << "Unexpected touch major < 0";
-  DCHECK_GE(minor_radius, 0) << "Unexpected touch minor < 0";
-  DCHECK_GE(major_radius, minor_radius) << "Unexpected major/minor touch radii";
-  DCHECK(-90 <= orientation_deg && orientation_deg <= 90)
-      << "Unexpected touch orientation angle";
+  DCHECK_GE(major_radius, 0);
+  DCHECK_GE(minor_radius, 0);
+  DCHECK_GE(major_radius, minor_radius);
+  // Allow a small bound tolerance to account for floating point conversion.
+  DCHECK_GT(orientation_deg, -90.01f);
+  DCHECK_LT(orientation_deg, 90.01f);
   if (orientation_deg >= 0) {
     // The case orientation_deg == 0 is handled here on purpose: although the
     // 'else' block is equivalent in this case, we want to pass the 0 value

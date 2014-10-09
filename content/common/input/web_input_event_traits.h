@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
 #define CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "content/common/input/scoped_web_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -15,6 +17,7 @@ namespace content {
 class CONTENT_EXPORT WebInputEventTraits {
  public:
   static const char* GetName(blink::WebInputEvent::Type type);
+  static std::string ToString(const blink::WebInputEvent& event);
   static size_t GetSize(blink::WebInputEvent::Type type);
   static ScopedWebInputEvent Clone(const blink::WebInputEvent& event);
   static void Delete(blink::WebInputEvent* event);

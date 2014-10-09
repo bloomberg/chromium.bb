@@ -11,6 +11,9 @@
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using std::numeric_limits;
@@ -157,6 +160,28 @@ TEST_F(WebInputEventTraitsTest, PinchEventCoalescing) {
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch1));
   WebInputEventTraits::Coalesce(pinch0, &pinch1);
   EXPECT_EQ(numeric_limits<float>::max(), pinch1.data.pinchUpdate.scale);
+}
+
+// Very basic smoke test to ensure stringification doesn't explode.
+TEST_F(WebInputEventTraitsTest, ToString) {
+  WebKeyboardEvent key;
+  key.type = WebInputEvent::RawKeyDown;
+  EXPECT_FALSE(WebInputEventTraits::ToString(key).empty());
+
+  WebMouseEvent mouse;
+  mouse.type = WebInputEvent::MouseMove;
+  EXPECT_FALSE(WebInputEventTraits::ToString(mouse).empty());
+
+  WebMouseEvent mouse_wheel;
+  mouse_wheel.type = WebInputEvent::MouseWheel;
+  EXPECT_FALSE(WebInputEventTraits::ToString(mouse_wheel).empty());
+
+  WebGestureEvent gesture =
+      CreateGesture(WebInputEvent::GesturePinchBegin, 1, 1);
+  EXPECT_FALSE(WebInputEventTraits::ToString(gesture).empty());
+
+  WebTouchEvent touch = CreateTouch(WebInputEvent::TouchStart);
+  EXPECT_FALSE(WebInputEventTraits::ToString(touch).empty());
 }
 
 }  // namespace

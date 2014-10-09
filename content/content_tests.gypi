@@ -559,6 +559,7 @@
         'browser/renderer_host/input/touch_event_queue_unittest.cc',
         'browser/renderer_host/input/touch_handle_unittest.cc',
         'browser/renderer_host/input/touch_selection_controller_unittest.cc',
+        'browser/renderer_host/input/web_input_event_util_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
         'browser/renderer_host/media/device_request_message_filter_unittest.cc',
