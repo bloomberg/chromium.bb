@@ -17,6 +17,7 @@
 namespace content {
 
 const char kCreateSessionUMAName[] = "CreateSession";
+const char kLoadSessionUMAName[] = "LoadSession";
 
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
@@ -64,6 +65,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     size_t init_data_length,
     const blink::WebString& session_type,
     blink::WebContentDecryptionModuleResult result) {
+  DCHECK(web_session_id_.empty());
 
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII MIME types.
@@ -92,6 +94,22 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
       scoped_ptr<media::NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result,
           adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName,
+          base::Bind(
+              &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
+              base::Unretained(this)))));
+}
+
+void WebContentDecryptionModuleSessionImpl::load(
+    const blink::WebString& session_id,
+    blink::WebContentDecryptionModuleResult result) {
+  DCHECK(!session_id.isEmpty());
+  DCHECK(web_session_id_.empty());
+
+  adapter_->LoadSession(
+      base::UTF16ToASCII(session_id),
+      scoped_ptr<media::NewSessionCdmPromise>(new NewSessionCdmResultPromise(
+          result,
+          adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
               base::Unretained(this)))));

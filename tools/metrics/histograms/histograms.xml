@@ -11678,6 +11678,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>KeyError event count using the Clear Key key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.ClearKey.LoadSession" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Result of Clear Key loadSession promises handled by Chromium code.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.NeedKey">
   <owner>xhwang@chromium.org</owner>
   <summary>EME NeedKey event count.</summary>
@@ -11729,6 +11736,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>KeyError event count using an unknown key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Unknown.LoadSession" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Result of loadSession promises for unknown key systems promises that were
+    handled by Chromium code.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Unknown.SystemCode" units="system code">
   <owner>xhwang@chromium.org</owner>
   <summary>System code count using an unknown key system.</summary>
@@ -11770,6 +11785,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Media.EME.Widevine.KeyError" enum="MediaKeyError">
   <owner>xhwang@chromium.org</owner>
   <summary>KeyError event count using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.LoadSession" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Result of Widevine loadSession promises handled by Chromium code.
+  </summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.SystemCode" units="system code">

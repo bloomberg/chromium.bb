@@ -99,6 +99,12 @@ void CdmSessionAdapter::InitializeNewSession(
                              promise.Pass());
 }
 
+void CdmSessionAdapter::LoadSession(
+    const std::string& web_session_id,
+    scoped_ptr<media::NewSessionCdmPromise> promise) {
+  media_keys_->LoadSession(web_session_id, promise.Pass());
+}
+
 void CdmSessionAdapter::UpdateSession(
     const std::string& web_session_id,
     const uint8* response,
