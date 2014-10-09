@@ -23,6 +23,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_client.h"
@@ -99,7 +100,14 @@ void AthenaContainerLayoutManager::OnWindowResized() {
 }
 
 void AthenaContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  if (!instance->window_list_provider_->IsWindowInList(child))
+  // TODO(oshima): Split view modes needs to take the transient window into
+  // account.
+  if (wm::GetTransientParent(child)) {
+    wm::TransientWindowManager::Get(child)
+        ->set_parent_controls_visibility(true);
+  }
+
+  if (!instance->window_list_provider_->IsValidWindow(child))
     return;
 
   if (instance->split_view_controller_->IsSplitViewModeActive() &&
@@ -240,10 +248,22 @@ void WindowManagerImpl::SetInOverview(bool active) {
 
 void WindowManagerImpl::InstallAccelerators() {
   const AcceleratorData accelerator_data[] = {
-      {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, CMD_TOGGLE_OVERVIEW,
+      {TRIGGER_ON_PRESS,
+       ui::VKEY_F6,
+       ui::EF_NONE,
+       CMD_TOGGLE_OVERVIEW,
        AF_NONE},
-      {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_CONTROL_DOWN,
-       CMD_TOGGLE_SPLIT_VIEW, AF_NONE},
+      {TRIGGER_ON_PRESS,
+       ui::VKEY_F6,
+       ui::EF_CONTROL_DOWN,
+       CMD_TOGGLE_SPLIT_VIEW,
+       AF_NONE},
+      // Debug
+      {TRIGGER_ON_PRESS,
+       ui::VKEY_6,
+       ui::EF_NONE,
+       CMD_TOGGLE_OVERVIEW,
+       AF_NONE | AF_DEBUG},
   };
   AcceleratorManager::Get()->RegisterAccelerators(
       accelerator_data, arraysize(accelerator_data), this);

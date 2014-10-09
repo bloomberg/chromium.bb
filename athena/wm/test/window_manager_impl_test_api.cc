@@ -4,6 +4,7 @@
 
 #include "athena/wm/test/window_manager_impl_test_api.h"
 
+#include "athena/wm/window_list_provider_impl.h"
 #include "athena/wm/window_manager_impl.h"
 
 namespace athena {

@@ -27,7 +27,7 @@ class WindowManagerImplTestApi;
 
 class BezelController;
 class SplitViewController;
-class WindowListProvider;
+class WindowListProviderImpl;
 class WindowManagerObserver;
 
 class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
@@ -86,7 +86,7 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
   virtual void OnTitleDragCanceled(aura::Window* window) override;
 
   scoped_ptr<aura::Window> container_;
-  scoped_ptr<WindowListProvider> window_list_provider_;
+  scoped_ptr<WindowListProviderImpl> window_list_provider_;
   scoped_ptr<WindowOverviewMode> overview_;
   scoped_ptr<BezelController> bezel_controller_;
   scoped_ptr<SplitViewController> split_view_controller_;

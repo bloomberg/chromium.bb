@@ -29,10 +29,6 @@ class ATHENA_EXPORT WindowListProvider {
   // Returns true if the |window| is part of the list.
   virtual bool IsWindowInList(aura::Window* window) const = 0;
 
-  // Returns true if the given window is a window which can be handled by the
-  // WindowListProvider.
-  virtual bool IsValidWindow(aura::Window* window) const = 0;
-
   // Stacks a given |window| in direct front of a |reference_window|.
   // Note: The |window| and |reference_window| has to be in the list already.
   virtual void StackWindowFrontOf(aura::Window* window,

@@ -6,41 +6,50 @@
 
 #include <algorithm>
 
+#include "athena/athena_export.h"
 #include "athena/wm/public/window_list_provider_observer.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
+#include "ui/wm/core/transient_window_manager.h"
+#include "ui/wm/core/window_util.h"
+
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ATHENA_EXPORT, bool);
 
 namespace athena {
+namespace {
+
+// Used to keep track of which window should be managed. This is necessary
+// as the necessary informatino used in IsValidWindow (transient parent
+// for example) may not available during destruction.
+DEFINE_WINDOW_PROPERTY_KEY(bool, kManagedKey, false);
+
+}  // namespace
 
 WindowListProviderImpl::WindowListProviderImpl(aura::Window* container)
     : container_(container) {
   CHECK(container_);
   container_->AddObserver(this);
   RecreateWindowList();
-  std::for_each(window_list_.begin(), window_list_.end(),
-                std::bind2nd(std::mem_fun(&aura::Window::AddObserver),
-                             this));
+  for (auto* window : window_list_)
+    window->AddObserver(this);
 }
 
 WindowListProviderImpl::~WindowListProviderImpl() {
   // Remove all remaining window observers.
-  for (aura::Window::Windows::const_iterator iter = window_list_.begin();
-       iter != window_list_.end();
-       ++iter) {
-    CHECK(IsValidWindow(*iter));
-    (*iter)->RemoveObserver(this);
+  for (auto* window : window_list_) {
+    CHECK(window->GetProperty(kManagedKey));
+    window->RemoveObserver(this);
   }
   container_->RemoveObserver(this);
 }
 
-void WindowListProviderImpl::RecreateWindowList() {
-  window_list_.clear();
-  const aura::Window::Windows& container_children = container_->children();
-  for (aura::Window::Windows::const_iterator iter = container_children.begin();
-       iter != container_children.end();
-       ++iter) {
-    if (IsValidWindow(*iter))
-      window_list_.push_back(*iter);
-  }
+bool WindowListProviderImpl::IsValidWindow(aura::Window* window) const {
+  if (wm::GetTransientParent(window))
+    return false;
+
+  // TODO(oshima): crbug.com/413912.
+  return window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+         window->type() == ui::wm::WINDOW_TYPE_PANEL;
 }
 
 void WindowListProviderImpl::AddObserver(WindowListProviderObserver* observer) {
@@ -57,13 +66,8 @@ const aura::Window::Windows& WindowListProviderImpl::GetWindowList() const {
 }
 
 bool WindowListProviderImpl::IsWindowInList(aura::Window* window) const {
+  // TODO(oshima): Use kManagedKey specify which windows are managed.
   return window->parent() == container_ && IsValidWindow(window);
-}
-
-bool WindowListProviderImpl::IsValidWindow(aura::Window* window) const {
-  // TODO(oshima): crbug.com/413912
-  return window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-      window->type() == ui::wm::WINDOW_TYPE_PANEL;
 }
 
 void WindowListProviderImpl::StackWindowFrontOf(
@@ -84,16 +88,26 @@ void WindowListProviderImpl::StackWindowBehindTo(
   container_->StackChildBelow(window, reference_window);
 }
 
+void WindowListProviderImpl::RecreateWindowList() {
+  window_list_.clear();
+  for (auto* window : container_->children()) {
+    if (window->GetProperty(kManagedKey))
+      window_list_.push_back(window);
+  }
+}
+
 void WindowListProviderImpl::OnWindowAdded(aura::Window* window) {
   if (!IsValidWindow(window) || window->parent() != container_)
     return;
+
+  window->SetProperty(kManagedKey, true);
   RecreateWindowList();
   DCHECK(IsWindowInList(window));
   window->AddObserver(this);
 }
 
 void WindowListProviderImpl::OnWillRemoveWindow(aura::Window* window) {
-  if (!IsValidWindow(window) || window->parent() != container_)
+  if (!window->GetProperty(kManagedKey))
     return;
   DCHECK(IsWindowInList(window));
   aura::Window::Windows::iterator find = std::find(window_list_.begin(),

@@ -6,6 +6,7 @@
 #define ATHENA_WM_WINDOW_LIST_PROVIDER_IMPL_H_
 
 #include "athena/wm/public/window_list_provider.h"
+#include "base/gtest_prod_util.h"
 #include "ui/aura/window_observer.h"
 
 namespace athena {
@@ -20,19 +21,20 @@ class ATHENA_EXPORT WindowListProviderImpl : public WindowListProvider,
   explicit WindowListProviderImpl(aura::Window* container);
   virtual ~WindowListProviderImpl();
 
- private:
-  void RecreateWindowList();
+  bool IsValidWindow(aura::Window* window) const;
 
   // WindowListProvider:
   virtual void AddObserver(WindowListProviderObserver* observer) override;
   virtual void RemoveObserver(WindowListProviderObserver* observer) override;
   virtual const aura::Window::Windows& GetWindowList() const override;
   virtual bool IsWindowInList(aura::Window* window) const override;
-  virtual bool IsValidWindow(aura::Window* window) const override;
   virtual void StackWindowFrontOf(aura::Window* window,
                                   aura::Window*reference_window) override;
   virtual void StackWindowBehindTo(aura::Window* window,
                                    aura::Window*reference_window) override;
+
+ private:
+  void RecreateWindowList();
 
   // aura::WindowObserver:
   virtual void OnWindowAdded(aura::Window* new_window) override;

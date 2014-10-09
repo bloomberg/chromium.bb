@@ -4,8 +4,7 @@
 
 #include "athena/wm/window_overview_mode.h"
 
-#include <algorithm>
-#include <functional>
+#include <complex>
 #include <vector>
 
 #include "athena/wm/overview_toolbar.h"
@@ -13,7 +12,7 @@
 #include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/split_view_controller.h"
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -31,10 +30,9 @@
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace {
-
-const float kOverviewDefaultScale = 0.75f;
 
 struct WindowOverviewState {
   // The current overview state of the window. 0.f means the window is at the
@@ -53,13 +51,16 @@ struct WindowOverviewState {
 
 }  // namespace
 
-DECLARE_WINDOW_PROPERTY_TYPE(WindowOverviewState*)
+DECLARE_WINDOW_PROPERTY_TYPE(WindowOverviewState*);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowOverviewState,
                                  kWindowOverviewState,
-                                 NULL)
+                                 NULL);
+
 namespace athena {
 
 namespace {
+
+const float kOverviewDefaultScale = 0.75f;
 
 gfx::Transform GetTransformForSplitWindow(aura::Window* window, float scale) {
   const float kScrollWindowPositionInOverview = 0.65f;
@@ -99,14 +100,102 @@ gfx::Transform GetTransformForState(aura::Window* window,
   return transform;
 }
 
-// Sets the progress-state for the window in the overview mode.
-void SetWindowProgress(aura::Window* window, float progress) {
-  WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
-  state->progress = progress;
+// A utility class used to set the transform/opacity to the window and
+// its transient children.
+class TransientGroupSetter {
+ public:
+  explicit TransientGroupSetter(aura::Window* window) : window_(window) {
+  }
+  ~TransientGroupSetter() {}
 
-  gfx::Transform transform = GetTransformForState(window, state);
-  window->SetTransform(transform);
-}
+  // Aborts all animations including its transient children.
+  void AbortAllAnimations() {
+    window_->layer()->GetAnimator()->AbortAllAnimations();
+    for (auto* transient_child : wm::GetTransientChildren(window_))
+      transient_child->layer()->GetAnimator()->AbortAllAnimations();
+  }
+
+  // Applys transform to the window and its transient children.
+  // Transient children gets a tranfrorm with the offset relateive
+  // it its transient parent.
+  void SetTransform(const gfx::Transform& transform) {
+    window_->SetTransform(transform);
+    for (auto* transient_child : wm::GetTransientChildren(window_)) {
+      gfx::Rect window_bounds = window_->bounds();
+      gfx::Rect child_bounds = transient_child->bounds();
+      gfx::Transform transient_window_transform(TranslateTransformOrigin(
+          child_bounds.origin() - window_bounds.origin(), transform));
+      transient_child->SetTransform(transient_window_transform);
+    }
+  }
+
+  // Sets the opacity to the window and its transient children.
+  void SetOpacity(float opacity) {
+    window_->layer()->SetOpacity(opacity);
+    for (auto* transient_child : wm::GetTransientChildren(window_)) {
+      transient_child->layer()->SetOpacity(opacity);
+    }
+  }
+
+  // Apply the transform with the overview scroll |progress|.
+  void SetWindowProgress(float progress) {
+    WindowOverviewState* state = window_->GetProperty(kWindowOverviewState);
+    state->progress = progress;
+
+    SetTransform(GetTransformForState(window_, state));
+  }
+
+ private:
+  static gfx::Transform TranslateTransformOrigin(
+      const gfx::Vector2d& new_origin,
+      const gfx::Transform& transform) {
+    gfx::Transform result;
+    result.Translate(-new_origin.x(), -new_origin.y());
+    result.PreconcatTransform(transform);
+    result.Translate(new_origin.x(), new_origin.y());
+    return result;
+  }
+
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransientGroupSetter);
+};
+
+// TransientGroupSetter with animation.
+class AnimateTransientGroupSetter : public TransientGroupSetter {
+ public:
+  explicit AnimateTransientGroupSetter(aura::Window* window)
+      : TransientGroupSetter(window) {
+    animation_settings_.push_back(CreateScopedLayerAnimationSettings(window));
+    for (auto* transient_child : wm::GetTransientChildren(window)) {
+      animation_settings_.push_back(
+          CreateScopedLayerAnimationSettings(transient_child));
+    }
+  }
+  ~AnimateTransientGroupSetter() {}
+
+  ui::ScopedLayerAnimationSettings* GetMainWindowAnimationSettings() {
+    CHECK(animation_settings_.size());
+    return animation_settings_[0];
+  }
+
+ private:
+  static ui::ScopedLayerAnimationSettings* CreateScopedLayerAnimationSettings(
+      aura::Window* window) {
+    const int kTransitionMs = 250;
+
+    ui::ScopedLayerAnimationSettings* settings =
+        new ui::ScopedLayerAnimationSettings(window->layer()->GetAnimator());
+    settings->SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings->SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kTransitionMs));
+    return settings;
+  }
+
+  ScopedVector<ui::ScopedLayerAnimationSettings> animation_settings_;
+  DISALLOW_COPY_AND_ASSIGN(AnimateTransientGroupSetter);
+};
 
 void HideWindowIfNotVisible(aura::Window* window,
                             SplitViewController* split_view_controller) {
@@ -115,7 +204,9 @@ void HideWindowIfNotVisible(aura::Window* window,
     should_hide = window != split_view_controller->left_window() &&
                   window != split_view_controller->right_window();
   } else {
-    should_hide = !wm::IsActiveWindow(window);
+    aura::Window* active = aura::client::GetActivationClient(
+                               window->GetRootWindow())->GetActiveWindow();
+    should_hide = active != window && wm::GetTransientParent(active) != window;
   }
   if (should_hide)
     window->Hide();
@@ -126,18 +217,15 @@ void RestoreWindowState(aura::Window* window,
                         SplitViewController* split_view_controller) {
   window->ClearProperty(kWindowOverviewState);
 
-  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(250));
+  AnimateTransientGroupSetter setter(window);
 
-  settings.AddObserver(new ui::ClosureAnimationObserver(
-      base::Bind(&HideWindowIfNotVisible, window, split_view_controller)));
+  setter.GetMainWindowAnimationSettings()->AddObserver(
+      new ui::ClosureAnimationObserver(
+          base::Bind(&HideWindowIfNotVisible, window, split_view_controller)));
 
-  window->SetTransform(gfx::Transform());
-
+  setter.SetTransform(gfx::Transform());
   // Reset the window opacity in case the user is dragging a window.
-  window->layer()->SetOpacity(1.0f);
+  setter.SetOpacity(1.0f);
 
   wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
 }
@@ -156,19 +244,17 @@ void TransformSplitWindowScale(aura::Window* window, float scale) {
   gfx::Transform transform = window->layer()->GetTargetTransform();
   if (transform.Scale2d() == gfx::Vector2dF(scale, scale))
     return;
-  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  window->SetTransform(GetTransformForSplitWindow(window, scale));
+  AnimateTransientGroupSetter setter(window);
+  setter.SetTransform(GetTransformForSplitWindow(window, scale));
 }
 
 void AnimateWindowTo(aura::Window* animate_window,
                      aura::Window* target_window) {
-  ui::ScopedLayerAnimationSettings settings(
-      animate_window->layer()->GetAnimator());
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  AnimateTransientGroupSetter setter(animate_window);
+
   WindowOverviewState* target_state =
       target_window->GetProperty(kWindowOverviewState);
-  SetWindowProgress(animate_window, target_state->progress);
+  setter.SetWindowProgress(target_state->progress);
 }
 
 // Always returns the same target.
@@ -231,10 +317,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         window_list_provider_->GetWindowList();
     if (windows.empty())
       return;
-    std::for_each(windows.begin(),
-                  windows.end(),
-                  std::bind2nd(std::ptr_fun(&RestoreWindowState),
-                               split_view_controller_));
+    for (auto* window : windows)
+      RestoreWindowState(window, split_view_controller_);
   }
 
  private:
@@ -314,20 +398,19 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         ++index;
       }
 
-      scoped_refptr<ui::LayerAnimator> animator =
-          window->layer()->GetAnimator();
+      TransientGroupSetter setter(window);
 
       // Unset any in-progress animation.
-      animator->AbortAllAnimations();
+      setter.AbortAllAnimations();
+
+      // Showing transient parent will show the transient children if any.
       window->Show();
-      window->SetTransform(gfx::Transform());
+
+      setter.SetTransform(gfx::Transform());
       // Setup the animation.
       {
-        ui::ScopedLayerAnimationSettings settings(animator);
-        settings.SetPreemptionStrategy(
-            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-        settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(250));
-        SetWindowProgress(window, progress);
+        AnimateTransientGroupSetter setter(window);
+        setter.SetWindowProgress(progress);
       }
     }
   }
@@ -347,7 +430,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         targeter->FindTargetForLocatedEvent(container_, event));
     while (target && target->parent() != container_)
       target = target->parent();
-    return target;
+    aura::Window* transient_parent = wm::GetTransientParent(target);
+    return transient_parent ? transient_parent : target;
   }
 
   // Scroll the window list by |delta_y| amount. |delta_y| is negative when
@@ -369,7 +453,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           // It is possible to scroll |window| up. Scroll it up, and update
           // |delta_y_p| for the next window.
           float apply = delta_y_p * state->progress;
-          SetWindowProgress(window, std::max(0.f, state->progress - apply * 3));
+          TransientGroupSetter setter(window);
+          setter.SetWindowProgress(std::max(0.f, state->progress - apply * 3));
           delta_y_p -= apply;
         }
       }
@@ -385,7 +470,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         if (1.f - state->progress > kEpsilon) {
           // It is possible to scroll |window| down. Scroll it down, and update
           // |delta_y_p| for the next window.
-          SetWindowProgress(window, std::min(1.f, state->progress + delta_y_p));
+          TransientGroupSetter setter(window);
+          setter.SetWindowProgress(std::min(1.f, state->progress + delta_y_p));
           delta_y_p /= 2.f;
         }
       }
@@ -446,7 +532,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     gfx::Transform transform =
         GetTransformForState(dragged_window_, dragged_state);
     transform.Translate(-dragged_distance.x(), 0);
-    dragged_window_->SetTransform(transform);
+    TransientGroupSetter setter(dragged_window_);
+    setter.SetTransform(transform);
 
     // Update the toolbar.
     const int kMinDistanceForActionButtons = 20;
@@ -488,11 +575,11 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
             ? 1
             : gfx::Tween::FloatValueBetween(ratio, kMaxOpacity, kMinOpacity);
     if (animate_opacity) {
-      ui::ScopedLayerAnimationSettings settings(
-          dragged_window_->layer()->GetAnimator());
-      dragged_window_->layer()->SetOpacity(opacity);
+      AnimateTransientGroupSetter setter(dragged_window_);
+      setter.SetOpacity(opacity);
     } else {
-      dragged_window_->layer()->SetOpacity(opacity);
+      TransientGroupSetter setter(dragged_window_);
+      setter.SetOpacity(opacity);
     }
 
     if (split_view_controller_->IsSplitViewModeActive()) {
@@ -525,9 +612,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   void CloseDragWindow(const ui::GestureEvent& gesture) {
     // Animate |dragged_window_| offscreen first, then destroy it.
     {
-      wm::ScopedHidingAnimationSettings settings(dragged_window_);
-      settings.layer_animation_settings()->SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      AnimateTransientGroupSetter setter(dragged_window_);
 
       WindowOverviewState* dragged_state =
           dragged_window_->GetProperty(kWindowOverviewState);
@@ -541,8 +626,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       else
         transform_x = -(transformed_bounds.x() + transformed_bounds.width());
       transform.Translate(transform_x / kOverviewDefaultScale, 0);
-      dragged_window_->SetTransform(transform);
-      dragged_window_->layer()->SetOpacity(kMinOpacity);
+
+      setter.SetOpacity(kMinOpacity);
     }
     delete dragged_window_;
     dragged_window_ = NULL;
@@ -554,13 +639,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         dragged_window_->GetProperty(kWindowOverviewState);
     CHECK(dragged_state);
 
-    ui::ScopedLayerAnimationSettings settings(
-        dragged_window_->layer()->GetAnimator());
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    dragged_window_->SetTransform(
-        GetTransformForState(dragged_window_, dragged_state));
-    dragged_window_->layer()->SetOpacity(1.f);
+    AnimateTransientGroupSetter setter(dragged_window_);
+    setter.SetTransform(GetTransformForState(dragged_window_, dragged_state));
+    setter.SetOpacity(1.0f);
     dragged_window_ = NULL;
   }
 

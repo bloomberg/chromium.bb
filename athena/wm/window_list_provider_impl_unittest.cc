@@ -6,10 +6,14 @@
 
 #include <algorithm>
 
+#include "athena/screen/public/screen_manager.h"
 #include "athena/test/base/athena_test_base.h"
 #include "athena/wm/public/window_list_provider_observer.h"
+#include "athena/wm/public/window_manager.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
@@ -21,11 +25,26 @@ bool AreWindowListsEqual(const aura::Window::Windows& one,
          std::equal(one.begin(), one.end(), two.begin());
 }
 
-scoped_ptr<aura::Window> CreateWindow(aura::WindowDelegate* delegate,
+scoped_ptr<aura::Window> CreateWindow(aura::Window* parent,
+                                      aura::WindowDelegate* delegate,
                                       ui::wm::WindowType window_type) {
   scoped_ptr<aura::Window> window(new aura::Window(delegate));
   window->SetType(window_type);
   window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  if (parent)
+    parent->AddChild(window.get());
+  return window.Pass();
+}
+
+scoped_ptr<aura::Window> CreateTransientWindow(aura::Window* transient_parent,
+                                               aura::WindowDelegate* delegate,
+                                               ui::wm::WindowType window_type) {
+  scoped_ptr<aura::Window> window(new aura::Window(delegate));
+  window->SetType(window_type);
+  window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  wm::AddTransientChild(transient_parent, window.get());
+  aura::client::ParentWindowWithContext(
+      window.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
   return window.Pass();
 }
 
@@ -94,24 +113,27 @@ typedef test::AthenaTestBase WindowListProviderImplTest;
 TEST_F(WindowListProviderImplTest, StackingOrder) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> container(new aura::Window(&delegate));
-  scoped_ptr<aura::Window> first =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> second =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> third =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  container->AddChild(first.get());
-  container->AddChild(second.get());
-  container->AddChild(third.get());
-
   scoped_ptr<WindowListProvider> list_provider(
       new WindowListProviderImpl(container.get()));
+
+  scoped_ptr<aura::Window> first =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> second =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> third =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+
+  EXPECT_EQ(3u, container->children().size());
+  EXPECT_EQ(container->children().size(),
+            list_provider->GetWindowList().size());
+
   EXPECT_TRUE(AreWindowListsEqual(container->children(),
                                   list_provider->GetWindowList()));
 
   container->StackChildAtTop(first.get());
   EXPECT_TRUE(AreWindowListsEqual(container->children(),
                                   list_provider->GetWindowList()));
+  EXPECT_EQ(3u, container->children().size());
   EXPECT_EQ(first.get(), container->children().back());
 }
 
@@ -119,21 +141,17 @@ TEST_F(WindowListProviderImplTest, StackingOrder) {
 TEST_F(WindowListProviderImplTest, ListContainsOnlyNormalWindows) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> container(new aura::Window(&delegate));
-  scoped_ptr<aura::Window> first =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> second =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_POPUP);
-  scoped_ptr<aura::Window> third =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> fourth =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_MENU);
-  container->AddChild(first.get());
-  container->AddChild(second.get());
-  container->AddChild(third.get());
-  container->AddChild(fourth.get());
-
   scoped_ptr<WindowListProvider> list_provider(
       new WindowListProviderImpl(container.get()));
+
+  scoped_ptr<aura::Window> first =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> second =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_POPUP);
+  scoped_ptr<aura::Window> third =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> fourth =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_MENU);
 
   const aura::Window::Windows& list = list_provider->GetWindowList();
   EXPECT_EQ(list.end(), std::find(list.begin(), list.end(), second.get()));
@@ -146,16 +164,15 @@ TEST_F(WindowListProviderImplTest, ListContainsOnlyNormalWindows) {
 TEST_F(WindowListProviderImplTest, SimpleChecks) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> container(new aura::Window(&delegate));
+  scoped_ptr<WindowListProviderImpl> list_provider(
+      new WindowListProviderImpl(container.get()));
 
   scoped_ptr<aura::Window> normal_window =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
+      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> popup_window =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_POPUP);
+      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_POPUP);
   scoped_ptr<aura::Window> menu_window =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_MENU);
-
-  scoped_ptr<WindowListProvider> list_provider(
-      new WindowListProviderImpl(container.get()));
+      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_MENU);
 
   // Check which windows are valid and which are not.
   EXPECT_TRUE(list_provider->IsValidWindow(normal_window.get()));
@@ -176,18 +193,17 @@ TEST_F(WindowListProviderImplTest, SimpleChecks) {
 TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> container(new aura::Window(&delegate));
-
-  scoped_ptr<aura::Window> window1 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> window2 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> window3 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-
   scoped_ptr<WindowListProvider> list_provider(
       new WindowListProviderImpl(container.get()));
   scoped_ptr<WindowListObserver> observer(
       new WindowListObserver(list_provider.get()));
+
+  scoped_ptr<aura::Window> window1 =
+      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window2 =
+      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window3 =
+      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
 
   EXPECT_FALSE(list_provider->IsWindowInList(window1.get()));
   EXPECT_FALSE(list_provider->IsWindowInList(window2.get()));
@@ -244,26 +260,20 @@ TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
 TEST_F(WindowListProviderImplTest, TestWindowRemovalNotification) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> container(new aura::Window(&delegate));
-
-  scoped_ptr<aura::Window> window1 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> window2 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> window3 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_NORMAL);
-  scoped_ptr<aura::Window> window4 =
-      CreateWindow(&delegate, ui::wm::WINDOW_TYPE_POPUP);
-
   scoped_ptr<WindowListProvider> list_provider(
       new WindowListProviderImpl(container.get()));
   scoped_ptr<WindowListObserver> observer(
       new WindowListObserver(list_provider.get()));
 
-  // Add the windows.
-  container->AddChild(window1.get());
-  container->AddChild(window2.get());
-  container->AddChild(window3.get());
-  container->AddChild(window4.get());
+  scoped_ptr<aura::Window> window1 =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window2 =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window3 =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> window4 =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_POPUP);
+
   // The popup-window (window4) should not be included in the window-list.
   ASSERT_EQ(3U, list_provider->GetWindowList().size());
   EXPECT_EQ(0, observer->window_removal_calls());
@@ -285,6 +295,65 @@ TEST_F(WindowListProviderImplTest, TestWindowRemovalNotification) {
   window3.reset();
   ASSERT_EQ(0U, list_provider->GetWindowList().size());
   EXPECT_EQ(3, observer->window_removal_calls());
+}
+
+// Test that transient windows are handled property.
+TEST_F(WindowListProviderImplTest, TransientWindows) {
+  aura::test::TestWindowDelegate delegate;
+  delegate.set_can_focus(true);
+
+  WindowListProvider* list_provider =
+      WindowManager::Get()->GetWindowListProvider();
+
+  scoped_ptr<WindowListObserver> observer(
+      new WindowListObserver(list_provider));
+  scoped_ptr<aura::Window> w1 = CreateTestWindow(&delegate, gfx::Rect());
+  w1->Show();
+  scoped_ptr<aura::Window> w2 = CreateTestWindow(&delegate, gfx::Rect());
+  w2->Show();
+  scoped_ptr<aura::Window> t1 =
+      CreateTransientWindow(w1.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+  t1->Show();
+
+  EXPECT_EQ(2u, list_provider->GetWindowList().size());
+
+  // Activation should honor transient relations.
+  wm::ActivateWindow(w2.get());
+  EXPECT_EQ(w1.get(), list_provider->GetWindowList()[0]);
+  EXPECT_EQ(w2.get(), list_provider->GetWindowList()[1]);
+
+  EXPECT_EQ(w1.get(), w1->parent()->children()[0]);
+  EXPECT_EQ(t1.get(), w1->parent()->children()[1]);
+  EXPECT_EQ(w2.get(), w1->parent()->children()[2]);
+
+  wm::ActivateWindow(w1.get());
+  EXPECT_EQ(w2.get(), w1->parent()->children()[0]);
+  EXPECT_EQ(w1.get(), w1->parent()->children()[1]);
+  EXPECT_EQ(t1.get(), w1->parent()->children()[2]);
+
+  // Manual operations should honor transient relations too.
+  // TODO(oshima): moving the active window back should activate the top window.
+  list_provider->StackWindowBehindTo(w1.get(), w2.get());
+  EXPECT_EQ(w1.get(), w1->parent()->children()[0]);
+  EXPECT_EQ(t1.get(), w1->parent()->children()[1]);
+  EXPECT_EQ(w2.get(), w1->parent()->children()[2]);
+
+  list_provider->StackWindowFrontOf(w1.get(), w2.get());
+  EXPECT_EQ(w2.get(), w1->parent()->children()[0]);
+  EXPECT_EQ(w1.get(), w1->parent()->children()[1]);
+  EXPECT_EQ(t1.get(), w1->parent()->children()[2]);
+
+  // Transient windows should follow the transient parent's
+  // visibility.
+  EXPECT_TRUE(t1->IsVisible());
+  w1->Hide();
+  EXPECT_FALSE(t1->IsVisible());
+  w1->Show();
+  EXPECT_TRUE(t1->IsVisible());
+
+  // Resetting transient window won't notify the observer.
+  t1.reset();
+  EXPECT_EQ(0, observer->window_removal_calls());
 }
 
 }  // namespace athena
