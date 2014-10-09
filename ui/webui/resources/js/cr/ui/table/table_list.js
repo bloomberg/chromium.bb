@@ -8,7 +8,6 @@
 
 cr.define('cr.ui.table', function() {
   /** @const */ var List = cr.ui.List;
-  /** @const */ var TableRow = cr.ui.table.TableRow;
   /** @const */ var ListItem = cr.ui.ListItem;
 
   /**

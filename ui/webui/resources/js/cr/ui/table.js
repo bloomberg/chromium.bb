@@ -61,7 +61,7 @@ cr.define('cr.ui', function() {
     /**
      * The list of table.
      *
-     * @type {cr.ui.list}
+     * @type {cr.ui.List}
      */
     get list() {
       return this.list_;
@@ -92,7 +92,7 @@ cr.define('cr.ui', function() {
      * The table selection model.
      *
      * @type
-     * {cr.ui.ListSelectionModel|cr.ui.table.ListSingleSelectionModel}
+     * {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel}
      */
     get selectionModel() {
       return this.list_.selectionModel;
@@ -126,7 +126,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Returns render function for row.
-     * @return {Function(*, cr.ui.Table): HTMLElement} Render function.
+     * @return {function(*, cr.ui.Table): HTMLElement} Render function.
      */
     getRenderFunction: function() {
       return this.list_.renderFunction_;
@@ -134,7 +134,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Sets render function for row.
-     * @param {Function(*, cr.ui.Table): HTMLElement} Render function.
+     * @param {function(*, cr.ui.Table): HTMLElement} renderFunction Render
+     *     function.
      */
     setRenderFunction: function(renderFunction) {
       if (renderFunction === this.list_.renderFunction_)
@@ -164,7 +165,7 @@ cr.define('cr.ui', function() {
       this.appendChild(this.list_);
 
       TableList.decorate(this.list_);
-      this.list_.selectionModel = new ListSelectionModel(this);
+      this.list_.selectionModel = new ListSelectionModel();
       this.list_.table = this;
       this.list_.addEventListener('scroll', this.handleScroll_.bind(this));
 
@@ -190,7 +191,7 @@ cr.define('cr.ui', function() {
     /**
      * Redraws the table.
      */
-    redraw: function(index) {
+    redraw: function() {
       this.list_.redraw();
       this.header_.redraw();
     },
@@ -226,7 +227,7 @@ cr.define('cr.ui', function() {
     /**
      * Find the list item element at the given index.
      * @param {number} index The index of the list item to get.
-     * @return {ListItem} The found list item or null if not found.
+     * @return {cr.ui.ListItem} The found list item or null if not found.
      */
     getListItemByIndex: function(index) {
       return this.list_.getListItemByIndex(index);

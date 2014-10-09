@@ -92,7 +92,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Function used to create grid items.
-     * @return {function(new:cr.ui.ListItem, Object)}
+     * @return {function(new:cr.ui.ListItem, *)}
      */
     get itemConstructor() {
       return this.itemConstructor_;

@@ -180,9 +180,10 @@ cr.define('cr.ui.table', function() {
     /**
      * Handles the touchstart event. If the touch happened close enough
      * to a splitter starts dragging.
-     * @param {TouchEvent} e The touch event.
+     * @param {Event} e The touch event.
      */
     handleTouchStart_: function(e) {
+      e = /** @type {TouchEvent} */ (e);
       if (e.touches.length != 1)
         return;
       var clientX = e.touches[0].clientX;

@@ -11,7 +11,7 @@ cr.define('cr.ui', function() {
    * Creates a new autocomplete list item.
    * This is suitable for selecting a web site, and used by default.
    * A different behavior can be set by AutocompleteListItem.itemConstructor.
-   * @param {Object} pageInfo The page this item represents.
+   * @param {*} pageInfo The page this item represents.
    * @constructor
    * @extends {cr.ui.ListItem}
    */

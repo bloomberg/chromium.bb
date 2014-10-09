@@ -17,7 +17,7 @@ cr.define('cr.ui', function() {
    * Creates a new table splitter element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {Splitter}
+   * @extends {cr.ui.Splitter}
    */
   var TableSplitter = cr.ui.define('div');
 

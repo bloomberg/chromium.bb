@@ -11,9 +11,10 @@ cr.define('cr.ui.table', function() {
   /**
    * A table column model that wraps table columns array
    * This implementation supports widths in percents.
-   * @param {!Array<cr.ui.table.TableColumn>} columnIds Array of table columns.
+   * @param {!Array<cr.ui.table.TableColumn>} tableColumns Array of table
+   *     columns.
    * @constructor
-   * @extends {EventTarget}
+   * @extends {cr.EventTarget}
    */
   function TableColumnModel(tableColumns) {
     this.columns_ = [];
@@ -107,7 +108,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Returns render function for the column at the given index.
      * @param {number} index The index of the column.
-     * @return {Function(*, string, cr.ui.Table): HTMLElement} Render function.
+     * @return {function(*, string, cr.ui.Table): HTMLElement} Render function.
      */
     getRenderFunction: function(index) {
       return this.columns_[index].renderFunction;
@@ -116,7 +117,8 @@ cr.define('cr.ui.table', function() {
     /**
      * Sets render function for the column at the given index.
      * @param {number} index The index of the column.
-     * @param {Function(*, string, cr.ui.Table): HTMLElement} Render function.
+     * @param {function(*, string, cr.ui.Table): HTMLElement} renderFunction
+     *     Render function.
      */
     setRenderFunction: function(index, renderFunction) {
       if (index < 0 || index >= this.columns_.size - 1)
