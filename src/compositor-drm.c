@@ -1106,9 +1106,9 @@ drm_assign_planes(struct weston_output *output)
 		    (es->buffer_ref.buffer &&
 		    (!wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
 		     (ev->surface->width <= 64 && ev->surface->height <= 64))))
-			es->keep_buffer = 1;
+			es->keep_buffer = true;
 		else
-			es->keep_buffer = 0;
+			es->keep_buffer = false;
 
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
