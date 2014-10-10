@@ -35,6 +35,8 @@ Credential::Credential(const String& id, const String& name, const KURL& avatar)
 
 KURL Credential::parseStringAsURL(const String& url, ExceptionState& exceptionState)
 {
+    if (url.isEmpty())
+        return KURL();
     KURL parsedURL = KURL(KURL(), url);
     if (!parsedURL.isValid())
         exceptionState.throwDOMException(SyntaxError, "'" + url + "' is not a valid URL.");
