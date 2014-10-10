@@ -381,6 +381,13 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
   if (!main_frame)
     return;
 
+  // TODO(creis): Refactor WebFrame::contentAsText to handle RemoteFrames,
+  // likely by moving it to the browser process.  For now, only capture page
+  // info from main frames that are LocalFrames, and ignore their RemoteFrame
+  // children.
+  if (main_frame->isWebRemoteFrame())
+    return;
+
   // Don't index/capture pages that are in view source mode.
   if (main_frame->isViewSourceModeEnabled())
     return;
