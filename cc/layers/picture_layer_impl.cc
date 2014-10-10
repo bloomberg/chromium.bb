@@ -45,9 +45,9 @@ const float kCpuSkewportTargetTimeInFrames = 60.0f;
 const float kGpuSkewportTargetTimeInFrames = 0.0f;
 
 // Even for really wide viewports, at some point GPU raster should use
-// less than 4 tiles to fill the viewport. This is set to 128 as a
-// sane minimum for now, but we might want to increase with tuning.
-const int kMinHeightForGpuRasteredTile = 128;
+// less than 4 tiles to fill the viewport. This is set to 256 as a
+// sane minimum for now, but we might want to tune this for low-end.
+const int kMinHeightForGpuRasteredTile = 256;
 
 // When making odd-sized tiles, round them up to increase the chances
 // of using the same tile size.
@@ -695,14 +695,17 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     int viewport_width = layer_tree_impl()->device_viewport_size().width();
     int viewport_height = layer_tree_impl()->device_viewport_size().height();
     default_tile_width = viewport_width;
-    default_tile_height = viewport_height / 4;
+    // Also, increase the height proportionally as the width decreases, and
+    // pad by our border texels to make the tiles exactly match the viewport.
+    int divisor = 4;
+    if (content_bounds.width() <= viewport_width / 2)
+      divisor = 2;
+    if (content_bounds.width() <= viewport_width / 4)
+      divisor = 1;
+    default_tile_height = RoundUp(viewport_height, divisor) / divisor;
+    default_tile_height += 2 * PictureLayerTiling::kBorderTexels;
     default_tile_height =
         std::max(default_tile_height, kMinHeightForGpuRasteredTile);
-
-    // Increase the tile-height proportionally when the content width
-    // drops below half the viewport width.
-    if (content_bounds.width() <= viewport_width / 2)
-      default_tile_height *= 2;
   } else {
     // For CPU rasterization we use tile-size settings.
     const LayerTreeSettings& settings = layer_tree_impl()->settings();

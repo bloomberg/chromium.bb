@@ -4470,8 +4470,7 @@ TEST_F(TileSizeTest, TileSizes) {
   scoped_ptr<FakePictureLayerImpl> layer =
       FakePictureLayerImpl::Create(pending_tree, id_);
 
-  gfx::Size viewport_size = gfx::Size(1000, 1000);
-  host_impl_.SetViewportSize(viewport_size);
+  host_impl_.SetViewportSize(gfx::Size(1000, 1000));
   gfx::Size result;
 
   host_impl_.SetUseGpuRasterization(false);
@@ -4484,29 +4483,27 @@ TEST_F(TileSizeTest, TileSizes) {
   result = layer->CalculateTileSize(gfx::Size(42, 42));
   EXPECT_EQ(result.width(), 64);
   EXPECT_EQ(result.height(), 64);
-  result = layer->CalculateTileSize(gfx::Size(184, 184));
+  result = layer->CalculateTileSize(gfx::Size(191, 191));
   EXPECT_EQ(result.width(), 192);
   EXPECT_EQ(result.height(), 192);
   result = layer->CalculateTileSize(gfx::Size(199, 199));
   EXPECT_EQ(result.width(), 200);
   EXPECT_EQ(result.height(), 200);
 
-  host_impl_.SetUseGpuRasterization(true);
-
   // Gpu-rasterization uses 25% viewport-height tiles.
+  // The +2's below are for border texels.
+  host_impl_.SetUseGpuRasterization(true);
+  host_impl_.SetViewportSize(gfx::Size(2000, 2000));
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
-  EXPECT_EQ(result.width(), 1000);
-  EXPECT_EQ(result.height(), 250);
+  EXPECT_EQ(result.width(), 2000);
+  EXPECT_EQ(result.height(), 500 + 2);
 
   // Clamp and round-up, when smaller than viewport.
-  result = layer->CalculateTileSize(gfx::Size(831, 10000));
-  EXPECT_EQ(result.width(), 832);
-  EXPECT_EQ(result.height(), 250);
-
   // Tile-height doubles to 50% when width shrinks to <= 50%.
+  host_impl_.SetViewportSize(gfx::Size(1000, 1000));
   result = layer->CalculateTileSize(gfx::Size(447, 10000));
   EXPECT_EQ(result.width(), 448);
-  EXPECT_EQ(result.height(), 500);
+  EXPECT_EQ(result.height(), 500 + 2);
 
   // Largest layer is 50% of viewport width (rounded up), and
   // 50% of viewport in height.
@@ -4515,7 +4512,7 @@ TEST_F(TileSizeTest, TileSizes) {
   EXPECT_EQ(result.height(), 448);
   result = layer->CalculateTileSize(gfx::Size(500, 499));
   EXPECT_EQ(result.width(), 512);
-  EXPECT_EQ(result.height(), 500);
+  EXPECT_EQ(result.height(), 500 + 2);
 }
 
 }  // namespace

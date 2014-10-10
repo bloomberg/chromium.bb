@@ -58,6 +58,8 @@ class CC_EXPORT PictureLayerTilingClient {
 
 class CC_EXPORT PictureLayerTiling {
  public:
+  static const int kBorderTexels = 1;
+
   enum EvictionCategory {
     EVENTUALLY,
     EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION,
