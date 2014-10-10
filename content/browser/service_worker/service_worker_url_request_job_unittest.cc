@@ -193,9 +193,12 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
 // Responds to fetch events with a blob.
 class BlobResponder : public EmbeddedWorkerTestHelper {
  public:
-  BlobResponder(int mock_render_process_id, const std::string& blob_uuid)
+  BlobResponder(int mock_render_process_id,
+                const std::string& blob_uuid,
+                uint64 blob_size)
       : EmbeddedWorkerTestHelper(mock_render_process_id),
-        blob_uuid_(blob_uuid) {}
+        blob_uuid_(blob_uuid),
+        blob_size_(blob_size) {}
   virtual ~BlobResponder() {}
 
  protected:
@@ -211,10 +214,12 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
                               "OK",
                               blink::WebServiceWorkerResponseTypeDefault,
                               ServiceWorkerHeaderMap(),
-                              blob_uuid_)));
+                              blob_uuid_,
+                              blob_size_)));
   }
 
   std::string blob_uuid_;
+  uint64 blob_size_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlobResponder);
@@ -230,14 +235,15 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   }
   scoped_ptr<storage::BlobDataHandle> blob_handle =
       blob_storage_context->context()->AddFinishedBlob(blob_data_.get());
-  SetUpWithHelper(new BlobResponder(kProcessID, blob_handle->uuid()));
+  SetUpWithHelper(new BlobResponder(
+      kProcessID, blob_handle->uuid(), expected_response.size()));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", expected_response);
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
-  SetUpWithHelper(new BlobResponder(kProcessID, "blob-id:nothing-is-here"));
+  SetUpWithHelper(new BlobResponder(kProcessID, "blob-id:nothing-is-here", 0));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string());
 }

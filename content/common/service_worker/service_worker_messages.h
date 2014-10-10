@@ -58,6 +58,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(response_type)
   IPC_STRUCT_TRAITS_MEMBER(headers)
   IPC_STRUCT_TRAITS_MEMBER(blob_uuid)
+  IPC_STRUCT_TRAITS_MEMBER(blob_size)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerCacheQueryParams)
@@ -233,6 +234,9 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_CacheBatch,
 
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheClosed,
                     int /* cache_id */)
+
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_BlobDataHandled,
+                    std::string /* uuid */)
 
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.

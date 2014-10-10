@@ -107,6 +107,7 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
                         OnCacheBatch)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheClosed,
                         OnCacheClosed)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_BlobDataHandled, OnBlobDataHandled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -271,7 +272,8 @@ void ServiceWorkerCacheListener::OnCacheBatch(
                                   operation.response.status_text,
                                   operation.response.response_type,
                                   operation.response.headers,
-                                  operation.response.blob_uuid));
+                                  operation.response.blob_uuid,
+                                  operation.response.blob_size));
     cache->Put(scoped_request.Pass(),
                scoped_response.Pass(),
                base::Bind(&ServiceWorkerCacheListener::OnCachePutCallback,
@@ -287,6 +289,10 @@ void ServiceWorkerCacheListener::OnCacheBatch(
 
 void ServiceWorkerCacheListener::OnCacheClosed(int cache_id) {
   DropCacheReference(cache_id);
+}
+
+void ServiceWorkerCacheListener::OnBlobDataHandled(const std::string& uuid) {
+  DropBlobDataHandle(uuid);
 }
 
 void ServiceWorkerCacheListener::Send(const IPC::Message& message) {
@@ -379,17 +385,9 @@ void ServiceWorkerCacheListener::OnCacheMatchCallback(
     return;
   }
 
-  // TODO(jkarlin): Once there is a message acknowledging the blob handle from
-  // the renderer then store the blob_data_handle until the message is received.
-  // For now just drop it.
-  Send(ServiceWorkerMsg_CacheMatchSuccess(
-      request_id,
-      ServiceWorkerResponse(response->url,
-                            response->status_code,
-                            response->status_text,
-                            response->response_type,
-                            response->headers,
-                            "")));
+  StoreBlobDataHandle(blob_data_handle.Pass());
+
+  Send(ServiceWorkerMsg_CacheMatchSuccess(request_id, *response));
 }
 
 void ServiceWorkerCacheListener::OnCacheKeysCallback(
@@ -439,9 +437,8 @@ void ServiceWorkerCacheListener::OnCachePutCallback(
     return;
   }
 
-  // TODO(jkarlin): Once there is a message acknowledging the blob handle from
-  // the renderer then store the blob_data_handle until the message is received.
-  // For now just drop it.
+  StoreBlobDataHandle(blob_data_handle.Pass());
+
   std::vector<ServiceWorkerResponse> responses;
   responses.push_back(*response);
   Send(ServiceWorkerMsg_CacheBatchSuccess(request_id, responses));
@@ -457,6 +454,24 @@ ServiceWorkerCacheListener::StoreCacheReference(
 
 void ServiceWorkerCacheListener::DropCacheReference(CacheID cache_id) {
   id_to_cache_map_.erase(cache_id);
+}
+
+void ServiceWorkerCacheListener::StoreBlobDataHandle(
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  std::pair<UUIDToBlobDataHandleList::iterator, bool> rv =
+      blob_handle_store_.insert(std::make_pair(
+          blob_data_handle->uuid(), std::list<storage::BlobDataHandle>()));
+  rv.first->second.push_front(storage::BlobDataHandle(*blob_data_handle));
+}
+
+void ServiceWorkerCacheListener::DropBlobDataHandle(std::string uuid) {
+  UUIDToBlobDataHandleList::iterator it = blob_handle_store_.find(uuid);
+  if (it == blob_handle_store_.end())
+    return;
+  DCHECK(!it->second.empty());
+  it->second.pop_front();
+  if (it->second.empty())
+    blob_handle_store_.erase(it);
 }
 
 }  // namespace content

@@ -494,7 +494,8 @@ void MatchDidReadHeaderData(
       headers->status_text(),
       ProtoResponseTypeToWebResponseType(headers->response_type()),
       ServiceWorkerHeaderMap(),
-      ""));
+      "",
+      0));
 
   for (int i = 0; i < headers->response_headers_size(); ++i) {
     const ServiceWorkerRequestResponseHeaders::HeaderMap header =
@@ -580,6 +581,8 @@ void MatchDidReadResponseBodyData(
   }
 
   if (rv == 0) {
+    response->blob_uuid = response_context->blob_data->uuid();
+    response->blob_size = response_context->total_bytes_read;
     MatchDoneWithBody(request.Pass(),
                       callback,
                       blob_storage,

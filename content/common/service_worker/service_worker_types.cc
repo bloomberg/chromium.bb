@@ -36,7 +36,9 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
 ServiceWorkerResponse::ServiceWorkerResponse()
-    : status_code(0), response_type(blink::WebServiceWorkerResponseTypeOpaque) {
+    : status_code(0),
+      response_type(blink::WebServiceWorkerResponseTypeOpaque),
+      blob_size(0) {
 }
 
 ServiceWorkerResponse::ServiceWorkerResponse(
@@ -45,13 +47,16 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     const std::string& status_text,
     blink::WebServiceWorkerResponseType response_type,
     const ServiceWorkerHeaderMap& headers,
-    const std::string& blob_uuid)
+    const std::string& blob_uuid,
+    uint64 blob_size)
     : url(url),
       status_code(status_code),
       status_text(status_text),
       response_type(response_type),
       headers(headers),
-      blob_uuid(blob_uuid) {}
+      blob_uuid(blob_uuid),
+      blob_size(blob_size) {
+}
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}
 

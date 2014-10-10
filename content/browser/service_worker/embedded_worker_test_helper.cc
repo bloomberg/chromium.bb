@@ -152,7 +152,8 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
                             "OK",
                             blink::WebServiceWorkerResponseTypeDefault,
                             ServiceWorkerHeaderMap(),
-                            std::string())));
+                            std::string(),
+                            0)));
 }
 
 void EmbeddedWorkerTestHelper::SimulatePausedAfterDownload(

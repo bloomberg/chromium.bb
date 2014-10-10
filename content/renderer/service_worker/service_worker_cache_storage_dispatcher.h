@@ -129,6 +129,13 @@ class ServiceWorkerCacheStorageDispatcher
   typedef IDMap<blink::WebServiceWorkerCache::CacheWithRequestsCallbacks,
                 IDMapOwnPointer> WithRequestsCallbacksMap;
 
+  void PopulateWebResponseFromResponse(
+      const ServiceWorkerResponse& response,
+      blink::WebServiceWorkerResponse* web_response);
+
+  blink::WebVector<blink::WebServiceWorkerResponse> WebResponsesFromResponses(
+      const std::vector<ServiceWorkerResponse>& responses);
+
   // Not owned. The script context containing this object.
   ServiceWorkerScriptContext* script_context_;
 

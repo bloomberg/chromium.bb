@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_LISTENER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_LISTENER_H_
 
+#include <list>
+#include <map>
+
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -57,10 +60,13 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
                     int cache_id,
                     const std::vector<ServiceWorkerBatchOperation>& operations);
   void OnCacheClosed(int cache_id);
+  void OnBlobDataHandled(const std::string& uuid);
 
  private:
   typedef int32_t CacheID;  // TODO(jkarlin): Bump to 64 bit.
-  typedef std::map<CacheID, scoped_refptr<ServiceWorkerCache> > IDToCacheMap;
+  typedef std::map<CacheID, scoped_refptr<ServiceWorkerCache>> IDToCacheMap;
+  typedef std::map<std::string, std::list<storage::BlobDataHandle>>
+      UUIDToBlobDataHandleList;
 
   void Send(const IPC::Message& message);
 
@@ -108,6 +114,12 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   CacheID StoreCacheReference(const scoped_refptr<ServiceWorkerCache>& cache);
   void DropCacheReference(CacheID cache_id);
 
+  // Stores blob handles while waiting for acknowledgement of receipt from the
+  // renderer.
+  void StoreBlobDataHandle(
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+  void DropBlobDataHandle(std::string uuid);
+
   // The ServiceWorkerVersion to use for messaging back to the renderer thread.
   ServiceWorkerVersion* version_;
 
@@ -116,6 +128,8 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
 
   IDToCacheMap id_to_cache_map_;
   CacheID next_cache_id_;
+
+  UUIDToBlobDataHandleList blob_handle_store_;
 
   base::WeakPtrFactory<ServiceWorkerCacheListener> weak_factory_;
 

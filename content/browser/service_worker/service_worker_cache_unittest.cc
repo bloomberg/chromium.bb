@@ -111,7 +111,8 @@ class ServiceWorkerCacheTest : public testing::Test {
                               "OK",
                               blink::WebServiceWorkerResponseTypeDefault,
                               headers,
-                              blob_handle_->uuid());
+                              blob_handle_->uuid(),
+                              expected_blob_data_.size());
 
     no_body_response_ =
         ServiceWorkerResponse(GURL("http://example.com/no_body.html"),
@@ -119,7 +120,8 @@ class ServiceWorkerCacheTest : public testing::Test {
                               "OK",
                               blink::WebServiceWorkerResponseTypeDefault,
                               headers,
-                              "");
+                              "",
+                              0);
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -139,7 +141,8 @@ class ServiceWorkerCacheTest : public testing::Test {
                                   response.status_text,
                                   response.response_type,
                                   response.headers,
-                                  response.blob_uuid));
+                                  response.blob_uuid,
+                                  response.blob_size));
     return sw_response.Pass();
   }
 
@@ -292,6 +295,8 @@ TEST_P(ServiceWorkerCacheTestP, PutNoBody) {
   EXPECT_STREQ(no_body_response_.url.spec().c_str(),
                callback_response_->url.spec().c_str());
   EXPECT_FALSE(callback_response_data_);
+  EXPECT_STREQ("", callback_response_->blob_uuid.c_str());
+  EXPECT_EQ(0u, callback_response_->blob_size);
 }
 
 TEST_P(ServiceWorkerCacheTestP, PutBody) {
@@ -300,6 +305,9 @@ TEST_P(ServiceWorkerCacheTestP, PutBody) {
   EXPECT_STREQ(body_response_.url.spec().c_str(),
                callback_response_->url.spec().c_str());
   EXPECT_TRUE(callback_response_data_);
+  EXPECT_STRNE("", callback_response_->blob_uuid.c_str());
+  EXPECT_EQ(expected_blob_data_.size(), callback_response_->blob_size);
+
   std::string response_body;
   CopyBody(callback_response_data_.get(), &response_body);
   EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
@@ -327,6 +335,8 @@ TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {
   EXPECT_STREQ("OK", callback_response_->status_text.c_str());
   EXPECT_STREQ("http://example.com/no_body.html",
                callback_response_->url.spec().c_str());
+  EXPECT_STREQ("", callback_response_->blob_uuid.c_str());
+  EXPECT_EQ(0u, callback_response_->blob_size);
 }
 
 TEST_P(ServiceWorkerCacheTestP, MatchBody) {
@@ -336,6 +346,9 @@ TEST_P(ServiceWorkerCacheTestP, MatchBody) {
   EXPECT_STREQ("OK", callback_response_->status_text.c_str());
   EXPECT_STREQ("http://example.com/body.html",
                callback_response_->url.spec().c_str());
+  EXPECT_STRNE("", callback_response_->blob_uuid.c_str());
+  EXPECT_EQ(expected_blob_data_.size(), callback_response_->blob_size);
+
   std::string response_body;
   CopyBody(callback_response_data_.get(), &response_body);
   EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
@@ -497,7 +510,8 @@ TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerResponseHeaders) {
                                  "OK",
                                  blink::WebServiceWorkerResponseTypeDefault,
                                  ServiceWorkerHeaderMap(),
-                                 "");
+                                 "",
+                                 0);
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);

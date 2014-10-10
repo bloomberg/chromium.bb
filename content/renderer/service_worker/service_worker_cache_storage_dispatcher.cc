@@ -90,33 +90,8 @@ ServiceWorkerResponse ResponseFromWebResponse(
                                base::UTF16ToASCII(web_response.statusText()),
                                web_response.responseType(),
                                headers,
-                               base::UTF16ToASCII(web_response.blobUUID()));
-}
-
-void PopulateWebResponseFromResponse(
-    const ServiceWorkerResponse& response,
-    blink::WebServiceWorkerResponse* web_response) {
-  web_response->setURL(response.url);
-  web_response->setStatus(response.status_code);
-  web_response->setStatusText(base::ASCIIToUTF16(response.status_text));
-  web_response->setResponseType(response.response_type);
-
-  for (ServiceWorkerHeaderMap::const_iterator i = response.headers.begin(),
-                                            end = response.headers.end();
-       i != end; ++i) {
-    web_response->setHeader(base::ASCIIToUTF16(i->first),
-                            base::ASCIIToUTF16(i->second));
-  }
-  // TODO(gavinp): set blob here.
-}
-
-blink::WebVector<blink::WebServiceWorkerResponse> WebResponsesFromResponses(
-    const std::vector<ServiceWorkerResponse>& responses) {
-  blink::WebVector<blink::WebServiceWorkerResponse>
-      web_responses(responses.size());
-  for (size_t i = 0; i < responses.size(); ++i)
-    PopulateWebResponseFromResponse(responses[i], &(web_responses[i]));
-  return web_responses;
+                               base::UTF16ToASCII(web_response.blobUUID()),
+                               web_response.blobSize());
 }
 
 ServiceWorkerCacheQueryParams QueryParamsFromWebQueryParams(
@@ -562,6 +537,37 @@ void ServiceWorkerCacheStorageDispatcher::OnWebCacheDestruction(int cache_id) {
   web_caches_.Remove(cache_id);
   script_context_->Send(new ServiceWorkerHostMsg_CacheClosed(
       script_context_->GetRoutingID(), cache_id));
+}
+
+void ServiceWorkerCacheStorageDispatcher::PopulateWebResponseFromResponse(
+    const ServiceWorkerResponse& response,
+    blink::WebServiceWorkerResponse* web_response) {
+  web_response->setURL(response.url);
+  web_response->setStatus(response.status_code);
+  web_response->setStatusText(base::ASCIIToUTF16(response.status_text));
+  web_response->setResponseType(response.response_type);
+
+  for (const auto& i : response.headers) {
+    web_response->setHeader(base::ASCIIToUTF16(i.first),
+                            base::ASCIIToUTF16(i.second));
+  }
+
+  web_response->setBlob(blink::WebString::fromUTF8(response.blob_uuid),
+                        response.blob_size);
+
+  // Let the host know that it can release its reference to the blob.
+  script_context_->Send(new ServiceWorkerHostMsg_BlobDataHandled(
+      script_context_->GetRoutingID(), response.blob_uuid));
+}
+
+blink::WebVector<blink::WebServiceWorkerResponse>
+ServiceWorkerCacheStorageDispatcher::WebResponsesFromResponses(
+    const std::vector<ServiceWorkerResponse>& responses) {
+  blink::WebVector<blink::WebServiceWorkerResponse> web_responses(
+      responses.size());
+  for (size_t i = 0; i < responses.size(); ++i)
+    PopulateWebResponseFromResponse(responses[i], &(web_responses[i]));
+  return web_responses;
 }
 
 }  // namespace content
