@@ -491,7 +491,7 @@
       "description": "",
       "language": ["nb", "nn", "no"],
       "layouts": ["no"],
-      "input_view": "inputview.html#id=no.compact.qwerty&language=nb&passwordLayout=us.compact.qwerty&name=keyboard_norwegian",
+      "input_view": "inputview.html#id=no.compact.qwerty&language=no&passwordLayout=no.compact.qwerty&name=keyboard_norwegian",
       "options_page": "hmm_options.html?code=xkb:no::nob"
     },
     {

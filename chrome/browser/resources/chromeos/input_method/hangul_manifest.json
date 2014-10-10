@@ -26,7 +26,7 @@
     "description": "",
     "language": "ko",
     "layouts": ["us"],
-    "input_view": "inputview.html?id=us&language=ko&passwordLayout=us&name=Hangul_2_Set&isFakeEventUsed=true"
+    "input_view": "inputview.html#id=m17n:ko_2set&language=ko&passwordLayout=us&name=Hangul_2_Set&isFakeEventUsed=true"
   }, {
     "name": "__MSG_inputmethod_Hangul_3_Set_390__",
     "type": "ime",
@@ -35,7 +35,7 @@
     "description": "",
     "language": "ko",
     "layouts": ["us"],
-    "input_view": "inputview.html?id=us&language=ko&passwordLayout=us&name=Hangul_3_Set_390&isFakeEventUsed=true"
+    "input_view": "inputview.html#id=us&language=ko&passwordLayout=us&name=Hangul_3_Set_390&isFakeEventUsed=true"
   }, {
     "name": "__MSG_inputmethod_Hangul_3_Set_Final__",
     "type": "ime",
@@ -44,7 +44,7 @@
     "description": "",
     "language": "ko",
     "layouts": ["us"],
-    "input_view": "inputview.html?id=us&language=ko&passwordLayout=us&name=Hangul_3_Set_Final&isFakeEventUsed=true"
+    "input_view": "inputview.html#id=us&language=ko&passwordLayout=us&name=Hangul_3_Set_Final&isFakeEventUsed=true"
   }, {
     "name": "__MSG_inputmethod_Hangul_3_Set_No_Shift__",
     "type": "ime",
@@ -53,7 +53,7 @@
     "description": "",
     "language": "ko",
     "layouts": ["us"],
-    "input_view": "inputview.html?id=us&language=ko&passwordLayout=us&name=Hangul_3_Set_No_Shift&isFakeEventUsed=true"
+    "input_view": "inputview.html#id=us&language=ko&passwordLayout=us&name=Hangul_3_Set_No_Shift&isFakeEventUsed=true"
   }, {
     "name": "__MSG_inputmethod_Hangul_Romaja__",
     "type": "ime",
@@ -62,7 +62,7 @@
     "description": "",
     "language": "ko",
     "layouts": ["us"],
-    "input_view": "inputview.html?id=us&language=ko&passwordLayout=us&name=Hangul_Romaja&isFakeEventUsed=true"
+    "input_view": "inputview.html#id=us&language=ko&passwordLayout=us&name=Hangul_Romaja&isFakeEventUsed=true"
   }, {
     "name": "__MSG_inputmethod_Hangul_Ahnmatae__",
     "type": "ime",
@@ -71,7 +71,7 @@
     "description": "",
     "language": "ko",
     "layouts": ["us"],
-    "input_view": "inputview.html?id=us&language=ko&passwordLayout=us&name=Hangul_Ahnmatae&isFakeEventUsed=true"
+    "input_view": "inputview.html#id=us&language=ko&passwordLayout=us&name=Hangul_Ahnmatae&isFakeEventUsed=true"
   }],
   "icons": {
     "128": "icon128.png"
