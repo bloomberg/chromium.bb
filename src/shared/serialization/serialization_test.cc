@@ -76,17 +76,6 @@ int main(void) {
 
   CHECK(buf.Serialize(v));
 
-#if defined(NACL_HAS_IEEE_754)
-  float e = M_E;
-  double pi = M_PI;
-  CHECK(buf.Serialize(e));
-  CHECK(buf.Serialize(pi));
-
-  long double e_exp_pi;
-  e_exp_pi = powl(static_cast<long double>(e), static_cast<long double>(pi));
-  CHECK(buf.Serialize(e_exp_pi));
-#endif
-
   CHECK(buf.Serialize("Hello world"));
   CHECK(buf.Serialize(
             "When in the Course of human events, it becomes necessary for"
@@ -132,17 +121,6 @@ int main(void) {
   for (size_t ix = 0; ix < v.size(); ++ix) {
     CHECK(v[ix] == v2[ix]);
   }
-#if defined(NACL_HAS_IEEE_754)
-  float f;
-  CHECK(buf.Deserialize(&f));
-  CHECK(f == e);
-  double d;
-  CHECK(buf.Deserialize(&d));
-  CHECK(d == pi);
-  long double ld;
-  CHECK(buf.Deserialize(&ld));
-  CHECK(ld == e_exp_pi);
-#endif
   char buffer[64];
   size_t nbytes = sizeof buffer;
   CHECK(buf.Deserialize(buffer, &nbytes));

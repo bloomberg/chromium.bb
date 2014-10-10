@@ -170,34 +170,6 @@ void SerializationBuffer::AddUint64(uint64_t value) {
   in_use_ += sizeof value;
 }
 
-#if defined(NACL_HAS_IEEE_754)
-void SerializationBuffer::AddFloat(float value) {
-  union ieee754_float v;
-  v.f = value;
-  AddUint32((static_cast<uint32_t>(v.ieee.negative) << 31) |
-            (static_cast<uint32_t>(v.ieee.exponent) << 23) |
-            (static_cast<uint32_t>(v.ieee.mantissa) << 0));
-}
-
-void SerializationBuffer::AddDouble(double value) {
-  union ieee754_double v;
-  v.d = value;
-  AddUint64((static_cast<uint64_t>(v.ieee.negative) << 63) |
-            (static_cast<uint64_t>(v.ieee.exponent) << 52) |
-            (static_cast<uint64_t>(v.ieee.mantissa0) << 32) |
-            (static_cast<uint64_t>(v.ieee.mantissa1) << 0));
-}
-
-void SerializationBuffer::AddLongDouble(long double value) {
-  union ieee854_long_double v;
-  v.d = value;
-  AddUint16((static_cast<uint16_t>(v.ieee.negative) << 15) |
-            (static_cast<uint16_t>(v.ieee.exponent) << 0));
-  AddUint64((static_cast<uint64_t>(v.ieee.mantissa0) << 32) |
-            (static_cast<uint64_t>(v.ieee.mantissa1) << 0));
-}
-#endif
-
 bool SerializationBuffer::GetUint8(uint8_t *value) {
   if (bytes_unread() < sizeof *value) {
     return false;

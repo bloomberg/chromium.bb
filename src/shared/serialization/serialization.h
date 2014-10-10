@@ -8,16 +8,6 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_SERIALIZATION_SERIALIZATION_H_
 #define NATIVE_CLIENT_SRC_SHARED_SERIALIZATION_SERIALIZATION_H_
 
-#if defined(__native_client__) || (NACL_LINUX && !NACL_ANDROID)
-# define NACL_HAS_IEEE_754
-// Make sure fp is not dead code and is tested.  DO NOT USE the fp
-// interface until we have a portability version of ieee754.h!
-#endif
-
-#if defined(NACL_HAS_IEEE_754)
-# include <ieee754.h>
-#endif
-
 #include <vector>
 #include <string>
 
@@ -44,12 +34,6 @@ enum {
   kInt32 = 5,
   kUint64 = 6,
   kInt64 = 7,
-
-#if defined(NACL_HAS_IEEE_754)
-  kFloat = 8,
-  kDouble = 9,
-  kLongDouble = 10,
-#endif
 
   kCString = 11,
   kString = 12,
@@ -137,21 +121,11 @@ class SerializationBuffer {
   void AddUint16(uint16_t value);
   void AddUint32(uint32_t value);
   void AddUint64(uint64_t value);
-#if defined(NACL_HAS_IEEE_754)
-  void AddFloat(float value);
-  void AddDouble(double value);
-  void AddLongDouble(long double value);
-#endif
 
   bool GetUint8(uint8_t *val);
   bool GetUint16(uint16_t *val);
   bool GetUint32(uint32_t *val);
   bool GetUint64(uint64_t *val);
-#if defined(NACL_HAS_IEEE_754)
-  bool GetFloat(float *value);
-  bool GetDouble(double *value);
-  bool GetLongDouble(long double *value);
-#endif
 
   template<typename T> void AddVal(T value) {
     int T_must_be_integral_type[static_cast<T>(1)];
@@ -185,32 +159,6 @@ class SerializationBuffer {
     }
     return false;
   }
-
-#if defined(NACL_HAS_IEEE_754)
-  void AddVal(float value) {
-    AddFloat(value);
-  }
-
-  bool GetVal(float *value) {
-    return GetFloat(value);
-  }
-
-  void AddVal(double value) {
-    AddDouble(value);
-  }
-
-  bool GetVal(double *value) {
-    return GetDouble(value);
-  }
-
-  void AddVal(long double value) {
-    AddLongDouble(value);
-  }
-
-  bool GetVal(long double *value) {
-    return GetLongDouble(value);
-  }
-#endif
 
   template<typename T, bool nested_tagging>
   bool Serialize(std::vector<T> const& v);
@@ -456,29 +404,6 @@ template<> class SerializationTraits<int64_t> {
   static const int kBytes = 8;
   static const bool kNestedTag = false;
 };
-
-#if defined(NACL_HAS_IEEE_754)
-template<> class SerializationTraits<float> {
- public:
-  static const int kTag = kFloat;
-  static const int kBytes = 4;
-  static const bool kNestedTag = false;
-};
-
-template<> class SerializationTraits<double> {
- public:
-  static const int kTag = kDouble;
-  static const int kBytes = 8;
-  static const bool kNestedTag = false;
-};
-
-template<> class SerializationTraits<long double> {
- public:
-  static const int kTag = kLongDouble;
-  static const int kBytes = 10;
-  static const bool kNestedTag = false;
-};
-#endif
 
 template<> class SerializationTraits<char *> {
  public:

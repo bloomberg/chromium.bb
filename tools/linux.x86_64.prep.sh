@@ -82,6 +82,3 @@ ensure_installed '/lib/i386-linux-gnu/libtinfo.so.5' 'libtinfo5:i386'
 ensure_installed '/lib/i386-linux-gnu/libglib-2.0.so.0' 'libglib2.0-0:i386'
 # 32-bit libc headers and libraries
 ensure_installed '/usr/include/i386-linux-gnu/asm/errno.h' 'linux-libc-dev:i386'
-# 32-bit linux-libc-dev doesn't have ieee754.h when installed on x86-64
-ln -sf /usr/include/x86_64-linux-gnu/ieee754.h \
-  /usr/include/i386-linux-gnu/ieee754.h
