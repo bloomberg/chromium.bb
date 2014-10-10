@@ -616,12 +616,7 @@ void RenderLayerScrollableArea::updateAfterLayout()
         if (box().style()->overflowY() == OSCROLL)
             verticalScrollbar()->setEnabled(hasVerticalOverflow);
     }
-    if (hasOverlayScrollbars()) {
-        if (!scrollSize(HorizontalScrollbar))
-            setHasHorizontalScrollbar(false);
-        if (!scrollSize(VerticalScrollbar))
-            setHasVerticalScrollbar(false);
-    }
+
     // overflow:auto may need to lay out again if scrollbars got added/removed.
     bool autoHorizontalScrollBarChanged = box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
     bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
