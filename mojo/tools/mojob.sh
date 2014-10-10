@@ -19,7 +19,7 @@ command should be one of:
   build - Build.
   test - Run unit tests (does not build).
   perftest - Run perf tests (does not build).
-  pytest - Run Python unit tests.
+  pytest - Run Python unit tests (does not build).
   gyp - Run gyp for mojo (does not sync).
   gypall - Run gyp for all of chromium (does not sync).
   sync - Sync using gclient (does not run gyp).
@@ -66,7 +66,14 @@ do_perftests() {
 }
 
 do_pytests() {
+  echo "Running python tests in out/$1 ..."
   python mojo/tools/run_mojo_python_tests.py || exit 1
+  # TODO(qsr) Remove this test when the component build is not supported
+  # anymore.
+  if [ -f "out/$1/python/mojo/system.so" ]; then
+    python mojo/tools/run_mojo_python_bindings_tests.py \
+        "--build-dir=out/$1" || exit 1
+  fi
 }
 
 do_gyp() {
@@ -180,7 +187,8 @@ for arg in "$@"; do
       should_do_Release && do_perftests Release
       ;;
     pytest)
-      do_pytests
+      should_do_Debug && do_pytests Debug
+      should_do_Release && do_pytests Release
       ;;
     gyp)
       set_goma_dir_if_necessary
@@ -236,3 +244,5 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+exit 0
