@@ -116,6 +116,7 @@ libc++::localization/locale.categories/category.monetary/locale.money.put/locale
 libc++::localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp
 libc++::localization/locale.categories/facet.numpunct/locale.numpunct.byname/decimal_point.pass.cpp
 libc++::localization/locale.categories/facet.numpunct/locale.numpunct.byname/grouping.pass.cpp
+libc++::localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp
 libc++::localization/locales/locale/locale.cons/copy.pass.cpp
 libc++::localization/locales/locale/locale.cons/default.pass.cpp
 libc++::localization/locales/locale/locale.members/name.pass.cpp
