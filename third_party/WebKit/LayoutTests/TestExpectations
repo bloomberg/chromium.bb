@@ -1308,7 +1308,6 @@ crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeou
 crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
 crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Pass Failure ]
-crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure Timeout ]
 crbug.com/418864 [ Win ] http/tests/serviceworker/chromium/registration-stress.html [ Pass Timeout ]
 crbug.com/418868 [ XP ] http/tests/serviceworker/ready.html [ Pass Timeout ]
 crbug.com/418869 [ Win ] http/tests/serviceworker/register-same-scope-different-script-url.html [ Pass Timeout ]
@@ -1457,3 +1456,6 @@ crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ NeedsManualRebasel
 
 crbug.com/415031 [ Mac ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/415031 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
+
+crbug.com/416371 http/tests/serviceworker/fetch-event.html [ NeedsRebaseline ]
+
