@@ -11,7 +11,6 @@
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
