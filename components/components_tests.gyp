@@ -544,6 +544,7 @@
                 ['include', '^search_provider_logos/'],
                 ['include', '^signin/'],
                 ['exclude', '^signin/core/browser/mutable_profile_oauth2_token_service_unittest\\.cc$'],
+                ['include', '^suggestions/'],
                 ['include', '^sync_driver/'],
                 ['include', '^translate/'],
                 ['include', '^url_fixer/'],

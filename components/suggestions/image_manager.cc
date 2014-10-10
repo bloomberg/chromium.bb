@@ -6,18 +6,14 @@
 
 #include "base/bind.h"
 #include "components/suggestions/image_fetcher.h"
-#include "ui/gfx/codec/jpeg_codec.h"
+
+#if defined(OS_IOS)
+#include "components/suggestions/image_encoder_ios.h"
+#else
+#include "components/suggestions/image_encoder.h"
+#endif
 
 using leveldb_proto::ProtoDatabase;
-
-namespace {
-
-// From JPEG-encoded bytes to SkBitmap.
-SkBitmap* DecodeImage(const std::vector<unsigned char>& encoded_data) {
-  return gfx::JPEGCodec::Decode(&encoded_data[0], encoded_data.size());
-}
-
-}  // namespace
 
 namespace suggestions {
 
@@ -139,7 +135,7 @@ void ImageManager::SaveImage(const GURL& url, const SkBitmap& bitmap) {
   // Attempt to save a JPEG representation to the database. If not successful,
   // the fetched bitmap will still be inserted in the cache, above.
   std::vector<unsigned char> encoded_data;
-  if (EncodeImage(bitmap, &encoded_data)) {
+  if (EncodeSkBitmapToJPEG(bitmap, &encoded_data)) {
     // Save the resulting bitmap to the database.
     ImageData data;
     data.set_url(url.spec());
@@ -194,7 +190,7 @@ void ImageManager::LoadEntriesInCache(scoped_ptr<ImageDataVector> entries) {
     std::vector<unsigned char> encoded_data(it->data().begin(),
                                             it->data().end());
 
-    scoped_ptr<SkBitmap> bitmap(DecodeImage(encoded_data));
+    scoped_ptr<SkBitmap> bitmap(DecodeJPEGToSkBitmap(encoded_data));
     if (bitmap.get()) {
       image_map_.insert(std::make_pair(it->url(), *bitmap));
     }
@@ -210,19 +206,6 @@ void ImageManager::ServePendingCacheRequests() {
       ServeFromCacheOrNetwork(request.url, request.image_url, *callback_it);
     }
   }
-}
-
-// static
-bool ImageManager::EncodeImage(const SkBitmap& bitmap,
-                               std::vector<unsigned char>* dest) {
-  SkAutoLockPixels bitmap_lock(bitmap);
-  if (!bitmap.readyToDraw() || bitmap.isNull()) {
-    return false;
-  }
-  return gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
-      bitmap.rowBytes(), 100, dest);
 }
 
 }  // namespace suggestions

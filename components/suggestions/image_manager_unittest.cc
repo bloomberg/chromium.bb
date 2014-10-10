@@ -17,6 +17,12 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
+#if defined(OS_IOS)
+#include "components/suggestions/image_encoder_ios.h"
+#else
+#include "components/suggestions/image_encoder.h"
+#endif
+
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -92,7 +98,7 @@ class ImageManagerTest : public testing::Test {
     ImageData data;
     data.set_url(url);
     std::vector<unsigned char> encoded;
-    EXPECT_TRUE(ImageManager::EncodeImage(bm, &encoded));
+    EXPECT_TRUE(EncodeSkBitmapToJPEG(bm, &encoded));
     data.set_data(std::string(encoded.begin(), encoded.end()));
     return data;
   }

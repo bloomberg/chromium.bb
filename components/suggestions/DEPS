@@ -4,6 +4,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/variations",
   "+net",
+  "+skia/ext",
   "+ui",
   "+url",
 ]

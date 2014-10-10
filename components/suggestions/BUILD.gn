@@ -30,4 +30,16 @@ static_library("suggestions") {
     "//ui/gfx",
     "//url",
   ]
+
+  if (is_ios) {
+    sources += [
+      "image_encoder_ios.h",
+      "image_encoder_ios.mm",
+    ]
+  } else {
+    sources += [
+      "image_encoder.cc",
+      "image_encoder.h",
+    ]
+  }
 }

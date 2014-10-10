@@ -119,11 +119,6 @@ class ImageManager : public ImageFetcherDelegate {
 
   void ServePendingCacheRequests();
 
-  // From SkBitmap to the vector of JPEG-encoded bytes, |dst|. Visible only for
-  // testing.
-  static bool EncodeImage(const SkBitmap& bitmap,
-                          std::vector<unsigned char>* dest);
-
   // Map from URL to image URL. Should be kept up to date when a new
   // SuggestionsProfile is available.
   std::map<GURL, GURL> image_url_map_;
