@@ -290,9 +290,6 @@ const char kEnableAcceleratedJpegDecoding[] =
 const char kEnableBleedingEdgeRenderingFastPaths[] =
     "enable-bleeding-edge-rendering-fast-paths";
 
-// Disable deferred image filters.
-const char kDisableDeferredFilters[]         = "disable-deferred-filters";
-
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
