@@ -5,7 +5,7 @@
 import math
 import unittest
 
-# pylint: disable=F0401
+# pylint: disable=E0611,F0401
 import mojo.system
 
 # Generated files

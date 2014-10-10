@@ -4,7 +4,7 @@
 
 import unittest
 
-# pylint: disable=F0401
+# pylint: disable=E0611,F0401
 import mojo.embedder
 import mojo.system as system
 

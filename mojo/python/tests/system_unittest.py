@@ -7,7 +7,7 @@ import time
 
 import mojo_unittest
 
-# pylint: disable=F0401
+# pylint: disable=E0611
 from mojo import system
 
 DATA_SIZE = 1024

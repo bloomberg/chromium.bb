@@ -5,15 +5,16 @@
 import unittest
 
 import mojo_unittest
-
-# pylint: disable=F0401
 from mojo.bindings import messaging
+
+# pylint: disable=E0611
 from mojo import system
 
 
 class _ForwardingConnectionErrorHandler(messaging.ConnectionErrorHandler):
 
   def __init__(self, callback):
+    messaging.ConnectionErrorHandler.__init__(self)
     self._callback = callback
 
   def OnError(self, result):

@@ -5,8 +5,9 @@
 import math
 import unittest
 
-# pylint: disable=F0401
 import mojo.bindings.reflection as reflection
+
+# pylint: disable=E0611,F0401
 import mojo.system
 
 # Generated files
