@@ -8,6 +8,7 @@
 #include "mojo/services/network/cookie_store_impl.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/tcp_bound_socket_impl.h"
+#include "mojo/services/network/udp_socket_impl.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "mojo/services/network/web_socket_impl.h"
 
@@ -82,6 +83,10 @@ void NetworkServiceImpl::CreateTCPConnectedSocket(
       base::Bind(&BoundAddressCallbackAdapter,
                  callback,
                  base::Passed(bound_socket.GetLocalAddress().Pass())));
+}
+
+void NetworkServiceImpl::CreateUDPSocket(InterfaceRequest<UDPSocket> socket) {
+  BindToRequest(new UDPSocketImpl(), &socket);
 }
 
 }  // namespace mojo

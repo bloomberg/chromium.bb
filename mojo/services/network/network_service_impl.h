@@ -34,6 +34,7 @@ class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
       ScopedDataPipeProducerHandle receive_stream,
       InterfaceRequest<TCPConnectedSocket> client_socket,
       const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+  virtual void CreateUDPSocket(InterfaceRequest<UDPSocket> socket) override;
 
  private:
   NetworkContext* context_;

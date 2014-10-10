@@ -273,6 +273,8 @@
         'services/network/tcp_connected_socket_impl.h',
         'services/network/tcp_server_socket_impl.cc',
         'services/network/tcp_server_socket_impl.h',
+        'services/network/udp_socket_impl.cc',
+        'services/network/udp_socket_impl.h',
         'services/network/url_loader_impl.cc',
         'services/network/url_loader_impl.h',
         'services/network/web_socket_impl.cc',
@@ -297,6 +299,26 @@
       ],
       'sources': [
         'services/network/main.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/services/network:unittests
+      'target_name': 'mojo_network_service_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        'edk/mojo_edk.gyp:mojo_run_all_unittests',
+        'edk/mojo_edk.gyp:mojo_system_impl',
+        'mojo_application_manager',
+        'mojo_base.gyp:mojo_environment_chromium',
+        'mojo_network_service',
+        'mojo_shell_test_support',
+        'services/public/mojo_services_public.gyp:mojo_network_bindings',
+      ],
+      'sources': [
+        'services/network/udp_socket_unittest.cc',
       ],
     },
     {
