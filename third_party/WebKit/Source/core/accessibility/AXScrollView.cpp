@@ -34,7 +34,7 @@
 
 namespace blink {
 
-AXScrollView::AXScrollView(ScrollView* view)
+AXScrollView::AXScrollView(FrameView* view)
     : m_scrollView(view)
     , m_childrenDirty(false)
 {
@@ -51,7 +51,7 @@ void AXScrollView::detach()
     m_scrollView = 0;
 }
 
-PassRefPtr<AXScrollView> AXScrollView::create(ScrollView* view)
+PassRefPtr<AXScrollView> AXScrollView::create(FrameView* view)
 {
     return adoptRef(new AXScrollView(view));
 }
@@ -167,7 +167,7 @@ AXObject* AXScrollView::webAreaObject() const
     if (!m_scrollView || !m_scrollView->isFrameView())
         return 0;
 
-    Document* doc = toFrameView(m_scrollView)->frame().document();
+    Document* doc = m_scrollView->frame().document();
     if (!doc || !doc->renderView())
         return 0;
 
@@ -201,7 +201,7 @@ FrameView* AXScrollView::documentFrameView() const
     if (!m_scrollView || !m_scrollView->isFrameView())
         return 0;
 
-    return toFrameView(m_scrollView);
+    return m_scrollView;
 }
 
 AXObject* AXScrollView::parentObject() const
@@ -210,11 +210,11 @@ AXObject* AXScrollView::parentObject() const
         return 0;
 
     // FIXME: Broken for OOPI.
-    HTMLFrameOwnerElement* owner = toFrameView(m_scrollView)->frame().deprecatedLocalOwner();
+    HTMLFrameOwnerElement* owner = m_scrollView->frame().deprecatedLocalOwner();
     if (owner && owner->renderer())
         return axObjectCache()->getOrCreate(owner);
 
-    return axObjectCache()->getOrCreate(toFrameView(m_scrollView)->frame().pagePopupOwner());
+    return axObjectCache()->getOrCreate(m_scrollView->frame().pagePopupOwner());
 }
 
 AXObject* AXScrollView::parentObjectIfExists() const
@@ -222,11 +222,11 @@ AXObject* AXScrollView::parentObjectIfExists() const
     if (!m_scrollView || !m_scrollView->isFrameView())
         return 0;
 
-    HTMLFrameOwnerElement* owner = toFrameView(m_scrollView)->frame().deprecatedLocalOwner();
+    HTMLFrameOwnerElement* owner = m_scrollView->frame().deprecatedLocalOwner();
     if (owner && owner->renderer())
         return axObjectCache()->get(owner);
 
-    return axObjectCache()->get(toFrameView(m_scrollView)->frame().pagePopupOwner());
+    return axObjectCache()->get(m_scrollView->frame().pagePopupOwner());
 }
 
 ScrollableArea* AXScrollView::getScrollableAreaIfScrollable() const

@@ -265,10 +265,10 @@ void AutoscrollController::updatePanScrollState(FrameView* view, const IntPoint&
 {
     // At the original click location we draw a 4 arrowed icon. Over this icon there won't be any scroll
     // So we don't want to change the cursor over this area
-    bool east = m_panScrollStartPos.x() < (lastKnownMousePosition.x() - ScrollView::noPanScrollRadius);
-    bool west = m_panScrollStartPos.x() > (lastKnownMousePosition.x() + ScrollView::noPanScrollRadius);
-    bool north = m_panScrollStartPos.y() > (lastKnownMousePosition.y() + ScrollView::noPanScrollRadius);
-    bool south = m_panScrollStartPos.y() < (lastKnownMousePosition.y() - ScrollView::noPanScrollRadius);
+    bool east = m_panScrollStartPos.x() < (lastKnownMousePosition.x() - FrameView::noPanScrollRadius);
+    bool west = m_panScrollStartPos.x() > (lastKnownMousePosition.x() + FrameView::noPanScrollRadius);
+    bool north = m_panScrollStartPos.y() > (lastKnownMousePosition.y() + FrameView::noPanScrollRadius);
+    bool south = m_panScrollStartPos.y() < (lastKnownMousePosition.y() - FrameView::noPanScrollRadius);
 
     if (m_autoscrollType == AutoscrollForPan && (east || west || north || south))
         m_autoscrollType = AutoscrollForPanCanStop;

@@ -32,13 +32,13 @@ namespace blink {
 
 class AXScrollbar;
 class Scrollbar;
-class ScrollView;
+class FrameView;
 
 class AXScrollView final : public AXObject {
 public:
-    static PassRefPtr<AXScrollView> create(ScrollView*);
+    static PassRefPtr<AXScrollView> create(FrameView*);
     virtual AccessibilityRole roleValue() const override { return ScrollAreaRole; }
-    ScrollView* scrollView() const { return m_scrollView; }
+    FrameView* scrollView() const { return m_scrollView; }
 
     virtual ~AXScrollView();
     virtual void detach() override;
@@ -48,7 +48,7 @@ protected:
     virtual void scrollTo(const IntPoint&) const override;
 
 private:
-    explicit AXScrollView(ScrollView*);
+    explicit AXScrollView(FrameView*);
 
     virtual bool computeAccessibilityIsIgnored() const override;
     virtual bool isAXScrollView() const override { return true; }
@@ -75,7 +75,7 @@ private:
     AXScrollbar* addChildScrollbar(Scrollbar*);
     void removeChildScrollbar(AXObject*);
 
-    ScrollView* m_scrollView;
+    FrameView* m_scrollView;
     RefPtr<AXObject> m_horizontalScrollbar;
     RefPtr<AXObject> m_verticalScrollbar;
     bool m_childrenDirty;

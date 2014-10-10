@@ -35,7 +35,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/mac/BlockExceptions.h"
 #include "platform/mac/NSScrollerImpDetails.h"
-#include "platform/scroll/ScrollView.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMacCommon.h"

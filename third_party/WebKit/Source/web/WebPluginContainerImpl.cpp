@@ -68,7 +68,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollAnimator.h"
-#include "platform/scroll/ScrollView.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
@@ -116,7 +115,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRec
     gc->save();
 
     ASSERT(parent()->isFrameView());
-    ScrollView* view =  toScrollView(parent());
+    FrameView* view =  toFrameView(parent());
 
     // The plugin is positioned in window coordinates, so it needs to be painted
     // in window coordinates.
@@ -543,7 +542,7 @@ void WebPluginContainerImpl::setWantsWheelEvents(bool wantsWheelEvents)
 
 WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
 {
-    ScrollView* view = toScrollView(parent());
+    FrameView* view = toFrameView(parent());
     if (!view)
         return point;
     WebPoint windowPoint = view->windowToContents(point);
@@ -552,7 +551,7 @@ WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
 
 WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
 {
-    ScrollView* view = toScrollView(parent());
+    FrameView* view = toFrameView(parent());
     if (!view)
         return point;
     IntPoint absolutePoint = roundedIntPoint(m_element->renderer()->localToAbsolute(LayoutPoint(point), UseTransforms));
@@ -932,7 +931,7 @@ void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,
                                                IntRect& clipRect,
                                                Vector<IntRect>& cutOutRects)
 {
-    windowRect = toScrollView(parent())->contentsToWindow(frameRect);
+    windowRect = toFrameView(parent())->contentsToWindow(frameRect);
 
     // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
     clipRect = windowClipRect();

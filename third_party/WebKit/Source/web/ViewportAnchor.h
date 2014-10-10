@@ -41,9 +41,9 @@
 namespace blink {
 
 class EventHandler;
+class FrameView;
 class IntSize;
 class Node;
-class ScrollView;
 
 // ViewportAnchor provides a way to anchor a viewport origin to a DOM node.
 // In particular, the user supplies the current viewport (in CSS coordinates)
@@ -59,7 +59,7 @@ public:
 
     void setAnchor(const IntRect& outerViewRect, const IntRect& innerViewRect, const FloatSize& anchorInViewCoords);
 
-    void computeOrigins(const ScrollView&, const FloatSize& innerSize,
+    void computeOrigins(const FrameView&, const FloatSize& innerSize,
         IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const;
 
 private:

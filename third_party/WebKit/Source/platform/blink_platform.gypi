@@ -757,7 +757,6 @@
       'scroll/ScrollAnimatorNone.cpp',
       'scroll/ScrollAnimatorNone.h',
       'scroll/ScrollTypes.h',
-      'scroll/ScrollView.cpp',
       'scroll/ScrollableArea.cpp',
       'scroll/ScrollableArea.h',
       'scroll/Scrollbar.cpp',

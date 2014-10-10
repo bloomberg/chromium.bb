@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #import "config.h"
@@ -31,7 +31,7 @@
 #import "platform/mac/BlockExceptions.h"
 #import "platform/mac/LocalCurrentGraphicsContext.h"
 #import "platform/mac/WebCoreNSCellExtras.h"
-#import "platform/scroll/ScrollView.h"
+#import "platform/scroll/ScrollableArea.h"
 #include "wtf/StdLibExtras.h"
 
 NSRect focusRingClipRect;
@@ -146,19 +146,19 @@ static void setControlSize(NSCell* cell, const IntSize* sizes, const IntSize& mi
 static void updateStates(NSCell* cell, ControlStates states)
 {
     // Hover state is not supported by Aqua.
-    
+
     // Pressed state
     bool oldPressed = [cell isHighlighted];
     bool pressed = states & PressedControlState;
     if (pressed != oldPressed)
         [cell setHighlighted:pressed];
-    
+
     // Enabled state
     bool oldEnabled = [cell isEnabled];
     bool enabled = states & EnabledControlState;
     if (enabled != oldEnabled)
         [cell setEnabled:enabled];
-    
+
 #if BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     // Focused state
     bool oldFocused = [cell showsFirstResponder];
@@ -174,8 +174,8 @@ static void updateStates(NSCell* cell, ControlStates states)
     bool oldChecked = [cell state] == NSOnState;
     if (oldIndeterminate != indeterminate || checked != oldChecked)
         [cell setState:indeterminate ? NSMixedState : (checked ? NSOnState : NSOffState)];
-        
-    // Window inactive state does not need to be checked explicitly, since we paint parented to 
+
+    // Window inactive state does not need to be checked explicitly, since we paint parented to
     // a view in a window whose key state can be detected.
 }
 
@@ -277,18 +277,18 @@ static NSButtonCell *checkbox(ControlStates states, const IntRect& zoomedRect, f
         [checkboxCell setAllowsMixedState:YES];
         [checkboxCell setFocusRingType:NSFocusRingTypeExterior];
     }
-    
+
     // Set the control size based off the rectangle we're painting into.
     setControlSize(checkboxCell, checkboxSizes(), zoomedRect.size(), zoomFactor);
 
     // Update the various states we respond to.
     updateStates(checkboxCell, states);
-    
+
     return checkboxCell;
 }
 
 // FIXME: Share more code with radio buttons.
-static void paintCheckbox(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollView* scrollView)
+static void paintCheckbox(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
 
@@ -301,7 +301,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
     zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
     zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
     IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, checkboxMargins(controlSize), zoomFactor);
-    
+
     if (zoomFactor != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
         inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
@@ -318,7 +318,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
         [checkboxCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
 #endif
     [checkboxCell setControlView:nil];
-    
+
     END_BLOCK_OBJC_EXCEPTIONS
 }
 
@@ -360,7 +360,7 @@ static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, floa
         [radioCell setTitle:nil];
         [radioCell setFocusRingType:NSFocusRingTypeExterior];
     }
-    
+
     // Set the control size based off the rectangle we're painting into.
     setControlSize(radioCell, radioSizes(), zoomedRect.size(), zoomFactor);
 
@@ -368,11 +368,11 @@ static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, floa
     // Cocoa draws NSMixedState NSRadioButton as NSOnState so we don't want that.
     states &= ~IndeterminateControlState;
     updateStates(radioCell, states);
-    
+
     return radioCell;
 }
 
-static void paintRadio(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollView* scrollView)
+static void paintRadio(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView)
 {
     // Determine the width and height needed for the control and prepare the cell for painting.
     NSButtonCell *radioCell = radio(states, zoomedRect, zoomFactor);
@@ -383,7 +383,7 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
     zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
     zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
     IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, radioMargins(controlSize), zoomFactor);
-    
+
     if (zoomFactor != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
         inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
@@ -453,10 +453,10 @@ static NSButtonCell *button(ControlPart part, ControlStates states, const IntRec
     return cell;
 }
 
-static void paintButton(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollView* scrollView)
+static void paintButton(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
-    
+
     // Determine the width and height needed for the control and prepare the cell for painting.
     NSButtonCell *buttonCell = button(part, states, zoomedRect, zoomFactor);
     GraphicsContextStateSaver stateSaver(*context);
@@ -483,7 +483,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
             context->scale(zoomFactor, zoomFactor);
             context->translate(-inflatedRect.x(), -inflatedRect.y());
         }
-    } 
+    }
 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     NSView *view = ThemeMac::ensuredView(scrollView);
@@ -518,7 +518,7 @@ static NSControlSize stepperControlSizeForFont(const FontDescription& fontDescri
     return NSMiniControlSize;
 }
 
-static void paintStepper(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollView*)
+static void paintStepper(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea*)
 {
     // We don't use NSStepperCell because there are no ways to draw an
     // NSStepperCell with the up button highlighted.
@@ -560,7 +560,7 @@ static void paintStepper(ControlStates states, GraphicsContext* context, const I
 
 // This will ensure that we always return a valid NSView, even if ScrollView doesn't have an associated document NSView.
 // If the ScrollView doesn't have an NSView, we will return a fake NSView whose sole purpose is to tell AppKit that it's flipped.
-NSView *ThemeMac::ensuredView(ScrollView* scrollView)
+NSView *ThemeMac::ensuredView(ScrollableArea* scrollView)
 {
 
     // Use a fake flipped view.
@@ -721,7 +721,7 @@ void ThemeMac::inflateControlPaintRect(ControlPart part, ControlStates states, I
     END_BLOCK_OBJC_EXCEPTIONS
 }
 
-void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollView* scrollView) const
+void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView) const
 {
     switch (part) {
         case CheckboxPart:

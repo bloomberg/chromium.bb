@@ -38,7 +38,7 @@ namespace blink {
 
 class AbstractInlineTextBox;
 class HTMLAreaElement;
-class ScrollView;
+class FrameView;
 class Widget;
 
 struct TextMarkerData {
@@ -127,12 +127,12 @@ public:
     void handleAriaExpandedChange(Node*);
 
     // Called when scroll bars are added / removed (as the view resizes).
-    void handleScrollbarUpdate(ScrollView*);
+    void handleScrollbarUpdate(FrameView*);
 
     void handleLayoutComplete(RenderObject*);
 
     // Called when the scroll offset changes.
-    void handleScrollPositionChanged(ScrollView*);
+    void handleScrollPositionChanged(FrameView*);
     void handleScrollPositionChanged(RenderObject*);
 
     void handleAttributeChanged(const QualifiedName& attrName, Element*);

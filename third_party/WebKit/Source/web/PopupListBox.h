@@ -32,8 +32,9 @@
 #define PopupListBox_h
 
 #include "core/dom/Element.h"
+#include "platform/Widget.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/ScrollView.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
 

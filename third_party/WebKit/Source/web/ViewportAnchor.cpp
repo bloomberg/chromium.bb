@@ -33,9 +33,9 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
+#include "core/frame/FrameView.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
-#include "platform/scroll/ScrollView.h"
 
 namespace blink {
 
@@ -148,7 +148,7 @@ void ViewportAnchor::setAnchor(const IntRect& outerViewRect, const IntRect& inne
     m_anchorInNodeCoords.scale(1.f / m_anchorNodeBounds.width(), 1.f / m_anchorNodeBounds.height());
 }
 
-void ViewportAnchor::computeOrigins(const ScrollView& scrollView, const FloatSize& innerSize,
+void ViewportAnchor::computeOrigins(const FrameView& scrollView, const FloatSize& innerSize,
     IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const
 {
     IntSize outerSize = scrollView.visibleContentRect().size();

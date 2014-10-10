@@ -64,7 +64,7 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperati
     WidgetToParentMap::iterator end = map.end();
     for (WidgetToParentMap::iterator it = map.begin(); it != end; ++it) {
         Widget* child = it->key.get();
-        ScrollView* currentParent = toScrollView(child->parent());
+        FrameView* currentParent = toFrameView(child->parent());
         FrameView* newParent = it->value;
         if (newParent != currentParent) {
             if (currentParent)
@@ -88,8 +88,8 @@ static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
     if (!s_updateSuspendCount) {
         if (parent)
             parent->addChild(child);
-        else if (toScrollView(child->parent()))
-            toScrollView(child->parent())->removeChild(child);
+        else if (toFrameView(child->parent()))
+            toFrameView(child->parent())->removeChild(child);
         return;
     }
     widgetNewParentMap().set(child, parent);

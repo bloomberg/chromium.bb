@@ -28,8 +28,8 @@
 
 #include "config.h"
 #include "core/accessibility/AXScrollbar.h"
-
-#include "platform/scroll/ScrollView.h"
+#include "platform/scroll/ScrollableArea.h"
+#include "platform/scroll/Scrollbar.h"
 
 namespace blink {
 

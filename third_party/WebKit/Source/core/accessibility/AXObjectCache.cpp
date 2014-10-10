@@ -56,6 +56,7 @@
 #include "core/accessibility/AXTableHeaderContainer.h"
 #include "core/accessibility/AXTableRow.h"
 #include "core/dom/Document.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
@@ -75,7 +76,6 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderView.h"
-#include "platform/scroll/ScrollView.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -341,7 +341,7 @@ AXObject* AXObjectCache::getOrCreate(Widget* widget)
 
     RefPtr<AXObject> newObj = nullptr;
     if (widget->isFrameView())
-        newObj = AXScrollView::create(toScrollView(widget));
+        newObj = AXScrollView::create(toFrameView(widget));
     else if (widget->isScrollbar())
         newObj = AXScrollbar::create(toScrollbar(widget));
 
@@ -806,7 +806,7 @@ void AXObjectCache::selectedChildrenChanged(RenderObject* renderer)
     postNotification(renderer, AXSelectedChildrenChanged, false);
 }
 
-void AXObjectCache::handleScrollbarUpdate(ScrollView* view)
+void AXObjectCache::handleScrollbarUpdate(FrameView* view)
 {
     if (!view)
         return;
@@ -1027,7 +1027,7 @@ void AXObjectCache::handleScrolledToAnchor(const Node* anchorNode)
     postPlatformNotification(AXObject::firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
 }
 
-void AXObjectCache::handleScrollPositionChanged(ScrollView* scrollView)
+void AXObjectCache::handleScrollPositionChanged(FrameView* scrollView)
 {
     postPlatformNotification(getOrCreate(scrollView), AXScrollPositionChanged);
 }
