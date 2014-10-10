@@ -106,7 +106,7 @@ void mmap_breakpoint(void) {
 
 void ret_sequence(void) {
 #if defined(__i386__)
-  asm(
+  __asm__(
       ".globl ret_start\n"
       ".globl ret_end\n"
       ".align 32\n"
@@ -114,7 +114,7 @@ void ret_sequence(void) {
       "naclret\n"
       "ret_end:\n");
 #elif defined(__x86_64__)
-  asm(
+  __asm__(
       ".globl ret_start\n"
       ".globl ret_end\n"
       ".align 32\n"

@@ -5,6 +5,10 @@
  */
 
     /*
+     * nacl-clang does not use the .init/.fini mechanism at all.
+     */
+#if !defined(__clang__)
+    /*
      * The .init section needs to be finished by a function return.
      */
     .section .init
@@ -23,5 +27,5 @@
 
     leave
     naclret
-
+#endif
     .p2align NACLENTRYALIGN,0xf4

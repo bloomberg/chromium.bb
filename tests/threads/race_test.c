@@ -52,7 +52,7 @@ NOINLINE void break_optimization(void) {
   volatile int foo;
   foo = 0;
 #else
-  asm volatile ("");
+  __asm__ volatile ("");
 #endif
 }
 

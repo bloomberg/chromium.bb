@@ -46,6 +46,7 @@
  * lock-free: we can't guarantee that all our platforms are lock-free.
  */
 void test_lock_free_macros() {
+#if defined(__pnacl__)
   static_assert(ATOMIC_BOOL_LOCK_FREE == 1, "should be compile-time 1");
   static_assert(ATOMIC_CHAR_LOCK_FREE == 1, "should be compile-time 1");
   static_assert(ATOMIC_CHAR16_T_LOCK_FREE == 1, "should be compile-time 1");
@@ -56,6 +57,20 @@ void test_lock_free_macros() {
   static_assert(ATOMIC_LONG_LOCK_FREE == 1, "should be compile-time 1");
   static_assert(ATOMIC_LLONG_LOCK_FREE == 1, "should be compile-time 1");
   static_assert(ATOMIC_POINTER_LOCK_FREE == 1, "should be compile-time 1");
+#elif defined(__x86_64__) || defined(__i386__) || defined(__arm__)
+  static_assert(ATOMIC_BOOL_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_CHAR_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_CHAR16_T_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_CHAR32_T_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_WCHAR_T_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_SHORT_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_INT_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_LONG_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_LLONG_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_POINTER_LOCK_FREE == 2, "should be compile-time 2");
+# else
+  // TODO: Other architechtures, such as mips
+#endif
 }
 
 #define TEST_IS_LOCK_FREE(TYPE) do {                    \

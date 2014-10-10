@@ -261,6 +261,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'bitcode', default=False,
     desc='We are building bitcode')
 
+  BitFromArgument(env, 'nacl_clang', default=False,
+    desc='Use the native nacl-clang newlib compiler instead of nacl-gcc')
+
   BitFromArgument(env, 'translate_fast', default=False,
     desc='When using pnacl TC (bitcode=1) use accelerated translation step')
 
@@ -1235,7 +1238,8 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
   if toolchain_name is None:
     # Fill in default arguments based on environment.
     if is_pnacl is None:
-      is_pnacl = env.Bit('bitcode')
+      # For the purposes of finding the toolchain dir, nacl_clang is PNaCl.
+      is_pnacl = env.Bit('bitcode') or env.Bit('nacl_clang')
       if lib_name is None:
         if is_pnacl or not env.Bit('nacl_glibc'):
           lib_name = 'newlib'
@@ -2893,6 +2897,8 @@ pre_base_env.Append(
 # independent binaries
 # NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
 nacl_env = MakeArchSpecificEnv()
+# See comment below about libc++ and libpthread in NONIRT_LIBS.
+using_nacl_libcxx = nacl_env.Bit('bitcode') or nacl_env.Bit('nacl_clang')
 nacl_env = nacl_env.Clone(
     tools = ['naclsdk'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
@@ -2946,10 +2952,17 @@ nacl_env = nacl_env.Clone(
     # These are settings for in-tree, non-browser tests to use.
     # They use libraries that circumvent the IRT-based implementations
     # in the public libraries.
-    # Note that pthread_private is part of NONIRT_LIBS for PNaCl because
-    # libc++ depends on it.
+    # Note that pthread_private is part of NONIRT_LIBS for clang because
+    # libc++ depends on libpthread. However we can't just add
+    # libpthread_private to the link line because those libs get added before
+    # the standard libs, so the references that come from libc++ itself will
+    # still get satisfied from libpthread instead of libpthread_private (and
+    # that code will crash because it requires the IRT). So put libc++ on the
+    # user link line before libpthread_private to ensure that its references
+    # to libpthread also get satisfied by libpthread_private.
+    # TODO(dschuff): Also remove the hack in pnacl-ld and use this for pnacl.
     NONIRT_LIBS = (['nacl_sys_private'] +
-                   (['pthread_private'] if nacl_env.Bit('bitcode') else [])),
+                   (['c++','pthread_private'] if using_nacl_libcxx else [])),
     PTHREAD_LIBS = ['pthread_private'],
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     EXCEPTION_LIBS = ['nacl_exception_private'],
@@ -3147,6 +3160,12 @@ if nacl_env.Bit('bitcode'):
   # http://code.google.com/p/nativeclient/issues/detail?id=2861
   nacl_env.Append(CCFLAGS=['-Wno-unused-private-field'])
 
+if nacl_env.Bit('nacl_clang'):
+  # third_party/valgrind/nacl_valgrind.h uses asm instead of __asm__
+  # https://code.google.com/p/nativeclient/issues/detail?id=3974
+  # TODO(dschuff): change it to __asm__ and remove this suppression.
+  nacl_env.Append(CCFLAGS=['-Wno-language-extension-token'])
+
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone
 # it from nacl_env here, before too much other cruft has been added.
@@ -3175,6 +3194,7 @@ target_variant_map = [
     ('nacl_glibc', 'glibc'),
     ('pnacl_generate_pexe', 'pexe'),
     ('nonsfi_nacl', 'nonsfi'),
+    ('nacl_clang', 'clang'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
@@ -3644,6 +3664,10 @@ def AddImplicitLibs(env):
       # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
       if GetTargetPlatform() == 'x86-32':
         implicit_libs.append(os.path.join('32', 'crt1.o'))
+    # libc++ depends on libpthread, and because PPAPI applications always need
+    # threads anyway, nacl-clang just includes -lpthread unconditionally.
+    if using_nacl_libcxx and env['NACL_BUILD_FAMILY'] != 'UNTRUSTED_IRT':
+      implicit_libs += ['libpthread.a']
 
   if implicit_libs != []:
     env['IMPLICIT_LIBS'] = [env.File(os.path.join('${LIB_DIR}', file))

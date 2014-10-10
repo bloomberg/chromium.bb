@@ -27,6 +27,12 @@ if env.Bit('host_windows'):
 # restore %cs to its saved value on return from a signal handler.
 if env.Bit('host_mac'):
   Return()
+# nacl-clang's integrated assembler expands "naclcall" to a sequence which
+# separates the push of the return address from the jump, and so breaks the
+# test's expectations for the stack pointer.
+# TODO(dschuff): re-enable this test after we switch to gas with nacl-clang
+if env.Bit('nacl_clang'):
+  Return()
 
 if env.Bit('build_x86'):
   step_test_guest = env.ComponentProgram(

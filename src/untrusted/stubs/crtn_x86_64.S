@@ -3,7 +3,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
+    /*
+     * nacl-clang does not use the .init/.fini mechanism at all.
+     */
+#if !defined(__clang__)
     /*
      * The .init section needs to be finished by a function return.
      */
@@ -29,5 +32,5 @@
     movl %r11d,%ebp
     addq %r15,%rbp
     naclret
-
+#endif
     .p2align NACLENTRYALIGN,0xf4

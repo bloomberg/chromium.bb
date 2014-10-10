@@ -99,6 +99,15 @@ def _SetEnvForNativeSdk(env, sdk_path):
     raise Exception("Cannot find a toolchain for %s in %s" %
                     (env['TARGET_FULLARCH'], sdk_path))
 
+  cc = 'clang' if env.Bit('nacl_clang') else 'gcc'
+  cxx = 'clang++' if env.Bit('nacl_clang') else 'g++'
+  # Eventually nacl-clang will default to -no-integrated-as but for now we have
+  # to use the integrated as for compilation because of
+  # https://code.google.com/p/nativeclient/issues/detail?id=3966
+  # However clang's as' support of some of the nacl syntax is incomplete, so for
+  # now use binutils as for our asm files.
+  as_flags = '-no-integrated-as' if env.Bit('nacl_clang') else []
+
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
               # TODO(robertm): switch to using the mechanism that
@@ -107,14 +116,14 @@ def _SetEnvForNativeSdk(env, sdk_path):
               # where to find/put nacl generic extra sdk libraries
               NACL_SDK_LIB='%s/%s' % (sdk_path, libdir),
               # Replace the normal unix tools with the NaCl ones.
-              CC=os.path.join(bin_path, '%s-gcc' % tool_prefix),
-              CXX=os.path.join(bin_path, '%s-g++' % tool_prefix),
+              CC=os.path.join(bin_path, '%s-%s' % (tool_prefix, cc)),
+              CXX=os.path.join(bin_path, '%s-%s' % (tool_prefix, cxx)),
               AR=os.path.join(bin_path, '%s-ar' % tool_prefix),
               AS=os.path.join(bin_path, '%s-as' % tool_prefix),
-              ASPP=os.path.join(bin_path, '%s-gcc' % tool_prefix),
+              ASPP=os.path.join(bin_path, '%s-%s' % (tool_prefix, cc)),
               GDB=os.path.join(bin_path, '%s-gdb' % tool_prefix),
               # NOTE: use g++ for linking so we can handle C AND C++.
-              LINK=os.path.join(bin_path, '%s-g++' % tool_prefix),
+              LINK=os.path.join(bin_path, '%s-%s' % (tool_prefix, cxx)),
               # Grrr... and sometimes we really need ld.
               LD=os.path.join(bin_path, '%s-ld' % tool_prefix) + ld_mode_flag,
               RANLIB=os.path.join(bin_path, '%s-ranlib' % tool_prefix),
@@ -139,7 +148,7 @@ def _SetEnvForNativeSdk(env, sdk_path):
                        '-pedantic',
                        '-D__linux__',
                        ],
-              ASFLAGS=[],
+              ASFLAGS=as_flags,
               )
 
   # NaClSdk environment seems to be inherited from the host environment.
@@ -665,22 +674,22 @@ def generate(env):
   # if bitcode=1 use pnacl toolchain
   if env.Bit('bitcode'):
     _SetEnvForPnacl(env, root)
+  elif env.Bit('built_elsewhere'):
+    _StubOutEnvToolsForBuiltElsewhere(env)
+  else:
+    _SetEnvForNativeSdk(env, root)
 
+  if (env.Bit('bitcode') or env.Bit('nacl_clang')) and env.Bit('target_x86'):
     # Get GDB from the nacl-gcc toolchain even when using PNaCl.
     # TODO(mseaborn): We really want the nacl-gdb binary to be in a
     # separate tarball from the nacl-gcc toolchain, then this step
     # will not be necessary.
     # See http://code.google.com/p/nativeclient/issues/detail?id=2773
-    if env.Bit('target_x86'):
-      temp_env = env.Clone()
-      temp_env.ClearBits('bitcode')
-      temp_root = temp_env.GetToolchainDir()
-      _SetEnvForNativeSdk(temp_env, temp_root)
-      env.Replace(GDB=temp_env['GDB'])
-  elif env.Bit('built_elsewhere'):
-    _StubOutEnvToolsForBuiltElsewhere(env)
-  else:
-    _SetEnvForNativeSdk(env, root)
+    temp_env = env.Clone()
+    temp_env.ClearBits('bitcode', 'nacl_clang')
+    temp_root = temp_env.GetToolchainDir()
+    _SetEnvForNativeSdk(temp_env, temp_root)
+    env.Replace(GDB=temp_env['GDB'])
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
 

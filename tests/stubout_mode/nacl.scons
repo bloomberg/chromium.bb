@@ -23,6 +23,11 @@ env.AddNodeToTestSuite(
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
+# nacl-clang currently has trouble with the top-level asm in this file:
+# https://code.google.com/p/nativeclient/issues/detail?id=3968
+if env.Bit('nacl_clang'):
+  Return()
+
 # The file partly_invalid.c contains inline assembler
 if env.Bit('bitcode'):
   env.AddBiasForPNaCl()

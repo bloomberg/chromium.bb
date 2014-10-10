@@ -8,9 +8,6 @@
  * This is nacl-clang's crtbegin file (crtbegin.o, crtbeginS.o, crtbeginT.o).
  * Currently we only support static linking and it only supports being used
  * as crtbeginT.o (see __dso_handle below).
- * Currently it is also just an aggregation of what PNaCl uses, and is enough
- * to compile our tests, but in particular C++ EH doesn't work yet.
- * TODO(dschuff): Make EH work.
  */
 
 /*

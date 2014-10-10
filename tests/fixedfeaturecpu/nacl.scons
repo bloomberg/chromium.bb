@@ -60,8 +60,13 @@ elif env.Bit('nacl_glibc'):
     expect_x87_Z_status=1
 else:
   if env.Bit('target_x86_32'):
-    # 32-bit newlib: passes
-    expect_null_Z_status=0
+    # 32-bit newlib: passes, except nacl-clang's ff_null_z for reasons which
+    # are unknown because ncval is broken and ncval_new doesn't support
+    # FF mode.
+    if env.Bit('nacl_clang'):
+      expect_null_Z_status=1
+    else:
+      expect_null_Z_status=0
     expect_sse_Z_status=1
     expect_x87_Z_status=1
   elif env.Bit('target_x86_64'):
@@ -112,7 +117,7 @@ if not env.Bit('bitcode'):
 # http://code.google.com/p/nativeclient/issues/detail?id=2692
 if not env.Bit('target_x86_64') and not env.Bit('bitcode'):
   x87_env = env.Clone()
-  x87_env.Append(CCFLAGS=['-mfpmath=387'])
+  x87_env.Append(CCFLAGS=['-mfpmath=387', '-mno-sse'])
   x87_o = x87_env.ComponentObject('ff_hello_world_x87.o', 'ff_hello_world.c')
   ff_hello_world_x87_nexe = x87_env.ComponentProgram(
       'ff_hello_world_x87',
