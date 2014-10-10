@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 #include "ui/events/events_base_export.h"
+#include "ui/events/gesture_curve.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -14,13 +15,21 @@ namespace ui {
 
 // FlingCurve can be used to scroll a UI element suitable for touch screen-based
 // flings.
-class EVENTS_BASE_EXPORT FlingCurve {
+class EVENTS_BASE_EXPORT FlingCurve : public GestureCurve {
  public:
   FlingCurve(const gfx::Vector2dF& velocity, base::TimeTicks start_timestamp);
-  ~FlingCurve();
+  virtual ~FlingCurve();
 
-  gfx::Vector2dF GetScrollAmountAtTime(base::TimeTicks current_timestamp);
-  base::TimeTicks start_timestamp() const { return start_timestamp_; }
+  // GestureCurve implementation.
+  virtual bool ComputeScrollOffset(base::TimeTicks time,
+                                   gfx::Vector2dF* offset,
+                                   gfx::Vector2dF* velocity) override;
+
+  // In contrast to |ComputeScrollOffset()|, this method is stateful and
+  // returns the *change* in scroll offset between successive calls.
+  // Returns true as long as the curve is still active and requires additional
+  // animation ticks.
+  bool ComputeScrollDeltaAtTime(base::TimeTicks current, gfx::Vector2dF* delta);
 
  private:
   const float curve_duration_;
@@ -28,7 +37,7 @@ class EVENTS_BASE_EXPORT FlingCurve {
 
   gfx::Vector2dF displacement_ratio_;
   gfx::Vector2dF cumulative_scroll_;
-  base::TimeTicks last_timestamp_;
+  base::TimeTicks previous_timestamp_;
   float time_offset_;
   float position_offset_;
 

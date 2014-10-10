@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/android/scroller.h"
+#include "ui/events/android/scroller.h"
 
 #include <cmath>
 
 #include "base/lazy_instance.h"
 
-namespace gfx {
+namespace ui {
 namespace {
 
 // Default scroll duration from android.widget.Scroller.
@@ -122,9 +122,7 @@ struct SplineConstants {
   }
 
  private:
-  enum {
-    NUM_SAMPLES = 100
-  };
+  enum { NUM_SAMPLES = 100 };
 
   float spline_position_[NUM_SAMPLES + 1];
   float spline_time_[NUM_SAMPLES + 1];
@@ -160,8 +158,8 @@ base::LazyInstance<SplineConstants>::Leaky g_spline_constants =
 }  // namespace
 
 Scroller::Config::Config()
-    : fling_friction(kDefaultFriction),
-      flywheel_enabled(false) {}
+    : fling_friction(kDefaultFriction), flywheel_enabled(false) {
+}
 
 Scroller::Scroller(const Config& config)
     : mode_(UNDEFINED),
@@ -187,9 +185,27 @@ Scroller::Scroller(const Config& config)
       distance_(0),
       fling_friction_(config.fling_friction),
       deceleration_(ComputeDeceleration(fling_friction_)),
-      tuning_coeff_(ComputeDeceleration(0.84f)) {}
+      tuning_coeff_(ComputeDeceleration(0.84f)) {
+}
 
-Scroller::~Scroller() {}
+Scroller::~Scroller() {
+}
+
+bool Scroller::ComputeScrollOffset(base::TimeTicks time,
+                                   gfx::Vector2dF* offset,
+                                   gfx::Vector2dF* velocity) {
+  DCHECK(offset);
+  DCHECK(velocity);
+  if (!ComputeScrollOffsetInternal(time)) {
+    *offset = gfx::Vector2dF(GetFinalX(), GetFinalY());
+    *velocity = gfx::Vector2dF();
+    return false;
+  }
+
+  *offset = gfx::Vector2dF(GetCurrX(), GetCurrY());
+  *velocity = gfx::Vector2dF(GetCurrVelocityX(), GetCurrVelocityY());
+  return true;
+}
 
 void Scroller::StartScroll(float start_x,
                            float start_y,
@@ -210,6 +226,7 @@ void Scroller::StartScroll(float start_x,
                            float dy,
                            base::TimeTicks start_time,
                            base::TimeDelta duration) {
+  DCHECK_GT(duration.ToInternalValue(), 0);
   mode_ = SCROLL_MODE;
   finished_ = false;
   duration_ = duration;
@@ -232,6 +249,8 @@ void Scroller::Fling(float start_x,
                      float min_y,
                      float max_y,
                      base::TimeTicks start_time) {
+  DCHECK(velocity_x || velocity_y);
+
   // Continue a scroll or fling in progress.
   if (flywheel_enabled_ && !finished_) {
     float old_velocity_x = GetCurrVelocityX();
@@ -250,6 +269,7 @@ void Scroller::Fling(float start_x,
 
   velocity_ = velocity;
   duration_ = GetSplineFlingDuration(velocity);
+  DCHECK_GT(duration_.ToInternalValue(), 0);
   duration_seconds_reciprocal_ = 1.0 / duration_.InSecondsF();
   start_time_ = start_time;
   curr_time_ = start_time_;
@@ -274,68 +294,6 @@ void Scroller::Fling(float start_x,
   final_y_ = Clamped(final_y_, min_y_, max_y_);
 
   RecomputeDeltas();
-}
-
-bool Scroller::ComputeScrollOffset(base::TimeTicks time) {
-  if (finished_)
-    return false;
-
-  if (time == curr_time_)
-    return true;
-
-  base::TimeDelta time_passed = time - start_time_;
-
-  if (time_passed < base::TimeDelta()) {
-    time_passed = base::TimeDelta();
-  }
-
-  if (time_passed >= duration_) {
-    curr_x_ = final_x_;
-    curr_y_ = final_y_;
-    curr_time_ = start_time_ + duration_;
-    finished_ = true;
-    return true;
-  }
-
-  curr_time_ = time;
-
-  const float t = time_passed.InSecondsF() * duration_seconds_reciprocal_;
-
-  switch (mode_) {
-    case UNDEFINED:
-      NOTREACHED() << "|StartScroll()| or |Fling()| must be called prior to "
-                      "scroll offset computation.";
-      return false;
-
-    case SCROLL_MODE: {
-      float x = g_viscosity_constants.Get().ApplyViscosity(t);
-
-      curr_x_ = start_x_ + x * delta_x_;
-      curr_y_ = start_y_ + x * delta_y_;
-    } break;
-
-    case FLING_MODE: {
-      float distance_coef = 1.f;
-      float velocity_coef = 0.f;
-      g_spline_constants.Get().CalculateCoefficients(
-          t, &distance_coef, &velocity_coef);
-
-      curr_velocity_ = velocity_coef * distance_ * duration_seconds_reciprocal_;
-
-      curr_x_ = start_x_ + distance_coef * delta_x_;
-      curr_x_ = Clamped(curr_x_, min_x_, max_x_);
-
-      curr_y_ = start_y_ + distance_coef * delta_y_;
-      curr_y_ = Clamped(curr_y_, min_y_, max_y_);
-
-      float diff_x = std::abs(curr_x_ - final_x_);
-      float diff_y = std::abs(curr_y_ - final_y_);
-      if (diff_x < kThresholdForFlingEnd && diff_y < kThresholdForFlingEnd)
-        finished_ = true;
-    } break;
-  }
-
-  return true;
 }
 
 void Scroller::ExtendDuration(base::TimeDelta extend) {
@@ -365,19 +323,29 @@ void Scroller::AbortAnimation() {
   finished_ = true;
 }
 
-void Scroller::ForceFinished(bool finished) { finished_ = finished; }
+void Scroller::ForceFinished(bool finished) {
+  finished_ = finished;
+}
 
-bool Scroller::IsFinished() const { return finished_; }
+bool Scroller::IsFinished() const {
+  return finished_;
+}
 
 base::TimeDelta Scroller::GetTimePassed() const {
   return curr_time_ - start_time_;
 }
 
-base::TimeDelta Scroller::GetDuration() const { return duration_; }
+base::TimeDelta Scroller::GetDuration() const {
+  return duration_;
+}
 
-float Scroller::GetCurrX() const { return curr_x_; }
+float Scroller::GetCurrX() const {
+  return curr_x_;
+}
 
-float Scroller::GetCurrY() const { return curr_y_; }
+float Scroller::GetCurrY() const {
+  return curr_y_;
+}
 
 float Scroller::GetCurrVelocity() const {
   if (finished_)
@@ -395,17 +363,81 @@ float Scroller::GetCurrVelocityY() const {
   return delta_y_norm_ * GetCurrVelocity();
 }
 
-float Scroller::GetStartX() const { return start_x_; }
+float Scroller::GetStartX() const {
+  return start_x_;
+}
 
-float Scroller::GetStartY() const { return start_y_; }
+float Scroller::GetStartY() const {
+  return start_y_;
+}
 
-float Scroller::GetFinalX() const { return final_x_; }
+float Scroller::GetFinalX() const {
+  return final_x_;
+}
 
-float Scroller::GetFinalY() const { return final_y_; }
+float Scroller::GetFinalY() const {
+  return final_y_;
+}
 
 bool Scroller::IsScrollingInDirection(float xvel, float yvel) const {
   return !finished_ && Signum(xvel) == Signum(delta_x_) &&
          Signum(yvel) == Signum(delta_y_);
+}
+
+bool Scroller::ComputeScrollOffsetInternal(base::TimeTicks time) {
+  if (finished_)
+    return false;
+
+  if (time <= start_time_)
+    return true;
+
+  if (time == curr_time_)
+    return true;
+
+  base::TimeDelta time_passed = time - start_time_;
+  if (time_passed >= duration_) {
+    AbortAnimation();
+    return false;
+  }
+
+  curr_time_ = time;
+
+  const float u = time_passed.InSecondsF() * duration_seconds_reciprocal_;
+  switch (mode_) {
+    case UNDEFINED:
+      NOTREACHED() << "|StartScroll()| or |Fling()| must be called prior to "
+                      "scroll offset computation.";
+      return false;
+
+    case SCROLL_MODE: {
+      float x = g_viscosity_constants.Get().ApplyViscosity(u);
+
+      curr_x_ = start_x_ + x * delta_x_;
+      curr_y_ = start_y_ + x * delta_y_;
+    } break;
+
+    case FLING_MODE: {
+      float distance_coef = 1.f;
+      float velocity_coef = 0.f;
+      g_spline_constants.Get().CalculateCoefficients(
+          u, &distance_coef, &velocity_coef);
+
+      curr_velocity_ = velocity_coef * distance_ * duration_seconds_reciprocal_;
+
+      curr_x_ = start_x_ + distance_coef * delta_x_;
+      curr_x_ = Clamped(curr_x_, min_x_, max_x_);
+
+      curr_y_ = start_y_ + distance_coef * delta_y_;
+      curr_y_ = Clamped(curr_y_, min_y_, max_y_);
+
+      float diff_x = std::abs(curr_x_ - final_x_);
+      float diff_y = std::abs(curr_y_ - final_y_);
+      if (diff_x < kThresholdForFlingEnd && diff_y < kThresholdForFlingEnd)
+        AbortAnimation();
+    } break;
+  }
+
+  return !finished_;
 }
 
 void Scroller::RecomputeDeltas() {
@@ -441,4 +473,4 @@ double Scroller::GetSplineFlingDistance(float velocity) const {
          std::exp(kDecelerationRate / decel_minus_one * l);
 }
 
-}  // namespace gfx
+}  // namespace ui

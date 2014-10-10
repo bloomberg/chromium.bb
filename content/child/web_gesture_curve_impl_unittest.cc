@@ -1,25 +1,21 @@
-  // Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests for the TouchFlingGestureCurve.
-
-#include "content/child/touch_fling_gesture_curve.h"
+#include "content/child/web_gesture_curve_impl.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
+#include "ui/events/gestures/fling_curve.h"
 
-using blink::WebFloatPoint;
 using blink::WebFloatSize;
 using blink::WebGestureCurve;
 using blink::WebGestureCurveTarget;
-using blink::WebSize;
 
+namespace content {
 namespace {
 
 class MockGestureCurveTarget : public WebGestureCurveTarget {
@@ -32,34 +28,40 @@ class MockGestureCurveTarget : public WebGestureCurveTarget {
     return true;
   }
 
-  WebFloatSize cumulative_delta() const { return cumulative_delta_; }
-  void resetCumulativeDelta() { cumulative_delta_ = WebFloatSize(); }
-
-  WebFloatSize current_velocity() const { return current_velocity_; }
+  const WebFloatSize& cumulative_delta() const { return cumulative_delta_; }
+  const WebFloatSize& current_velocity() const { return current_velocity_; }
 
  private:
   WebFloatSize cumulative_delta_;
   WebFloatSize current_velocity_;
 };
 
-} // namespace anonymous
+}  // namespace anonymous
 
-TEST(TouchFlingGestureCurve, flingCurveTouch)
-{
-  double initialVelocity = 5000;
-  MockGestureCurveTarget target;
+TEST(WebGestureCurveImplTest, Basic) {
+  gfx::Vector2dF velocity(5000, 0);
+  gfx::Vector2dF offset;
+  base::TimeTicks time;
+  auto curve = WebGestureCurveImpl::CreateFrom(
+      scoped_ptr<ui::GestureCurve>(new ui::FlingCurve(velocity, time)), offset);
 
-  scoped_ptr<WebGestureCurve> curve(content::TouchFlingGestureCurve::Create(
-      WebFloatPoint(initialVelocity, 0), WebSize()));
-
-  // Note: the expectations below are dependent on the curve parameters hard
   // coded into the create call above.
+  MockGestureCurveTarget target;
   EXPECT_TRUE(curve->apply(0, &target));
   EXPECT_TRUE(curve->apply(0.25, &target));
   EXPECT_NEAR(target.current_velocity().width, 1878, 1);
   EXPECT_EQ(target.current_velocity().height, 0);
-  EXPECT_TRUE(curve->apply(0.45f, &target)); // Use non-uniform tick spacing.
-  EXPECT_TRUE(curve->apply(1, &target));
+  EXPECT_GT(target.cumulative_delta().width, 0);
+  EXPECT_TRUE(curve->apply(0.45, &target));  // Use non-uniform tick spacing.
+
+  // Ensure fling persists even if successive timestamps are identical.
+  gfx::Vector2dF cumulative_delta = target.cumulative_delta();
+  gfx::Vector2dF current_velocity = target.current_velocity();
+  EXPECT_TRUE(curve->apply(0.45, &target));
+  EXPECT_EQ(cumulative_delta, gfx::Vector2dF(target.cumulative_delta()));
+  EXPECT_EQ(current_velocity, gfx::Vector2dF(target.current_velocity()));
+
+  EXPECT_TRUE(curve->apply(0.75, &target));
   EXPECT_FALSE(curve->apply(1.5, &target));
   EXPECT_NEAR(target.cumulative_delta().width, 1193, 1);
   EXPECT_EQ(target.cumulative_delta().height, 0);
@@ -67,3 +69,4 @@ TEST(TouchFlingGestureCurve, flingCurveTouch)
   EXPECT_EQ(target.current_velocity().height, 0);
 }
 
+}  // namespace content

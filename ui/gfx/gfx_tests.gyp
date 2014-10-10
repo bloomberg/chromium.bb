@@ -25,7 +25,6 @@
       ],
       'all_sources': [
         '<@(_common_sources)',
-        'android/scroller_unittest.cc',
         'animation/animation_container_unittest.cc',
         'animation/animation_unittest.cc',
         'animation/multi_animation_unittest.cc',

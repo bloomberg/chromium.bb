@@ -38,6 +38,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'android/scroller.cc',
+        'android/scroller.h',
         'device_data_manager.cc',
         'device_data_manager.h',
         'device_hotplug_event_observer.h',
@@ -45,6 +47,7 @@
         'event_switches.cc',
         'event_switches.h',
         'events_base_export.h',
+        'gesture_curve.h',
         'gesture_event_details.cc',
         'gesture_event_details.h',
         'gestures/fling_curve.cc',
@@ -307,6 +310,7 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'android/scroller_unittest.cc',
         'cocoa/events_mac_unittest.mm',
         'event_dispatcher_unittest.cc',
         'event_processor_unittest.cc',

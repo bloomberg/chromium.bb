@@ -4,10 +4,9 @@
 
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/android/scroller.h"
+#include "ui/events/android/scroller.h"
 
-namespace gfx {
-
+namespace ui {
 namespace {
 
 const float kDefaultStartX = 7.f;
@@ -48,46 +47,51 @@ TEST_F(ScrollerTest, Scroll) {
 
   // Advance halfway through the scroll.
   const base::TimeDelta scroll_duration = scroller.GetDuration();
-  scroller.ComputeScrollOffset(start_time + scroll_duration / 2);
+  gfx::Vector2dF offset, velocity;
+  EXPECT_TRUE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration / 2, &offset, &velocity));
 
   // Ensure we've moved in the direction of the delta, but have yet to reach
   // the target.
-  EXPECT_GT(kDefaultStartX, scroller.GetCurrX());
-  EXPECT_LT(kDefaultStartY, scroller.GetCurrY());
-  EXPECT_LT(scroller.GetFinalX(), scroller.GetCurrX());
-  EXPECT_GT(scroller.GetFinalY(), scroller.GetCurrY());
+  EXPECT_GT(kDefaultStartX, offset.x());
+  EXPECT_LT(kDefaultStartY, offset.y());
+  EXPECT_LT(scroller.GetFinalX(), offset.x());
+  EXPECT_GT(scroller.GetFinalY(), offset.y());
   EXPECT_FALSE(scroller.IsFinished());
 
   // Ensure our velocity is non-zero and in the same direction as the delta.
-  EXPECT_GT(0.f, scroller.GetCurrVelocityX() * kDefaultDeltaX);
-  EXPECT_GT(0.f, scroller.GetCurrVelocityY() * kDefaultDeltaY);
+  EXPECT_GT(0.f, velocity.x() * kDefaultDeltaX);
+  EXPECT_GT(0.f, velocity.y() * kDefaultDeltaY);
   EXPECT_TRUE(scroller.IsScrollingInDirection(kDefaultDeltaX, kDefaultDeltaY));
 
   // Repeated offset computations at the same timestamp should yield identical
   // results.
-  float curr_x = scroller.GetCurrX();
-  float curr_y = scroller.GetCurrY();
-  float curr_velocity_x = scroller.GetCurrVelocityX();
-  float curr_velocity_y = scroller.GetCurrVelocityY();
-  scroller.ComputeScrollOffset(start_time + scroll_duration / 2);
-  EXPECT_EQ(curr_x, scroller.GetCurrX());
-  EXPECT_EQ(curr_y, scroller.GetCurrY());
-  EXPECT_EQ(curr_velocity_x, scroller.GetCurrVelocityX());
-  EXPECT_EQ(curr_velocity_y, scroller.GetCurrVelocityY());
+  float curr_x = offset.x();
+  float curr_y = offset.y();
+  float curr_velocity_x = velocity.x();
+  float curr_velocity_y = velocity.y();
+  EXPECT_TRUE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration / 2, &offset, &velocity));
+  EXPECT_EQ(curr_x, offset.x());
+  EXPECT_EQ(curr_y, offset.y());
+  EXPECT_EQ(curr_velocity_x, velocity.x());
+  EXPECT_EQ(curr_velocity_y, velocity.y());
 
   // Advance to the end.
-  scroller.ComputeScrollOffset(start_time + scroll_duration);
-  EXPECT_EQ(scroller.GetFinalX(), scroller.GetCurrX());
-  EXPECT_EQ(scroller.GetFinalY(), scroller.GetCurrY());
+  EXPECT_FALSE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration, &offset, &velocity));
+  EXPECT_EQ(scroller.GetFinalX(), offset.x());
+  EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
   EXPECT_EQ(scroll_duration, scroller.GetTimePassed());
-  EXPECT_NEAR(0.f, scroller.GetCurrVelocityX(), kEpsilon);
-  EXPECT_NEAR(0.f, scroller.GetCurrVelocityY(), kEpsilon);
+  EXPECT_NEAR(0.f, velocity.x(), kEpsilon);
+  EXPECT_NEAR(0.f, velocity.y(), kEpsilon);
 
   // Try to advance further; nothing should change.
-  scroller.ComputeScrollOffset(start_time + scroll_duration * 2);
-  EXPECT_EQ(scroller.GetFinalX(), scroller.GetCurrX());
-  EXPECT_EQ(scroller.GetFinalY(), scroller.GetCurrY());
+  EXPECT_FALSE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration * 2, &offset, &velocity));
+  EXPECT_EQ(scroller.GetFinalX(), offset.x());
+  EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
   EXPECT_EQ(scroll_duration, scroller.GetTimePassed());
 }
@@ -118,50 +122,55 @@ TEST_F(ScrollerTest, Fling) {
 
   // Advance halfway through the fling.
   const base::TimeDelta scroll_duration = scroller.GetDuration();
-  scroller.ComputeScrollOffset(start_time + scroll_duration / 2);
+  gfx::Vector2dF offset, velocity;
+  scroller.ComputeScrollOffset(
+      start_time + scroll_duration / 2, &offset, &velocity);
 
   // Ensure we've moved in the direction of the velocity, but have yet to reach
   // the target.
-  EXPECT_GT(kDefaultStartX, scroller.GetCurrX());
-  EXPECT_LT(kDefaultStartY, scroller.GetCurrY());
-  EXPECT_LT(scroller.GetFinalX(), scroller.GetCurrX());
-  EXPECT_GT(scroller.GetFinalY(), scroller.GetCurrY());
+  EXPECT_GT(kDefaultStartX, offset.x());
+  EXPECT_LT(kDefaultStartY, offset.y());
+  EXPECT_LT(scroller.GetFinalX(), offset.x());
+  EXPECT_GT(scroller.GetFinalY(), offset.y());
   EXPECT_FALSE(scroller.IsFinished());
 
   // Ensure our velocity is non-zero and in the same direction as the original
   // velocity.
-  EXPECT_LT(0.f, scroller.GetCurrVelocityX() * kDefaultVelocityX);
-  EXPECT_LT(0.f, scroller.GetCurrVelocityY() * kDefaultVelocityY);
+  EXPECT_LT(0.f, velocity.x() * kDefaultVelocityX);
+  EXPECT_LT(0.f, velocity.y() * kDefaultVelocityY);
   EXPECT_TRUE(
       scroller.IsScrollingInDirection(kDefaultVelocityX, kDefaultVelocityY));
 
   // Repeated offset computations at the same timestamp should yield identical
   // results.
-  float curr_x = scroller.GetCurrX();
-  float curr_y = scroller.GetCurrY();
-  float curr_velocity_x = scroller.GetCurrVelocityX();
-  float curr_velocity_y = scroller.GetCurrVelocityY();
-  scroller.ComputeScrollOffset(start_time + scroll_duration / 2);
-  EXPECT_EQ(curr_x, scroller.GetCurrX());
-  EXPECT_EQ(curr_y, scroller.GetCurrY());
-  EXPECT_EQ(curr_velocity_x, scroller.GetCurrVelocityX());
-  EXPECT_EQ(curr_velocity_y, scroller.GetCurrVelocityY());
+  float curr_x = offset.x();
+  float curr_y = offset.y();
+  float curr_velocity_x = velocity.x();
+  float curr_velocity_y = velocity.y();
+  EXPECT_TRUE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration / 2, &offset, &velocity));
+  EXPECT_EQ(curr_x, offset.x());
+  EXPECT_EQ(curr_y, offset.y());
+  EXPECT_EQ(curr_velocity_x, velocity.x());
+  EXPECT_EQ(curr_velocity_y, velocity.y());
 
   // Advance to the end.
-  scroller.ComputeScrollOffset(start_time + scroll_duration);
-  EXPECT_EQ(scroller.GetFinalX(), scroller.GetCurrX());
-  EXPECT_EQ(scroller.GetFinalY(), scroller.GetCurrY());
+  EXPECT_FALSE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration, &offset, &velocity));
+  EXPECT_EQ(scroller.GetFinalX(), offset.x());
+  EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
   EXPECT_EQ(scroll_duration, scroller.GetTimePassed());
-  EXPECT_NEAR(0.f, scroller.GetCurrVelocityX(), kEpsilon);
-  EXPECT_NEAR(0.f, scroller.GetCurrVelocityY(), kEpsilon);
+  EXPECT_NEAR(0.f, velocity.x(), kEpsilon);
+  EXPECT_NEAR(0.f, velocity.y(), kEpsilon);
 
   // Try to advance further; nothing should change.
-  scroller.ComputeScrollOffset(start_time + scroll_duration * 2);
-  EXPECT_EQ(scroller.GetFinalX(), scroller.GetCurrX());
-  EXPECT_EQ(scroller.GetFinalY(), scroller.GetCurrY());
+  EXPECT_FALSE(scroller.ComputeScrollOffset(
+      start_time + scroll_duration * 2, &offset, &velocity));
+  EXPECT_EQ(scroller.GetFinalX(), offset.x());
+  EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
   EXPECT_EQ(scroll_duration, scroller.GetTimePassed());
 }
 
-}  // namespace gfx
+}  // namespace ui

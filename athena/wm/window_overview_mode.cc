@@ -777,14 +777,15 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   // ui::CompositorAnimationObserver:
   virtual void OnAnimationStep(base::TimeTicks timestamp) override {
     CHECK(fling_);
-    if (fling_->start_timestamp() > timestamp)
-      return;
-    gfx::Vector2dF scroll = fling_->GetScrollAmountAtTime(timestamp);
-    if (scroll.IsZero()) {
+    gfx::Vector2dF delta;
+    bool fling_active = fling_->ComputeScrollDeltaAtTime(timestamp, &delta);
+
+    if (!delta.IsZero())
+      DoScroll(delta.y());
+
+    if (!fling_active) {
       fling_.reset();
       RemoveAnimationObserver();
-    } else {
-      DoScroll(scroll.y());
     }
   }
 

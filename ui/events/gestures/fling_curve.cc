@@ -38,8 +38,10 @@ FlingCurve::FlingCurve(const gfx::Vector2dF& velocity,
                        base::TimeTicks start_timestamp)
     : curve_duration_(GetTimeAtVelocity(0)),
       start_timestamp_(start_timestamp),
+      previous_timestamp_(start_timestamp_),
       time_offset_(0),
       position_offset_(0) {
+  DCHECK(!velocity.IsZero());
   float max_start_velocity = std::max(fabs(velocity.x()), fabs(velocity.y()));
   if (max_start_velocity > GetVelocityAtTime(0))
     max_start_velocity = GetVelocityAtTime(0);
@@ -49,32 +51,57 @@ FlingCurve::FlingCurve(const gfx::Vector2dF& velocity,
                                        velocity.y() / max_start_velocity);
   time_offset_ = GetTimeAtVelocity(max_start_velocity);
   position_offset_ = GetPositionAtTime(time_offset_);
-  last_timestamp_ = start_timestamp_ + base::TimeDelta::FromSecondsD(
-                                           curve_duration_ - time_offset_);
 }
 
 FlingCurve::~FlingCurve() {
 }
 
-gfx::Vector2dF FlingCurve::GetScrollAmountAtTime(base::TimeTicks current) {
-  if (current < start_timestamp_)
-    return gfx::Vector2dF();
-
-  float displacement = 0;
-  if (current < last_timestamp_) {
-    float time = time_offset_ + (current - start_timestamp_).InSecondsF();
-    CHECK_LT(time, curve_duration_);
-    displacement = GetPositionAtTime(time) - position_offset_;
-  } else {
-    displacement = GetPositionAtTime(curve_duration_) - position_offset_;
+bool FlingCurve::ComputeScrollOffset(base::TimeTicks time,
+                                     gfx::Vector2dF* offset,
+                                     gfx::Vector2dF* velocity) {
+  DCHECK(offset);
+  DCHECK(velocity);
+  base::TimeDelta elapsed_time = time - start_timestamp_;
+  if (elapsed_time < base::TimeDelta()) {
+    *offset = gfx::Vector2dF();
+    *velocity = gfx::Vector2dF();
+    return true;
   }
 
-  gfx::Vector2dF scroll(displacement * displacement_ratio_.x(),
-                        displacement * displacement_ratio_.y());
-  gfx::Vector2dF scroll_increment(scroll.x() - cumulative_scroll_.x(),
-                                  scroll.y() - cumulative_scroll_.y());
-  cumulative_scroll_ = scroll;
-  return scroll_increment;
+  bool still_active = true;
+  float scalar_offset;
+  float scalar_velocity;
+  double offset_time = elapsed_time.InSecondsF() + time_offset_;
+  if (offset_time < curve_duration_) {
+    scalar_offset = GetPositionAtTime(offset_time) - position_offset_;
+    scalar_velocity = GetVelocityAtTime(offset_time);
+  } else {
+    scalar_offset = GetPositionAtTime(curve_duration_) - position_offset_;
+    scalar_velocity = 0;
+    still_active = false;
+  }
+
+  *offset = gfx::ScaleVector2d(displacement_ratio_, scalar_offset);
+  *velocity = gfx::ScaleVector2d(displacement_ratio_, scalar_velocity);
+  return still_active;
+}
+
+bool FlingCurve::ComputeScrollDeltaAtTime(base::TimeTicks current,
+                                          gfx::Vector2dF* delta) {
+  DCHECK(delta);
+  if (current <= previous_timestamp_) {
+    *delta = gfx::Vector2dF();
+    return true;
+  }
+
+  previous_timestamp_ = current;
+
+  gfx::Vector2dF offset, velocity;
+  bool still_active = ComputeScrollOffset(current, &offset, &velocity);
+
+  *delta = offset - cumulative_scroll_;
+  cumulative_scroll_ = offset;
+  return still_active;
 }
 
 }  // namespace ui

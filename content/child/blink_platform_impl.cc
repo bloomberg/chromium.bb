@@ -33,8 +33,8 @@
 #include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
-#include "content/child/touch_fling_gesture_curve.h"
 #include "content/child/web_discardable_memory_impl.h"
+#include "content/child/web_gesture_curve_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/websocket_bridge.h"
@@ -47,15 +47,12 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebConvertableToTraceFormat.h"
 #include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "ui/base/layout.h"
-
-#if defined(OS_ANDROID)
-#include "content/child/fling_animator_impl_android.h"
-#endif
 
 #if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
@@ -1002,13 +999,10 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-#if defined(OS_ANDROID)
-  return FlingAnimatorImpl::CreateAndroidGestureCurve(
-      velocity,
-      cumulative_scroll);
-#endif
-
-  return TouchFlingGestureCurve::Create(velocity, cumulative_scroll);
+  auto curve = WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
+      gfx::Vector2dF(velocity.x, velocity.y),
+      gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height));
+  return curve.release();
 }
 
 void BlinkPlatformImpl::didStartWorkerRunLoop(

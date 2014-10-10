@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_ANDROID_SCROLLER_H_
-#define UI_GFX_ANDROID_SCROLLER_H_
+#ifndef UI_EVENTS_ANDROID_SCROLLER_H_
+#define UI_EVENTS_ANDROID_SCROLLER_H_
 
 #include "base/time/time.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/events/events_base_export.h"
+#include "ui/events/gesture_curve.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
-namespace gfx {
+namespace ui {
 
 // Native port of android.widget.Scroller.
 // * Change-Id: I4365946f890a76fcfa78ca9d69f2a8e0848095a9
 // * Please update the Change-Id as upstream Android changes are pulled.
-class GFX_EXPORT Scroller {
+class EVENTS_BASE_EXPORT Scroller : public GestureCurve {
  public:
   struct Config {
     Config();
@@ -26,7 +28,12 @@ class GFX_EXPORT Scroller {
   };
 
   explicit Scroller(const Config& config);
-  ~Scroller();
+  virtual ~Scroller();
+
+  // GestureCurve implementation.
+  virtual bool ComputeScrollOffset(base::TimeTicks time,
+                                   gfx::Vector2dF* offset,
+                                   gfx::Vector2dF* velocity) override;
 
   // Start scrolling by providing a starting point and the distance to travel.
   // The default value of 250 milliseconds will be used for the duration.
@@ -56,10 +63,6 @@ class GFX_EXPORT Scroller {
              float min_y,
              float max_y,
              base::TimeTicks start_time);
-
-  // Call this when you want to know the new location.  If it returns true,
-  // the animation is not yet finished.
-  bool ComputeScrollOffset(base::TimeTicks time);
 
   // Extend the scroll animation by |extend|. This allows a running animation
   // to scroll further and longer when used with |SetFinalX()| or |SetFinalY()|.
@@ -102,7 +105,7 @@ class GFX_EXPORT Scroller {
     FLING_MODE,
   };
 
-  void OnDurationChanged();
+  bool ComputeScrollOffsetInternal(base::TimeTicks time);
   void RecomputeDeltas();
 
   double GetSplineDeceleration(float velocity) const;
@@ -143,6 +146,6 @@ class GFX_EXPORT Scroller {
   float tuning_coeff_;
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_ANDROID_SCROLLER_H_
+#endif  // UI_EVENTS_ANDROID_SCROLLER_H_

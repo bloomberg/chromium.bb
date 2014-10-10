@@ -14,23 +14,25 @@ TEST(FlingCurveTest, Basic) {
   base::TimeTicks now = gfx::FrameTime::Now();
   FlingCurve curve(velocity, now);
 
-  gfx::Vector2dF scroll =
-      curve.GetScrollAmountAtTime(now + base::TimeDelta::FromMilliseconds(20));
-  EXPECT_EQ(0, scroll.x());
-  EXPECT_NEAR(scroll.y(), 96, 1);
+  gfx::Vector2dF delta;
+  EXPECT_TRUE(curve.ComputeScrollDeltaAtTime(
+      now + base::TimeDelta::FromMilliseconds(20), &delta));
+  EXPECT_EQ(0, delta.x());
+  EXPECT_NEAR(delta.y(), 96, 1);
 
-  scroll =
-      curve.GetScrollAmountAtTime(now + base::TimeDelta::FromMilliseconds(250));
-  EXPECT_EQ(0, scroll.x());
-  EXPECT_NEAR(scroll.y(), 705, 1);
+  EXPECT_TRUE(curve.ComputeScrollDeltaAtTime(
+      now + base::TimeDelta::FromMilliseconds(250), &delta));
+  EXPECT_EQ(0, delta.x());
+  EXPECT_NEAR(delta.y(), 705, 1);
 
-  scroll =
-      curve.GetScrollAmountAtTime(now + base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(0, scroll.x());
-  EXPECT_NEAR(scroll.y(), 392, 1);
+  EXPECT_FALSE(curve.ComputeScrollDeltaAtTime(
+      now + base::TimeDelta::FromSeconds(10), &delta));
+  EXPECT_EQ(0, delta.x());
+  EXPECT_NEAR(delta.y(), 392, 1);
 
-  EXPECT_TRUE(curve.GetScrollAmountAtTime(
-      now + base::TimeDelta::FromSeconds(20)).IsZero());
+  EXPECT_FALSE(curve.ComputeScrollDeltaAtTime(
+      now + base::TimeDelta::FromSeconds(20), &delta));
+  EXPECT_TRUE(delta.IsZero());
 }
 
 }  // namespace ui

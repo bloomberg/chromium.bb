@@ -642,7 +642,7 @@
         'child/resource_dispatcher_unittest.cc',
         'child/simple_webmimeregistry_impl_unittest.cc',
         'child/site_isolation_policy_unittest.cc',
-        'child/touch_fling_gesture_curve_unittest.cc',
+        'child/web_gesture_curve_impl_unittest.cc',
         'child/web_url_loader_impl_unittest.cc',
         'child/webcrypto/test/aes_cbc_unittest.cc',
         'child/webcrypto/test/aes_ctr_unittest.cc',
