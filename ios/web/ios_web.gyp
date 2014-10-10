@@ -17,6 +17,7 @@
         '../../base/base.gyp:base',
       ],
       'sources': [
+        'public/navigation_item.h',
         'public/user_agent.h',
         'public/user_agent.mm',
       ],
