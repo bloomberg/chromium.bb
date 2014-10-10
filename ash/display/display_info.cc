@@ -236,6 +236,7 @@ DisplayInfo::DisplayInfo(int64 id,
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
       native_(false),
+      is_aspect_preserving_scaling_(false),
       color_profile_(ui::COLOR_PROFILE_STANDARD) {
 }
 
