@@ -1275,9 +1275,21 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
 bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
+    Vector<RenderObject*> layerRenderers;
+
+    // A background of the body or document must extend to the total visible size of the document. This means the union of the
+    // view and document bounds, since it can be the case that the view is larger than the document and vice-versa.
+    // http://dev.w3.org/csswg/css-backgrounds/#the-background
+    if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground()))) {
+        layerRenderers.append(document().documentElement()->renderer());
+        layerRenderers.append(view());
+    } else {
+        layerRenderers.append(this);
+    }
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            setShouldDoFullPaintInvalidation();
+            for (RenderObject* layerRenderer : layerRenderers)
+                layerRenderer->setShouldDoFullPaintInvalidation();
             return true;
         }
     }

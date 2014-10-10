@@ -1,3 +1,4 @@
+crbug.com/419660 fast/repaint/background-image-paint-invalidation-small-document.html [ NeedsRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
