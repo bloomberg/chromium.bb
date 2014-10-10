@@ -38,7 +38,9 @@ found in the LICENSE file.
       <a href="https://code.google.com/p/chromium/wiki/UsefulURLs">Useful URLs</a>
     </div>
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
-    <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
+    <template if="{{ tree == 'blink' }}">
+      <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
+    </template>
     <template if="{{ failures && failures.failures && (!failures.failures[tree] || !failures.failures[tree].length) }}">
       <ct-party-time></ct-party-time>
     </template>

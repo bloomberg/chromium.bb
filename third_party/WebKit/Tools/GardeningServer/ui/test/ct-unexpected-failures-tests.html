@@ -65,6 +65,29 @@ describe('ct-unexpected-failures', function() {
       done();
     });
   });
+
+  it('test showing only chromium tree status when chromium', function(done) {
+    var noFailures = document.createElement('ct-unexpected-failures');
+    noFailures.tree = 'chromium';
+
+    setTimeout(function() {
+      assert.equal(noFailures.shadowRoot.querySelectorAll('ct-tree-status').length, 1);
+
+      done();
+    });
+  });
+
+  it('test showing both chromium and blink tree status when blink', function(done) {
+    var noFailures = document.createElement('ct-unexpected-failures');
+    noFailures.tree = 'blink';
+
+    setTimeout(function() {
+      assert.equal(noFailures.shadowRoot.querySelectorAll('ct-tree-status').length, 2);
+
+      done();
+    });
+  });
+
 });
 
 })();
