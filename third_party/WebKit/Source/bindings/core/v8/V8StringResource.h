@@ -126,7 +126,7 @@ public:
     }
 };
 
-class WebCoreStringResource8 final : public WebCoreStringResourceBase, public v8::String::ExternalAsciiStringResource {
+class WebCoreStringResource8 final : public WebCoreStringResourceBase, public v8::String::ExternalOneByteStringResource {
 public:
     explicit WebCoreStringResource8(const String& string)
         : WebCoreStringResourceBase(string)
