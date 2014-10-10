@@ -74,25 +74,25 @@ std::string MetricSample::ToString() const {
   }
 }
 
-const int MetricSample::sample() const {
+int MetricSample::sample() const {
   CHECK_NE(type_, USER_ACTION);
   CHECK_NE(type_, CRASH);
   return sample_;
 }
 
-const int MetricSample::min() const {
+int MetricSample::min() const {
   CHECK_EQ(type_, HISTOGRAM);
   return min_;
 }
 
-const int MetricSample::max() const {
+int MetricSample::max() const {
   CHECK_NE(type_, CRASH);
   CHECK_NE(type_, USER_ACTION);
   CHECK_NE(type_, SPARSE_HISTOGRAM);
   return max_;
 }
 
-const int MetricSample::bucket_count() const {
+int MetricSample::bucket_count() const {
   CHECK_EQ(type_, HISTOGRAM);
   return bucket_count_;
 }

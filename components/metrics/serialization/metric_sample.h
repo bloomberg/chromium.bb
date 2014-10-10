@@ -43,10 +43,10 @@ class MetricSample {
   // Check the metric type to make sure the request make sense. (ex: a crash
   // sample does not have a bucket_count so we crash if we call bucket_count()
   // on it.)
-  const int sample() const;
-  const int min() const;
-  const int max() const;
-  const int bucket_count() const;
+  int sample() const;
+  int min() const;
+  int max() const;
+  int bucket_count() const;
 
   // Returns a serialized version of the sample.
   //

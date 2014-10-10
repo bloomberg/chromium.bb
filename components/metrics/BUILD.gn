@@ -52,6 +52,10 @@ source_set("metrics") {
     "//components/variations",
     "//third_party/zlib",
   ]
+
+  if (is_chromeos) {
+    deps += [ ":serialization" ]
+  }
 }
 
 # GYP version: components/metrics.gypi:metrics_gpu
@@ -119,6 +123,19 @@ static_library("test_support") {
   public_deps = [
     ":metrics",
   ]
+}
+
+if (is_linux) {
+  # GYP version: components/metrics.gypi:metrics_serialization
+  source_set("serialization") {
+    sources = [
+      "serialization/serialization_utils.cc",
+      "serialization/serialization_utils.h",
+      "serialization/metric_sample.cc",
+      "serialization/metric_sample.h",
+    ]
+    deps = [ "//base" ]
+  }
 }
 
 # TODO(GYP): metrics_chromeos
