@@ -362,6 +362,9 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
     pref_service->SetInteger(prefs::kProfileAvatarIndex, new_icon_index);
     pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
     pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, false);
+  } else {
+    // Only default avatars and Gaia account photos are supported.
+    CHECK(false);
   }
   ProfileMetrics::LogProfileUpdate(profile_file_path);
 
