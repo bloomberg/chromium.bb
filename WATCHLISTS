@@ -191,7 +191,9 @@
       'filepath': 'chrome/browser/ui/views',
     },
     'chromedriver': {
-      'filepath': 'chrome/test/chromedriver'
+      'filepath': 'chrome/test/chromedriver|'\
+                  'chrome/test/data/chromedriver|'\
+                  'third_party/webdriver'
     },
     'chromeos': {
       'filepath': 'chromeos/',
@@ -823,7 +825,7 @@
     'chrome_elf': ['caitkp+watch@chromium.org',],
     'chrome_views': ['tfarina@chromium.org'],
     'chromecast': ['lcwu+watch@chromium.org'],
-    'chromedriver': ['stgao@chromium.org'],
+    'chromedriver': ['samuong+watch@chromium.org', 'stgao@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],
     'chromeos_attestation' : ['dkrahn+watch@chromium.org'],
