@@ -95,22 +95,11 @@ bool TouchTransformerController::ShouldComputeMirrorModeTouchTransformer(
   if (touch_display.touch_device_id() == 0)
     return false;
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  const std::vector<gfx::Display>& displays = display_manager->displays();
-  const DisplayInfo* info = NULL;
-  for (size_t i = 0; i < displays.size(); i++) {
-    const DisplayInfo& current_info =
-        display_manager->GetDisplayInfo(displays[i].id());
-    if (current_info.touch_device_id() == touch_display.touch_device_id()) {
-      info = &current_info;
-      break;
-    }
-  }
-
-  if (!info || info->size_in_pixel() == info->GetNativeModeSize() ||
-      !info->is_aspect_preserving_scaling()) {
+  if (touch_display.size_in_pixel() == touch_display.GetNativeModeSize() ||
+      !touch_display.is_aspect_preserving_scaling()) {
     return false;
   }
+
   return true;
 }
 
@@ -129,26 +118,16 @@ gfx::Transform TouchTransformerController::GetMirrorModeTouchTransformer(
 
   float mirror_width = touch_display.bounds_in_native().width();
   float mirror_height = touch_display.bounds_in_native().height();
-  float native_width = 0;
-  float native_height = 0;
-
-  std::vector<DisplayMode> modes = touch_display.display_modes();
-  for (size_t i = 0; i < modes.size(); i++) {
-       if (modes[i].native) {
-         native_width = modes[i].size.width();
-         native_height = modes[i].size.height();
-         break;
-       }
-  }
+  gfx::Size native_mode_size = touch_display.GetNativeModeSize();
+  float native_width = native_mode_size.width();
+  float native_height = native_mode_size.height();
 
   if (native_height == 0.0 || mirror_height == 0.0 ||
       native_width == 0.0 || mirror_width == 0.0)
     return ctm;
 
-  float native_ar = static_cast<float>(native_width) /
-      static_cast<float>(native_height);
-  float mirror_ar = static_cast<float>(mirror_width) /
-      static_cast<float>(mirror_height);
+  float native_ar = native_width / native_height;
+  float mirror_ar = mirror_width / mirror_height;
 
   if (mirror_ar > native_ar) {  // Letterboxing
     // Translate before scale.

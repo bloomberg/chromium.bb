@@ -136,6 +136,18 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
     display_mode_list.push_back(iter->second);
   }
 
+  if (output.display->native_mode()) {
+    const std::pair<int, int> size(native_mode.size.width(),
+                                   native_mode.size.height());
+    DisplayModeMap::iterator it = display_mode_map.find(size);
+    DCHECK(it != display_mode_map.end())
+        << "Native mode must be part of the mode list.";
+
+    // If the native mode was replaced re-add it.
+    if (!it->second.native)
+      display_mode_list.push_back(native_mode);
+  }
+
   if (native_mode.size.width() >= kMinimumWidthFor4K) {
     for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k);
          ++i) {

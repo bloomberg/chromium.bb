@@ -313,6 +313,7 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
   // Outputs without any modes shouldn't cause a crash.
   modes.clear();
   display_snapshot.set_modes(modes.get());
+  display_snapshot.set_native_mode(NULL);
 
   display_modes = DisplayChangeObserver::GetExternalDisplayModeList(output);
   EXPECT_EQ(0u, display_modes.size());
@@ -341,6 +342,32 @@ TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(-100.0f));
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(0.0f));
   EXPECT_EQ(2.0f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f));
+}
+
+TEST_F(DisplayChangeObserverTest,
+       FindExternalDisplayNativeModeWhenOverwritten) {
+  ScopedVector<const ui::DisplayMode> modes;
+  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), true, 60));
+  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60));
+
+  ui::TestDisplaySnapshot display_snapshot;
+  display_snapshot.set_modes(modes.get());
+  display_snapshot.set_native_mode(modes[0]);
+  DisplayConfigurator::DisplayState output;
+  output.display = &display_snapshot;
+
+  std::vector<DisplayMode> display_modes =
+      DisplayChangeObserver::GetExternalDisplayModeList(output);
+  ASSERT_EQ(2u, display_modes.size());
+  EXPECT_EQ("1920x1080", display_modes[0].size.ToString());
+  EXPECT_FALSE(display_modes[0].interlaced);
+  EXPECT_FALSE(display_modes[0].native);
+  EXPECT_EQ(display_modes[0].refresh_rate, 60);
+
+  EXPECT_EQ("1920x1080", display_modes[1].size.ToString());
+  EXPECT_TRUE(display_modes[1].interlaced);
+  EXPECT_TRUE(display_modes[1].native);
+  EXPECT_EQ(display_modes[1].refresh_rate, 60);
 }
 
 }  // namespace ash
