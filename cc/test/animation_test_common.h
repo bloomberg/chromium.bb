@@ -45,7 +45,8 @@ class FakeTransformTransition : public TransformAnimationCurve {
                                     gfx::BoxF* bounds) const override;
   virtual bool AffectsScale() const override;
   virtual bool IsTranslation() const override;
-  virtual bool MaximumScale(float* max_scale) const override;
+  virtual bool MaximumTargetScale(bool forward_direction,
+                                  float* max_scale) const override;
 
   virtual scoped_ptr<AnimationCurve> Clone() const override;
 

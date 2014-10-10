@@ -510,8 +510,8 @@ TEST(KeyframedAnimationCurveTest, IsTranslation) {
   EXPECT_FALSE(curve->IsTranslation());
 }
 
-// Tests that maximum scale is computed as expected.
-TEST(KeyframedAnimationCurveTest, MaximumScale) {
+// Tests that maximum target scale is computed as expected.
+TEST(KeyframedAnimationCurveTest, MaximumTargetScale) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
 
@@ -523,7 +523,7 @@ TEST(KeyframedAnimationCurveTest, MaximumScale) {
       1.0, operations1, EaseTimingFunction::Create()));
 
   float maximum_scale = 0.f;
-  EXPECT_TRUE(curve->MaximumScale(&maximum_scale));
+  EXPECT_TRUE(curve->MaximumTargetScale(true, &maximum_scale));
   EXPECT_EQ(3.f, maximum_scale);
 
   TransformOperations operations2;
@@ -531,7 +531,7 @@ TEST(KeyframedAnimationCurveTest, MaximumScale) {
   curve->AddKeyframe(TransformKeyframe::Create(
       2.0, operations2, EaseTimingFunction::Create()));
 
-  EXPECT_TRUE(curve->MaximumScale(&maximum_scale));
+  EXPECT_TRUE(curve->MaximumTargetScale(true, &maximum_scale));
   EXPECT_EQ(6.f, maximum_scale);
 
   TransformOperations operations3;
@@ -539,7 +539,26 @@ TEST(KeyframedAnimationCurveTest, MaximumScale) {
   curve->AddKeyframe(TransformKeyframe::Create(
       3.0, operations3, EaseTimingFunction::Create()));
 
-  EXPECT_FALSE(curve->MaximumScale(&maximum_scale));
+  EXPECT_FALSE(curve->MaximumTargetScale(true, &maximum_scale));
+
+  // The original scale is not used in computing the max.
+  scoped_ptr<KeyframedTransformAnimationCurve> curve2(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations4;
+  operations4.AppendScale(0.4f, 0.2f, 0.6f);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations4, EaseTimingFunction::Create()));
+  TransformOperations operations5;
+  operations5.AppendScale(0.5f, 0.3f, -0.8f);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations5, EaseTimingFunction::Create()));
+
+  EXPECT_TRUE(curve2->MaximumTargetScale(true, &maximum_scale));
+  EXPECT_EQ(0.8f, maximum_scale);
+
+  EXPECT_TRUE(curve2->MaximumTargetScale(false, &maximum_scale));
+  EXPECT_EQ(0.6f, maximum_scale);
 }
 
 // Tests that an animation with a curve timing function works as expected.

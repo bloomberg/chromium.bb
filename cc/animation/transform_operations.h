@@ -63,14 +63,6 @@ class CC_EXPORT TransformOperations {
   // Returns true if these operations are only translations.
   bool IsTranslation() const;
 
-  // Sets |max_scale| to be the maximum scale in any dimension when calling
-  // Blend on |from| with progress in the range [min_progress, max_progress]. If
-  // this maximum scale cannot be computed, returns false.
-  bool MaximumScale(const TransformOperations& from,
-                    SkMScalar min_progress,
-                    SkMScalar max_progress,
-                    float* max_scale) const;
-
   // Returns true if this operation and its descendants have the same types
   // as other and its descendants.
   bool MatchesTypes(const TransformOperations& other) const;
@@ -79,6 +71,11 @@ class CC_EXPORT TransformOperations {
   // false if we must resort to matrix interpolation, and matrix interpolation
   // fails (this can happen if either matrix cannot be decomposed).
   bool CanBlendWith(const TransformOperations& other) const;
+
+  // If these operations have no more than one scale operation, and if the only
+  // other operations are translations, sets |scale| to the scale component
+  // of these operations. Otherwise, returns false.
+  bool ScaleComponent(gfx::Vector3dF* scale) const;
 
   void AppendTranslate(SkMScalar x, SkMScalar y, SkMScalar z);
   void AppendRotate(SkMScalar x, SkMScalar y, SkMScalar z, SkMScalar degrees);
@@ -97,11 +94,6 @@ class CC_EXPORT TransformOperations {
   std::vector<TransformOperation> operations_;
 
   bool ComputeDecomposedTransform() const;
-
-  // If these operations have no more than one scale operation, and if the only
-  // other operations are translations, sets |scale| to the scale component
-  // of these operations. Otherwise, returns false.
-  bool ScaleComponent(gfx::Vector3dF* scale) const;
 
   // For efficiency, we cache the decomposed transform.
   mutable scoped_ptr<gfx::DecomposedTransform> decomposed_transform_;

@@ -1094,7 +1094,7 @@ static inline void CalculateAnimationContentsScale(
   }
 
   float layer_maximum_animated_scale = 0.f;
-  if (!layer->layer_animation_controller()->MaximumScale(
+  if (!layer->layer_animation_controller()->MaximumTargetScale(
           &layer_maximum_animated_scale)) {
     *combined_maximum_animation_contents_scale = 0.f;
     return;

@@ -114,41 +114,6 @@ bool TransformOperations::IsTranslation() const {
   return true;
 }
 
-bool TransformOperations::MaximumScale(const TransformOperations& from,
-                                       SkMScalar min_progress,
-                                       SkMScalar max_progress,
-                                       float* max_scale) const {
-  if (!MatchesTypes(from))
-    return false;
-
-  gfx::Vector3dF from_scale;
-  gfx::Vector3dF to_scale;
-
-  if (!from.ScaleComponent(&from_scale) || !ScaleComponent(&to_scale))
-    return false;
-
-  gfx::Vector3dF scale_at_min_progress(
-      std::abs(gfx::Tween::FloatValueBetween(
-          min_progress, from_scale.x(), to_scale.x())),
-      std::abs(gfx::Tween::FloatValueBetween(
-          min_progress, from_scale.y(), to_scale.y())),
-      std::abs(gfx::Tween::FloatValueBetween(
-          min_progress, from_scale.z(), to_scale.z())));
-  gfx::Vector3dF scale_at_max_progress(
-      std::abs(gfx::Tween::FloatValueBetween(
-          max_progress, from_scale.x(), to_scale.x())),
-      std::abs(gfx::Tween::FloatValueBetween(
-          max_progress, from_scale.y(), to_scale.y())),
-      std::abs(gfx::Tween::FloatValueBetween(
-          max_progress, from_scale.z(), to_scale.z())));
-
-  gfx::Vector3dF max_scale_3d = scale_at_min_progress;
-  max_scale_3d.SetToMax(scale_at_max_progress);
-  *max_scale =
-      std::max(max_scale_3d.x(), std::max(max_scale_3d.y(), max_scale_3d.z()));
-  return true;
-}
-
 bool TransformOperations::ScaleComponent(gfx::Vector3dF* scale) const {
   *scale = gfx::Vector3dF(1.f, 1.f, 1.f);
   bool has_scale_component = false;

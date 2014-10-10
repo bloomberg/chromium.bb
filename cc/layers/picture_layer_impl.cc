@@ -1045,27 +1045,33 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
   // If we're not re-rasterizing during animation, rasterize at the maximum
   // scale that will occur during the animation, if the maximum scale is
-  // known. However, to avoid excessive memory use, don't rasterize at a scale
-  // at which this layer would become larger than the viewport.
+  // known. However we want to avoid excessive memory use. If the scale is
+  // smaller than what we would choose otherwise, then it's always better off
+  // for us memory-wise. But otherwise, we don't choose a scale at which this
+  // layer's rastered content would become larger than the viewport.
   if (draw_properties().screen_space_transform_is_animating &&
       !ShouldAdjustRasterScaleDuringScaleAnimations()) {
     bool can_raster_at_maximum_scale = false;
-    if (draw_properties().maximum_animation_contents_scale > 0.f) {
-      gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(gfx::ScaleSize(
-          bounds(), draw_properties().maximum_animation_contents_scale));
+    // TODO(ajuma): If we need to deal with scale-down animations starting right
+    // as a layer gets promoted, then we'd want to have the
+    // |starting_animation_contents_scale| passed in here as a separate draw
+    // property so we could try use that when the max is too large.
+    // See crbug.com/422341.
+    float maximum_scale = draw_properties().maximum_animation_contents_scale;
+    if (maximum_scale) {
+      gfx::Size bounds_at_maximum_scale =
+          gfx::ToCeiledSize(gfx::ScaleSize(bounds(), maximum_scale));
       if (bounds_at_maximum_scale.GetArea() <=
           layer_tree_impl()->device_viewport_size().GetArea())
         can_raster_at_maximum_scale = true;
     }
-    if (can_raster_at_maximum_scale) {
-      raster_contents_scale_ =
-          std::max(raster_contents_scale_,
-                   draw_properties().maximum_animation_contents_scale);
-    } else {
-      raster_contents_scale_ =
-          std::max(raster_contents_scale_,
-                   1.f * ideal_page_scale_ * ideal_device_scale_);
-    }
+    // Use the computed scales for the raster scale directly, do not try to use
+    // the ideal scale here. The current ideal scale may be way too large in the
+    // case of an animation with scale, and will be constantly changing.
+    if (can_raster_at_maximum_scale)
+      raster_contents_scale_ = maximum_scale;
+    else
+      raster_contents_scale_ = 1.f * ideal_page_scale_ * ideal_device_scale_;
   }
 
   // If this layer would create zero or one tiles at this content scale,

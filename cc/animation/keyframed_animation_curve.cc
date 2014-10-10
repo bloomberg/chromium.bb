@@ -366,23 +366,30 @@ bool KeyframedTransformAnimationCurve::IsTranslation() const {
   return true;
 }
 
-bool KeyframedTransformAnimationCurve::MaximumScale(float* max_scale) const {
+bool KeyframedTransformAnimationCurve::MaximumTargetScale(
+    bool forward_direction,
+    float* max_scale) const {
   DCHECK_GE(keyframes_.size(), 2ul);
   *max_scale = 0.f;
-  for (size_t i = 1; i < keyframes_.size(); ++i) {
-    float min_progress = 0.f;
-    float max_progress = 1.f;
-    if (keyframes_[i - 1]->timing_function())
-      keyframes_[i - 1]->timing_function()->Range(&min_progress, &max_progress);
 
-    float max_scale_for_segment = 0.f;
-    if (!keyframes_[i]->Value().MaximumScale(keyframes_[i - 1]->Value(),
-                                             min_progress,
-                                             max_progress,
-                                             &max_scale_for_segment))
+  // If |forward_direction| is true, then skip the first frame, otherwise
+  // skip the last frame, since that is the original position in the animation.
+  size_t start = 1;
+  size_t end = keyframes_.size();
+  if (!forward_direction) {
+    --start;
+    --end;
+  }
+
+  for (size_t i = start; i < end; ++i) {
+    gfx::Vector3dF target_scale_for_segment;
+    if (!keyframes_[i]->Value().ScaleComponent(&target_scale_for_segment))
       return false;
-
-    *max_scale = std::max(*max_scale, max_scale_for_segment);
+    float max_scale_for_segment =
+        fmax(std::abs(target_scale_for_segment.x()),
+             fmax(std::abs(target_scale_for_segment.y()),
+                  std::abs(target_scale_for_segment.z())));
+    *max_scale = fmax(*max_scale, max_scale_for_segment);
   }
   return true;
 }

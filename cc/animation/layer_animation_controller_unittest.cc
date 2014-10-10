@@ -1890,12 +1890,12 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
 }
 
-TEST(LayerAnimationControllerTest, MaximumScale) {
+TEST(LayerAnimationControllerTest, MaximumTargetScale) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
 
   float max_scale = 0.f;
-  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
   EXPECT_EQ(0.f, max_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve1(
@@ -1912,7 +1912,7 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
       Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
   EXPECT_EQ(4.f, max_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve2(
@@ -1928,7 +1928,7 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
   animation = Animation::Create(curve2.Pass(), 2, 2, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve3(
@@ -1944,7 +1944,7 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
   animation = Animation::Create(curve3.Pass(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_FALSE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_FALSE(controller_impl->MaximumTargetScale(&max_scale));
 
   controller_impl->GetAnimation(3, Animation::Transform)
       ->SetRunState(Animation::Finished, TicksFromSecondsF(0.0));
@@ -1952,9 +1952,76 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
       ->SetRunState(Animation::Finished, TicksFromSecondsF(0.0));
 
   // Only unfinished animations should be considered by
-  // MaximumScale.
-  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  // MaximumTargetScale.
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
   EXPECT_EQ(4.f, max_scale);
+}
+
+TEST(LayerAnimationControllerTest, MaximumTargetScaleWithDirection) {
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve1(
+      KeyframedTransformAnimationCurve::Create());
+  TransformOperations operations1;
+  operations1.AppendScale(1.0, 2.0, 3.0);
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  TransformOperations operations2;
+  operations2.AppendScale(4.0, 5.0, 6.0);
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, scoped_ptr<TimingFunction>()));
+
+  scoped_ptr<Animation> animation_owned(
+      Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));
+  Animation* animation = animation_owned.get();
+  controller_impl->AddAnimation(animation_owned.Pass());
+
+  float max_scale = 0.f;
+
+  EXPECT_GT(animation->playback_rate(), 0.0);
+
+  // Normal direction with positive playback rate.
+  animation->set_direction(Animation::Normal);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(6.f, max_scale);
+
+  // Alternate direction with positive playback rate.
+  animation->set_direction(Animation::Alternate);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(6.f, max_scale);
+
+  // Reverse direction with positive playback rate.
+  animation->set_direction(Animation::Reverse);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(3.f, max_scale);
+
+  // Alternate reverse direction.
+  animation->set_direction(Animation::Reverse);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(3.f, max_scale);
+
+  animation->set_playback_rate(-1.0);
+
+  // Normal direction with negative playback rate.
+  animation->set_direction(Animation::Normal);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(3.f, max_scale);
+
+  // Alternate direction with negative playback rate.
+  animation->set_direction(Animation::Alternate);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(3.f, max_scale);
+
+  // Reverse direction with negative playback rate.
+  animation->set_direction(Animation::Reverse);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(6.f, max_scale);
+
+  // Alternate reverse direction with negative playback rate.
+  animation->set_direction(Animation::Reverse);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_EQ(6.f, max_scale);
 }
 
 TEST(LayerAnimationControllerTest, NewlyPushedAnimationWaitsForActivation) {

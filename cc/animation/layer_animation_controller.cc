@@ -5,6 +5,7 @@
 #include "cc/animation/layer_animation_controller.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
@@ -494,17 +495,30 @@ bool LayerAnimationController::HasOnlyTranslationTransforms() const {
   return true;
 }
 
-bool LayerAnimationController::MaximumScale(float* max_scale) const {
+bool LayerAnimationController::MaximumTargetScale(float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != Animation::Transform)
       continue;
 
+    bool forward_direction = true;
+    switch (animations_[i]->direction()) {
+      case Animation::Normal:
+      case Animation::Alternate:
+        forward_direction = animations_[i]->playback_rate() >= 0.0;
+        break;
+      case Animation::Reverse:
+      case Animation::AlternateReverse:
+        forward_direction = animations_[i]->playback_rate() < 0.0;
+        break;
+    }
+
     const TransformAnimationCurve* transform_animation_curve =
         animations_[i]->curve()->ToTransformAnimationCurve();
     float animation_scale = 0.f;
-    if (!transform_animation_curve->MaximumScale(&animation_scale))
+    if (!transform_animation_curve->MaximumTargetScale(forward_direction,
+                                                       &animation_scale))
       return false;
     *max_scale = std::max(*max_scale, animation_scale);
   }
