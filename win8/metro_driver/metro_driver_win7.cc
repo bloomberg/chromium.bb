@@ -1229,7 +1229,7 @@ class CoreApplicationWin7Emulation
 
 
 mswr::ComPtr<winapp::Core::ICoreApplication> InitWindows7() {
-  HRESULT hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
   if (FAILED(hr))
     CHECK(false);
   return mswr::Make<CoreApplicationWin7Emulation>();

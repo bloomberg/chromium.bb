@@ -92,7 +92,7 @@ namespace {
 // TF_SENTENCEMODE_PHRASEPREDICT to emulate IMM32 behavior. This value is
 // managed per thread, thus setting this value at once is sufficient. This
 // value never affects non-Japanese IMEs.
-bool InitializeSentenceMode(ITfThreadMgr2* thread_manager,
+bool InitializeSentenceMode(ITfThreadMgr* thread_manager,
                             TfClientId client_id) {
   base::win::ScopedComPtr<ITfCompartmentMgr> thread_compartment_manager;
   HRESULT hr = thread_compartment_manager.QueryFrom(thread_manager);
@@ -224,7 +224,7 @@ class DocumentBinding {
   }
 
   static scoped_ptr<DocumentBinding> Create(
-      ITfThreadMgr2* thread_manager,
+      ITfThreadMgr* thread_manager,
       TfClientId client_id,
       const std::vector<InputScope>& input_scopes,
       HWND window_handle,
@@ -232,7 +232,7 @@ class DocumentBinding {
     base::win::ScopedComPtr<ITfDocumentMgr> document_manager;
     HRESULT hr = thread_manager->CreateDocumentMgr(document_manager.Receive());
     if (FAILED(hr)) {
-      LOG(ERROR) << "ITfThreadMgr2::CreateDocumentMgr failed. hr = " << hr;
+      LOG(ERROR) << "ITfThreadMgr::CreateDocumentMgr failed. hr = " << hr;
       return scoped_ptr<DocumentBinding>();
     }
 
@@ -316,7 +316,7 @@ class DocumentBinding {
 class TextServiceImpl : public TextService,
                         public TextStoreDelegate {
  public:
-  TextServiceImpl(ITfThreadMgr2* thread_manager,
+  TextServiceImpl(ITfThreadMgr* thread_manager,
                   TfClientId client_id,
                   HWND window_handle,
                   TextServiceDelegate* delegate)
@@ -368,7 +368,7 @@ class TextServiceImpl : public TextService,
     }
     HRESULT hr = thread_manager_->SetFocus(document_manager);
     if (FAILED(hr)) {
-      LOG(ERROR) << "ITfThreadMgr2::SetFocus failed. hr = " << hr;
+      LOG(ERROR) << "ITfThreadMgr::SetFocus failed. hr = " << hr;
       return;
     }
   }
@@ -446,7 +446,7 @@ class TextServiceImpl : public TextService,
   HWND window_handle_;
   TextServiceDelegate* delegate_;
   scoped_ptr<DocumentBinding> current_document_;
-  base::win::ScopedComPtr<ITfThreadMgr2> thread_manager_;
+  base::win::ScopedComPtr<ITfThreadMgr> thread_manager_;
 
   // A vector of InputScope enumeration, which represents the document type of
   // the focused text field. Note that in our IPC message protocol, an empty
@@ -466,7 +466,7 @@ scoped_ptr<TextService>
 CreateTextService(TextServiceDelegate* delegate, HWND window_handle) {
   if (!delegate)
     return scoped_ptr<TextService>();
-  base::win::ScopedComPtr<ITfThreadMgr2> thread_manager;
+  base::win::ScopedComPtr<ITfThreadMgr> thread_manager;
   HRESULT hr = thread_manager.CreateInstance(CLSID_TF_ThreadMgr);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create instance of CLSID_TF_ThreadMgr. hr = "
@@ -474,9 +474,9 @@ CreateTextService(TextServiceDelegate* delegate, HWND window_handle) {
     return scoped_ptr<TextService>();
   }
   TfClientId client_id = TF_CLIENTID_NULL;
-  hr = thread_manager->ActivateEx(&client_id, 0);
+  hr = thread_manager->Activate(&client_id);
   if (FAILED(hr)) {
-    LOG(ERROR) << "ITfThreadMgr2::ActivateEx failed. hr = " << hr;
+    LOG(ERROR) << "ITfThreadMgr::Activate failed. hr = " << hr;
     return scoped_ptr<TextService>();
   }
   if (!InitializeSentenceMode(thread_manager, client_id)) {

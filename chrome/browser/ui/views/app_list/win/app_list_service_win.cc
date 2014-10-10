@@ -38,6 +38,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/win/shell.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -49,15 +50,20 @@
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
-  if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
+  if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
+    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kViewerConnect));
     return AppListServiceAsh::GetInstance();
+  }
 
   return AppListServiceWin::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
-  AppListServiceAsh::GetInstance()->Init(initial_profile);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kViewerConnect))
+    AppListServiceAsh::GetInstance()->Init(initial_profile);
+
   AppListServiceWin::GetInstance()->Init(initial_profile);
 }
 

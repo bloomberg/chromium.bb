@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/remote_input_method_win.h"
 
+#include "base/command_line.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/metro.h"
@@ -14,6 +15,7 @@
 #include "ui/base/ime/remote_input_method_delegate_win.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/rect.h"
@@ -364,6 +366,10 @@ class RemoteInputMethodWin : public InputMethod,
 }  // namespace
 
 bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget) {
+  // If the remote input method is already registered then don't do it again.
+  if (ui::g_public_interface_ && ui::g_private_interface_)
+    return false;
+
   DWORD process_id = 0;
   if (GetWindowThreadProcessId(widget, &process_id) == 0)
     return false;
@@ -371,7 +377,9 @@ bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget) {
       PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id));
   if (!process_handle.IsValid())
     return false;
-  return base::win::IsProcessImmersive(process_handle.Get());
+  return base::win::IsProcessImmersive(process_handle.Get()) ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kViewerConnect);
 }
 
 RemoteInputMethodPrivateWin::RemoteInputMethodPrivateWin() {}
