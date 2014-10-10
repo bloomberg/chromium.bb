@@ -898,17 +898,17 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
     RefPtr<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward, then back again.
-    mainFrameLocal->loader().loadHistoryItem(item1.get(), HistorySameDocumentLoad);
-    mainFrameLocal->loader().loadHistoryItem(item2.get(), HistorySameDocumentLoad);
-    mainFrameLocal->loader().loadHistoryItem(item1.get(), HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item2.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
 
     // Click a different anchor
     mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
     RefPtr<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward. The scroll position should be properly set on the forward navigation.
-    mainFrameLocal->loader().loadHistoryItem(item1.get(), HistorySameDocumentLoad);
-    mainFrameLocal->loader().loadHistoryItem(item3.get(), HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item3.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);
 }

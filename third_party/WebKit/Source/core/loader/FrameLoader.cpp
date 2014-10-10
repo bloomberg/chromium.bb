@@ -102,7 +102,7 @@ using namespace HTMLNames;
 
 bool isBackForwardLoadType(FrameLoadType type)
 {
-    return type == FrameLoadTypeBackForward;
+    return type == FrameLoadTypeBackForward || type == FrameLoadTypeInitialHistoryLoad;
 }
 
 static bool needsHistoryItemRestore(FrameLoadType type)
@@ -166,7 +166,8 @@ void FrameLoader::setDefersLoading(bool defers)
 
     if (!defers) {
         if (m_deferredHistoryLoad.isValid()) {
-            loadHistoryItem(m_deferredHistoryLoad.m_item.get(), m_deferredHistoryLoad.m_type, m_deferredHistoryLoad.m_cachePolicy);
+            loadHistoryItem(m_deferredHistoryLoad.m_item.get(), FrameLoadTypeBackForward,
+                m_deferredHistoryLoad.m_type, m_deferredHistoryLoad.m_cachePolicy);
             m_deferredHistoryLoad = DeferredHistoryLoad();
         }
         m_frame->navigationScheduler().startTimer();
@@ -334,6 +335,7 @@ static HistoryCommitType loadTypeToCommitType(FrameLoadType type)
     case FrameLoadTypeStandard:
         return StandardCommit;
     case FrameLoadTypeInitialInChildFrame:
+    case FrameLoadTypeInitialHistoryLoad:
         return InitialCommitInChildFrame;
     case FrameLoadTypeBackForward:
         return BackForwardCommit;
@@ -369,7 +371,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
 {
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (m_provisionalItem && m_loadType == FrameLoadTypeBackForward)
+    if (m_provisionalItem && (m_loadType == FrameLoadTypeBackForward || m_loadType == FrameLoadTypeInitialHistoryLoad))
         m_frame->domWindow()->statePopped(m_provisionalItem->stateObject());
 
     if (dispatch)
@@ -398,7 +400,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
         }
     }
 
-    if (m_provisionalItem && m_loadType == FrameLoadTypeBackForward)
+    if (m_provisionalItem && (m_loadType == FrameLoadTypeBackForward || m_loadType == FrameLoadTypeInitialHistoryLoad))
         m_frame->document()->setStateForNewFormElements(m_provisionalItem->documentState());
 }
 
@@ -1425,7 +1427,7 @@ LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Docume
     return toLocalFrame(frame);
 }
 
-void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
+void FrameLoader::loadHistoryItem(HistoryItem* item, FrameLoadType frameLoadType, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
 {
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     if (m_frame->page()->defersLoading()) {
@@ -1435,7 +1437,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
 
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
-        loadInSameDocument(item->url(), item->stateObject(), FrameLoadTypeBackForward, NotClientRedirect);
+        loadInSameDocument(item->url(), item->stateObject(), frameLoadType, NotClientRedirect);
         restoreScrollPositionAndViewState();
         return;
     }
@@ -1443,7 +1445,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
     ResourceRequest request = requestFromHistoryItem(item, cachePolicy);
     request.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     request.setRequestContext(WebURLRequest::RequestContextInternal);
-    loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData(), CheckContentSecurityPolicy);
+    loadWithNavigationAction(NavigationAction(request, frameLoadType), frameLoadType, nullptr, SubstituteData(), CheckContentSecurityPolicy);
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

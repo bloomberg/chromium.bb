@@ -850,7 +850,8 @@ void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLo
     ASSERT(frame());
     RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
     ASSERT(historyItem);
-    frame()->loader().loadHistoryItem(historyItem.get(), static_cast<HistoryLoadType>(loadType), static_cast<ResourceRequestCachePolicy>(cachePolicy));
+    frame()->loader().loadHistoryItem(historyItem.get(), FrameLoadTypeBackForward,
+        static_cast<HistoryLoadType>(loadType), static_cast<ResourceRequestCachePolicy>(cachePolicy));
 }
 
 void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
@@ -1595,7 +1596,7 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
         childItem = PassRefPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild));
 
     if (childItem)
-        child->loader().loadHistoryItem(childItem.get());
+        child->loader().loadHistoryItem(childItem.get(), FrameLoadTypeInitialHistoryLoad);
     else
         child->loader().load(FrameLoadRequest(request.originDocument(), request.resourceRequest(), "_self"));
 

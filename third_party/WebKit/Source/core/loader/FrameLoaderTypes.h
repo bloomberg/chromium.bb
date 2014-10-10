@@ -46,6 +46,7 @@ enum FrameLoadType {
     FrameLoadTypeSame, // user loads same URL again (but not reload button)
     FrameLoadTypeRedirectWithLockedBackForwardList,
     FrameLoadTypeInitialInChildFrame,
+    FrameLoadTypeInitialHistoryLoad,
     FrameLoadTypeReloadFromOrigin,
 };
 

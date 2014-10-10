@@ -81,7 +81,9 @@ public:
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
     void reload(ReloadPolicy, const KURL& overrideURL = KURL(), ClientRedirectPolicy = NotClientRedirect);
-    void loadHistoryItem(HistoryItem*, HistoryLoadType = HistoryDifferentDocumentLoad, ResourceRequestCachePolicy = UseProtocolCachePolicy); // The entry point for all back/forward loads
+    void loadHistoryItem(HistoryItem*, FrameLoadType = FrameLoadTypeBackForward,
+        HistoryLoadType = HistoryDifferentDocumentLoad,
+        ResourceRequestCachePolicy = UseProtocolCachePolicy); // The entry point for all back/forward loads
 
     static void reportLocalLoadFailed(LocalFrame*, const String& url);
 

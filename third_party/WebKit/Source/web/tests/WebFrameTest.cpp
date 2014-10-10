@@ -5847,7 +5847,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType)
     RefPtr<HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
     runPendingTasks();
 
-    toLocalFrame(webViewImpl->page()->mainFrame())->loader().loadHistoryItem(item.get(), HistorySameDocumentLoad);
+    toLocalFrame(webViewImpl->page()->mainFrame())->loader().loadHistoryItem(item.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
     EXPECT_EQ(WebBackForwardCommit, client.lastCommitType());
 }
 
