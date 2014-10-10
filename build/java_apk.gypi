@@ -551,6 +551,7 @@
     }],
     ['is_test_apk == 1', {
       'dependencies': [
+        '<(DEPTH)/build/android/pylib/device/commands/commands.gyp:chromium_commands',
         '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
       ]
     }],

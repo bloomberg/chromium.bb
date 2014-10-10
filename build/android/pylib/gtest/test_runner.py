@@ -70,10 +70,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
         device_dir = constants.TEST_EXECUTABLE_DIR
       else:
         device_dir = self.device.GetExternalStoragePath()
-      for p in os.listdir(constants.ISOLATE_DEPS_DIR):
-        self.device.PushChangedFiles(
-            os.path.join(constants.ISOLATE_DEPS_DIR, p),
+      self.device.PushChangedFiles(
+          [(os.path.join(constants.ISOLATE_DEPS_DIR, p),
             os.path.join(device_dir, p))
+           for p in os.listdir(constants.ISOLATE_DEPS_DIR)])
 
   def _ParseTestOutput(self, p):
     """Process the test output.

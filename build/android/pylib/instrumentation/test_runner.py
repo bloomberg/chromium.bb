@@ -99,14 +99,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
                       str(self.device))
       return
 
+    host_device_file_tuples = []
     test_data = _GetDataFilesForTestSuite(self.test_pkg.GetApkName())
     if test_data:
       # Make sure SD card is ready.
       self.device.WaitUntilFullyBooted(timeout=20)
-      for p in test_data:
-        self.device.PushChangedFiles(
-            os.path.join(constants.DIR_SOURCE_ROOT, p),
-            os.path.join(self.device.GetExternalStoragePath(), p))
+      host_device_file_tuples += [
+          (os.path.join(constants.DIR_SOURCE_ROOT, p),
+           os.path.join(self.device.GetExternalStoragePath(), p))
+          for p in test_data]
 
     # TODO(frankf): Specify test data in this file as opposed to passing
     # as command-line.
@@ -117,12 +118,14 @@ class TestRunner(base_test_runner.BaseTestRunner):
       host_test_files_path = os.path.join(constants.DIR_SOURCE_ROOT,
                                           host_src)
       if os.path.exists(host_test_files_path):
-        self.device.PushChangedFiles(
+        host_device_file_tuples += [(
             host_test_files_path,
             '%s/%s/%s' % (
                 self.device.GetExternalStoragePath(),
                 TestRunner._DEVICE_DATA_DIR,
-                dst_layer))
+                dst_layer))]
+    if host_device_file_tuples:
+      self.device.PushChangedFiles(host_device_file_tuples)
     self.tool.CopyFiles()
     TestRunner._DEVICE_HAS_TEST_FILES[str(self.device)] = True
 

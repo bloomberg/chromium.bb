@@ -24,4 +24,4 @@ class TestPackage(test_jar.TestJar):
 
   # Override.
   def Install(self, device):
-    device.PushChangedFiles(self._jar_path, constants.TEST_EXECUTABLE_DIR)
+    device.PushChangedFiles([(self._jar_path, constants.TEST_EXECUTABLE_DIR)])

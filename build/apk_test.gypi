@@ -20,6 +20,7 @@
 {
   'dependencies': [
     '<(DEPTH)/base/base.gyp:base_java',
+    '<(DEPTH)/build/android/pylib/device/commands/commands.gyp:chromium_commands',
     '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
   ],
   'conditions': [
