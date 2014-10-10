@@ -358,7 +358,7 @@
           'action_name': 'pack_arm_relocations',
           'variables': {
             'conditions': [
-              ['use_chromium_linker == 1 and use_relocation_packer == 1', {
+              ['use_chromium_linker == 1 and use_relocation_packer == 1 and profiling != 1', {
                 'enable_packing': 1,
               }, {
                 'enable_packing': 0,
