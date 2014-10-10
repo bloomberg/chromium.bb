@@ -14,11 +14,13 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
     const std::string& file_system_id,
     const std::string& display_name,
     bool writable,
+    bool supports_notify_tag,
     const base::FilePath& mount_path)
     : extension_id_(extension_id),
       file_system_id_(file_system_id),
       display_name_(display_name),
       writable_(writable),
+      supports_notify_tag_(supports_notify_tag),
       mount_path_(mount_path) {
 }
 

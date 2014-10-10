@@ -104,7 +104,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
                             const std::string& extension_id,
                             const std::string& file_system_id,
                             const std::string& display_name,
-                            bool writable) {
+                            bool writable,
+                            bool supports_notify_tag) {
   TestingPrefServiceSyncable* const pref_service =
       profile->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
@@ -116,6 +117,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
                                              kFileSystemId);
   file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName, kDisplayName);
   file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable, writable);
+  file_system->SetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
+                                              supports_notify_tag);
   file_systems->SetWithoutPathExpansion(kFileSystemId, file_system);
   extensions.SetWithoutPathExpansion(kExtensionId, file_systems);
 
@@ -159,8 +162,11 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        false /* writable */,
+                                        false /* supports_notify_tag */));
 
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_EQ(kExtensionId, observer.mounts[0].file_system_info().extension_id());
@@ -172,6 +178,7 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
             observer.mounts[0].file_system_info().mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kDisplayName, observer.mounts[0].file_system_info().display_name());
   EXPECT_FALSE(observer.mounts[0].file_system_info().writable());
+  EXPECT_FALSE(observer.mounts[0].file_system_info().supports_notify_tag());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
   ASSERT_EQ(0u, observer.unmounts.size());
 
@@ -182,15 +189,20 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   service_->RemoveObserver(&observer);
 }
 
-TEST_F(FileSystemProviderServiceTest, MountFileSystem_Writable) {
+TEST_F(FileSystemProviderServiceTest,
+       MountFileSystem_WritableAndSupportsNotifyTag) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, true /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        true /* writable */,
+                                        true /* supports_notify_tag */));
 
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_TRUE(observer.mounts[0].file_system_info().writable());
+  EXPECT_TRUE(observer.mounts[0].file_system_info().supports_notify_tag());
   ASSERT_EQ(0u, observer.unmounts.size());
   std::vector<ProvidedFileSystemInfo> file_system_info_list =
       service_->GetProvidedFileSystemInfoList();
@@ -203,10 +215,16 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_UniqueIds) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
-  EXPECT_FALSE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        false /* writable */,
+                                        false /* supports_notify_tag */));
+  EXPECT_FALSE(service_->MountFileSystem(kExtensionId,
+                                         kFileSystemId,
+                                         kDisplayName,
+                                         false /* writable */,
+                                         false /* supports_notify_tag */));
 
   ASSERT_EQ(2u, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
@@ -227,14 +245,20 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_StressTest) {
   for (size_t i = 0; i < kMaxFileSystems; ++i) {
     const std::string file_system_id =
         std::string("test-") + base::IntToString(i);
-    EXPECT_TRUE(service_->MountFileSystem(
-        kExtensionId, file_system_id, kDisplayName, false /* writable */));
+    EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                          file_system_id,
+                                          kDisplayName,
+                                          false /* writable */,
+                                          false /* supports_notify_tag */));
   }
   ASSERT_EQ(kMaxFileSystems, observer.mounts.size());
 
   // The next file system is out of limit, and registering it should fail.
-  EXPECT_FALSE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+  EXPECT_FALSE(service_->MountFileSystem(kExtensionId,
+                                         kFileSystemId,
+                                         kDisplayName,
+                                         false /* writable */,
+                                         false /* supports_notify_tag */));
 
   ASSERT_EQ(kMaxFileSystems + 1, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
@@ -251,8 +275,11 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        false /* writable */,
+                                        false /* supports_notify_tag */));
   ASSERT_EQ(1u, observer.mounts.size());
 
   EXPECT_TRUE(service_->UnmountFileSystem(
@@ -276,8 +303,11 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        false /* writable */,
+                                        false /* supports_notify_tag */));
   ASSERT_EQ(1u, observer.mounts.size());
 
   // Directly call the observer's method.
@@ -307,8 +337,11 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
 
   const std::string kWrongExtensionId = "helloworldhelloworldhelloworldhe";
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        false /* writable */,
+                                        false /* supports_notify_tag */));
   ASSERT_EQ(1u, observer.mounts.size());
   ASSERT_EQ(1u, service_->GetProvidedFileSystemInfoList().size());
 
@@ -327,8 +360,12 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
 
 TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   // Create a fake entry in the preferences.
-  RememberFakeFileSystem(
-      profile_, kExtensionId, kFileSystemId, kDisplayName, true /* writable */);
+  RememberFakeFileSystem(profile_,
+                         kExtensionId,
+                         kFileSystemId,
+                         kDisplayName,
+                         true /* writable */,
+                         true /* supports_notify_tag */);
 
   // Create a new service instance in order to load remembered file systems
   // from preferences.
@@ -352,6 +389,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   EXPECT_EQ(kFileSystemId,
             observer.mounts[0].file_system_info().file_system_id());
   EXPECT_TRUE(observer.mounts[0].file_system_info().writable());
+  EXPECT_TRUE(observer.mounts[0].file_system_info().supports_notify_tag());
 
   std::vector<ProvidedFileSystemInfo> file_system_info_list =
       new_service->GetProvidedFileSystemInfoList();
@@ -364,8 +402,11 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
-  EXPECT_TRUE(service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, true /* writable */));
+  EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                        kFileSystemId,
+                                        kDisplayName,
+                                        true /* writable */,
+                                        true /* supports_notify_tag */));
   ASSERT_EQ(1u, observer.mounts.size());
 
   TestingPrefServiceSyncable* const pref_service =
@@ -402,6 +443,11 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
       file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable, &writable));
   EXPECT_TRUE(writable);
 
+  bool supports_notify_tag = false;
+  EXPECT_TRUE(file_system->GetBooleanWithoutPathExpansion(
+      kPrefKeySupportsNotifyTag, &supports_notify_tag));
+  EXPECT_TRUE(supports_notify_tag);
+
   service_->RemoveObserver(&observer);
 }
 
@@ -414,8 +460,11 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
   ASSERT_TRUE(pref_service);
 
   {
-    EXPECT_TRUE(service_->MountFileSystem(
-        kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+    EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                          kFileSystemId,
+                                          kDisplayName,
+                                          false /* writable */,
+                                          false /* supports_notify_tag */));
     ASSERT_EQ(1u, observer.mounts.size());
 
     const base::DictionaryValue* extensions =
@@ -454,8 +503,11 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountByUser) {
   ASSERT_TRUE(pref_service);
 
   {
-    EXPECT_TRUE(service_->MountFileSystem(
-        kExtensionId, kFileSystemId, kDisplayName, false /* writable */));
+    EXPECT_TRUE(service_->MountFileSystem(kExtensionId,
+                                          kFileSystemId,
+                                          kDisplayName,
+                                          false /* writable */,
+                                          false /* supports_notify_tag */));
     ASSERT_EQ(1u, observer.mounts.size());
 
     const base::DictionaryValue* extensions =

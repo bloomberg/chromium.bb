@@ -18,6 +18,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -40,6 +42,7 @@ namespace file_system_provider {
 extern const char kPrefKeyFileSystemId[];
 extern const char kPrefKeyDisplayName[];
 extern const char kPrefKeyWritable[];
+extern const char kPrefKeySupportsNotifyTag[];
 
 class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
@@ -52,7 +55,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 // Manages and registers the file system provider service. Maintains provided
 // file systems.
 class Service : public KeyedService,
-                public extensions::ExtensionRegistryObserver {
+                public extensions::ExtensionRegistryObserver,
+                public ProvidedFileSystemObserver {
  public:
   typedef base::Callback<ProvidedFileSystemInterface*(
       Profile* profile,
@@ -74,12 +78,15 @@ class Service : public KeyedService,
 
   // Mounts a file system provided by an extension with the |extension_id|. If
   // |writable| is set to true, then the file system is mounted in a R/W mode.
-  // Otherwise, only read-only operations are supported. For success, returns
+  // Otherwise, only read-only operations are supported. If change notification
+  // tags are supported, then |supports_notify_tag| must be true. Note, that
+  // it is required in order to enable the internal cache. For success, returns
   // true, otherwise false.
   bool MountFileSystem(const std::string& extension_id,
                        const std::string& file_system_id,
                        const std::string& display_name,
-                       bool writable);
+                       bool writable,
+                       bool supports_notify_tag);
 
   // Unmounts a file system with the specified |file_system_id| for the
   // |extension_id|. For success returns true, otherwise false.
@@ -123,6 +130,19 @@ class Service : public KeyedService,
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension) override;
+
+  // ProvidedFileSystemInterface::Observer overrides.
+  virtual void OnObservedEntryChanged(
+      const ProvidedFileSystemInfo& file_system_info,
+      const base::FilePath& observed_path,
+      ProvidedFileSystemObserver::ChangeType change_type,
+      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      const base::Closure& callback) override;
+  virtual void OnObservedEntryTagUpdated(
+      const ProvidedFileSystemInfo& file_system_info,
+      const base::FilePath& observed_path) override;
+  virtual void OnObservedEntryListChanged(
+      const ProvidedFileSystemInfo& file_system_info) override;
 
  private:
   // Key is a pair of an extension id and file system id, which makes it

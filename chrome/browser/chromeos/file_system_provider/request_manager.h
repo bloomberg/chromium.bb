@@ -39,6 +39,8 @@ enum RequestType {
   TRUNCATE,
   WRITE_FILE,
   ABORT,
+  OBSERVE_DIRECTORY,
+  UNOBSERVE_ENTRY,
   TESTING
 };
 

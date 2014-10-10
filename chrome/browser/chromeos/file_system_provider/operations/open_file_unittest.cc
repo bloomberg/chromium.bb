@@ -77,6 +77,7 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
                                kFileSystemId,
                                "" /* display_name */,
                                false /* writable */,
+                               false /* supports_notify_tag */,
                                base::FilePath() /* mount_path */);
   }
 
@@ -147,6 +148,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
       kFileSystemId,
       "" /* file_system_name */,
       false /* writable */,
+      false /* supports_notify_tag */,
       base::FilePath() /* mount_path */);
 
   // Opening for read on a read-only file system is allowed.

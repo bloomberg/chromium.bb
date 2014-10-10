@@ -42,6 +42,7 @@ class FileSystemProviderOperationsCreateFileTest : public testing::Test {
                                kFileSystemId,
                                "" /* file_system_name */,
                                true /* writable */,
+                               false /* supports_notify_tag */,
                                base::FilePath() /* mount_path */);
   }
 
@@ -107,6 +108,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, Execute_ReadOnly) {
       kFileSystemId,
       "" /* file_system_name */,
       false /* writable */,
+      false /* supports_notify_tag */,
       base::FilePath() /* mount_path */);
 
   CreateFile create_file(NULL,

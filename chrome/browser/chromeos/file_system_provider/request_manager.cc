@@ -48,6 +48,10 @@ std::string RequestTypeToString(RequestType type) {
       return "WRITE_FILE";
     case ABORT:
       return "ABORT";
+    case OBSERVE_DIRECTORY:
+      return "OBSERVE_DIRECTORY";
+    case UNOBSERVE_ENTRY:
+      return "UNOBSERVE_ENTRY";
     case TESTING:
       return "TESTING";
   }

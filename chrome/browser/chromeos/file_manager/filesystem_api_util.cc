@@ -24,7 +24,6 @@
 
 namespace file_manager {
 namespace util {
-
 namespace {
 
 // Helper function used to implement GetNonNativeLocalPathMimeType. It extracts

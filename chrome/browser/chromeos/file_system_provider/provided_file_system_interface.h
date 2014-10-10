@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
 class EventRouter;
@@ -30,8 +34,7 @@ namespace file_system_provider {
 class ProvidedFileSystemInfo;
 class RequestManager;
 
-// Represents metadata for either a file or a directory. Returned by GetMetadata
-// method in ProvidedFileSystemInterface.
+// Represents metadata for either a file or a directory.
 struct EntryMetadata {
   EntryMetadata();
   ~EntryMetadata();
@@ -54,6 +57,9 @@ struct EntryMetadata {
 // fails synchronously.
 class ProvidedFileSystemInterface {
  public:
+  struct ObservedEntry;
+  struct ChildChange;
+
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
 
@@ -78,6 +84,19 @@ class ProvidedFileSystemInterface {
 
   // Mask of fields requested from the GetMetadata() call.
   typedef int MetadataFieldMask;
+
+  // List of observed entries.
+  typedef std::map<base::FilePath, ObservedEntry> ObservedEntries;
+
+  // Represents an observed entry on the file system.
+  struct ObservedEntry {
+    ObservedEntry();
+    ~ObservedEntry();
+
+    base::FilePath entry_path;
+    bool recursive;
+    std::string last_tag;
+  };
 
   virtual ~ProvidedFileSystemInterface() {}
 
@@ -170,11 +189,41 @@ class ProvidedFileSystemInterface {
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests observing a directory.
+  virtual AbortCallback ObserveDirectory(
+      const base::FilePath& directory_path,
+      bool recursive,
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+
+  // Requests unobserving an entry, which is immediately removed from the
+  // internal list, hence the operation is not abortable.
+  virtual void UnobserveEntry(
+      const base::FilePath& entry_path,
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+
+  // Notifies about changes to the observed entries within the file system.
+  // Invoked by the file system implementation. Returns false if the
+  // notification arguments are malformed or the entry is not observed anymore.
+  virtual bool Notify(
+      const base::FilePath& observed_path,
+      ProvidedFileSystemObserver::ChangeType change_type,
+      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      const std::string& tag) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 
+  // Returns a mutable list of observed entries.
+  virtual ObservedEntries* GetObservedEntries() = 0;
+
   // Returns a request manager for the file system.
   virtual RequestManager* GetRequestManager() = 0;
+
+  // Adds an observer on the file system.
+  virtual void AddObserver(ProvidedFileSystemObserver* observer) = 0;
+
+  // Removes an observer.
+  virtual void RemoveObserver(ProvidedFileSystemObserver* observer) = 0;
 
   // Returns a weak pointer to this object.
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() = 0;

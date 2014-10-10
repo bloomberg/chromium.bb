@@ -42,6 +42,7 @@ class FileSystemProviderOperationsCreateDirectoryTest : public testing::Test {
                                kFileSystemId,
                                "" /* file_system_name */,
                                true /* writable */,
+                               false /* supports_notify_tag */,
                                base::FilePath() /* mount_path */);
   }
 
@@ -112,6 +113,7 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute_ReadOnly) {
       kFileSystemId,
       "" /* file_system_name */,
       false /* writable */,
+      false /* supports_notify_tag */,
       base::FilePath() /* mount_path */);
 
   CreateDirectory create_directory(

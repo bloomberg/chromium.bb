@@ -964,6 +964,7 @@ enum HistogramValue {
   COPRESENCESOCKET_SEND,
   COPRESENCESOCKET_DISCONNECT,
   BOOKMARKMANAGERPRIVATE_SETVERSION,
+  FILESYSTEMPROVIDER_NOTIFY,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

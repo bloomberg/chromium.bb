@@ -309,4 +309,12 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onAbortRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onObserveDirectoryRequested',
+    massageArgumentsDefault);
+
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onUnobserveEntryRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();

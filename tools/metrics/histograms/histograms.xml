@@ -42700,6 +42700,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="903" label="COPRESENCESOCKET_SEND"/>
   <int value="904" label="COPRESENCESOCKET_DISCONNECT"/>
   <int value="905" label="BOOKMARKMANAGERPRIVATE_SETVERSION"/>
+  <int value="906" label="FILESYSTEMPROVIDER_NOTIFY"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

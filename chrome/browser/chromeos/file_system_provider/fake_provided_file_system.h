@@ -12,9 +12,11 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 
 class Profile;
 
@@ -122,8 +124,23 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       int64 offset,
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
+  virtual AbortCallback ObserveDirectory(
+      const base::FilePath& directory_path,
+      bool recursive,
+      const storage::AsyncFileUtil::StatusCallback& callback) override;
+  virtual void UnobserveEntry(
+      const base::FilePath& entry_path,
+      const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
   virtual RequestManager* GetRequestManager() override;
+  virtual ObservedEntries* GetObservedEntries() override;
+  virtual void AddObserver(ProvidedFileSystemObserver* observer) override;
+  virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
+  virtual bool Notify(
+      const base::FilePath& observed_path,
+      ProvidedFileSystemObserver::ChangeType change_type,
+      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      const std::string& tag) override;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
   // Factory callback, to be used in Service::SetFileSystemFactory(). The
@@ -156,6 +173,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   OpenedFilesMap opened_files_;
   int last_file_handle_;
   base::CancelableTaskTracker tracker_;
+  ObserverList<ProvidedFileSystemObserver> observers_;
 
   base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);

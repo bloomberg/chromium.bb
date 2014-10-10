@@ -82,6 +82,7 @@ class FileSystemProviderOperationsReadFileTest : public testing::Test {
                                kFileSystemId,
                                "" /* display_name */,
                                false /* writable */,
+                               false /* supports_notify_tag */,
                                base::FilePath() /* mount_path */);
     io_buffer_ = make_scoped_refptr(new net::IOBuffer(kOffset + kLength));
   }

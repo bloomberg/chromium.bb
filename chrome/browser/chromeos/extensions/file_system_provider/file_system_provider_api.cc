@@ -24,6 +24,13 @@ using chromeos::file_system_provider::RequestValue;
 using chromeos::file_system_provider::Service;
 
 namespace extensions {
+namespace {
+
+const char kNotifyFailedErrorMessage[] =
+    "Sending a response for the request failed.";
+const char kInvalidNotificationErrorMessage[] = "The notification is invalid.";
+
+}  // namespace
 
 bool FileSystemProviderMountFunction::RunSync() {
   using api::file_system_provider::Mount::Params;
@@ -56,7 +63,8 @@ bool FileSystemProviderMountFunction::RunSync() {
   if (!service->MountFileSystem(extension_id(),
                                 params->options.file_system_id,
                                 params->options.display_name,
-                                params->options.writable)) {
+                                params->options.writable,
+                                params->options.supports_notify_tag)) {
     base::ListValue* const result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kMountFailedErrorMessage));
     SetResult(result);
@@ -115,6 +123,45 @@ bool FileSystemProviderGetAllFunction::RunSync() {
   }
 
   SetResultList(api::file_system_provider::GetAll::Results::Create(items));
+  return true;
+}
+
+bool FileSystemProviderNotifyFunction::RunSync() {
+  using api::file_system_provider::Notify::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Service* const service = Service::Get(GetProfile());
+  DCHECK(service);
+  if (!service)
+    return false;
+
+  ProvidedFileSystemInterface* const file_system =
+      service->GetProvidedFileSystem(extension_id(),
+                                     params->options.file_system_id);
+  if (!file_system) {
+    base::ListValue* const result = new base::ListValue();
+    result->Append(CreateError(kNotFoundErrorName, kNotifyFailedErrorMessage));
+    SetResult(result);
+    return true;
+  }
+
+  // TODO(mtomasz): Pass real data to Notify() instead of fake ones.
+  if (!file_system->Notify(
+          base::FilePath::FromUTF8Unsafe(params->options.observed_path),
+          chromeos::file_system_provider::ProvidedFileSystemObserver::CHANGED,
+          chromeos::file_system_provider::ProvidedFileSystemObserver::
+              ChildChanges(),
+          "todo-tag")) {
+    base::ListValue* const result = new base::ListValue();
+    result->Append(
+        CreateError(kSecurityErrorName, kInvalidNotificationErrorMessage));
+    SetResult(result);
+    return true;
+  }
+
+  base::ListValue* const result = new base::ListValue();
+  SetResult(result);
   return true;
 }
 

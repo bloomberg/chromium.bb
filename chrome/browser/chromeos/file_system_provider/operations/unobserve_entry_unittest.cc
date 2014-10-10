@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_system_provider/operations/abort.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/unobserve_entry.h"
 
 #include <string>
 #include <vector>
@@ -27,14 +27,14 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const int kOperationRequestId = 3;
+const base::FilePath::CharType kEntryPath[] = "/kitty/and/puppy/happy";
 
 }  // namespace
 
-class FileSystemProviderOperationsAbortTest : public testing::Test {
+class FileSystemProviderOperationsUnobserveEntryTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsAbortTest() {}
-  virtual ~FileSystemProviderOperationsAbortTest() {}
+  FileSystemProviderOperationsUnobserveEntryTest() {}
+  virtual ~FileSystemProviderOperationsUnobserveEntryTest() {}
 
   virtual void SetUp() override {
     file_system_info_ =
@@ -49,25 +49,27 @@ class FileSystemProviderOperationsAbortTest : public testing::Test {
   ProvidedFileSystemInfo file_system_info_;
 };
 
-TEST_F(FileSystemProviderOperationsAbortTest, Execute) {
-  using extensions::api::file_system_provider::AbortRequestedOptions;
+TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute) {
+  using extensions::api::file_system_provider::UnobserveEntryRequestedOptions;
 
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Abort abort(NULL,
-              file_system_info_,
-              kOperationRequestId,
-              base::Bind(&util::LogStatusCallback, &callback_log));
-  abort.SetDispatchEventImplForTesting(
+  UnobserveEntry unobserve_entry(
+      NULL,
+      file_system_info_,
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
+      base::Bind(&util::LogStatusCallback, &callback_log));
+  unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(abort.Execute(kRequestId));
+  EXPECT_TRUE(unobserve_entry.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
   extensions::Event* event = dispatcher.events()[0];
-  EXPECT_EQ(extensions::api::file_system_provider::OnAbortRequested::kEventName,
+  EXPECT_EQ(extensions::api::file_system_provider::OnUnobserveEntryRequested::
+                kEventName,
             event->event_name);
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
@@ -75,66 +77,70 @@ TEST_F(FileSystemProviderOperationsAbortTest, Execute) {
   const base::DictionaryValue* options_as_value = NULL;
   ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  AbortRequestedOptions options;
-  ASSERT_TRUE(AbortRequestedOptions::Populate(*options_as_value, &options));
+  UnobserveEntryRequestedOptions options;
+  ASSERT_TRUE(
+      UnobserveEntryRequestedOptions::Populate(*options_as_value, &options));
   EXPECT_EQ(kFileSystemId, options.file_system_id);
   EXPECT_EQ(kRequestId, options.request_id);
-  EXPECT_EQ(kOperationRequestId, options.operation_request_id);
+  EXPECT_EQ(kEntryPath, options.entry_path);
 }
 
-TEST_F(FileSystemProviderOperationsAbortTest, Execute_NoListener) {
+TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Abort abort(NULL,
-              file_system_info_,
-              kOperationRequestId,
-              base::Bind(&util::LogStatusCallback, &callback_log));
-  abort.SetDispatchEventImplForTesting(
+  UnobserveEntry unobserve_entry(
+      NULL,
+      file_system_info_,
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
+      base::Bind(&util::LogStatusCallback, &callback_log));
+  unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_FALSE(abort.Execute(kRequestId));
+  EXPECT_FALSE(unobserve_entry.Execute(kRequestId));
 }
 
-TEST_F(FileSystemProviderOperationsAbortTest, OnSuccess) {
+TEST_F(FileSystemProviderOperationsUnobserveEntryTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Abort abort(NULL,
-              file_system_info_,
-              kOperationRequestId,
-              base::Bind(&util::LogStatusCallback, &callback_log));
-  abort.SetDispatchEventImplForTesting(
+  UnobserveEntry unobserve_entry(
+      NULL,
+      file_system_info_,
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
+      base::Bind(&util::LogStatusCallback, &callback_log));
+  unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(abort.Execute(kRequestId));
+  EXPECT_TRUE(unobserve_entry.Execute(kRequestId));
 
-  abort.OnSuccess(kRequestId,
-                  scoped_ptr<RequestValue>(new RequestValue()),
-                  false /* has_more */);
+  unobserve_entry.OnSuccess(kRequestId,
+                            scoped_ptr<RequestValue>(new RequestValue()),
+                            false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_OK, callback_log[0]);
 }
 
-TEST_F(FileSystemProviderOperationsAbortTest, OnError) {
+TEST_F(FileSystemProviderOperationsUnobserveEntryTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  Abort abort(NULL,
-              file_system_info_,
-              kOperationRequestId,
-              base::Bind(&util::LogStatusCallback, &callback_log));
-  abort.SetDispatchEventImplForTesting(
+  UnobserveEntry unobserve_entry(
+      NULL,
+      file_system_info_,
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
+      base::Bind(&util::LogStatusCallback, &callback_log));
+  unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(abort.Execute(kRequestId));
+  EXPECT_TRUE(unobserve_entry.Execute(kRequestId));
 
-  abort.OnError(kRequestId,
-                scoped_ptr<RequestValue>(new RequestValue()),
-                base::File::FILE_ERROR_TOO_MANY_OPENED);
+  unobserve_entry.OnError(kRequestId,
+                          scoped_ptr<RequestValue>(new RequestValue()),
+                          base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, callback_log[0]);
 }

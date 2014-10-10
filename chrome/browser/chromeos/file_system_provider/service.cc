@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -40,6 +39,7 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 const char kPrefKeyFileSystemId[] = "file-system-id";
 const char kPrefKeyDisplayName[] = "display-name";
 const char kPrefKeyWritable[] = "writable";
+const char kPrefKeySupportsNotifyTag[] = "supports-notify-tag";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -103,7 +103,8 @@ void Service::SetFileSystemFactoryForTesting(
 bool Service::MountFileSystem(const std::string& extension_id,
                               const std::string& file_system_id,
                               const std::string& display_name,
-                              bool writable) {
+                              bool writable,
+                              bool supports_notify_tag) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If already exists a file system provided by the same extension with this
@@ -154,9 +155,14 @@ bool Service::MountFileSystem(const std::string& extension_id,
   //   file_system_id = hello_world
   //   mount_point_name =  b33f1337-hello_world-5aa5
   //   writable = false
+  //   supports_notify_tag = false
   //   mount_path = /provided/b33f1337-hello_world-5aa5
-  ProvidedFileSystemInfo file_system_info(
-      extension_id, file_system_id, display_name, writable, mount_path);
+  ProvidedFileSystemInfo file_system_info(extension_id,
+                                          file_system_id,
+                                          display_name,
+                                          writable,
+                                          supports_notify_tag,
+                                          mount_path);
 
   ProvidedFileSystemInterface* file_system =
       file_system_factory_.Run(profile_, file_system_info);
@@ -327,6 +333,27 @@ void Service::OnRequestUnmountStatus(
   }
 }
 
+void Service::OnObservedEntryChanged(
+    const ProvidedFileSystemInfo& file_system_info,
+    const base::FilePath& observed_path,
+    ChangeType change_type,
+    const ChildChanges& child_changes,
+    const base::Closure& callback) {
+  callback.Run();
+}
+
+void Service::OnObservedEntryTagUpdated(
+    const ProvidedFileSystemInfo& file_system_info,
+    const base::FilePath& observed_path) {
+  // TODO(mtomasz): Store tags of observed entries in preferences, or better
+  // in leveldb.
+}
+
+void Service::OnObservedEntryListChanged(
+    const ProvidedFileSystemInfo& file_system_info) {
+  // TODO(mtomasz): Store observed entries in preferences or leveldb.
+}
+
 void Service::RememberFileSystem(
     const ProvidedFileSystemInfo& file_system_info) {
   base::DictionaryValue* file_system = new base::DictionaryValue();
@@ -336,6 +363,8 @@ void Service::RememberFileSystem(
                                              file_system_info.display_name());
   file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable,
                                               file_system_info.writable());
+  file_system->SetBooleanWithoutPathExpansion(
+      kPrefKeySupportsNotifyTag, file_system_info.supports_notify_tag());
 
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
@@ -374,6 +403,7 @@ void Service::ForgetFileSystem(const std::string& extension_id,
 }
 
 void Service::RestoreFileSystems(const std::string& extension_id) {
+  // TODO(mtomasz): Restore observed entries together with their tags.
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
@@ -383,8 +413,9 @@ void Service::RestoreFileSystems(const std::string& extension_id) {
 
   const base::DictionaryValue* file_systems_per_extension = NULL;
   if (!file_systems->GetDictionaryWithoutPathExpansion(
-          extension_id, &file_systems_per_extension))
+          extension_id, &file_systems_per_extension)) {
     return;  // Nothing to restore.
+  }
 
   // Use a copy of the dictionary, since the original one may be modified while
   // iterating over it.
@@ -402,7 +433,8 @@ void Service::RestoreFileSystems(const std::string& extension_id) {
 
     std::string file_system_id;
     std::string display_name;
-    bool writable;
+    bool writable = false;
+    bool supports_notify_tag = false;
 
     if (!file_system_value->GetAsDictionary(&file_system) ||
         !file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
@@ -411,14 +443,18 @@ void Service::RestoreFileSystems(const std::string& extension_id) {
                                                     &display_name) ||
         !file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable,
                                                      &writable) ||
+        !file_system->GetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
+                                                     &supports_notify_tag) ||
         file_system_id.empty() || display_name.empty()) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
     }
-
-    const bool result =
-        MountFileSystem(extension_id, file_system_id, display_name, writable);
+    const bool result = MountFileSystem(extension_id,
+                                        file_system_id,
+                                        display_name,
+                                        writable,
+                                        supports_notify_tag);
     if (!result) {
       LOG(ERROR) << "Failed to restore a provided file system from "
                  << "preferences: " << extension_id << ", " << file_system_id

@@ -13,5 +13,11 @@ EntryMetadata::EntryMetadata() : is_directory(false), size(0) {
 EntryMetadata::~EntryMetadata() {
 }
 
+ProvidedFileSystemInterface::ObservedEntry::ObservedEntry() : recursive(false) {
+}
+
+ProvidedFileSystemInterface::ObservedEntry::~ObservedEntry() {
+}
+
 }  // namespace file_system_provider
 }  // namespace chromeos

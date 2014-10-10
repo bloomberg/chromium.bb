@@ -41,6 +41,7 @@ class FileSystemProviderOperationsCloseFileTest : public testing::Test {
                                kFileSystemId,
                                "" /* display_name */,
                                false /* writable */,
+                               false /* supports_notify_tag */,
                                base::FilePath() /* mount_path */);
   }
 

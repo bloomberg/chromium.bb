@@ -80,10 +80,12 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
     service->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
-    const bool result = service->MountFileSystem(kExtensionId,
-                                                 kFileSystemId,
-                                                 "Testing File System",
-                                                 false /* writable */);
+    const bool result =
+        service->MountFileSystem(kExtensionId,
+                                 kFileSystemId,
+                                 "Testing File System",
+                                 false /* writable */,
+                                 false /* supports_notify_tag */);
     ASSERT_TRUE(result);
     provided_file_system_ = static_cast<FakeProvidedFileSystem*>(
         service->GetProvidedFileSystem(kExtensionId, kFileSystemId));

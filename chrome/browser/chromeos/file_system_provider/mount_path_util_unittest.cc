@@ -128,7 +128,11 @@ TEST_F(FileSystemProviderMountPathUtilTest, IsFileSystemProviderLocalPath) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
   const bool result = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */);
+      kExtensionId,
+      kFileSystemId,
+      kDisplayName,
+      false /* writable */,
+      false /* supports_notify_tag */);
   ASSERT_TRUE(result);
   const ProvidedFileSystemInfo file_system_info =
       file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
@@ -152,7 +156,11 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
   const bool result = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */);
+      kExtensionId,
+      kFileSystemId,
+      kDisplayName,
+      false /* writable */,
+      false /* supports_notify_tag */);
   ASSERT_TRUE(result);
   const ProvidedFileSystemInfo file_system_info =
       file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
@@ -179,6 +187,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
       kFileSystemId,
       kDisplayName,
       false /* writable */,
+      false /* supports_notify_tag */,
       GetMountPath(profile_, kExtensionId, kFileSystemId));
 
   const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
@@ -194,7 +203,11 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
   const bool result = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */);
+      kExtensionId,
+      kFileSystemId,
+      kDisplayName,
+      false /* writable */,
+      false /* supports_notify_tag */);
   ASSERT_TRUE(result);
   const ProvidedFileSystemInfo file_system_info =
       file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
@@ -240,7 +253,11 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser) {
   const bool result = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */);
+      kExtensionId,
+      kFileSystemId,
+      kDisplayName,
+      false /* writable */,
+      false /* supports_notify_tag */);
   ASSERT_TRUE(result);
   const ProvidedFileSystemInfo file_system_info =
       file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
@@ -264,7 +281,11 @@ TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser_RootPath) {
   const bool result = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemId, kDisplayName, false /* writable */);
+      kExtensionId,
+      kFileSystemId,
+      kDisplayName,
+      false /* writable */,
+      false /* supports_notify_tag */);
   ASSERT_TRUE(result);
   const ProvidedFileSystemInfo file_system_info =
       file_system_provider_service_->GetProvidedFileSystem(kExtensionId,

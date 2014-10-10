@@ -34,6 +34,12 @@ namespace fileSystemProvider {
     WRITE
   };
 
+  // Type of a change detected on the observed directory.
+  enum ChangeType {
+    CHANGED,
+    DELETED
+  };
+
   // Represents metadata of a file or a directory.
   dictionary EntryMetadata {
     // True if it is a directory.
@@ -57,6 +63,18 @@ namespace fileSystemProvider {
     DOMString? thumbnail;
   };
 
+  // Represents an observed entry.
+  dictionary ObservedEntry {
+    // The path of the entry being observed.
+    DOMString entryPath;
+
+    // Whether observing should include all child entries recursively.
+    boolean recursive;
+
+    // Tag used by the last notification for the observed path.
+    DOMString? lastTag;
+  };
+
   // Represents a mounted file system.
   dictionary FileSystemInfo {
     // The identifier of the file system.
@@ -68,6 +86,13 @@ namespace fileSystemProvider {
     // Whether the file system supports operations which may change contents
     // of the file system (such as creating, deleting or writing to files).
     boolean writable;
+
+    // Whether the file system supports the <code>tag</code> field for observing
+    // directories.
+    [nodoc] boolean? supportsNotifyTag;
+
+    // List of observed entries.
+    [nodoc] ObservedEntry[] observedEntries;
   };
 
   // Options for the <code>mount()</code> method.
@@ -82,6 +107,10 @@ namespace fileSystemProvider {
     // Whether the file system supports operations which may change contents
     // of the file system (such as creating, deleting or writing to files).
     boolean? writable;
+
+    // Whether the file system supports the <code>tag</code> field for observed
+    // directories. Required in order to enable the internal cache.
+    [nodoc] boolean? supportsNotifyTag;
   };
 
   // Options for the <code>unmount()</code> method.
@@ -287,6 +316,66 @@ namespace fileSystemProvider {
     long operationRequestId;
   };
 
+  // Options for the <code>onObserveDirectoryRequested()</code> event.
+  dictionary ObserveDirectoryRequestedOptions {
+    // The identifier of the file system related to this operation.
+    DOMString fileSystemId;
+
+    // The unique identifier of this request.
+    long requestId;
+
+    // The path of the directory to be observed.
+    DOMString directoryPath;
+
+    // Whether observing should include all child entries recursively.
+    boolean recursive;
+  };
+
+  // Options for the <code>onUnobserveEntryRequested()</code> event.
+  dictionary UnobserveEntryRequestedOptions {
+    // The identifier of the file system related to this operation.
+    DOMString fileSystemId;
+
+    // The unique identifier of this request.
+    long requestId;
+
+    // The path of the entry to be not observed anymore.
+    DOMString entryPath;
+  };
+
+  // Information about a change happened to an entry within the observed
+  // directory.
+  dictionary ChildChange {
+    // The path of the changed entry.
+    DOMString entryPath;
+
+    // The type of the change which happened to the entry.
+    ChangeType changeType;
+  };
+
+  // Options for the <code>Notify()</code> method.
+  dictionary NotifyOptions {
+    // The identifier of the file system related to this change.
+    DOMString fileSystemId;
+
+    // The path of the observed entry.
+    DOMString observedPath;
+
+    // The type of the change which happened to the observed entry. If it is
+    // DELETED, then the observed entry will be automatically removed from the
+    // list of observed entries.
+    ChangeType changeType;
+
+    // List of changes to entries within the observed directory.
+    ChildChange[]? childChanges;
+
+    // Tag for the notification. Required if the file system was mounted with
+    // the <code>supportsNotifyTag</code> option. Note, that this flag is
+    // necessary to provide notifications about changes which changed even
+    // when the system was shutdown.
+    DOMString? tag;
+  };
+
   // Callback to receive the result of mount() function.
   callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
 
@@ -351,6 +440,25 @@ namespace fileSystemProvider {
 
     // Returns all file systems mounted by the extension.
     static void getAll(GetAllCallback callback);
+
+    // Notifies about changes in the observed directory at <code>
+    // observedPath</code>. If the file system is mounted with <code>
+    // supportsNofityTag</code>, then <code>tag</code> must be provided, and
+    // all changes since the last notification always reported, even if the
+    // system was shutdown. The last tag can be obtained with <code>
+    // getAll()</code>. Note, that <code>tag</code> is required in order to
+    // enable the internal cache.
+    //
+    // Value of <code>tag</code> can be any string which is unique per call,
+    // so it's possible to identify the last registered notification. Eg. if
+    // the providing extension starts after a reboot, and the last registered
+    // notification's tag is equal to "123", then it should call notify() for
+    // all changes which happened since the change tagged as "123".
+    //
+    // Not all providers are able to provide a tag, but if the file system has
+    // a changelog, then the tag can be eg. a change number, or a revision
+    // number.
+    [nodoc] static void notify(NotifyOptions options);
   };
 
   interface Events {
@@ -469,6 +577,20 @@ namespace fileSystemProvider {
         AbortRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
+
+    // Raised when setting a new directory watcher is requested. If an error
+    // occurs, then <code>errorCallback</code> must be called.
+    [maxListeners=1, nodoc] static void onObserveDirectoryRequested(
+      ObserveDirectoryRequestedOptions options,
+      ProviderSuccessCallback successCallback,
+      ProviderErrorCallback errorCallback);
+
+    // Raised when the entry should no longer be observed. If an error occurs,
+    // then <code>errorCallback</code> must be called.
+    [maxListeners=1, nodoc] static void onUnobserveEntryRequested(
+      UnobserveEntryRequestedOptions options,
+      ProviderSuccessCallback successCallback,
+      ProviderErrorCallback errorCallback);
   };
 };
 
