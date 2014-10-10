@@ -20,6 +20,13 @@ import sys
 import time
 import urllib2
 
+# We specifically set up a local server to connect to, so make sure we
+# delete any proxy settings that might screw that up.  We also need to
+# do it here because modules that are imported below will implicitly
+# initialize with this proxy setting rather than dynamically pull it
+# on the fly :(.
+os.environ.pop('http_proxy', None)
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
