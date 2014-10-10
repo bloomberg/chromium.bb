@@ -1832,6 +1832,13 @@ internal_paladin.add_config('auron-paladin',
   important=False,
 )
 
+internal_paladin.add_config('bobcat-paladin',
+  boards=['bobcat'],
+  paladin_builder_name='bobcat paladin',
+  profile='minimal',
+  important=False,
+)
+
 internal_paladin.add_config('butterfly-paladin',
   full_paladin,
   boards=['butterfly'],
