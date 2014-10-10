@@ -61,10 +61,14 @@ class LocalFrame;
 // offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
 // main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
 // in the outer viewport and can pan within it.
-class PinchViewport final : public GraphicsLayerClient, public ScrollableArea {
+class PinchViewport final : public NoBaseWillBeGarbageCollectedFinalized<PinchViewport>, public GraphicsLayerClient, public ScrollableArea {
 public:
-    explicit PinchViewport(FrameHost&);
+    static PassOwnPtrWillBeRawPtr<PinchViewport> create(FrameHost& host)
+    {
+        return adoptPtrWillBeNoop(new PinchViewport(host));
+    }
     virtual ~PinchViewport();
+    virtual void trace(Visitor*);
 
     void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
     GraphicsLayer* rootGraphicsLayer()
@@ -119,6 +123,8 @@ public:
     IntPoint clampDocumentOffsetAtScale(const IntPoint& offset, float scale);
 
 private:
+    explicit PinchViewport(FrameHost&);
+
     // ScrollableArea implementation
     virtual bool isActive() const override { return false; }
     virtual int scrollSize(ScrollbarOrientation) const override;
@@ -153,7 +159,13 @@ private:
 
     LocalFrame* mainFrame() const;
 
-    FrameHost& m_frameHost;
+    FrameHost& frameHost() const
+    {
+        ASSERT(m_frameHost);
+        return *m_frameHost;
+    }
+
+    RawPtrWillBeMember<FrameHost> m_frameHost;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
     OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
     OwnPtr<GraphicsLayer> m_pageScaleLayer;

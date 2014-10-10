@@ -45,7 +45,7 @@ PassOwnPtrWillBeRawPtr<FrameHost> FrameHost::create(Page& page)
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page)
-    , m_pinchViewport(adoptPtr(new PinchViewport(*this)))
+    , m_pinchViewport(PinchViewport::create(*this))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
 {
 }
@@ -88,6 +88,7 @@ EventHandlerRegistry& FrameHost::eventHandlerRegistry() const
 void FrameHost::trace(Visitor* visitor)
 {
     visitor->trace(m_page);
+    visitor->trace(m_pinchViewport);
     visitor->trace(m_eventHandlerRegistry);
 }
 

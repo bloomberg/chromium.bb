@@ -71,7 +71,14 @@ PinchViewport::PinchViewport(FrameHost& owner)
     reset();
 }
 
-PinchViewport::~PinchViewport() { }
+PinchViewport::~PinchViewport()
+{
+}
+
+void PinchViewport::trace(Visitor* visitor)
+{
+    visitor->trace(m_frameHost);
+}
 
 void PinchViewport::setSize(const IntSize& size)
 {
@@ -185,7 +192,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
     if (clampedOffset != m_offset) {
         m_offset = clampedOffset;
 
-        ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
+        ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
         ASSERT(coordinator);
         coordinator->scrollableAreaScrollLayerDidChange(this);
 
@@ -243,13 +250,13 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         m_overlayScrollbarHorizontal = GraphicsLayer::create(graphicsLayerFactory, this);
         m_overlayScrollbarVertical = GraphicsLayer::create(graphicsLayerFactory, this);
 
-        blink::ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
+        blink::ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
         ASSERT(coordinator);
         coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
 
         // Set masks to bounds so the compositor doesn't clobber a manually
         // set inner viewport container layer size.
-        m_innerViewportContainerLayer->setMasksToBounds(m_frameHost.settings().mainFrameClipsContent());
+        m_innerViewportContainerLayer->setMasksToBounds(frameHost().settings().mainFrameClipsContent());
         m_innerViewportContainerLayer->setSize(m_size);
 
         m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
@@ -282,7 +289,7 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
         m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
-    int thumbThickness = m_frameHost.settings().pinchOverlayScrollbarThickness();
+    int thumbThickness = frameHost().settings().pinchOverlayScrollbarThickness();
     int scrollbarThickness = thumbThickness;
     int scrollbarMargin = scrollbarThickness;
 
@@ -295,7 +302,7 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 #endif
 
     if (!webScrollbarLayer) {
-        ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
+        ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
         ASSERT(coordinator);
         ScrollbarOrientation webcoreOrientation = isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
         webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, thumbThickness, scrollbarMargin, false);
@@ -320,11 +327,11 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
 {
     TRACE_EVENT0("blink", "PinchViewport::registerLayersWithTreeView");
     ASSERT(layerTreeView);
-    ASSERT(m_frameHost.page().mainFrame());
-    ASSERT(m_frameHost.page().mainFrame()->isLocalFrame());
-    ASSERT(m_frameHost.page().deprecatedLocalMainFrame()->contentRenderer());
+    ASSERT(frameHost().page().mainFrame());
+    ASSERT(frameHost().page().mainFrame()->isLocalFrame());
+    ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentRenderer());
 
-    RenderLayerCompositor* compositor = m_frameHost.page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
+    RenderLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer()->platformLayer();
 
@@ -447,7 +454,7 @@ void PinchViewport::paintContents(const GraphicsLayer*, GraphicsContext&, Graphi
 
 LocalFrame* PinchViewport::mainFrame() const
 {
-    return m_frameHost.page().mainFrame() && m_frameHost.page().mainFrame()->isLocalFrame() ? m_frameHost.page().deprecatedLocalMainFrame() : 0;
+    return frameHost().page().mainFrame() && frameHost().page().mainFrame()->isLocalFrame() ? frameHost().page().deprecatedLocalMainFrame() : 0;
 }
 
 FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)

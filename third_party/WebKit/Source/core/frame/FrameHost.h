@@ -86,7 +86,7 @@ private:
     explicit FrameHost(Page&);
 
     RawPtrWillBeMember<Page> m_page;
-    const OwnPtr<PinchViewport> m_pinchViewport;
+    const OwnPtrWillBeMember<PinchViewport> m_pinchViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
 
     AtomicString m_overrideEncoding;
