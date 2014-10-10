@@ -552,7 +552,7 @@ class RemoveTest(AbstractGSContextTest):
 
   def testRecursive(self):
     """Verify we pass down -R in recursive mode."""
-    self.ctx.Remove('gs://foo/bar', recurse=True)
+    self.ctx.Remove('gs://foo/bar', recursive=True)
     self.gs_mock.assertCommandContains(['rm', '-R'])
 
 
@@ -584,7 +584,7 @@ class UnmockedRemoveTest(cros_test_lib.TestCase):
     with gs.TemporaryURL('chromite.rm') as tempuri:
       for p in files:
         ctx.Copy('/dev/null', os.path.join(tempuri, p))
-      ctx.Remove(tempuri, recurse=True)
+      ctx.Remove(tempuri, recursive=True)
       for p in files:
         self.assertFalse(ctx.Exists(os.path.join(tempuri, p)))
 

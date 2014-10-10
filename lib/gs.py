@@ -880,18 +880,19 @@ class GSContext(object):
 
     return True
 
-  def Remove(self, path, recurse=False, ignore_missing=False, **kwargs):
+  def Remove(self, path, recursive=False, ignore_missing=False, **kwargs):
     """Remove the specified file.
 
     Args:
       path: Full gs:// url of the file to delete.
-      recurse: Remove recursively starting at path. Same as rm -R. Defaults
-        to False.
+      recursive: Remove recursively starting at path.
       ignore_missing: Whether to suppress errors about missing files.
       kwargs: Flags to pass to DoCommand.
     """
     cmd = ['rm']
-    if recurse:
+    if 'recurse' in kwargs:
+      raise TypeError('"recurse" has been renamed to "recursive"')
+    if recursive:
       cmd.append('-R')
     cmd.append(path)
     try:
@@ -1033,8 +1034,8 @@ def TemporaryURL(prefix):
   url = '%s/chromite-temp/%s/%s/%s' % (constants.TRASH_BUCKET, prefix,
                                        getpass.getuser(), md5.hexdigest())
   ctx = GSContext()
-  ctx.Remove(url, ignore_missing=True, recurse=True)
+  ctx.Remove(url, ignore_missing=True, recursive=True)
   try:
     yield url
   finally:
-    ctx.Remove(url, ignore_missing=True, recurse=True)
+    ctx.Remove(url, ignore_missing=True, recursive=True)
