@@ -3486,3 +3486,14 @@
    ...
    fun:_ZN7content62SpeechRecognitionAudioSinkTest_RecognizerNotifiedOnSocket_Test8TestBodyEv
 }
+{
+   bug_422485
+   Memcheck:Overlap
+   fun:memcpy@@GLIBC_2.14
+   fun:_ZNK8SkBitmap12copyPixelsToEPvmmb
+   fun:_ZN5blink19ImageFrameGenerator14decodeAndScaleERK11SkImageInfomPvm
+   fun:_ZN5blink22DecodingImageGenerator11onGetPixelsERK11SkImageInfoPvmPjPi
+   fun:_ZN16SkImageGenerator9getPixelsERK11SkImageInfoPvmPjPi
+   ...
+   fun:_ZNK6SkDraw10drawBitmapERK8SkBitmapRK8SkMatrixRK7SkPaint
+}
