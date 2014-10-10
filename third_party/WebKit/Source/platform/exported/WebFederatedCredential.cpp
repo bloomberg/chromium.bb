@@ -24,5 +24,16 @@ WebURL WebFederatedCredential::federation() const
     return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->federation();
 }
 
+WebFederatedCredential::WebFederatedCredential(PlatformCredential* credential)
+    : WebCredential(credential)
+{
+}
+
+WebFederatedCredential& WebFederatedCredential::operator=(PlatformCredential* credential)
+{
+    m_platformCredential = credential;
+    return *this;
+}
+
 } // namespace blink
 

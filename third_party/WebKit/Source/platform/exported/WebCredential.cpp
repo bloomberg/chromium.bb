@@ -6,12 +6,35 @@
 #include "public/platform/WebCredential.h"
 
 #include "platform/credentialmanager/PlatformCredential.h"
+#include "public/platform/WebFederatedCredential.h"
+#include "public/platform/WebLocalCredential.h"
 
 namespace blink {
+
+WebCredential WebCredential::create(PlatformCredential* credential)
+{
+    if (credential->isLocal()) {
+        WebLocalCredential local(credential);
+        return local;
+    }
+
+    if (credential->isFederated()) {
+        WebFederatedCredential federated(credential);
+        return federated;
+    }
+
+    ASSERT_NOT_REACHED();
+    return WebCredential(credential);
+}
 
 WebCredential::WebCredential(const WebString& id, const WebString& name, const WebURL& avatarURL)
     : m_platformCredential(PlatformCredential::create(id, name, avatarURL))
 {
+}
+
+WebCredential::WebCredential(const WebCredential& other)
+{
+    assign(other);
 }
 
 void WebCredential::assign(const WebCredential& other)
@@ -48,6 +71,16 @@ WebString WebCredential::name() const
 WebURL WebCredential::avatarURL() const
 {
     return m_platformCredential->avatarURL();
+}
+
+bool WebCredential::isLocalCredential() const
+{
+    return m_platformCredential->isLocal();
+}
+
+bool WebCredential::isFederatedCredential() const
+{
+    return m_platformCredential->isFederated();
 }
 
 } // namespace blink

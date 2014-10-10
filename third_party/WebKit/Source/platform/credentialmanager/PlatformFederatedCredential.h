@@ -19,6 +19,8 @@ public:
 
     const KURL& federation() const { return m_federation; }
 
+    virtual bool isFederated() override { return true; }
+
 private:
     PlatformFederatedCredential(const String& id, const String& name, const KURL& avatarURL, const KURL& federation);
 

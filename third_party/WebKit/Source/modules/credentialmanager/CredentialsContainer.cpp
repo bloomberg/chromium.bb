@@ -134,7 +134,7 @@ ScriptPromise CredentialsContainer::notifySignedIn(ScriptState* scriptState, Cre
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchSignedIn(WebCredential(credential->platformCredential()), new NotificationCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchSignedIn(WebCredential::create(credential->platformCredential()), new NotificationCallbacks(resolver));
     return promise;
 }
 
@@ -145,7 +145,7 @@ ScriptPromise CredentialsContainer::notifyFailedSignIn(ScriptState* scriptState,
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchFailedSignIn(WebCredential(credential->platformCredential()), new NotificationCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchFailedSignIn(WebCredential::create(credential->platformCredential()), new NotificationCallbacks(resolver));
     return promise;
 }
 

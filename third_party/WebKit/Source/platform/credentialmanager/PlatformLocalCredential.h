@@ -19,6 +19,8 @@ public:
 
     const String& password() const { return m_password; }
 
+    virtual bool isLocal() override { return true; }
+
 private:
     PlatformLocalCredential(const String& id, const String& name, const KURL& avatarURL, const String& password);
 

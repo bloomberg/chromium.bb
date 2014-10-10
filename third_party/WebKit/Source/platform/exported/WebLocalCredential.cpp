@@ -24,5 +24,16 @@ WebString WebLocalCredential::password() const
     return static_cast<PlatformLocalCredential*>(m_platformCredential.get())->password();
 }
 
+WebLocalCredential::WebLocalCredential(PlatformCredential* credential)
+    : WebCredential(credential)
+{
+}
+
+WebLocalCredential& WebLocalCredential::operator=(PlatformCredential* credential)
+{
+    m_platformCredential = credential;
+    return *this;
+}
+
 } // namespace blink
 

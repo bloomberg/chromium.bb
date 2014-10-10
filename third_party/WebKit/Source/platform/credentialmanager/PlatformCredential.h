@@ -21,6 +21,9 @@ public:
     const String& name() const { return m_name; }
     const KURL& avatarURL() const { return m_avatarURL; }
 
+    virtual bool isLocal() { return false; }
+    virtual bool isFederated() { return false; }
+
     virtual void trace(Visitor*) { }
 
 protected:
