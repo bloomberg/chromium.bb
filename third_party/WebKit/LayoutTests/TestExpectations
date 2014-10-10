@@ -84,8 +84,7 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
-# Commented out for rebaselining for crbug.com/414283.
-# crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
+crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
