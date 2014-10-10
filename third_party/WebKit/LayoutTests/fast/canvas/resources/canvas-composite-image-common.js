@@ -1,5 +1,4 @@
 if (window.testRunner) {
-    testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
@@ -353,7 +352,14 @@ function checkResult(context, compositeIndex, testIndex) {
     addOutput('div', 'pass', 'PASS');
 }
 
-function runTest() {
+function runTest(testMode) {
+  if (window.testRunner) {
+    if (testMode == "dumpAsText") {
+      testRunner.dumpAsText();
+    } else if (testMode == "dumpAsTextWithPixelResults") {
+      testRunner.dumpAsTextWithPixelResults();
+    }
+  }
   setupTest();
   createOutputTable();
   for (var i = 0; i < compositeTypes.length; i++) {
@@ -365,15 +371,18 @@ function runTest() {
       context.restore();
     }
   }
-  for (var i = 0; i < compositeTypes.length; i++) {
-    addOutput('h1', '', 'Mode: ' + compositeTypes[i]);
-    for (var j = 0; j < testNames.length; j++) {
-      addOutput('h2', '', 'Test: ' + testNames[j]);
-      var context = getContext(i, j);
-      checkResult(context, i, j);
-      //rebaseline(context, i, j);
+
+  if (testMode == "dumpAsText") {
+    for (var i = 0; i < compositeTypes.length; i++) {
+      addOutput('h1', '', 'Mode: ' + compositeTypes[i]);
+      for (var j = 0; j < testNames.length; j++) {
+        addOutput('h2', '', 'Test: ' + testNames[j]);
+        var context = getContext(i, j);
+        checkResult(context, i, j);
+        //rebaseline(context, i, j);
+      }
     }
   }
-  if (testRunner)
+  if (window.testRunner)
       testRunner.notifyDone();
 }

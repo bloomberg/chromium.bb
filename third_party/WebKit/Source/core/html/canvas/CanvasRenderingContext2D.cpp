@@ -1523,33 +1523,53 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    FloatRect dirtyRect = clipBounds;
-    if (imageSource->isVideoElement()) {
-        // TODO(dshwang): unify video code into below code to composite correctly; crbug.com/407079
-        drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
-        computeDirtyRect(dstRect, clipBounds, &dirtyRect);
-    } else {
-        if (rectContainsTransformedRect(dstRect, clipBounds)) {
-            c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
-        } else if (isFullCanvasCompositeMode(op)) {
-            fullCanvasCompositedDrawImage(image.get(), dstRect, srcRect, op);
-        } else if (op == CompositeCopy) {
-            clearCanvas();
+    if (rectContainsTransformedRect(dstRect, clipBounds)) {
+        if (!imageSource->isVideoElement()) {
             c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
         } else {
-            FloatRect dirtyRect;
-            computeDirtyRect(dstRect, clipBounds, &dirtyRect);
-            c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
+            drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
         }
-
-        if (sourceImageStatus == ExternalSourceImageStatus && isAccelerated() && canvas()->buffer())
-            canvas()->buffer()->flush();
+        didDraw(clipBounds);
+    } else if (isFullCanvasCompositeMode(op)) {
+        CompositeOperator previousOperator = c->compositeOperation();
+        WebBlendMode previousBlendMode = c->blendModeOperation();
+        c->setCompositeOperation(previousOperator, blendMode);
+        // TODO(dshwang): this code is unnecessarily complicated because beginLayer() uses current blendMode slightly.
+        c->beginLayer(1, op);
+        if (!imageSource->isVideoElement()) {
+            c->drawImage(image.get(), dstRect, srcRect, CompositeSourceOver, WebBlendModeNormal);
+        } else {
+            c->setCompositeOperation(CompositeSourceOver, WebBlendModeNormal);
+            drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
+        }
+        c->endLayer();
+        c->setCompositeOperation(previousOperator, previousBlendMode);
+        didDraw(clipBounds);
+    } else if (op == CompositeCopy) {
+        clearCanvas();
+        if (!imageSource->isVideoElement()) {
+            c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
+        } else {
+            drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
+        }
+        didDraw(clipBounds);
+    } else {
+        FloatRect dirtyRect;
+        if (computeDirtyRect(dstRect, clipBounds, &dirtyRect)) {
+            if (!imageSource->isVideoElement()) {
+                c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
+            } else {
+                drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
+            }
+            didDraw(dirtyRect);
+        }
     }
+
+    if (sourceImageStatus == ExternalSourceImageStatus && isAccelerated() && canvas()->buffer())
+        canvas()->buffer()->flush();
 
     if (canvas()->originClean() && wouldTaintOrigin(imageSource))
         canvas()->setOriginTainted();
-
-    didDraw(dirtyRect);
 }
 
 void CanvasRenderingContext2D::drawVideo(HTMLVideoElement* video, FloatRect srcRect, FloatRect dstRect)
@@ -1608,21 +1628,6 @@ bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect
     FloatQuad quad(rect);
     FloatQuad transformedQuad(transformedRect);
     return state().m_transform.mapQuad(quad).containsQuad(transformedQuad);
-}
-
-static void drawImageToContext(Image* image, GraphicsContext* context, const FloatRect& dest, const FloatRect& src, CompositeOperator op)
-{
-    context->drawImage(image, dest, src, op);
-}
-
-template<class T> void  CanvasRenderingContext2D::fullCanvasCompositedDrawImage(T* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op)
-{
-    ASSERT(isFullCanvasCompositeMode(op));
-
-    GraphicsContext* c = drawingContext();
-    c->beginLayer(1, op);
-    drawImageToContext(image, c, dest, src, CompositeSourceOver);
-    c->endLayer();
 }
 
 static void fillPrimitive(const FloatRect& rect, GraphicsContext* context)

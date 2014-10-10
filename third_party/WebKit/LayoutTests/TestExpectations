@@ -363,6 +363,11 @@ crbug.com/377696 printing/width-overflow.html [ Skip ]
 # Test changes due to disabling SVG Fonts on non-GDI platforms.
 crbug.com/242735 [ XP ] svg/custom/svg-font-support.html [ ImageOnlyFailure ]
 
+crbug.com/407079 fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
+crbug.com/407079 fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
+crbug.com/407079 virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
+crbug.com/407079 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
+
 # Reftests that needs investigation.
 crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]

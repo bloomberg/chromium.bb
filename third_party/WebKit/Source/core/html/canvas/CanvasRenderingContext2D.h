@@ -347,7 +347,6 @@ private:
 
     template<class T> void fullCanvasCompositedFill(const T&);
     template<class T> void fullCanvasCompositedStroke(const T&);
-    template<class T> void fullCanvasCompositedDrawImage(T*, const FloatRect&, const FloatRect&, CompositeOperator);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
