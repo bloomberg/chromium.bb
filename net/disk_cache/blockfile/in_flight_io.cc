@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -87,6 +88,10 @@ void InFlightIO::OnIOComplete(BackgroundIO* operation) {
 // Runs on the primary thread.
 void InFlightIO::InvokeCallback(BackgroundIO* operation, bool cancel_task) {
   {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422516 is fixed.
+    tracked_objects::ScopedProfile tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 InFlightIO::InvokeCallback"));
+
     // http://crbug.com/74623
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     operation->io_completed()->Wait();
