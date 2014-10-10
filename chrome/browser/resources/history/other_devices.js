@@ -185,6 +185,7 @@ Device.prototype.getDOMNode = function(maxNumTabs, row) {
   heading.addEventListener('contextmenu', handleDropDownFocus);
 
   var dropDownButton = new cr.ui.ContextMenuButton;
+  dropDownButton.tabIndex = 0;
   dropDownButton.classList.add('drop-down');
   dropDownButton.addEventListener('mousedown', function(event) {
       handleDropDownFocus(event);
