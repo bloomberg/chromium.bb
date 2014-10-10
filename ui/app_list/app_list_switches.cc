@@ -78,8 +78,9 @@ bool IsCenteredAppListEnabled() {
 
 bool IsDriveAppsInAppListEnabled() {
 #if defined(OS_CHROMEOS)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableDriveAppsInAppList);
+  // Disable Drive app integration due to http://crbug.com/420034
+  // TODO(xiyuan): Revisit this after the bug is fixed.
+  return false;
 #else
   return false;
 #endif
