@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_
 #define COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_
 
+#include <queue>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,6 +27,7 @@ class NetLogLogger;
 namespace cronet {
 
 struct URLRequestContextConfig;
+typedef base::Callback<void(void)> RunAfterContextInitTask;
 
 // Implementation of the Chromium NetLog observer interface.
 class NetLogObserver : public net::NetLog::ThreadSafeObserver {
@@ -56,6 +60,16 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
                            std::string user_agent);
   void Initialize(scoped_ptr<URLRequestContextConfig> config);
 
+  // Posts a task that might depend on the context being initialized
+  // to the network thread.
+  void PostTaskToNetworkThread(const tracked_objects::Location& posted_from,
+                               const RunAfterContextInitTask& callback);
+
+  // Runs a task that might depend on the context being initialized.
+  // This method should only be run on the network thread.
+  void RunTaskAfterContextInitOnNetworkThread(
+      const RunAfterContextInitTask& callback);
+
   const std::string& GetUserAgent(const GURL& url) const;
 
   // net::URLRequestContextGetter implementation:
@@ -75,10 +89,21 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   scoped_ptr<NetLogObserver> net_log_observer_;
   scoped_ptr<net::NetLogLogger> net_log_logger_;
 
+  // A queue of tasks that need to be run after context has been initialized.
+  std::queue<RunAfterContextInitTask> tasks_waiting_for_context_;
+  bool is_context_initialized_;
+
   virtual ~URLRequestContextAdapter();
 
   // Initializes |context_| on the Network thread.
   void InitializeURLRequestContext(scoped_ptr<URLRequestContextConfig> config);
+
+  // Helper function to start writing NetLog data to file. This should only be
+  // run after context is initialized.
+  void StartNetLogToFileHelper(const std::string& file_name);
+  // Helper function to stop writing NetLog data to file. This should only be
+  // run after context is initialized.
+  void StopNetLogHelper();
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextAdapter);
 };

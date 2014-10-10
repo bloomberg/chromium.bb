@@ -5,7 +5,6 @@
 package org.chromium.net;
 
 import android.content.Context;
-import android.os.ConditionVariable;
 import android.os.Process;
 import android.util.Log;
 
@@ -27,8 +26,6 @@ public class ChromiumUrlRequestContext {
      */
     private long mChromiumUrlRequestContextAdapter;
 
-    private final ConditionVariable mStarted = new ConditionVariable();
-
     /**
      * Constructor.
      *
@@ -37,11 +34,9 @@ public class ChromiumUrlRequestContext {
             String config) {
         mChromiumUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
                 context, userAgent, getLoggingLevel(), config);
-        if (mChromiumUrlRequestContextAdapter == 0)
+        if (mChromiumUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed");
-
-        // TODO(mef): Revisit the need of block here.
-        mStarted.block(2000);
+        }
     }
 
     /**
@@ -90,7 +85,6 @@ public class ChromiumUrlRequestContext {
     private void initNetworkThread() {
         Thread.currentThread().setName("ChromiumNet");
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-        mStarted.open();
     }
 
     @Override

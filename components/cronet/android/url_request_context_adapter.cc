@@ -135,6 +135,7 @@ void URLRequestContextAdapter::Initialize(
 
 void URLRequestContextAdapter::InitializeURLRequestContext(
     scoped_ptr<URLRequestContextConfig> config) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
   context_builder.set_network_delegate(new BasicNetworkDelegate());
@@ -178,6 +179,11 @@ void URLRequestContextAdapter::InitializeURLRequestContext(
           net::AlternateProtocol::QUIC,
           1.0f);
     }
+    is_context_initialized_ = true;
+    while (!tasks_waiting_for_context_.empty()) {
+      tasks_waiting_for_context_.front().Run();
+      tasks_waiting_for_context_.pop();
+    }
   }
 
   if (VLOG_IS_ON(2)) {
@@ -189,12 +195,34 @@ void URLRequestContextAdapter::InitializeURLRequestContext(
   delegate_->OnContextInitialized(this);
 }
 
+void URLRequestContextAdapter::PostTaskToNetworkThread(
+    const tracked_objects::Location& posted_from,
+    const RunAfterContextInitTask& callback) {
+  GetNetworkTaskRunner()->PostTask(
+      posted_from,
+      base::Bind(
+          &URLRequestContextAdapter::RunTaskAfterContextInitOnNetworkThread,
+          this,
+          callback));
+}
+
+void URLRequestContextAdapter::RunTaskAfterContextInitOnNetworkThread(
+    const RunAfterContextInitTask& callback) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  if (is_context_initialized_) {
+    callback.Run();
+    return;
+  }
+  tasks_waiting_for_context_.push(callback);
+}
+
 URLRequestContextAdapter::~URLRequestContextAdapter() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (net_log_observer_) {
     context_->net_log()->RemoveThreadSafeObserver(net_log_observer_.get());
     net_log_observer_.reset();
   }
-  StopNetLog();
+  StopNetLogHelper();
   // TODO(mef): Ensure that |network_thread_| is destroyed properly.
 }
 
@@ -204,6 +232,7 @@ const std::string& URLRequestContextAdapter::GetUserAgent(
 }
 
 net::URLRequestContext* URLRequestContextAdapter::GetURLRequestContext() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (!context_) {
     LOG(ERROR) << "URLRequestContext is not set up";
   }
@@ -216,6 +245,20 @@ URLRequestContextAdapter::GetNetworkTaskRunner() const {
 }
 
 void URLRequestContextAdapter::StartNetLogToFile(const std::string& file_name) {
+  PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(
+          &URLRequestContextAdapter::StartNetLogToFileHelper, this, file_name));
+}
+
+void URLRequestContextAdapter::StopNetLog() {
+  PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&URLRequestContextAdapter::StopNetLogHelper, this));
+}
+
+void URLRequestContextAdapter::StartNetLogToFileHelper(
+    const std::string& file_name) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   // Do nothing if already logging to a file.
   if (net_log_logger_)
     return;
@@ -230,7 +273,8 @@ void URLRequestContextAdapter::StartNetLogToFile(const std::string& file_name) {
   net_log_logger_->StartObserving(context_->net_log());
 }
 
-void URLRequestContextAdapter::StopNetLog() {
+void URLRequestContextAdapter::StopNetLogHelper() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (net_log_logger_) {
     net_log_logger_->StopObserving();
     net_log_logger_.reset();

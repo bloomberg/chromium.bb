@@ -117,6 +117,8 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) override;
 
+  bool OnNetworkThread() const;
+
  private:
   static void OnDestroyRequest(URLRequestAdapter* self);
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/url_request_context_adapter.h"
 #include "components/cronet/android/wrapped_channel_upload_element_reader.h"
@@ -41,6 +42,7 @@ URLRequestAdapter::URLRequestAdapter(URLRequestContextAdapter* context,
 }
 
 URLRequestAdapter::~URLRequestAdapter() {
+  DCHECK(OnNetworkThread());
   CHECK(url_request_ == NULL);
 }
 
@@ -77,7 +79,7 @@ void URLRequestAdapter::AppendChunk(const char* bytes, int bytes_len,
   VLOG(1) << "AppendChunk, len: " << bytes_len << ", last: " << is_last_chunk;
   scoped_ptr<char[]> buf(new char[bytes_len]);
   memcpy(buf.get(), bytes, bytes_len);
-  context_->GetNetworkTaskRunner()->PostTask(
+  context_->PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&URLRequestAdapter::OnAppendChunk,
                  base::Unretained(this),
@@ -108,7 +110,7 @@ std::string URLRequestAdapter::GetNegotiatedProtocol() const {
 }
 
 void URLRequestAdapter::Start() {
-  context_->GetNetworkTaskRunner()->PostTask(
+  context_->PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&URLRequestAdapter::OnInitiateConnection,
                  base::Unretained(this)));
@@ -116,10 +118,12 @@ void URLRequestAdapter::Start() {
 
 void URLRequestAdapter::OnAppendChunk(const scoped_ptr<char[]> bytes,
                                       int bytes_len, bool is_last_chunk) {
+  DCHECK(OnNetworkThread());
   url_request_->AppendChunkToUpload(bytes.get(), bytes_len, is_last_chunk);
 }
 
 void URLRequestAdapter::OnInitiateConnection() {
+  DCHECK(OnNetworkThread());
   if (canceled_) {
     return;
   }
@@ -159,12 +163,13 @@ void URLRequestAdapter::Cancel() {
 
   canceled_ = true;
 
-  context_->GetNetworkTaskRunner()->PostTask(
+  context_->PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&URLRequestAdapter::OnCancelRequest, base::Unretained(this)));
 }
 
 void URLRequestAdapter::OnCancelRequest() {
+  DCHECK(OnNetworkThread());
   VLOG(1) << "Canceling chromium request: " << url_.possibly_invalid_spec();
 
   if (url_request_ != NULL) {
@@ -175,18 +180,21 @@ void URLRequestAdapter::OnCancelRequest() {
 }
 
 void URLRequestAdapter::Destroy() {
-  context_->GetNetworkTaskRunner()->PostTask(
+  context_->PostTaskToNetworkThread(
       FROM_HERE, base::Bind(&URLRequestAdapter::OnDestroyRequest, this));
 }
 
 // static
 void URLRequestAdapter::OnDestroyRequest(URLRequestAdapter* self) {
+  DCHECK(self->OnNetworkThread());
   VLOG(1) << "Destroying chromium request: "
           << self->url_.possibly_invalid_spec();
   delete self;
 }
 
+// static
 void URLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
+  DCHECK(OnNetworkThread());
   if (request->status().status() != net::URLRequestStatus::SUCCESS) {
     OnRequestFailed();
     return;
@@ -204,6 +212,7 @@ void URLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
 
 // Reads all available data or starts an asynchronous read.
 void URLRequestAdapter::Read() {
+  DCHECK(OnNetworkThread());
   while (true) {
     if (read_buffer_->RemainingCapacity() == 0) {
       int new_capacity = read_buffer_->capacity() + kBufferSizeIncrement;
@@ -241,6 +250,7 @@ void URLRequestAdapter::Read() {
 
 void URLRequestAdapter::OnReadCompleted(net::URLRequest* request,
                                         int bytes_read) {
+  DCHECK(OnNetworkThread());
   VLOG(1) << "Asynchronously read: " << bytes_read << " bytes";
   if (bytes_read < 0) {
     OnRequestFailed();
@@ -255,12 +265,14 @@ void URLRequestAdapter::OnReadCompleted(net::URLRequest* request,
 }
 
 void URLRequestAdapter::OnBytesRead(int bytes_read) {
+  DCHECK(OnNetworkThread());
   read_buffer_->set_offset(read_buffer_->offset() + bytes_read);
   bytes_read_ += bytes_read;
   total_bytes_read_ += bytes_read;
 }
 
 void URLRequestAdapter::OnRequestSucceeded() {
+  DCHECK(OnNetworkThread());
   if (canceled_) {
     return;
   }
@@ -272,6 +284,7 @@ void URLRequestAdapter::OnRequestSucceeded() {
 }
 
 void URLRequestAdapter::OnRequestFailed() {
+  DCHECK(OnNetworkThread());
   if (canceled_) {
     return;
   }
@@ -283,10 +296,12 @@ void URLRequestAdapter::OnRequestFailed() {
 }
 
 void URLRequestAdapter::OnRequestCanceled() {
+  DCHECK(OnNetworkThread());
   OnRequestCompleted();
 }
 
 void URLRequestAdapter::OnRequestCompleted() {
+  DCHECK(OnNetworkThread());
   VLOG(1) << "Completed: " << url_.possibly_invalid_spec();
   url_request_.reset();
 
@@ -295,7 +310,12 @@ void URLRequestAdapter::OnRequestCompleted() {
 }
 
 unsigned char* URLRequestAdapter::Data() const {
+  DCHECK(OnNetworkThread());
   return reinterpret_cast<unsigned char*>(read_buffer_->StartOfBuffer());
+}
+
+bool URLRequestAdapter::OnNetworkThread() const {
+  return context_->GetNetworkTaskRunner()->BelongsToCurrentThread();
 }
 
 }  // namespace cronet
