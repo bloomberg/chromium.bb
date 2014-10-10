@@ -3,12 +3,11 @@
 # found in the LICENSE file.
 
 import random
-import sys
 import time
-import unittest
+
+import mojo_unittest
 
 # pylint: disable=F0401
-import mojo.embedder
 from mojo import system
 
 DATA_SIZE = 1024
@@ -19,13 +18,7 @@ def _GetRandomBuffer(size):
   return bytearray(''.join(chr(random.randint(0, 255)) for i in xrange(size)))
 
 
-class BaseMojoTest(unittest.TestCase):
-
-  def setUp(self):
-    mojo.embedder.Init()
-
-
-class CoreTest(BaseMojoTest):
+class CoreTest(mojo_unittest.MojoTestCase):
 
   def testResults(self):
     self.assertEquals(system.RESULT_OK, 0)
@@ -300,11 +293,3 @@ class CoreTest(BaseMojoTest):
     self.assertEquals(data, buf1.buffer)
     self.assertEquals(data, buf2.buffer)
     self.assertEquals(buf1.buffer, buf2.buffer)
-
-
-if __name__ == '__main__':
-  suite = unittest.TestLoader().loadTestsFromTestCase(CoreTest)
-  test_results = unittest.TextTestRunner(verbosity=0).run(suite)
-  if not test_results.wasSuccessful():
-    sys.exit(1)
-  sys.exit(0)

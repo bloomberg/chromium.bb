@@ -17,6 +17,9 @@ from cpython.buffer cimport PyObject_GetBuffer
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from libc.stdint cimport int32_t, int64_t, uint32_t, uint64_t, uintptr_t
 
+import ctypes
+import threading
+
 def SetSystemThunks(system_thunks_as_object):
   """Bind the basic Mojo Core functions.
 
@@ -711,10 +714,29 @@ class DuplicateSharedBufferOptions(object):
     self.flags = DuplicateSharedBufferOptions.FLAG_NONE
 
 
+# Keeps a thread local weak reference to the current run loop.
+_RUN_LOOPS = threading.local()
+
+
 cdef class RunLoop(object):
   """RunLoop to use when using asynchronous operations on handles."""
 
-  cdef c_environment.CRunLoop c_run_loop
+  cdef c_environment.CRunLoop* c_run_loop
+
+  def __init__(self):
+    assert not <uintptr_t>(c_environment.CRunLoopCurrent())
+    self.c_run_loop = new c_environment.CRunLoop()
+    _RUN_LOOPS.loop = id(self)
+
+  def __dealloc__(self):
+    del _RUN_LOOPS.loop
+    del self.c_run_loop
+
+  @staticmethod
+  def Current():
+    if hasattr(_RUN_LOOPS, 'loop'):
+      return ctypes.cast(_RUN_LOOPS.loop, ctypes.py_object).value
+    return None
 
   def Run(self):
     """Run the runloop until Quit is called."""

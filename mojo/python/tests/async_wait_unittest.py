@@ -2,18 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import unittest
+import mojo_unittest
 
 # pylint: disable=F0401
-import mojo.embedder
 from mojo import system
 
 
-class AsyncWaitTest(unittest.TestCase):
+class AsyncWaitTest(mojo_unittest.MojoTestCase):
 
   def setUp(self):
-    mojo.embedder.Init()
-    self.loop = system.RunLoop()
+    super(AsyncWaitTest, self).setUp()
     self.array = []
     self.handles = system.MessagePipe()
     self.cancel = self.handles.handle0.AsyncWait(system.HANDLE_SIGNAL_READABLE,
@@ -24,7 +22,7 @@ class AsyncWaitTest(unittest.TestCase):
     self.cancel()
     self.handles = None
     self.array = None
-    self.loop = None
+    super(AsyncWaitTest, self).tearDown()
 
   def _OnResult(self, value):
     self.array.append(value)

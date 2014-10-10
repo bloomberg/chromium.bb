@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import unittest
+import mojo_unittest
 
 # pylint: disable=F0401
-import mojo.embedder
 from mojo import system
 
 
@@ -15,28 +14,28 @@ def _Increment(array):
   return _Closure
 
 
-class RunLoopTest(unittest.TestCase):
-
-  def setUp(self):
-    mojo.embedder.Init()
+class RunLoopTest(mojo_unittest.MojoTestCase):
 
   def testRunLoop(self):
-    loop = system.RunLoop()
     array = []
     for _ in xrange(10):
-      loop.PostDelayedTask(_Increment(array))
-    loop.RunUntilIdle()
+      self.loop.PostDelayedTask(_Increment(array))
+    self.loop.RunUntilIdle()
     self.assertEquals(len(array), 10)
 
   def testRunLoopWithException(self):
-    loop = system.RunLoop()
     def Throw():
       raise Exception("error")
     array = []
-    loop.PostDelayedTask(Throw)
-    loop.PostDelayedTask(_Increment(array))
+    self.loop.PostDelayedTask(Throw)
+    self.loop.PostDelayedTask(_Increment(array))
     with self.assertRaisesRegexp(Exception, '^error$'):
-      loop.Run()
+      self.loop.Run()
     self.assertEquals(len(array), 0)
-    loop.RunUntilIdle()
+    self.loop.RunUntilIdle()
     self.assertEquals(len(array), 1)
+
+  def testCurrent(self):
+    self.assertEquals(system.RunLoop.Current(), self.loop)
+    self.loop = None
+    self.assertIsNone(system.RunLoop.Current())
