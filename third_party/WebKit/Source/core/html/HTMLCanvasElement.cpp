@@ -738,11 +738,19 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
 
         // can't create SkImage from WebGLImageBufferSurface (contains only SkBitmap)
         return m_imageBuffer->copyImage(DontCopyBackingStore, Unscaled);
-    } else {
-        *status = NormalSourceImageStatus;
     }
 
-    return StaticBitmapImage::create(m_imageBuffer->newImageSnapshot());
+    RefPtr<SkImage> image = m_imageBuffer->newImageSnapshot();
+    if (image) {
+        *status = NormalSourceImageStatus;
+
+        return StaticBitmapImage::create(image.release());
+    }
+
+
+    *status = InvalidSourceImageStatus;
+
+    return nullptr;
 }
 
 bool HTMLCanvasElement::wouldTaintOrigin(SecurityOrigin*) const
