@@ -316,6 +316,7 @@ def _ProxySimSetup(options):
 
     # Set up child side of the network.
     commands = (
+      ('ip', 'link', 'set', 'up', 'lo'),
       ('ip', 'address', 'add',
        '%s/%u' % (PROXY_GUEST_IP, PROXY_NETMASK),
        'dev', veth_guest),
