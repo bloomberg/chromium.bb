@@ -55,15 +55,30 @@ public abstract class WebContentsObserverAndroid {
 
     /**
      * Called when the main frame of the page has committed.
+     * TODO(pedrosimonetti): Remove this method once downstream changes are landed.
      * @param url The validated url for the page.
      * @param baseUrl The validated base url for the page.
      * @param isNavigationToDifferentPage Whether the main frame navigated to a different page.
      * @param isFragmentNavigation Whether the main frame navigation did not cause changes to the
      *                             document (for example scrolling to a named anchor or PopState).
      */
-    @CalledByNative
     public void didNavigateMainFrame(String url, String baseUrl,
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
+    }
+
+    /**
+     * Called when the main frame of the page has committed.
+     * @param url The validated url for the page.
+     * @param baseUrl The validated base url for the page.
+     * @param isNavigationToDifferentPage Whether the main frame navigated to a different page.
+     * @param isFragmentNavigation Whether the main frame navigation did not cause changes to the
+     *                             document (for example scrolling to a named anchor or PopState).
+     * @param statusCode The HTTP status code of the navigation.
+     */
+    @CalledByNative
+    public void didNavigateMainFrame(String url, String baseUrl,
+            boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
+        didNavigateMainFrame(url, baseUrl, isNavigationToDifferentPage, isFragmentNavigation);
     }
 
     /**

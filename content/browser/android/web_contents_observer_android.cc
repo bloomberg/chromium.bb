@@ -150,7 +150,8 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
       (details.type == NAVIGATION_TYPE_IN_PAGE || details.is_in_page);
   Java_WebContentsObserverAndroid_didNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
-      details.is_navigation_to_different_page(), is_fragment_navigation);
+      details.is_navigation_to_different_page(), is_fragment_navigation,
+      details.http_status_code);
 }
 
 void WebContentsObserverAndroid::DidNavigateAnyFrame(
