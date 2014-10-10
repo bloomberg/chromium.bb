@@ -21,6 +21,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -146,6 +147,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       using_saml_api_(false),
       is_enrolling_consumer_management_(false),
       test_expects_complete_login_(false),
+      embedded_signin_enabled_by_shortcut_(false),
       signin_screen_handler_(NULL),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
@@ -204,7 +206,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
           : GaiaUrls::GetInstance()->gaia_url();
   params.SetString("gaiaUrl", gaia_url.spec());
 
-  if (command_line->HasSwitch(chromeos::switches::kEnableEmbeddedSignin))
+  if (context.embedded_signin_enabled)
     params.SetBoolean("useEmbedded", true);
 
   frame_state_ = FRAME_STATE_LOADING;
@@ -232,6 +234,22 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
   VLOG(1) << "Reloading Gaia.";
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("doReload");
+}
+
+void GaiaScreenHandler::SwitchToEmbeddedSignin() {
+  // This feature should not be working on Stable,Beta images.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return;
+  }
+  embedded_signin_enabled_by_shortcut_ = true;
+  LoadAuthExtension(
+      true /* force */, true /* silent_load */, false /* offline */);
+}
+
+void GaiaScreenHandler::CancelEmbeddedSignin() {
+  embedded_signin_enabled_by_shortcut_ = false;
 }
 
 void GaiaScreenHandler::DeclareLocalizedValues(
@@ -653,6 +671,11 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
     context.show_users = Delegate()->IsShowUsers();
     context.has_users = !Delegate()->GetUsers().empty();
   }
+
+  context.embedded_signin_enabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableEmbeddedSignin) ||
+      embedded_signin_enabled_by_shortcut_;
 
   populated_email_.clear();
 

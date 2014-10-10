@@ -744,6 +744,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
+  AddCallback("switchToEmbeddedSignin",
+              &SigninScreenHandler::HandleSwitchToEmbeddedSignin);
   AddCallback("toggleKioskEnableScreen",
               &SigninScreenHandler::HandleToggleKioskEnableScreen);
   AddCallback("createAccount", &SigninScreenHandler::HandleCreateAccount);
@@ -1319,6 +1321,9 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
   VLOG(0) << "Login WebUI >> active: " << new_value << ", "
             << "source: " << source;
 
+  if (source == "gaia-signin" && !new_value)
+    gaia_screen_handler_->CancelEmbeddedSignin();
+
   if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
       KioskAppManager::Get()->IsAutoLaunchRequested()) {
     VLOG(0) << "Showing auto-launch warning";
@@ -1432,6 +1437,10 @@ void SigninScreenHandler::HandleGetTouchViewState() {
     CallJS("login.AccountPickerScreen.setTouchViewState",
            max_mode_delegate_->IsMaximizeModeEnabled());
   }
+}
+
+void SigninScreenHandler::HandleSwitchToEmbeddedSignin() {
+  gaia_screen_handler_->SwitchToEmbeddedSignin();
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

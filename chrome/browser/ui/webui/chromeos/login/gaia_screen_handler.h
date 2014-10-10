@@ -49,6 +49,9 @@ struct GaiaContext {
 
   // Whether consumer management enrollment is in progress.
   bool is_enrolling_consumer_management;
+
+  // True if embedded_signin is enabled.
+  bool embedded_signin_enabled;
 };
 
 // A class that handles WebUI hooks in Gaia screen.
@@ -74,6 +77,12 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // will be sent in any case, otherwise it will be sent only when Gaia is
   // not loading right now.
   void ReloadGaia(bool force_reload);
+
+  // Reload gaia with embedded signin frame.
+  void SwitchToEmbeddedSignin();
+
+  // Cancel embedded signin for the next load.
+  void CancelEmbeddedSignin();
 
   FrameState frame_state() const { return frame_state_; }
   net::Error frame_error() const { return frame_error_; }
@@ -213,6 +222,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
   std::string test_user_;
   std::string test_pass_;
   bool test_expects_complete_login_;
+
+  // True if user pressed shortcut to enable embedded signin.
+  bool embedded_signin_enabled_by_shortcut_;
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used
   // in dtor.
