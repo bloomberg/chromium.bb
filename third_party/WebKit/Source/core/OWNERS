@@ -1,17 +1,17 @@
+# Please prefer to use more specific OWNERS if possible.
+# For example, core/rendering/OWNERS for rendering changes.
+
+# Reviewers (comments indicate areas of expertise):
 adamk@chromium.org
 ager@chromium.org
 alexis.menard@intel.com
 apavlov@chromium.org
 arv@chromium.org
 chrishtr@chromium.org
-darin@chromium.org
 dcheng@chromium.org
 dglazkov@chromium.org
-dimich@chromium.org
-dmazzoni@chromium.org
 dominicc@chromium.org
 dpranke@chromium.org
-dschulze@chromium.org
 dstockwell@chromium.org
 eae@chromium.org
 enne@chromium.org
@@ -19,7 +19,6 @@ eseidel@chromium.org
 esprehn@chromium.org
 fmalita@chromium.org
 fs@opera.com
-hamaji@chromium.org
 haraken@chromium.org
 hayato@chromium.org
 inferno@chromium.org
@@ -33,11 +32,11 @@ keishi@chromium.org
 kenneth.r.christiansen@intel.com
 kinuko@chromium.org
 kouhei@chromium.org
-levin@chromium.org
 leviw@chromium.org
 mkwst@chromium.org
 morrita@chromium.org
 ojan@chromium.org
+# pdr reviews many svg and text autosizing patches.
 pdr@chromium.org
 pfeldman@chromium.org
 philipj@opera.com
@@ -58,3 +57,10 @@ vsevik@chromium.org
 yoav@yoav.ws
 yurys@chromium.org
 yutak@chromium.org
+
+# Owners emeritus:
+darin@chromium.org
+levin@chromium.org
+dimich@chromium.org
+dschulze@chromium.org
+hamaji@chromium.org
