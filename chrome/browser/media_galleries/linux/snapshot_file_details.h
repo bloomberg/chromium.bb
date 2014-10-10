@@ -59,7 +59,7 @@ class SnapshotFileDetails {
     return bytes_written_;
   }
 
-  const base::File::Info file_info() const {
+  const base::File::Info& file_info() const {
     return file_info_;
   }
 
