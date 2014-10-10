@@ -23,9 +23,19 @@
 
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
+  // Wrapper view around web content, and the developer tools view.
   base::scoped_nsobject<FastResizeView> tabContentArea_;
   base::scoped_nsobject<NSView> tabStripBackgroundView_;
+
+  // The tab strip overlaps the titlebar of the window.
   base::scoped_nsobject<TabStripView> tabStripView_;
+
+  // No views should be added directly to the root view. Views that overlap
+  // the title bar should be added to the window's contentView. All other views
+  // should be added to chromeContentView_. This allows tab dragging and
+  // fullscreen logic to easily move the views that don't need special
+  // treatment.
+  base::scoped_nsobject<NSView> chromeContentView_;
 
   // The child window used during dragging to achieve the opacity tricks.
   NSWindow* overlayWindow_;
@@ -40,6 +50,7 @@
 @property(readonly, nonatomic) NSView* tabStripBackgroundView;
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
+@property(readonly, nonatomic) NSView* chromeContentView;
 
 // This is the designated initializer for this class.
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip;
@@ -156,6 +167,12 @@
 
 // The tab strip should always be inserted directly above the content view.
 - (void)insertTabStripView:(NSView*)tabStripView intoWindow:(NSWindow*)window;
+
+// The tab strip background view should always be inserted as the back-most
+// subview of the root view. It cannot be a subview of the contentView, as that
+// would cause it to become layer backed, which would cause it to draw on top
+// of non-layer backed content like the window controls.
+- (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window;
 
 @end
 

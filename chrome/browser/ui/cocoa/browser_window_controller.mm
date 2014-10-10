@@ -946,10 +946,11 @@ using content::WebContents;
   // Disable subview resizing while resizing the window, or else we will get
   // unwanted renderer resizes.  The calling code must call layoutSubviews to
   // make things right again.
-  NSView* contentView = [window contentView];
-  [contentView setAutoresizesSubviews:NO];
+  NSView* chromeContentView = [self chromeContentView];
+  BOOL autoresizesSubviews = [chromeContentView autoresizesSubviews];
+  [chromeContentView setAutoresizesSubviews:NO];
   [window setFrame:windowFrame display:NO];
-  [contentView setAutoresizesSubviews:YES];
+  [chromeContentView setAutoresizesSubviews:autoresizesSubviews];
   return YES;
 }
 
@@ -1573,7 +1574,7 @@ using content::WebContents;
   if (!downloadShelfController_.get()) {
     downloadShelfController_.reset([[DownloadShelfController alloc]
         initWithBrowser:browser_.get() resizeDelegate:self]);
-    [[[self window] contentView] addSubview:[downloadShelfController_ view]];
+    [self.chromeContentView addSubview:[downloadShelfController_ view]];
   }
 }
 

@@ -69,7 +69,8 @@ const CGFloat kWindowGradientHeight = 24.0;
   if ((self = [super initWithContentRect:contentRect
                                styleMask:styleMask
                                  backing:NSBackingStoreBuffered
-                                   defer:YES])) {
+                                   defer:YES
+                  wantsViewsOverTitlebar:hasTabStrip])) {
     // The 10.6 fullscreen code copies the title to a different window, which
     // will assert if it's nil.
     [self setTitle:@""];

@@ -25,19 +25,12 @@
 
 @implementation FullSizeContentView
 
-// This method is directly called by NSWindow during a window resize on OSX
-// 10.10.0, beta 2. We must override it to prevent the content view from
-// shrinking.
+// This method is directly called by AppKit during a live window resize.
+// Override it to prevent the content view from shrinking.
 - (void)setFrameSize:(NSSize)size {
   if ([self superview])
     size = [[self superview] bounds].size;
   [super setFrameSize:size];
-}
-
-// The contentView gets moved around during certain full-screen operations.
-// This is less than ideal, and should eventually be removed.
-- (void)viewDidMoveToSuperview {
-  [self setFrame:[[self superview] bounds]];
 }
 
 @end
@@ -71,18 +64,31 @@
                           styleMask:(NSUInteger)windowStyle
                             backing:(NSBackingStoreType)bufferingType
                               defer:(BOOL)deferCreation {
+  return [self initWithContentRect:contentRect
+                         styleMask:windowStyle
+                           backing:bufferingType
+                             defer:deferCreation
+            wantsViewsOverTitlebar:NO];
+}
+
+- (instancetype)initWithContentRect:(NSRect)contentRect
+                          styleMask:(NSUInteger)windowStyle
+                            backing:(NSBackingStoreType)bufferingType
+                              defer:(BOOL)deferCreation
+             wantsViewsOverTitlebar:(BOOL)wantsViewsOverTitlebar {
   self = [super initWithContentRect:contentRect
                           styleMask:windowStyle
                             backing:bufferingType
                               defer:deferCreation];
   if (self) {
-    if ([VersionIndependentWindow
-        shouldUseFullSizeContentViewForStyle:windowStyle]) {
+    if (wantsViewsOverTitlebar &&
+        [VersionIndependentWindow
+            shouldUseFullSizeContentViewForStyle:windowStyle]) {
       chromeWindowView_.reset([[FullSizeContentView alloc] init]);
       [chromeWindowView_
           setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-      [chromeWindowView_ setFrame:[[[self contentView] superview] bounds]];
       [self setContentView:chromeWindowView_];
+      [chromeWindowView_ setFrame:[[chromeWindowView_ superview] bounds]];
     }
   }
   return self;
@@ -91,13 +97,7 @@
 #pragma mark - Private Methods
 
 + (BOOL)shouldUseFullSizeContentViewForStyle:(NSUInteger)windowStyle {
-  // TODO(erikchen): Once OSX Yosemite is released, consider removing this
-  // class entirely.
-  // http://crbug.com/398574
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFullSizeContentView))
-    return NO;
-  return (windowStyle & NSTitledWindowMask) && base::mac::IsOSYosemiteOrLater();
+  return windowStyle & NSTitledWindowMask;
 }
 
 - (NSView*)chromeWindowView {
@@ -105,30 +105,6 @@
 }
 
 #pragma mark - NSWindow Overrides
-
-#ifndef NDEBUG
-
-- (void)setContentSize:(NSSize)size {
-  DCHECK(!chromeWindowView_);
-  [super setContentSize:size];
-}
-
-- (void)setContentMinSize:(NSSize)size {
-  DCHECK(!chromeWindowView_);
-  [super setContentMinSize:size];
-}
-
-- (void)setContentMaxSize:(NSSize)size {
-  DCHECK(!chromeWindowView_);
-  [super setContentMaxSize:size];
-}
-
-- (void)setContentAspectRatio:(NSSize)ratio {
-  DCHECK(!chromeWindowView_);
-  [super setContentAspectRatio:ratio];
-}
-
-#endif  // NDEBUG
 
 + (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle {
   if ([self shouldUseFullSizeContentViewForStyle:aStyle])

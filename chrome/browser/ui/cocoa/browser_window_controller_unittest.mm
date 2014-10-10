@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -241,21 +242,63 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
 
 namespace {
 
+// Returns the frame of the view in window coordinates.
+NSRect FrameInWindowForView(NSView* view) {
+  return [[view superview] convertRect:[view frame] toView:nil];
+}
+
+// Whether the view's frame is within the bounds of the superview.
+BOOL ViewContainmentValid(NSView* view) {
+  if (NSIsEmptyRect([view frame]))
+    return YES;
+
+  return NSContainsRect([[view superview] bounds], [view frame]);
+}
+
+// Checks the view hierarchy rooted at |view| to ensure that each view is
+// properly contained.
+BOOL ViewHierarchyContainmentValid(NSView* view) {
+  // TODO(erikchen): Fix these views to have correct containment.
+  // http://crbug.com/397665.
+  if ([view isKindOfClass:NSClassFromString(@"DownloadShelfView")])
+    return YES;
+  if ([view isKindOfClass:NSClassFromString(@"BookmarkBarToolbarView")])
+    return YES;
+  if ([view isKindOfClass:NSClassFromString(@"BrowserActionsContainerView")])
+    return YES;
+
+  if (!ViewContainmentValid(view)) {
+    LOG(ERROR) << "View violates containment: " <<
+        [[view description] UTF8String];
+    return NO;
+  }
+
+  for (NSView* subview in [view subviews]) {
+    BOOL result = ViewHierarchyContainmentValid(subview);
+    if (!result)
+      return NO;
+  }
+
+  return YES;
+}
+
 // Verifies that the toolbar, infobar, tab content area, and download shelf
 // completely fill the area under the tabstrip.
 void CheckViewPositions(BrowserWindowController* controller) {
-  NSRect contentView = [[[controller window] contentView] bounds];
-  NSRect tabstrip = [[controller tabStripView] frame];
-  NSRect toolbar = [[controller toolbarView] frame];
-  NSRect infobar = [[controller infoBarContainerView] frame];
-  NSRect contentArea = [[controller tabContentArea] frame];
+  EXPECT_TRUE(ViewHierarchyContainmentValid([[controller window] contentView]));
+
+  NSRect contentView = FrameInWindowForView([[controller window] contentView]);
+  NSRect tabstrip = FrameInWindowForView([controller tabStripView]);
+  NSRect toolbar = FrameInWindowForView([controller toolbarView]);
+  NSRect infobar = FrameInWindowForView([controller infoBarContainerView]);
+  NSRect tabContent = FrameInWindowForView([controller tabContentArea]);
   NSRect download = NSZeroRect;
   if ([[[controller downloadShelf] view] superview])
     download = [[[controller downloadShelf] view] frame];
 
   EXPECT_EQ(NSMinY(contentView), NSMinY(download));
-  EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
-  EXPECT_EQ(NSMaxY(contentArea), NSMinY(infobar));
+  EXPECT_EQ(NSMaxY(download), NSMinY(tabContent));
+  EXPECT_EQ(NSMaxY(tabContent), NSMinY(infobar));
 
   // Bookmark bar frame is random memory when hidden.
   if ([controller bookmarkBarVisible]) {
@@ -620,7 +663,7 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
   [controller_ addFindBar:bridge.find_bar_cocoa_controller()];
 
   // Test that the Z-order of the find bar is on top of everything.
-  NSArray* subviews = [[[controller_ window] contentView] subviews];
+  NSArray* subviews = [controller_.chromeContentView subviews];
   NSUInteger findBar_index =
       [subviews indexOfObject:[controller_ findBarView]];
   EXPECT_NE(NSNotFound, findBar_index);
@@ -888,6 +931,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
                                   styleMask:NSBorderlessWindowMask
                                     backing:NSBackingStoreBuffered
                                       defer:NO]);
+  [[testFullscreenWindow_ contentView] setWantsLayer:YES];
   return testFullscreenWindow_.get();
 }
 @end

@@ -19,35 +19,25 @@
 
 @end
 
-// In OSX 10.10, adding subviews to the root view for the NSView hierarchy
-// produces warnings. To eliminate the warnings, we resize the contentView to
-// fill the window, and add subviews to that.  When this class is used on OSX
-// 10.9 and lower, subviews are added directly to the root view, and the
-// contentView is not resized.
-// http://crbug.com/380412
+// By default, the contentView does not occupy the full size of a framed
+// window. Chrome still wants to draw in the title bar. Historically, Chrome
+// has done this by adding subviews directly to the root view. This causes
+// several problems. The most egregious is related to layer ordering when the
+// root view does not have a layer. By giving the contentView the same size as
+// the window, there is no longer any need to add subviews to the root view.
 //
-// For code to be 10.9 and 10.10 compatible, views should be added to [window
-// cr_windowView] instead of [[window contentView] superview].
+// No views should be manually added to [[window contentView] superview].
+// Instead, they should be added to [window cr_windowView].
 //
 // If the window does not have a titlebar, then its contentView already has the
 // same size as the window. In this case, this class has no effect.
 //
 // This class currently does not support changing the window's style after the
 // window has been initialized.
-//
-// Since the contentView's size varies between OSes, several NSWindow methods
-// are no longer well defined.
-// - setContentSize:
-// - setContentMinSize:
-// - setContentMaxSize:
-// - setContentAspectRatio:
-// The implementation of this class on OSX 10.10 uses a hacked subclass of
-// NSView. It currently does not support the above 4 methods.
 @interface VersionIndependentWindow : ChromeEventProcessingWindow {
  @private
-  // Holds the view that replaces [window contentView]. This view's size is the
-  // same as the window's size.
-  // Empty on 10.9 and lower, or if there is no titlebar.
+  // Holds the view that replaces [window contentView]. This view has the same
+  // size as the window.  Empty if there is no titlebar.
   base::scoped_nsobject<NSView> chromeWindowView_;
 }
 
@@ -55,7 +45,8 @@
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
                             backing:(NSBackingStoreType)bufferingType
-                              defer:(BOOL)deferCreation;
+                              defer:(BOOL)deferCreation
+             wantsViewsOverTitlebar:(BOOL)wantsViewsOverTitlebar;
 
 @end
 
