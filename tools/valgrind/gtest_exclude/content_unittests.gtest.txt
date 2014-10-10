@@ -1,6 +1,3 @@
-# Flaky, see http://crbug.com/227278
-WebContentsVideoCaptureDeviceTest.WebContentsDestroyed
-
 # False positive, according to crbug.com/386080
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplComplex
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplSimple
