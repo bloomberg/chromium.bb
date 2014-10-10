@@ -68,10 +68,13 @@ def GetNameForKind(kind, internal = False):
   return "::".join(parts)
 
 def GetCppType(kind):
-  if mojom.IsStructKind(kind):
-    return "%s_Data*" % GetNameForKind(kind, internal=True)
   if mojom.IsAnyArrayKind(kind):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return "mojo::internal::Map_Data<%s, %s>*" % (
+      GetCppType(kind.key_kind), GetCppType(kind.value_kind))
+  if mojom.IsStructKind(kind):
+    return "%s_Data*" % GetNameForKind(kind, internal=True)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
   if mojom.IsEnumKind(kind):
@@ -92,6 +95,9 @@ def GetCppArrayArgWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return "mojo::Map<%s, %s> " % (GetCppArrayArgWrapperType(kind.key_kind),
+                                   GetCppArrayArgWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
     raise Exception("Arrays of interfaces not yet supported!")
   if mojom.IsInterfaceRequestKind(kind):
@@ -117,6 +123,9 @@ def GetCppResultWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
+                                  GetCppArrayArgWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
@@ -142,6 +151,9 @@ def GetCppWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
+                                  GetCppArrayArgWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
@@ -165,6 +177,9 @@ def GetCppConstWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
+                                  GetCppArrayArgWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
@@ -193,6 +208,9 @@ def GetCppFieldType(kind):
         GetNameForKind(kind, internal=True))
   if mojom.IsAnyArrayKind(kind):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return ("mojo::internal::StructPointer<mojo::internal::Map_Data<%s, %s>>" %
+            (GetCppType(kind.key_kind), GetCppType(kind.value_kind)))
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
   if mojom.IsEnumKind(kind):
@@ -251,13 +269,18 @@ def ShouldInlineStruct(struct):
   return True
 
 def GetArrayValidateParams(kind):
-  if not mojom.IsAnyArrayKind(kind) and not mojom.IsStringKind(kind):
+  if (not mojom.IsAnyArrayKind(kind) and not mojom.IsMapKind(kind) and
+      not mojom.IsStringKind(kind)):
     return "mojo::internal::NoValidateParams"
 
   if mojom.IsStringKind(kind):
     expected_num_elements = 0
     element_is_nullable = False
     element_validate_params = "mojo::internal::NoValidateParams"
+  elif mojom.IsMapKind(kind):
+    expected_num_elements = 0
+    element_is_nullable = mojom.IsNullableKind(kind.value_kind)
+    element_validate_params = GetArrayValidateParams(kind.value_kind)
   else:
     expected_num_elements = generator.ExpectedArraySize(kind)
     element_is_nullable = mojom.IsNullableKind(kind.kind)
@@ -267,6 +290,14 @@ def GetArrayValidateParams(kind):
       expected_num_elements,
       'true' if element_is_nullable else 'false',
       element_validate_params)
+
+def GetMapValidateParams(value_kind):
+  # Unlike GetArrayValidateParams, we are given the wrapped kind, instead of
+  # the raw array kind. So we wrap the return value of GetArrayValidateParams.
+  element_is_nullable = mojom.IsNullableKind(value_kind)
+  return "mojo::internal::ArrayValidateParams<0, %s,\n%s> " % (
+      'true' if element_is_nullable else 'false',
+      GetArrayValidateParams(value_kind))
 
 _HEADER_SIZE = 8
 
@@ -284,6 +315,7 @@ class Generator(generator.Generator):
     "expected_array_size": generator.ExpectedArraySize,
     "expression_to_text": ExpressionToText,
     "get_array_validate_params": GetArrayValidateParams,
+    "get_map_validate_params": GetMapValidateParams,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "has_callbacks": mojom.HasCallbacks,
@@ -295,6 +327,7 @@ class Generator(generator.Generator):
     "is_any_handle_kind": mojom.IsAnyHandleKind,
     "is_interface_kind": mojom.IsInterfaceKind,
     "is_interface_request_kind": mojom.IsInterfaceRequestKind,
+    "is_map_kind": mojom.IsMapKind,
     "is_nullable_kind": mojom.IsNullableKind,
     "is_object_kind": mojom.IsObjectKind,
     "is_string_kind": mojom.IsStringKind,

@@ -237,6 +237,7 @@ class Parser(object):
     """nonnullable_typename : basictypename
                             | array
                             | fixed_array
+                            | associative_array
                             | interfacerequest"""
     p[0] = p[1]
 
@@ -274,6 +275,10 @@ class Parser(object):
                        lineno=p.lineno(5),
                        snippet=self._GetSnippet(p.lineno(5)))
     p[0] = p[3] + "[" + p[5] + "]"
+
+  def p_associative_array(self, p):
+    """associative_array : MAP LANGLE identifier COMMA typename RANGLE"""
+    p[0] = p[5] + "{" + p[3] + "}"
 
   def p_interfacerequest(self, p):
     """interfacerequest : identifier AMP"""

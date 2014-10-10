@@ -17,7 +17,6 @@
 
 namespace mojo {
 
-// Provides read-only access to array data.
 template <typename T>
 class Array {
   MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(Array, RValue)

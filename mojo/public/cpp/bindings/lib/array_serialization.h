@@ -11,6 +11,7 @@
 
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/lib/map_serialization.h"
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
@@ -28,6 +29,16 @@ template <typename ValidateParams, typename E, typename F>
 inline void SerializeArray_(Array<E> input,
                             internal::Buffer* buf,
                             internal::Array_Data<F>** output);
+
+template <typename ValueValidateParams,
+          typename KeyWrapperType,
+          typename ValueWrapperType,
+          typename KeySerializationType,
+          typename ValueSerializationType>
+inline void SerializeMap_(
+    Map<KeyWrapperType, ValueWrapperType> input,
+    internal::Buffer* buf,
+    internal::Map_Data<KeySerializationType, ValueSerializationType>** output);
 
 template <typename E, typename F>
 inline void Deserialize_(internal::Array_Data<F>* data, Array<E>* output);
@@ -175,6 +186,15 @@ struct ArraySerializer<S, typename S::Data_*, true> {
                     Buffer* buf,
                     typename Array<T>::Data_** output) {
       SerializeArray_<Params>(input.Pass(), buf, output);
+    }
+  };
+
+  template <typename T, typename U, typename Params>
+  struct SerializeCaller<Map<T, U>, Params> {
+    static void Run(Map<T, U> input,
+                    Buffer* buf,
+                    typename Map<T, U>::Data_** output) {
+      SerializeMap_<Params>(input.Pass(), buf, output);
     }
   };
 };

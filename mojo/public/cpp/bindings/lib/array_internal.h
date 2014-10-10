@@ -13,7 +13,9 @@
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
+#include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/lib/validate_params.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/environment/logging.h"
 
@@ -140,26 +142,6 @@ struct ArrayDataTraits<bool> {
     return (storage[offset / 8] & (1 << (offset % 8))) != 0;
   }
 };
-
-// Array type information needed for valdiation.
-template <uint32_t in_expected_num_elements,
-          bool in_element_is_nullable,
-          typename InElementValidateParams>
-class ArrayValidateParams {
- public:
-  // Validation information for elements. It is either another specialization of
-  // ArrayValidateParams (if elements are arrays) or NoValidateParams.
-  typedef InElementValidateParams ElementValidateParams;
-
-  // If |expected_num_elements| is not 0, the array is expected to have exactly
-  // that number of elements.
-  static const uint32_t expected_num_elements = in_expected_num_elements;
-  // Whether the elements are nullable.
-  static const bool element_is_nullable = in_element_is_nullable;
-};
-
-// NoValidateParams is used to indicate the end of an ArrayValidateParams chain.
-class NoValidateParams {};
 
 // What follows is code to support the serialization of Array_Data<T>. There
 // are two interesting cases: arrays of primitives and arrays of objects.
@@ -313,6 +295,14 @@ struct ArraySerializationHelper<P*, false> {
     }
   };
 
+  template <typename Key, typename Value, typename Params>
+  struct ValidateCaller<Map_Data<Key, Value>, Params> {
+    static bool Run(const void* data, BoundsChecker* bounds_checker) {
+      return Map_Data<Key, Value>::template Validate<Params>(data,
+                                                             bounds_checker);
+    }
+  };
+
   template <typename T, typename Params>
   struct ValidateCaller<Array_Data<T>, Params> {
     static bool Run(const void* data, BoundsChecker* bounds_checker) {
@@ -416,7 +406,7 @@ class Array_Data {
     header_.num_bytes = num_bytes;
     header_.num_elements = num_elements;
   }
-  ~Array_Data() {}
+  ~Array_Data() = delete;
 
   internal::ArrayHeader header_;
 

@@ -6,6 +6,7 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
+#include "mojo/public/cpp/bindings/tests/container_test_util.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,60 +20,6 @@ using mojo::internal::ArrayValidateParams;
 using mojo::internal::FixedBuffer;
 using mojo::internal::NoValidateParams;
 using mojo::internal::String_Data;
-
-class CopyableType {
- public:
-  CopyableType() : copied_(false), ptr_(this) { num_instances_++; }
-  CopyableType(const CopyableType& other) : copied_(true), ptr_(other.ptr()) {
-    num_instances_++;
-  }
-  CopyableType& operator=(const CopyableType& other) {
-    copied_ = true;
-    ptr_ = other.ptr();
-    return *this;
-  }
-  ~CopyableType() { num_instances_--; }
-
-  bool copied() const { return copied_; }
-  static size_t num_instances() { return num_instances_; }
-  CopyableType* ptr() const { return ptr_; }
-  void ResetCopied() { copied_ = false; }
-
- private:
-  bool copied_;
-  static size_t num_instances_;
-  CopyableType* ptr_;
-};
-
-size_t CopyableType::num_instances_ = 0;
-
-class MoveOnlyType {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(MoveOnlyType, RValue)
- public:
-  typedef MoveOnlyType Data_;
-  MoveOnlyType() : moved_(false), ptr_(this) { num_instances_++; }
-  MoveOnlyType(RValue other) : moved_(true), ptr_(other.object->ptr()) {
-    num_instances_++;
-  }
-  MoveOnlyType& operator=(RValue other) {
-    moved_ = true;
-    ptr_ = other.object->ptr();
-    return *this;
-  }
-  ~MoveOnlyType() { num_instances_--; }
-
-  bool moved() const { return moved_; }
-  static size_t num_instances() { return num_instances_; }
-  MoveOnlyType* ptr() const { return ptr_; }
-  void ResetMoved() { moved_ = false; }
-
- private:
-  bool moved_;
-  static size_t num_instances_;
-  MoveOnlyType* ptr_;
-};
-
-size_t MoveOnlyType::num_instances_ = 0;
 
 class ArrayTest : public testing::Test {
  public:

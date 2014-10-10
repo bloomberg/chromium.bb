@@ -44,6 +44,9 @@ enum ValidationError {
   // |flags| in the message header indicates that a request ID is required but
   // there isn't one.
   VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID,
+  // Two parallel arrays which are supposed to represent a map have different
+  // lengths.
+  VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP
 };
 
 const char* ValidationErrorToString(ValidationError error);

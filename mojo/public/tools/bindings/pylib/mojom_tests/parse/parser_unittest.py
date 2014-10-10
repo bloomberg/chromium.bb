@@ -683,6 +683,47 @@ class ParserTest(unittest.TestCase):
         r" *array<int32, abcdefg> not_a_number;"):
       parser.Parse(source3, "my_file.mojom")
 
+  def testValidAssociativeArrays(self):
+    """Tests that we can parse valid associative array structures."""
+
+    source1 = "struct MyStruct { map<string, uint8> data; };"
+    expected1 = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Struct(
+            'MyStruct',
+            None,
+            ast.StructBody(
+                [ast.StructField('data', None, 'uint8{string}', None)]))])
+    self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
+
+    source2 = "interface MyInterface { MyMethod(map<string, uint8> a); };"
+    expected2 = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Interface(
+            'MyInterface',
+            None,
+            ast.InterfaceBody(
+                ast.Method(
+                    'MyMethod',
+                    None,
+                    ast.ParameterList(
+                      ast.Parameter('a', None, 'uint8{string}')),
+                    None)))])
+    self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
+
+    source3 = "struct MyStruct { map<string, array<uint8>> data; };"
+    expected3 = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Struct(
+            'MyStruct',
+            None,
+            ast.StructBody(
+                [ast.StructField('data', None, 'uint8[]{string}', None)]))])
+    self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
+
   def testValidMethod(self):
     """Tests parsing method declarations."""
 

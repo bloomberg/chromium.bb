@@ -123,6 +123,12 @@ def KindFromData(kinds, data, scope):
     kind = mojom.Array(KindFromData(kinds, data[2:], scope))
   elif data.startswith('r:'):
     kind = mojom.InterfaceRequest(KindFromData(kinds, data[2:], scope))
+  elif data.startswith('m['):
+    # Isolate the two types from their brackets
+    first_kind = data[2:data.find(']')]
+    second_kind = data[data.rfind('[')+1:data.rfind(']')]
+    kind = mojom.Map(KindFromData(kinds, first_kind, scope),
+                     KindFromData(kinds, second_kind, scope))
   elif data.startswith('a'):
     colon = data.find(':')
     length = int(data[1:colon])

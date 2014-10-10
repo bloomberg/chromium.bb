@@ -25,6 +25,9 @@ class String {
   }
   String(const char* chars, size_t num_chars)
       : value_(chars, num_chars), is_null_(false) {}
+  String(const mojo::String& str)
+      : value_(str.value_), is_null_(str.is_null_) {}
+
   template <size_t N>
   String(const char chars[N])
       : value_(chars, N - 1), is_null_(false) {}
@@ -39,6 +42,11 @@ class String {
     return TypeConverter<U, String>::Convert(*this);
   }
 
+  String& operator=(const mojo::String& str) {
+    value_ = str.value_;
+    is_null_ = str.is_null_;
+    return *this;
+  }
   String& operator=(const std::string& str) {
     value_ = str;
     is_null_ = false;
@@ -113,6 +121,15 @@ inline bool operator!=(const String& a, const char* b) {
 
 inline std::ostream& operator<<(std::ostream& out, const String& s) {
   return out << s.get();
+}
+
+inline bool operator<(const String& a, const String& b) {
+  if (a.is_null())
+    return !b.is_null();
+  if (b.is_null())
+    return false;
+
+  return a.get() < b.get();
 }
 
 // TODO(darin): Add similar variants of operator<,<=,>,>=

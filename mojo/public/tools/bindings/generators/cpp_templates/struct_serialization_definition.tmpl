@@ -18,6 +18,9 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
 {%-     if pf.field.kind|is_any_array_kind %}
     mojo::SerializeArray_<{{pf.field.kind|get_array_validate_params|indent(26)}}>(
         mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
+{%-     elif pf.field.kind|is_map_kind %}
+    mojo::SerializeMap_<{{pf.field.kind.value_kind|get_map_validate_params|indent(26)}}>(
+        mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
 {%-     else %}
     Serialize_(mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
 {%-     endif %}

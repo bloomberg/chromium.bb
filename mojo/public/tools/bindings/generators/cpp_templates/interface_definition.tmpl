@@ -55,6 +55,9 @@ params->{{param.name}}
 {%-       if param.kind|is_any_array_kind %}
   mojo::SerializeArray_<{{param.kind|get_array_validate_params|indent(24)}}>(
       mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
+{%-       elif param.kind|is_map_kind %}
+  mojo::SerializeMap_<{{param.kind.value_kind|get_map_validate_params|indent(24)}}>(
+      mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
 {%-       else %}
   Serialize_(mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
 {%-       endif %}

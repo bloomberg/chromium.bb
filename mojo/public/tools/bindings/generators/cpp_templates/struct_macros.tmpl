@@ -33,6 +33,11 @@
           {{kind|get_array_validate_params|indent(10)}}>(
               mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
               bounds_checker)) {
+{%-       elif kind|is_map_kind %}
+  if (!{{wrapper_type}}::Data_::Validate<
+          {{kind.value_kind|get_map_validate_params|indent(10)}}>(
+              mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
+              bounds_checker)) {
 {%-       else %}
   if (!{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),

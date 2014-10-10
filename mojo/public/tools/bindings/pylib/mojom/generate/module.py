@@ -228,6 +228,33 @@ class FixedArray(ReferenceKind):
     self.length = length
 
 
+class Map(ReferenceKind):
+  ReferenceKind.AddSharedProperty('key_kind')
+  ReferenceKind.AddSharedProperty('value_kind')
+
+  def __init__(self, key_kind=None, value_kind=None):
+    if (key_kind is not None and value_kind is not None):
+      ReferenceKind.__init__(self,
+                             'm[' + key_kind.spec + '][' + value_kind.spec +
+                             ']')
+      if IsNullableKind(key_kind):
+        raise Exception("Nullable kinds can not be keys in maps.")
+      if IsStructKind(key_kind):
+        # TODO(erg): It would sometimes be nice if we could key on struct
+        # values. However, what happens if the struct has a handle in it? Or
+        # non-copyable data like an array?
+        raise Exception("Structs can not be keys in maps.")
+      if IsAnyHandleKind(key_kind):
+        raise Exception("Handles can not be keys in maps.")
+      if IsAnyArrayKind(key_kind):
+        raise Exception("Arrays can not be keys in maps.")
+    else:
+      ReferenceKind.__init__(self)
+
+    self.key_kind = key_kind
+    self.value_kind = value_kind
+
+
 class InterfaceRequest(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
 
@@ -399,8 +426,13 @@ def IsAnyArrayKind(kind):
   return IsArrayKind(kind) or IsFixedArrayKind(kind)
 
 
+def IsMapKind(kind):
+  return isinstance(kind, Map)
+
+
 def IsObjectKind(kind):
-  return IsStructKind(kind) or IsAnyArrayKind(kind) or IsStringKind(kind)
+  return (IsStructKind(kind) or IsAnyArrayKind(kind) or IsStringKind(kind) or
+          IsMapKind(kind))
 
 
 def IsNonInterfaceHandleKind(kind):

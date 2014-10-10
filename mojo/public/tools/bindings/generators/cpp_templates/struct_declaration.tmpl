@@ -16,7 +16,7 @@ class {{class_name}} {
 
  private:
   {{class_name}}();
-  ~{{class_name}}();  // NOT IMPLEMENTED
+  ~{{class_name}}() = delete;
 };
 static_assert(sizeof({{class_name}}) == {{struct.packed|struct_size}},
               "Bad sizeof({{class_name}})");

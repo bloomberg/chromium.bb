@@ -40,11 +40,15 @@ def _MapKind(kind):
     base_kind = _MapKind(kind[0:-1])
     # NOTE: This doesn't rule out enum types. Those will be detected later, when
     # cross-reference is established.
-    reference_kinds = ('s', 'h', 'a', 'r', 'x')
+    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x')
     if base_kind[0] not in reference_kinds:
       raise Exception(
           'A type (spec "%s") cannot be made nullable' % base_kind)
     return '?' + base_kind
+  if kind.endswith('}'):
+    lbracket = kind.rfind('{')
+    value = kind[0:lbracket]
+    return 'm[' + _MapKind(kind[lbracket+1:-1]) + '][' + _MapKind(value) + ']'
   if kind.endswith('[]'):
     typename = kind[0:-2]
     if _FIXED_ARRAY_REGEXP.search(typename):
