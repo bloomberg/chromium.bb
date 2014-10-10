@@ -1,6 +1,8 @@
 <script src="../../resources/testharness.js"></script>
 <script src="test-helpers.js?pipe=sub"></script>
 <script>
+var host_info = get_host_info();
+
 function get_boundary(headers) {
   var reg = new RegExp('multipart\/form-data; boundary=(.*)');
   for (var i = 0; i < headers.length; ++i) {
@@ -34,7 +36,7 @@ function create_file_system_file(file_name, data) {
     });
 }
 
-function xhr_send(method, data) {
+function xhr_send(url_base, method, data, with_credentials) {
   return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
       xhr.onload = function() {
@@ -44,13 +46,16 @@ function xhr_send(method, data) {
         reject('XHR should succeed.');
       };
       xhr.responseType = 'text';
-      xhr.open(method, './dummy?test', true);
+      if (with_credentials) {
+        xhr.withCredentials = true;
+      }
+      xhr.open(method, url_base + '/dummy?test', true);
       xhr.send(data);
     });
 }
 
 function string_test() {
-  return xhr_send('POST', 'test string')
+  return xhr_send(host_info['HTTP_ORIGIN'], 'POST', 'test string', false)
     .then(function(response) {
         assert_equals(response.method, 'POST');
         assert_equals(response.body, 'test string');
@@ -58,7 +63,8 @@ function string_test() {
 }
 
 function blob_test() {
-  return xhr_send('POST', new Blob(['test blob']))
+  return xhr_send(host_info['HTTP_ORIGIN'], 'POST', new Blob(['test blob']),
+                  false)
     .then(function(response) {
         assert_equals(response.method, 'POST');
         assert_equals(response.body, 'test blob');
@@ -66,7 +72,7 @@ function blob_test() {
 }
 
 function custom_method_test() {
-  return xhr_send('XXX', 'test string xxx')
+  return xhr_send(host_info['HTTP_ORIGIN'], 'XXX', 'test string xxx', false)
     .then(function(response){
         assert_equals(response.method, 'XXX');
         assert_equals(response.body, 'test string xxx');
@@ -81,7 +87,7 @@ function form_data_test() {
         formData.append('sample blob', new Blob(['blob content']));
         formData.append('sample file', new File(['file content'], 'file.dat'));
         formData.append('sample fs file', file_system_file);
-        return xhr_send('POST', formData);
+        return xhr_send(host_info['HTTP_ORIGIN'], 'POST', formData, false);
       })
     .then(function(response) {
         assert_equals(response.method, 'POST');
@@ -114,12 +120,32 @@ function form_data_test() {
       });
 }
 
+function mode_test() {
+  return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', false)
+    .then(function(response){
+        assert_equals(response.mode, 'cors');
+        return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', true);
+      })
+    .then(function(response){
+        assert_equals(response.mode, 'cors');
+        return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'GET', '', false);
+      })
+    .then(function(response){
+        assert_equals(response.mode, 'cors');
+        return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'GET', '', true);
+      })
+    .then(function(response){
+        assert_equals(response.mode, 'cors');
+      });
+}
+
 window.addEventListener('message', function(evt) {
     var port = evt.ports[0];
     string_test()
       .then(blob_test)
       .then(custom_method_test)
       .then(form_data_test)
+      .then(mode_test)
       .then(function() { port.postMessage({results: 'finish'}); })
       .catch(function(e) { port.postMessage({results: 'failure:' + e}); });
   });

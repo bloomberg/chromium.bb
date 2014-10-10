@@ -46,6 +46,7 @@
 #include "core/loader/CrossOriginPreflightResultCache.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceRequest.h"
@@ -97,6 +98,33 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
         if (FetchUtils::isSimpleHeader(it->key, it->value))
             m_simpleRequestHeaders.add(it->key, it->value);
+    }
+
+    // If the fetch request will be handled by the ServiceWorker, the
+    // FetchRequestMode of the request must be FetchRequestModeCORS or
+    // FetchRequestModeCORSWithForcedPreflight. Otherwise the ServiceWorker can
+    // return a opaque response which is from the other origin site and the
+    // script in the page can read the content.
+    if (m_async && !request.skipServiceWorker() && m_document.fetcher()->isControlledByServiceWorker()) {
+        if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
+            m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are not supported."));
+            return;
+        }
+        ResourceRequest newRequest(request);
+        // FetchRequestMode should be set by the caller. But the expected value
+        // of FetchRequestMode is not speced yet except for XHR. So we set here.
+        // FIXME: When we support fetch API in document, this value should not
+        // be overridden here.
+        if (options.preflightPolicy == ForcePreflight)
+            newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
+        else
+            newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
+
+        m_fallbackRequestForServiceWorker = adoptPtr(new ResourceRequest(request));
+        m_fallbackRequestForServiceWorker->setSkipServiceWorker(true);
+
+        loadRequest(newRequest, m_resourceLoaderOptions);
+        return;
     }
 
     if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
@@ -362,29 +390,18 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         return;
     }
 
-    // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
-    bool isCrossOriginResponse = false;
     if (response.wasFetchedViaServiceWorker()) {
-        if (!isAllowedByPolicy(response.url())) {
-            notifyResponseReceived(identifier, response);
-            m_client->didFailRedirectCheck();
+        if (response.wasFallbackRequiredByServiceWorker()) {
+            ASSERT(m_fallbackRequestForServiceWorker);
+            loadFallbackRequestForServiceWorker();
             return;
         }
-        isCrossOriginResponse = !securityOrigin()->canRequest(response.url());
-        if (m_options.crossOriginRequestPolicy == DenyCrossOriginRequests && isCrossOriginResponse) {
-            notifyResponseReceived(identifier, response);
-            m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Cross origin requests are not supported."));
-            return;
-        }
-        if (isCrossOriginResponse && m_resourceLoaderOptions.credentialsRequested == ClientDidNotRequestCredentials) {
-            // Since the request is no longer same-origin, if the user didn't request credentials in
-            // the first place, update our state so we neither request them nor expect they must be allowed.
-            m_forceDoNotAllowStoredCredentials = true;
-        }
-    } else {
-        isCrossOriginResponse = !m_sameOriginRequest;
+        m_fallbackRequestForServiceWorker = nullptr;
+        m_client->didReceiveResponse(identifier, response);
+        return;
     }
-    if (isCrossOriginResponse && m_options.crossOriginRequestPolicy == UseAccessControl) {
+
+    if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
         String accessControlErrorDescription;
         if (!passesAccessControlCheck(response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
             notifyResponseReceived(identifier, response);
@@ -406,7 +423,7 @@ void DocumentThreadableLoader::handleReceivedData(const char* data, unsigned dat
 {
     ASSERT(m_client);
     // Preflight data should be invisible to clients.
-    if (!m_actualRequest)
+    if (!m_actualRequest && !m_fallbackRequestForServiceWorker)
         m_client->didReceiveData(data, dataLength);
 }
 
@@ -446,6 +463,18 @@ void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer
     ResourceError error("net", timeoutError, resource()->url(), String());
     error.setIsTimeout(true);
     cancelWithError(error);
+}
+
+void DocumentThreadableLoader::loadFallbackRequestForServiceWorker()
+{
+    clearResource();
+    OwnPtr<ResourceRequest> fallbackRequest(m_fallbackRequestForServiceWorker.release());
+    if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
+        loadRequest(*fallbackRequest, m_resourceLoaderOptions);
+        return;
+    }
+    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
+    makeCrossOriginAccessRequest(*fallbackRequest);
 }
 
 void DocumentThreadableLoader::loadActualRequest()

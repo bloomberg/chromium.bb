@@ -119,6 +119,7 @@ private:
     bool m_notifiedLoadComplete;
 
     bool m_defersLoading;
+    OwnPtr<ResourceRequest> m_fallbackRequestForServiceWorker;
     ResourceRequest m_deferredRequest;
     ResourceLoaderOptions m_options;
 

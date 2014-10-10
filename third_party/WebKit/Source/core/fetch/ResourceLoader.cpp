@@ -149,6 +149,11 @@ void ResourceLoader::start()
     ASSERT(!m_request.isNull());
     ASSERT(m_deferredRequest.isNull());
 
+    if (responseNeedsAccessControlCheck() && m_host->isControlledByServiceWorker()) {
+        m_fallbackRequestForServiceWorker = adoptPtr(new ResourceRequest(m_request));
+        m_fallbackRequestForServiceWorker->setSkipServiceWorker(true);
+    }
+
     m_host->willStartLoadingResource(m_resource, m_request);
 
     if (m_options.synchronousPolicy == RequestSynchronously) {
@@ -355,18 +360,32 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     const ResourceResponse& resourceResponse = response.toResourceResponse();
 
     if (responseNeedsAccessControlCheck()) {
-        // If the response successfully validated a cached resource, perform
-        // the access control with respect to it. Need to do this right here
-        // before the resource switches clients over to that validated resource.
-        Resource* resource = m_resource;
-        if (resource->isCacheValidator() && resourceResponse.httpStatusCode() == 304)
-            resource = m_resource->resourceToRevalidate();
-        else
-            m_resource->setResponse(resourceResponse);
-        if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url())) {
-            m_host->didReceiveResponse(m_resource, resourceResponse);
-            cancel();
-            return;
+        if (response.wasFetchedViaServiceWorker()) {
+            if (response.wasFallbackRequiredByServiceWorker()) {
+                m_loader->cancel();
+                m_loader.clear();
+                m_connectionState = ConnectionStateStarted;
+                m_request = *m_fallbackRequestForServiceWorker;
+                m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
+                ASSERT(m_loader);
+                blink::WrappedResourceRequest wrappedRequest(m_request);
+                m_loader->loadAsynchronously(wrappedRequest, this);
+                return;
+            }
+        } else {
+            // If the response successfully validated a cached resource, perform
+            // the access control with respect to it. Need to do this right here
+            // before the resource switches clients over to that validated resource.
+            Resource* resource = m_resource;
+            if (resource->isCacheValidator() && resourceResponse.httpStatusCode() == 304)
+                resource = m_resource->resourceToRevalidate();
+            else
+                m_resource->setResponse(resourceResponse);
+            if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url())) {
+                m_host->didReceiveResponse(m_resource, resourceResponse);
+                cancel();
+                return;
+            }
         }
     }
 

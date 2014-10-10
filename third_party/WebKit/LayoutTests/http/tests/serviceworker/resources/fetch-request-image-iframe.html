@@ -1,0 +1,27 @@
+<script src="../../resources/testharness.js"></script>
+<script src="test-helpers.js?pipe=sub"></script>
+<body>
+<script>
+var host_info = get_host_info();
+
+function load_image(url, cross_origin) {
+  return new Promise(function(resolve) {
+      var img = new Image();
+      if (cross_origin != '') {
+        img.crossOrigin = cross_origin;
+      }
+      img.onerror = resolve;
+      img.src = url;
+    });
+}
+
+window.addEventListener('message', function(evt) {
+    var port = evt.ports[0];
+    Promise.all([load_image('dummy?test1', ''),
+                 load_image('dummy?test2', 'anonymous'),
+                 load_image('dummy?test3', 'use-credentials')])
+      .then(function() { port.postMessage({results: 'finish'}); })
+      .catch(function(e) { port.postMessage({results: 'failure:' + e}); });
+  });
+</script>
+</body>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<title>Service Worker: FetchEvent from image</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js?pipe=sub"></script>
+<script>
+async_test(function(t) {
+    var SCOPE = 'resources/fetch-request-image-iframe.html';
+    var SCRIPT = 'resources/fetch-request-image-worker.js';
+    var host_info = get_host_info();
+    var TEST_URL =
+      host_info['HTTP_ORIGIN'] + base_path() + 'resources/dummy?test';
+    var worker;
+    service_worker_unregister_and_register(t, SCRIPT, SCOPE)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
+      .then(function(sw) {
+          worker = sw;
+          return wait_for_state(t, sw, 'activated');
+        })
+      .then(function() { return with_iframe(SCOPE); })
+      .then(function(frame) {
+          return new Promise(function(resolve) {
+              var channel1 = new MessageChannel();
+              channel1.port1.onmessage = t.step_func(function(e) {
+                  assert_equals(e.data.results, 'finish');
+                  unload_iframe(frame);
+                  var channel2 = new MessageChannel();
+                  channel2.port1.onmessage = resolve;
+                  worker.postMessage(
+                    {port: channel2.port2}, [channel2.port2]);
+                });
+              frame.contentWindow.postMessage({},
+                                              [channel1.port2],
+                                              host_info['HTTP_ORIGIN']);
+            });
+        })
+      .then(function(e) {
+          var results = e.data;
+          assert_equals(results[TEST_URL + '1'].mode, 'no-cors',
+                        'mode of normal image request must be no-cors.');
+          assert_equals(results[TEST_URL + '2'].mode, 'cors',
+                        'mode of anonymous crossOrigin image request must be ' +
+                        'cors.');
+          assert_equals(results[TEST_URL + '3'].mode, 'cors',
+                        'mode of use-credentials crossOrigin image request ' +
+                        'must be cors.');
+          service_worker_unregister_and_done(t, SCOPE);
+        })
+      .catch(unreached_rejection(t));
+  }, 'Verify FetchEvent from image');
+</script>

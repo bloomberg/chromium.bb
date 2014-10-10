@@ -614,6 +614,16 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
     return true;
 }
 
+bool ResourceFetcher::isControlledByServiceWorker()
+{
+    LocalFrame* localFrame = frame();
+    if (!localFrame)
+        return false;
+    if (!m_documentLoader)
+        return false;
+    return localFrame->loader().client()->isControlledByServiceWorker(*m_documentLoader);
+}
+
 bool ResourceFetcher::shouldLoadNewResource(Resource::Type type) const
 {
     if (!frame())

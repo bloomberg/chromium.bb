@@ -92,6 +92,8 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
+        // Loads m_fallbackRequestForServiceWorker.
+        void loadFallbackRequestForServiceWorker();
         // Loads m_actualRequest.
         void loadActualRequest();
         // Clears m_actualRequest and reports access control check failure to
@@ -127,6 +129,9 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         bool m_simpleRequest;
         bool m_async;
 
+        // Holds the original request for fallback in case the Service Worker
+        // does not respond.
+        OwnPtr<ResourceRequest> m_fallbackRequestForServiceWorker;
         // Holds the original request and options for it during preflight
         // request handling phase.
         OwnPtr<ResourceRequest> m_actualRequest;

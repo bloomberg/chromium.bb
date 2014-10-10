@@ -72,6 +72,7 @@ FetchRequest::~FetchRequest()
 void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, StoredCredentials allowCredentials, CredentialRequest requested)
 {
     ASSERT(requested == ClientDidNotRequestCredentials || allowCredentials == AllowStoredCredentials);
+    m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
     updateRequestForAccessControl(m_resourceRequest, origin, allowCredentials);
     m_options.allowCredentials = allowCredentials;
     m_options.corsEnabled = IsCORSEnabled;

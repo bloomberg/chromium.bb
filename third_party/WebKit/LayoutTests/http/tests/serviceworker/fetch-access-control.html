@@ -488,28 +488,13 @@ var TEST_TARGETS = [
   [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL),
    [fetchRejected]]
 ];
-
-function login(test, origin, username, password) {
-  return new Promise(function(resolve, reject) {
-      with_iframe(
-        origin +
-        '/serviceworker/resources/fetch-access-control-login.html')
-        .then(test.step_func(function(frame) {
-            var channel = new MessageChannel();
-            channel.port1.onmessage = test.step_func(function() {
-                resolve();
-              });
-            frame.contentWindow.postMessage(
-              {username: username, password: password},
-              [channel.port2], origin);
-          }));
-    });
-}
   
 var test = async_test('Verify access control of fetch() in a Service Worker');
 test.step(function() {
-    var login1 = login(test, 'http://127.0.0.1:8000', 'username1', 'password1');
-    var login2 = login(test, 'http://localhost:8000', 'username2', 'password2');
+    var login1 =
+      test_login(test, 'http://127.0.0.1:8000', 'username1', 'password1');
+    var login2 =
+      test_login(test, 'http://localhost:8000', 'username2', 'password2');
     var workerScript = 'resources/fetch-access-control-worker.js';
     var worker = undefined;
     var frameWindow = {};

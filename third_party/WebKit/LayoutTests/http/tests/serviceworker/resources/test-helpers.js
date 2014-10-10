@@ -246,3 +246,21 @@ function get_host_info() {
 function base_path() {
     return location.pathname.replace(/\/[^\/]*$/, '/');
 }
+
+function test_login(test, origin, username, password) {
+  return new Promise(function(resolve, reject) {
+      with_iframe(
+        origin + base_path() +
+        'resources/fetch-access-control-login.html')
+        .then(test.step_func(function(frame) {
+            var channel = new MessageChannel();
+            channel.port1.onmessage = test.step_func(function() {
+                unload_iframe(frame);
+                resolve();
+              });
+            frame.contentWindow.postMessage(
+              {username: username, password: password},
+              [channel.port2], origin);
+          }));
+    });
+}
