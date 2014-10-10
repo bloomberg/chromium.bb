@@ -208,7 +208,9 @@ static void ConvertVideoFrameToRGBPixels(
 // Generates an RGB image from a VideoFrame.
 class VideoImageGenerator : public SkImageGenerator {
  public:
-  VideoImageGenerator(const scoped_refptr<VideoFrame>& frame) : frame_(frame) {}
+  VideoImageGenerator(const scoped_refptr<VideoFrame>& frame) : frame_(frame) {
+    DCHECK(frame_.get());
+  }
   virtual ~VideoImageGenerator() {}
 
   void set_frame(const scoped_refptr<VideoFrame>& frame) { frame_ = frame; }
@@ -230,10 +232,9 @@ class VideoImageGenerator : public SkImageGenerator {
     if (!frame_.get())
       return false;
     if (!pixels)
-      return true;
+      return false;
     // If skia couldn't do the YUV conversion, we will.
     ConvertVideoFrameToRGBPixels(frame_, pixels, row_bytes);
-    frame_ = NULL;
     return true;
   }
 
@@ -278,13 +279,13 @@ class VideoImageGenerator : public SkImageGenerator {
         planes[plane] = frame_->data(plane) + offset;
       }
     }
-    if (planes && row_bytes)
-      frame_ = NULL;
     return true;
   }
 
  private:
   scoped_refptr<VideoFrame> frame_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoImageGenerator);
 };
 
 SkCanvasVideoRenderer::SkCanvasVideoRenderer()
@@ -379,6 +380,10 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   if (need_transform)
     canvas->restore();
   canvas->flush();
+  // SkCanvas::flush() causes the generator to generate SkImage, so delete
+  // |video_frame| not to be outlived.
+  if (generator_)
+    generator_->set_frame(NULL);
 }
 
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
