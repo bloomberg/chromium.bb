@@ -3478,3 +3478,11 @@
    fun:_ZN7content30SpeechRecognitionAudioSinkTest35AssertConsumptionForAudioParametersEiiiij
    fun:_ZN7content62SpeechRecognitionAudioSinkTest_RecognizerNotifiedOnSocket_Test8TestBodyEv
 }
+{
+   bug_422472b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7content31MediaStreamAudioLevelCalculator9CalculateEPKsii
+   ...
+   fun:_ZN7content62SpeechRecognitionAudioSinkTest_RecognizerNotifiedOnSocket_Test8TestBodyEv
+}

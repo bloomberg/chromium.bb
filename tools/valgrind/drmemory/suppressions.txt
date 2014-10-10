@@ -692,3 +692,12 @@ shared_memory_support.dll!media::FromInterleavedInternal<>
 ...
 *!content::SpeechRecognitionAudioSinkTest::CaptureAudio
 *!content::SpeechRecognitionAudioSinkTest_SyncSocketFailsSendingData_Test::TestBody
+
+UNINITIALIZED READ
+name=http://crbug.com/422472 (d)
+content.dll!content::`anonymous namespace'::MaxAmplitude
+content.dll!content::MediaStreamAudioLevelCalculator::Calculate
+content.dll!content::WebRtcLocalAudioTrack::Capture
+...
+*!content::SpeechRecognitionAudioSinkTest_*_Test::TestBody
+
