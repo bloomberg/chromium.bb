@@ -64,7 +64,9 @@ public:
     WebString getHeader(const WebString& key) const;
     void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
+    void setBlob(const WebString& uuid, uint64_t size);
     WebString blobUUID() const;
+    uint64_t blobSize() const;
 
 #if INSIDE_BLINK
     const HTTPHeaderMap& headers() const;

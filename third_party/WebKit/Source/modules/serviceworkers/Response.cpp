@@ -34,6 +34,8 @@ FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorker
         response->headerList()->append(i->key, i->value);
     }
 
+    response->setBlobDataHandle(webResponse.blobDataHandle());
+
     // Filter the response according to |webResponse|'s ResponseType.
     switch (webResponse.responseType()) {
     case WebServiceWorkerResponseTypeBasic:
@@ -160,7 +162,6 @@ Response* Response::create(ExecutionContext* context, FetchResponseData* respons
 
 Response* Response::create(ExecutionContext* context, const WebServiceWorkerResponse& webResponse)
 {
-    // FIXME: Handle response body data.
     FetchResponseData* responseData = createFetchResponseDataFromWebResponse(webResponse);
     Response* r = new Response(context, responseData);
     r->suspendIfNeeded();

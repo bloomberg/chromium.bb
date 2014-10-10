@@ -114,11 +114,23 @@ void WebServiceWorkerResponse::visitHTTPHeaderFields(WebHTTPHeaderVisitor* heade
         headerVisitor->visitHeader(i->key, i->value);
 }
 
+void WebServiceWorkerResponse::setBlob(const WebString& uuid, uint64_t size)
+{
+    m_private->blobDataHandle = BlobDataHandle::create(uuid, String(), size);
+}
+
 WebString WebServiceWorkerResponse::blobUUID() const
 {
     if (!m_private->blobDataHandle)
         return WebString();
     return m_private->blobDataHandle->uuid();
+}
+
+uint64_t WebServiceWorkerResponse::blobSize() const
+{
+    if (!m_private->blobDataHandle)
+        return 0;
+    return m_private->blobDataHandle->size();
 }
 
 const HTTPHeaderMap& WebServiceWorkerResponse::headers() const
