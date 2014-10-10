@@ -92,6 +92,8 @@
         'shell/app/webkit_test_platform_support_win.cc',
         'shell/browser/ipc_echo_message_filter.cc',
         'shell/browser/ipc_echo_message_filter.h',
+        'shell/browser/layout_test/layout_test_browser_context.cc',
+        'shell/browser/layout_test/layout_test_browser_context.h',
         'shell/browser/layout_test/layout_test_devtools_frontend.cc',
         'shell/browser/layout_test/layout_test_devtools_frontend.h',
         'shell/browser/layout_test/layout_test_javascript_dialog_manager.cc',
