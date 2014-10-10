@@ -116,6 +116,12 @@ double TextureUploader::EstimatedTexturesPerSecond() {
 }
 
 void TextureUploader::BeginQuery() {
+  // Check to see if any of the pending queries are free before allocating a
+  // new one. If this is not done, queries may be allocated without bound.
+  // http://crbug.com/398072
+  if (available_queries_.empty())
+    ProcessQueries();
+
   if (available_queries_.empty())
     available_queries_.push_back(Query::Create(gl_));
 
