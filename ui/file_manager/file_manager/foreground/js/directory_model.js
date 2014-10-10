@@ -173,6 +173,18 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
   var directoryEntry = this.getCurrentDirEntry();
 
+  // If the change is deletion of currentDir, move up to its parent directory.
+  directoryEntry.getDirectory(directoryEntry.fullPath, {create: false},
+      null,
+      function() {
+        var volumeInfo = this.volumeManager_.getVolumeInfo(directoryEntry);
+        if (volumeInfo) {
+          volumeInfo.resolveDisplayRoot().then(function(displayRoot) {
+            this.changeDirectoryEntry(displayRoot);
+          }.bind(this));
+        }
+      }.bind(this));
+
   if (event.changedFiles) {
     var addedOrUpdatedFileUrls = [];
     var deletedFileUrls = [];
