@@ -324,6 +324,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
 
+  // The last tooltip that was set with SetTooltipText().
+  base::string16 current_tooltip_text_;
+
   scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
   WebContentsImpl* embedder_web_contents_;
 
