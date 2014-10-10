@@ -268,15 +268,6 @@ void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
   layer_->SetForceRenderSurface(force_render_surface);
 }
 
-void WebLayerImpl::setScrollPosition(blink::WebPoint position) {
-  layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
-}
-
-blink::WebPoint WebLayerImpl::scrollPosition() const {
-  return gfx::PointAtOffsetFromOrigin(
-      gfx::ScrollOffsetToFlooredVector2d(layer_->scroll_offset()));
-}
-
 void WebLayerImpl::setScrollPositionDouble(blink::WebDoublePoint position) {
   layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
 }
