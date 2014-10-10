@@ -82,6 +82,11 @@ private:
         ScriptLikeAttributeTruncation
     };
 
+    enum HrefRestriction {
+        ProhibitSameOriginHref,
+        AllowSameOriginHref
+    };
+
     bool filterStartToken(const FilterTokenRequest&);
     void filterEndToken(const FilterTokenRequest&);
     bool filterCharacterToken(const FilterTokenRequest&);
@@ -96,9 +101,10 @@ private:
     bool filterFormToken(const FilterTokenRequest&);
     bool filterInputToken(const FilterTokenRequest&);
     bool filterButtonToken(const FilterTokenRequest&);
+    bool filterLinkToken(const FilterTokenRequest&);
 
     bool eraseDangerousAttributesIfInjected(const FilterTokenRequest&);
-    bool eraseAttributeIfInjected(const FilterTokenRequest&, const QualifiedName&, const String& replacementValue = String(), TruncationKind treatment = NormalAttributeTruncation);
+    bool eraseAttributeIfInjected(const FilterTokenRequest&, const QualifiedName&, const String& replacementValue = String(), TruncationKind = NormalAttributeTruncation, HrefRestriction = ProhibitSameOriginHref);
 
     String canonicalizedSnippetForTagName(const FilterTokenRequest&);
     String canonicalizedSnippetForJavaScript(const FilterTokenRequest&);

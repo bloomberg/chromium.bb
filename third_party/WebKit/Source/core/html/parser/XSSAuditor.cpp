@@ -444,6 +444,8 @@ bool XSSAuditor::filterStartToken(const FilterTokenRequest& request)
         didBlockScript |= filterInputToken(request);
     else if (hasName(request.token, buttonTag))
         didBlockScript |= filterButtonToken(request);
+    else if (hasName(request.token, linkTag))
+        didBlockScript |= filterLinkToken(request);
 
     return didBlockScript;
 }
@@ -600,6 +602,22 @@ bool XSSAuditor::filterButtonToken(const FilterTokenRequest& request)
     return eraseAttributeIfInjected(request, formactionAttr, kURLWithUniqueOrigin, SrcLikeAttributeTruncation);
 }
 
+bool XSSAuditor::filterLinkToken(const FilterTokenRequest& request)
+{
+    ASSERT(request.token.type() == HTMLToken::StartTag);
+    ASSERT(hasName(request.token, linkTag));
+
+    size_t indexOfAttribute = 0;
+    if (!findAttributeWithName(request.token, relAttr, indexOfAttribute))
+        return false;
+
+    const HTMLToken::Attribute& attribute = request.token.attributes().at(indexOfAttribute);
+    if (!equalIgnoringCase(String(attribute.value), "import"))
+        return false;
+
+    return eraseAttributeIfInjected(request, hrefAttr, kURLWithUniqueOrigin, SrcLikeAttributeTruncation, AllowSameOriginHref);
+}
+
 bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& request)
 {
     DEFINE_STATIC_LOCAL(String, safeJavaScriptURL, ("javascript:void(0)"));
@@ -633,7 +651,7 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& re
     return didBlockScript;
 }
 
-bool XSSAuditor::eraseAttributeIfInjected(const FilterTokenRequest& request, const QualifiedName& attributeName, const String& replacementValue, TruncationKind treatment)
+bool XSSAuditor::eraseAttributeIfInjected(const FilterTokenRequest& request, const QualifiedName& attributeName, const String& replacementValue, TruncationKind treatment, HrefRestriction restriction)
 {
     size_t indexOfAttribute = 0;
     if (!findAttributeWithName(request.token, attributeName, indexOfAttribute))
@@ -643,7 +661,7 @@ bool XSSAuditor::eraseAttributeIfInjected(const FilterTokenRequest& request, con
     if (!isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), treatment)))
         return false;
 
-    if (threadSafeMatch(attributeName, srcAttr)) {
+    if (threadSafeMatch(attributeName, srcAttr) || (restriction == AllowSameOriginHref && threadSafeMatch(attributeName, hrefAttr))) {
         if (isLikelySafeResource(String(attribute.value)))
             return false;
     } else if (threadSafeMatch(attributeName, http_equivAttr)) {
