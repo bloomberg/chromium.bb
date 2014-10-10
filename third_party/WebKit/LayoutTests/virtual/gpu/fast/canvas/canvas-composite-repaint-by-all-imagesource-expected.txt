@@ -1,0 +1,389 @@
+{
+  "bounds": [785, 928],
+  "children": [
+    {
+      "bounds": [785, 928],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [144, 62],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [286, 62],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [428, 62],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [570, 62],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [144, 112],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [286, 112],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [428, 112],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [570, 112],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [144, 162],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [286, 162],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [428, 162],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [570, 162],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [144, 212],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [286, 212],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [428, 212],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [570, 212],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [144, 262],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [286, 262],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [428, 262],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [570, 262],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [144, 312],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [286, 312],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [428, 312],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [570, 312],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [144, 362],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [286, 362],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [428, 362],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [570, 362],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [144, 412],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [286, 412],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [428, 412],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [570, 412],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [144, 462],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [286, 462],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [428, 462],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [570, 462],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [144, 512],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [286, 512],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [428, 512],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [570, 512],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [1, 1, 80, 40]
+          ]
+        },
+        {
+          "position": [144, 562],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [286, 562],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [428, 562],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [570, 562],
+          "bounds": [132, 42],
+          "drawsContent": true,
+          "repaintRects": [
+            [31, 1, 50, 40]
+          ]
+        },
+        {
+          "position": [15, 750],
+          "bounds": [152, 62],
+          "drawsContent": true
+        },
+        {
+          "position": [15, 854],
+          "bounds": [150, 60]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [15, 854],
+              "bounds": [150, 60],
+              "drawsContent": true
+            },
+            {
+              "position": [15, 854],
+              "bounds": [150, 25],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
