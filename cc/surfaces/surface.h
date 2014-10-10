@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_id.h"
@@ -50,12 +51,12 @@ class CC_SURFACES_EXPORT Surface {
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   void RunDrawCallbacks();
 
-  SurfaceFactory* factory() { return factory_; }
+  base::WeakPtr<SurfaceFactory> factory() { return factory_; }
 
  private:
   SurfaceId surface_id_;
   gfx::Size size_;
-  SurfaceFactory* factory_;
+  base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
   int frame_index_;

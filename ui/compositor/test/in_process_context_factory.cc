@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/threading/thread.h"
 #include "cc/output/output_surface.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/reflector.h"
@@ -19,7 +20,8 @@
 namespace ui {
 
 InProcessContextFactory::InProcessContextFactory()
-    : shared_bitmap_manager_(new cc::TestSharedBitmapManager()) {
+    : shared_bitmap_manager_(new cc::TestSharedBitmapManager()),
+      next_surface_id_namespace_(1u) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
@@ -100,6 +102,12 @@ base::MessageLoopProxy* InProcessContextFactory::GetCompositorMessageLoop() {
   if (!compositor_thread_)
     return NULL;
   return compositor_thread_->message_loop_proxy().get();
+}
+
+scoped_ptr<cc::SurfaceIdAllocator>
+InProcessContextFactory::CreateSurfaceIdAllocator() {
+  return make_scoped_ptr(
+      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
 }
 
 }  // namespace ui

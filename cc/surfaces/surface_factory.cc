@@ -29,9 +29,18 @@ void SurfaceFactory::Create(SurfaceId surface_id, const gfx::Size& size) {
 void SurfaceFactory::Destroy(SurfaceId surface_id) {
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
-  DCHECK(it->second->factory() == this);
+  DCHECK(it->second->factory().get() == this);
   manager_->DeregisterSurface(surface_id);
   surface_map_.erase(it);
+}
+
+void SurfaceFactory::DestroyOnSequence(
+    SurfaceId surface_id,
+    const std::set<SurfaceSequence>& dependency_set) {
+  OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
+  DCHECK(it != surface_map_.end());
+  DCHECK(it->second->factory().get() == this);
+  manager_->DestroyOnSequence(surface_map_.take_and_erase(it), dependency_set);
 }
 
 void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
@@ -39,7 +48,7 @@ void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
                                  const base::Closure& callback) {
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
-  DCHECK(it->second->factory() == this);
+  DCHECK(it->second->factory().get() == this);
   it->second->QueueFrame(frame.Pass(), callback);
   manager_->SurfaceModified(surface_id);
 }
@@ -52,7 +61,7 @@ void SurfaceFactory::RequestCopyOfSurface(
     copy_request->SendEmptyResult();
     return;
   }
-  DCHECK(it->second->factory() == this);
+  DCHECK(it->second->factory().get() == this);
   it->second->RequestCopyOfOutput(copy_request.Pass());
   manager_->SurfaceModified(surface_id);
 }

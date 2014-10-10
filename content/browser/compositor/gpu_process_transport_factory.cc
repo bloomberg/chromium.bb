@@ -202,7 +202,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
     scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
         new SurfaceDisplayOutputSurface(
-            manager, next_surface_id_namespace_++, context_provider));
+            manager, compositor->surface_id_allocator(), context_provider));
     display_client->set_surface_output_surface(output_surface.get());
     output_surface->set_display_client(display_client.get());
     data->display_client = display_client.Pass();

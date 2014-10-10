@@ -370,16 +370,26 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       if (!surface_factory_) {
         ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
         cc::SurfaceManager* manager = factory->GetSurfaceManager();
-        id_allocator_ = factory->CreateSurfaceIdAllocator();
+        id_allocator_ =
+            factory->GetContextFactory()->CreateSurfaceIdAllocator();
         surface_factory_ =
             make_scoped_ptr(new cc::SurfaceFactory(manager, this));
       }
       if (surface_id_.is_null() || frame_size != current_surface_size_ ||
           frame_size_in_dip != current_frame_size_in_dip_) {
-        // TODO(jbauman): Wait to destroy this surface until the parent has
-        // finished using it.
-        if (!surface_id_.is_null())
-          surface_factory_->Destroy(surface_id_);
+        if (!surface_id_.is_null()) {
+          if (compositor) {
+            std::set<cc::SurfaceSequence> seq;
+            seq.insert(compositor->InsertSurfaceSequenceForNextFrame());
+            // Destruction of this surface needs to wait for compositors that
+            // have drawn using it to swap frames that don't reference it.
+            // TODO(jbauman): Handle cases where the compositor has been
+            // changed since the last draw.
+            surface_factory_->DestroyOnSequence(surface_id_, seq);
+          } else {
+            surface_factory_->Destroy(surface_id_);
+          }
+        }
         surface_id_ = id_allocator_->GenerateId();
         surface_factory_->Create(surface_id_, frame_size);
         client_->GetLayer()->SetShowSurface(surface_id_, frame_size_in_dip);

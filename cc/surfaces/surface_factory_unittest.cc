@@ -372,5 +372,32 @@ TEST_F(SurfaceFactoryTest, DestroyWithResourceRefs) {
   factory_.SubmitFrame(id, frame.Pass(), base::Closure());
 }
 
+TEST_F(SurfaceFactoryTest, DestroySequence) {
+  SurfaceId id2(5);
+  factory_.Create(id2, gfx::Size(5, 5));
+
+  // Check that waiting before the sequence is satisfied works.
+  std::set<SurfaceSequence> sequence;
+  sequence.insert(SurfaceSequence(0, 4));
+  factory_.DestroyOnSequence(id2, sequence);
+
+  scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->metadata.satisfies_sequences.push_back(6);
+  frame->metadata.satisfies_sequences.push_back(4);
+  frame->delegated_frame_data = frame_data.Pass();
+  DCHECK(manager_.GetSurfaceForId(id2));
+  factory_.SubmitFrame(surface_id_, frame.Pass(), base::Closure());
+  DCHECK(!manager_.GetSurfaceForId(id2));
+
+  // Check that waiting after the sequence is satisfied works.
+  factory_.Create(id2, gfx::Size(5, 5));
+  sequence.clear();
+  sequence.insert(SurfaceSequence(0, 6));
+  DCHECK(manager_.GetSurfaceForId(id2));
+  factory_.DestroyOnSequence(id2, sequence);
+  DCHECK(!manager_.GetSurfaceForId(id2));
+}
+
 }  // namespace
 }  // namespace cc

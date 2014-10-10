@@ -40,12 +40,15 @@ class InProcessContextFactory : public ContextFactory {
   virtual bool DoesCreateTestContexts() override;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
+  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
+      override;
 
  private:
   scoped_ptr<base::Thread> compositor_thread_;
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
   scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
+  uint32_t next_surface_id_namespace_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };

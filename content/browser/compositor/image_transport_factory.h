@@ -72,7 +72,6 @@ class CONTENT_EXPORT ImageTransportFactory {
   virtual ui::ContextFactory* GetContextFactory() = 0;
 
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() = 0;
-  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   // Gets a GLHelper instance, associated with the shared context. This

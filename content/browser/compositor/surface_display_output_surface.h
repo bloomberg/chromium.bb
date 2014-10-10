@@ -27,7 +27,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
   // The underlying cc::Display and cc::SurfaceManager must outlive this class.
   SurfaceDisplayOutputSurface(
       cc::SurfaceManager* surface_manager,
-      uint32_t surface_id_namespace,
+      cc::SurfaceIdAllocator* allocator,
       const scoped_refptr<cc::ContextProvider>& context_provider);
   virtual ~SurfaceDisplayOutputSurface();
 
@@ -54,7 +54,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
   cc::SurfaceFactory factory_;
   gfx::Size display_size_;
   cc::SurfaceId surface_id_;
-  cc::SurfaceIdAllocator allocator_;
+  cc::SurfaceIdAllocator* allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDisplayOutputSurface);
 };

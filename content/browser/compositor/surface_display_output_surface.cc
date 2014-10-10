@@ -15,14 +15,14 @@ namespace content {
 
 SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     cc::SurfaceManager* surface_manager,
-    uint32_t surface_id_namespace,
+    cc::SurfaceIdAllocator* allocator,
     const scoped_refptr<cc::ContextProvider>& context_provider)
     : cc::OutputSurface(context_provider,
                         scoped_ptr<cc::SoftwareOutputDevice>()),
       display_client_(NULL),
       surface_manager_(surface_manager),
       factory_(surface_manager, this),
-      allocator_(surface_id_namespace) {
+      allocator_(allocator) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -47,7 +47,7 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     if (!surface_id_.is_null()) {
       factory_.Destroy(surface_id_);
     }
-    surface_id_ = allocator_.GenerateId();
+    surface_id_ = allocator_->GenerateId();
     factory_.Create(surface_id_, frame_size);
     display_size_ = frame_size;
     display_client_->display()->Resize(surface_id_, frame_size);

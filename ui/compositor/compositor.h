@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -37,6 +38,7 @@ class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
 class SharedBitmapManager;
+class SurfaceIdAllocator;
 }
 
 namespace gfx {
@@ -95,6 +97,9 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Gets the compositor message loop, or NULL if not using threaded
   // compositing.
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() = 0;
+
+  // Creates a Surface ID allocator with a new namespace.
+  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
@@ -266,6 +271,14 @@ class COMPOSITOR_EXPORT Compositor
     return &layer_animator_collection_;
   }
 
+  // Inserts a SurfaceSequence that will be satisfied on the next frame this
+  // compositor commits and swaps.
+  cc::SurfaceSequence InsertSurfaceSequenceForNextFrame();
+
+  cc::SurfaceIdAllocator* surface_id_allocator() {
+    return surface_id_allocator_.get();
+  }
+
  private:
   friend class base::RefCounted<Compositor>;
   friend class CompositorLock;
@@ -290,6 +303,8 @@ class COMPOSITOR_EXPORT Compositor
   ObserverList<CompositorAnimationObserver> animation_observer_list_;
 
   gfx::AcceleratedWidget widget_;
+  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  uint32_t surface_sequence_number_;
   scoped_refptr<cc::Layer> root_web_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_loop_;

@@ -20,6 +20,7 @@
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
@@ -68,12 +69,31 @@ namespace {}  // namespace
 
 namespace ui {
 
+class SatisfySwapPromise : public cc::SwapPromise {
+ public:
+  explicit SatisfySwapPromise(uint32_t id) : id_(id) {}
+
+ private:
+  virtual void DidSwap(cc::CompositorFrameMetadata* metadata) OVERRIDE {
+    metadata->satisfies_sequences.push_back(id_);
+  }
+
+  virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE {
+    // TODO(jbauman): Send to the SurfaceManager immediately.
+    DCHECK(false);
+  }
+  virtual int64 TraceId() const OVERRIDE { return 0; }
+  uint32_t id_;
+};
+
 Compositor::Compositor(gfx::AcceleratedWidget widget,
                        ui::ContextFactory* context_factory,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_factory_(context_factory),
       root_layer_(NULL),
       widget_(widget),
+      surface_id_allocator_(context_factory->CreateSurfaceIdAllocator()),
+      surface_sequence_number_(0),
       compositor_thread_loop_(context_factory->GetCompositorMessageLoop()),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
@@ -404,6 +424,16 @@ const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
 void Compositor::SetLayerTreeDebugState(
     const cc::LayerTreeDebugState& debug_state) {
   host_->SetDebugState(debug_state);
+}
+
+cc::SurfaceSequence Compositor::InsertSurfaceSequenceForNextFrame() {
+  cc::SurfaceSequence sequence;
+  sequence.id_namespace = surface_id_allocator_->id_namespace();
+  sequence.sequence = ++surface_sequence_number_;
+  scoped_ptr<cc::SwapPromise> promise(
+      new SatisfySwapPromise(surface_sequence_number_));
+  host_->QueueSwapPromise(promise.Pass());
+  return sequence;
 }
 
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {

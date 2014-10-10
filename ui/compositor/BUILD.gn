@@ -109,6 +109,7 @@ source_set("test_support") {
   deps = [
     "//base/test:test_support",
     "//cc",
+    "//cc/surfaces",
     "//cc:test_support",
     "//skia",
     "//testing/gtest",

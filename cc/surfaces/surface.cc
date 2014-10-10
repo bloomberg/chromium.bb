@@ -7,6 +7,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_manager.h"
 
 namespace cc {
 
@@ -17,7 +18,7 @@ static const int kFrameIndexStart = 2;
 Surface::Surface(SurfaceId id, const gfx::Size& size, SurfaceFactory* factory)
     : surface_id_(id),
       size_(size),
-      factory_(factory),
+      factory_(factory->AsWeakPtr()),
       frame_index_(kFrameIndexStart) {
 }
 
@@ -28,7 +29,7 @@ Surface::~Surface() {
     (*it)->SendEmptyResult();
   }
   copy_requests_.clear();
-  if (current_frame_) {
+  if (current_frame_ && factory_) {
     ReturnedResourceArray current_resources;
     TransferableResource::ReturnResources(
         current_frame_->delegated_frame_data->resource_list,
@@ -39,6 +40,7 @@ Surface::~Surface() {
 
 void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
                          const base::Closure& callback) {
+  DCHECK(factory_);
   for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
        it != copy_requests_.end();
        ++it) {
@@ -63,6 +65,8 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
   if (!draw_callback_.is_null())
     draw_callback_.Run();
   draw_callback_ = callback;
+  factory_->manager()->DidSatisfySequences(
+      surface_id_, &current_frame_->metadata.satisfies_sequences);
 }
 
 void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {

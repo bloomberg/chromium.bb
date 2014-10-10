@@ -5,6 +5,7 @@
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 
 #include "cc/output/context_provider.h"
+#include "cc/surfaces/surface_manager.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor.h"
@@ -13,7 +14,8 @@
 namespace content {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory()
-    : context_factory_(new ui::InProcessContextFactory) {
+    : context_factory_(new ui::InProcessContextFactory),
+      surface_manager_(new cc::SurfaceManager) {
 }
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
@@ -31,13 +33,8 @@ NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
   return gfx::GLSurfaceHandle();
 }
 
-scoped_ptr<cc::SurfaceIdAllocator>
-NoTransportImageTransportFactory::CreateSurfaceIdAllocator() {
-  return scoped_ptr<cc::SurfaceIdAllocator>();
-}
-
 cc::SurfaceManager* NoTransportImageTransportFactory::GetSurfaceManager() {
-  return NULL;
+  return surface_manager_.get();
 }
 
 GLHelper* NoTransportImageTransportFactory::GetGLHelper() {

@@ -46,6 +46,10 @@ class CC_EXPORT CompositorFrameMetadata {
   ViewportSelectionBound selection_end;
 
   std::vector<ui::LatencyInfo> latency_info;
+
+  // A set of SurfaceSequences that this frame satisfies (always in the same
+  // namespace as the current Surface).
+  std::vector<uint32_t> satisfies_sequences;
 };
 
 }  // namespace cc

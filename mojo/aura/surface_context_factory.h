@@ -32,6 +32,8 @@ class SurfaceContextFactory : public ui::ContextFactory {
   virtual bool DoesCreateTestContexts() override;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
+  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
+      override;
 
   SurfaceBinding surface_binding_;
 

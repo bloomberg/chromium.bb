@@ -56,12 +56,12 @@ class GpuProcessTransportFactory
   virtual bool DoesCreateTestContexts() override;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
+  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
+      override;
 
   // ImageTransportFactory implementation.
   virtual ui::ContextFactory* GetContextFactory() override;
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
-  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
-      override;
   virtual cc::SurfaceManager* GetSurfaceManager() override;
   virtual GLHelper* GetGLHelper() override;
   virtual void AddObserver(ImageTransportFactoryObserver* observer) override;
