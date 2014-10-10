@@ -609,7 +609,7 @@ void LocalDOMWindow::sendOrientationChangeEvent()
     // Before dispatching the event, build a list of the child frames to
     // also send the event to, to mitigate side effects from event handlers
     // potentially interfering with others.
-    WillBeHeapVector<RefPtr<Frame> > childFrames;
+    WillBeHeapVector<RefPtrWillBeMember<Frame> > childFrames;
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         childFrames.append(child);
     }
