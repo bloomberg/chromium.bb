@@ -187,9 +187,10 @@ MOJO_SYSTEM_EXPORT MojoResult
 // that thread can then wait for |data_pipe_producer_handle| to become writable
 // again.
 //
-// Once the caller has finished writing data to |*buffer|, it should call
-// |MojoEndWriteData()| to specify the amount written and to complete the
-// two-phase write.
+// When |MojoBeginWriteData()| returns MOJO_RESULT_OK, and the caller has
+// finished writing data to |*buffer|, it should call |MojoEndWriteData()| to
+// specify the amount written and to complete the two-phase write.
+// |MojoEndWriteData()| need not be called for other return values.
 //
 // Note: If the data pipe has the "may discard" option flag (specified on
 // creation) and |flags| has |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| set, this may

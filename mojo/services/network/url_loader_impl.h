@@ -14,7 +14,9 @@
 #include "net/url_request/url_request.h"
 
 namespace mojo {
+
 class NetworkContext;
+class NetToMojoPendingBuffer;
 
 class URLLoaderImpl : public InterfaceImpl<URLLoader>,
                       public net::URLRequest::Delegate {
@@ -23,9 +25,6 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   virtual ~URLLoaderImpl();
 
  private:
-  class PendingWriteToDataPipe;
-  class DependentIOBuffer;
-
   // URLLoader methods:
   virtual void Start(
       URLRequestPtr request,
@@ -48,7 +47,6 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
       const Callback<void(URLResponsePtr)>& callback);
   void SendResponse(URLResponsePtr response);
   void OnResponseBodyStreamReady(MojoResult result);
-  void WaitToReadMore();
   void ReadMore();
   void DidRead(uint32_t num_bytes, bool completed_synchronously);
 
@@ -56,7 +54,7 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   scoped_ptr<net::URLRequest> url_request_;
   Callback<void(URLResponsePtr)> callback_;
   ScopedDataPipeProducerHandle response_body_stream_;
-  scoped_refptr<PendingWriteToDataPipe> pending_write_;
+  scoped_refptr<NetToMojoPendingBuffer> pending_write_;
   common::HandleWatcher handle_watcher_;
   uint32 response_body_buffer_size_;
   bool auto_follow_redirects_;
