@@ -70,6 +70,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_texture_usage;
     bool ext_texture_storage;
     bool chromium_path_rendering;
+    bool ext_blend_minmax;
   };
 
   struct Workarounds {

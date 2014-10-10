@@ -143,9 +143,12 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                             const CheckerboardDrawQuad* quad);
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
-  static bool ShouldApplyBlendModeUsingBlendFunc(const DrawQuad* quad);
-  void ApplyBlendModeUsingBlendFunc(const DrawQuad* quad);
-  void RestoreBlendFuncToDefault();
+  static bool IsDefaultBlendMode(SkXfermode::Mode blend_mode) {
+    return blend_mode == SkXfermode::kSrcOver_Mode;
+  }
+  bool CanApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode);
+  void ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode);
+  void RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode);
 
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       DrawingFrame* frame,
@@ -436,6 +439,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   ScopedPtrDeque<SyncQuery> available_sync_queries_;
   scoped_ptr<SyncQuery> current_sync_query_;
   bool use_sync_query_;
+  bool use_blend_minmax_;
 
   SkBitmap on_demand_tile_raster_bitmap_;
   ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;

@@ -196,6 +196,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(discard_framebuffer)
   IPC_STRUCT_TRAITS_MEMBER(sync_query)
   IPC_STRUCT_TRAITS_MEMBER(image)
+  IPC_STRUCT_TRAITS_MEMBER(blend_minmax)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats::ProcessStats)

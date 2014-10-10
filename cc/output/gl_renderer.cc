@@ -338,6 +338,7 @@ GLRenderer::GLRenderer(RendererClient* client,
   capabilities_.allow_rasterize_on_demand = true;
 
   use_sync_query_ = context_caps.gpu.sync_query;
+  use_blend_minmax_ = context_caps.gpu.blend_minmax;
 
   InitializeSharedObjects();
 }
@@ -698,21 +699,32 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   return image;
 }
 
-bool GLRenderer::ShouldApplyBlendModeUsingBlendFunc(const DrawQuad* quad) {
-  SkXfermode::Mode blend_mode = quad->shared_quad_state->blend_mode;
-  return blend_mode == SkXfermode::kScreen_Mode ||
+bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
+  return (use_blend_minmax_ && blend_mode == SkXfermode::kLighten_Mode) ||
+         blend_mode == SkXfermode::kScreen_Mode ||
          blend_mode == SkXfermode::kSrcOver_Mode;
 }
 
-void GLRenderer::ApplyBlendModeUsingBlendFunc(const DrawQuad* quad) {
-  DCHECK(ShouldApplyBlendModeUsingBlendFunc(quad));
-  if (quad->shared_quad_state->blend_mode == SkXfermode::kScreen_Mode) {
+void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
+  DCHECK(CanApplyBlendModeUsingBlendFunc(blend_mode));
+
+  // Any modes set here must be reset in RestoreBlendFuncToDefault
+  if (blend_mode == SkXfermode::kScreen_Mode) {
     GLC(gl_, gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE));
+  } else if (blend_mode == SkXfermode::kLighten_Mode) {
+    GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE));
+    GLC(gl_, gl_->BlendEquation(GL_MAX_EXT));
   }
 }
 
-void GLRenderer::RestoreBlendFuncToDefault() {
+void GLRenderer::RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode) {
+  if (blend_mode == SkXfermode::kSrcOver_Mode)
+    return;
+
   GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+
+  if (blend_mode == SkXfermode::kLighten_Mode)
+    GLC(gl_, gl_->BlendEquation(GL_FUNC_ADD));
 }
 
 static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
@@ -1012,8 +1024,10 @@ GLRenderer::ApplyInverseTransformForBackgroundFilters(
 
 void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const RenderPassDrawQuad* quad) {
+  SkXfermode::Mode blend_mode = quad->shared_quad_state->blend_mode;
   SetBlendEnabled(quad->ShouldDrawWithBlending() ||
-                  ShouldApplyBlendModeUsingBlendFunc(quad));
+                  (!IsDefaultBlendMode(blend_mode) &&
+                   CanApplyBlendModeUsingBlendFunc(blend_mode)));
 
   ScopedResource* contents_texture =
       render_pass_textures_.get(quad->render_pass_id);
@@ -1032,7 +1046,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (!contents_device_transform.GetInverse(&contents_device_transform_inverse))
     return;
 
-  bool need_background_texture = !ShouldApplyBlendModeUsingBlendFunc(quad) ||
+  bool need_background_texture = !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
                                  ShouldApplyBackgroundFilters(frame, quad);
 
   scoped_ptr<ScopedResource> background_texture;
@@ -1108,34 +1122,36 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     }
   }
 
-  // If blending is applied using shaders, the background texture with
-  // filters will be used as backdrop for blending operation, so we don't
-  // need to copy it to the frame buffer.
-  if (background_texture && !ShouldApplyBlendModeUsingBlendFunc(quad)) {
-    filter_bitmap =
-        ApplyBlendModeWithBackdrop(ScopedUseGrContext::Create(this, frame),
-                                   resource_provider_,
-                                   filter_bitmap,
-                                   contents_texture,
-                                   background_texture.get(),
-                                   quad->shared_quad_state->blend_mode);
-  } else if (background_texture) {
-    // Draw the background texture if it has some filters applied.
-    DCHECK(ShouldApplyBackgroundFilters(frame, quad));
-    DCHECK(background_texture->size() == quad->rect.size());
-    ResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                            background_texture->id());
+  if (background_texture) {
+    if (CanApplyBlendModeUsingBlendFunc(blend_mode)) {
+      // Draw the background texture if it has some filters applied.
+      DCHECK(ShouldApplyBackgroundFilters(frame, quad));
+      DCHECK(background_texture->size() == quad->rect.size());
+      ResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                              background_texture->id());
 
-    // The background_texture is oriented the same as the frame buffer. The
-    // transform we are copying with has a vertical flip, so flip the contents
-    // in the shader to maintain orientation
-    bool flip_vertically = true;
+      // The background_texture is oriented the same as the frame buffer. The
+      // transform we are copying with has a vertical flip, so flip the contents
+      // in the shader to maintain orientation
+      bool flip_vertically = true;
 
-    CopyTextureToFramebuffer(frame,
-                             lock.texture_id(),
-                             quad->rect,
-                             quad->quadTransform(),
-                             flip_vertically);
+      CopyTextureToFramebuffer(frame,
+                               lock.texture_id(),
+                               quad->rect,
+                               quad->quadTransform(),
+                               flip_vertically);
+    } else {
+      // If blending is applied using shaders, the background texture with
+      // filters will be used as backdrop for blending operation, so we don't
+      // need to copy it to the frame buffer.
+      filter_bitmap =
+          ApplyBlendModeWithBackdrop(ScopedUseGrContext::Create(this, frame),
+                                     resource_provider_,
+                                     filter_bitmap,
+                                     contents_texture,
+                                     background_texture.get(),
+                                     quad->shared_quad_state->blend_mode);
+    }
   }
 
   bool clipped = false;
@@ -1178,8 +1194,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
               contents_resource_lock->target());
   }
 
-  if (ShouldApplyBlendModeUsingBlendFunc(quad))
-    ApplyBlendModeUsingBlendFunc(quad);
+  if (CanApplyBlendModeUsingBlendFunc(blend_mode))
+    ApplyBlendModeUsingBlendFunc(blend_mode);
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_,
@@ -1428,8 +1444,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (filter_bitmap)
     GLC(gl_, gl_->Flush());
 
-  if (ShouldApplyBlendModeUsingBlendFunc(quad))
-    RestoreBlendFuncToDefault();
+  if (CanApplyBlendModeUsingBlendFunc(blend_mode))
+    RestoreBlendFuncToDefault(blend_mode);
 }
 
 struct SolidColorProgramUniforms {

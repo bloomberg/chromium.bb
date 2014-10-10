@@ -142,7 +142,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       is_swiftshader(false),
       angle_texture_usage(false),
       ext_texture_storage(false),
-      chromium_path_rendering(false) {
+      chromium_path_rendering(false),
+      ext_blend_minmax(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -789,6 +790,7 @@ void FeatureInfo::InitializeFeatures() {
 
   if (is_es3 || extensions.Contains("GL_EXT_blend_minmax") ||
       gfx::HasDesktopGLFeatures()) {
+    feature_flags_.ext_blend_minmax = true;
     AddExtensionString("GL_EXT_blend_minmax");
     validators_.equation.AddValue(GL_MIN_EXT);
     validators_.equation.AddValue(GL_MAX_EXT);

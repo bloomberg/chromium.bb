@@ -2746,6 +2746,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.post_sub_buffer = supports_post_sub_buffer_;
   caps.image = true;
 
+  caps.blend_minmax = feature_info_->feature_flags().ext_blend_minmax;
   return caps;
 }
 
